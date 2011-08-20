@@ -1,0 +1,769 @@
+
+
+                       -----K-N-I-G-H-T-S-+---
+
+                                 by
+                          Reaper 1993-1994
+
+                         Documentation file
+                         September 28, 1994
+
+
+
+Contents:
+
+ *   1. Overview                    	General information
+ *   2. Game Installation & Starting    How to start Knights
+ *   3. Game Control                	Control methods and keys
+     4. Game Menu                   	How to customize dungeons
+     5. Screen Layout               	How the screen is laid out
+ *   6. Controlling your Knight     	How to move and manipulate
+     7. Dungeon Environment         	What's in the Dungeon
+     8. Dungeons Items              	What is this item?
+     9. Critters                    	Creatures in dungeons
+ *  10.	Knights FAQ		    	Frequently Asked Questions
+ *  11. Notes from creator          	Avoid this! ;)
+
+
+* differences from previous help file (late April)
+
+------------
+1. Overview
+------------
+
+ Knights is a two-player game of brave Knights who wander deep in the
+ dangerous Dungeons pursuing their goal.
+
+ The game requires two players and at least one joystick.
+
+
+    *******************************************************************
+    *                            NOTE:                                *
+    *   TO FULLY ENJOY THIS GAME YOU SHOULD CREATE A SCREEN DIVIDER,  *
+    *  FROM CARDBOARD OR BOOKS, TO SEPARATE EACH HALF OF THE SCREEN,  *
+    * SO THAT NEITHER PLAYER CAN SEE HIS OPPONENTS HALF OF THE SCREEN *
+    *******************************************************************
+
+ The game was written and compiled with AMOS 1.36, and requires about
+ 1 MB of memory and works on at least the A500s, A2000s and A1200s.
+ It works now with AA too and can be multitasked. In addition, NTSC
+ is supported and the screen can be repositioned.
+
+ This latest version is more complicated than the version released a
+ half a year ago and includes innumerous additional features.
+
+ This game includes:
+
+    * Over 250 different Dungeon floorparts
+    * Excellent sound effects and nice violence
+    * Corpses and Gore that do not vanish
+    * Flexible Quest customization
+    * Creatures with nice sounds and fancy tactics
+
+ Version 2.4 adds the following features:
+
+    * A more efficient Dungeon generator, which creates almost unlimited
+	number of different Dungeons
+    * Bigger Dungeons
+    * Dungeons containing more basic elements and rooms
+    * Wands, Books, and a variety of starting gear
+    * A selection of different Missions
+    * Improved Knight control system
+    * Clever monsters
+    * New Potions and Scrolls
+    * Information texts
+    * Suicide possibility
+    * Triggers and special traps
+    * AA and NTSC support
+
+
+ Version 2.42 got some minor improvements:
+
+    * Shorter intro with no music
+    * Mouse port disabling
+    * A few new rooms
+    * Information about missing files
+    
+
+    *******************************************************************
+    *                             NOTE II                             *
+    *      KNIGHTS COME WITH ABSOLUTELY NO WARRANTY. ANY DAMAGE       *
+    *    CAUSED TO MECHANICAL OR BIOLOGICAL THINGS IS NOT DIRECTLY    *
+    *   CAUSED BY THIS GAME AND CREATOR IS NOT RESPONSIBLE FOR THEM   *
+    *           IT DOES NOT SAVE ANYTHING OR MODIFY DISK              *
+    *******************************************************************
+
+
+-------------------------------
+2. Game Installation & Starting
+-------------------------------
+
+ Hard Disk Installation:
+ -----------------------
+
+ Copy Knights-files and Data-folder (with KRD) into suitable place like
+ work:games/Knights/
+
+ Copy contents of fonts-folder into your fonts-folder in SYS:partition
+
+ Start game by clicking it's icon or from CLI. Be sure that working directory
+ is same as where game is located.
+
+
+ Floppy Installation:
+ --------------------
+
+ Use bootable disk.
+
+ Copy Knights-files and Data-folder into suitable directory like root.
+
+ Copy Fonts-folder into root-directory (or add it's contents to already
+ available fonts-folder if appropriate) 
+
+ Be sure that lib-folder in floppy includes following files:
+	Diskfont.Library
+	Icon.Library
+	Mathieeedoubbas.Library
+	Mathtrans.Library
+
+ Make suitable startup-sequence and everything should be fine.
+
+
+
+ Game Starting:
+ --------------
+
+ Boot with the Knights disk or run it from the WB.
+
+ Wait until the game is loaded and demo is over, and then just press 
+ 'FIRE' on either joystick or RIGHT SHIFT.
+
+ Unless fire in mouse port is pressed mouse port is initially DISABLED.
+ To make it work, press F1. 
+
+
+----------------
+3. Game Control
+----------------
+
+ Player 1   (left side of screen) controlled with joystick #1 (left port)
+ Player 2   (right side of screen) controlled with joystick #0 (mouse-port)
+            and/or with RIGHT-SHIFT and ARROW keys
+
+ F1 enables mouse port if not already working
+ F2 disables mouse port		
+
+ Game can be terminated with CTRL-C
+ Switch between WB and game with LAMIGA+A
+
+ Reposition screen CTRL+ARROWS
+ During game, use ESC to return to game menu
+ During game, use CAPS-LOCK to pause game
+
+
+-------------
+4. Game Menu
+-------------
+
+ Dungeon Environment Customization Menu:
+
+ Use this menu to select aspects of the game
+ Joystick UP/DOWN moves the selection box and RIGHT/LEFT changes values
+ Press 'FIRE' to see additional information on selected item
+ Press 'FIRE' while on [ continue... ] to begin game
+
+ Here's an explanation of the menu items.
+
+ Quests:
+
+    There are several predetermined-determined Quests from which to select.
+    Quest selection simply creates templates which may be customized
+    with the options listed below them.
+
+
+    Mission Specification. States the primary goal of the Quest.
+    The options are:
+
+    -Escape from the Dungeon-
+     Find the required number of Gems (see below) and exit to win.
+
+    -Duel to the Death-
+     Win by securing all entry points with a special Wand of Securing
+     (see below).
+
+    -Retrieve Wand and Escape-
+     Find the Wand in the Dungeon and escape with it. You may also
+     need to retrieve some Gems (see below).
+
+    -Retrieve Book and Escape-
+     Find the Book in the Dungeon and escape with it. You may also
+     be required to retrieve some Gems (see below).
+
+    -Destroy Book with Wand-
+     Find the Book, bring it to the special Pentagram at the top of
+     the stairs (a very special place, easily distinguished from normal
+     Pentagrams), find the Wand (and required number of Gems), and then
+     hit the Book, lying in the Pentagram, with the Wand.
+
+ Types of Books:
+
+    If you have selected a mission with Book, one is hidden in the
+    Dungeon. The Book is heavy and fighting while carrying the Book
+    is impossible, so be careful while fighting and carrying it. The
+    different kinds of books are:
+
+    -Lost Book of Ashur-
+     A general Book with no special place or special effects.
+
+    -Necronomicon-
+     This Book of Dark Magic is always in a conjurer's room behind
+     locked Iron Doors. When taken, its powers are unleashed and any
+     nearby corpses are raised as Zombies. Additionally, when this
+     Book is carried, Zombie activity is automatically at its maximum...
+
+    -Tome of Gnomes-
+     This Book of Gnome Wisdom is always located behind clever traps
+     or mechanical riddles.
+
+    -Ancient Book of Knowledge-
+     This Book automatically grants a map to its carrier. Alas, your
+     enemy is always aware of your location if you carry it.
+
+ Types of Wands:
+
+    If there are any Wands in the Dungeon, they are all of the same
+    kind. Wands are carried and used like any other (melee) weapons.
+    When used, areas are filled with magical light. All targets must
+    be physically hit with a Wand in order to work. The type are:
+
+    -Wand of Destruction-
+     Destroys any creature or wooden, breakable object.
+
+    -Wand of UnDeath-
+     A nasty Wand which destroys Zombies (and turns an enemy Knight
+    into one)! No Zombie will attack the bearer of this Wand.
+
+    -Wand of Open Ways-
+     Opens its target, be it a locked Door or a creature (*grin*)
+
+    -Wand of Securing-
+     Used to 'secure' entry points so that your enemy cannot use them.
+     After all entry points are secured, your enemy dies, having no
+     way to enter the Dungeon and therefore loses the game. Securing a
+     Door does not prevent Knight who secured the Door from entering
+     that door (unless the other Knight has already secured that
+     location...).
+
+ Number of Wands:
+
+    Some missions require that there is at least one Wand in the
+    Dungeon.
+
+ Number of Gems:
+
+    Gems are almost always in Chests, but might be found on Tables
+    as well.
+
+ Gems Needed:
+
+    The number of Gems a Knight must retrieve, in addition to any
+    other mission requirements, before he can win.
+
+ Dungeon Type:
+
+    General layout of the Dungeon. If the selected type is too small
+    for mission creation, it is automatically enlarged. Snake Dungeons
+    are like very broad corridors.
+
+ Premapped:
+
+    Option to have the Dungeon automatically mapped (visible) when
+    the game starts.
+
+ Entry Point:
+
+    Place where the Knights enter the Dungeon. Entry points remain
+    the same during the game unless they are secured by your enemy
+    with a Wand of Securing and the chosen method of entry is 'random'.
+
+ Starting Gear:
+
+    Knights may have additional equipment at the start of the game.
+    The amount of extra equipment will decrease upon each death.
+
+ Exit Point:
+
+    The place where a Knight can exit the Dungeon. If a Knight
+    arrives at this location before collecting all the required
+    items, he will be told what he still needs.
+
+ Number of Keys:
+
+    Number of different Keys (and Locks). Additionally, there is
+    always at least one Lock Pick which can be used to open any
+    locked Door (if time is no problem...)
+
+ Pretrapped Chests:
+
+    Some Chests might be pretrapped with a Poison Needle or a
+    Blade Spring if this option is selected.
+
+ Amount of Stuff:
+
+    The amount of various stuff (see below) lying on the floor
+    and Tables.
+
+ Zombie Activity:
+
+    Determines how quickly dead bodies will transform into corpses,
+    then raise to walk on Earth...
+
+ Vampire Bats:
+
+    Number of Killer Vampire Bats in the Dungeon.
+
+
+-----------------
+5. Screen layout
+-----------------
+
+ Your half of the game screen is divided into two parts. The upper part
+ consists of a view of the room where your Knight is currently located.
+
+ The lower part includes status information (from left to right):
+
+    -Skulls-
+     Tells you how many times you have died. Fortunately, lives are
+     unlimited.
+
+    -The Bottle-
+     Tells you your life status, and if any special magical effect is
+     currently affecting you. The meaning of the color of the Bottle
+     contents is explained below in the equipment section. If the
+     level of the liquid has lowered, find a healing potion or visit
+     your entry point.
+
+    -Equipment-
+     Any small equipment stuffed into your pouches is shown here.
+
+    -Map-
+     A plan view of the Dungeon is drawn here. A Knight automatically
+     maps any room he enters if there are no enemies to stop him.
+     Additionally, you may find a Map Scroll, or the Dungeon might be
+     premapped (if selected above). There is also a scroll named
+     'Wipe Map'. No need to explain how nasty *it* is.
+
+     YOU are shown as a blinking dot in your Map (if are able to map
+     your current room). There are also Scrolls which tell you of your
+     opponent's location. He is also shown as blinking dot on your Map.
+
+
+--------------------------
+6.Controlling your Knight
+--------------------------
+
+ A Knight is controlled by joystick (or the right-side player may be
+ alternatively controlled with ARROW-KEYS and the RIGHT-SHIFT).
+
+ AMIGA+ALT is used to commit suicide, if need be (never happened, but
+ might be possible). Use this pair of keys on your side of the keyboard
+ to commit suicide.
+
+
+ Moving:
+
+    Move your Knight in the desired direction by pushing the joystick
+    to that direction.
+
+
+ Fast item manipulating:
+
+    Press 'FIRE' and push the joystick in the desired direction to use
+    any of the following items currently in hand:
+
+        Sword, Maul         to strike
+        Axe                 to throw or to strike, depending on the
+                            situation
+        Wand                to zap
+       *Crossbow            to fire (if loaded)
+        Unloaded Crossbow,
+        Staff or Book       to drop these
+
+    * A Crossbow is automatically reloaded if you are not doing
+      anything and if you have Quarrels with you.
+
+
+ Parrying:
+
+    Your Knight will automatically try to parry strikes coming from
+    the front, if he has Sword, Axe or Staff in his hands, and the
+    controller is not touched. Parrying with a Staff is easier than
+    parrying with a Sword which is easier than parrying with an Axe.
+    Mauls or Crossbows are too clumsy, and Wands too fragile, to be
+    used as parrying weapons.
+
+
+ Special Menus:
+
+ The Action Menu: manipulation of items in the same square.
+
+    By pressing 'FIRE' for a longer while, you are presented with the
+    Action Menu, as long as you keep 'FIRE' pressed. By pushing the
+    joystick to the appropriate direction the action (shown by icon)
+    is performed. The Action Menu will remain on-screen as long as you
+    keep the 'FIRE' button pressed. The Action Menu is used to pick up
+    items, drop gems, and other special actions (eg., setting bear
+    traps, picking locks).
+
+    NOTE: You get the default action simply by pressing 'FIRE' for a
+    very short period. The default action while standing in a square
+    is picking up and dropping items. The Action Menu must be used to
+    drop gems, throw daggers, or set bear traps.
+
+ The Approaching Menu: manipulation of an item in the square in front.
+
+    When approaching an adjacent square and pressing 'FIRE' (without
+    releasing the direction) you are presented with Approaching Menu,
+    which is used like the Action Menu, except the possible actions are
+    different. In this menu, you can set Traps, pick Locks, put items
+    in or on, or take items out of or from, Chests or Tables.
+
+    NOTE 1: You may use a short click for the default action. The
+    default action is opening, item taking, and closing. The special
+    menus must be used when you want to pick locks or set traps.
+
+    NOTE 2: Actions like opening and closing may be done in either
+    special menu.
+
+    NOTE 3: Menus are normally only used when setting Traps, picking
+    Locks, or throwing Daggers, because a short click is easier and
+    faster.
+
+
+-----------------------
+7. Dungeon Environment
+-----------------------
+
+ The Dungeon is a hostile environment with magical items and special
+ places...
+
+ 7.1 Entry Point
+
+    The place where your Knight enters game. If you are injured,
+    visiting your entry point will heal you - slowly. If your enemy
+    uses a Wand of Securing against your entry point, you will be
+    given a new entry point, which is then used for healing and
+    re-entry.
+
+ 7.2 Exit Point
+
+    The place which you must find to win (excluding the -Duel to the
+    Death- and -Book Destroying- scenarios). Normally, it is the same
+    as your entry point, but may also be the same as your enemy's (or
+    some other unknown's) entry point. If the mission is to escape the
+    Dungeon with some number of specific items which you currently do
+    not possess, you will be informed of what are you missing.
+
+ 7.3 Pits
+
+    There are Bottomless Pits. Do not enter. 
+
+ 7.4 Switches
+
+    Some switches open Doors or close Pits. Some drop a Portcullis
+    behind you. Some trigger Crossbows inside Skulls and Walls.
+
+ 7.5 Pentagrams
+
+    Some Pentagrams are harmless. Others are not, and include powerful
+    conjurations which may transform you, render you invisible,
+    invulnerable, or may even teleport you next to your enemy. Alas,
+    sometimes it may even change you into a Zombie.
+
+ 7.6 Crystal Balls
+
+    There are Crystal Balls in some Dungeons. Looking into one (approach
+    it) will show you on your Map where your opponent is located.
+
+ 7.7 Doors and Chests
+
+    All Doors and Chests are closed at the start of the game. Some may
+    be locked, in which case, you must find a suitable Key or a Lock Pick.
+    You may also simply try to break the Door down or smash the Chest.
+    Unfortunately, there are also Iron Doors, which cannot be broken, but
+    only opened with Keys or Lock Picks.
+
+
+-----------------
+8. Dungeon Items
+-----------------
+
+ The floor and Tables are filled with various items...
+
+ 8.1 Sword
+
+    You will always have a Sword. If you pick up something big, your
+    Sword is automatically placed into your Scabbard until you drop the
+    new item. The Sword is the best weapon in a melee, but cannot be
+    thrown (Why not?! Cries our Conan-clone) and is hopelessly bad for
+    breaking things.
+
+ 8.2 Big items
+
+    There are certain items that are so big that you can carry only one
+    with you at a time. These are:
+
+    -Axe-
+     An Axe is an acceptable melee weapon, which can also be thrown. It
+     is far better than a Sword when you need to destroy wooden objects.
+
+    -Maul-
+     A Maul is a mighty weapon - against inanimate objects. No wooden,
+     breakable object can resist its force. In contrast, is it a very
+     bad melee weapon.
+
+    -Staff-
+     A Staff cannot be used in melee in efficient way, because it is
+     too lightweight to cause damage to armored Knights. Instead, it is
+     used to disarm Traps. If your Knight opens a Door or Chest with a
+     Staff in his hands, no Trap will strike him. (NOTE: Because a
+     Staff is so bad as a melee weapon, it is automatically dropped
+     if you press 'FIRE' with a direction (in the open). If you really
+     want to strike something with it, you must use the Action Menu).
+
+    -Crossbow-
+     A Crossbow is a powerful weapon - if it is loaded. To load a
+     Crossbow, you must have Quarrels and patience. A Knight will
+     automatically load a Crossbow if he has Quarrels and stays in
+     place. If loading is aborted (for example, by moving) you must
+     start loading from the beginning again.
+
+    -Bear Traps-
+     Bear traps lying on the floor are either armed or unarmed. Unarmed
+     are harmless and can be picked up or walked over without fear.
+     Armed beartraps are open. If a Knight walks into one, he is injured
+     and stuck for a while. After that, the Bear Trap is unarmed. Armed
+     traps may be 'tripped' by striking them with some item. The item will
+     not be harmed. Bear traps may be carried and dropped, or set in
+     certain, strategic places. In addition to slowing down your enemy,
+     they are quite useful as 'alarms' because the sound of one catching
+     its victim will cause enough noise to alarm you.
+
+    -Other-
+     Book and Wands are big items too. Read about their special nature in
+     section 4.
+
+ 8.3 Small items
+
+    Certain items can be taken and carried by your Knight.
+
+    -Gems-
+     Some Dungeons include gems, which must be retrieved as part of the
+     mission. Gems are carried like other small items, but can also be
+     dropped. (Why drop gems? If you have many gems and your enemy kills
+     you, he gets them all and may easily win. By hiding some of them,
+     you know that he will not win by just killing you...).
+
+    -Quarrels-
+     Quarrels are needed with Crossbows. Either is useless without the
+     other.
+
+    -Daggers-
+     Daggers can be thrown from the Action Menu. They are pretty harmless,
+     but not completely useless, and might prove very dangerous when
+     combined with magical quickness and large quantities.
+
+    -Keys-
+     Keys are needed to open locked Doors (well, at least Iron Doors).
+     There are also Lock Picks, which can be used to open any Lock at
+     any given time.
+
+    -Poison Needles-
+     Poison Needles are Traps that kill any Knight which tries to open
+     an item trapped with them, unless he is currently immune to poison,
+     invulnerable, or equipped with a Staff while opening the item.
+
+    -Spring Blade-
+     A set Spring Blade fires in the direction from which it was put
+     into an object if someone opens or strikes the object. It is as
+     dangerous as a Crossbow, and can only be disabled with a Staff
+     (or by coming at the item from different direction).
+
+ 8.4 Potions
+
+    There are magical Potions in the Dungeon, which can be drunk by
+    picking them up. The effects from them are unpredictable, but
+    mostly helpful. Here is a list of the different effects and their
+    colors (shown in your life force Bottle):
+
+    Name              Color           Effect
+    ----------------- -----------     -----------------------------
+    Healing           none            Heals your Knight
+    Poison Immunity   flashing white  Gives immunity against poison
+    Poison            dark green      Kills you!
+    Paralyzation      green           Paralyzes you for a while
+   *Strength          blue            Gives you superior strength
+   *Quickness         violet          Gives you superior speed
+   *Regeneration      orange          Regenerates you (auto-healing)
+   *Invisibility      black           Makes you invisible
+   *Super             multicolored    Makes you strong, fast and
+                                      regenerated
+
+    * Only one of these may be in effect at a time. All effects
+    (except healing) are temporary.
+
+ 8.5 Scrolls
+
+    In addition to Potions, there are Magical Scrolls, which are read
+    by picking them up. Some may have effects similar to Potions, but
+    there are also different effects, such as:
+
+    Name              Effect
+    ----------------- -------------------------------------------
+    Map               Shows a map of the Dungeon
+    Teleport          Teleports you near your enemy or him to you
+    Sensing           Gives you and/or your enemy knowledge of
+                      others' locations
+    Sense Treasure    Shows you locations of any Gems, Wands or
+                      Books in areas you've already mapped
+    Invulnerability   Makes you invincible
+    Map Wipe          You lose your map!
+    Necromancy        You turn into a Zombie! (*UAAAAAA*)
+
+
+------------
+9. Critters
+------------
+
+ The Dungeons may include some nasty creatures...
+
+ 9.1 Vampire bats
+
+    There are blood-sucking Vampire Bats with razor-sharp fangs which
+    can even pierce plate armor. They are easily killed, but can just
+    as easily kill a panicked Knight. Be warned, their sonar cannot be
+    fooled by invisibility.
+
+ 9.2 Zombies
+
+    Evil Magic will cause corpses to turn into Zombies. Zombies exist
+    only to kill living Knights. They do not disrupt Bats. Zombies are
+    tough and can break down Doors and Tables, so they can easily wander
+    around the Dungeon...
+
+
+
+---------------
+10. Knights FAQ
+---------------
+
+ Here is some questions frequently asked (heh, at least one have done so)
+
+
+ "Is there going to be modem version?"
+
+   Apparently no. I have had not yet gotten enough inspiration to get back to 
+   Amos long enough to make something so big, and I do not think I will ever 
+   have :/
+
+
+ "Control is a bit hard...I try to strike enemy approaching from north but my
+  knight turns left"
+
+   Using 'menu' to strike is not the way to go. Use button+direction shortcut,
+   that's why it is there.
+
+
+ "The game does not seem to work...screen goes black but then it returns to system"
+
+   Apparently you have memory problems. Try to run it directly after booting without
+   WB in background.
+
+
+ "The game complains about missing fonts (running from HD)"
+
+   Include knights-fonts in your fonts-folder in SYS:partition.
+
+
+ "Could I get the source?"
+
+   No. I have not yet made it publicily available. Maybe some other day.
+
+
+
+
+-----------------------
+11. Notes from Creator    
+-----------------------
+
+    I hope there is enough information in this document for you to
+    completely master Knights. Creation of this game had been a nice
+    way of spending my time during weekends and evenings, but 
+    unfortunately I have had no time after release 2.4 (last spring)
+    to improve it a much...so that's why this version 2.42 is almost
+    identical to 2.4..despite the intro..
+
+    
+    I want to thank my friends for help;
+
+        Miku for supplying those awful sound effects...
+        Rami, Tommi, A.P. and my brother for playtesting and ideas...
+
+    Thanks to James Keating for re-layoutting and enchanting this 
+	document (those ugly parts are made by me _after_ his work )
+ 
+    Thanks for all ideas and letters from all of you...so bad I had
+	no inspiration enough to do them all :(
+
+
+
+    And once again, I repeat:
+
+        To fully enjoy this game, DIVIDE the screen with something.
+        There's no fun in being invisible if your opponent can see
+        you just by looking at your side of the screen!
+
+
+    If you find any apparent bugs send me e-mail. If you like/dislike 
+    this game, send me e-mail too. I like e-mail. Response 99.7 % 
+    guarenteed
+
+
+    You can also send me gifts, postcards, etc., if you want to :)
+
+
+    Send any bug reports, comments etc. to:
+        marjola@cc.helsinki.fi  (or Kalle.Marjola@Helsinki.fi)
+
+
+    Check my homepage at http://www.helsinki.fi/~marjola/
+      	There is information about my new products (and older, too)
+
+    Finger me at:
+	marjola@kruuna.helsinki.fi (or karhu or plootu or fltxb)
+
+
+
+	    SnailMail:
+	
+	        Kalle Marjola
+        	Jukolantie 14
+	        01900 NURMIJÄRVI
+        	FINLAND
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------There Can Be Only One!-------------------------------

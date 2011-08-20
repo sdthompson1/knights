@@ -1,0 +1,209 @@
+/*
+ * lockable.cpp
+ *
+ * This file is part of Knights.
+ *
+ * Copyright (C) Stephen Thompson, 2006 - 2011.
+ * Copyright (C) Kalle Marjola, 1994.
+ *
+ * Knights is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Knights is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Knights.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+#include "misc.hpp"
+
+#include "action.hpp"
+#include "dungeon_map.hpp"
+#include "dungeon_view.hpp"
+#include "item.hpp"
+#include "item_type.hpp"
+#include "knight.hpp"
+#include "lockable.hpp"
+#include "mediator.hpp"
+#include "rng.hpp"
+#include "trap.hpp"
+
+//
+// opening/closing: private functions
+//
+
+// returns true if the door was opened, or false if it was locked & we couldn't unlock
+bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, Player *player,
+                      ActivateType act_type)
+{
+    if (isLocked() && act_type != ACT_UNLOCK_ALL) {
+        bool ok = checkUnlock(cr);
+        if (!ok) return false;
+    }
+    openImpl(dmap, mc, player);
+    if (lock != SPECIAL_LOCK_NUM) lock = 0;  // special lock is always left; but other locks always unlock when opened.
+    closed = false;
+    if (act_type == ACT_NORMAL) activateTraps(dmap, mc, cr);
+    else disarmTraps(dmap, mc);
+    if (on_open_or_close) {
+        ActionData ad;
+        ad.setActor(cr, false);
+        ad.setPlayer(player);
+        ad.setTile(&dmap, mc, shared_from_this());
+        ad.setLuaPos(mc);
+        on_open_or_close->execute(ad);
+    }
+    return true;
+}
+
+bool Lockable::doClose(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, Player *player,
+                       ActivateType act_type)
+{
+    // Doors can be closed UNLESS they are "special-locked". The latter can
+    // only be closed by switches or traps (which we identify by the act_type,
+    // which should be ACT_UNLOCK_ALL for switches/traps).
+    
+    if (lock == SPECIAL_LOCK_NUM && act_type != ACT_UNLOCK_ALL) return false;
+    
+    closeImpl(dmap, mc, player);
+    closed = true;
+
+    if (on_open_or_close) {
+        ActionData ad;
+        ad.setActor(cr, false);
+        ad.setPlayer(player);
+        ad.setTile(&dmap, mc, shared_from_this());
+        ad.setLuaPos(mc);
+        on_open_or_close->execute(ad);
+    }
+
+    return true;
+}
+
+bool Lockable::checkUnlock(shared_ptr<Creature> cr) const
+{
+    if (!isLocked()) return true;
+    
+    // Only Knights have the ability to unlock doors
+    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(cr);
+    if (kt) {
+        for (int i=0; i<kt->getBackpackCount(); ++i) {
+            int key = kt->getBackpackItem(i).getKey();
+            if (key == this->lock) return true;
+        }
+    }
+    return false;
+}
+
+//
+// opening/closing: public functions
+//
+
+void Lockable::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr,
+                          Player *player,
+                          ActivateType act_type, bool success_dummy)
+{
+    // An "activate" only succeeds if the relevant doOpen/doClose routine says it does
+    bool success = false, doing_open = false;
+    if (closed) {
+        success = doOpen(dmap, mc, cr, player, act_type);
+        doing_open = true;
+    } else {
+        success = doClose(dmap, mc, cr, player, act_type);
+    }
+    Tile::onActivate(dmap, mc, cr, player, act_type, success);
+    if (doing_open) Mediator::instance().onOpenLockable(mc); // handles tutorial message (only) currently
+}
+
+void Lockable::close(DungeonMap &dmap, const MapCoord &mc, Player *player)
+{
+    // An explicit "close" always succeeds
+    if (!closed) {
+        closeImpl(dmap, mc, player);
+        closed = true;
+    }
+}
+
+void Lockable::open(DungeonMap &dmap, const MapCoord &mc, Player *player)
+{
+    // An explicit "open" always succeeds
+    if (closed) {
+        // note: if activate_type is ACT_UNLOCK_ALL then the creature is not used, so we can pass null
+        doOpen(dmap, mc, shared_ptr<Creature>(), player, ACT_UNLOCK_ALL);
+    }
+}
+
+
+//
+// lock- and trap-related stuff
+//
+
+void Lockable::generateLock(int nkeys)
+{
+    if (lock < 0) {
+        if (nkeys <= 0) {
+            lock = 0;    // unlocked
+        } else {
+            if (g_rng.getBool(float(lock_chance)/100.0f)) {
+                if (g_rng.getBool(float(pick_only_chance)/100.0f)) {
+                    lock = PICK_ONLY_LOCK_NUM;    // locked, and can be opened by lockpicks only
+                } else {
+                    lock = g_rng.getInt(1, max(keymax,nkeys)+1); // normal lock
+                    if (lock > nkeys) lock = 0; // unlocked (keymax has come into effect)
+                }
+            } else {
+                lock = 0;   // unlocked
+            }
+        }
+    }
+}
+
+void Lockable::disarmTraps(DungeonMap &dmap, const MapCoord &mc)
+{
+    if (trap) {
+        const ItemType *itype = trap->getTrapItem();
+        if (itype) {
+            shared_ptr<Item> dummy;
+            const bool can_drop = CheckDropSquare(dmap, mc, *itype, dummy);
+            if (can_drop) {
+                dummy.reset(new Item(*trap->getTrapItem()));
+                dmap.addItem(mc, dummy);
+            }
+        }
+        trap = shared_ptr<Trap>();
+        trap_owner = 0;
+    }
+}
+
+void Lockable::activateTraps(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr)
+{
+    if (trap) {
+        trap->spring(dmap, mc, cr, trap_owner);
+        trap = shared_ptr<Trap>();
+        trap_owner = 0;
+    }
+}
+
+void Lockable::setTrap(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr,
+                       shared_ptr<Trap> newtrap)
+{
+    if (trap) {
+        activateTraps(dmap, mc, cr);
+    }
+    trap = newtrap;
+    trap_owner = cr ? cr->getPlayer() : 0;
+}
+
+void Lockable::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, Player *player)
+{
+    if (trap && trap->activateOnHit()) {
+        activateTraps(dmap, mc, cr);
+    }
+    Tile::onHit(dmap, mc, cr, player);
+}

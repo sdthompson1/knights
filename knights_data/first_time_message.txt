@@ -1,0 +1,19 @@
+%cWelcome to Knights!
+
+%lKnights is a multiplayer game involving several knights who must explore random dungeons and solve various quests.
+
+%lIf you haven't played before, you might like to start with the Tutorial, which will explain the controls and the basics of the game to you.
+
+After that, you can join a multiplayer game on the Knights server, or start up a LAN game. There is also a singleplayer mode, but this is mainly intended for practice -- this game is definitely more fun in multiplayer!
+
+
+%cIf you like this game, why not drop by the forums:
+http://www.knightsgame.org.uk/forum/
+
+or check out the moddb profile: 
+http://www.moddb.com/games/knights
+
+
+%lHave fun...
+
+CLICK MOUSE TO CONTINUE

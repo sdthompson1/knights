@@ -1,0 +1,62 @@
+%c
+
+KNIGHTS
+
+Release 017
+Released 02-Aug-2011
+
+
+Programmed by 
+Stephen Thompson
+<stephen@solarflare.org.uk>
+
+
+Based on the Amiga game by
+Kalle Marjola a.k.a. "Reaper"
+
+
+Thanks to David Thompson, dukey, K9, moikel, Narts, Raytray, rpr and Wil.7ang
+for help with multiplayer testing.
+
+
+For further information and updates please visit the website:
+http://www.knightsgame.org.uk/
+
+
+Visit the Knights forums:
+http://www.knightsgame.org.uk/forum/
+
+or check out the moddb profile:
+http://www.moddb.com/games/knights
+
+
+%l
+Copyright (C) Stephen Thompson, 2006 - 2011.
+Copyright (C) Kalle Marjola, 1994.
+
+Knights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+Knights is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Knights.  If not, see <http://www.gnu.org/licenses/>.
+
+
+This program uses the following software libraries, which are copyright by their respective authors:
+
+Scale2x (scale2x.sourceforge.net), a graphics scaling algorithm by Andrea Mazzoleni.
+SDL (www.libsdl.org), by Sam Lantinga and others. Licensed under the LGPL.
+SDL_ttf (www.libsdl.org/projects/SDL_ttf), by Sam Lantinga (with modifications by Stephen Thompson). Licensed under the LGPL.
+FreeType (www.freetype.org), by The FreeType Project. Licensed under the FreeType Licence.
+Guichan (guichan.sourceforge.net), by Olof Naessen and Per Larsson. Licensed under a BSD-style licence.
+Boost (www.boost.org), licensed under the Boost Software Licence.
+ENet (enet.bespin.org), by Lee Salzman. Licensed under a BSD-style licence.
+libcurl (curl.haxx.se), by Daniel Stenberg and others. Licensed under a BSD-style licence.
+Lua (www.lua.org), a scripting language, licensed under the MIT licence.
+Please refer to the "docs" directory for further details.
+
+
+
+%cCLICK MOUSE TO CONTINUE
+
+
+

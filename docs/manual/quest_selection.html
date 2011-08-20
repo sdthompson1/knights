@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>3. Quest Selection</title>
+<link type="text/css" rel="stylesheet" href="../style_new.css">
+</head>
+<body>
+
+<div class="header">
+<table><tr>
+<td align="left"><a href="starting.html">Previous</a></td>
+<td align="center"><a href="index.html">Contents</a></td>
+<td align="right"><a href="screen_layout.html">Next</a></td>
+</tr></table>
+
+</div>
+
+<h2>3. Quest Selection</h2>
+<!-- -*- mode: html; coding: utf-8; -*- -->
+
+<p>Each game of Knights revolves around a quest &ndash; a set of
+  objectives that players must accomplish in order to win. Before each
+  game starts the players must decide which quest they wish to play.
+  The game comes with a number of pre-defined quests to choose from,
+  or you can design your own.</p>
+
+<p>After joining a game the following screen will be displayed:</p>
+
+<p><img src="images/quest_selection.png" alt="Screenshot"></p>
+
+<p>(Note that for split screen games, a cut-down version of the above
+  screen, without the chat area and player list, is displayed.)</p>
+
+<p>The main part of the screen, on the left, is taken up with the
+ quest settings, which are explained below. The right-hand half of the
+ screen is used for chat, and you can also adjust your knight's House
+ Colours here.</p>
+
+<p>Once all players in the game click on "Ready to Start", the game
+  will begin. (There must be at least two players present to start a
+  game.)</p>
+
+<p>If you click "Observe" then you will "sit out" of the next game.
+  You will be able to watch the game but not take part. To re-join the
+  game again, click "Join Game" (note this can only be done from the
+  quest selection screen, not during the game itself).</p>
+
+<h3>Quest Settings</h3>
+
+<p>To play one of the pre-defined quests, simply select it from the
+  Quest drop-down. A brief description of the mission will appear in
+  the small window at the bottom left. Alternatively, you can set up a
+  custom quest by adjusting the various settings (see below).</p>
+
+<h4>Quest Objectives</h4>
+
+<p>The following options define what you have to do to win the
+  quest.</p>
+
+<ul>
+  <li><b>Mission Type:</b> Can be set to:
+    <ul>
+      <li><i>Escape from the Dungeon:</i> Your knight must leave the
+        dungeon via the exit point to win.</li>
+      <li><i>Retrieve Book and Escape:</i> Your knight must retrieve
+        the book and then escape via the exit point.</li>
+      <li><i>Retrieve Wand and Escape:</i> Your knight must retrieve
+        the wand and then escape via the exit point.</li>
+      <li><i>Destroy Book with Wand:</i> Your knight must find the
+        book, place it in the "special" pentagram and then destroy it
+        by striking it with the wand. (The special pentagram will be
+        surrounded by stairs or other decorations and is easily
+        distinguishable from a normal pentagram. See
+        also <a href="dungeon_features.html#pentagram">Pentagrams</a>.)</li>
+      <li><i>Duel to the Death:</i> The last knight alive wins! In
+        order to win this quest you will first need to "secure" all
+        the entry points, so that your enemy cannot re-enter the
+        dungeon when he dies.
+        See also <a href="items.html#wand_of_securing">Wand of
+        Securing</a>.</li>
+    </ul>
+  </li>
+  <li><b>Type of Book:</b> If the quest involves a book then you can
+    choose from several types of book.
+    See <a href="items.html#books">Books</a> for details.</li>
+  <li><b>Type of Wand</b> and <b>Number of Wands:</b> The Dungeon may
+    contain up to 8 wands. If there are multiple wands, they are
+    always all of the same type.
+    See <a href="items.html#wands">Wands</a> for details of each
+    Wand's powers.</li>
+  <li><b>Number of Gems</b> and <b>Gems Needed:</b> To make the
+    quest more interesting you can require knights to find a certain
+    number of gems before winning. Gems will be hidden randomly
+    within the dungeon, usually inside chests or on tables. Gems
+    have no powers or abilities, but if a knight is not carrying
+    enough then he will be unable to win the quest.</li>
+</ul>
+
+<h4>Dungeon Environment Settings</h4>
+
+<p>The following settings affect the type of dungeon generated and the
+  nature of the dungeon environment.</p>
+
+<ul>
+  <li><b>Dungeon Type:</b> This affects the size and layout of the
+    dungeon. Choose from Tiny, Small, Basic, Big, Huge, Snake, Long
+    Snake or Ring.</li>
+  <li><b>Premapped:</b> If set then knights will start with a complete
+    map of the dungeon.</li>
+  <li><b>Entry Point:</b> Controls where each knight enters the
+    dungeon. Choose from Total Random, Close to Other (the knights
+    start close together), or Away from Other (the knights start far
+    apart from each other).</li>
+  <li><b>Exit Point:</b> This is the place where the knight has to
+    go to escape from the dungeon. Choose from Same as Entry (leave
+    via your own entry point), Other's Entry (leave via your
+    opponent's entry point), Guarded (the exit point is behind locked
+    doors and guarded by vampire bats), or Total Random (the exit
+    point is in an unknown, random location). Note that Other's Entry
+    is only available in two-player games.</li>
+  <li><b>Starting Gear:</b> Knights may start the game with daggers,
+    traps, both, or just their trusty sword.</li>
+  <li><b>Number of Keys:</b> Controls the number of keys generated
+    (between 1 and 3). If set to 1 then few doors will be locked; if
+    set to 3 there will be more locked doors and all iron doors will
+    be locked.</li>
+  <li><b>Pretrapped Chests:</b> If this is enabled then some chests
+    will be trapped at the start of the game.</li>
+  <li><b>Amount of Stuff:</b> Controls the amount of equipment and
+    items placed randomly into the dungeon at the start of the game.
+    Can be between 1 and 5.</li>
+  <li><b>Stuff Respawning:</b> This controls how quickly potions and
+    scrolls respawn after use. Choose from Slow, Medium or Fast, or
+    set to None to turn off respawning. Note that this only affects
+    potions and scrolls; other items do not respawn.</li>
+  <li><b>Zombie Activity:</b> If this is activated, then evil magic
+    will cause the dead to start walking! Corpses will slowly decay
+    and eventually rise up as zombies. The speed at which this happens
+    can be set between 1 and 5, or it can be set to 0 to turn off
+    zombie activity.</li>
+  <li><b>Vampire Bats:</b> If this is activated then the dungeon
+    will be filled with bloodthirsty vampire bats. Additional bats
+    will also appear from pits. The number of bats can be set on a
+    scale from 0 to 5.</li>
+</ul>
+
+<h4>Time Limit</h4>
+
+<p>There is also an option to set a time limit. This is mainly
+  intended for use with the single player game mode, but it can also
+  be used in multiplayer games. If the time limit runs out, then all
+  players lose.</p>
+
+<div class="footer2">
+<table><tr>
+<td align="left"><a href="starting.html">Previous</a></td>
+<td align="center"><a href="index.html">Contents</a></td>
+<td align="right"><a href="screen_layout.html">Next</a></td>
+</tr><tr>
+<td align="left">Starting a Game</td>
+<td></td>
+<td align="right">Screen Layout</td>
+</table>
+</div>
+
+</body>
+</html>
+

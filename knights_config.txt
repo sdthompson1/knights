@@ -1,0 +1,40 @@
+# Example Knights server configuration file.
+# Lines starting with # are ignored.
+
+
+# Which UDP port to run the server on. Default 16399
+Port = 16399
+
+
+# Short description of server. This will appear on the Find Server screen.
+# Description = Example Knights server
+
+# Message of the Day. The contents of this file are displayed whenever a new player connects.
+# MOTDFile = motd.txt
+
+
+# Maximum number of players that can connect. Default 100
+MaxPlayers = 100
+
+# Maximum number of games. Default unlimited.
+MaxGames = 40
+
+
+# Whether to "advertise" this server on the LAN and/or the Internet.
+#  - To run an Internet server, set UseMetaserver = yes and UseBroadcast = no.
+#  - To run a LAN server, set UseMetaserver = no and UseBroadcast = yes.
+UseMetaserver = yes
+UseBroadcast = no
+
+
+# Set this to password protect your server
+# Password = example
+
+
+# Log file to use. If unset, log messages will be printed to stdout.
+# LogFile = /path/to/log_file.txt
+
+
+# Location of the knights_data directory. Normally this can be left
+# unset as the directory will be found automatically.
+# KnightsDataDir = /path/to/knights_data

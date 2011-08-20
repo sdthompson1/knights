@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Appendix A: Building/Installing from Source</title>
+<link type="text/css" rel="stylesheet" href="../style_new.css">
+</head>
+<body>
+
+<div class="header">
+<table><tr>
+<td align="left"><a href="server.html">Previous</a></td>
+<td align="center"><a href="index.html">Contents</a></td>
+<td align="right"><a href="copyright.html">Next</a></td>
+</tr></table>
+
+</div>
+
+<h2>Appendix A: Building/Installing from Source</h2>
+<!-- -*- mode: html; coding: utf-8; -*- -->
+
+<p>This Appendix gives information on how to build and
+  install <i>Knights</i> from the source code.</p>
+
+<h3>Linux</h3>
+
+<p>For Linux a Makefile is provided. Most users should just be able to
+  type "make" followed by "make install" to build and install
+  respectively.</p>
+
+<p>Before compiling, make sure you have the necessary dependencies
+  installed. The game requires Boost, SDL, libcurl, Freetype and Fontconfig. On
+  Debian systems the following packages will satisfy the
+  requirements:</p>
+
+<ul>
+  <li>libboost-dev</li>
+  <li>libboost-thread-dev</li>
+  <li>libsdl-dev</li>
+  <li>libcurl4-openssl-dev <i>or</i> libcurl4-gnutls-dev</li>
+  <li>libfreetype6-dev</li>
+  <li>libfontconfig-dev</li>
+</ul>
+
+<p>If you only want to build the server (and not the game itself) then
+  you only need the first three of the above.</p>
+
+<p>Also, make sure that you have at least version 1.35 of Boost. Some
+  Linux distributions come with older versions, which will not work
+  with <i>Knights</i>. Also, if your Boost is installed in a
+  non-standard location, you may need to edit CPPFLAGS and/or
+  BOOST_LIBS to get it to build.</p>
+
+<p>You can install only parts of the game by using the following:</p>
+
+<ul>
+ <li>make install_knights &ndash; install only the game (and its data
+ files)</li>
+ <li>make install_server &ndash; install only the server (and its data
+ files)</li>
+ <li>make install_docs &ndash; install only the documentation
+ files.</li>
+</ul>
+
+<p>By default the game installs the "knights" and "knights_server"
+  executables to /usr/local/bin/, data files to
+  /usr/local/share/knights/, and documentation files to
+  /usr/local/share/doc/knights/. The default install directory can be
+  changed by setting the PREFIX variable, e.g. to install in your home
+  directory use "make PREFIX=$HOME" and "make install PREFIX=$HOME".
+  (The PREFIX should agree between the make and make install commands,
+  otherwise the game will not work!)</p>
+
+<p>For finer control of installation directories, use the following
+  variables:</p>
+
+<ul>
+  <li>BIN_DIR: location of the Knights binary (default: $(PREFIX)/bin)</li>
+  <li>DATA_DIR: location of the Knights data files (default: $(PREFIX)/share/knights)</li>
+  <li>DOC_DIR: location of the documentation files (default: $(PREFIX)/share/doc/knights)</li>
+  <li>KNIGHTS_BINARY_NAME: name of the Knights executable (default:
+  knights)</li>
+  <li>SERVER_BINARY_NAME: name of the server executable (default:
+  knights_server)</li>
+</ul>
+
+<p>It is possible to build a version without sound support by editing
+  the Makefile and adding "-DDISABLE_SOUND" to the CPPFLAGS. This
+  might be useful if you are having trouble getting sound to work on
+  your system.</p>
+
+<p>The Makefile also supports "make uninstall" (but make sure you pass
+  the correct PREFIX or DIR variables, e.g. "make uninstall
+  PREFIX=$HOME", if you changed these from their default values).</p>
+
+<p>If you are developing, you may like to know that the Makefile is
+  generated automatically from the Visual Studio project files (see
+  makemakefile.py in the python directory). The Makefile also uses
+  the "Advanced Auto-Dependency Generation" technique described here:
+  <a href="http://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html">http://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html</a>.</p>
+
+
+<h3>Windows</h3>
+
+<p>Most Windows users will use the pre-packaged installer, however if
+  you want to try building the game from source code, then read
+  on.</p>
+
+<p>Project and solution files for Visual Studio are included. (You can
+  get the Visual Studio Express Edition for free from Microsoft.)</p>
+
+<p>Before building, certain dependencies must be obtained. These
+  are:</p>
+
+<ul>
+  <li> <a href="http://www.boost.org/">Boost:</a> You'll need to
+    install Boost on your computer &ndash; the simplest way is to
+    download the latest installer (see the Getting Started section on
+    the Boost website, or go directly
+    to <a href="http://www.boostpro.com/download">http://www.boostpro.com/download</a>).
+  </li>
+  <li> <a href="http://www.libsdl.org/">SDL:</a> Download both the
+    "runtime libraries for Win32" and the "development libraries for
+    Win32". </li>
+  <li> <a href="http://curl.haxx.se/download.html">libcurl:</a>
+    Download the latest curl "source archive". </li>
+  <li> <a href="http://www.freetype.org/">Freetype:</a> Download the
+    latest stable release of freetype2. </li>
+</ul>
+
+<p>Extract the Knights source code to a directory of your choice. Then
+  extract the above dependencies as follows:</p>
+
+<ul>
+  <li>Run the Boost installer. (Note that this is a change from the
+    previous version of <i>Knights</i>, where the Boost files were
+    just copied into the source directory. This won't work any more
+    because we now need the Boost.Threads libraries as well as just
+    the header files.) You'll also need to set the include and library
+    directories in Visual Studio. Go to Tools -&gt; Options, then
+    Projects and Solutions -&gt; VC++ Directories, and select "Show
+    directories for: Include files". Add the path for the Boost root
+    directory e.g. "C:\Program Files\boost\boost_1_39". Then select
+    "Show directories for: Library files" and add the "lib"
+    subdirectory of Boost e.g. "C:\Program
+    Files\boost\boost_1_39\lib". </li>
+  <li>Unpack the SDL development libraries directly to
+    "knights_017_src". Rename the "SDL-1.2.x" folder to just
+    "SDL".</li>
+  <li>Unpack libcurl directly to "knights_017_src". Rename the
+    "curl-7.x.x" folder to just "curl".</li>
+  <li>Unpack the Freetype archive directly to "knights_017_src".
+    Rename the "freetype-2.x.x" folder to just "freetype".</li>
+  <li>Unpack the SDL runtime libraries. Only the file "SDL.dll" from
+    this is required; copy it to the "knights_017_src\" folder.</li>
+</ul>
+
+<p>You should now have a directory structure as follows:</p>
+
+<pre>
+knights_017_src\
+  curl\
+    docs\
+    include\
+    ...
+  freetype\
+    builds\
+    devel\
+    ...
+  SDL\
+    docs\
+    include\
+    ...
+  SDL.dll
+  ...
+</pre>
+
+<p>Now you can build Knights as follows:</p>
+
+<ol>
+  <li> Go into the msvc\ folder and open the Knights.sln.</li>
+  <li> The project conversion wizard may appear (Visual Studio wants to
+    convert the Freetype project file to the latest version). Click
+    "Finish" to let this run.</li>
+  <li> Right-click the Freetype project and select Properties. Set the
+    Configuration to Release and open the C/C++ -&gt; Code Generation
+    page. Change Runtime Library to "Multi-Threaded (/MT)".</li>
+  <li> Right-click the libcurl project and select Properties. Set the
+    Configuration to Release. Under C/C++, add HTTP_ONLY and
+    CURL_STATICLIB to the Preprocessor Definitions. Under Code
+    Generation, change Runtime Library to "Multi-Threaded (/MT)".</li>
+  <li>Build the solution in Release mode &ndash; this will create the
+    client and server executables. It also copies Knights.exe to
+    $(SolutionDir) as a post-build action.</li>
+</ol>
+
+<p>If you want to run Knights.exe from within the IDE then you will
+  need to edit the project settings for KnightsMain: go to Debugging
+  under Configuration Properties and change Command to
+  $(SolutionDir)/Knights.exe (or $(SolutionDir)/Knights_Debug.exe for
+  the Debug build). This is because the game looks in its own
+  directory for the "knights_data" folder at startup, so running it
+  from the standard Debug or Release locations won't work. You will
+  also need to set the StartUp Project to KnightsMain.</p>
+
+<p>The server is built by the KnightsSvrMain project and is named
+  KnightsSvrMain.exe by default.</p>
+
+<p>If you want to build the installer you must
+  install <a href="http://www.innosetup.com/isinfo.php">Inno
+  Setup</a>. Then go to the knights_017_src directory and issue the
+  following command:</p>
+
+<pre>"c:\program files\inno setup 5\iscc" /O"." /F"knights_017_installer" installer.iss</pre>
+
+<p>This will build the "knights_017_installer.exe" in the current
+  directory.</p>
+
+<h3>Scons</h3>
+
+<p>The Scons build files, present in earlier versions
+  of <i>Knights</i>, have now been removed and are no longer
+  supported.</p>
+
+<div class="footer2">
+<table><tr>
+<td align="left"><a href="server.html">Previous</a></td>
+<td align="center"><a href="index.html">Contents</a></td>
+<td align="right"><a href="copyright.html">Next</a></td>
+</tr><tr>
+<td align="left">Running a Server</td>
+<td></td>
+<td align="right">Copyright and Contact Details</td>
+</table>
+</div>
+
+</body>
+</html>
+

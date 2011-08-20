@@ -1,0 +1,266 @@
+/*
+ * script_actions.hpp
+ *
+ * This file is part of Knights.
+ *
+ * Copyright (C) Stephen Thompson, 2006 - 2011.
+ * Copyright (C) Kalle Marjola, 1994.
+ *
+ * Knights is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Knights is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Knights.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/*
+ * Actions usable from the config system (used for switch effects etc)
+ *
+ */
+
+#ifndef SCRIPT_ACTIONS_HPP
+#define SCRIPT_ACTIONS_HPP
+
+#include "action.hpp"
+
+#include "kconfig_fwd.hpp"
+using namespace KConfig;
+
+class A_AddTile : public Action {
+public:
+    explicit A_AddTile(shared_ptr<Tile> t) : tile(t) { }
+    virtual void execute(const ActionData &) const;
+private:
+    shared_ptr<Tile> tile;
+    ACTION_MAKER("AddTile");
+};
+
+class A_After : public Action {
+public:
+    A_After(int t, const Action *ac)
+        : delay(t), action(ac) { }
+    virtual void execute(const ActionData &) const;
+private:
+    int delay;
+    const Action *action;
+    ACTION_MAKER("After");
+};
+
+class A_ChangeItem : public Action {
+public:
+    explicit A_ChangeItem(const ItemType *itype) : item_type(itype) { }
+    virtual void execute(const ActionData &) const;
+private:
+    const ItemType *item_type;
+    ACTION_MAKER("ChangeItem");
+};
+
+class A_ChangeTile : public Action {
+public:
+    explicit A_ChangeTile(shared_ptr<Tile> t) : tile(t) { }
+    virtual void execute(const ActionData &) const;
+private:
+    shared_ptr<Tile> tile;
+    ACTION_MAKER("ChangeTile");
+};
+
+class A_CheckQuest : public Action {
+public:
+    A_CheckQuest() { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("CheckQuest");
+};
+
+class A_CrystalStart : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("CrystalStart");
+};
+
+class A_CrystalStop : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("CrystalStop");
+};
+
+class A_Damage : public Action {
+public:
+    A_Damage(const RandomInt *amt, const RandomInt *st, bool is) : amount(amt), stun_time(st), inhibit_squelch(is) { }
+    virtual void execute(const ActionData &) const;
+private:
+    const RandomInt *amount;
+    const RandomInt *stun_time;
+    bool inhibit_squelch;  // special hack used only for bear traps (at the moment)
+    ACTION_MAKER("Damage");
+};
+
+class A_DebugPrint : public Action {
+public:
+    explicit A_DebugPrint(const string &m) : msg(m) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("DebugPrint");
+    string msg;
+};
+
+class A_FlashMessage : public Action {
+public:
+    explicit A_FlashMessage(const string &m, int nt) : msg(m), num_times(nt) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("FlashMessage");
+    string msg;
+    int num_times;
+};
+
+class A_FlashScreen : public Action {
+public:
+    explicit A_FlashScreen(int d) : delay(d) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("FlashScreen");
+    int delay;
+};
+
+class A_FullZombieActivity : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("FullZombieActivity");
+};
+
+class A_IfKnight : public Action {
+public:
+    A_IfKnight(const Action *a) : action(a) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("IfKnight");
+    const Action *action;
+};
+
+class A_Necromancy : public Action {
+public:
+    A_Necromancy(int nzom, int rang) : nzoms(nzom), range(rang) { }
+    virtual bool possible(const ActionData &) const;
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("Necromancy");
+    int nzoms, range;
+};
+
+class A_Nop : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("Nop");
+};
+
+class A_NormalZombieActivity : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("NormalZombieActivity");
+};
+
+class A_OnSuccess : public Action {
+public:
+    A_OnSuccess(const Action *s, const Action *f) : success_action(s), fail_action(f) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("OnSuccess");
+    const Action *success_action;
+    const Action *fail_action;
+};
+
+class A_PitKill : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("PitKill");
+};
+
+class A_PlaySound : public Action {
+public:
+    A_PlaySound(const Sound *s, const RandomInt *freq, bool a) : sound(s), frequency(freq), all(a) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("PlaySound");
+    const Sound *sound;
+    const RandomInt *frequency;
+    bool all;
+};
+
+class A_RevealStart : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("RevealStart");
+};
+
+class A_RevealStop : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("RevealStop");
+};
+
+class A_Secure : public Action {
+public:
+    explicit A_Secure(shared_ptr<Tile> pwt) : plain_wall_tile(pwt) { }
+    virtual bool possible(const ActionData &) const;
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("Secure");
+    shared_ptr<Tile> plain_wall_tile;
+};
+
+class A_Shoot : public Action {
+public:
+    A_Shoot(int dx_, int dy_, MapDirection dir_, const ItemType &it)
+        : dx(dx_), dy(dy_), dir(dir_), itype(it) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("Shoot");
+    int dx, dy;
+    MapDirection dir;
+    const ItemType &itype;
+};
+
+class A_TeleportTo : public Action {
+public:
+    A_TeleportTo(int dx_, int dy_) : dx(dx_), dy(dy_) { }
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("TeleportTo");
+    int dx, dy;
+};
+
+class A_UpdateQuestStatus : public Action {
+public:
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("UpdateQuestStatus");
+};
+
+class A_ZombieKill : public Action {
+public:
+    virtual bool possible(const ActionData &) const;
+    virtual void execute(const ActionData &) const;
+private:
+    ACTION_MAKER("ZombieKill");
+};
+
+#endif
+
+    

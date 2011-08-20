@@ -1,0 +1,92 @@
+
+
+	Knights 2.42 Source Code
+	========================
+
+LICENSE:
+
+  Knights
+  Copyright (C) 1994   Kalle Marjola
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+The license affects the source code, documentation, maps and graphics.
+
+The full GPL is available at: http://www.gnu.org/licenses/gpl-2.0.txt
+
+
+
+Alternatively, those who have obtained the source code prior to Aug
+2009 can still stick to old "license" (but not recommended, as the
+vocabularity on it is a bit misleading):
+
+
+DISCLAIMER:   
+	THIS SOURCE CODE IS REPRESENTED AS IT IS AND IS MEANT ONLY FOR
+	PERSONAL OR PUBLIC DOMAIN USE. NO PARTS OR COMPLETE CODE CAN
+	BE USED IN COMMERCIAL PRODUCT OF ANY KIND AND PRODUCTS
+	INCLUDING EVEN PARTION OF CODE, GRAPHICS OR SOUNDS AVAILABLE
+	MUST BE PUBLIC DOMAIN AND CHARGE OF PRODUCT MUST BE LIMITED TO
+	PERSONAL DELIVERY EXPENSES
+
+
+ 
+
+
+So, here it is: Source code for Knights 2.42 amiga 2-player hack'em'up
+dungeon exploration game. Feel free to use them to upgrade this game,
+but keep those upgrades publicly available so all enthuastics have fun
+of them.
+
+
+Contents of this package:
+-------------------------
+(NOTE: I'm not sure this all information is up-to-date; I'm just
+trying to recall what everything did. And as I had said to all
+requesting this source - this is filled up with magic numbers and
+other information, which makes the project taxing at least)
+	
+*.IFF - graphics for various parts. Note that changinc these files has
+no effect on game even when rerun or compiled, because they must be
+first loaded into game in appropriate formats.
+
+Kbtaker.AMOS - this utility should take data from Kbobs.IFF and put it
+into bob databank
+
+Kitaker.AMOS - same for background icons
+
+Knights.AMOS - the source code, including some graphics in data
+banks. Has numerous magic numbers etc., maybe I will find my notes
+some day....
+
+Lockmapper.AMOS - utility to generate knights room maps. Each map is
+done so that there is 4 maps with identical floor plans but different
+interiors and door locations. Traps are added with some keys (look at
+source), etc.
+
+Mapjoin.AMOS - utility to read maps from Maps/ directory and put them
+into one separate databank.
+
+
+----
+Ok, that's all folks this time. If something is missing, please tell
+me; I try to find them other day. My amiga is quite disassembled
+nowadays etc. so it may take time...
+
+
+				Kalle Marjola
+				marjola ät iki.fi
+				http://www.iki.fi/marjola/
+

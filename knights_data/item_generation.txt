@@ -1,0 +1,66 @@
+#
+# This file is part of Knights.
+#
+# Copyright (C) Stephen Thompson, 2006 - 2011.
+# Copyright (C) Kalle Marjola, 1994.
+#
+# Knights is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Knights is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Knights.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+include "items.txt"
+
+# Floors
+ig_big = Random(
+       i_axe : 30,
+       i_hammer : 25,
+       [i_dagger,Random(1,1,Random(d3+1,d4+1,d5+1))] : 20,
+       i_bear_trap : 20,
+       i_crossbow : 15,
+       i_staff : 10,
+       i_poison_trap : 4,
+       i_blade_trap : 4,
+       [i_bolts,d4] : 4,
+       i_potion : 4,
+       i_scroll : 4
+)
+
+# Chests
+ig_pot = Random(
+       i_poison_trap : 1,
+       i_blade_trap : 1,
+       ig_trap : 5,
+       i_potion : 5,
+       i_scroll : 4
+)
+
+# Barrels
+ig_trap = Random(
+        i_poison_trap : 6,
+        i_blade_trap : 6,
+        [i_bolts,d4] : 6,
+        i_potion : 1,
+        [i_dagger,Random(d3+1,d4+1,d5+1)]  : 6
+)
+
+# (Large) Tables
+ig_table = Random(
+         ig_big:1,
+         ig_pot:2,
+         ig_trap:1
+)
+
+# Note: item generation settings for small skull / small table tiles
+# can be found in menus.txt.
+

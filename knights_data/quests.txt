@@ -1,0 +1,34 @@
+#
+# This file is part of Knights.
+#
+# Copyright (C) Stephen Thompson, 2006 - 2011.
+# Copyright (C) Kalle Marjola, 1994.
+#
+# Knights is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Knights is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Knights.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+QUEST_DESCRIPTIONS = [
+ "Quest for Gems\\Deep within the dungeon are hidden four gems.\\You must recover at least three of them and then return to your entry point.",
+ "The Big Quest for Gems\\Deep within the vast dungeon are hidden six gems.\\You must recover at least four of them before returning to your entry point.",
+ "Shock Assault\\You must make a shock assault on the entry point of the other knight. If you succeed before your enemy you are the winner.\\This quest is for 2 players only.",
+ "War of Survival\\You must secure all entry points with the wand so that your enemy cannot use them, and then kill him.",
+ "The Dungeon of Death\\Out of the vampire bat infested dungeon you must find an exit which is behind locked doors and a swarm of bats.",
+ "The Lost Book of the Gnome King\\The ancient Gnome King left his book of wisdom within this dungeon.\\You must find it and carry it back to your entry point.",
+ "The Tomb of the Liche Lord\\The Liche Lord is gone but his spell book is still in our universe. You must recover it from the Liche Lord's study.",
+ "The Ancient Wand of Death\\The Wand of Destruction is hidden in this dungeon.\\You must recover it and escape via %X.",
+ "The Way to the Paradise\\Legend has it that any hero who strikes the Book of Knowledge with the Wand of Open Ways in the Special Pentagram is granted immortality.\\Your objective is to attain that status.",
+ "The Quest of Giants\\You are put on the huge quest.\\You must retrieve the book and four out of six gems and escape via %X.",
+ "Run for the Freedom\\You are trapped in the dungeon of vampire bats.\\You must run to the exit point and get out before your opponent."
+]

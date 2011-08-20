@@ -1,0 +1,162 @@
+#-*-fundamental-*-
+
+#
+# This file is part of Knights.
+#
+# Copyright (C) Stephen Thompson, 2006 - 2011.
+# Copyright (C) Kalle Marjola, 1994.
+#
+# Knights is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Knights is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Knights.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+# NB If exits is not specified then all possible exits are assumed.
+
+d_tiny = { width=1 height=1 data=[ {type="block" }] }
+
+d_small = { width=2 height=1 data=[ {type="block"} {type="block"} ] }
+
+d_basic = {
+    width=2 height=2 data=[
+            { type="edge" } { type="edge" }
+            { type="edge" } { type="edge" }
+    ]
+}
+
+d_big = Random(
+    {
+        width=2 height=3 data=[
+            { type="edge"  } { type="edge"  }
+            { type="block" } { type="block" }
+            { type="edge"  } { type="edge"  }
+        ]
+    } : 3,
+    {
+        width=2 height=3 data=[
+            { type="edge" } { type="edge"  }
+            { type="edge" } { type="block" }
+            { type="none" } { type="edge"  }
+        ]
+    } : 1
+)
+
+d_huge = Random(
+    {
+        width=3 height=3 data=[
+            { type="edge"  } { type="block" } { type="edge"  }
+            { type="block" } { type="block" } { type="block" }
+            { type="edge"  } { type="block" } { type="edge"  }
+        ]
+    }
+    {
+        width=3 height=3 data=[
+            { type="block" } { type="edge"  } { type="none"  }
+            { type="edge"  } { type="block" } { type="block" }
+            { type="none"  } { type="block" } { type="edge"  }
+        ]
+    }
+    {
+        width=3 height=3 data=[
+            { type="edge"  } { type="block" } { type="edge"  }
+            { type="block" } { type="block" } { type="block" }
+            { type="edge"  } { type="block" } { type="none"  }
+        ]
+    }
+)
+
+d_snake = Random(
+    {
+        width=3 height=1 data=[ { type="edge" } { type="block" } { type="edge" } ]
+    } : 6
+
+    {
+        width=3 height=2 data=[
+            { type="block" } { type="block" } { type="edge" }
+            { type="edge"  } { type="none"  } { type="none" } ]
+    } : 1
+
+    {
+        width=3 height=3 data=[
+            { type="block" } { type="block" } { type="edge" }
+            { type="block" } { type="none"  } { type="none" }
+            { type="edge"  } { type="none"  } { type="none" } ]
+    } : 1
+
+    {
+        width=3 height=2 data=[
+            { type="edge"  } { type="none"  } { type="edge"  }
+            { type="block" } { type="block" } { type="block" }  ]
+    } : 1
+    {
+        width=3 height=3 data=[
+            { type="edge"  } { type="none"  } { type="none"  }
+            { type="block" } { type="block" } { type="block" }
+            { type="none"  } { type="none"  } { type="edge"  }  ]
+    } : 1
+)
+
+d_long_snake = Random(
+    {
+        width=2 height=3 data=[
+            { type="block" exits="se" } { type="block" exits="sw" }
+            { type="block" exits="ns" } { type="block" exits="ns" }
+            { type="edge"  exits="n"  } { type="edge"  exits="n"  } ]
+    }
+    {
+        width=3 height=3 data=[
+            { type="block" } { type="block" } { type="block" }
+            { type="block" } { type="none"  } { type="edge"  }
+            { type="edge"  } { type="none"  } { type="none"  } ]
+    }
+    {
+        width=3 height=3 data=[
+            { type="block" } { type="block" } { type="block" }
+            { type="block" } { type="none"  } { type="block" }
+            { type="edge"  } { type="none"  } { type="edge"  }  ]
+    }
+    {
+        width=3 height=3 data=[
+            { type="block" } { type="edge"  exits="w"  } { type="none"  }
+            { type="block" } { type="block" exits="we" } { type="block" }
+            { type="none"  } { type="edge"  exits="e"  } { type="block" } ]
+    }
+    {
+        width=3 height=3 data=[
+            { type="edge"  exits="e" } { type="block" } { type="block" }
+            { type="edge"  exits="s" } { type="none"  } { type="block" }
+            { type="block"           } { type="block" } { type="block" }  ]
+    }
+)
+
+d_ring = Random(
+    {
+        width=3 height=3 data=[
+            {type="block"           } {type="block"             } {type="block"           }
+            {type="block" exits="ns"} {type="special" exits="n" } {type="block" exits="ns"}
+            {type="block"           } {type="block"   exits="we"} {type="block"           }  ]
+    } : 4
+    { 
+        width=3 height=3 data=[
+            {type="block"           } {type="block" exits="we"} {type="block"  }
+            {type="block" exits="ns"} {type="block" exits="es"} {type="block"  }
+            {type="block"           } {type="block"           } {type="special"}  ]
+    } : 1
+    { 
+        width=3 height=3 data=[
+            {type="block"           } {type="block"           } {type="special"}
+            {type="block" exits="ns"} {type="block" exits="ns"} {type="none"   }
+            {type="block"           } {type="block"           } {type="none"   } ]
+    } : 1
+)
+

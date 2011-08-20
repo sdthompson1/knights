@@ -1,0 +1,70 @@
+#
+# This file is part of Knights.
+#
+# Copyright (C) Stephen Thompson, 2006 - 2011.
+# Copyright (C) Kalle Marjola, 1994.
+#
+# Knights is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Knights is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Knights.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+# Sound effects are a combination of a .wav file and a playback frequency in Hz.
+# NOTE: The "s_" variables (which represent the wav files themselves) are defined in Lua.
+
+snd_bat_screech  = PlaySound(s_screech, 15000)   # Sound made by bats when taking damage
+snd_bear_trap    = PlaySound(s_parry, 4000, 1)   # Stepping on a bear trap (can be heard by all players)
+snd_click        = PlaySound(s_click, 20000)     # Generic sound for various actions. (pick up, drop, etc.)
+snd_crossbow     = PlaySound(s_door, 35000)      # Crossbow fired
+snd_daggerfall   = PlaySound(s_parry, 40000)     # Missile hits wall and falls to floor.
+snd_door         = PlaySound(s_door, 20000)      # Opening or closing a door, chest or switch
+snd_downswing    = PlaySound(s_ugh, 14000)       # Swoosh of weapon downswing; also dagger throwing.
+snd_drink        = PlaySound(s_drink, 10000)     # Drinking a potion
+snd_lock         = PlaySound(s_parry, 40000)     # "Chink" sound of locked doors / lock picks.
+snd_parry        = PlaySound(s_parry, 10000)     # Parrying
+snd_pentagram    = PlaySound(s_door, 30000)      # Stepping on a pentagram, reading a scroll, or zapping a wand
+snd_squelch      = PlaySound(s_squelch, 15000)   # Knight takes weapon damage, or monster killed by weapon
+snd_teleport     = PlaySound(s_squelch, 4000)    # Teleportation
+snd_tile_bash    = PlaySound(s_click, 2000)      # Tile was hit
+snd_tile_clunk   = PlaySound(s_click, 1000)      # "Heavy" tile was hit
+snd_tile_destroy = PlaySound(s_door, 6000)       # Wooden tile destroyed
+snd_ugh          = PlaySound(s_ugh, 9000)        # Knight takes damage, is poisoned, or suicides
+snd_zombie       = Random(PlaySound(s_ugh,     4000+d2000),        # Sounds made by zombies.
+                          PlaySound(s_zombie2, 8000+d3000),
+                          PlaySound(s_zombie3, 8000+d3000))
+
+snd_dart = [snd_click snd_crossbow]  # used for skull traps.
+
+# Attach some of the sounds to the special event hooks 
+
+# (a) Knight swings weapon. (b) Knight parries a weapon blow.
+HOOK_WEAPON_DOWNSWING = snd_downswing
+HOOK_WEAPON_PARRY = snd_parry
+
+# (a) Knight takes damage, suicides or is poisoned. 
+# (b) Any creature takes damage >0.
+HOOK_KNIGHT_DAMAGE = snd_ugh
+HOOK_CREATURE_SQUELCH = snd_squelch
+
+# Zombie was hit by weapon or killed; zombie took bear trap damage; 
+# zombie attacks; randomly on some zombie moves.
+HOOK_ZOMBIE = snd_zombie
+
+# Bat took damage but did not die
+HOOK_BAT = snd_bat_screech
+
+# Crossbow bolt was fired.
+HOOK_SHOOT = snd_crossbow
+
+# Dagger or crossbow bolt hits a wall (or other obstacle) and drops to floor.
+HOOK_MISSILE_MISS = snd_daggerfall
