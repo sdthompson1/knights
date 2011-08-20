@@ -76,6 +76,8 @@ void Log(const char *format, ...)
 
 class TestClientCallbacks : public ClientCallbacks {
 public:
+    TestClientCallbacks() : join_game_accepted(false) { }
+
     void connectionLost() { Log("Connection lost"); }
     void connectionFailed() { Log("Connection failed"); }
 
@@ -90,6 +92,7 @@ public:
                           const std::vector<std::string> &observers)
     {
         Log("Join game accepted");
+        join_game_accepted = true;
     }
     void joinGameDenied(const std::string &reason) { Log("Join game denied. Reason = %s", reason.c_str()); }
 
@@ -173,6 +176,9 @@ public:
     {
         Log("Announcement: %s", msg.c_str());
     }
+
+public:
+    bool join_game_accepted;
 };
 
 class TestDungeonView : public DungeonView {
@@ -350,8 +356,12 @@ void SendMessagesIfRequired()
     // First message must always be "set player name"
     if (!set_player_name_sent) {
         g_client->setPlayerNameAndControls("Network Testing Bot", true);
+        g_client->joinGame("Game 1");
         set_player_name_sent = true;
         return;
+    } else if (g_client_callbacks->join_game_accepted) {
+        g_client->setReady(true);
+        g_client->finishedLoading();
     }
 }
 
