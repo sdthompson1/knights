@@ -76,7 +76,7 @@ void Log(const char *format, ...)
 
 class TestClientCallbacks : public ClientCallbacks {
 public:
-    TestClientCallbacks() : join_game_accepted(false) { }
+    TestClientCallbacks() : join_game_accepted(false), game_started(false) { }
 
     void connectionLost() { Log("Connection lost"); }
     void connectionFailed() { Log("Connection failed"); }
@@ -139,6 +139,7 @@ public:
     void startGame(int ndisplays, const std::vector<std::string> &player_names, bool already_started)
     {
         Log("Start game. Ndisplays = %d", ndisplays);
+	game_started = true;
     }
     void gotoMenu() { Log("Goto menu"); }
 
@@ -179,6 +180,7 @@ public:
 
 public:
     bool join_game_accepted;
+    bool game_started;
 };
 
 class TestDungeonView : public DungeonView {
@@ -361,7 +363,10 @@ void SendMessagesIfRequired()
         return;
     } else if (g_client_callbacks->join_game_accepted) {
         g_client->setReady(true);
+	g_client_callbacks->join_game_accepted = false;  // prevent multiple send of "set ready" msgs.
+    } else if (g_client_callbacks->game_started) {
         g_client->finishedLoading();
+	g_client_callbacks->game_started = false; 
     }
 }
 
