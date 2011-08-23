@@ -5,6 +5,12 @@
 #ifndef __ENET_UNIX_H__
 #define __ENET_UNIX_H__
 
+// Added by SDT 23-Aug-2011 (original version 22-May-2008)
+#define HAS_FCNTL
+#define HAS_POLL
+#define HAS_SOCKLEN_T
+//////
+
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>

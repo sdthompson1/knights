@@ -1,7 +1,7 @@
 Source code taken from other places. At the moment we have:
 
 enet -- A cross-platform networking library for games, by Lee Salzman
-(enet.bespin.org). Currently I am using enet 1.3.3, with custom
+(enet.bespin.org). Currently I am using enet 1.2.5, with custom
 modifications to enet.h and protocol.c (to add an "averagePing" field
 to ENetPeer).
 

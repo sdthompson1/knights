@@ -283,6 +283,10 @@ typedef struct _ENetPeer
    enet_uint16   outgoingUnsequencedGroup;
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
    enet_uint32   disconnectData;
+
+    // Added by SDT 23-Aug-2011 (original version 8-Nov-2009)
+    float averagePing;
+    int averagePingSet;
 } ENetPeer;
 
 /** Callback that computes the checksum of the data held in buffers [0..bufferCount-1] */

@@ -702,6 +702,16 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
        peer -> roundTripTimeVariance += (peer -> roundTripTime - roundTripTime) / 4;
     }
 
+    
+    // Added by SDT 23-Aug-2011 (original version 8-Nov-2009)
+    if (peer->averagePingSet) {
+        peer->averagePing = (peer->averagePing + roundTripTime) * 0.5f;
+    } else {
+        peer->averagePing = roundTripTime;
+        peer->averagePingSet = 1;
+    }
+    
+
     if (peer -> roundTripTime < peer -> lowestRoundTripTime)
       peer -> lowestRoundTripTime = peer -> roundTripTime;
 

@@ -51,7 +51,7 @@ namespace Coercri {
         enet_address_set_host(&address, hostname.c_str());
         address.port = port;
 
-        peer = enet_host_connect(host, &address, 1, 0);  // open 1 channel only. no user data supplied.
+        peer = enet_host_connect(host, &address, 1);  // open 1 channel only.
         if (!peer) {
             throw CoercriError("EnetNetworkConnection: enet_host_connect failed");
         }
