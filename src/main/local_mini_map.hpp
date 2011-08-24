@@ -62,19 +62,14 @@ public:
 
 private:
     void setHighlight(int x, int y, int id);
-    
-    struct Highlighter {
-        Highlighter(const LocalMiniMap &m, int t, const ConfigMap &cfg);  // sets highlights to appropriate colour
-        ~Highlighter();  // resets highlights to their original colours.
-        const LocalMiniMap &mini_map;
-    };
 
+    void makeHighlightedMap(int t, std::vector<MiniMapColour> &new_data) const;
+    
     const ConfigMap &config_map;
     int width, height;
-    mutable std::vector<MiniMapColour> data;   // must be mutable for Highlighter to work properly.
+    std::vector<MiniMapColour> data;
     struct Highlight {
         int x, y;
-        mutable MiniMapColour old_colour;
     };
     std::map<int, Highlight> highlights;
 };

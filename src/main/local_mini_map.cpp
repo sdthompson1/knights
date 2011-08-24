@@ -46,8 +46,9 @@ void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int
     if (width==0 || height==0) return;
     if (npx == 0 || npy == 0) return;  // will cause division by zero otherwise
 
-    // Set highlights to their proper colour.
-    Highlighter h(*this, t, config_map);
+    // Make a copy of the map with the correct highlights (flashing red dots) in it.
+    std::vector<MiniMapColour> new_data;
+    makeHighlightedMap(t, new_data);
 
     const int scale = min(npx/width, npy/height);
 
@@ -86,7 +87,7 @@ void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int
                     for (int i = 0; i < (extend_right ? recip_scale+1 : recip_scale); ++i) {
                         ASSERT(xbase + i < width);
                         ASSERT(ybase + j < height);
-                        csel = min(csel, data[(xbase+i) + (ybase+j)*width]);
+                        csel = min(csel, new_data[(xbase+i) + (ybase+j)*width]);
                     }
                 }
 
@@ -122,8 +123,8 @@ void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int
                 extend_up = true;
             }
 
-            const MiniMapColour *pright = &data[y*width];
-            const MiniMapColour *paboveright = (y+1==height) ? 0 : &data[(y+1)*width];
+            const MiniMapColour *pright = &new_data[y*width];
+            const MiniMapColour *paboveright = (y+1==height) ? 0 : &new_data[(y+1)*width];
         
             MiniMapColour chere, cabove;
             MiniMapColour cright = *pright++;
@@ -220,7 +221,7 @@ void LocalMiniMap::setHighlight(int x, int y, int id)
     // The strategy is to store highlights into a separate map, rather than
     // simply setting colours directly in the "data" array. This simplifies
     // setHighlight and setColour, but it does complicate the draw routines
-    // slightly. 
+    // slightly.
     
     // Erase the old highlight first (if any)
     map<int,Highlight>::iterator it = highlights.find(id);
@@ -233,29 +234,18 @@ void LocalMiniMap::setHighlight(int x, int y, int id)
         Highlight h;
         h.x = x;
         h.y = y;
-        h.old_colour = data[y*width+x];
         highlights.insert(make_pair(id, h));
     }
 }
 
-LocalMiniMap::Highlighter::Highlighter(const LocalMiniMap &m, int t, const ConfigMap &config_map)
-    : mini_map(m)
+void LocalMiniMap::makeHighlightedMap(int t, std::vector<MiniMapColour> &new_data) const
 {
     const MiniMapColour col_highlight = MiniMapColour((t / config_map.getInt("mini_map_flash_time")) % NUM_HIGHLIGHTS + FIRST_HIGHLIGHT);
 
-    for (std::map<int,LocalMiniMap::Highlight>::const_iterator it = mini_map.highlights.begin();
-    it != mini_map.highlights.end(); ++it) {
-        const int idx = it->second.y * mini_map.width + it->second.x;
-        it->second.old_colour = mini_map.data[idx];
-        mini_map.data[idx] = col_highlight;
-    }
-}
+    new_data = data;
 
-LocalMiniMap::Highlighter::~Highlighter()
-{
-    // Reset highlights to their proper map colour.
-    for (std::map<int, LocalMiniMap::Highlight>::const_iterator it = mini_map.highlights.begin();
-    it != mini_map.highlights.end(); ++it) {
-        mini_map.data[it->second.y * mini_map.width + it->second.x] = it->second.old_colour;
+    for (std::map<int,LocalMiniMap::Highlight>::const_iterator it = highlights.begin(); it != highlights.end(); ++it) {
+        const int idx = it->second.y * width + it->second.x;
+        new_data[idx] = col_highlight;
     }
 }
