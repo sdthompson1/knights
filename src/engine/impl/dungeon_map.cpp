@@ -506,7 +506,7 @@ public:
             // Attempt to drop the item into the square
             // Note: don't allow nonlocal drop - if a "local" drop fails, we might as well just wait
             // until the next attempt.
-            const bool result = DropItem(di.item, dmap, mc, false, true, D_NORTH, shared_ptr<Creature>());
+            const bool result = DropItem(di.item, dmap, mc, false, false, D_NORTH, shared_ptr<Creature>());
         
             if (result || di.item->getNumber() == 0) {
                 // Drop was successful.

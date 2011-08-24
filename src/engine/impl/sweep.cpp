@@ -39,7 +39,7 @@ void SweepItems(DungeonMap &dmap, const MapCoord &mc)
 
         // Try to add it back again
         // (We allow it to be placed non-locally if necessary.)
-        DropItem(it, dmap, mc, true, true, D_NORTH, shared_ptr<Creature>());
+        DropItem(it, dmap, mc, true, false, D_NORTH, shared_ptr<Creature>());
     }
 }
 

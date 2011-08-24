@@ -87,14 +87,6 @@ namespace {
         return result;
     }
 
-    MapDirection GetPreferredDropDirection(const Entity &kt)
-    {
-        // If the kt is approaching, then we want to drop behind,
-        // otherwise, drop in front.
-        if (kt.isApproaching()) return Opposite(kt.getFacing());
-        else return kt.getFacing();
-    }
-
     void DoSwing(shared_ptr<Creature> actor)
     {
         if (!actor) return;
@@ -464,10 +456,15 @@ bool A_Drop::possible(const ActionData &ad) const
 
     if (actor->getNumCarried(it) == 0) return false;
 
-    const MapCoord mc = actor->getTargettedPos();
-    return CanDropItem(it, *actor->getMap(), mc,
-                       actor->getPlayer()->getApproachBasedControls(),
-                       GetPreferredDropDirection(*actor));
+    // If we are approaching
+    // (or are using approach-less controls)
+    // then try to drop onto the square ahead (assuming it is approachable).
+    // Otherwise drop onto the current square.
+    const bool drop_ahead =
+        !actor->getPlayer()->getApproachBasedControls()
+        || actor->isApproaching();
+    return CanDropItem(it, *actor->getMap(), actor->getPos(),
+                       drop_ahead, actor->getFacing());
 }
 
 void A_Drop::execute(const ActionData &ad) const
@@ -479,13 +476,14 @@ void A_Drop::execute(const ActionData &ad) const
     int no_to_drop = actor->getNumCarried(this->it);
     if (no_to_drop == 0) return;
     if (no_to_drop > this->it.getMaxStack()) no_to_drop = this->it.getMaxStack();
-    
-    const MapCoord mc = actor->getTargettedPos();
+
+    const bool drop_ahead =
+        !actor->getPlayer()->getApproachBasedControls()
+        || actor->isApproaching();
 
     shared_ptr<Item> item(new Item(this->it, no_to_drop));
-    bool added_to_map = DropItem(item, *actor->getMap(), mc, false,
-                                 actor->getPlayer()->getApproachBasedControls(),
-                                 GetPreferredDropDirection(*actor),
+    bool added_to_map = DropItem(item, *actor->getMap(), actor->getPos(), false,
+                                 drop_ahead, actor->getFacing(),
                                  actor);
 
     if (added_to_map) {
@@ -525,19 +523,21 @@ bool A_DropHeld::possible(const ActionData &ad) const
     if (!actor) return false;
     if (!actor->canDropHeld()) return false;
 
-    const MapCoord mc = actor->getTargettedPos();
-
     // Rule: If actor is approaching then he can only drop the item into the
     // approached square. Otherwise, he can drop it onto any adjacent square.
     // (This is to prevent "accidental" drops when when e.g. approaching a
     // closed chest from behind.)
     if (actor->isApproaching()) {
         shared_ptr<Item> dummy;
-        return CheckDropSquare(*actor->getMap(), mc, *actor->getItemInHand(), dummy);
+        return CheckDropSquare(*actor->getMap(), actor->getTargettedPos(), *actor->getItemInHand(), dummy);
     } else {
-        return CanDropItem(*actor->getItemInHand(), *actor->getMap(), mc,
-                           actor->getPlayer()->getApproachBasedControls(),
-                           GetPreferredDropDirection(*actor));
+
+        const bool drop_ahead =
+            !actor->getPlayer()->getApproachBasedControls()
+            || actor->isApproaching();
+
+        return CanDropItem(*actor->getItemInHand(), *actor->getMap(), actor->getPos(),
+                           drop_ahead, actor->getFacing());
     }
 }
 
@@ -548,11 +548,13 @@ void A_DropHeld::execute(const ActionData &ad) const
     if (!actor) return;
     if (!actor->canDropHeld()) return;
 
-    const MapCoord mc = actor->getTargettedPos();
+    const bool drop_ahead =
+        !actor->getPlayer()->getApproachBasedControls()
+        || actor->isApproaching();
+
     shared_ptr<Item> item(new Item(*actor->getItemInHand()));
-    bool added_to_map = DropItem(item, *actor->getMap(), mc, false,
-                                 actor->getPlayer()->getApproachBasedControls(),
-                                 GetPreferredDropDirection(*actor),
+    bool added_to_map = DropItem(item, *actor->getMap(), actor->getPos(), false,
+                                 drop_ahead, actor->getFacing(),
                                  actor);
     if (added_to_map) {
         actor->setItemInHand(0);

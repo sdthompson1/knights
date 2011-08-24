@@ -429,7 +429,7 @@ void Knight::dropAllItems(bool move_back /* = false */)
     if (canDropHeld()) {
         // We have an item-in-hand that needs to be dropped
         shared_ptr<Item> item(new Item(*getItemInHand()));
-        const bool success = DropItem(item, *getMap(), mc, true, true, pref_drop_dir, self);
+        const bool success = DropItem(item, *getMap(), mc, true, false, pref_drop_dir, self);
 
         if (!success) {
             // could not drop it into the map. so add to "displaced items" (for later respawning)
@@ -446,7 +446,7 @@ void Knight::dropAllItems(bool move_back /* = false */)
 
         if (bkpk_single_item) {
             // Ordinary drop (don't use stuff bags).
-            const bool success = DropItem(bkpk_single_item, *getMap(), mc, true, true, pref_drop_dir, self);
+            const bool success = DropItem(bkpk_single_item, *getMap(), mc, true, false, pref_drop_dir, self);
 
             if (!success && bkpk_single_item->getNumber() != 0) {
                 // Was not (fully) dropped into the map - must add it to the displaced items
@@ -458,7 +458,7 @@ void Knight::dropAllItems(bool move_back /* = false */)
             // Try to drop a stuff bag.
             shared_ptr<Item> stuff_bag(new Item(stuff_manager.getStuffBagItemType()));
             MapCoord drop_mc;
-            const bool success = DropItem(stuff_bag, *getMap(), mc, true, true, pref_drop_dir, self, &drop_mc);
+            const bool success = DropItem(stuff_bag, *getMap(), mc, true, false, pref_drop_dir, self, &drop_mc);
             if (success) {
                 // Note that DropItem will run the stuff bag's onDrop event; but this
                 // will not actually have done anything (because we haven't set the

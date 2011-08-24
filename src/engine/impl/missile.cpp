@@ -127,7 +127,7 @@ void MissileTask::execute(TaskManager &tm)
         // so as to give the best chance of finding a place for the item.)
         if (m->drop_after) {
             shared_ptr<Item> item(new Item(m->itype));
-            DropItem(item, *m->getMap(), m->getPos(), true, true, m->getFacing(), shared_ptr<Creature>());
+            DropItem(item, *m->getMap(), m->getPos(), true, false, m->getFacing(), shared_ptr<Creature>());
         }
         m->rmFromMap();
     } else {

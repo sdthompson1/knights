@@ -92,13 +92,13 @@ bool CheckDropSquare(const DungeonMap &dmap, const MapCoord &mc,
 // you would prefer the item to be dropped into (if it can't be dropped in the
 // given square) -- set to anything (e.g. D_NORTH) if you don't care.
 
-// approach_based: If false, we will PREFER to drop in the preferred_direction, over the base
-// square, IF the tile in the preferred direction is approachable.
+// shift_forward: If true, we will PREFER to drop in the preferred_direction, over the base
+// square, IF the tile in the preferred direction is approachable. (This is used when a player
+// drops an item into a chest for example.)
 // Otherwise, we will prefer the base square, THEN the square in the preferred direction.
-// NOTE: Set approach_based to true if the drop is not initiated by any player.
 
 bool CanDropItem(const ItemType &drop_item, DungeonMap &dmap, const MapCoord &mc,
-                 bool approach_based, MapDirection preferred_direction);
+                 bool shift_forward, MapDirection preferred_direction);
     
 
 // DropItem: adds the given item to the map at the given square or one
@@ -127,7 +127,7 @@ bool CanDropItem(const ItemType &drop_item, DungeonMap &dmap, const MapCoord &mc
 // with stackable items.)
 
 bool DropItem(shared_ptr<Item> drop_item, DungeonMap &dmap, const MapCoord &mc,
-              bool allow_nonlocal, bool approach_based, MapDirection preferred_direction,
+              bool allow_nonlocal, bool shift_forward, MapDirection preferred_direction,
               shared_ptr<Creature> actor, MapCoord *drop_mc = 0);
 
 #endif

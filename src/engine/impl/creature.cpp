@@ -256,7 +256,7 @@ void ThrowingTask::execute(TaskManager &tm)
     me->throwAwayItem(&itype);
     if (!success) {
         shared_ptr<Item> item(new Item(itype));
-        DropItem(item, *dmap, me->getPos(), true, true, me->getFacing(), me);
+        DropItem(item, *dmap, me->getPos(), true, false, me->getFacing(), me);
     }
 }
 

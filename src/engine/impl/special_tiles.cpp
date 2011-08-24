@@ -168,7 +168,7 @@ void Chest::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
     if (stored_item && !stored_item->getType().isFragile()) {
         // NB don't set actor, because the creature isn't actually dropping the item himself.
         // Also: no need to set allow_nonlocal - because the chest tile should always be free
-        DropItem(stored_item, dmap, mc, false, true, D_NORTH, shared_ptr<Creature>());
+        DropItem(stored_item, dmap, mc, false, false, D_NORTH, shared_ptr<Creature>());
     }
 }
 
@@ -292,6 +292,6 @@ void Barrel::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature
     if (stored_item && !stored_item->getType().isFragile()) {
         // NB don't set actor, because the creature isn't actually dropping the item himself.
         // Also: should always be able to drop on the barrel tile itself, so don't set "allow_nonlocal"
-        DropItem(stored_item, dmap, mc, false, true, D_NORTH, shared_ptr<Creature>());
+        DropItem(stored_item, dmap, mc, false, false, D_NORTH, shared_ptr<Creature>());
     }
 }

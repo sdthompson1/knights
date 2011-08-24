@@ -63,16 +63,16 @@ namespace {
     // square.)
     // Added 31-Aug-2007: If "allow_nonlocal" is true then additional
     // nearby squares will be searched as well.
-    // Added 31-Dec-2010: If "approach_based" is set to false then we 
+    // Added 31-Dec-2010: If "shift_forward" is set to true then we 
     // will prefer to drop on the square in front (if it is approachable).
     // Otherwise we will prefer the current square.
 
     MapCoord GetDropSquare(const DungeonMap &dmap, const MapCoord &base,
-                           bool allow_nonlocal, bool approach_based,
+                           bool allow_nonlocal, bool shift_forward,
                            MapDirection preferred_direction,
                            const ItemType &drop_item, shared_ptr<Item> &curr_item)
     {
-        if (!approach_based) {
+        if (shift_forward) {
             // In this case prefer dropping on the square ahead if possible (if it is approachable).
             // Just do this as an extra check right at the beginning.
             const MapCoord ahead = DisplaceCoord(base, preferred_direction);
@@ -139,15 +139,15 @@ bool CheckDropSquare(const DungeonMap &dmap, const MapCoord &mc,
 
 
 bool CanDropItem(const ItemType &drop_item, DungeonMap &dmap, const MapCoord &mc,
-                 bool approach_based, MapDirection preferred_direction)
+                 bool shift_forward, MapDirection preferred_direction)
 {
     shared_ptr<Item> dummy;
-    MapCoord dest = GetDropSquare(dmap, mc, false, approach_based, preferred_direction, drop_item, dummy);
+    MapCoord dest = GetDropSquare(dmap, mc, false, shift_forward, preferred_direction, drop_item, dummy);
     return (!dest.isNull());
 }
 
 bool DropItem(shared_ptr<Item> drop_item, DungeonMap &dmap, const MapCoord &mc,
-              bool allow_nonlocal, bool approach_based,
+              bool allow_nonlocal, bool shift_forward,
               MapDirection preferred_direction,
               shared_ptr<Creature> actor, MapCoord *drop_mc)
 {
@@ -157,7 +157,7 @@ bool DropItem(shared_ptr<Item> drop_item, DungeonMap &dmap, const MapCoord &mc,
     Mediator &mediator(Mediator::instance());
     
     while (1) {
-        MapCoord dest = GetDropSquare(dmap, mc, allow_nonlocal, approach_based,
+        MapCoord dest = GetDropSquare(dmap, mc, allow_nonlocal, shift_forward,
                                       preferred_direction, drop_item->getType(), curr_item);
         if (dest.isNull()) {
             // Can't drop at all
