@@ -100,7 +100,8 @@ public:
     void setHouseColour(int hse_col);
     void setObsFlag(bool obs_flag);   // attempt to become player (false param) or observer (true param)
     void setMenuSelection(const std::string &key, int value);  // set a menu option (used in menu screen)
-
+    void randomQuest();   // ask the server to generate a random quest
+    
     void finishedLoading();  // tell server that we have finished loading and are ready to start game
 
     // send password to server

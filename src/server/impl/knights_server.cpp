@@ -645,6 +645,12 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                     conn.action_bar_controls = action_bar;
                 }
                 break;
+
+            case CLIENT_RANDOM_QUEST:
+                if (conn.game) {
+                    conn.game->randomQuest(*conn.game_conn);
+                }
+                break;
                 
             default:
                 throw ProtocolError("Unknown message code from client");

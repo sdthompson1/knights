@@ -78,6 +78,7 @@ public:
     boost::scoped_ptr<GuiButton> start_button;
     boost::scoped_ptr<GuiButton> observe_button;
     boost::scoped_ptr<GuiButton> exit_button;
+    boost::scoped_ptr<GuiButton> random_quest_button;
     boost::scoped_ptr<gcn::Label> label, title, observer_label;
     boost::scoped_ptr<GuiTextWrap> quest_description_box;
     std::auto_ptr<gcn::ScrollArea> quest_description_scroll_area;
@@ -111,7 +112,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     container->setOpaque(false);
     
     const int pad = 6, vpad_pretitle = 6, vpad_posttitle = 15, vpad_mid = 15, vpad_bot = 4;
-    const int vpad_before_quest_box = 30;
+    const int vpad_before_quest_box = 18, vpad_after_quest_box = 10;
     const int vpad_rhs = 5, width_rhs = extended ? 450 : 0;
     const int gutter = 15;
     
@@ -124,6 +125,14 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     app.getGameManager().createMenuWidgets(this, this, pad, menu_y, *container.get(),
                                            menu_width, y_after_menu);
 
+    // random quest button
+    y_after_menu += 5;
+    random_quest_button.reset(new GuiButton("Random Quest"));
+    random_quest_button->addActionListener(this);
+    container->add(random_quest_button.get(), pad, y_after_menu);
+    y_after_menu += random_quest_button->getHeight();
+
+    // quest description box
     quest_description_box.reset(new GuiTextWrap);
     quest_description_box->setForegroundColor(gcn::Color(0,0,0));
     quest_description_box->setWidth(menu_width - DEFAULT_SCROLLBAR_WIDTH - 4);
@@ -201,7 +210,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     
     // Add the start and exit buttons
     const int button_yofs = -3;
-    int y = y_after_menu + vpad_mid;
+    int y = y_after_menu + vpad_after_quest_box;
     if (extended) {
         // (this looks a little better with some extra spacing, as its next to the "Observe" button which is fairly big...)
         exit_button.reset(new GuiButton("  Exit  "));
@@ -271,6 +280,11 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
 
     if (event.getSource() == start_button.get()) {
         knights_client->setReady(true);
+        return;
+    }
+
+    if (event.getSource() == random_quest_button.get()) {
+        knights_client->randomQuest();
         return;
     }
 

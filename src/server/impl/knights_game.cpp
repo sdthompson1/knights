@@ -493,6 +493,43 @@ namespace {
             out.writeUbyte(hse_col);
         }            
     }
+
+    // validate the menu selections, also send updates to clients.
+    // called by SetMenuSelection and by Random Quests code.
+    // returns true if something was changed.
+    bool ValidateMenuSelections(KnightsGameImpl &impl, 
+                                const MenuSelections &msel_old, 
+                                const std::string &quest_descr_old)
+    {
+        // Update the quest description
+        impl.quest_description = GenerateQuestDescription(impl.menu_selections, *impl.knights_config);
+        
+        // Broadcast new menu selections to all clients. (Only if something changed though.)
+        // Also deactivate 'ready' flags if something changed.
+        bool updated = false;
+        for (game_conn_vector::iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
+            Coercri::OutputByteBuf buf((*it)->output_data);
+
+            bool need_hse_col_update;
+            updated = SendMenuSelections(buf, msel_old, impl.menu_selections, &need_hse_col_update);
+
+            if (need_hse_col_update) {
+                const int n_hse_col = GetNumAvailHouseCols(impl);
+                if ((*it)->house_colour >= n_hse_col && !(*it)->obs_flag) {
+                    // re-set his house colour.
+                    DoSetHouseColour(impl, **it, n_hse_col - 1);
+                }
+                // re-send him the list of available house colours.
+                SendAvailableHouseColours(impl, buf);
+            }
+                        
+            if (!updated) break;
+            SendQuestDescription(buf, quest_descr_old, impl.quest_description);
+            (*it)->is_ready = false;
+        }
+        
+        return updated;
+    }
     
     // returns true if something was changed.
     bool SetMenuSelection(KnightsGameImpl &impl, const std::string &key, int value)
@@ -527,34 +564,7 @@ namespace {
         impl.knights_config->getMenuConstraints().apply(impl.knights_config->getMenu(), impl.menu_selections,
                                                         std::max(min_players_for_constraint, nplayers));
 
-        // Update the quest description
-        impl.quest_description = GenerateQuestDescription(impl.menu_selections, *impl.knights_config);
-        
-        // Broadcast new menu selections to all clients. (Only if something changed though.)
-        // Also deactivate 'ready' flags if something changed.
-        bool updated = false;
-        for (game_conn_vector::iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
-            Coercri::OutputByteBuf buf((*it)->output_data);
-
-            bool need_hse_col_update;
-            updated = SendMenuSelections(buf, msel_old, impl.menu_selections, &need_hse_col_update);
-
-            if (need_hse_col_update) {
-                const int n_hse_col = GetNumAvailHouseCols(impl);
-                if ((*it)->house_colour >= n_hse_col && !(*it)->obs_flag) {
-                    // re-set his house colour.
-                    DoSetHouseColour(impl, **it, n_hse_col - 1);
-                }
-                // re-send him the list of available house colours.
-                SendAvailableHouseColours(impl, buf);
-            }
-                        
-            if (!updated) break;
-            SendQuestDescription(buf, quest_descr_old, impl.quest_description);
-            (*it)->is_ready = false;
-        }
-        
-        return updated;
+        return ValidateMenuSelections(impl, msel_old, quest_descr_old);
     }
 
     void ResetMenuSelections(KnightsGameImpl &impl)
@@ -1769,6 +1779,114 @@ void KnightsGame::setMenuSelection(GameConnection &conn, const std::string &key,
         }
         Announcement(*pimpl, str);
     }
+}
+
+namespace {
+    struct GtrThan {
+        GtrThan(int x_) : x(x_) {} 
+        bool operator()(int y) const { return y > x; }
+        int x;
+    };
+}
+
+void KnightsGame::randomQuest(GameConnection &conn)
+{
+    if (pimpl->update_thread.joinable()) return;  // Game is running
+
+    WaitForMsgCounter(*pimpl);
+
+    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
+    if (conn.obs_flag) return;   // only players can set quests.
+
+    // Save the old settings
+    MenuSelections msel_old = pimpl->menu_selections;
+    std::string quest_descr_old = pimpl->quest_description;
+
+    // Make sure "quest" is set to "custom"
+    SetMenuSelection(*pimpl, "quest", 0);
+
+    // Calculate number of players for constraint purposes (do this once up front)
+    // NOTE: We generate a quest appropriate for the current number of players;
+    // i.e. if only one player is online, we do not create the two-player quests.
+    const int nplayers = CountPlayers(*pimpl);
+
+    // Build up a list of keys that we are going to randomize.
+    // (Can do this once at the beginning)
+    const Menu & menu = pimpl->knights_config->getMenu();
+    std::vector<const std::string *> keys;
+    keys.reserve(menu.getNumItems());
+    for (int i = 0; i < menu.getNumItems(); ++i) {
+        const std::string & key = menu.getItem(i).getKey();
+        
+        // special case: "quest" should not be randomized because that would
+        // undo all our work randomizing the settings.
+        // also: "#time" is not randomized (currently) since we don't really know what a
+        // reasonable time limit would be for various quests.
+        if (key != "quest" && key != "#time") {
+            keys.push_back(&key);
+        }
+    }
+    
+    RNG_Wrapper myrng(g_rng);
+    std::vector<int> allowed_values;
+    
+    // Iterate a number of times, to make sure we get a good randomization
+    for (int iterations = 0; iterations < 3; ++iterations) {
+
+        // Shuffle the menu keys into a random order
+        // Note: we are using the global rng (from the main thread), as opposed to
+        // the rng's from the game threads. This should mean that the replay feature
+        // is not messed up by the extra random numbers being generated here.
+        std::random_shuffle(keys.begin(), keys.end(), myrng);
+
+        // for each key in the random ordering:
+        for (std::vector<const std::string *>::const_iterator key_it = keys.begin(); key_it != keys.end(); ++key_it) {
+
+            // find out the allowed values
+            allowed_values = pimpl->menu_selections.getAllowedValues(**key_it);
+
+            // special case: "num_wands" may not be bigger than the current number of players plus two
+            // This is to prevent silly 8-wand quests when there are only 2 players present (for example)...
+            // NOTE: Don't really want special cases like this here. (Ideally "random quest" would generate exactly
+            // the same set of quests that you can enter manually.)
+            if (**key_it == "num_wands") {
+                allowed_values.erase(std::remove_if(allowed_values.begin(), allowed_values.end(), GtrThan(nplayers+2)),
+                                     allowed_values.end());
+            }
+
+            if (!allowed_values.empty()) {
+                // pick one at random
+                const int selected_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
+
+                // set it to that value, updating constraints as required.
+                pimpl->menu_selections.setValue(**key_it, selected_value);
+                pimpl->knights_config->getMenuConstraints().apply(menu,
+                                                                  pimpl->menu_selections,
+                                                                  nplayers);
+            }
+        }
+    }
+
+    // ensure the results are valid; send updates to clients
+    ValidateMenuSelections(*pimpl, msel_old, quest_descr_old);
+   
+    if (pimpl->knights_log) {
+        // Save the quest in the binary log (This is so that replays work correctly. It is no good just having 
+        // "random quest" in the log, we need to save what the quest was actually set to.)
+        std::ostringstream random_quest_str;
+        random_quest_str << pimpl->game_name << '\0';
+        for (std::map<std::string, MenuSelections::Sel>::const_iterator it = pimpl->menu_selections.selections.begin();
+        it != pimpl->menu_selections.selections.end(); ++it) {
+            random_quest_str << it->first << '\0';
+            random_quest_str << it->second.value << '\0';
+        }
+        const std::string & s = random_quest_str.str();
+        pimpl->knights_log->logBinary("QST", 0, s.length(), s.c_str());
+    }
+
+    // Send announcement to all players
+    Announcement(*pimpl, conn.name + " selected a Random Quest.");
 }
 
 void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control_num)

@@ -88,6 +88,7 @@ public:
     bool requestQuit(GameConnection &);
     void setPauseMode(bool p); 
     void setMenuSelection(GameConnection &, const std::string &key, int value);
+    void randomQuest(GameConnection &);
     void sendControl(GameConnection &, int plyr, unsigned char control_num);  // plyr is usually 0; can be 1 in split screen mode
     void requestSpeechBubble(GameConnection &, bool show);
     void setObsFlag(GameConnection &, bool flag);

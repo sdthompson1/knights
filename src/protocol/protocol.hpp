@@ -67,7 +67,8 @@ enum ClientMessageCode {
     CLIENT_SET_OBS_FLAG = 17,        // followed by ubyte (0=I want to be a player, 1=I want to be an observer)
     CLIENT_REQUEST_SPEECH_BUBBLE = 18,   // followed by ubyte (0=don't show, 1=show)
     CLIENT_SET_APPROACH_BASED_CONTROLS = 19,     // followed by ubyte (1=true 0=false)
-    CLIENT_SET_ACTION_BAR_CONTROLS = 20          // followed by ubyte (1=true 0=false)
+    CLIENT_SET_ACTION_BAR_CONTROLS = 20,         // followed by ubyte (1=true 0=false)
+    CLIENT_RANDOM_QUEST = 21         // no extra data
 };
 
 // Messages sent by the server

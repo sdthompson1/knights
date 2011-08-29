@@ -282,7 +282,8 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     
     // initialize RNG
     g_rng.initialize();
-    
+    g_rng.setSeed(static_cast<unsigned int>(std::time(0)));
+
     // initialize resource lib
     RStream::Initialize(resource_dir);
 

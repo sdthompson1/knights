@@ -836,6 +836,12 @@ void KnightsClient::setMenuSelection(const std::string &key, int value)
     buf.writeVarInt(value);
 }
 
+void KnightsClient::randomQuest()
+{
+    Coercri::OutputByteBuf buf(pimpl->out);
+    buf.writeUbyte(CLIENT_RANDOM_QUEST);
+}
+
 void KnightsClient::finishedLoading()
 {
     pimpl->out.push_back(CLIENT_FINISHED_LOADING);
@@ -944,7 +950,7 @@ void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 const Graphic * KnightsClientImpl::readGraphic(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > client_config->graphics.size()) throw ProtocolError("graphic id out of range");
+    if (id < 0 || id > int(client_config->graphics.size())) throw ProtocolError("graphic id out of range");
     if (id == 0) return 0;
     return client_config->graphics.at(id-1);
 }
@@ -952,7 +958,7 @@ const Graphic * KnightsClientImpl::readGraphic(Coercri::InputByteBuf &buf) const
 const Anim * KnightsClientImpl::readAnim(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > client_config->anims.size()) throw ProtocolError("anim id out of range");
+    if (id < 0 || id > int(client_config->anims.size())) throw ProtocolError("anim id out of range");
     if (id == 0) return 0;
     return client_config->anims.at(id-1);
 }
@@ -960,7 +966,7 @@ const Anim * KnightsClientImpl::readAnim(Coercri::InputByteBuf &buf) const
 const Overlay * KnightsClientImpl::readOverlay(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > client_config->overlays.size()) throw ProtocolError("overlay id out of range");
+    if (id < 0 || id > int(client_config->overlays.size())) throw ProtocolError("overlay id out of range");
     if (id == 0) return 0;
     return client_config->overlays.at(id-1);
 }
@@ -968,7 +974,7 @@ const Overlay * KnightsClientImpl::readOverlay(Coercri::InputByteBuf &buf) const
 const Sound * KnightsClientImpl::readSound(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > client_config->sounds.size()) throw ProtocolError("sound id out of range");
+    if (id < 0 || id > int(client_config->sounds.size())) throw ProtocolError("sound id out of range");
     if (id == 0) return 0;
     return client_config->sounds.at(id-1);
 }
