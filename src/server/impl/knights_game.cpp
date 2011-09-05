@@ -1855,6 +1855,12 @@ void KnightsGame::randomQuest(GameConnection &conn)
                                      allowed_values.end());
             }
 
+            // another special case: don't generate "team duel to the death" unless there are at least four players
+            if (**key_it == "mission" && nplayers < 4) {
+                allowed_values.erase(std::remove(allowed_values.begin(), allowed_values.end(), 5),
+                                     allowed_values.end());
+            }
+
             if (!allowed_values.empty()) {
                 // pick one at random
                 const int selected_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
