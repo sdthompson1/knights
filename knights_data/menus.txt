@@ -291,8 +291,10 @@ MAIN_MENU = [
         values=[
             ["Total Random" DungeonHome("total_random")]
             ["Close to Other" DungeonHome("close_to_other") 
+                      ConstrainMinPlayers("",2)     # Doesn't make sense in single player mode
                       ConstrainMaxPlayers("",4) ]   # Dungeon generator only allows 4 "close to other" homes currently
             ["Away from Other" DungeonHome("away_from_other")
+                      ConstrainMinPlayers("",2)     # Doesn't make sense in single player mode
                       ConstrainMaxPlayers("",4) ]   # Dungeon generator only allows 4 "away from other" homes currently
         ]
     }
