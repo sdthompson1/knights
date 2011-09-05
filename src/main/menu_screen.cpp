@@ -362,6 +362,7 @@ void MenuScreenImpl::updateGui()
     if (join_button) join_button->setVisible(i_am_observer);
     if (observe_button) observe_button->setVisible(!i_am_observer);
     if (observer_label) observer_label->setVisible(i_am_observer);
+    if (random_quest_button) random_quest_button->setEnabled(!i_am_observer);
 
     // if I am observer then make sure 'ready to start' is always unchecked
     // otherwise, set it from the game manager.
