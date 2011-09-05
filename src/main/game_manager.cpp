@@ -127,7 +127,15 @@ namespace {
 
 void ChatList::add(const std::string &msg_in)
 {
-    std::string msg = do_timestamps ? AddTimestamp(msg_in) : msg_in;
+    bool msg_empty = true;
+    for (std::string::const_iterator it = msg_in.begin(); it != msg_in.end(); ++it) {
+        if (!std::isspace(*it)) {
+            msg_empty = false;
+            break;
+        }
+    }
+
+    const std::string msg = (do_timestamps && !msg_empty) ? AddTimestamp(msg_in) : msg_in;
     lines.push_back(msg);
     addFormattedLine(msg);
     if (lines.size() > max_msgs) {
