@@ -82,6 +82,7 @@ public:
 
     // GameMsg -- a message to be sent to a particular player.
     // NOTE: If player_num < 0 then the message will be broadcast to all players.
+    // 'private_msg', if true, means don't send the msg to observers.
     virtual void gameMsg(int player_num, const std::string &msg) = 0;
 
     // Tutorial pop-up windows

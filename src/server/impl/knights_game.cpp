@@ -1708,18 +1708,17 @@ bool KnightsGame::requestQuit(GameConnection &conn)
             pimpl->knights_log->logMessage(pimpl->game_name + "\tquit requested\t" + conn.name);
         }
 
-        // tell all players what happened.
-        {
-            boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-            Announcement(*pimpl, conn.name + " quit the game.");
-        }
-
-        // If there are only two players then stop the game, otherwise, go back to the lobby
+        // If there are only two players then stop the game (with appropriate message), 
+        // otherwise, kick this player out (but the game continues).
         if (getNumPlayers() > 2) {
             boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
             pimpl->players_to_eliminate.push_back(conn.player_num);
             return true;
         } else {
+            {
+                boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+                Announcement(*pimpl, conn.name + " quit the game.");
+            }
             StopGameAndReturnToMenu(*pimpl);
             return false;
         }

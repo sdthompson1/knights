@@ -63,14 +63,13 @@ ServerCallbacks::~ServerCallbacks()
 
 void ServerCallbacks::appendPlayerCmds(int plyr, std::vector<ubyte> &out) const
 {
-    doAppendPlayerCmds(plyr, out, 0);
+    doAppendPlayerCmds(plyr, out, 0, true);
 }
 
-void ServerCallbacks::doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num) const
+void ServerCallbacks::doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num, bool include_private) const
 {
     std::copy(pub[plyr].begin(), pub[plyr].end(), std::back_inserter(out));
-    std::copy(prv[plyr].begin(), prv[plyr].end(), std::back_inserter(out));
-    std::copy(all.begin(), all.end(), std::back_inserter(out));
+    if (include_private) std::copy(prv[plyr].begin(), prv[plyr].end(), std::back_inserter(out));
     mini_map[plyr]->appendMiniMapCmds(out);
     dungeon_view[plyr]->appendDungeonViewCmds(observer_num*1000+plyr, out);  // note 'transformed' observer_num
 }
@@ -83,7 +82,7 @@ void ServerCallbacks::appendObserverCmds(int observer_num, std::vector<ubyte> &o
         out.push_back(SERVER_SWITCH_PLAYER);
         out.push_back(ubyte(i));
         const size_t prev_size = out.size();
-        doAppendPlayerCmds(i, out, observer_num);
+        doAppendPlayerCmds(i, out, observer_num, false);
         if (out.size() == prev_size) {
             // remove the SWITCH_PLAYER cmd, it isn't needed if there
             // was no output for that player
@@ -95,13 +94,12 @@ void ServerCallbacks::appendObserverCmds(int observer_num, std::vector<ubyte> &o
 
 void ServerCallbacks::clearCmds()
 {
-    for (int i = 0; i < pub.size(); ++i) {
+    for (int i = 0; i < int(pub.size()); ++i) {
         pub[i].clear();
         prv[i].clear();
         mini_map[i]->clearMiniMapCmds();
         dungeon_view[i]->clearDungeonViewCmds();
     }
-    all.clear();
 }
 
 int ServerCallbacks::allocObserverNum()
@@ -114,7 +112,7 @@ int ServerCallbacks::allocObserverNum()
 
 void ServerCallbacks::rmObserverNum(int o)
 {
-    for (int i = 0; i < pub.size(); ++i) {
+    for (int i = 0; i < int(pub.size()); ++i) {
         dungeon_view[i]->rmObserverNum(o*1000+i);
     }
 }
@@ -203,9 +201,17 @@ void ServerCallbacks::flashScreen(int plyr, int delay)
 void ServerCallbacks::gameMsg(int plyr, const std::string &msg)
 {
     // convert to an ANNOUNCEMENT
-    for (int p = 0; p < pub.size(); ++p) {
+    for (int p = 0; p < int(pub.size()); ++p) {
         if (p == plyr || plyr < 0) {   // plyr < 0 means "send to all players"
-            Coercri::OutputByteBuf buf(pub[p]);
+
+            // First msg goes to 'pub', rest go to 'prv', this prevents duplicate messages
+            // for observers (Trac #36).
+            // NOTE: This can screw up the order of messages, because private messages always come 
+            // after public. No good solution for that at the moment.
+            Coercri::OutputByteBuf buf(
+                (plyr < 0 && p > 0) ? prv[p] : pub[p]
+            );
+
             buf.writeUbyte(SERVER_ANNOUNCEMENT);
             buf.writeString(msg);
         }
@@ -224,7 +230,7 @@ void ServerCallbacks::popUpWindow(const std::vector<TutorialWindow> &windows)
         buf.writeVarInt(it->popup ? 1 : 0);
         buf.writeVarInt(it->gfx.size());
         ASSERT(it->cc.size() == it->gfx.size());
-        for (int i = 0; i < it->gfx.size(); ++i) {
+        for (int i = 0; i < int(it->gfx.size()); ++i) {
             buf.writeVarInt(it->gfx[i] ? it->gfx[i]->getID() : 0);
             it->cc[i].serialize(buf);
         }

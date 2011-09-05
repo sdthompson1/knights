@@ -77,6 +77,7 @@ public:
 
     virtual void flashScreen(int plyr, int delay);
 
+    // 'private_msg', if true, means don't broadcast to observers.
     virtual void gameMsg(int plyr_num, const std::string &msg);
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows);
 
@@ -84,7 +85,7 @@ public:
     virtual void goIntoObserverMode(int nplayers, const std::vector<std::string> &names) { }
 
 private:
-    void doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num) const;
+    void doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num, bool include_private) const;
 
 private:
     std::vector<boost::shared_ptr<ServerDungeonView> > dungeon_view;
@@ -93,7 +94,6 @@ private:
 
     // output buffers
     std::vector<std::vector<ubyte> > pub, prv;
-    std::vector<ubyte> all;
 
     // caching
     std::vector<const UserControl*> prev_menu_highlight;

@@ -376,17 +376,6 @@ void Mediator::eliminatePlayer(Player &pl)
         kt->rmFromMap();
     }
 
-    if (!pl.getName().empty()) {
-        std::ostringstream str;
-        str << pl.getName() << " has been eliminated.";
-        const int nleft = remaining_players.size() - 1;
-        if (nleft > 1) {
-            str << " " << nleft << " players are left.";
-        }
-        Mediator::getCallbacks().gameMsg(-1, str.str());
-        if (nleft > 1) Mediator::getCallbacks().onElimination(pl.getPlayerNum());
-    }
-
     remaining_players.erase(&pl);
     pl.resetHome(MapCoord(), D_NORTH);  // Stops him respawning
 
@@ -428,6 +417,9 @@ void Mediator::eliminatePlayer(Player &pl)
             }
         }
         winGame(winner, msg.str());
+    } else {
+        // this puts him into observer mode, but he is still in the game (as an observer).
+        Mediator::getCallbacks().onElimination(pl.getPlayerNum());
     }
 }
 
