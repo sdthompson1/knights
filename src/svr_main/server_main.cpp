@@ -187,7 +187,7 @@ public:
         // Loop forever (main thread will send us a thread_interrupted exception when it wants us to shut down).
         while (1) {
             // Periodically flush the log buffers to disk.
-            boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+            boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
             flush();
         }
     }
@@ -203,10 +203,12 @@ public:
 
         if (!tbuf2.empty()) {
             str.write(&tbuf2[0], tbuf2.size());
+            str.flush();
             tbuf2.clear();
         }
         if (!bbuf2.empty() && bin_str) {
             bin_str->write(reinterpret_cast<char*>(&bbuf2[0]), bbuf2.size());
+            bin_str->flush();
             bbuf2.clear();
         }
     }
@@ -968,6 +970,7 @@ int main(int argc, char **argv)
         // Main Loop.
         while (!quit_flag) {
             bool did_something = false;
+            int sleep_time = 10;
 
             // Gather outgoing messages.
             did_something = ProcessOutgoingNetMsgs() || did_something;
@@ -1002,11 +1005,14 @@ int main(int argc, char **argv)
                     boost::lock_guard<boost::mutex> lock(g_num_players_mutex);
                     g_num_players = num_players;
                 }
+
+                // if no players connected then increase sleep time.
+                if (num_players == 0) sleep_time = 200;
             }
 
             // Sleep for a bit if nothing was done.
             if (!did_something) {
-                timer->sleepMsec(10);
+                timer->sleepMsec(sleep_time);
             }
         }
 
