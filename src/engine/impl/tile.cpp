@@ -397,14 +397,21 @@ void Tile::setAccess(DungeonMap *dmap, const MapCoord &mc, MapAccess acc, Player
 
 MiniMapColour Tile::getColour() const
 {
-    // Current method of determining mini map colour is as follows: colour is
-    // COL_WALL if access level is A_BLOCKED at all available heights; else colour is
-    // COL_FLOOR.
+    // Current method of determining mini map colour is as follows: 
+    // 
+    // * colour is COL_WALL if access level != A_CLEAR at all available heights, AND
+    //   tile is indestructible
+    // * else, colour is COL_FLOOR
+    //
     // This can be overridden by subclasses if required.
+
+    if (destructible()) return COL_FLOOR;
+
     for (int h=0; h<=H_MISSILES; ++h) {
-        if (getAccess(MapHeight(h)) != A_BLOCKED) {
+        if (getAccess(MapHeight(h)) == A_CLEAR) {
             return COL_FLOOR;
         }
     }
+
     return COL_WALL;
 }

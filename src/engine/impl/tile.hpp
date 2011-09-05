@@ -117,6 +117,7 @@ public:
     //    fragile item present.
     // -- "destructible": can the target be destroyed. Used by zombies to see if they should
     //    attack a tile. (Destructible implies targettable, but not vice versa.)
+    //    (Also used by the default mini map colouring, see Tile::getColour().)
     // -- "targettable": used by A_Attack to decide whether to make a melee attack against
     //    this tile; also used to determine whether an item's melee_action should be called
     //    when attacking this tile.

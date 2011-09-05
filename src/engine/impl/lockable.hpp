@@ -86,6 +86,11 @@ public:
     virtual bool generateTrap(DungeonMap &, const MapCoord &) { return false; }
     virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *);
 
+
+    // Mini map colour of anything lockable should always be COL_FLOOR.
+    // (This prevents bug where iron doors would otherwise appear as COL_WALL.)
+    virtual MiniMapColour getColour() const { return COL_FLOOR; }
+
 protected:
     // "openImpl", "closeImpl" are implemented by subclasses, and handle the actual opening
     // and closing.
