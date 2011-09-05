@@ -767,7 +767,7 @@ void ViewManager::sendCurrentRoom(int player, DungeonView &dview)
             // Item/Tile information
             for (int y = 0; y < height; ++y) {
                 for (int x = 0; x < width; ++x) {
-                    uploadSquare(dview, dmap, MapCoord(x + top_left.getX(), y + top_left.getY()), x, y, true);
+                    uploadSquare(dview, dmap, MapCoord(x + top_left.getX(), y + top_left.getY()), x, y, false);
                 }
             }
         }

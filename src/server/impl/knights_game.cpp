@@ -36,9 +36,6 @@
 #include "protocol.hpp"
 #include "rng.hpp"
 #include "server_callbacks.hpp"
-#include "server_dungeon_view.hpp"
-#include "server_mini_map.hpp"
-#include "server_status_display.hpp"
 #include "sh_ptr_eq.hpp"
 #include "sound.hpp"
 #include "user_control.hpp"
@@ -888,16 +885,20 @@ namespace {
                                 buf.push_back(SERVER_SWITCH_PLAYER);
                                 buf.push_back(p);
 
-                                // slight hack -- create 'temporary' dungeonview/minimap objects.
-                                // This is the simplest way to get the data sent only to this new observer
-                                // and no-one else.
-                                ServerDungeonView dungeon_view(buf);
-                                ServerMiniMap mini_map(buf);
-                                ServerStatusDisplay status_display(buf);
-                                engine->catchUp(p, dungeon_view, mini_map, status_display);
-                                mini_map.appendMiniMapCmds(buf);
-                                dungeon_view.appendDungeonViewCmds(1000 + p, buf);  // obs_num can be a dummy because we're throwing away the caches anyway
-                                // no need to call 'clearCmds' because the dview/mini map are being deleted anyway.
+                                // This will send mini map and status display updates to ALL connected players/observers
+                                // (even those who already have this data).
+                                //
+                                // (For the tile/item updates, there is an optimization in ViewManager -- the "force" 
+                                // flag -- which should mean that only the new observer gets these updates, at least; 
+                                // although I haven't explicitly tested this.)
+                                //
+                                // A previous version of this code used a hack to try to avoid the unnecessary updates,
+                                // but that caused a bug (Trac #115), so it has been removed, and we just accept the 
+                                // unnecessary updates for now.
+                                engine->catchUp(p, 
+                                                callbacks->getDungeonView(p),
+                                                callbacks->getMiniMap(p),
+                                                callbacks->getStatusDisplay(p));
                             }
                             
                             (*it)->observer_num = callbacks->allocObserverNum();
