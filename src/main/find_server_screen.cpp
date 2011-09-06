@@ -301,7 +301,13 @@ namespace {
         { }
 
         void operator()() {
-            const std::string hostname = net_driver.resolveAddress(ip_address);
+            std::string hostname;
+            {
+                // Only one thread is allowed to call resolveAddress() at a time
+                boost::lock_guard<boost::mutex> lock(net_driver_mutex);
+                hostname = net_driver.resolveAddress(ip_address);
+            }
+
             boost::lock_guard<boost::mutex> lock(*mutex);
             for (std::vector<ServerInfo>::iterator it = server_infos->begin(); it != server_infos->end(); ++it) {
                 if (it->ip_address == ip_address) {
@@ -317,8 +323,11 @@ namespace {
         boost::shared_ptr<std::vector<ServerInfo> > server_infos;
         boost::shared_ptr<bool> hostname_lookup_complete;
         std::string ip_address;
+
+        static boost::mutex net_driver_mutex; // Prevents multiple threads accessing the NetworkDriver at the same time
     };
 
+    boost::mutex HostnameThread::net_driver_mutex;
     
     class ServerList : public gcn::ListModel, boost::noncopyable {
     public:
