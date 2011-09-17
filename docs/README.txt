@@ -1,4 +1,4 @@
-Knights Release 017
+Knights Release 018
 -------------------
 
 KNIGHTS is a remake of a classic Amiga game for two players, in which
@@ -24,4 +24,4 @@ GPL.txt for a copy of the licence itself.
 -----
 Stephen Thompson
 stephen@solarflare.org.uk
-August 2011
+September 2011

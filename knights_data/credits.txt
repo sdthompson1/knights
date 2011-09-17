@@ -2,8 +2,8 @@
 
 KNIGHTS
 
-Release 017
-Released 02-Aug-2011
+Release 018
+Released 17-Sep-2011
 
 
 Programmed by 

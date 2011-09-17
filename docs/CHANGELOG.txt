@@ -2,6 +2,56 @@ Note: Numbers in square brackets refer to Trac
 <http://www.knightsgame.org.uk:8000/>.
 
 
+Release 018
+===========
+
+Released 17-Sep-2011
+
+
+New features:
+
+[#29] Added "Random Quest" button.
+
+
+Bug fixes and other improvements:
+
+[#3] Fixed bug: "Stuck" red dots appear on mini map.
+
+[#67] Entry/exit squares are no longer shown as "floor" on the mini
+  map.
+
+[#4] Fixed bug: Gems can be dropped "through" a closed door.
+
+[#115] Fixed bug: Incorrect items would sometimes appear on the screen
+  when observing a game.
+
+[#76] Removed the "Entry Point" setting for single player mode.
+
+[#36] Reduced message spam when a player is eliminated (in duel to the
+  death quests).
+
+[#71] Timestamps are no longer printed if a message line is completely
+  blank.
+
+[#113] Fixed build error with latest gcc version: "ptrdiff_t does not
+  name a type".
+
+[#109] Changed the way broadcast messages are handled; this means the
+  Windows Firewall dialog will no longer appear when you are joining a
+  game (although it will still appear if you want to host a game).
+
+[#42] Upgraded to the latest version of ENet.
+
+
+Server-side changes:
+
+[#114] The server now flushes its log files after each log message.
+  This means that messages will show up in the log files more
+  promptly.
+
+
+
+
 Release 017
 ===========
 
