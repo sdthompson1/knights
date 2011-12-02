@@ -703,9 +703,10 @@ void DungeonGenerator::doLayout(int nplayers)
     }
 
     // Make sure there are enough homes in the "assigned" list.
+    // (exception: if using H_RANDOM_RESPAWN, homes are irrelevant, so no need for this check)
     random_shuffle(assigned_homes.begin(), assigned_homes.end(), myrng);
     random_shuffle(unassigned_homes.begin(), unassigned_homes.end(), myrng);
-    while (assigned_homes.size() < nplayers) {
+    while (assigned_homes.size() < nplayers && home_type != H_RANDOM_RESPAWN) {
         if (unassigned_homes.empty()) {
             // this can happen eg if you ask for gnome room on a 1x1 map... there won't be
             // any space left for the homes!!
