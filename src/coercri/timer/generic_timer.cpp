@@ -53,6 +53,11 @@
 #endif
 #endif
 
+#ifdef __linux__
+#include <time.h>
+#include <unistd.h>
+#endif
+
 namespace Coercri {
 
     GenericTimer::GenericTimer()
