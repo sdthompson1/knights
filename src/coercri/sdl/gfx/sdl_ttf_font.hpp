@@ -6,7 +6,7 @@
  *   Implementation of Font using SDL_TTF
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.

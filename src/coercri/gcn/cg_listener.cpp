@@ -128,72 +128,67 @@ namespace Coercri {
         }
     }
 
-    void CGListener::onKey(KeyEvent ke, KeyCode kc, int character, int modifiers)
+    void CGListener::onCookedKey(CookedKey ck, int character, KeyModifier mods)
     {
         gcn::Key k;
 
-        if (character >= 32 && character < 1000) {
-            // Use 'character' if it is available.
+        // gcn::Key values from 32 to 999 represent printable characters
+        // 1000 upwards represent special characters.
+        if (ck == CK_CHARACTER && character >= 32 && character < 1000) {
             k = character;
         } else {
-            // Convert 'kc' to a guichan value.
-            switch (kc) {
-            case KC_SPACE: k = gcn::Key::SPACE; break;
-            case KC_TAB: k = gcn::Key::TAB; break;
-            case KC_KP_ENTER: k = gcn::Key::ENTER; break;
-            case KC_RETURN: k = gcn::Key::ENTER; break;
-            case KC_LEFT_ALT: k = gcn::Key::LEFT_ALT; break;
-            case KC_RIGHT_ALT: k = gcn::Key::RIGHT_ALT; break;
-            case KC_LEFT_SHIFT: k = gcn::Key::LEFT_SHIFT; break;
-            case KC_RIGHT_SHIFT: k = gcn::Key::RIGHT_SHIFT; break;
-            case KC_LEFT_CONTROL: k = gcn::Key::LEFT_CONTROL; break;
-            case KC_RIGHT_CONTROL: k = gcn::Key::RIGHT_CONTROL; break;
-            case KC_LEFT_META: k = gcn::Key::LEFT_META; break;
-            case KC_RIGHT_META: k = gcn::Key::RIGHT_META; break;
-            case KC_LEFT_SUPER: k = gcn::Key::LEFT_SUPER; break;
-            case KC_RIGHT_SUPER: k = gcn::Key::RIGHT_SUPER; break;
-            case KC_INSERT: k = gcn::Key::INSERT; break;
-            case KC_HOME: k = gcn::Key::HOME; break;
-            case KC_PAGE_UP: k = gcn::Key::PAGE_UP; break;
-            case KC_DELETE: k = gcn::Key::DELETE; break;
-            case KC_END: k = gcn::Key::END; break;
-            case KC_PAGE_DOWN: k = gcn::Key::PAGE_DOWN; break;
-            case KC_ESCAPE: k = gcn::Key::ESCAPE; break;
-            case KC_CAPS_LOCK: k = gcn::Key::CAPS_LOCK; break;
-            case KC_BACKSPACE: k = gcn::Key::BACKSPACE; break;
-            case KC_F1: k = gcn::Key::F1; break;
-            case KC_F2: k = gcn::Key::F2; break;
-            case KC_F3: k = gcn::Key::F3; break;
-            case KC_F4: k = gcn::Key::F4; break;
-            case KC_F5: k = gcn::Key::F5; break;
-            case KC_F6: k = gcn::Key::F6; break;
-            case KC_F7: k = gcn::Key::F7; break;
-            case KC_F8: k = gcn::Key::F8; break;
-            case KC_F9: k = gcn::Key::F9; break;
-            case KC_F10: k = gcn::Key::F10; break;
-            case KC_F11: k = gcn::Key::F11; break;
-            case KC_F12: k = gcn::Key::F12; break;
-            case KC_F13: k = gcn::Key::F13; break;
-            case KC_F14: k = gcn::Key::F14; break;
-            case KC_F15: k = gcn::Key::F15; break;
-            case KC_PRINT: k = gcn::Key::PRINT_SCREEN; break;
-            case KC_SCROLL_LOCK: k = gcn::Key::SCROLL_LOCK; break;
-            case KC_PAUSE: k = gcn::Key::PAUSE; break;
-            case KC_NUM_LOCK: k = gcn::Key::NUM_LOCK; break;
-            case KC_LEFT: k = gcn::Key::LEFT; break;
-            case KC_RIGHT: k = gcn::Key::RIGHT; break;
-            case KC_UP: k = gcn::Key::UP; break;
-            case KC_DOWN: k = gcn::Key::DOWN; break;
-            default: return;   // Unknown key
+            switch (ck) {
+            case CK_BACKSPACE: k = gcn::Key::BACKSPACE; break;
+            case CK_DELETE: k = gcn::Key::DELETE; break;
+            case CK_DOWN: k = gcn::Key::DOWN; break;
+            case CK_END: k = gcn::Key::END; break;
+            case CK_ESCAPE: k = gcn::Key::ESCAPE; break;
+            case CK_F1: k = gcn::Key::F1; break;
+            case CK_F2: k = gcn::Key::F2; break;
+            case CK_F3: k = gcn::Key::F3; break;
+            case CK_F4: k = gcn::Key::F4; break;
+            case CK_F5: k = gcn::Key::F5; break;
+            case CK_F6: k = gcn::Key::F6; break;
+            case CK_F7: k = gcn::Key::F7; break;
+            case CK_F8: k = gcn::Key::F8; break;
+            case CK_F9: k = gcn::Key::F9; break;
+            case CK_F10: k = gcn::Key::F10; break;
+            case CK_F11: k = gcn::Key::F11; break;
+            case CK_F12: k = gcn::Key::F12; break;
+            case CK_F13: k = gcn::Key::F13; break;
+            case CK_F14: k = gcn::Key::F14; break;
+            case CK_F15: k = gcn::Key::F15; break;
+            case CK_HOME: k = gcn::Key::HOME; break;
+            case CK_INSERT: k = gcn::Key::INSERT; break;
+            case CK_LEFT: k = gcn::Key::LEFT; break;
+            case CK_LEFT_WINDOWS: k = gcn::Key::LEFT_SUPER; break;
+            case CK_PAGE_DOWN: k = gcn::Key::PAGE_DOWN; break;
+            case CK_PAGE_UP: k = gcn::Key::PAGE_UP; break;
+            case CK_PAUSE: k = gcn::Key::PAUSE; break;
+            case CK_PRINT_SCREEN: k = gcn::Key::PRINT_SCREEN; break;
+            case CK_RETURN: k = gcn::Key::ENTER; break;
+            case CK_RIGHT: k = gcn::Key::RIGHT; break;
+            case CK_RIGHT_WINDOWS: k = gcn::Key::RIGHT_SUPER; break;
+            case CK_TAB: k = gcn::Key::TAB; break;
+            case CK_UP: k = gcn::Key::UP; break;
+            default: return;    // Unknown key
             }
         }
 
-        gcn::KeyInput key_input(k, ke == KE_RELEASED ? gcn::KeyInput::RELEASED : gcn::KeyInput::PRESSED);
-        key_input.setAltPressed((modifiers & KM_ALT) != 0);
-        key_input.setControlPressed((modifiers & KM_CONTROL) != 0);
-        key_input.setMetaPressed((modifiers & KM_META) != 0);
-        key_input.setShiftPressed((modifiers & KM_SHIFT) != 0);
-        key_input.setNumericPad(kc >= KC_KP_0 && kc <= KC_KP_PLUS);
+        // Guichan uses a different input model to Coercri (Guichan's
+        // model is a sort of mixture of raw and cooked keys). To
+        // handle this, we create two Guichan events for each Coercri
+        // cooked key event -- one for a press, and one for a release
+        // -- and ignore the Coercri raw key events.
+        
+        gcn::KeyInput key_input(k, gcn::KeyInput::PRESSED);
+        key_input.setAltPressed((mods & KM_ALT) != 0);
+        key_input.setControlPressed((mods & KM_CONTROL) != 0);
+        key_input.setShiftPressed((mods & KM_SHIFT) != 0);
+        // guichan also supports "meta" modifier, and a "numeric pad" flag, but Coercri doesn't support these (for cooked key events).
+        pimpl->input.addKeyInput(key_input);
+
+        key_input.setType(gcn::KeyInput::RELEASED);
         pimpl->input.addKeyInput(key_input);
     }
 

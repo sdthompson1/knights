@@ -3,7 +3,7 @@
  *   gfx_context.cpp
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -38,6 +38,7 @@
  *
  */
 
+#include "font.hpp"
 #include "gfx_context.hpp"
 #include "rectangle.hpp"
 
@@ -109,5 +110,10 @@ namespace Coercri {
         for (int y = rect.getTop(); y < rect.getBottom(); ++y) {
             drawLine(left, y, right, y, col);
         }
+    }
+
+    void GfxContext::drawText(int x, int y, const Font &font, const std::string &text, Color col, bool antialias)
+    {
+        font.drawText(*this, x, y, text, col, antialias);
     }
 }

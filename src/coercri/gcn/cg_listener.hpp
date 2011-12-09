@@ -10,7 +10,7 @@
  *   Stephen Thompson
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2011.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -98,7 +98,7 @@ namespace Coercri {
         
         // Overridden from WindowListener:
         virtual void onResize(int new_width, int new_height);
-        virtual void onKey(KeyEvent ke, KeyCode kc, int character, int modifiers);
+        virtual void onCookedKey(CookedKey ck, int ch, KeyModifier mods);
         virtual void onMouseDown(int x, int y, MouseButton button);
         virtual void onMouseUp(int x, int y, MouseButton button);
         virtual void onMouseMove(int x, int y);

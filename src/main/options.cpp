@@ -33,26 +33,26 @@ Options::Options()
 {
     first_time = true;
     
-    ctrls[0][0] = Coercri::KC_W;
-    ctrls[0][1] = Coercri::KC_S;
-    ctrls[0][2] = Coercri::KC_A;
-    ctrls[0][3] = Coercri::KC_D;
-    ctrls[0][4] = Coercri::KC_Q;
-    ctrls[0][5] = Coercri::KC_F1;
+    ctrls[0][0] = Coercri::RK_W;
+    ctrls[0][1] = Coercri::RK_S;
+    ctrls[0][2] = Coercri::RK_A;
+    ctrls[0][3] = Coercri::RK_D;
+    ctrls[0][4] = Coercri::RK_Q;
+    ctrls[0][5] = Coercri::RK_F1;
 
-    ctrls[1][0] = Coercri::KC_UP;
-    ctrls[1][1] = Coercri::KC_DOWN;
-    ctrls[1][2] = Coercri::KC_LEFT;
-    ctrls[1][3] = Coercri::KC_RIGHT;
-    ctrls[1][4] = Coercri::KC_RIGHT_CONTROL;
-    ctrls[1][5] = Coercri::KC_F12;
+    ctrls[1][0] = Coercri::RK_UP;
+    ctrls[1][1] = Coercri::RK_DOWN;
+    ctrls[1][2] = Coercri::RK_LEFT;
+    ctrls[1][3] = Coercri::RK_RIGHT;
+    ctrls[1][4] = Coercri::RK_RIGHT_CONTROL;
+    ctrls[1][5] = Coercri::RK_F12;
 
-    ctrls[2][0] = Coercri::KC_W;
-    ctrls[2][1] = Coercri::KC_S;
-    ctrls[2][2] = Coercri::KC_A;
-    ctrls[2][3] = Coercri::KC_D;
-    ctrls[2][4] = Coercri::KC_Q;
-    ctrls[2][5] = Coercri::KC_F1;
+    ctrls[2][0] = Coercri::RK_W;
+    ctrls[2][1] = Coercri::RK_S;
+    ctrls[2][2] = Coercri::RK_A;
+    ctrls[2][3] = Coercri::RK_D;
+    ctrls[2][4] = Coercri::RK_Q;
+    ctrls[2][5] = Coercri::RK_F1;
 
     // New control system is the default for new players.
     new_control_system = true;
@@ -94,7 +94,7 @@ Options LoadOptions(std::istream &str)
                 // Read from file.
                 int x;
                 str >> x;
-                o.ctrls[i][j] = Coercri::KeyCode(x);
+                o.ctrls[i][j] = Coercri::RawKey(x);
             } else {
                 // Versions prior to 3 only have 2 sets of controls in the file.
                 // Copy the "network games" controls from the P2 controls.

@@ -167,12 +167,12 @@ namespace Coercri {
         sdl_rect.h = clip_rectangle.getHeight();
         SDL_SetClipRect(surface, &sdl_rect);
     }
-        
+
     Rectangle SDLGfxContext::getClipRectangle() const
     {
         return clip_rectangle;
     }
-
+        
     int SDLGfxContext::getWidth() const
     {
         return surface->w;
@@ -216,11 +216,6 @@ namespace Coercri {
         if (sdl_graphic) {
             sdl_graphic->blit(*surface, x, y);
         }
-    }
-
-    void SDLGfxContext::drawText(int x, int y, const Font &font, const std::string &text, Color col, bool antialias)
-    {
-        font.drawText(*this, x, y, text, col, antialias);
     }
 
     void SDLGfxContext::fillRectangle(const Rectangle &rect, Color col)

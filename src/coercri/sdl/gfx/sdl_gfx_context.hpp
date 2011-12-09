@@ -6,7 +6,7 @@
  *   Implement GfxContext for SDL
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -71,8 +71,6 @@ namespace Coercri {
         virtual void clearScreen(Color col);
         virtual void plotPixel(int x, int y, Color col);
         virtual void drawGraphic(int x, int y, const Graphic &graphic);
-        virtual void drawText(int x, int y, const Font &font, const std::string &text, Color col, bool antialias);
-
         virtual void fillRectangle(const Rectangle &rect, Color col);
 
         // for those who want more low-level access:

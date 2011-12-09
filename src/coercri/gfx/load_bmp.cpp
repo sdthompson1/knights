@@ -3,7 +3,7 @@
  *   load_bmp.cpp
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -151,8 +151,8 @@ namespace Coercri {
         const int padding = (left_over==0) ? 0 : 4 - left_over;
         
         // Read the data. (BMPs are stored bottom-to-top so the y loop runs backwards.)
-        for (int y = bitmap_height - 1; y >= 0; --y) {
-            for (int x = 0; x < bitmap_width; ++x) {
+        for (int y = int(bitmap_height) - 1; y >= 0; --y) {
+            for (int x = 0; x < int(bitmap_width); ++x) {
                 Color& col = (*result)(x,y);
                 if (bits_per_pixel == 24) {
                     // don't forget: BGR order!

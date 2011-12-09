@@ -63,7 +63,7 @@ public:
     virtual void onMouseMove(int new_x, int new_y);
     virtual void onMouseDown(int x, int y, Coercri::MouseButton m);
     virtual void onMouseUp(int x, int y, Coercri::MouseButton m);
-    virtual void onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int character, int modifiers);
+    virtual void onRawKey(bool pressed, Coercri::RawKey rk);
     virtual void onActivate();
     virtual void onDeactivate();
     virtual void onGainFocus();

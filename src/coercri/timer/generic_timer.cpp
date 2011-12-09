@@ -1,15 +1,15 @@
 /*
  * FILE:
- *   sdl_ttf_loader.hpp
- *
- * PURPOSE:
- *   Implementation of TTFLoader for SDL
+ *   generic_timer.cpp
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   21-Oct-2011
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2011.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,18 +41,36 @@
  *
  */
 
-#ifndef COERCRI_SDL_TTF_LOADER_HPP
-#define COERCRI_SDL_TTF_LOADER_HPP
-
-#include "../../gfx/ttf_loader.hpp"
+#include "generic_timer.hpp"
 
 namespace Coercri {
 
-    class SDLTTFLoader : public TTFLoader {
-    public:
-        virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str, int size);
-    };
+    GenericTimer::GenericTimer()
+    {
+#ifdef WIN32
+        LARGE_INTEGER frequency;
+        QueryPerformanceFrequency(&frequency);
+        // TODO: What to do if this fails
+
+        counts_per_msec = frequency.QuadPart / 1000;
+#endif
+    }
+
+    unsigned int GenericTimer::getMsec()
+    {
+#ifdef WIN32
+        LARGE_INTEGER count;
+        QueryPerformanceCounter(&count);
+
+        return static_cast<unsigned int>(count.QuadPart / counts_per_msec);
+#endif
+    }    
+
+    void GenericTimer::sleepMsec(int msec)
+    {
+#ifdef WIN32
+        Sleep(msec);
+#endif
+    }
 
 }
-
-#endif

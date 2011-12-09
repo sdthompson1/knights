@@ -1,15 +1,18 @@
 /*
  * FILE:
- *   sdl_ttf_loader.hpp
+ *   generic_timer.hpp
  *
  * PURPOSE:
- *   Implementation of TTFLoader for SDL
+ *   Implementation of Timer for various operating systems / platforms.
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   21-Oct-2011
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2011.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,18 +44,33 @@
  *
  */
 
-#ifndef COERCRI_SDL_TTF_LOADER_HPP
-#define COERCRI_SDL_TTF_LOADER_HPP
+#ifndef COERCRI_GENERIC_TIMER_HPP
+#define COERCRI_GENERIC_TIMER_HPP
 
-#include "../../gfx/ttf_loader.hpp"
+#include "timer.hpp"
+
+#ifdef WIN32
+#include <windows.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+#endif
 
 namespace Coercri {
-
-    class SDLTTFLoader : public TTFLoader {
+    class GenericTimer : public Timer {
     public:
-        virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str, int size);
-    };
+        GenericTimer();
+        unsigned int getMsec();
+        void sleepMsec(int msec);
 
+    private:
+#ifdef WIN32
+        LONGLONG counts_per_msec;
+#endif
+    };
 }
 
 #endif

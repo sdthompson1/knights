@@ -6,7 +6,7 @@
  *   Base class for exceptions thrown by the Coercri library
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.

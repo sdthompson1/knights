@@ -105,7 +105,7 @@ public:
     void action(const gcn::ActionEvent &event);
     void keyPressed(gcn::KeyEvent &ke);
     void keyReleased(gcn::KeyEvent &ke);
-    void onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int character, int modifiers);
+    void onRawKey(bool pressed, Coercri::RawKey rk);
 
     void transferToGui();
     void setupChangeControls(int);
@@ -391,7 +391,7 @@ void OptionsScreenImpl::transferToGui()
                     control_setting[which_label][j]->setCaption("");
                 }
             } else {
-                control_setting[which_label][j]->setCaption(Coercri::KeyName(current_opts.ctrls[i][j]));
+                control_setting[which_label][j]->setCaption(Coercri::RawKeyName(current_opts.ctrls[i][j]));
             }
             control_setting[which_label][j]->adjustSize();
         }
@@ -456,11 +456,11 @@ void OptionsScreenImpl::setupChangeControls(int i)
     transferToGui();
 }
 
-void OptionsScreenImpl::onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int character, int modifiers)
+void OptionsScreenImpl::onRawKey(bool pressed, Coercri::RawKey rk)
 {
-    if (ke == Coercri::KE_PRESSED && change_active) {
+    if (pressed && change_active) {
 
-        if (kc == Coercri::KC_ESCAPE) {
+        if (rk == Coercri::RK_ESCAPE) {
             // cancel!
             change_active = false;
             bad_key_msg = "";
@@ -470,14 +470,14 @@ void OptionsScreenImpl::onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int cha
             
             // Check for duplicate control keys
             for (int i = 0; i < change_key; ++i) {
-                if (current_opts.ctrls[change_player][i] == kc) {
+                if (current_opts.ctrls[change_player][i] == rk) {
                     allowed = false;
                     bad_key_msg = "Key already in use. Please choose another key.";
                 }
             }
 
             if (allowed) {
-                current_opts.ctrls[change_player][change_key] = kc;
+                current_opts.ctrls[change_player][change_key] = rk;
                 ++change_key;
                 if (change_key >= 6 || (current_opts.new_control_system && change_key >= 4)) {
                     change_active = false;

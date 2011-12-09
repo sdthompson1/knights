@@ -43,8 +43,8 @@ class KeyboardListener;
 class KeyboardController : public Controller {
 public:
     KeyboardController(bool using_action_bar_,
-                       Coercri::KeyCode up_key_, Coercri::KeyCode right_key_, Coercri::KeyCode down_key_,
-                       Coercri::KeyCode left_key_, Coercri::KeyCode fire_key_, Coercri::KeyCode suicide_key_,
+                       Coercri::RawKey up_key_, Coercri::RawKey right_key_, Coercri::RawKey down_key_,
+                       Coercri::RawKey left_key_, Coercri::RawKey fire_key_, Coercri::RawKey suicide_key_,
                        boost::shared_ptr<Coercri::Window> w);
     virtual ~KeyboardController();
     
@@ -55,7 +55,7 @@ private:
     friend class KeyboardListener;
     boost::scoped_ptr<KeyboardListener> kbd_listener;
     boost::shared_ptr<Coercri::Window> win;
-    Coercri::KeyCode up_key, right_key, down_key, left_key, fire_key, suicide_key;
+    Coercri::RawKey up_key, right_key, down_key, left_key, fire_key, suicide_key;
     bool up, right, down, left, fire, suicide;
     bool using_action_bar;
 };

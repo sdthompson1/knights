@@ -6,7 +6,7 @@
  *   Deleter for SDL_Surface - suitable for use with boost::shared_ptr
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.

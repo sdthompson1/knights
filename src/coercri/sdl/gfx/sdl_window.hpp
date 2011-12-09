@@ -6,7 +6,7 @@
  *   Implementation of Window for SDL
  *   
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -61,8 +61,6 @@ namespace Coercri {
         virtual bool isFullScreen() const;
         virtual std::auto_ptr<GfxContext> createGfxContext();
         
-        const std::vector<WindowListener*> getListeners() const { return listeners; }
-
         bool need_window_resize;  // see SDLGfxDriver::pollEvents.
         
     private:

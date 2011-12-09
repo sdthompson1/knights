@@ -29,15 +29,15 @@
 class KeyboardListener : public Coercri::WindowListener {
 public:
     explicit KeyboardListener(KeyboardController &c) : ctrlr(c) { }
-    virtual void onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int character, int modifiers);
+    virtual void onRawKey(bool pressed, Coercri::RawKey rk);
 
 private:
     KeyboardController &ctrlr;
 };
 
 KeyboardController::KeyboardController(bool using_action_bar_,
-                                       Coercri::KeyCode u, Coercri::KeyCode r, Coercri::KeyCode d,
-                                       Coercri::KeyCode l, Coercri::KeyCode f, Coercri::KeyCode s,
+                                       Coercri::RawKey u, Coercri::RawKey r, Coercri::RawKey d,
+                                       Coercri::RawKey l, Coercri::RawKey f, Coercri::RawKey s,
                                        boost::shared_ptr<Coercri::Window> w)
     : kbd_listener(new KeyboardListener(*this)), win(w),
       up_key(u), right_key(r), down_key(d), left_key(l), fire_key(f), suicide_key(s),
@@ -71,16 +71,12 @@ void KeyboardController::get(ControllerState &state) const
     }
 }
 
-void KeyboardListener::onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int character, int modifiers)
+void KeyboardListener::onRawKey(bool p, Coercri::RawKey rk)
 {
-    if (ke == Coercri::KE_AUTO_REPEAT) return;  // we are not interested in keyboard repeat here.
-
-    const bool p = ke == Coercri::KE_PRESSED;
-
-    if (kc == ctrlr.up_key) { ctrlr.up = p; }
-    else if (kc == ctrlr.right_key) { ctrlr.right = p; }
-    else if (kc == ctrlr.down_key) { ctrlr.down = p; }
-    else if (kc == ctrlr.left_key) { ctrlr.left = p; }
-    else if (kc == ctrlr.fire_key) { ctrlr.fire = p; }
-    else if (kc == ctrlr.suicide_key) { ctrlr.suicide = p; }
+    if (rk == ctrlr.up_key) { ctrlr.up = p; }
+    else if (rk == ctrlr.right_key) { ctrlr.right = p; }
+    else if (rk == ctrlr.down_key) { ctrlr.down = p; }
+    else if (rk == ctrlr.left_key) { ctrlr.left = p; }
+    else if (rk == ctrlr.fire_key) { ctrlr.fire = p; }
+    else if (rk == ctrlr.suicide_key) { ctrlr.suicide = p; }
 }

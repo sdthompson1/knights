@@ -8,7 +8,7 @@
  *   to windows.
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -54,7 +54,6 @@
 namespace Coercri {
 
     class Font;
-    class GfxListener;
     class Graphic;
     class PixelArray;
     class Window;
@@ -87,9 +86,6 @@ namespace Coercri {
 
         // MS Windows only -- sets icon for creation of new windows
         virtual void setWindowsIcon(int resource_id) { }
-
-        // Enable/disable key repeat. Default is disabled.
-        virtual void setKeyRepeat(bool enabled) = 0;
     };
 
 }

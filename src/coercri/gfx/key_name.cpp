@@ -3,7 +3,7 @@
  *   key_name.cpp
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -45,159 +45,161 @@
 namespace Coercri {
     
     namespace {
-        std::map<KeyCode, const char *> names;
+        std::map<RawKey, const char *> names;
 
         void InitNames()
         {
             if (!names.empty()) return;
         
-            names[KC_0] = "0";
-            names[KC_1] = "1";
-            names[KC_2] = "2";
-            names[KC_3] = "3";
-            names[KC_4] = "4";
-            names[KC_5] = "5";
-            names[KC_6] = "6";
-            names[KC_7] = "7";
-            names[KC_8] = "8";
-            names[KC_9] = "9";
-            names[KC_A] = "A";
-            names[KC_AMPERSAND] = "&";
-            names[KC_ASTERISK] = "*";
-            names[KC_AT] = "@";
-            names[KC_B] = "B";
-            names[KC_BACKQUOTE] = "`";
-            names[KC_BACKSLASH] = "\\";
-            names[KC_BACKSPACE] = "BACKSPACE";
-            names[KC_BREAK] = "BREAK";
-            names[KC_C] = "C";
-            names[KC_CAPS_LOCK] = "CAPS LOCK";
-            names[KC_CARET] = "^";
-            names[KC_CLEAR] = "CLEAR";
-            names[KC_COLON] = ":";
-            names[KC_COMMA] = ",";
-            names[KC_COMPOSE] = "COMPOSE";
-            names[KC_D] = "D";
-            names[KC_DELETE] = "DELETE";
-            names[KC_DOLLAR] = "$";
-            names[KC_DOUBLE_QUOTE] = "\"";
-            names[KC_DOWN] = "DOWN";
-            names[KC_E] = "E";
-            names[KC_END] = "END";
-            names[KC_EQUALS] = "=";
-            names[KC_ESCAPE] = "ESCAPE";
-            names[KC_EURO] = "EURO";
-            names[KC_EXCLAIM] = "!";
-            names[KC_F] = "F";
-            names[KC_F1] = "F1";
-            names[KC_F2] = "F2";
-            names[KC_F3] = "F3";
-            names[KC_F4] = "F4";
-            names[KC_F5] = "F5";
-            names[KC_F6] = "F6";
-            names[KC_F7] = "F7";
-            names[KC_F8] = "F8";
-            names[KC_F9] = "F9";
-            names[KC_F10] = "F10";
-            names[KC_F11] = "F11";
-            names[KC_F12] = "F12";
-            names[KC_F13] = "F13";
-            names[KC_F14] = "F14";
-            names[KC_F15] = "F15";
-            names[KC_G] = "G";
-            names[KC_GREATER] = ">";
-            names[KC_H] = "H";
-            names[KC_HASH] = "#";
-            names[KC_HELP] = "HELP";
-            names[KC_HOME] = "HOME";
-            names[KC_I] = "I";
-            names[KC_INSERT] = "INSERT";
-            names[KC_J] = "J";
-            names[KC_K] = "K";
-            names[KC_KP_0] = "NUMPAD 0";
-            names[KC_KP_1] = "NUMPAD 1";
-            names[KC_KP_2] = "NUMPAD 2";
-            names[KC_KP_3] = "NUMPAD 3";
-            names[KC_KP_4] = "NUMPAD 4";
-            names[KC_KP_5] = "NUMPAD 5";
-            names[KC_KP_6] = "NUMPAD 6";
-            names[KC_KP_7] = "NUMPAD 7";
-            names[KC_KP_8] = "NUMPAD 8";
-            names[KC_KP_9] = "NUMPAD 9";
-            names[KC_KP_DIVIDE] = "NUMPAD /";
-            names[KC_KP_ENTER] = "ENTER";
-            names[KC_KP_EQUALS] = "NUMPAD =";
-            names[KC_KP_MINUS] = "NUMPAD -";
-            names[KC_KP_MULTIPLY] = "NUMPAD *";
-            names[KC_KP_PERIOD] = "NUMPAD .";
-            names[KC_KP_PLUS] = "NUMPAD +";
-            names[KC_L] = "L";
-            names[KC_LEFT] = "LEFT";
-            names[KC_LEFT_ALT] = "LEFT ALT";
-            names[KC_LEFT_BRACKET] = "[";
-            names[KC_LEFT_CONTROL] = "LEFT CTRL";
-            names[KC_LEFT_META] = "LEFT META";
-            names[KC_LEFT_PAREN] = "LEFT (";
-            names[KC_LEFT_SHIFT] = "LEFT SHIFT";
-            names[KC_LEFT_SUPER] = "LEFT WINDOWS";
-            names[KC_LESS] = "<";
-            names[KC_M] = "M";
-            names[KC_MENU] = "MENU";
-            names[KC_MODE] = "MODE";
-            names[KC_MINUS] = "-";
-            names[KC_N] = "N";
-            names[KC_NUM_LOCK] = "NUM LOCK";
-            names[KC_O] = "O";
-            names[KC_P] = "P";
-            names[KC_PAGE_DOWN] = "PAGE DOWN";
-            names[KC_PAGE_UP] = "PAGE UP";
-            names[KC_PAUSE] = "PAUSE";
-            names[KC_PERIOD] = ".";
-            names[KC_PLUS] = "+";
-            names[KC_POWER] = "POWER";
-            names[KC_PRINT] = "PRINT SCREEN";
-            names[KC_Q] = "Q";
-            names[KC_QUESTION] = "?";
-            names[KC_R] = "R";
-            names[KC_RETURN] = "RETURN";
-            names[KC_RIGHT] = "RIGHT";
-            names[KC_RIGHT_ALT] = "RIGHT ALT";
-            names[KC_RIGHT_BRACKET] = "]";
-            names[KC_RIGHT_CONTROL] = "RIGHT CTRL";
-            names[KC_RIGHT_META] = "RIGHT META";
-            names[KC_RIGHT_PAREN] = ")";
-            names[KC_RIGHT_SHIFT] = "RIGHT SHIFT";
-            names[KC_RIGHT_SUPER] = "RIGHT WINDOWS";
-            names[KC_S] = "S";
-            names[KC_SCROLL_LOCK] = "SCROLL LOCK";
-            names[KC_SEMICOLON] = ";";
-            names[KC_SINGLE_QUOTE] = "'";
-            names[KC_SLASH] = "/";
-            names[KC_SPACE] = "SPACE";
-            names[KC_SYSREQ] = "SYSREQ";
-            names[KC_T] = "T";
-            names[KC_TAB] = "TAB";
-            names[KC_U] = "U";
-            names[KC_UNDERSCORE] = "_";
-            names[KC_UNDO] = "UNDO";
-            names[KC_UP] = "UP";
-            names[KC_V] = "V";
-            names[KC_W] = "W";
-            names[KC_X] = "X";
-            names[KC_Y] = "Y";
-            names[KC_Z] = "Z";
+            names[RK_0] = "0";
+            names[RK_1] = "1";
+            names[RK_2] = "2";
+            names[RK_3] = "3";
+            names[RK_4] = "4";
+            names[RK_5] = "5";
+            names[RK_6] = "6";
+            names[RK_7] = "7";
+            names[RK_8] = "8";
+            names[RK_9] = "9";
+            names[RK_A] = "A";
+            names[RK_AMPERSAND] = "&";
+            names[RK_ASTERISK] = "*";
+            names[RK_AT] = "@";
+            names[RK_B] = "B";
+            names[RK_BACKQUOTE] = "`";
+            names[RK_BACKSLASH] = "\\";
+            names[RK_BACKSPACE] = "BACKSPACE";
+            names[RK_BREAK] = "BREAK";
+            names[RK_C] = "C";
+            names[RK_CAPS_LOCK] = "CAPS LOCK";
+            names[RK_CARET] = "^";
+            names[RK_CLEAR] = "CLEAR";
+            names[RK_COLON] = ":";
+            names[RK_COMMA] = ",";
+            names[RK_COMPOSE] = "COMPOSE";
+            names[RK_D] = "D";
+            names[RK_DELETE] = "DELETE";
+            names[RK_DOLLAR] = "$";
+            names[RK_DOUBLE_QUOTE] = "\"";
+            names[RK_DOWN] = "DOWN";
+            names[RK_E] = "E";
+            names[RK_END] = "END";
+            names[RK_EQUALS] = "=";
+            names[RK_ESCAPE] = "ESCAPE";
+            names[RK_EURO] = "EURO";
+            names[RK_EXCLAIM] = "!";
+            names[RK_F] = "F";
+            names[RK_F1] = "F1";
+            names[RK_F2] = "F2";
+            names[RK_F3] = "F3";
+            names[RK_F4] = "F4";
+            names[RK_F5] = "F5";
+            names[RK_F6] = "F6";
+            names[RK_F7] = "F7";
+            names[RK_F8] = "F8";
+            names[RK_F9] = "F9";
+            names[RK_F10] = "F10";
+            names[RK_F11] = "F11";
+            names[RK_F12] = "F12";
+            names[RK_F13] = "F13";
+            names[RK_F14] = "F14";
+            names[RK_F15] = "F15";
+            names[RK_G] = "G";
+            names[RK_GREATER] = ">";
+            names[RK_H] = "H";
+            names[RK_HASH] = "#";
+            names[RK_HELP] = "HELP";
+            names[RK_HOME] = "HOME";
+            names[RK_I] = "I";
+            names[RK_INSERT] = "INSERT";
+            names[RK_J] = "J";
+            names[RK_K] = "K";
+            names[RK_KP_0] = "NUMPAD 0";
+            names[RK_KP_1] = "NUMPAD 1";
+            names[RK_KP_2] = "NUMPAD 2";
+            names[RK_KP_3] = "NUMPAD 3";
+            names[RK_KP_4] = "NUMPAD 4";
+            names[RK_KP_5] = "NUMPAD 5";
+            names[RK_KP_6] = "NUMPAD 6";
+            names[RK_KP_7] = "NUMPAD 7";
+            names[RK_KP_8] = "NUMPAD 8";
+            names[RK_KP_9] = "NUMPAD 9";
+            names[RK_KP_DIVIDE] = "NUMPAD /";
+            names[RK_KP_ENTER] = "ENTER";
+            names[RK_KP_EQUALS] = "NUMPAD =";
+            names[RK_KP_MINUS] = "NUMPAD -";
+            names[RK_KP_MULTIPLY] = "NUMPAD *";
+            names[RK_KP_PERIOD] = "NUMPAD .";
+            names[RK_KP_PLUS] = "NUMPAD +";
+            names[RK_L] = "L";
+            names[RK_LEFT] = "LEFT";
+            names[RK_LEFT_ALT] = "LEFT ALT";
+            names[RK_LEFT_BRACKET] = "[";
+            names[RK_LEFT_CONTROL] = "LEFT CTRL";
+            names[RK_LEFT_META] = "LEFT META";
+            names[RK_LEFT_PAREN] = "LEFT (";
+            names[RK_LEFT_SHIFT] = "LEFT SHIFT";
+            names[RK_LEFT_WINDOWS] = "LEFT WINDOWS";
+            names[RK_LESS] = "<";
+            names[RK_M] = "M";
+            names[RK_MENU] = "MENU";
+            names[RK_MODE] = "MODE";
+            names[RK_MINUS] = "-";
+            names[RK_N] = "N";
+            names[RK_NUM_LOCK] = "NUM LOCK";
+            names[RK_O] = "O";
+            names[RK_P] = "P";
+            names[RK_PAGE_DOWN] = "PAGE DOWN";
+            names[RK_PAGE_UP] = "PAGE UP";
+            names[RK_PAUSE] = "PAUSE";
+            names[RK_PERIOD] = ".";
+            names[RK_PLUS] = "+";
+            names[RK_POWER] = "POWER";
+            names[RK_PRINT_SCREEN] = "PRINT SCREEN";
+            names[RK_Q] = "Q";
+            names[RK_QUESTION] = "?";
+            names[RK_R] = "R";
+            names[RK_RETURN] = "RETURN";
+            names[RK_RIGHT] = "RIGHT";
+            names[RK_RIGHT_ALT] = "RIGHT ALT";
+            names[RK_RIGHT_BRACKET] = "]";
+            names[RK_RIGHT_CONTROL] = "RIGHT CTRL";
+            names[RK_RIGHT_META] = "RIGHT META";
+            names[RK_RIGHT_PAREN] = ")";
+            names[RK_RIGHT_SHIFT] = "RIGHT SHIFT";
+            names[RK_RIGHT_WINDOWS] = "RIGHT WINDOWS";
+            names[RK_S] = "S";
+            names[RK_SCROLL_LOCK] = "SCROLL LOCK";
+            names[RK_SEMICOLON] = ";";
+            names[RK_SINGLE_QUOTE] = "'";
+            names[RK_SLASH] = "/";
+            names[RK_SPACE] = "SPACE";
+            names[RK_SYSREQ] = "SYSREQ";
+            names[RK_T] = "T";
+            names[RK_TAB] = "TAB";
+            names[RK_U] = "U";
+            names[RK_UNDERSCORE] = "_";
+            names[RK_UNDO] = "UNDO";
+            names[RK_UP] = "UP";
+            names[RK_V] = "V";
+            names[RK_W] = "W";
+            names[RK_X] = "X";
+            names[RK_Y] = "Y";
+            names[RK_Z] = "Z";
         }
     }
 
-    std::string KeyName(KeyCode kc)
+    std::string RawKeyName(RawKey rk)
     {
         InitNames();
-        std::map<KeyCode, const char *>::const_iterator it = names.find(kc);
+        std::map<RawKey, const char *>::const_iterator it = names.find(rk);
         if (it == names.end()) {
             return "UNKNOWN";
         } else {
             return it->second;
         }
     }
+
+
 
 }

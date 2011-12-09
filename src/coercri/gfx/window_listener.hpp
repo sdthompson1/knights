@@ -7,7 +7,7 @@
  *   keyboard/mouse input, etc.
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -59,7 +59,9 @@ namespace Coercri {
 
         virtual ~WindowListener() { }
         
-        // Window closed
+        // User requested to close the window (e.g. by clicking "X" button)
+        // Note: The window does not automatically close, the application has to do that
+        // by destroying the Coercri::Window object.
         virtual void onClose() { }
 
         // Window gained or lost focus
@@ -73,14 +75,36 @@ namespace Coercri {
         virtual void onActivate() { }
         virtual void onDeactivate() { }
 
+        
         // Keyboard events
 
-        // ke = KE_PRESSED, KE_AUTO_REPEAT or KE_RELEASED, see key_code.hpp
-        // kc = key code, see key_code.hpp
-        // character = unicode character value (if a printable char) or 0. generated only on KEY_PRESSED events.
-        // modifiers = or'd combination of modifier values, see key_code.hpp.
-        virtual void onKey(KeyEvent ke, KeyCode kc, int character, int modifiers) { }
+        // onRawKey. Used for "raw" key press/release events.
+        // pressed = true for KEY DOWN event, false for KEY UP event.
+        // rk = raw key code, see key_code.hpp.
 
+        // NOTE: If window loses focus while a key is held, the "key
+        // up" msg may not be generated. It is recommended that
+        // applications clear any "key pressed" flags they may be
+        // holding whenever the window loses focus.
+        
+        virtual void onRawKey(bool pressed, RawKey rk) { }
+
+        
+        // onCookedKey. Used for "cooked" keypresses such as <a>, <A>, <F1>, <Ctrl-c>, <Alt-Shift-F8>
+
+        // ck = cooked key code, see key_code.hpp
+        // ch = character (Unicode code point) in case of CK_CHARACTER.
+        // mods = OR'd list of key modifiers.
+
+        // Note that the character returned is "case sensitive", so,
+        // for example, there is a difference between Ctrl-c and
+        // Ctrl-Shift-C and Ctrl-C (the latter with caps lock on).
+
+        // Note that CK_CHARACTER is only supposed to return printable characters.
+        
+        virtual void onCookedKey(CookedKey ck, int ch, KeyModifier mods) { }
+
+        
         // Mouse button events
         virtual void onMouseDown(int x, int y, MouseButton button) { }
         virtual void onMouseUp(int x, int y, MouseButton button) { }

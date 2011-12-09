@@ -6,7 +6,7 @@
  *   Interface for drawing onto a Window
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -75,7 +75,9 @@ namespace Coercri {
         virtual void clearScreen(Color col) = 0;   // (col.a is ignored)
         virtual void plotPixel(int x, int y, Color col) = 0;
         virtual void drawGraphic(int x, int y, const Graphic &graphic) = 0;
-        virtual void drawText(int x, int y, const Font &font, const std::string &text, Color col, bool antialias) = 0;
+
+        // this just calls through to font.drawText.
+        void drawText(int x, int y, const Font &font, const std::string &text, Color col, bool antialias);
 
         // The following have default implementations but can be
         // overridden if more efficient implementations are available.

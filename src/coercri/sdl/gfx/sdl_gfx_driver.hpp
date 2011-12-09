@@ -6,7 +6,7 @@
  *   SDL implementation of GfxDriver
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -63,7 +63,6 @@ namespace Coercri {
         virtual boost::shared_ptr<Graphic> createGraphic(boost::shared_ptr<const PixelArray> pixels, int hx = 0, int hy = 0);
         virtual bool pollEvents();
         virtual void setWindowsIcon(int resource_id);
-        virtual void setKeyRepeat(bool enabled);
         
     private:
         SDLSubSystemHandle video_subsystem;

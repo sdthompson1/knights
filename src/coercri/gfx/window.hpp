@@ -7,7 +7,7 @@
  *   receive keyboard and mouse input.
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -76,6 +76,10 @@ namespace Coercri {
         
         // Show or hide the mouse pointer.
         virtual void showMousePointer(bool shown) = 0;
+
+        // Capture the mouse. This allows mouse messages to be received even
+        // if the mouse is outside the window
+        virtual void captureMouse(bool captured) { }
         
         // Switch between windowed and full screen
         virtual void switchToWindowed(int w, int h) = 0;
@@ -85,8 +89,9 @@ namespace Coercri {
         virtual bool isFullScreen() const = 0;
 
         // Get a GfxContext for drawing.
-        // NB only one GfxContext should exist at a time (for each window),
-        // otherwise strange things might happen...
+        // Notes:
+        // 1) only one GfxContext should exist at any given time
+        // 2) a GfxContext should not exist across a call to GfxDriver::pollEvents.
         virtual std::auto_ptr<GfxContext> createGfxContext() = 0;
         
         //
@@ -96,6 +101,7 @@ namespace Coercri {
         // WindowListeners for this window
         void addWindowListener(WindowListener *);
         void rmWindowListener(WindowListener *);
+        const std::vector<WindowListener*> & getListeners() const { return listeners; }
 
         // Invalid region handling
         void invalidateRectangle(const Rectangle &rect) { invalid_region.addRectangle(rect); }

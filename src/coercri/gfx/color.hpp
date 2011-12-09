@@ -6,7 +6,7 @@
  *   Struct representing an RGBA quadruple. Values range from 0 to 255.
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.

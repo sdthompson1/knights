@@ -348,7 +348,6 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     // (Here we use SDL, but a different backend could be selected
     // just by changing the following few lines.)
     pimpl->gfx_driver.reset(new Coercri::SDLGfxDriver);
-    pimpl->gfx_driver->setKeyRepeat(true);
 
 #ifndef DISABLE_SOUND
     try {

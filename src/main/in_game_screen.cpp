@@ -138,9 +138,9 @@ void InGameScreen::setupDisplay()
                                    knights_app.getGameManager().getIngamePlayerList(),
                                    *knights_client,
                                    *container,
-                                   Coercri::KeyName(options.ctrls[2][0]), Coercri::KeyName(options.ctrls[2][1]),
-                                   Coercri::KeyName(options.ctrls[2][2]), Coercri::KeyName(options.ctrls[2][3]),
-                                   Coercri::KeyName(options.ctrls[2][4]), Coercri::KeyName(options.ctrls[2][5]),
+                                   Coercri::RawKeyName(options.ctrls[2][0]), Coercri::RawKeyName(options.ctrls[2][1]),
+                                   Coercri::RawKeyName(options.ctrls[2][2]), Coercri::RawKeyName(options.ctrls[2][3]),
+                                   Coercri::RawKeyName(options.ctrls[2][4]), Coercri::RawKeyName(options.ctrls[2][5]),
                                    single_player,
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips));
@@ -292,7 +292,7 @@ void InGameScreen::onMouseUp(int x, int y, Coercri::MouseButton b)
     else if (b == Coercri::MB_RIGHT) mright = false;
 }
 
-void InGameScreen::onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int character, int modifiers)
+void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
 {
     if (auto_mouse) window->showMousePointer(false);
     
@@ -303,10 +303,10 @@ void InGameScreen::onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int characte
     const int nplayers = display->getNPlayers();
     
     const bool is_game_over = display->isGameOver();
-    const bool escape_pressed = ke == Coercri::KE_PRESSED && kc == Coercri::KC_ESCAPE;
-    const bool space_pressed = ke == Coercri::KE_PRESSED && kc == Coercri::KC_SPACE;
-    const bool q_pressed = ke == Coercri::KE_PRESSED && kc == Coercri::KC_Q;
-    const bool tab_pressed = ke == Coercri::KE_PRESSED && kc == Coercri::KC_TAB;
+    const bool escape_pressed = pressed && rk == Coercri::RK_ESCAPE;
+    const bool space_pressed = pressed && rk == Coercri::RK_SPACE;
+    const bool q_pressed = pressed && rk == Coercri::RK_Q;
+    const bool tab_pressed = pressed && rk == Coercri::RK_TAB;
 
     // TAB => toggle chat mode
     if (tab_pressed) {
@@ -354,11 +354,11 @@ void InGameScreen::onKey(Coercri::KeyEvent ke, Coercri::KeyCode kc, int characte
     }
 
     // Left/Right in Observe mode => shift currently observed player.
-    if (player_names.size() > 2 && ke == Coercri::KE_PRESSED) {
-        if (kc == Coercri::KC_LEFT) {
+    if (player_names.size() > 2 && pressed) {
+        if (rk == Coercri::RK_LEFT) {
             --curr_obs_player;
             if (curr_obs_player < 0) curr_obs_player = player_names.size() - 1;
-        } else if (kc == Coercri::KC_RIGHT) {
+        } else if (rk == Coercri::RK_RIGHT) {
             ++curr_obs_player;
             if (curr_obs_player >= player_names.size()) curr_obs_player = 0;
         }

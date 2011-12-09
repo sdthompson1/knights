@@ -44,7 +44,7 @@ public:
     
     // Controls for 3 players (P1/P2/Network games) and in order up/down/left/right/action/suicide.
     // 3rd player added in v011 of Knights.
-    Coercri::KeyCode ctrls[3][6];
+    Coercri::RawKey ctrls[3][6];
     
     // Display settings
     bool use_scale2x;

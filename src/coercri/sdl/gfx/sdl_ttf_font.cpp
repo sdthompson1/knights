@@ -3,7 +3,7 @@
  *   sdl_ttf_font.cpp
  *
  * AUTHOR:
- *   Stephen Thompson
+ *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
@@ -63,7 +63,7 @@ namespace Coercri {
     {
         // Initialize SDL_TTF if we haven't already
         if (!TTF_WasInit() && TTF_Init()==-1) {
-            throw CoercriError("Failed to initialize SDL_TTF");
+            throw CoercriError(std::string("Failed to initialize SDL_TTF. SDL error was: ") + TTF_GetError());
         }
 
         // Open the font
