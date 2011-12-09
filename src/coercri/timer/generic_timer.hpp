@@ -49,27 +49,13 @@
 
 #include "timer.hpp"
 
-#ifdef WIN32
-#include <windows.h>
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
-#endif
-
 namespace Coercri {
     class GenericTimer : public Timer {
     public:
         GenericTimer();
+        ~GenericTimer();
         unsigned int getMsec();
         void sleepMsec(int msec);
-
-    private:
-#ifdef WIN32
-        LONGLONG counts_per_msec;
-#endif
     };
 }
 

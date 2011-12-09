@@ -43,26 +43,47 @@
 
 #include "generic_timer.hpp"
 
+#ifdef WIN32
+#include <windows.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+#endif
+
 namespace Coercri {
 
     GenericTimer::GenericTimer()
     {
 #ifdef WIN32
-        LARGE_INTEGER frequency;
-        QueryPerformanceFrequency(&frequency);
-        // TODO: What to do if this fails
-
-        counts_per_msec = frequency.QuadPart / 1000;
+        // Apparently there are problems with QueryPerformanceCounter on some systems,
+        // so we use timeBeginPeriod / timeGetTime / timeEndTime instead.
+        // Request 1ms resolution.
+        timeBeginPeriod(1);
 #endif
+    }
+
+    GenericTimer::~GenericTimer()
+    {
+#ifdef WIN32
+        timeEndPeriod(1);
+#endif        
     }
 
     unsigned int GenericTimer::getMsec()
     {
 #ifdef WIN32
-        LARGE_INTEGER count;
-        QueryPerformanceCounter(&count);
+        return timeGetTime();
 
-        return static_cast<unsigned int>(count.QuadPart / counts_per_msec);
+#elif defined(__linux__)
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        return (now.tv_sec * 1000) + (now.tv_nsec / 1000000);
+
+#else
+#error "Timer not implemented for this operating system!"
 #endif
     }    
 
@@ -70,6 +91,8 @@ namespace Coercri {
     {
 #ifdef WIN32
         Sleep(msec);
+#elif defined(__linux__)
+        usleep(msec * 1000);
 #endif
     }
 

@@ -44,7 +44,7 @@
 #include "enet/enet_network_connection.hpp"
 #include "enet/enet_network_driver.hpp"
 #include "network/udp_socket.hpp"
-#include "sdl/timer/sdl_timer.hpp"
+#include "timer/generic_timer.hpp"
 
 #include <curl/curl.h>
 
@@ -887,10 +887,7 @@ int main(int argc, char **argv)
 
     
     // Set up timer.
-    // (Could argue that introducing a dependency onto SDL just for
-    // the Timer functionality is overkill, but I am too lazy to write
-    // my own Timer implementation right now...)
-    timer.reset(new Coercri::SDLTimer);
+    timer.reset(new Coercri::GenericTimer);
 
     try {
 

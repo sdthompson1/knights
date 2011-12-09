@@ -20,9 +20,7 @@ EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o',
                      'src/coercri/enet/enet_network_driver.o',
                      'src/coercri/enet/enet_network_connection.o',
                      'src/coercri/enet/enet_udp_socket.o',
-                     'src/coercri/sdl/core/sdl_error.o',
-                     'src/coercri/sdl/core/sdl_subsystem_handle.o',
-                     'src/coercri/sdl/timer/sdl_timer.o']
+                     'src/coercri/timer/generic_timer.o']
 
 PROJECTS_ALL = list(set(PROJECTS_MAIN + PROJECTS_SERVER))
 
@@ -175,7 +173,7 @@ $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
 # Print target for Server binary
 print """
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `sdl-config --libs` `curl-config --libs` $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `curl-config --libs` $(BOOST_LIBS)
 \t$(STRIP) $@
 """
 

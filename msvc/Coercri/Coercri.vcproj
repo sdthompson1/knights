@@ -192,6 +192,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\coercri\timer\generic_timer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\coercri\gfx\gfx_context.cpp"
 				>
 			</File>
@@ -323,6 +327,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\coercri\gfx\font.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\timer\generic_timer.hpp"
 				>
 			</File>
 			<File

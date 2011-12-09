@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SDL\lib\SDL.lib ws2_32.lib winmm.lib"
+				AdditionalDependencies="ws2_32.lib winmm.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -136,7 +136,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SDL\lib\SDL.lib ws2_32.lib winmm.lib"
+				AdditionalDependencies="ws2_32.lib winmm.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"

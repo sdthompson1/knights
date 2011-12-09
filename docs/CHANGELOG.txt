@@ -2,6 +2,17 @@ Note: Numbers in square brackets refer to Trac
 <http://www.knightsgame.org.uk:8000/>.
 
 
+Release 019
+===========
+
+Not Yet Released
+
+Code changes:
+
+* Updated "Coercri" library to the latest version. (The interface for
+  keyboard handling has changed somewhat.)
+
+
 Release 018
 ===========
 
