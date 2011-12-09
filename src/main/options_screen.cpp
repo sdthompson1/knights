@@ -434,6 +434,9 @@ void OptionsScreenImpl::transferToGui()
         change_button[i]->setY(last_label->getY() + last_label->getHeight() + 10);
     }
 
+    // Position the change label to same Y as change button (Trac #120)
+    change_label->setY(change_button[0]->getY());
+
     const bool show_lower = !change_active || bad_key_msg.empty();
     options_label->setVisible(show_lower);
     display_label->setVisible(show_lower);
@@ -480,7 +483,12 @@ void OptionsScreenImpl::onRawKey(bool pressed, Coercri::RawKey rk)
             if (allowed) {
                 current_opts.ctrls[change_player][change_key] = rk;
                 ++change_key;
-                if (change_key >= 6 || (current_opts.new_control_system && change_key >= 4)) {
+
+                const bool four_key_mode = 
+                    current_opts.new_control_system     // Using NEW control system (4-key) for LAN/Internet/SglPlyr
+                    && show_controls_dropdown->getSelected() == 0;  // Currently editing ctrls for LAN/Internet/SglPlyr
+
+                if (change_key >= 6 || (four_key_mode && change_key >= 4)) {
                     change_active = false;
                 }
                 bad_key_msg = "";
