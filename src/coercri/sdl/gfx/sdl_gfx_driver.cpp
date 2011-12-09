@@ -516,9 +516,13 @@ namespace Coercri {
         if (resizable) g_sdl_required_flags |= SDL_RESIZABLE;
 
         // In windowed mode we call SetVideoMode twice. This is a workaround for a bug when SDL is used with xmonad.
-        SDL_SetVideoMode(width, height, 0, g_sdl_required_flags);
-        if (!fullscreen) SDL_SetVideoMode(width, height, 0, g_sdl_required_flags);
+        SDL_Surface * sdl_surf = SDL_SetVideoMode(width, height, 0, g_sdl_required_flags);
+        if (!fullscreen) sdl_surf = SDL_SetVideoMode(width, height, 0, g_sdl_required_flags);
 
+        if (!sdl_surf) {
+            throw CoercriError("SDL_SetVideoMode failed");
+        }
+        
         SDL_WM_SetCaption(title.c_str(), title.c_str());
 
         SDL_EnableUNICODE(1);

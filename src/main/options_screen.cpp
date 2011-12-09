@@ -310,6 +310,7 @@ void OptionsScreenImpl::action(const gcn::ActionEvent &event)
 
     if (got_ok || got_cancel) {
         if (got_ok) {
+            // Note: Save the options FIRST, because switchToFullScreen or switchToWindowed could throw.
             knights_app.setAndSaveOptions(current_opts);
             if (current_opts.fullscreen && !previous_fullscreen) {
                 window->switchToFullScreen(desktop_width, desktop_height);

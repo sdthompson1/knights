@@ -107,20 +107,27 @@ namespace Coercri {
         bool currently_full_screen = ((g_sdl_required_flags & SDL_FULLSCREEN) != 0);
         g_sdl_required_flags &= (~SDL_FULLSCREEN);
 
-        SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
+        SDL_Surface * result = SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
 
         if (currently_full_screen) {
             // Need two calls to SetVideoMode to work around a bug when SDL is used with xmonad
-            SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
+            result = SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
         }
         
+        if (!result) {
+            throw CoercriError("SDL_SetVideoMode failed");
+        }
+
         need_window_resize = true;
     }
 
     void SDLWindow::switchToFullScreen(int w, int h)
     {
         g_sdl_required_flags |= SDL_FULLSCREEN;
-        SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
+        SDL_Surface * result = SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
+        if (!result) {
+            throw CoercriError("SDL_SetVideoMode failed");
+        }
         need_window_resize = true;
     }
 

@@ -52,6 +52,7 @@
 #include "title_screen.hpp"
 
 // coercri
+#include "core/coercri_error.hpp"
 #include "enet/enet_network_driver.hpp"
 #include "gcn/cg_font.hpp"
 #include "gcn/cg_listener.hpp"
@@ -381,7 +382,21 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     } else {
         getWindowedModeSize(width, height);
     }
-    pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, fullscreen, game_name);
+
+    try {
+        pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, fullscreen, game_name);
+    } catch (Coercri::CoercriError &) {
+        // If creation in fullscreen mode fails then try again in windowed mode (Trac #118)
+        // (If it wasn't fullscreen mode then re-throw the exception)
+        if (fullscreen) {
+            // shrink the window a little bit, so it doesn't fill the entire screen
+            width = std::max(width-200, 400);
+            height = std::max(height-200, 400);
+            pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, false, game_name);
+        } else {
+            throw;
+        }
+    }
     
     // Get the font names.
     // NOTE: we always try to load TTF before bitmap fonts, irrespective of the order they are in the file.
