@@ -76,6 +76,13 @@ ImpactTask::ImpactResult ImpactTask::tryCreatureImpact(Creature &me)
     shared_ptr<Creature> target_creature = me.getMap()->getTargetCreature(me, true);
     if (!target_creature) return NO_TARGET;
     
+    // If the target creature is on the same team as me, then disallow the impact (Trac #128)
+    if (target_creature->getPlayer() && me.getPlayer()
+        && me.getPlayer()->getTeamNum() >= 0
+        && target_creature->getPlayer()->getTeamNum() == me.getPlayer()->getTeamNum()) {
+            return NO_TARGET;
+    }
+
     // The "impactVeto" process is designed to ensure that
     // there is a fair result when two creatures strike each
     // other simultaneously (or near simultaneously).
