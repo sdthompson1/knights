@@ -169,9 +169,9 @@ public:
         Log("Set obs flag. Name = %s, val = %d", name.c_str(), new_obs_flag ? 1 : 0);
     }
     
-    void chat(const std::string &whofrom, bool observer, const std::string &msg)
+    void chat(const std::string &whofrom, bool observer, bool team, const std::string &msg)
     {
-        Log("Chat. whofrom = %s, obs = %d, msg = %s", whofrom.c_str(), observer ? 1 : 0, msg.c_str());
+        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.c_str(), observer ? 1 : 0, team ? 1 : 0, msg.c_str());
     }
     void announcement(const std::string &msg)
     {

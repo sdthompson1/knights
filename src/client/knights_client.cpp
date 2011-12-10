@@ -330,9 +330,12 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
                 // we currently don't parse all the chat codes, we only look for 2 (Observer)
                 // and use this to print "(Observer)" after the player's name...
-                const bool is_observer = (buf.readUbyte() == 2);
+                // Also: 3 = (Team)
+                const int chat_code = buf.readUbyte();
+                const bool is_observer = (chat_code == 2);
+                const bool is_team = (chat_code == 3);
                 const std::string msg = buf.readString();
-                if (client_cb) client_cb->chat(whofrom, is_observer, msg);
+                if (client_cb) client_cb->chat(whofrom, is_observer, is_team, msg);
             }
             break;
 

@@ -215,7 +215,7 @@ public:
 
     virtual void setObsFlag(const std::string &name, bool new_obs_flag);
     
-    virtual void chat(const std::string &whofrom, bool observer, const std::string &msg);
+    virtual void chat(const std::string &whofrom, bool observer, bool team, const std::string &msg);
     virtual void announcement(const std::string &msg);
 
 

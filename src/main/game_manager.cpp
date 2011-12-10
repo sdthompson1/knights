@@ -1119,10 +1119,11 @@ void GameManager::setReady(const std::string &name, bool ready)
     pimpl->gui_invalid = true;
 }
 
-void GameManager::chat(const std::string &whofrom, bool observer, const std::string &msg)
+void GameManager::chat(const std::string &whofrom, bool observer, bool team, const std::string &msg)
 {
     std::string out = whofrom;
     if (observer) out += " (Observer)";
+    if (team) out += " (Team)";
     out += ": ";
     out += msg;
     pimpl->chat_list.add(out);

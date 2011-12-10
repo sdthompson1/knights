@@ -77,7 +77,7 @@ public:
     bool ready_to_end;   // true=clicked mouse on winner/loser screen, false=still waiting.
     bool obs_flag;   // true=observer, false=player
     bool cancel_obs_mode_after_game;
-    int house_colour;  // Must fit in a ubyte. Set to zero for observers.
+    int house_colour;  // Must fit in a ubyte. Set to zero for observers (but beware, zero is also a valid house colour for non-observers!).
 
     int client_version;
     int observer_num;   // 0 if not an observer, or not set yet. >0 if set.
@@ -134,9 +134,35 @@ public:
     std::auto_ptr<std::deque<int> > time_deltas;     // ditto
     std::auto_ptr<std::deque<unsigned int> > random_seeds; // ditto
     bool msg_count_update_flag;
+
+    // This is set during initialization, it is used to decide whether to parse the "/t" team chat signal.
+    // (Only valid while game is running!)
+    bool is_team_game;
 };
 
 namespace {
+
+    void CheckTeamChat(const std::string msg_orig, std::string &msg, bool &is_team)
+    {
+        is_team = false;
+
+        // Left trim
+        size_t idx = 0;
+        while (idx < msg_orig.size() && msg_orig[idx] == ' ') ++idx;
+
+        // Check for "/t"
+        if (idx < msg_orig.size() && msg_orig[idx] == '/'
+            && idx+1 < msg_orig.size() && msg_orig[idx+1] == 't') {
+                idx += 2;
+                is_team = true;
+        }
+
+        // Left trim again
+        while (idx < msg_orig.size() && msg_orig[idx] == ' ') ++idx;
+
+        // Copy rest of the message into msg
+        msg = msg_orig.substr(idx);
+    }
 
     void WaitForMsgCounter(KnightsGameImpl &kg)
     {
@@ -716,9 +742,20 @@ namespace {
                     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
                 }
 
-                // Send the warning message (from the dungeon generator) to all players (Trac #47)
-                if (!warning_msg.empty()) {
-                    callbacks->gameMsg(-1, warning_msg);
+                // Send the warning message (from the dungeon generator) to all players and observers (Trac #47)
+                // Also send the team chat notification (if applicable)
+                for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                    Coercri::OutputByteBuf buf((*it)->output_data);
+
+                    if (!warning_msg.empty()) {
+                        buf.writeUbyte(SERVER_ANNOUNCEMENT);
+                        buf.writeString(warning_msg);
+                    }
+
+                    if (kg.is_team_game && !(*it)->obs_flag) {
+                        buf.writeUbyte(SERVER_ANNOUNCEMENT);
+                        buf.writeString("Note: Team chat is available. Type /t at the start of your message to send to your team only.");
+                    }
                 }
                 
                 // Go into game loop. NOTE: This will run forever until the main thread interrupts us
@@ -1202,8 +1239,8 @@ namespace {
         }
 
         // Don't start if it's a team game and all players are on the same team
-        const bool is_team = IsTeam(kg.menu_selections);
-        if (ready_to_start && is_team) {
+        kg.is_team_game = IsTeam(kg.menu_selections);
+        if (ready_to_start && kg.is_team_game) {
             int team_found = -1;
             bool two_teams_found = false;
             for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
@@ -1609,17 +1646,44 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
     StartGameIfReady(*pimpl);    
 }
 
-void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg)
+void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_orig)
 {
+    // Determine whether this is a Team chat message
+    bool is_team;
+    std::string msg;
+    if (!pimpl->update_thread.joinable() || !pimpl->is_team_game || conn.obs_flag) {
+        // Team chat not available (either because we are on the quest selection menu, 
+        // or this is not a team game, or because sender is an observer).
+        is_team = false;
+        msg = msg_orig;
+    } else {
+        // Check whether they typed /t, and strip it out (and set is_team flag) if it's there
+        CheckTeamChat(msg_orig, msg, is_team);
+    }
+
     // Forward the message to everybody (including the originator)
+    // (Except team chat msgs which go to team mates only)
     WaitForMsgCounter(*pimpl);
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
+
+        if (is_team) {
+            // Skip over players of different team, or observers
+            if ((*it)->obs_flag || (*it)->house_colour != conn.house_colour) continue;
+        }
+
         Coercri::OutputByteBuf buf((*it)->output_data);
         buf.writeUbyte(SERVER_CHAT);
         buf.writeString(conn.name);
-        buf.writeUbyte(conn.obs_flag ? 2 : 1);  // 2 means observer, 1 means player.
+
+        if (is_team) {
+            buf.writeUbyte(3);  // Team Message
+        } else if (conn.obs_flag) {
+            buf.writeUbyte(2);  // Message from an observer
+        } else {
+            buf.writeUbyte(1);  // Normal Message
+        }
         buf.writeString(msg);
     }
 }
