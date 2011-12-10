@@ -6,14 +6,8 @@
 
 After that, you can join a multiplayer game on the Knights server, or start up a LAN game. There is also a singleplayer mode, but this is mainly intended for practice -- this game is definitely more fun in multiplayer!
 
+If you're looking for other players, check out the Knights game finder service -- go to the Knights web site and click Server List. You can use this to schedule a time to meet other Knights players online.
 
-%cIf you like this game, why not drop by the forums:
-http://www.knightsgame.org.uk/forum/
-
-or check out the moddb profile: 
-http://www.moddb.com/games/knights
-
-
-%lHave fun...
+Have fun...
 
 CLICK MOUSE TO CONTINUE
