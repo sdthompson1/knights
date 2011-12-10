@@ -199,10 +199,10 @@ namespace {
         if (mission == 5) {
             // Team Duel to the Death
             result = "Team Duel to the Death\n\n"
-                "In this quest players divide into two teams. Use your Knight House Colours control to "
-                "decide which team you are playing for (Purple or Green).\n\n"
+                "In this quest players divide into two or more teams. Set your Knight House Colours to "
+                "decide which team you are playing for.\n\n"
                 "The objective is to secure all of the entry points using the Wand of Securing, then kill all of "
-                "the other team's knights to win the game.";
+                "the other teams' knights to win the game.";
         } else if (quest > 0) {
             result = knights_config.getQuestDescription(quest, exit_string);
         } else if (quest == 0) {
@@ -337,7 +337,7 @@ namespace {
     {
         std::vector<Coercri::Color> hse_cols;
         impl.knights_config->getHouseColours(hse_cols);
-        return IsTeam(impl.menu_selections) ? 2 : hse_cols.size();
+        return hse_cols.size();
     }
     
     void SendAvailableHouseColours(const KnightsGameImpl &impl, Coercri::OutputByteBuf &buf)

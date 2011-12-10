@@ -236,6 +236,9 @@ private:
           lua_state(lua) { }
     void operator=(const Mediator &) const;  // not defined
     Mediator(const Mediator &);              // not defined
+
+
+    std::string getWinningTeamMessage(int team_num) const;
     
 private:
 

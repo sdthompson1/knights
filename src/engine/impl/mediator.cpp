@@ -406,17 +406,12 @@ void Mediator::eliminatePlayer(Player &pl)
 
         const Player * winner = *remaining_players.begin();
         
-        std::ostringstream msg;
+        std::string msg;
         if (team_game) {
-            if (winner->getTeamNum() == 0) {
-                msg << "The purple team wins!";
-            } else if (winner->getTeamNum() == 1) {
-                msg << "The green team wins!";
-            } else {
-                msg << "Team " << winner->getTeamNum() + 1 << " wins!";
-            }
+            msg = getWinningTeamMessage(winner->getTeamNum());
         }
-        winGame(winner, msg.str());
+        
+        winGame(winner, msg);
     } else {
         // this puts him into observer mode, but he is still in the game (as an observer).
         Mediator::getCallbacks().onElimination(pl.getPlayerNum());
@@ -434,4 +429,33 @@ KnightsCallbacks & Mediator::getCallbacks() const
         throw CallbacksUnavailable();
     }
     return *callbacks;
+}
+
+std::string Mediator::getWinningTeamMessage(int winning_team) const
+{
+    // Find names of all the winning players
+    std::vector<std::string> winner_names;
+    for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
+        if ((*it)->getTeamNum() == winning_team) {
+            winner_names.push_back((*it)->getName());
+        }
+    }
+
+    if (winner_names.size() < 2) {
+        return "";  // The default message ("Fred wins") is fine
+
+    } else {
+        // Otherwise, need custom message for two or more winners
+
+        std::string msg;
+        
+        for (int i = 0; i < int(winner_names.size()) - 2; ++i) {
+            msg += winner_names[i] + ", ";
+        }
+
+        msg += winner_names[winner_names.size()-2] + " and ";
+        msg += winner_names[winner_names.size()-1] + " are the winners!";
+
+        return msg;
+    }
 }
