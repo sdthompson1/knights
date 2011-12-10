@@ -94,7 +94,8 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const MenuSelections &msel,
                              const std::vector<int> &hse_cols,
                              const std::vector<std::string> &player_names,
-                             bool tutorial_mode)
+                             bool tutorial_mode,
+                             std::string &warning_msg)
     : pimpl(new KnightsEngineImpl(hse_cols.size()))
 {
     boost::shared_ptr<TutorialManager> tutorial_manager;
@@ -112,22 +113,23 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         // Most initialization work is delegated to the KnightsConfig object
         std::vector<boost::shared_ptr<Quest> > quests;
         bool premapped = false;
-        config->initializeGame(msel,
-                               pimpl->dungeon_map,
-                               quests,
-                               pimpl->home_manager,
-                               pimpl->players,
-                               pimpl->stuff_manager,
-                               pimpl->gore_manager,
-                               pimpl->monster_manager,
-                               pimpl->event_manager,
-                               pimpl->premapped,
-                               pimpl->starting_gears,
-                               pimpl->task_manager,
-                               hse_cols,
-                               player_names,
-                               tutorial_manager.get(),
-                               pimpl->final_gvt);
+        warning_msg =
+            config->initializeGame(msel,
+                                   pimpl->dungeon_map,
+                                   quests,
+                                   pimpl->home_manager,
+                                   pimpl->players,
+                                   pimpl->stuff_manager,
+                                   pimpl->gore_manager,
+                                   pimpl->monster_manager,
+                                   pimpl->event_manager,
+                                   pimpl->premapped,
+                                   pimpl->starting_gears,
+                                   pimpl->task_manager,
+                                   hse_cols,
+                                   player_names,
+                                   tutorial_manager.get(),
+                                   pimpl->final_gvt);
         
         pimpl->house_col_idxs = hse_cols;
 

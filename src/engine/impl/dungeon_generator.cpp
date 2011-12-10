@@ -404,7 +404,7 @@ void DungeonGenerator::setStuff(int tile_category, int chance, const ItemGenerat
     stuff[tile_category] = si;
 }
 
-void DungeonGenerator::generate(DungeonMap &dmap, int nplayers, bool tutorial_mode)
+std::string DungeonGenerator::generate(DungeonMap &dmap, int nplayers, bool tutorial_mode)
 {
     // If there is an exception of any kind we just re-try the
     // generation. If it still fails after N attempts (e.g. because
@@ -464,7 +464,12 @@ void DungeonGenerator::generate(DungeonMap &dmap, int nplayers, bool tutorial_mo
                 }
                 
                 // If we get here then we have had a successful dungeon generation.
-                return;
+                std::string warning_msg;
+                if (i != layouts.begin()) {
+                    warning_msg = "Note: Could not generate a \"" + (*layouts.begin())->getName() + "\" dungeon for this quest."
+                        " Using \"" + (*i)->getName() + "\" instead.";
+                }
+                return warning_msg;
 
             } catch (const DungeonGenerationFailed &) {
                 vector<const RandomDungeonLayout*>::const_iterator i2 = i;
@@ -478,6 +483,8 @@ void DungeonGenerator::generate(DungeonMap &dmap, int nplayers, bool tutorial_mo
             // (Other exceptions are allowed to propagate upwards)
         }
     }
+
+    throw DungeonGenerationFailed();  // Shouldn't get here
 }
 
 

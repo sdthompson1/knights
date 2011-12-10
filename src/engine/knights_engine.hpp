@@ -63,7 +63,8 @@ public:
                   const MenuSelections &msel,
                   const std::vector<int> &hse_cols,
                   const std::vector<std::string> &player_names,
-                  bool tutorial_mode);
+                  bool tutorial_mode,
+                  std::string &warning_msg);
     ~KnightsEngine();
 
     // Run one update step (for a given time).

@@ -107,22 +107,22 @@ public:
     void getSounds(std::vector<const Sound*> &sounds) const;
     void getStandardControls(std::vector<const UserControl*> &controls) const;
     void getOtherControls(std::vector<const UserControl*> &controls) const;
-    void initializeGame(const MenuSelections &msel,
-                        boost::shared_ptr<DungeonMap> &dungeon_map,
-                        std::vector<boost::shared_ptr<Quest> > &quests,
-                        HomeManager &home_manager,
-                        std::vector<boost::shared_ptr<Player> > &players,
-                        StuffManager &stuff_manager,
-                        GoreManager &gore_manager,
-                        MonsterManager &monster_manager,
-                        EventManager &event_manager,
-                        bool &premapped,
-                        std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
-                        TaskManager &task_manager,
-                        const std::vector<int> &hse_cols,
-                        const std::vector<std::string> &player_names,
-                        TutorialManager *tutorial_manager,
-                        int &final_gvt) const;
+    std::string initializeGame(const MenuSelections &msel,
+                               boost::shared_ptr<DungeonMap> &dungeon_map,
+                               std::vector<boost::shared_ptr<Quest> > &quests,
+                               HomeManager &home_manager,
+                               std::vector<boost::shared_ptr<Player> > &players,
+                               StuffManager &stuff_manager,
+                               GoreManager &gore_manager,
+                               MonsterManager &monster_manager,
+                               EventManager &event_manager,
+                               bool &premapped,
+                               std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
+                               TaskManager &task_manager,
+                               const std::vector<int> &hse_cols,
+                               const std::vector<std::string> &player_names,
+                               TutorialManager *tutorial_manager,
+                               int &final_gvt) const;
     const Menu & getMenu() const { return menu; }
     const MenuConstraints & getMenuConstraints() const { return menu_constraints; }
     int getApproachOffset() const;
@@ -179,7 +179,7 @@ public:
     void popControlSet(std::vector<const Control*> &which_control_set);
     DungeonBlock popDungeonBlock();
     DungeonDirective * popDungeonDirective();
-    DungeonLayout * popDungeonLayout();
+    DungeonLayout * popDungeonLayout(std::string &name);
     Graphic * popGraphic();
     Graphic * popGraphic(Graphic *dflt);
     void popHouseColours(const ConfigMap &config_map);

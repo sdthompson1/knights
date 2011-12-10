@@ -111,22 +111,25 @@ public:
 
     // NOTE: this creates dependencies on to quite a lot of other
     // classes, it might be nice if we could reduce this somehow.
-    void initializeGame(const MenuSelections &msel,
-                        boost::shared_ptr<DungeonMap> &dungeon_map,
-                        std::vector<boost::shared_ptr<Quest> > &quests,
-                        HomeManager &home_manager,
-                        std::vector<boost::shared_ptr<Player> > &players,
-                        StuffManager &stuff_manager,
-                        GoreManager &gore_manager,
-                        MonsterManager &monster_manager,
-                        EventManager &event_manager,
-                        bool &premapped,
-                        std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
-                        TaskManager &task_manager,
-                        const std::vector<int> &hse_cols,
-                        const std::vector<std::string> &player_names,
-                        TutorialManager *tutorial_manager,    // TutorialManager is optional
-                        int &final_gvt) const;
+
+    // Return value = a warning message to be displayed to players (or "" if there are no warnings)
+    
+    std::string initializeGame(const MenuSelections &msel,
+                               boost::shared_ptr<DungeonMap> &dungeon_map,
+                               std::vector<boost::shared_ptr<Quest> > &quests,
+                               HomeManager &home_manager,
+                               std::vector<boost::shared_ptr<Player> > &players,
+                               StuffManager &stuff_manager,
+                               GoreManager &gore_manager,
+                               MonsterManager &monster_manager,
+                               EventManager &event_manager,
+                               bool &premapped,
+                               std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
+                               TaskManager &task_manager,
+                               const std::vector<int> &hse_cols,
+                               const std::vector<std::string> &player_names,
+                               TutorialManager *tutorial_manager,    // TutorialManager is optional
+                               int &final_gvt) const;
     boost::shared_ptr<const ConfigMap> getConfigMap() const;
     boost::shared_ptr<lua_State> getLuaState();  // This will live for as long as the KnightsConfig lives.
     

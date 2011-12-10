@@ -65,8 +65,11 @@ class RandomDungeonLayout {
 public:
     void add(const DungeonLayout * d) { if (d) data.push_back(d); }
     const DungeonLayout * choose() const;  // picks one of the layouts at random.
+    void setName(const std::string &n) { name = n; }
+    const std::string & getName() const { return name; }
 private:
     vector<const DungeonLayout *> data;
+    std::string name;
 };
 
 #endif

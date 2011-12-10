@@ -93,7 +93,8 @@ public:
     void setTeamMode(bool t) { team_mode = t; }
     
     // "generate" routine -- generates the dungeon map.
-    void generate(DungeonMap &dmap, int nplayers, bool tutorial_mode);
+    // Returns a warning message to display to players, or "" if there were no warnings.
+    std::string generate(DungeonMap &dmap, int nplayers, bool tutorial_mode);
 
     // Add vampire bats to an already-generated dungeon map.
     void addVampireBats(DungeonMap &dmap, MonsterManager &mmgr,

@@ -706,7 +706,7 @@ DungeonDirective * KnightsConfigImpl::popDungeonDirective()
     return it->second;
 }
 
-DungeonLayout * KnightsConfigImpl::popDungeonLayout()
+DungeonLayout * KnightsConfigImpl::popDungeonLayout(std::string &name)
 {
     if (!kf) return 0;
     const Value * p = kf->getTop();
@@ -722,6 +722,7 @@ DungeonLayout * KnightsConfigImpl::popDungeonLayout()
         tab.push("data");
         DungeonLayout *dlay = doPopDungeonLayout(w, h);
         tab.push("height"); kf->pop();
+        tab.push("name"); name = kf->popString("");
         tab.push("width"); kf->pop();
 
         it = dungeon_layouts.insert(make_pair(p, dlay)).first;
@@ -1301,14 +1302,18 @@ RandomDungeonLayout * KnightsConfigImpl::popRandomDungeonLayout()
         RandomDungeonLayout *r = new RandomDungeonLayout;
         it = random_dungeon_layouts.insert(make_pair(p, r)).first;
         if (kf->isTable()) {
-            DungeonLayout *d = popDungeonLayout();
+            std::string name;
+            DungeonLayout *d = popDungeonLayout(name);
             r->add(d);
+            r->setName(name);
         } else if (kf->isRandom()) {
             KFile::Random ran(*kf, "DungeonLayout");
+            std::string name;
             for (int i=0; i<ran.getSize(); ++i) {
                 int weight = ran.push(i);
-                DungeonLayout *d = popDungeonLayout();
+                DungeonLayout *d = popDungeonLayout(name);
                 for (int j=0; j<weight; ++j) r->add(d);
+                if (i==0) r->setName(name);
             }
         }
         
@@ -1968,22 +1973,22 @@ void KnightsConfigImpl::getOtherControls(std::vector<const UserControl*> &out) c
     std::sort(out.begin(), out.end(), CompareID<UserControl>());
 }
 
-void KnightsConfigImpl::initializeGame(const MenuSelections &msel,
-                                       boost::shared_ptr<DungeonMap> &dungeon_map,
-                                       std::vector<boost::shared_ptr<Quest> > &quests,
-                                       HomeManager &home_manager,
-                                       std::vector<boost::shared_ptr<Player> > &players,
-                                       StuffManager &stuff_manager,
-                                       GoreManager &gore_manager,
-                                       MonsterManager &monster_manager,
-                                       EventManager &event_manager,
-                                       bool &premapped,
-                                       std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
-                                       TaskManager &task_manager,
-                                       const std::vector<int> &hse_cols,
-                                       const std::vector<std::string> &player_names,
-                                       TutorialManager *tutorial_manager,
-                                       int &final_gvt) const
+std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
+                                              boost::shared_ptr<DungeonMap> &dungeon_map,
+                                              std::vector<boost::shared_ptr<Quest> > &quests,
+                                              HomeManager &home_manager,
+                                              std::vector<boost::shared_ptr<Player> > &players,
+                                              StuffManager &stuff_manager,
+                                              GoreManager &gore_manager,
+                                              MonsterManager &monster_manager,
+                                              EventManager &event_manager,
+                                              bool &premapped,
+                                              std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
+                                              TaskManager &task_manager,
+                                              const std::vector<int> &hse_cols,
+                                              const std::vector<std::string> &player_names,
+                                              TutorialManager *tutorial_manager,
+                                              int &final_gvt) const
 {
     boost::scoped_ptr<DungeonGenerator> dg(new DungeonGenerator(segment_set,
                                                                 wall_tile,
@@ -1994,7 +1999,8 @@ void KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     quests.clear();
     readMenu(menu, msel, *dg, quests);   // apply DungeonDirectives and get quests
     dungeon_map.reset(new DungeonMap);
-    dg->generate(*dungeon_map, hse_cols.size(), tutorial_manager != 0);
+    const std::string dungeon_generator_msg =
+        dg->generate(*dungeon_map, hse_cols.size(), tutorial_manager != 0);
     
     // Add homes to the home manager
     for (int i = 0; i < dg->getNumHomesOverall(); ++i) {
@@ -2152,6 +2158,8 @@ void KnightsConfigImpl::initializeGame(const MenuSelections &msel,
             tutorial_manager->addTutorialKey(it->first, it->second.first, it->second.second);
         }
     }
+
+    return dungeon_generator_msg;
 }
 
 int KnightsConfigImpl::getApproachOffset() const

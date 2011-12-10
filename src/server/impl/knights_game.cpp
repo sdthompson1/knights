@@ -675,9 +675,10 @@ namespace {
 
                 nplayers = player_names.size();
                 
+                std::string warning_msg;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, kg.menu_selections, hse_cols, player_names,
-                                                   kg.tutorial_mode));
+                                                   kg.tutorial_mode, warning_msg));
                 } catch (const std::exception &e) {
                     kg.startup_err_msg = e.what();
                     if (kg.startup_err_msg.empty()) kg.startup_err_msg = "Unknown error";
@@ -713,6 +714,11 @@ namespace {
                         if (all_loaded) break;
                     }
                     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+                }
+
+                // Send the warning message (from the dungeon generator) to all players (Trac #47)
+                if (!warning_msg.empty()) {
+                    callbacks->gameMsg(-1, warning_msg);
                 }
                 
                 // Go into game loop. NOTE: This will run forever until the main thread interrupts us
