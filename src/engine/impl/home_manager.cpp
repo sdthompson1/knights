@@ -121,31 +121,28 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
 
 pair<MapCoord,MapDirection> HomeManager::getRandomHomeFor(const Player &pl) const
 {
-    // First of all, work out how many homes are not secured against pl
-    int count = 0;
-    for (HomeMap::const_iterator it = homes.begin(); it != homes.end(); ++it) {
-        if (it->second == 0 || it->second == &pl) {
-            ++count;
-        }
-    }
-
-    if (count == 0) return make_pair(MapCoord(), D_NORTH);
+    const bool is_team_game = pl.getTeamNum() >= 0;
     
-    // Generate a random number
-    int r = g_rng.getInt(0, count);
-
-    // Now find the rth home
+    // First of all, work out which homes are not secured against pl
+    std::vector<std::pair<MapCoord, MapDirection> > unsecured_homes;
+    
     for (HomeMap::const_iterator it = homes.begin(); it != homes.end(); ++it) {
-        if (it->second == 0 || it->second == &pl) {
-            --r;
-            if (r < 0) {
-                // Return this home
-                return it->first;
-            }
+
+        const bool unsecured = it->second == 0;
+        const bool secured_by_me = it->second == &pl;
+        const bool secured_by_my_team = !unsecured && it->second->getTeamNum() == pl.getTeamNum();
+        
+        if (unsecured || (is_team_game && secured_by_my_team) || (!is_team_game && secured_by_me)) {
+            unsecured_homes.push_back(it->first);
         }
     }
 
-    ASSERT(0);
-    return make_pair(MapCoord(), D_NORTH);
+    if (unsecured_homes.empty()) return make_pair(MapCoord(), D_NORTH);
+    
+    // Generate a random number ...
+    int r = g_rng.getInt(0, int(unsecured_homes.size()));
+
+    // ... and return the rth home
+    return unsecured_homes[r];
 }
 
