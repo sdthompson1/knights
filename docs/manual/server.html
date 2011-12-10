@@ -82,6 +82,14 @@
   connect to the server. The server re-reads the file each time a
   player connects, so you can edit the contents of the file without
   having to restart the server. </li>
+<li><b>OldMOTDFile:</b> As MOTDFile, except that the OldMOTDFile will
+  only be displayed if the client is running an older version
+  of <i>Knights</i>. Can be used to display a message that a new
+  version of <i>Knights</i> is available. Default: same as MOTDFile.
+  (Note that it is not guaranteed that old client versions will be
+  compatible with new server versions; in general, it is recommended
+  to keep the client and server versions the same, if at all
+  possible.)</li>
 <li><b>Password:</b> If set, the server will be password protected and
   players must type in the password before they can connect. Please
   note that the passwords are <i>not</i> encrypted during
@@ -152,6 +160,7 @@
   server will appear in the global server list, but only players who
   know the password will be able to log in.</li></ul>
 </ul>
+
 
 
 <h3>Keeping the server running</h3>
