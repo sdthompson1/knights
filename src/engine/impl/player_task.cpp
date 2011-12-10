@@ -64,6 +64,7 @@ void PlayerTask::execute(TaskManager &tm)
             // Check whether there are creatures in the room
             // (TODO) This could be made faster, write a dungeonmap routine to find all
             // entities within a room.
+            // NOTE: Knights on the same team as me do not count as "creatures in the room" for this purpose (Trac #126).
             bool found_creature = false;
             vector<shared_ptr<Entity> > entities;
             for (int i=0; i<w; ++i) {
@@ -72,7 +73,20 @@ void PlayerTask::execute(TaskManager &tm)
                     dmap->getEntities(mc, entities);
                     for (vector<shared_ptr<Entity> >::iterator it = entities.begin();
                     it != entities.end(); ++it) {
-                        if (dynamic_cast<Creature*>(it->get()) && (*it) != kt) {
+
+                        Creature * cr = dynamic_cast<Creature*>(it->get());
+                        if (cr && cr != kt.get()) {
+
+                            // Check if he is on the same team, if so disregard
+                            if (cr->getPlayer()) {
+                                const int my_team_num = kt->getPlayer()->getTeamNum();
+                                if (my_team_num != -1) {
+                                    const int other_team_num = cr->getPlayer()->getTeamNum();
+                                    if (other_team_num == my_team_num) continue;
+                                }
+                            }
+
+                            // Found an "enemy" creature so set the flag and break out of loop.
                             found_creature = true;
                             break;
                         }
