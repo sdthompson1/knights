@@ -67,7 +67,7 @@ switch_acc = {
 barrel_acc = {
     walking = "blocked"
     flying = "clear"
-    missiles = "partial"
+    missiles = "clear"
 }
 furniture_acc = {
     walking = "approach"
