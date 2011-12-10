@@ -118,7 +118,7 @@ namespace {
             // note: we don't care if CreateMissile was successful or not...
             CreateMissile(*dmap, actor->getPos(), actor->getFacing(),
                           *itype->getAmmo(), false, actor->hasStrength(),
-                          actor->getPlayer(), actor->getPlayer());
+                          actor->getPlayer(), false);
 
             // unload the crossbow, and stun
             actor->setItemInHand(itype->getUnloaded());

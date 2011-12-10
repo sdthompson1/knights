@@ -195,7 +195,7 @@ namespace {
         const bool drop_after = lua_toboolean(lua, 4) != 0;
 
         if (itype) {
-            CreateMissile(*dmap, mc, dir, *itype, drop_after, false, GetPlayer(lua), 0);
+            CreateMissile(*dmap, mc, dir, *itype, drop_after, false, GetPlayer(lua), true);
         }
 
         return 0;

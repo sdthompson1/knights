@@ -29,6 +29,7 @@
 #include "item_type.hpp"
 #include "mediator.hpp"
 #include "missile.hpp"
+#include "player.hpp"
 #include "rng.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
@@ -53,15 +54,31 @@ void MissileTask::execute(TaskManager &tm)
     // Check to see if we have hit something
     shared_ptr<Creature> cr = m->getMap()->getTargetCreature(*m, false);
     if (cr) {
-        const bool self_hit = m->getCannotHit() && m->getCannotHit() == cr->getPlayer();
-        if (!self_hit) {
+
+        // There is a creature present. See what kind of hit it is.
+        Missile::HitResult hit_type = m->canHitPlayer(cr->getPlayer());
+
+        // If hit type is IGNORE then proceed as if the creature was not there (i.e. missile goes right through it)
+        // (This is to prevent crossbow bolts hitting the knight that fires them.)
+
+        if (hit_type != Missile::IGNORE) {
+
+            // The missile has a chance to hit something
             const int hit_chance = m->range_left * m->itype.getMissileHitMultiplier() + 1;
             if (g_rng.getBool(1.0f - 1.0f / hit_chance)) {
-                const RandomInt *st = m->itype.getMissileStunTime();
-                const RandomInt *dam = m->itype.getMissileDamage();
-                const int stun_time = st? st->get() : 0;
-                const int damage = dam? dam->get() : 0;
-                cr->damage(damage, m->getOwner(), stun_time + tm.getGVT());
+
+                // OK the missile successfully hit.
+                // If hit type is CAN_HIT then process damage and delete the missile from the map.
+                // If hit type is FRIENDLY_FIRE then delete missile from map, but don't do any damage.
+
+                if (hit_type == Missile::CAN_HIT) {
+                    const RandomInt *st = m->itype.getMissileStunTime();
+                    const RandomInt *dam = m->itype.getMissileDamage();
+                    const int stun_time = st? st->get() : 0;
+                    const int damage = dam? dam->get() : 0;
+                    cr->damage(damage, m->getOwner(), stun_time + tm.getGVT());
+                }
+
                 delete_from_map = true;
             }
         }
@@ -147,7 +164,7 @@ void MissileTask::execute(TaskManager &tm)
 
 bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
                    const ItemType &itype, bool drop_after, bool with_strength,
-                   Player * owner, Player * cannot_hit)
+                   Player * owner, bool allow_friendly_fire)
 {
     // Check if we can place a missile here
     if (!dmap.canPlaceMissile(mc, dir)) return false;
@@ -163,7 +180,7 @@ bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
     Mediator &mediator = Mediator::instance();
 
     // Create the missile
-    shared_ptr<Missile> m(new Missile(itype, drop_after, owner, cannot_hit));
+    shared_ptr<Missile> m(new Missile(itype, drop_after, owner, allow_friendly_fire));
     if (with_strength) m->doubleRange();
     m->setFacing(dir);
     m->addToMap(&dmap, mc);
@@ -175,8 +192,8 @@ bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
     return true;
 }
 
-Missile::Missile(const ItemType &it, bool da, Player * ownr, Player * cannot_hit_)
-    : itype(it), range_left(it.getMissileRange()), drop_after(da), owner(ownr), cannot_hit(cannot_hit_)
+Missile::Missile(const ItemType &it, bool da, Player * ownr, bool aff)
+    : itype(it), range_left(it.getMissileRange()), drop_after(da), owner(ownr), allow_friendly_fire(aff)
 {
     setAnim(it.getMissileAnim());
     setSpeed(it.getMissileSpeed());
@@ -187,3 +204,28 @@ MapHeight Missile::getHeight() const
     return MapHeight(H_MISSILES + getFacing());
 }
 
+Missile::HitResult Missile::canHitPlayer(const Player *pl) const
+{
+    // If friendly fire is allowed then we can hit anything
+    if (allow_friendly_fire) return CAN_HIT;
+
+    // If the target is a monster (!pl), or the missile was shot by a monster (!owner),
+    // then we can hit
+    if (!pl) return CAN_HIT;
+    if (!owner) return CAN_HIT;
+    
+    // If the firer and target are both the same player then it is an IGNORE situation
+    // (e.g. crossbow bolt hitting the firer)
+    if (pl == owner) return IGNORE;
+
+    // Otherwise, it is either CAN_HIT or FRIENDLY_FIRE depending on whether players 
+    // are on same team or different team
+    if (owner->getTeamNum() == -1 || pl->getTeamNum() == -1) {
+        // Not a team game. So it is always CAN_HIT
+        return CAN_HIT;
+    } else {
+        // Team game. Friendly fire if the teams match, otherwise CAN_HIT.
+        if (owner->getTeamNum() == pl->getTeamNum()) return FRIENDLY_FIRE;
+        else return CAN_HIT;
+    }
+}

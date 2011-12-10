@@ -31,7 +31,7 @@
 
 void BladeTrap::spring(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>, Player *player)
 {
-    CreateMissile(dmap, mc, fire_dirn, mtype, false, false, player, 0);
+    CreateMissile(dmap, mc, fire_dirn, mtype, false, false, player, true);
 }
 
 void PoisonTrap::spring(DungeonMap &, const MapCoord &, shared_ptr<Creature> cr, Player *player)

@@ -248,7 +248,7 @@ void ThrowingTask::execute(TaskManager &tm)
     
     // create the missile
     bool success = CreateMissile(*dmap, me->getPos(), me->getFacing(),
-                                 itype, true, me->hasStrength(), me->getPlayer(), me->getPlayer());
+                                 itype, true, me->hasStrength(), me->getPlayer(), false);
 
     // reset anim / stun time
     const int qf = me->hasQuickness() ? mediator.cfgInt("quickness_factor") : 100;

@@ -601,7 +601,7 @@ void A_Shoot::execute(const ActionData &ad) const
     if (dm) {
         mc.setX(mc.getX() + dx);
         mc.setY(mc.getY() + dy);
-        CreateMissile(*dm, mc, dir, itype, false, false, ad.getPlayer(), 0);
+        CreateMissile(*dm, mc, dir, itype, false, false, ad.getPlayer(), true);
         Mediator::instance().runHook("HOOK_SHOOT", dm, mc);
     }
 }
