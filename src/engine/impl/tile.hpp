@@ -73,7 +73,9 @@ public:
                    const Action *activate,
                    const Action *walk_over, const Action *approach, 
                    const Action *withdraw, const Action *hit,
-                   int t_key);
+                   int t_key,
+                   shared_ptr<Tile> reflect,
+                   shared_ptr<Tile> rotate);
     void construct(shared_ptr<lua_State> lua, const Graphic *g, int dpth);
     void construct(shared_ptr<lua_State> lua, const Action *wlkovr, const Action *actvt); // construct a "dummy" tile (for switches)
 
@@ -182,7 +184,11 @@ public:
     int getConnectivityCheck() const { return connectivity_check; }
 
     // Tutorial Key (or 0 if unset)
-    int getTutorialKey() const { return tutorial_key; }    
+    int getTutorialKey() const { return tutorial_key; }
+
+    // Reflection/Rotation
+    shared_ptr<Tile> getReflect() const { return reflect; }   // X reflection of this tile
+    shared_ptr<Tile> getRotate() const { return rotate; }     // 90 degree clockwise rotation of this tile
     
 protected:
     // Clone this tile (or return shared_from_this() if the same tile can be shared)
@@ -229,6 +235,8 @@ private:
     const Control * control;
     
     int tutorial_key;
+
+    boost::shared_ptr<Tile> reflect, rotate;
 };
 
 

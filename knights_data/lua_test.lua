@@ -167,6 +167,8 @@ g_broken_wood_5    = Graphic("broken_wood_5.bmp")
 g_cage             = Graphic("cage.bmp")
 g_chair_north      = Graphic("chair_north.bmp")
 g_chair_south      = Graphic("chair_south.bmp")
+g_chair_east       = Graphic("chair_east.bmp")
+g_chair_west       = Graphic("chair_west.bmp")
 g_chest_east       = Graphic("chest_east.bmp")
 g_chest_north      = Graphic("chest_north.bmp")
 g_chest_south      = Graphic("chest_south.bmp")
@@ -211,9 +213,13 @@ g_pit_c            = Graphic("pit_c.bmp")
 g_pit_o            = Graphic("pit_o.bmp")
 g_pitv_c           = Graphic("pitv_c.bmp")
 g_pitv_o           = Graphic("pitv_o.bmp")
+g_pith_c           = Graphic("pith_c.bmp")
+g_pith_o           = Graphic("pith_o.bmp")
 g_pressure_plate   = Graphic("pressure_plate.bmp")
 g_skull_left       = Graphic("skull_left.bmp")
 g_skull_right      = Graphic("skull_right.bmp")
+g_skull_up         = Graphic("skull_up.bmp")
+g_skull_down       = Graphic("skull_down.bmp")
 g_small_skull      = Graphic("small_skull.bmp")
 g_stairs_east      = Graphic("stairs_east.bmp")
 g_stairs_north     = Graphic("stairs_north.bmp")
@@ -222,11 +228,15 @@ g_stairs_top       = Graphic("stairs_top.bmp")
 g_stairs_west      = Graphic("stairs_west.bmp")
 g_switch_down      = Graphic("switch_down.bmp")
 g_switch_up        = Graphic("switch_up.bmp")
-g_table_horiz      = Graphic("table_horiz.bmp")
+g_large_table_horiz = Graphic("large_table_horiz.bmp")
+g_large_table_vert  = Graphic("large_table_vert.bmp")
 g_table_north      = Graphic("table_north.bmp")
 g_table_small      = Graphic("table_small.bmp")
 g_table_south      = Graphic("table_south.bmp")
 g_table_vert       = Graphic("table_vert.bmp")
+g_table_west       = Graphic("table_west.bmp")
+g_table_horiz      = Graphic("table_horiz.bmp")
+g_table_east       = Graphic("table_east.bmp")
 g_vdoor_background = Graphic("vdoor_background.bmp")
 g_wall             = Graphic("wall.bmp")
 g_wooden_floor     = Graphic("wooden_floor.bmp")
@@ -363,16 +373,26 @@ i_bolt_trap = kconfig_itemtype("i_bolt_trap")
 
 -- fires a crossbow bolt
 function shoot(x, y, direction, itemtype)
-  local from = add_pos(cxt.pos, x, y)
-  add_missile(from, direction, itemtype, false)
+
+  -- account for map rotation/reflection
+  local xt, yt = transform_offset(cxt.pos, x, y)
+  local dt = transform_direction(cxt.pos, direction)
+
+  -- add the missile
+  local from = add_pos(cxt.pos, xt, yt)
+  add_missile(from, dt, itemtype, false)
   click_sound(cxt.pos)
   crossbow_sound(from)
 end
 
 -- teleports a knight
 function teleport(x, y)
+
+  -- account for map rotation/reflection
+  local xt, yt = transform_offset(cxt.pos, x, y)
+
   local from = get_pos(cxt.actor)
-  local to = add_pos(cxt.pos, x, y)
+  local to = add_pos(cxt.pos, xt, yt)
   teleport(cxt.actor, to)
   pentagram_sound(from)
   teleport_sound(from)
@@ -382,7 +402,9 @@ end
 -- implements open, close, toggle
 function toggle_impl(x, y, door_function, tile_function, sound_flag)
 
-  local pos = add_pos(cxt.pos, x, y)
+  local xt, yt = transform_offset(cxt.pos, x, y)
+
+  local pos = add_pos(cxt.pos, xt, yt)
 
   door_function(pos)
 

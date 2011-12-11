@@ -94,8 +94,10 @@ wall = {
 
 t_wall_normal = wall & { graphic=g_wall }          # 2
 t_wall_pillar = wall & { graphic=g_pillar, user_table = 1 }        # 3
-t_wall_skull_east = wall & { graphic=g_skull_right }   # 4
-t_wall_skull_west = wall & { graphic=g_skull_left }    # 5
+t_wall_skull_east = wall & { graphic=g_skull_right, reflect=t_wall_skull_west, rotate=t_wall_skull_south }   # 4
+t_wall_skull_west = wall & { graphic=g_skull_left,  reflect=t_wall_skull_east, rotate=t_wall_skull_north }   # 5
+t_wall_skull_north = wall & { graphic = g_skull_up,   rotate=t_wall_skull_east }
+t_wall_skull_south = wall & { graphic = g_skull_down, rotate=t_wall_skull_west }
 t_wall_cage  = wall & { graphic=g_cage }         # 6
 
 
@@ -155,10 +157,10 @@ gate = {
     user_table  = 1
 }
 
-t_door_horiz      = wood_door & { depth=-4, graphic=g_door_hwc, open_graphic=g_door_hwo }    # 7, 50
-t_door_vert       = wood_door & { depth=-4, graphic=g_door_vwc, open_graphic=g_door_vwo }    # 8, 51
-t_iron_door_horiz = iron_door & { depth=-4, graphic=g_door_hic, open_graphic=g_door_hio }    # 9, 52
-t_iron_door_vert  = iron_door & { depth=-4, graphic=g_door_vic, open_graphic=g_door_vio }    # 10, 53
+t_door_horiz      = wood_door & { depth=-4, graphic=g_door_hwc, open_graphic=g_door_hwo, rotate=t_door_vert }     # 7, 50
+t_door_vert       = wood_door & { depth=-4, graphic=g_door_vwc, open_graphic=g_door_vwo, rotate=t_door_horiz }    # 8, 51
+t_iron_door_horiz = iron_door & { depth=-4, graphic=g_door_hic, open_graphic=g_door_hio, rotate=t_iron_door_vert }     # 9, 52
+t_iron_door_vert  = iron_door & { depth=-4, graphic=g_door_vic, open_graphic=g_door_vio, rotate=t_iron_door_horiz }    # 10, 53
 
 
 # NOTE: For closed gates set connectivity_check = -1 to force the connectivity check
@@ -166,18 +168,18 @@ t_iron_door_vert  = iron_door & { depth=-4, graphic=g_door_vic, open_graphic=g_d
 # we don't really have any way to check this so we have to be conservative and assume
 # they can't be.)
 
-t_gate_horiz      = gate & { depth=-4, graphic=g_door_hgc, connectivity_check = -1 }    # 16, 64
-t_gate_vert       = gate & { depth=-4, graphic=g_door_vgc, connectivity_check = -1 }    # 17, 65
-t_open_gate_horiz = floor & { graphic=g_door_hgo, user_table = 1 }
-t_open_gate_vert  = floor & { graphic=g_door_vgo, user_table = 1 }
+t_gate_horiz      = gate & { depth=-4, graphic=g_door_hgc, connectivity_check = -1, rotate=t_gate_vert }     # 16, 64
+t_gate_vert       = gate & { depth=-4, graphic=g_door_vgc, connectivity_check = -1, rotate=t_gate_horiz }    # 17, 65
+t_open_gate_horiz = floor & { graphic=g_door_hgo, user_table = 1, rotate=t_open_gate_vert }
+t_open_gate_vert  = floor & { graphic=g_door_vgo, user_table = 1, rotate=t_open_gate_horiz }
 
-t_door_horiz_locked = t_door_horiz & { special_lock=1, editor_label="L" }
-t_door_vert_locked = t_door_vert & { special_lock=1, editor_label="L" }
-t_iron_door_horiz_locked = t_iron_door_horiz & { special_lock = 1, editor_label="L" }
-t_iron_door_vert_locked = t_iron_door_vert & { special_lock = 1, editor_label="L" }
+t_door_horiz_locked = t_door_horiz & { special_lock=1, editor_label="L", rotate=t_door_vert_locked }
+t_door_vert_locked = t_door_vert & { special_lock=1, editor_label="L", rotate=t_door_horiz_locked }
+t_iron_door_horiz_locked = t_iron_door_horiz & { special_lock = 1, editor_label="L", rotate=t_iron_door_vert_locked }
+t_iron_door_vert_locked = t_iron_door_vert & { special_lock = 1, editor_label="L", rotate=t_iron_door_horiz_locked }
 
-t_hdoor_background = floor & { graphic = g_hdoor_background }
-t_vdoor_background = floor & { graphic = g_vdoor_background }
+t_hdoor_background = floor & { graphic = g_hdoor_background, rotate=t_vdoor_background }
+t_vdoor_background = floor & { graphic = g_vdoor_background, rotate=t_hdoor_background }
 
 # Homes. (Facing is the direction TOWARDS the dungeon -- AWAY from the home itself.)
 
@@ -189,10 +191,10 @@ home = {
     tutorial = TUT_HOME
 }
 
-t_home_south  = home & { graphic=g_home_south, facing="south" }     # 11
-t_home_west   = home & { graphic=g_home_west,  facing="west" }      # 12
-t_home_north  = home & { graphic=g_home_north, facing="north" }     # 13
-t_home_east   = home & { graphic=g_home_east,  facing="east" }      # 14
+t_home_south  = home & { graphic=g_home_south, facing="south", rotate=t_home_west }     # 11
+t_home_west   = home & { graphic=g_home_west,  facing="west", rotate=t_home_north, reflect=t_home_east }      # 12
+t_home_north  = home & { graphic=g_home_north, facing="north", rotate=t_home_east }     # 13
+t_home_east   = home & { graphic=g_home_east,  facing="east", rotate=t_home_south, reflect=t_home_west }      # 14
 
 
 # Crystal balls.
@@ -278,13 +280,13 @@ chest = {
 }
 
 t_chest_north = chest & { graphic=g_chest_north, 
-    open_graphic=g_open_chest_north, facing="north" } # 25, 35
+    open_graphic=g_open_chest_north, facing="north", rotate=t_chest_east } # 25, 35
 t_chest_east  = chest & { graphic=g_chest_east,  
-    open_graphic=g_open_chest_east,  facing="east" }  # 26, 36
+    open_graphic=g_open_chest_east,  facing="east", rotate=t_chest_south, reflect=t_chest_west }  # 26, 36
 t_chest_south = chest & { graphic=g_chest_south, 
-    open_graphic=g_open_chest_south, facing="south" } # 27, 37
+    open_graphic=g_open_chest_south, facing="south", rotate=t_chest_west } # 27, 37
 t_chest_west  = chest & { graphic=g_chest_west,  
-    open_graphic=g_open_chest_west,  facing="west" }  # 28, 38
+    open_graphic=g_open_chest_west,  facing="west", rotate=t_chest_north, reflect=t_chest_east }  # 28, 38
 
 t_small_skull = {    # 32
     access = furniture_acc
@@ -303,12 +305,20 @@ table4 = table_base & { on_destroy = [AddTile(t_broken_wood_4), snd_tile_destroy
 table5 = table_base & { on_destroy = [AddTile(t_broken_wood_5), snd_tile_destroy] }
 
 t_table_small = table5 &     { graphic=g_table_small, items="small_table" }  # 39
-t_table_north = table5 &     { graphic=g_table_north }  # 40
-t_table_vert  = table5 &     { graphic=g_table_vert }   # 41
-t_table_south = table5 &     { graphic=g_table_south }  # 42
-t_table_horiz = table4 &     { graphic=g_table_horiz }  # 43
-t_chair_south = furniture4 & { graphic=g_chair_south }  # 44
-t_chair_north = furniture4 & { graphic=g_chair_north }  # 45
+t_table_north = table5 &     { graphic=g_table_north, rotate=t_table_east }  # 40
+t_table_vert  = table5 &     { graphic=g_table_vert,  rotate=t_table_horiz }   # 41
+t_table_south = table5 &     { graphic=g_table_south, rotate=t_table_west }  # 42
+t_table_west  = table5 &     { graphic=g_table_west,  rotate=t_table_north, reflect=t_table_east }
+t_table_horiz = table5 &     { graphic=g_table_horiz, rotate=t_table_vert }
+t_table_east  = table5 &     { graphic=g_table_east,  rotate=t_table_south, reflect=t_table_west }
+
+t_large_table_horiz = table4 & { graphic=g_large_table_horiz, rotate=t_large_table_vert }  # 43
+t_large_table_vert  = table4 & { graphic=g_large_table_vert,  rotate=t_large_table_horiz }
+
+t_chair_south = furniture4 & { graphic=g_chair_south, rotate=t_chair_west }  # 44
+t_chair_north = furniture4 & { graphic=g_chair_north, rotate=t_chair_east }  # 45
+t_chair_west  = furniture4 & { graphic=g_chair_west,  rotate=t_chair_north, reflect=t_chair_east }
+t_chair_east  = furniture4 & { graphic=g_chair_east,  rotate=t_chair_south, reflect=t_chair_west }
 
 
 # Pits.
@@ -334,7 +344,15 @@ open_pit =
 t_open_pit_vert   = open_pit & {     # 47
     graphic = g_pitv_o
     depth   = -4
+    rotate  = t_open_pit_horiz
 }
+
+t_open_pit_horiz = open_pit & {
+    graphic = g_pith_o
+    depth   = -4
+    rotate  = t_open_pit_vert
+}
+
 t_open_pit_wooden = open_pit & {     # 48
     graphic = g_wooden_pit
     depth   = -4
@@ -343,9 +361,17 @@ t_open_pit_normal = open_pit & {     # 49
     graphic = g_pit_o
     depth   = -4
 }
+
 t_closed_pit_vert = closed_pit & {   # 78
     graphic = g_pitv_c
+    rotate = t_closed_pit_horiz
 }
+
+t_closed_pit_horiz = closed_pit & {
+    graphic = g_pith_c
+    rotate = t_closed_pit_vert
+}
+
 t_closed_pit_wooden = closed_pit & { # 79
     graphic = g_wooden_floor
 }
@@ -400,10 +426,10 @@ t_special_pentagram = t_live_pentagram & {  # 90
 # Stairs
 
 t_stairs_top   = floor & { graphic=g_stairs_top, stairs_down="special" }   # 81
-t_stairs_south = floor & { graphic=g_stairs_south, stairs_down="south" } # 82  
-t_stairs_west  = floor & { graphic=g_stairs_west,  stairs_down="west" }  # 83
-t_stairs_north = floor & { graphic=g_stairs_north, stairs_down="north" }  # 84
-t_stairs_east  = floor & { graphic=g_stairs_east,  stairs_down="east" }  # 85
+t_stairs_south = floor & { graphic=g_stairs_south, stairs_down="south", rotate=t_stairs_west } # 82  
+t_stairs_west  = floor & { graphic=g_stairs_west,  stairs_down="west", rotate=t_stairs_north, reflect=t_stairs_east }  # 83
+t_stairs_north = floor & { graphic=g_stairs_north, stairs_down="north", rotate=t_stairs_east }  # 84
+t_stairs_east  = floor & { graphic=g_stairs_east,  stairs_down="east", rotate=t_stairs_south, reflect=t_stairs_west }  # 85
 
 
 #############

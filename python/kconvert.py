@@ -59,15 +59,15 @@ knights_rooms = {
         t_table_north       # 40
         t_table_vert        # 41
         t_table_south       # 42
-        t_table_horiz       # 43
+        t_large_table_horiz # 43
         t_chair_south       # 44
         t_chair_north       # 45
         0              # 46
         t_open_pit_vert     # 47
         t_open_pit_wooden   # 48
         t_open_pit_normal   # 49
-        [t_table_horiz, 0, i_basic_book]              # 50 
-        [t_table_horiz, 0, i_necronomicon]            # 51 
+        [t_large_table_horiz, 0, i_basic_book]        # 50 
+        [t_large_table_horiz, 0, i_necronomicon]      # 51 
         0              # 52 
         0              # 53 
         t_broken_wood_1     # 54

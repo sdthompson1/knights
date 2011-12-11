@@ -66,7 +66,7 @@ void RoomMap::getRoomAtPos(const MapCoord &mc, int &r1, int &r2) const
         
     for (vector<RoomInfo>::const_iterator it = rooms.begin(); it != rooms.end(); ++it) {
         if (mc.getX() >= it->pos.getX() && mc.getX() < it->pos.getX() + it->w
-            && mc.getY() >= it->pos.getY() && mc.getY() < it->pos.getY() + it->h) {
+        && mc.getY() >= it->pos.getY() && mc.getY() < it->pos.getY() + it->h) {
             // Found the room.
             const bool x_corner = mc.getX() == it->pos.getX() || mc.getX() == it->pos.getX() + it->w - 1;
             const bool y_corner = mc.getY() == it->pos.getY() || mc.getY() == it->pos.getY() + it->h - 1;

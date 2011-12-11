@@ -27,6 +27,7 @@
 #include "anim.hpp"
 #include "control.hpp"
 #include "control_actions.hpp"
+#include "coord_transform.hpp"
 #include "create_quest.hpp"
 #include "dungeon_generator.hpp"
 #include "dungeon_map.hpp"
@@ -1452,7 +1453,7 @@ void KnightsConfigImpl::popSegmentList(const vector<SegmentTileData> &tile_map)
         lst.push(i);
         int rcat;
         Segment *rm = popSegment(tile_map, rcat);
-        if (rm) segment_set.addSegment(rm, rm->getHomes().size(), rcat);
+        if (rm) segment_set.addSegment(rm, rm->getNumHomes(), rcat);
     }
 }
 
@@ -1692,6 +1693,11 @@ shared_ptr<Tile> KnightsConfigImpl::popTile()
             open_graphic = popGraphic(0);
         }
 
+        tab.push("reflect");
+        shared_ptr<Tile> reflect = popTile(shared_ptr<Tile>());
+        tab.push("rotate");
+        shared_ptr<Tile> rotate = popTile(shared_ptr<Tile>());
+
         // doors/chests can have "special_lock" property
         bool special_locked = false;
         if (door || chest) {
@@ -1754,7 +1760,8 @@ shared_ptr<Tile> KnightsConfigImpl::popTile()
                         initial_hit_points,
                         connectivity_check,
                         on_destroy, on_activate,
-                        on_walk_over, on_approach, on_withdraw, on_hit, t_key);
+                        on_walk_over, on_approach, on_withdraw, on_hit, t_key,
+                        reflect, rotate);
 
         if (control) {
             tile->setControl(control);
@@ -1975,6 +1982,7 @@ void KnightsConfigImpl::getOtherControls(std::vector<const UserControl*> &out) c
 
 std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
                                               boost::shared_ptr<DungeonMap> &dungeon_map,
+                                              boost::shared_ptr<CoordTransform> &coord_transform,
                                               std::vector<boost::shared_ptr<Quest> > &quests,
                                               HomeManager &home_manager,
                                               std::vector<boost::shared_ptr<Player> > &players,
@@ -1999,8 +2007,9 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     quests.clear();
     readMenu(menu, msel, *dg, quests);   // apply DungeonDirectives and get quests
     dungeon_map.reset(new DungeonMap);
+    coord_transform.reset(new CoordTransform);
     const std::string dungeon_generator_msg =
-        dg->generate(*dungeon_map, hse_cols.size(), tutorial_manager != 0);
+        dg->generate(*dungeon_map, *coord_transform, hse_cols.size(), tutorial_manager != 0);
     
     // Add homes to the home manager
     for (int i = 0; i < dg->getNumHomesOverall(); ++i) {

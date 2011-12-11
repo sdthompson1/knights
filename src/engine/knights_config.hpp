@@ -51,6 +51,7 @@
 
 class Anim;
 class ConfigMap;
+class CoordTransform;
 class DungeonGenerator;
 class DungeonMap;
 class EventManager;
@@ -116,6 +117,7 @@ public:
     
     std::string initializeGame(const MenuSelections &msel,
                                boost::shared_ptr<DungeonMap> &dungeon_map,
+                               boost::shared_ptr<CoordTransform> &coord_transform,
                                std::vector<boost::shared_ptr<Quest> > &quests,
                                HomeManager &home_manager,
                                std::vector<boost::shared_ptr<Player> > &players,

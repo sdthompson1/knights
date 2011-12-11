@@ -59,7 +59,8 @@ void Tile::construct(shared_ptr<lua_State> lua,
                      const Action *dto,
                      const Action *ac, 
                      const Action *wo, const Action *ap, const Action *wi, const Action *hit,
-                     int t_key)
+                     int t_key,
+                     boost::shared_ptr<Tile> reflect_, boost::shared_ptr<Tile> rotate_)
 {
     lua_state = lua;
     
@@ -78,6 +79,9 @@ void Tile::construct(shared_ptr<lua_State> lua,
     if (dstry) items_mode = DESTROY;
 
     tutorial_key = t_key;
+
+    reflect = reflect_ ? reflect_ : shared_from_this();
+    rotate = rotate_ ? rotate_ : shared_from_this();
 }
 
 void Tile::construct(shared_ptr<lua_State> lua, const Graphic *g, int dpth)
@@ -86,6 +90,8 @@ void Tile::construct(shared_ptr<lua_State> lua, const Graphic *g, int dpth)
     graphic = g; depth=dpth;
     items_mode = ALLOWED;
     // the rest take default values as set in the ctor.
+
+    reflect = rotate = shared_from_this();
 }
 
 void Tile::construct(shared_ptr<lua_State> lua, const Action *walkover, const Action *activate)
@@ -94,6 +100,8 @@ void Tile::construct(shared_ptr<lua_State> lua, const Action *walkover, const Ac
     on_walk_over = walkover;
     on_activate = activate;
     items_mode = ALLOWED;
+
+    reflect = rotate = shared_from_this();
 }
 
 Tile::~Tile()

@@ -50,6 +50,7 @@ class Action;
 class Anim;
 class ColourChange;
 class Control;
+class CoordTransform;
 class DungeonDirective;
 class DungeonGenerator;
 class EventManager;
@@ -109,6 +110,7 @@ public:
     void getOtherControls(std::vector<const UserControl*> &controls) const;
     std::string initializeGame(const MenuSelections &msel,
                                boost::shared_ptr<DungeonMap> &dungeon_map,
+                               boost::shared_ptr<CoordTransform> &coord_transform,
                                std::vector<boost::shared_ptr<Quest> > &quests,
                                HomeManager &home_manager,
                                std::vector<boost::shared_ptr<Player> > &players,

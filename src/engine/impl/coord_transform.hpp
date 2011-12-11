@@ -1,5 +1,5 @@
 /*
- * version.hpp
+ * coord_transform.hpp
  *
  * This file is part of Knights.
  *
@@ -21,20 +21,33 @@
  *
  */
 
-#ifndef VERSION_HPP
-#define VERSION_HPP
+#ifndef COORD_TRANSFORM_HPP
+#define COORD_TRANSFORM_HPP
 
-#define KNIGHTS_VERSION "019"
-#define KNIGHTS_VERSION_NUM 19
-#define COMPATIBLE_VERSION_NUM 19   // Lowest client version that can connect to this server
+#include "map_support.hpp"
 
-#ifdef WIN32
-#define KNIGHTS_PLATFORM "Windows"
-#else
-#define KNIGHTS_PLATFORM "Unix"
-#endif
+#include <vector>
 
-#define KNIGHTS_WEBSITE "http://www.knightsgame.org.uk/"
+// This class keeps track of dungeon generator reflections/rotations (Trac #41)
 
+class CoordTransform {
+public:
+    void add(const MapCoord &corner, int width, int height, bool x_reflect, int nrot);
+
+    void transformOffset(const MapCoord &base, int &x, int &y) const;
+    void transformDirection(const MapCoord &base, MapDirection &dir) const;
+
+private:
+    struct Zone {
+        MapCoord corner;
+        int width;
+        int height;
+        bool x_reflect;
+        int nrot;
+    };
+    std::vector<Zone> zones;
+
+    static bool inZone(const MapCoord &mc, const Zone &z);
+};
 
 #endif

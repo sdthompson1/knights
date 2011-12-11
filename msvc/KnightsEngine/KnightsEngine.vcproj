@@ -170,6 +170,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\coord_transform.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\create_quest.cpp"
 				>
 			</File>
@@ -397,6 +401,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\control_actions.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\coord_transform.hpp"
 				>
 			</File>
 			<File

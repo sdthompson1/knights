@@ -25,10 +25,9 @@
 #define LUA_USERDATA_HPP
 
 #include "lua_traits.hpp"
+#include "map_support.hpp"
 
 #include "lua.hpp"
-
-class MapCoord;
 
 typedef unsigned short int LuaTag;
 
@@ -63,5 +62,8 @@ template<class T> inline boost::weak_ptr<T> ReadLuaWeakPtr(lua_State *lua, int i
 // Function to push a MapCoord onto the stack (as a table with "x" and "y" values,
 // or "nil" if the MapCoord is null.)
 void PushMapCoord(lua_State *lua, const MapCoord &mc);
+
+// Push MapDirection onto the stack, as string ("north", "east", "south" or "west")
+void PushMapDirection(lua_State *lua, MapDirection dir);
 
 #endif

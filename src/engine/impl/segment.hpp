@@ -76,10 +76,19 @@ public:
     // copy the tiles and items into a dungeon map
     // The tiles replace any that were already there.
     // This routine also adds appropriate rooms to the RoomMap.
-    void copyToMap(DungeonMap &dmap, const MapCoord &bottom_left) const;
+    //
+    // #41: Reflections and rotations are now supported.
+    // Transformation applied is R^nrot * X
+    // where R=clockwise rotation of 90 degrees
+    // X=x reflection (only applied if x_reflect==true).
+    //
+    void copyToMap(DungeonMap &dmap, const MapCoord &bottom_left,
+                   bool x_reflect, int nrot) const;
 
     // access to homes
-    const vector<HomeInfo> & getHomes() const { return homes; }
+    vector<HomeInfo> getHomes(bool xreflect, int nrot) const;
+    int getNumHomes() const { return int(homes.size()); }
+    
 
     // see if a given square is approachable. (based on the addTile calls so far.)
     bool isApproachable(int x, int y) const;

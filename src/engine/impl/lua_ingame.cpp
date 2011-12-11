@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "coord_transform.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "knights_callbacks.hpp"
@@ -361,6 +362,52 @@ namespace {
         cb.gameMsg(player_num, msg);
         return 0;
     }
+
+    // Input: map position + two integers
+    // Cxt: none
+    // Output: two integers (transformed offset)
+    int TransformOffset(lua_State *lua)
+    {
+        // Get the CoordTransform
+        Mediator &med = Mediator::instance();
+        const CoordTransform * ct = med.getCoordTransform().get();
+        if (!ct) return 0;
+
+        // Read the inputs
+        const MapCoord base = GetMapCoord(lua, 1);
+        int x = lua_tointeger(lua, 2);
+        int y = lua_tointeger(lua, 3);
+        
+        // Do the transform
+        ct->transformOffset(base, x, y);
+
+        // Return results
+        lua_pushinteger(lua, x);
+        lua_pushinteger(lua, y);
+        return 2;
+    }
+
+    // Input: map position + direction (string)
+    // Cxt: none
+    // Output: new direction
+    int TransformDirection(lua_State *lua)
+    {
+        // Get the CoordTransform
+        Mediator &med = Mediator::instance();
+        const CoordTransform * ct = med.getCoordTransform().get();
+        if (!ct) return 0;
+
+        // Read the inputs
+        const MapCoord base = GetMapCoord(lua, 1);
+        MapDirection dir = GetMapDirection(lua, 2);
+
+        // Do the transform
+        ct->transformDirection(base, dir);
+
+        // Return result
+        PushMapDirection(lua, dir);
+        return 1;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -403,4 +450,10 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     lua_pushcfunction(lua, &Print);
     lua_setglobal(lua, "print");
+
+    lua_pushcfunction(lua, &TransformOffset);
+    lua_setglobal(lua, "transform_offset");
+
+    lua_pushcfunction(lua, &TransformDirection);
+    lua_setglobal(lua, "transform_direction");
 }

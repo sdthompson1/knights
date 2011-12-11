@@ -61,6 +61,7 @@ using namespace boost;
 using namespace std;
 
 class ConfigMap;
+class CoordTransform;
 class Creature;
 class DungeonMap;
 class Entity;
@@ -202,6 +203,7 @@ public:
 
     // Various accessor functions.
     shared_ptr<DungeonMap> getMap() const { return dmap; }
+    shared_ptr<CoordTransform> getCoordTransform() const { return coord_transform; }
     const vector<Player*> &getPlayers() const { return players; }
     MonsterManager & getMonsterManager() const { return monster_manager; }
     StuffManager & getStuffManager() const { return stuff_manager; }
@@ -221,7 +223,7 @@ public:
                                boost::shared_ptr<TutorialManager> tut_m,
                                boost::shared_ptr<lua_State> lua);
     static void destroyInstance();  // must be called before the game thread exits, otherwise will leak memory
-    void setMap(shared_ptr<DungeonMap> dm) { dmap = dm; }
+    void setMap(shared_ptr<DungeonMap> dm, shared_ptr<CoordTransform> ct) { dmap = dm; coord_transform = ct; }
     void addPlayer(Player &);
 
 private:
@@ -259,6 +261,7 @@ private:
     
     // Other variables
     shared_ptr<DungeonMap> dmap;
+    shared_ptr<CoordTransform> coord_transform;
     vector<Player*> players;
     set<const Player*> remaining_players;
     bool game_running;

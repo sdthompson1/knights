@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "coord_transform.hpp"
 #include "dungeon_generator.hpp"
 #include "dungeon_map.hpp"
 #include "item.hpp"
@@ -404,7 +405,7 @@ void DungeonGenerator::setStuff(int tile_category, int chance, const ItemGenerat
     stuff[tile_category] = si;
 }
 
-std::string DungeonGenerator::generate(DungeonMap &dmap, int nplayers, bool tutorial_mode)
+std::string DungeonGenerator::generate(DungeonMap &dmap, CoordTransform &ct, int nplayers, bool tutorial_mode)
 {
     // If there is an exception of any kind we just re-try the
     // generation. If it still fails after N attempts (e.g. because
@@ -427,6 +428,8 @@ std::string DungeonGenerator::generate(DungeonMap &dmap, int nplayers, bool tuto
                 vert_exits.clear();
                 segments.clear();
                 segment_categories.clear();
+                segment_x_reflect.clear();
+                segment_nrot.clear();
                 lwidth = lheight = rwidth = rheight = 0;
                 unassigned_homes.clear();
                 assigned_homes.clear();
@@ -438,7 +441,7 @@ std::string DungeonGenerator::generate(DungeonMap &dmap, int nplayers, bool tuto
 
                 // create the DungeonMap itself
                 dmap.create(lwidth*(rwidth+1)+1, lheight*(rheight+1)+1);
-                copySegmentsToMap(dmap);         // copies the segments into the map.
+                copySegmentsToMap(dmap, ct);         // copies the segments into the map.
                 knockThroughDoors(dmap);      // creates doorways between the different segments.
 
                 // fill in exits
@@ -527,13 +530,17 @@ void DungeonGenerator::setHomeSegment(int x, int y, int minhomes, int assign)
     if (!r) throw DungeonGenerationFailed();
     segments[y*lwidth+x] = r;
 
+    // Trac #41. Generate random rotation/reflection for the segment
+    segment_x_reflect[y*lwidth+x] = g_rng.getBool();
+    segment_nrot[y*lwidth+x] = g_rng.getInt(0,4);
+
     // copy homes to appropriate lists (either assigned or unassigned).
     if (r) {
         rwidth = r->getWidth();
         rheight = r->getHeight();
         const int xbase = x*(rwidth+1)+1;
         const int ybase = y*(rheight+1)+1;
-        vector<HomeInfo> h(r->getHomes());
+        vector<HomeInfo> h(r->getHomes(segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]));
         RNG_Wrapper myrng(g_rng);
         random_shuffle(h.begin(), h.end(), myrng);
         for (int i=0; i<h.size(); ++i) {
@@ -560,6 +567,10 @@ void DungeonGenerator::setSpecialSegment(int x, int y, int category)
     }
     if (!r) throw DungeonGenerationFailed();
     segments[y*lwidth + x] = r;
+    segment_x_reflect[y*lwidth + x] = g_rng.getBool();
+    
+    // Trac #41. Generate random rotation/reflection for the segment
+    segment_nrot[y*lwidth + x] = g_rng.getInt(0, 4);
     segment_categories[y*lwidth+x] = category;
 }
 
@@ -664,6 +675,8 @@ void DungeonGenerator::doLayout(int nplayers)
     lheight = new_lheight;
     segments.resize(lwidth*lheight);
     segment_categories.resize(lwidth*lheight);
+    segment_x_reflect.resize(lwidth*lheight);
+    segment_nrot.resize(lwidth*lheight);
     fill(segment_categories.begin(), segment_categories.end(), -1);
 
     // "Away From Other" homes, on Edges
@@ -736,14 +749,20 @@ void DungeonGenerator::chopLeftSide()
 {
     vector<const Segment *> new_segments((lwidth-1)*lheight);
     vector<int> new_cats((lwidth-1)*lheight);
+    vector<bool> new_x_reflect((lwidth-1)*lheight);
+    vector<int> new_nrot((lwidth-1)*lheight);
     for (int x=0; x<lwidth-1; ++x) {
         for (int y=0; y<lheight; ++y) {
             new_segments[y*(lwidth-1)+x] = segments[y*lwidth+x+1];
             new_cats[y*(lwidth-1)+x] = segment_categories[y*lwidth+x+1];
+            new_x_reflect[y*(lwidth-1)+x] = segment_x_reflect[y*lwidth+x+1];
+            new_nrot[y*(lwidth-1)+x] = segment_nrot[y*lwidth+x+1];
         }
     }
     segments.swap(new_segments);
     segment_categories.swap(new_cats);
+    segment_x_reflect.swap(new_x_reflect);
+    segment_nrot.swap(new_nrot);
     --lwidth;
 }
 
@@ -751,13 +770,20 @@ void DungeonGenerator::chopRightSide()
 {
     vector<const Segment *> new_segments((lwidth-1)*lheight);
     vector<int> new_cats((lwidth-1)*lheight);
+    vector<bool> new_x_reflect((lwidth-1)*lheight);
+    vector<int> new_nrot((lwidth-1)*lheight);
     for (int x=0; x<lwidth-1; ++x) {
         for (int y=0; y<lheight; ++y) {
             new_segments[y*(lwidth-1)+x] = segments[y*lwidth+x];
             new_cats[y*(lwidth-1)+x] = segment_categories[y*lwidth+x];
+            new_x_reflect[y*(lwidth-1)+x] = segment_x_reflect[y*lwidth+x];
+            new_nrot[y*(lwidth-1)+x] = segment_nrot[y*lwidth+x];
         }
     }
     segments.swap(new_segments);
+    segment_categories.swap(new_cats);
+    segment_x_reflect.swap(new_x_reflect);
+    segment_nrot.swap(new_nrot);
     --lwidth;
 }
 
@@ -765,13 +791,20 @@ void DungeonGenerator::chopBottomSide()
 {
     vector<const Segment *> new_segments(lwidth*(lheight-1));
     vector<int> new_cats(lwidth*(lheight-1));
+    vector<bool> new_x_reflect(lwidth*(lheight-1));
+    vector<int> new_nrot(lwidth*(lheight-1));
     for (int x=0; x<lwidth; ++x) {
         for (int y=0; y<lheight-1; ++y) {
             new_segments[y*lwidth+x] = segments[(y+1)*lwidth+x];
             new_cats[y*lwidth+x] = segment_categories[(y+1)*lwidth+x];
+            new_x_reflect[y*lwidth+x] = segment_x_reflect[(y+1)*lwidth+x];
+            new_nrot[y*lwidth+x] = segment_nrot[(y+1)*lwidth+x];
         }
     }
     segments.swap(new_segments);
+    segment_categories.swap(new_cats);
+    segment_x_reflect.swap(new_x_reflect);
+    segment_nrot.swap(new_nrot);
     --lheight;
 }
 
@@ -779,6 +812,8 @@ void DungeonGenerator::chopTopSide()
 {
     segments.resize(segments.size()-lwidth);
     segment_categories.resize(segment_categories.size()-lwidth);
+    segment_x_reflect.resize(segment_x_reflect.size()-lwidth);
+    segment_nrot.resize(segment_nrot.size()-lwidth);
     --lheight;
 }
 
@@ -857,7 +892,7 @@ void DungeonGenerator::compress()
     }
 }
 
-void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap)
+void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap, CoordTransform &ct)
 {
     if (!dmap.getRoomMap()) {
         dmap.setRoomMap(new RoomMap);
@@ -867,8 +902,9 @@ void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap)
     for (int x=0; x<lwidth; ++x) {
         for (int y=0; y<lheight; ++y) {
             MapCoord corner( x*(rwidth+1)+1, y*(rheight+1)+1 );
-            if (segments[y*lwidth+x]) {
-                segments[y*lwidth+x]->copyToMap(dmap, corner);
+            if (segments[y*lwidth+x]) {                
+                segments[y*lwidth+x]->copyToMap(dmap, corner, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]);
+                ct.add(corner, rwidth, rheight, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]);
             } else {
                 fillWithWalls(dmap, corner, rwidth, rheight);
             }
@@ -1055,9 +1091,10 @@ void DungeonGenerator::generateExits()
                     if (segment_categories[y*lwidth+x] == exit_category) {
                         const Segment *seg = segments[y*lwidth+x];
                         ASSERT(seg); // if seg_category is set, then so must seg be
-                        if (!seg->getHomes().empty()) {
+                        if (seg->getNumHomes() > 0) {
                             for (int i=0; i<assigned_homes.size(); ++i) {
-                                const HomeInfo &hi(seg->getHomes().front());
+                                const HomeInfo &hi(seg->getHomes(segment_x_reflect[y*lwidth+x],
+                                                                 segment_nrot[y*lwidth+x]).front());
                                 exits.push_back(make_pair(MapCoord(hi.x + x*(rwidth+1)+1,
                                                                    hi.y + y*(rheight+1)+1),
                                                           hi.facing));

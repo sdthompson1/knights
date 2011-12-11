@@ -96,6 +96,7 @@ std::string KnightsConfig::getQuestDescription(int quest_num, const std::string 
 
 std::string KnightsConfig::initializeGame(const MenuSelections &msel,
                                           boost::shared_ptr<DungeonMap> &dungeon_map,
+                                          boost::shared_ptr<CoordTransform> &coord_transform,
                                           std::vector<boost::shared_ptr<Quest> > &quests,
                                           HomeManager &home_manager,
                                           std::vector<boost::shared_ptr<Player> > &players,
@@ -113,6 +114,7 @@ std::string KnightsConfig::initializeGame(const MenuSelections &msel,
 {
     return pimpl->initializeGame(msel,
                                  dungeon_map,
+                                 coord_transform,
                                  quests,
                                  home_manager,
                                  players,

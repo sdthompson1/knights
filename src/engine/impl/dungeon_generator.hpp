@@ -36,6 +36,7 @@ using namespace boost;
 #include <vector>
 using namespace std;
 
+class CoordTransform;
 class DungeonMap;
 class ItemGenerator;
 class ItemType;
@@ -94,7 +95,7 @@ public:
     
     // "generate" routine -- generates the dungeon map.
     // Returns a warning message to display to players, or "" if there were no warnings.
-    std::string generate(DungeonMap &dmap, int nplayers, bool tutorial_mode);
+    std::string generate(DungeonMap &dmap, CoordTransform &ct, int nplayers, bool tutorial_mode);
 
     // Add vampire bats to an already-generated dungeon map.
     void addVampireBats(DungeonMap &dmap, MonsterManager &mmgr,
@@ -143,7 +144,7 @@ private:
     void chopLeftSide();
     void chopRightSide();
     void compress();
-    void copySegmentsToMap(DungeonMap&);
+    void copySegmentsToMap(DungeonMap&, CoordTransform&);
     void fillWithWalls(DungeonMap&, const MapCoord&, int, int);
     bool placeDoor(DungeonMap&, const MapCoord &, const MapCoord &, const MapCoord &,
                    const MapCoord &, const MapCoord &, shared_ptr<Tile>, shared_ptr<Tile>);
@@ -205,6 +206,8 @@ private:
     vector<bool> horiz_exits, vert_exits;  // more layout info
     vector<const Segment *> segments;            // actual segments chosen
     vector<int> segment_categories;              // the category of each chosen segment.
+    vector<bool> segment_x_reflect;   // whether each segment was x-reflected
+    vector<int> segment_nrot;         // number of clockwise rotations of each segment
     int lwidth, lheight;       // layout dimensions (in segments)
     int rwidth, rheight;       // segment dimensions (in tiles)
     vector<pair<MapCoord,MapDirection> > unassigned_homes, assigned_homes, exits;   // homes

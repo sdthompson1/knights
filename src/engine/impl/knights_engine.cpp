@@ -56,6 +56,7 @@ public:
     
     // Game state
     boost::shared_ptr<DungeonMap> dungeon_map;
+    boost::shared_ptr<CoordTransform> coord_transform;
     std::vector<boost::shared_ptr<Player> > players;
 
     // "Manager" classes (these handle various types of update to the
@@ -116,6 +117,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         warning_msg =
             config->initializeGame(msel,
                                    pimpl->dungeon_map,
+                                   pimpl->coord_transform,
                                    quests,
                                    pimpl->home_manager,
                                    pimpl->players,
@@ -133,7 +135,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         
         pimpl->house_col_idxs = hse_cols;
 
-        Mediator::instance().setMap(pimpl->dungeon_map);
+        Mediator::instance().setMap(pimpl->dungeon_map, pimpl->coord_transform);
         
         for (int i = 0; i < pimpl->players.size(); ++i) {
             Mediator::instance().addPlayer(*pimpl->players[i]);

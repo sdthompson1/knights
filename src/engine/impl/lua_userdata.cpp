@@ -202,3 +202,14 @@ void PushMapCoord(lua_State *lua, const MapCoord &mc)
         lua_setfield(lua, -2, "y");  // [tbl]
     }
 }
+
+void PushMapDirection(lua_State *lua, MapDirection dir)
+{
+    switch (dir) {
+    case D_NORTH: lua_pushstring(lua, "north"); break;
+    case D_EAST: lua_pushstring(lua, "east"); break;
+    case D_SOUTH: lua_pushstring(lua, "south"); break;
+    case D_WEST: lua_pushstring(lua, "west"); break;
+    default: lua_pushnil(lua); break;
+    }
+}
