@@ -103,6 +103,11 @@ public:
     // Get the list of running games.
     std::vector<GameInfo> getRunningGames() const;
 
+    // Set a menu selection
+    // Used for replays.
+    void setMenuSelection(const std::string &game_name, const std::string &key, int value);
+
+    
     //
     // Query server status.
     //

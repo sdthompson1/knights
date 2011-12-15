@@ -824,6 +824,14 @@ std::vector<GameInfo> KnightsServer::getRunningGames() const
     return result;
 }
 
+void KnightsServer::setMenuSelection(const std::string &game_name, const std::string &key, int value)
+{
+    game_map::iterator it = pimpl->games.find(game_name);
+    if (it != pimpl->games.end()) {
+        it->second->internalSetMenuSelection(key, value);
+    }
+}
+
 int KnightsServer::getNumberOfPlayers() const
 {
     return int(pimpl->connections.size());

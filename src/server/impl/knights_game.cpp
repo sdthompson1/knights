@@ -2089,3 +2089,10 @@ void KnightsGame::setMsgCountUpdateFlag(bool on)
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     pimpl->msg_count_update_flag = on;
 }
+
+void KnightsGame::internalSetMenuSelection(const std::string &key, int value)
+{
+    if (pimpl->update_thread.joinable()) return; // Game is running
+    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+    SetMenuSelection(*pimpl, key, value);
+}

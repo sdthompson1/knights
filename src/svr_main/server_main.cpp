@@ -416,6 +416,29 @@ bool ProcessReplayFile(ReplayFile & file, std::list<UpdateStruct> & update_struc
     } else if (msg == "RST") {
         // Restart message.
         // TODO.
+    } else if (msg == "QST") {
+        // Quest Setup message
+
+        // first read the game name
+        size_t pos = 0;
+        while (extra_bytes[pos] != '\0') ++pos;
+        std::string game_name = extra_bytes.substr(0, pos);
+        ++pos;  // skip over the null
+
+        // now loop through settings
+        while (pos < extra_bytes.size()) {
+            size_t pos1 = pos;
+            while (extra_bytes[pos] != '\0') ++pos;
+            std::string key = extra_bytes.substr(pos1, pos - pos1);
+            ++pos;
+            int value = std::atoi(&extra_bytes[pos]);
+            while (extra_bytes[pos] != '\0') ++pos;
+            ++pos;
+            g_knights_server->setMenuSelection(game_name, key, value);
+        }
+        
+    } else if (msg != "RNG" && msg != "UPD") {
+        throw std::exception("Unknown message code!!");
     }
 
     return true;

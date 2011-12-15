@@ -101,6 +101,8 @@ public:
 
     // This is used for replays
     void setMsgCountUpdateFlag(bool on);
+
+    void internalSetMenuSelection(const std::string &key, int value);
     
 private:
     boost::shared_ptr<KnightsGameImpl> pimpl;
