@@ -83,6 +83,7 @@ void Knight::onDeath(DeathMode dmode, Player *attacker)
     }
 
     // Call onKnightDeath, for the tutorial
+    // (update 16-Dec-2011: now used for other things besides the tutorial, i.e. "different every time" entry points)
     if (getPlayer()) Mediator::instance().onKnightDeath(*getPlayer(), *getMap(), getNearestPos());
 }
 

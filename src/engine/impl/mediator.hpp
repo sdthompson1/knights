@@ -187,7 +187,9 @@ public:
 
     // Tutorial specific
     void onOpenLockable(const MapCoord &);
-    void onKnightDeath(const Player &player, const DungeonMap &dmap, const MapCoord &mc);
+
+    // Knight death routine (used for tutorial among other things)
+    void onKnightDeath(Player &player, const DungeonMap &dmap, const MapCoord &mc);
     
     // Home manager (wand of securing)
     bool isSecurableHome(const Player &pl, const MapCoord &pos, MapDirection facing) const;

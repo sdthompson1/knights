@@ -53,7 +53,7 @@ class Tile;
 // NB The present algorithm assumes that all Segments are the same size.
 //
 
-enum HomeType { H_NONE, H_CLOSE, H_AWAY, H_RANDOM, H_RANDOM_RESPAWN };
+enum HomeType { H_NONE, H_CLOSE, H_AWAY, H_RANDOM, H_RANDOM_RESPAWN, H_DIFFERENT_EVERY_TIME };
 enum ExitType { E_NONE, E_SELF, E_OTHER, E_RANDOM, E_SPECIAL };
 
 class DungeonGenerator {
@@ -104,6 +104,7 @@ public:
     // query home/exit locations
     int getNumHomes() const { return 2; }
     void getHome(int i, MapCoord &pos, MapDirection &facing_toward_home) const;
+    bool randomizeHomeOnDeath() const { return home_type == H_DIFFERENT_EVERY_TIME; }
     ExitType getExitType() const { return exit_type; }
     void getExit(int i, MapCoord &pos, MapDirection &facing_toward_exit) const;
     int getNumHomesOverall() const { return unassigned_homes.size() + assigned_homes.size(); }

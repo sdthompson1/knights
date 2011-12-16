@@ -284,11 +284,13 @@ void Mediator::onOpenLockable(const MapCoord &mc)
     }
 }
 
-void Mediator::onKnightDeath(const Player &player, const DungeonMap &dmap, const MapCoord &mc)
+void Mediator::onKnightDeath(Player &player, const DungeonMap &dmap, const MapCoord &mc)
 {
     if (tutorial_manager) {
         tutorial_manager->onKnightDeath(player, dmap, mc);
     }
+
+    home_manager.onKnightDeath(player);
 }
 
 

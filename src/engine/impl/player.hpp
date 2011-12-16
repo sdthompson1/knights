@@ -77,8 +77,10 @@ public:
            shared_ptr<const ColourChange> secured_home_cc,
            const std::string &name_, int team_num_);
 
-    void setRandomRespawn(bool r) { random_respawn = r; }
-    bool getRandomRespawn() const { return random_respawn; }
+    // Respawn type
+    enum RespawnType { R_NORMAL, R_RANDOM_SQUARE, R_DIFFERENT_EVERY_TIME };
+    void setRespawnType(RespawnType r) { respawn_type = r; }
+    RespawnType getRespawnType() const { return respawn_type; }
     
     // Add starting gear.
     void addStartingGear(const ItemType &itype, const vector<int> &nos);
@@ -258,7 +260,7 @@ private:
     std::string name;
     bool elim_flag;
 
-    bool random_respawn;
+    RespawnType respawn_type;
     int team_num;
 
     bool teleport_flag;

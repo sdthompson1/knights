@@ -296,6 +296,9 @@ MAIN_MENU = [
             ["Away from Other" DungeonHome("away_from_other")
                       ConstrainMinPlayers("",2)     # Doesn't make sense in single player mode
                       ConstrainMaxPlayers("",4) ]   # Dungeon generator only allows 4 "away from other" homes currently
+            ["Different every time" 
+                      DungeonHome("different_every_time")
+                      ConstrainList("exit", [4,3,0]) ]
         ]
     }
 

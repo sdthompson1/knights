@@ -146,3 +146,11 @@ pair<MapCoord,MapDirection> HomeManager::getRandomHomeFor(const Player &pl) cons
     return unsecured_homes[r];
 }
 
+void HomeManager::onKnightDeath(Player &pl) const
+{
+    if (pl.getRespawnType() == Player::R_DIFFERENT_EVERY_TIME) {
+        // Randomize the home after every death.
+        pair<MapCoord, MapDirection> p = getRandomHomeFor(pl);
+        pl.resetHome(p.first, p.second);
+    }
+}

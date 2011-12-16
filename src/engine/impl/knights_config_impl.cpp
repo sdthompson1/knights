@@ -2034,7 +2034,8 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
                                                     secured_cc.at(hse_cols[i]),
                                                     player_names[i],
                                                     team_num));
-        if (pos.isNull()) player->setRandomRespawn(true);
+        if (pos.isNull()) player->setRespawnType(Player::R_RANDOM_SQUARE);
+        if (dg->randomizeHomeOnDeath()) player->setRespawnType(Player::R_DIFFERENT_EVERY_TIME);
 
         switch (dg->getExitType()) {
         case E_SELF:

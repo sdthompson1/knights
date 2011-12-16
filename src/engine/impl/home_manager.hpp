@@ -53,6 +53,10 @@ public:
 
     // is this a securable home
     bool isSecurableHome(const Player &pl, const MapCoord &pos, MapDirection facing) const;
+
+    // On-knight-death routine. In "different every time" respawn mode, this
+    // randomizes the knight's "home" location. Otherwise it does nothing.
+    void onKnightDeath(Player &pl) const;
     
 private:
     // returns a null MapCoord if no such home can be found

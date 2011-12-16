@@ -152,6 +152,49 @@ bool ConstrainMax::canSetTo(const MenuSelections &msel, const string &k, int v, 
 
 
 //
+// ConstrainList
+//
+
+// NOTE: Be careful with this because the constraint solver isn't too intelligent.
+// The FIRST entry in the list should be a "safe" setting that is always valid,
+// otherwise the constraint solver may get stuck in a loop and start the quest with invalid settings.
+
+class ConstrainList : public MenuConstraint {
+public:
+    ConstrainList(const string &ak, int av, const string &ck, const std::vector<const MenuInt *> &cv)
+        : MenuConstraint(ak, av), key(ck), values(cv) { ASSERT(!values.empty()); }
+    virtual bool apply(MenuSelections &msel, int nplayers) const;
+    virtual bool canSetTo(const MenuSelections &msel, const std::string &k, int v, int nplayers) const;
+private:
+    std::string key;
+    std::vector<const MenuInt *> values;
+};
+
+bool ConstrainList::apply(MenuSelections &msel, int) const
+{
+    const int cur = msel.getValue(key);
+    for (std::vector<const MenuInt *>::const_iterator it = values.begin(); it != values.end(); ++it) {
+        const int allowed_val = (*it)->getValue(msel);
+        if (cur == allowed_val) {
+            return false;
+        }
+    }
+    msel.setValue(key, values.front()->getValue(msel));
+    return true;
+}
+
+bool ConstrainList::canSetTo(const MenuSelections &msel, const string &k, int v, int) const
+{
+    if (k != key) return true;
+    for (std::vector<const MenuInt *>::const_iterator it = values.begin(); it != values.end(); ++it) {
+        const int allowed_val = (*it)->getValue(msel);
+        if (v == allowed_val) return true;
+    }
+    return false;
+}
+
+
+//
 // ConstrainMinMaxPlayers
 //
 
@@ -214,11 +257,27 @@ boost::shared_ptr<MenuConstraint> CreateMenuConstraint(const std::string &key, i
     KConfig::KFile::List lst(*kc.getKFile(), "", 2);
     lst.push(0);
     std::string con_key = kc.getKFile()->popString();
-    lst.push(1);
-    const MenuInt * con_mi = kc.popMenuInt();
+
+    const MenuInt * con_mi = 0;
+    std::vector<const MenuInt *> con_list;
+    if (name != "ConstrainList") {
+        lst.push(1);
+        con_mi = kc.popMenuInt();
+    } else {
+        lst.push(1);
+        KConfig::KFile::List lst2(*kc.getKFile(), "");
+        const int sz = lst2.getSize();
+        con_list.reserve(sz);
+        for (int i = 0; i < sz; ++i) {
+            lst2.push(i);
+            con_list.push_back(kc.popMenuInt());
+        }
+    }
     
     if (name == "Constrain") {
         result.reset(new Constrain(key, val, con_key, con_mi));
+    } else if (name == "ConstrainList") {
+        result.reset(new ConstrainList(key, val, con_key, con_list));
     } else if (name == "ConstrainMin") {
         result.reset(new ConstrainMin(key, val, con_key, con_mi));
     } else if (name == "ConstrainMax") {

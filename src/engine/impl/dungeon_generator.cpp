@@ -288,6 +288,7 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
         else if (x == "close_to_other") return new DungeonHome(H_CLOSE);
         else if (x == "away_from_other") return new DungeonHome(H_AWAY);
         else if (x == "random_respawn") return new DungeonHome(H_RANDOM_RESPAWN);
+        else if (x == "different_every_time") return new DungeonHome(H_DIFFERENT_EVERY_TIME);
         else kc.getKFile()->errExpected("entry type");
 
     } else if (n == "Item") {
@@ -1093,8 +1094,8 @@ void DungeonGenerator::generateExits()
                         ASSERT(seg); // if seg_category is set, then so must seg be
                         if (seg->getNumHomes() > 0) {
                             for (int i=0; i<assigned_homes.size(); ++i) {
-                                const HomeInfo &hi(seg->getHomes(segment_x_reflect[y*lwidth+x],
-                                                                 segment_nrot[y*lwidth+x]).front());
+                                const HomeInfo hi = seg->getHomes(segment_x_reflect[y*lwidth+x],
+                                                                  segment_nrot[y*lwidth+x]).front();
                                 exits.push_back(make_pair(MapCoord(hi.x + x*(rwidth+1)+1,
                                                                    hi.y + y*(rheight+1)+1),
                                                           hi.facing));

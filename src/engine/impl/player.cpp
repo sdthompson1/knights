@@ -164,7 +164,7 @@ Player::Player(int plyr_num,
       default_item(di), backpack_capacities(bc), control_set(cs),
       quests(qs),
       secured_home_cc(sec_home_cc),
-      nskulls(0), nkills(0), name(name_), elim_flag(false), random_respawn(false),
+      nskulls(0), nkills(0), name(name_), elim_flag(false), respawn_type(R_NORMAL),
       team_num(team_num_),
       teleport_flag(false), speech_bubble(false), approach_based_controls(true), action_bar_controls(false)
 {
@@ -476,7 +476,7 @@ bool Player::respawn()
     if (knight.lock()) return false;
 
     // If we do not have a home, then it's game over
-    if (getHomeLocation().isNull() && !getRandomRespawn()) {
+    if (getHomeLocation().isNull() && getRespawnType() != R_RANDOM_SQUARE) {
 
         const bool already_eliminated = getElimFlag();
         
