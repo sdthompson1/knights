@@ -248,7 +248,7 @@ void ThrowingTask::execute(TaskManager &tm)
     
     // create the missile
     bool success = CreateMissile(*dmap, me->getPos(), me->getFacing(),
-                                 itype, true, me->hasStrength(), me->getPlayer(), false);
+                                 itype, true, me->hasStrength(), me->getOriginator(), false);
 
     // reset anim / stun time
     const int qf = me->hasQuickness() ? mediator.cfgInt("quickness_factor") : 100;
@@ -504,7 +504,7 @@ void Creature::parry()
 // damage and hitpoints
 //
 
-void Creature::damage(int amount, Player *attacker,
+void Creature::damage(int amount, const Originator &attacker,
                       int su /* = -1 */, bool inhibit_squelch /* = false */)
 {
     if (amount > 0) {
@@ -529,7 +529,7 @@ void Creature::damage(int amount, Player *attacker,
     if (su != -1) stunUntil(su);
 }
 
-void Creature::poison(Player *attacker)
+void Creature::poison(const Originator &attacker)
 {
     // death by poison.
     if (getMap()) {

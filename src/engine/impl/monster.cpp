@@ -32,7 +32,7 @@ Monster::~Monster()
     monster_manager.subtractMonster(type);
 }
 
-void Monster::onDeath(DeathMode dmode, Player *player)
+void Monster::onDeath(DeathMode dmode, const Originator &)
 {
     // We use this routine to place the monster corpse.
     if (!getMap()) return;

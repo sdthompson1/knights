@@ -58,7 +58,7 @@ Knight::~Knight()
 }
 
 
-void Knight::onDeath(DeathMode dmode, Player *attacker)
+void Knight::onDeath(DeathMode dmode, const Originator &originator)
 {
     if (!getMap()) return;
 
@@ -78,8 +78,17 @@ void Knight::onDeath(DeathMode dmode, Player *attacker)
     dispelMagic();
 
     // Credit a kill to the attacker
-    if (attacker && attacker != getPlayer()) {
-        attacker->addKill();
+    if (originator.isPlayer() && originator.getPlayer() != getPlayer()) {
+        originator.getPlayer()->addKill();
+        originator.getPlayer()->addToFrags(1);
+    }
+
+    // If it was a suicide then give minus one to the defender
+    // NOTE: We class originator.isNone() as a suicide
+    // (ideally there the originator would always be set, but unfortunately sometimes it is not, in these
+    // cases we just assume suicide...)
+    if (originator.isNone() || (originator.isPlayer() && originator.getPlayer() == getPlayer())) {
+        getPlayer()->addToFrags(-1);
     }
 
     // Call onKnightDeath, for the tutorial
@@ -497,7 +506,7 @@ void Knight::unloadBackpack(StuffContents &sc)
 // damage, poison, addToHealth
 //
 
-void Knight::damage(int amount, Player *attacker, int stun_until, bool inhibit_squelch)
+void Knight::damage(int amount, const Originator &attacker, int stun_until, bool inhibit_squelch)
 {
     // "filter out" damage if knight has invulnerability.
     if (!getInvulnerability()) {
@@ -529,7 +538,7 @@ void Knight::addToHealth(int amount)
     resetSpeed();  // may be necessary if you have super.
 }
 
-void Knight::poison(Player *attacker)
+void Knight::poison(const Originator &attacker)
 {
     // "filters out" poison if knight has invulnerability or poison immunity
     if (!getPoisonImmunity() && !getInvulnerability()) {

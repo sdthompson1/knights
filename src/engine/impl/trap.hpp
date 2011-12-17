@@ -36,14 +36,14 @@ class Creature;
 class DungeonMap;
 class ItemType;
 class MapCoord;
-class Player;
+class Originator;
 
 class Trap {
 public:
     explicit Trap(const ItemType *it) : trap_item(it) { }
     virtual ~Trap() { }
     const ItemType *getTrapItem() const { return trap_item; }
-    virtual void spring(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *player) = 0;
+    virtual void spring(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &originator) = 0;
     virtual bool activateOnHit() const = 0;
 private:
     const ItemType *trap_item;

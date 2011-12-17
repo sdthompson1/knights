@@ -208,7 +208,7 @@ bool DropItem(shared_ptr<Item> drop_item, DungeonMap &dmap, const MapCoord &mc,
 }
 
 Item::Item(const ItemType &t, int no)
-    : type(t), number(no)
+    : type(t), number(no), owner(OT_None())
 {
     if (number > type.getMaxStack()) number = type.getMaxStack();
     if (number < 0) number = 0;

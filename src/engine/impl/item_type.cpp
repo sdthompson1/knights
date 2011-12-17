@@ -104,7 +104,7 @@ void ItemType::doCreatureImpact(int gvt, shared_ptr<Creature> attacker,
     int stun_until = (melee_stun_time ? melee_stun_time->get() : 0) + gvt;
     int damage = melee_damage ? melee_damage->get() : 0;
     if (with_strength) damage += g_rng.getInt(1,3); // add d2 dmg if you have strength
-    target->damage(damage, attacker->getPlayer(), stun_until);
+    target->damage(damage, attacker->getOriginator(), stun_until);
 }
 
 void ItemType::doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap,
@@ -121,7 +121,7 @@ void ItemType::doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap,
             // If you need to switch the order then consider adding two separate melee actions
             // (eg pre_melee_action and post_melee_action).
             runMeleeAction(attacker, dmap, mc, *t);
-            (*t)->onHit(dmap, mc, attacker, attacker->getPlayer());
+            (*t)->onHit(dmap, mc, attacker, attacker->getOriginator());
             (*t)->damage(dmap, mc,
                          (with_strength && allow_strength) ? 9999 :
                          (melee_tile_damage ? melee_tile_damage->get() : 0),
@@ -149,6 +149,7 @@ void ItemType::onPickUp(DungeonMap &dmap, const MapCoord &mc,
         ActionData ad;
         ad.setActor(actor, false);
         ad.setItem(&dmap, mc, this);
+        ad.setOriginator(actor->getOriginator());
         on_pick_up->execute(ad);
     }
 }
@@ -159,6 +160,7 @@ void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ActionData ad;
         ad.setActor(actor, false);
         ad.setItem(&dmap, mc, this);
+        ad.setOriginator(actor->getOriginator());
         on_drop->execute(ad);
     }
         
@@ -166,12 +168,15 @@ void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 
 void ItemType::onWalkOver(DungeonMap &dmap, const MapCoord &mc,
                           shared_ptr<Creature> actor,
-                          Player *item_owner) const
+                          const Originator &item_owner) const
 {
     if (on_walk_over && actor && actor->getHeight() == H_WALKING) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(item_owner);
+        
+        // the originator of an item-walk-over event (e.g. stepping on a beartrap)
+        // is considered to be the person who put the beartrap there, NOT the player stepping on it.
+        ad.setOriginator(item_owner);
         ad.setItem(&dmap, mc, this);
         on_walk_over->execute(ad);
     }
@@ -183,6 +188,7 @@ void ItemType::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> 
         ActionData ad;
         ad.setActor(actor, false);
         ad.setItem(&dmap, mc, this);
+        ad.setOriginator(actor->getOriginator());
         on_hit->execute(ad);
     }
 }
@@ -192,7 +198,7 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> v
     if (melee_action) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(actor ? actor->getPlayer() : 0);
+        ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
         ad.setVictim(victim);
         ad.setItem(0, MapCoord(), this);
         melee_action->execute(ad);
@@ -206,7 +212,7 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor,
     if (melee_action) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(actor ? actor->getPlayer() : 0);
+        ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
         ad.setTile(&dmap, mc, tile);
         ad.setItem(0, MapCoord(), this);
         melee_action->execute(ad);

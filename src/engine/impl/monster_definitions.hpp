@@ -75,7 +75,7 @@ public:
           run_away_flag(false) { }
 
     virtual int bloodLevel() const { return 0; }
-    virtual void damage(int amount, Player *attacker, int stun_until, bool inhibit_squelch);
+    virtual void damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch);
     
     bool getRunAwayFlag() const { return run_away_flag; } // used by AI
     void clearRunAwayFlag() { run_away_flag = false; }
@@ -119,7 +119,7 @@ public:
            const Anim *zombie_anim, int speed)
         : Monster(mmgr, type, health, H_WALKING, weapon, zombie_anim, speed) { }
     virtual int bloodLevel() const { return 0; }
-    virtual void damage(int amount, Player *attacker, int stun_until, bool inhibit_squelch);
+    virtual void damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch);
     virtual const char * getWeaponDownswingHook() const { return "HOOK_ZOMBIE"; } // zombies moo on downswing.
 };
 

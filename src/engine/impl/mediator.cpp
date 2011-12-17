@@ -33,6 +33,7 @@
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
 #include "mediator.hpp"
+#include "originator.hpp"
 #include "player.hpp"
 #include "player_task.hpp"
 #include "task_manager.hpp"
@@ -218,16 +219,16 @@ void Mediator::onPickup(const Player &pl, const ItemType &it)
 // tiles
 //
 
-void Mediator::onAddTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, Player *player)
+void Mediator::onAddTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, const Originator &originator)
 {
     view_manager.onAddTile(dmap, mc, tile);
-    event_manager.onAddTile(dmap, mc, tile, player);
+    event_manager.onAddTile(dmap, mc, tile, originator);
 }
 
-void Mediator::onRmTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, Player *player)
+void Mediator::onRmTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, const Originator &originator)
 {
     view_manager.onRmTile(dmap, mc, tile);
-    event_manager.onRmTile(dmap, mc, tile, player);
+    event_manager.onRmTile(dmap, mc, tile, originator);
 }
 
 void Mediator::onChangeTile(const DungeonMap &dmap, const MapCoord &mc, const Tile &tile)
@@ -374,7 +375,7 @@ void Mediator::eliminatePlayer(Player &pl)
     if (kt) {
         // suicide him
         runHook("HOOK_KNIGHT_DAMAGE", kt);
-        kt->onDeath(Creature::NORMAL_MODE, 0);
+        kt->onDeath(Creature::NORMAL_MODE, Originator(OT_None()));
         kt->rmFromMap();
     }
 

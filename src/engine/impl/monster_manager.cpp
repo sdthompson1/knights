@@ -28,6 +28,7 @@
 #include "monster.hpp"
 #include "monster_manager.hpp"
 #include "monster_type.hpp"
+#include "originator.hpp"
 #include "rng.hpp"
 
 #include <algorithm>
@@ -109,8 +110,8 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
             if (d != decay_sequence.end()) {
                 // We found a decaying corpse. Roll for zombie activity, and we're done.
                 if (rollZombieActivity()) {
-                    dmap.rmTile(mc, d->first, 0);
-                    dmap.addTile(mc, d->second, 0);
+                    dmap.rmTile(mc, d->first, Originator(OT_None()));
+                    dmap.addTile(mc, d->second, Originator(OT_None()));
                 }
                 return;
             }
@@ -144,7 +145,7 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
                     // we don't want to make more than one zombie activity roll per monster
                     // generation cycle...)
                     if (!rollZombieActivity()) return;
-                    dmap.rmTile(mc, *it, 0);
+                    dmap.rmTile(mc, *it, Originator(OT_None()));
 
                 } else {
 
@@ -207,7 +208,7 @@ void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bot
                 // using the specific MonsterType from the monster_map. This works, but it
                 // relies on the assumption that there is only one kind of zombie.
                 if (zombify && dmap.getAccess(mc, H_WALKING) == A_CLEAR) {
-                    dmap.rmTile(mc, *it, 0);
+                    dmap.rmTile(mc, *it, Originator(OT_None()));
                     placeZombie(dmap, mc, MapDirection(g_rng.getInt(0,4)));
                     zombie_placed = true;
                     break; // Succeeded in placing a zombie!

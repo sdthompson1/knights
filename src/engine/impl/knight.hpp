@@ -55,7 +55,8 @@ public:
            const Anim * lower_anim, int spd);
     virtual ~Knight();
 
-    virtual Player * getPlayer() { return &player; }
+    virtual Player * getPlayer() const { return &player; }
+    virtual Originator getOriginator() const { return Originator(OT_Player(), &player); }
     
 
     //
@@ -92,7 +93,7 @@ public:
     
     
     // overridden from creature:
-    virtual void onDeath(DeathMode, Player *attacker);  // calls dropAllItems, also places a knight corpse
+    virtual void onDeath(DeathMode, const Originator &originator);  // calls dropAllItems, also places a knight corpse
     virtual bool hasStrength() const;
     virtual bool hasQuickness() const;
 
@@ -127,9 +128,9 @@ public:
     // override damage(), poison() to check for invulnerability and/or poison immunity
     // (and also to tell DungeonView about updated health, and to run damage hooks).
     //
-    virtual void damage(int amount, Player *attacker, int stun_until = -1, bool inhibit_squelch = false);
+    virtual void damage(int amount, const Originator &originator, int stun_until = -1, bool inhibit_squelch = false);
     virtual void addToHealth(int amount);
-    virtual void poison(Player *attacker);
+    virtual void poison(const Originator &attacker);
 
 
     // throwing of backpack items (as opposed to item-in-hand).

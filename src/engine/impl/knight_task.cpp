@@ -77,7 +77,7 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
             MapCoord tile_mc;
             player.getControlInfo(ctrl, item_type, tile, tile_mc);
             ad.setActor(knight, true);
-            ad.setPlayer(knight->getPlayer());
+            ad.setOriginator(knight->getOriginator());
             shared_ptr<Tile> tile_lock = tile.lock();
             if (item_type) ad.setItem(0, MapCoord(), item_type);
             if (tile_lock) ad.setTile(knight->getMap(), tile_mc, tile_lock);
@@ -164,7 +164,7 @@ void KnightTask::execute(TaskManager &tm)
         xbow_action_timer = gvt;
         ActionData ad;
         ad.setActor(knight, false);
-        ad.setPlayer(knight->getPlayer());
+        ad.setOriginator(knight->getOriginator());
         held_item->getReloadAction()->execute(ad);
     }   
 

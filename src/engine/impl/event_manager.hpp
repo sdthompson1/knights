@@ -48,8 +48,8 @@ public:
     static void onRmCreature(Creature &);                           // on_withdraw  [Player null]
     static void postRepositionCreature(Creature &);                 // on_walk_over [Player set from creature]
     static void onChangeEntityMotion(Creature &);                   // on_approach, on_withdraw [Player null]
-    static void onAddTile(DungeonMap &, const MapCoord &, Tile &, Player *);  // on_walk_over
-    static void onRmTile(DungeonMap &, const MapCoord &, Tile &, Player *);   // on_withdraw
+    static void onAddTile(DungeonMap &, const MapCoord &, Tile &, const Originator &);  // on_walk_over
+    static void onRmTile(DungeonMap &, const MapCoord &, Tile &, const Originator &);   // on_withdraw
 
     // A generic system for "event hooks"
     void setupHooks(const map<string, const Action*> &h) { hooks = h; }
@@ -57,7 +57,7 @@ public:
     void runHook(const string &h, DungeonMap *dmap, const MapCoord &mc) const;
     
 private:
-    static void walkOverEvent(Creature &, Player *);
+    static void walkOverEvent(Creature &, const Originator &);
     static void withdrawEvent(Creature &);
 
     void doHook(const string &name, const ActionData &ad) const;

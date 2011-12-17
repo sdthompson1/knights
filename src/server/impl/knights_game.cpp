@@ -1060,6 +1060,7 @@ namespace {
                             pi.player_num = -1;
                             pi.kills = -1;
                             pi.deaths = -1;
+                            pi.frags = -1;
                             pi.eliminated = false;
                             player_list.push_back(pi);
                             pings[pi.name] = (*it)->ping_time;
@@ -1092,6 +1093,7 @@ namespace {
                         buf.writeUbyte(player_list[idx].house_colour.b);
                         buf.writeVarInt(player_list[idx].kills);
                         buf.writeVarInt(player_list[idx].deaths);
+                        buf.writeVarInt(player_list[idx].frags);
                         buf.writeVarInt(pings[player_list[idx].name]);
                     }
 

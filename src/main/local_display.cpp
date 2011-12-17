@@ -548,9 +548,10 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         titles.push_back("Player");
         titles.push_back("Kills");
         titles.push_back("Deaths");
+        titles.push_back("Frags");
         titles.push_back("Ping");
         widths.clear();
-        widths.reserve(4);
+        widths.reserve(5);
         
         int num_width = gui_font->getWidth("9999");
         for (int i = 1; i < titles.size(); ++i) {
@@ -558,7 +559,8 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         }
         num_width += gui_font->getWidth("  ") + 4;
         
-        widths.push_back(plyr_list_width - 3*num_width);
+        widths.push_back(plyr_list_width - 4*num_width);
+        widths.push_back(num_width);
         widths.push_back(num_width);
         widths.push_back(num_width);
         widths.push_back(num_width);
@@ -906,7 +908,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
 
 
     // work out dungeon and status area sizes
-    const int pixels_per_square = ref_pixels_per_square * scale;
+    const int pixels_per_square = int(ref_pixels_per_square * scale);
     const int dungeon_width = pixels_per_square * dungeon_tiles_x;
     const int dungeon_height = pixels_per_square * dungeon_tiles_y;
     const float dungeon_scale_factor = float(pixels_per_square) / float(ref_pixels_per_square);
@@ -1018,8 +1020,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             int width, height;
             gm.loadGraphic(*image);
             gm.getGraphicSize(*image, width, height);
-            const int new_width = scale*width;
-            const int new_height = scale*height;
+            const int new_width = int(scale*width);
+            const int new_height = int(scale*height);
             const int th = gm.getFont()->getTextHeight();
             const int image_y = vp_y + (vp_height - new_height)/2 - th;
             gm.drawTransformedGraphic(gc, vp_x + (vp_width - new_width)/2, image_y,

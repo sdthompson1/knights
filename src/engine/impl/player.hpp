@@ -188,7 +188,9 @@ public:
 
     int getNSkulls() const { return nskulls; }
     int getKills() const { return nkills; }
+    int getFrags() const { return frags; }
     void addKill() { ++nkills; }
+    void addToFrags(int i) { frags += i; }
 
     // team_num is -1 for a normal game or >= 0 for team games
     int getTeamNum() const { return team_num; }
@@ -256,6 +258,7 @@ private:
 
     int nskulls;
     int nkills;
+    int frags;
     
     std::string name;
     bool elim_flag;

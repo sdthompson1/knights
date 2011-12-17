@@ -46,7 +46,6 @@ class Creature;
 class DungeonMap;
 class Graphic;
 class Item;
-class Player;
 
 struct lua_State;
 
@@ -126,7 +125,7 @@ public:
     // These fns are virtual because some tiles (doors) can be immune to damage
     // (if they are open).
     virtual void damage(DungeonMap &, const MapCoord &, int amount, shared_ptr<Creature> actor);
-    virtual void onDestroy(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, Player *player);
+    virtual void onDestroy(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &);
     bool destructible() const { return hit_points > 0 && targettable(); }
     virtual bool targettable() const;
 
@@ -145,20 +144,20 @@ public:
     // 'success' defaults to true, but is set false by things like locked doors (where
     // the player doesn't have the key).
     virtual void onActivate(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor,
-                            Player *player, ActivateType act_type, bool success = true);
+                            const Originator &originator, ActivateType act_type, bool success = true);
 
     // onWalkOver -- runs on_walk_over
     // (NB Does nothing if actor->getHeight() != H_WALKING.)
-    void onWalkOver(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, Player *player);
+    void onWalkOver(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &originator);
 
     // onApproach -- runs on_approach
-    virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, Player *player);
+    virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &originator);
 
     // onWithdraw -- runs on_withdraw
-    virtual void onWithdraw(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, Player *player);
+    virtual void onWithdraw(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &originator);
 
     // onHit -- runs on_hit
-    virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, Player *player);
+    virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &originator);
 
 
     // Custom control
@@ -200,8 +199,8 @@ protected:
     void setGraphic(DungeonMap *, const MapCoord &, const Graphic *,
                     shared_ptr<const ColourChange>);
     void setItemsAllowed(DungeonMap *, const MapCoord &, bool allow, bool destroy);
-    void setAccess(DungeonMap *, const MapCoord &, MapHeight height, MapAccess access, Player *player);
-    void setAccess(DungeonMap *, const MapCoord &, MapAccess access, Player *player);  // set all heights at once
+    void setAccess(DungeonMap *, const MapCoord &, MapHeight height, MapAccess access, const Originator &originator);
+    void setAccess(DungeonMap *, const MapCoord &, MapAccess access, const Originator &originator);  // set all heights at once
 
 private:
     // SetHitPoints -- this sets hit_points, using initial_hit_points.

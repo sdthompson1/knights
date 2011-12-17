@@ -34,6 +34,7 @@
 #define CREATURE_HPP
 
 #include "entity.hpp"
+#include "originator.hpp"
 
 class ItemType;
 class Player;
@@ -50,7 +51,11 @@ public:
     int getHealth() const { return health; }
     int getMaxHealth() const { return max_health; }
     virtual MapHeight getHeight() const { return height; }
-    virtual Player * getPlayer() { return 0; }
+    virtual Player * getPlayer() const { return 0; }
+
+    // getOriginator() returns what the "originator" should be for any action carried out by this creature.
+    // (For a knight it will be OT_Player, for a monster it should be OT_Monster.)
+    virtual Originator getOriginator() const { return Originator(OT_None()); } // default -- unknown originator.
 
     // item in hand
     const ItemType * getItemInHand() const { return item_in_hand; }
@@ -128,10 +133,10 @@ public:
 
     // Note: inhibit_squelch is a slight hack, it's used by bear traps to prevent the squelching sound
     // when you step on a bear trap. (All other damage to a creature should usually play the squelching sound.)
-    virtual void damage(int amount, Player *attacker, int stun_until = -1, bool inhibit_squelch = false);
+    virtual void damage(int amount, const Originator &originator, int stun_until = -1, bool inhibit_squelch = false);
     virtual int bloodLevel() const { return 2; }  // 1=only blood when die 0=no blood at all
     virtual void addToHealth(int amount);
-    virtual void poison(Player *attacker);
+    virtual void poison(const Originator &originator);
     bool impactVeto(int gvt, const Creature &attacker);
 
     void parry();
@@ -149,7 +154,7 @@ public:
                      POISON_MODE,  // corpse to be placed but no blood
                      NORMAL_MODE,  // corpse to be placed, with blood
     };
-    virtual void onDeath(DeathMode dmode, Player *attacker) { }
+    virtual void onDeath(DeathMode dmode, const Originator &originator) { }
     virtual bool hasStrength() const { return false; }
     virtual bool hasQuickness() const { return false; }
 

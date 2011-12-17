@@ -26,6 +26,7 @@
 
 #include "kconfig_fwd.hpp"
 #include "map_support.hpp"
+#include "originator.hpp"
 
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
@@ -107,7 +108,7 @@ struct lua_State;
 class ActionData {
 public:
     ActionData()
-        : direct(false), flag(false), success(true), item(0), item_dmap(0), tile_dmap(0) { }
+        : direct(false), flag(false), success(true), item(0), item_dmap(0), tile_dmap(0), originator(OT_None()) { }
 
     void setActor(shared_ptr<Creature> c, bool dir) { actor = c; direct = dir; }
     void setVictim(shared_ptr<Creature> c) { victim = c; }
@@ -115,7 +116,7 @@ public:
     void setTile(DungeonMap *, const MapCoord &, shared_ptr<Tile>);
     void setFlag(bool f) { flag = f; }
     void setSuccess(bool f) { success = f; }
-    void setPlayer(Player *p) { player = p; }
+    void setOriginator(const Originator &o) { originator = o; }
 
     // this is used for the lua "pos" field
     void setLuaPos(const MapCoord &mc) { lua_pos = mc; }
@@ -129,7 +130,7 @@ public:
         { dm = tile_dmap; mc = tile_coord; t = tile; }
     bool getFlag() const { return flag; }
     bool getSuccess() const { return success; }
-    Player * getPlayer() const { return player; }
+    const Originator & getOriginator() const { return originator; }
 
     pair<DungeonMap*, MapCoord> getPos() const;  // lookup pos from creature, item and tile (in that order).
 
@@ -142,8 +143,8 @@ private:
     shared_ptr<Tile> tile;
     DungeonMap *item_dmap, *tile_dmap;
     MapCoord item_coord, tile_coord;
-    Player * player;
     MapCoord lua_pos;
+    Originator originator;
 };
 
 

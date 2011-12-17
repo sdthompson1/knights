@@ -39,14 +39,14 @@
 //
 
 // returns true if the door was opened, or false if it was locked & we couldn't unlock
-bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, Player *player,
+bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, const Originator &originator,
                       ActivateType act_type)
 {
     if (isLocked() && act_type != ACT_UNLOCK_ALL) {
         bool ok = checkUnlock(cr);
         if (!ok) return false;
     }
-    openImpl(dmap, mc, player);
+    openImpl(dmap, mc, originator);
     if (lock != SPECIAL_LOCK_NUM) lock = 0;  // special lock is always left; but other locks always unlock when opened.
     closed = false;
     if (act_type == ACT_NORMAL) activateTraps(dmap, mc, cr);
@@ -54,7 +54,7 @@ bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
     if (on_open_or_close) {
         ActionData ad;
         ad.setActor(cr, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setLuaPos(mc);
         on_open_or_close->execute(ad);
@@ -62,7 +62,7 @@ bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
     return true;
 }
 
-bool Lockable::doClose(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, Player *player,
+bool Lockable::doClose(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, const Originator &originator,
                        ActivateType act_type)
 {
     // Doors can be closed UNLESS they are "special-locked". The latter can
@@ -71,13 +71,13 @@ bool Lockable::doClose(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature
     
     if (lock == SPECIAL_LOCK_NUM && act_type != ACT_UNLOCK_ALL) return false;
     
-    closeImpl(dmap, mc, player);
+    closeImpl(dmap, mc, originator);
     closed = true;
 
     if (on_open_or_close) {
         ActionData ad;
         ad.setActor(cr, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setLuaPos(mc);
         on_open_or_close->execute(ad);
@@ -106,36 +106,36 @@ bool Lockable::checkUnlock(shared_ptr<Creature> cr) const
 //
 
 void Lockable::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr,
-                          Player *player,
+                          const Originator &originator,
                           ActivateType act_type, bool success_dummy)
 {
     // An "activate" only succeeds if the relevant doOpen/doClose routine says it does
     bool success = false, doing_open = false;
     if (closed) {
-        success = doOpen(dmap, mc, cr, player, act_type);
+        success = doOpen(dmap, mc, cr, originator, act_type);
         doing_open = true;
     } else {
-        success = doClose(dmap, mc, cr, player, act_type);
+        success = doClose(dmap, mc, cr, originator, act_type);
     }
-    Tile::onActivate(dmap, mc, cr, player, act_type, success);
+    Tile::onActivate(dmap, mc, cr, originator, act_type, success);
     if (doing_open) Mediator::instance().onOpenLockable(mc); // handles tutorial message (only) currently
 }
 
-void Lockable::close(DungeonMap &dmap, const MapCoord &mc, Player *player)
+void Lockable::close(DungeonMap &dmap, const MapCoord &mc, const Originator &originator)
 {
     // An explicit "close" always succeeds
     if (!closed) {
-        closeImpl(dmap, mc, player);
+        closeImpl(dmap, mc, originator);
         closed = true;
     }
 }
 
-void Lockable::open(DungeonMap &dmap, const MapCoord &mc, Player *player)
+void Lockable::open(DungeonMap &dmap, const MapCoord &mc, const Originator &originator)
 {
     // An explicit "open" always succeeds
     if (closed) {
         // note: if activate_type is ACT_UNLOCK_ALL then the creature is not used, so we can pass null
-        doOpen(dmap, mc, shared_ptr<Creature>(), player, ACT_UNLOCK_ALL);
+        doOpen(dmap, mc, shared_ptr<Creature>(), originator, ACT_UNLOCK_ALL);
     }
 }
 
@@ -177,7 +177,7 @@ void Lockable::disarmTraps(DungeonMap &dmap, const MapCoord &mc)
             }
         }
         trap = shared_ptr<Trap>();
-        trap_owner = 0;
+        trap_owner = Originator(OT_None());
     }
 }
 
@@ -186,7 +186,7 @@ void Lockable::activateTraps(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Cr
     if (trap) {
         trap->spring(dmap, mc, cr, trap_owner);
         trap = shared_ptr<Trap>();
-        trap_owner = 0;
+        trap_owner = Originator(OT_None());
     }
 }
 
@@ -197,13 +197,13 @@ void Lockable::setTrap(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature
         activateTraps(dmap, mc, cr);
     }
     trap = newtrap;
-    trap_owner = cr ? cr->getPlayer() : 0;
+    trap_owner = cr ? cr->getOriginator() : Originator(OT_None());
 }
 
-void Lockable::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, Player *player)
+void Lockable::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, const Originator &originator)
 {
     if (trap && trap->activateOnHit()) {
         activateTraps(dmap, mc, cr);
     }
-    Tile::onHit(dmap, mc, cr, player);
+    Tile::onHit(dmap, mc, cr, originator);
 }

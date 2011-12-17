@@ -72,18 +72,29 @@ namespace {
         else return D_NORTH;
     }
 
-    // Read the player from "cxt"
-    Player * GetPlayer(lua_State *lua)
+    // Read the originator from "cxt"
+    Originator GetOriginator(lua_State *lua)
     {
         lua_getglobal(lua, "cxt");          // [cxt]
-        lua_getfield(lua, -1, "player");    // [cxt player]
-        Player * p = ReadLuaPtr<Player>(lua, -1);
+        lua_getfield(lua, -1, "originator");    // [cxt originator]
+
+        Originator orig = Originator(OT_None());
+
+        if (lua_isstring(lua, -1)) {
+            if (strcmp("monster", lua_tostring(lua, -1)) == 0) {
+                orig = Originator(OT_Monster());
+            }
+        } else {
+            Player * p = ReadLuaPtr<Player>(lua, -1);
+            orig = Originator(OT_Player(), p);
+        }
+
         lua_pop(lua, 2);
-        return p;
+        return orig;
     }
 
 
-    typedef void (Lockable::* LockableFnPtr)(DungeonMap &, const MapCoord &, Player *);
+    typedef void (Lockable::* LockableFnPtr)(DungeonMap &, const MapCoord &, const Originator &);
 
     // Reads a position from the top of the lua stack, and a Player from "cxt".
     // Does not modify the lua stack.
@@ -102,7 +113,7 @@ namespace {
             Tile *tile = it->get();
             Lockable *lockable = dynamic_cast<Lockable*>(tile);
             if (lockable) {
-                (lockable->*function_ptr)(*dmap, mc, GetPlayer(lua));
+                (lockable->*function_ptr)(*dmap, mc, GetOriginator(lua));
             }
         }
     }
@@ -135,7 +146,7 @@ namespace {
         if (!dmap) return 0;
 
         MapCoord mc = GetMapCoord(lua, 1);
-        Player *player = GetPlayer(lua);
+        Originator orig = GetOriginator(lua);
 
         std::vector<shared_ptr<Tile> > tiles;
         dmap->getTiles(mc, tiles);
@@ -145,9 +156,9 @@ namespace {
             Lockable *lockable = dynamic_cast<Lockable*>(tile);
             if (lockable) {
                 if (lockable->isClosed()) {
-                    lockable->open(*dmap, mc, player);
+                    lockable->open(*dmap, mc, orig);
                 } else {
-                    lockable->close(*dmap, mc, player);
+                    lockable->close(*dmap, mc, orig);
                 }
             }
         }
@@ -196,7 +207,7 @@ namespace {
         const bool drop_after = lua_toboolean(lua, 4) != 0;
 
         if (itype) {
-            CreateMissile(*dmap, mc, dir, *itype, drop_after, false, GetPlayer(lua), true);
+            CreateMissile(*dmap, mc, dir, *itype, drop_after, false, GetOriginator(lua), true);
         }
 
         return 0;
@@ -256,7 +267,7 @@ namespace {
         const MapCoord &mc = GetMapCoord(lua, 1);
         shared_ptr<Tile> tile = ReadLuaSharedPtr<Tile>(lua, 2);
 
-        dmap->rmTile(mc, tile, GetPlayer(lua));
+        dmap->rmTile(mc, tile, GetOriginator(lua));
         return 0;
     }
 
@@ -272,7 +283,7 @@ namespace {
         const MapCoord mc = GetMapCoord(lua, 1);
         shared_ptr<Tile> tile = ReadLuaSharedPtr<Tile>(lua, 2);
 
-        if (tile) dmap->addTile(mc, tile->clone(false), GetPlayer(lua));
+        if (tile) dmap->addTile(mc, tile->clone(false), GetOriginator(lua));
         return 0;
     }
 

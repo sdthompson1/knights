@@ -219,7 +219,7 @@ void A_OpenWays::execute(const ActionData &ad) const
     // If the tile is a "lockable" (i.e. a door or chest) then open it.
     shared_ptr<Lockable> lock = dynamic_pointer_cast<Lockable>(t);
     if (lock) {
-        lock->open(*dm, mc, ad.getPlayer());
+        lock->open(*dm, mc, ad.getOriginator());
     } else if (actor->hasStrength()) {
         // We turn off allow_strength for wand of open ways, so the normal melee code
         // will not attempt to damage the tile if the knight has strength. This is to
@@ -267,7 +267,7 @@ void A_Poison::execute(const ActionData &ad) const
 {
     if (ad.getActor()) {
         FlashMessage(ad, msg);
-        ad.getActor()->poison(0);
+        ad.getActor()->poison(ad.getOriginator());
     }
 }
 
@@ -503,7 +503,7 @@ Action * A_WipeMap::Maker::make(ActionPars &pars) const
 //
 
 namespace {
-    void ZombifyCreature(shared_ptr<Creature> cr, Player *attacker)
+    void ZombifyCreature(shared_ptr<Creature> cr, const Originator &originator)
     {
         // Only Knights can be zombified. This prevents zombification
         // of vampire bats or other weird things like that. Of course,
@@ -516,7 +516,7 @@ namespace {
             DungeonMap *dmap = kt->getMap();
             MapCoord mc = kt->getPos();
             MapDirection facing = kt->getFacing();
-            kt->onDeath(Creature::ZOMBIE_MODE, attacker);       // this drops items, etc.
+            kt->onDeath(Creature::ZOMBIE_MODE, originator);       // this drops items, etc.
             kt->rmFromMap();
             Mediator::instance().getMonsterManager().placeZombie(*dmap, mc, facing);
         }
@@ -525,7 +525,7 @@ namespace {
 
 void A_ZombifyActor::execute(const ActionData &ad) const
 {
-    ZombifyCreature(ad.getActor(), 0);
+    ZombifyCreature(ad.getActor(), ad.getOriginator());
 }
 
 A_ZombifyActor::Maker A_ZombifyActor::Maker::register_me;
@@ -544,7 +544,7 @@ bool A_ZombifyTarget::possible(const ActionData &ad) const
 
 void A_ZombifyTarget::execute(const ActionData &ad) const
 {
-    ZombifyCreature(ad.getVictim(), ad.getPlayer());
+    ZombifyCreature(ad.getVictim(), ad.getOriginator());
 }
 
 A_ZombifyTarget::Maker A_ZombifyTarget::Maker::register_me;

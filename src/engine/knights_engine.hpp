@@ -52,6 +52,7 @@ struct PlayerInfo {
     int player_num;
     int kills;
     int deaths;
+    int frags;
     bool eliminated;
 };
 

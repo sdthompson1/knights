@@ -29,12 +29,12 @@
 #include "missile.hpp"
 #include "player.hpp"
 
-void BladeTrap::spring(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>, Player *player)
+void BladeTrap::spring(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>, const Originator &originator)
 {
-    CreateMissile(dmap, mc, fire_dirn, mtype, false, false, player, true);
+    CreateMissile(dmap, mc, fire_dirn, mtype, false, false, originator, true);
 }
 
-void PoisonTrap::spring(DungeonMap &, const MapCoord &, shared_ptr<Creature> cr, Player *player)
+void PoisonTrap::spring(DungeonMap &, const MapCoord &, shared_ptr<Creature> cr, const Originator &originator)
 {
     if (cr) {
         Player * pl = cr->getPlayer();
@@ -42,6 +42,6 @@ void PoisonTrap::spring(DungeonMap &, const MapCoord &, shared_ptr<Creature> cr,
             pl->getDungeonView().flashMessage("Poison", 4);
         }
         
-        cr->poison(player);
+        cr->poison(originator);
     }
 }

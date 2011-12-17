@@ -105,7 +105,7 @@ void Segment::copyToMap(DungeonMap &dmap, const MapCoord &top_left,
                 for (int k = 0; k < nrot; ++k) t = t->getRotate();
                 
                 shared_ptr<Tile> tile(t->clone(false));
-                dmap.addTile(mc, tile, 0);
+                dmap.addTile(mc, tile, Originator(OT_None()));
             }
         }
     }

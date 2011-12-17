@@ -74,8 +74,8 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
     } else {
         homes.erase(it);  // let the record show that this home is secured by both players
         if (home_tile) {
-            dmap.rmTile(home_mc, home_tile, 0);   // remove the home tile
-            dmap.addTile(home_mc, secured_wall_tile, 0);  // add a wall tile instead
+            dmap.rmTile(home_mc, home_tile, Originator(OT_None()));   // remove the home tile
+            dmap.addTile(home_mc, secured_wall_tile, Originator(OT_None()));  // add a wall tile instead
         }
     }
 

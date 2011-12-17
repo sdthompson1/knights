@@ -221,7 +221,7 @@ shared_ptr<Monster> VampireBatMonsterType::makeMonster(MonsterManager &mm, TaskM
 }
 
 
-void VampireBat::damage(int amount, Player *attacker, int su, bool inhibit_squelch)
+void VampireBat::damage(int amount, const Originator &attacker, int su, bool inhibit_squelch)
 {
     // run vampire bat hook (usually plays "screech" sound effect)
     // -- Only want this if the bat was not killed.
@@ -247,7 +247,7 @@ void VampireBat::bite(shared_ptr<Creature> target)
     // strike the target
     if (target) {
         const int stun_until = (mtype.stun? mtype.stun->get() : 0) + gvt;
-        target->damage(mtype.dmg, 0, stun_until);
+        target->damage(mtype.dmg, Originator(OT_Monster()), stun_until);
     }
 
     // set my anim frame, and stun myself.
@@ -429,7 +429,7 @@ shared_ptr<Monster> ZombieMonsterType::makeMonster(MonsterManager &mm, TaskManag
 // This routine makes zombies 'recoil' when they're hit.
 // Also it runs the hooks (usually sound effects).
 
-void Zombie::damage(int amount, Player *attacker, int stun_until, bool inhibit_squelch)
+void Zombie::damage(int amount, const Originator &attacker, int stun_until, bool inhibit_squelch)
 {
     Mediator &mediator = Mediator::instance();
     shared_ptr<Zombie> self(static_pointer_cast<Zombie>(shared_from_this()));

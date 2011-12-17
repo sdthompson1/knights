@@ -37,6 +37,7 @@
 #define ITEM_HPP
 
 #include "item_type.hpp"
+#include "originator.hpp"
 
 //
 // Item
@@ -61,13 +62,13 @@ public:
     }
 
     // get/set player who "owns" this item. Used for bear traps.
-    Player * getOwner() const { return owner; }
-    void setOwner(Player *p) { owner = p; }
+    const Originator &getOwner() const { return owner; }
+    void setOwner(const Originator &o) { owner = o; }
     
 private:
     const ItemType &type;
     int number;
-    Player * owner;
+    Originator owner;
 };
 
 

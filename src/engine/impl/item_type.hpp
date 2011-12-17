@@ -53,8 +53,8 @@ class DungeonMap;
 class Graphic;
 class Item;
 class MapCoord;
+class Originator;
 class Overlay;
-class Player;
 class Tile;
 
 enum ItemSize {
@@ -172,7 +172,7 @@ public:
 
     // onWalkOver -- runs on_walk_over
     // (NB Does nothing if actor->getHeight() != H_WALKING.)
-    void onWalkOver(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, Player *item_owner) const;
+    void onWalkOver(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &item_owner) const;
 
     // onHit -- runs on_hit
     void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor) const;

@@ -46,6 +46,7 @@ struct ClientPlayerInfo {
     Coercri::Color house_colour;
     int kills;
     int deaths;
+    int frags;
     int ping;
 };
 

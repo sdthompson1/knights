@@ -44,7 +44,7 @@ void SweepItems(DungeonMap &dmap, const MapCoord &mc)
 }
 
 
-void SweepCreatures(DungeonMap &dmap, const MapCoord &mc, bool use_height, MapHeight ht, Player *player)
+void SweepCreatures(DungeonMap &dmap, const MapCoord &mc, bool use_height, MapHeight ht, const Originator &originator)
 {
     vector<shared_ptr<Entity> > ents;
     dmap.getEntities(mc, ents);
@@ -64,7 +64,7 @@ void SweepCreatures(DungeonMap &dmap, const MapCoord &mc, bool use_height, MapHe
             MapAccess acc = dmap.getAccess(mc, (*it)->getHeight(), it->get());
             if (acc <= A_APPROACH && cr) {
                 // Deal DOOR_CLOSED_DAMAGE to creatures finding themselves in A_BLOCKED squares.
-                cr->damage(Mediator::instance().cfgInt("door_closed_damage"), player);
+                cr->damage(Mediator::instance().cfgInt("door_closed_damage"), originator);
             }
         }
     }

@@ -26,6 +26,7 @@
 
 #include "entity.hpp"
 #include "map_support.hpp"
+#include "originator.hpp"
 
 class ItemType;
 
@@ -33,23 +34,23 @@ class ItemType;
 // Add a new missile to the map. "Drop_after" controls whether an item
 // should be dropped after the missile hits (true for axes, daggers
 // etc, but false for skulls). "With_strength" doubles the range.
-// "owner" => kills will attributed to this player.
+// "owner" => kills will be attributed to this player.
 // "allow_friendly_fire" => If false, missile cannot hit the owner or anyone on same team as owner (used for crossbows/daggers/etc).
 //                       => If true, the missile can hit anyone (used for traps etc).
 // Returns true if the missile was successfully created.
 bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir, 
                    const ItemType &it, bool drop_after, bool with_strength,
-                   Player *owner, bool allow_friendly_fire);
+                   const Originator &owner, bool allow_friendly_fire);
 
 // The Missile class itself
 class Missile : public Entity {
     friend class MissileTask;
 
 public:
-    Missile(const ItemType &it, bool da, Player * ownr, bool allow_friendly_fire_);
+    Missile(const ItemType &it, bool da, const Originator &ownr, bool allow_friendly_fire_);
     virtual MapHeight getHeight() const;
     void doubleRange() { range_left *= 2; } // used for strength
-    Player * getOwner() const { return owner; }
+    const Originator & getOwner() const { return owner; }
     
     enum HitResult { FRIENDLY_FIRE, IGNORE, CAN_HIT };
     HitResult canHitPlayer(const Player *target) const;
@@ -58,7 +59,7 @@ private:
     const ItemType &itype;
     int range_left;
     bool drop_after;
-    Player * owner;
+    Originator owner;
     bool allow_friendly_fire;
 };
 

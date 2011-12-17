@@ -190,19 +190,19 @@ void Tile::damage(DungeonMap &dmap, const MapCoord &mc, int amount, shared_ptr<C
         if (hit_points <= 0) {
             // Tile has been destroyed
             shared_ptr<Tile> self(shared_from_this());
-            dmap.rmTile(mc, self, actor->getPlayer());
-            self->onDestroy(dmap, mc, actor, actor->getPlayer());
+            dmap.rmTile(mc, self, actor->getOriginator());
+            self->onDestroy(dmap, mc, actor, actor->getOriginator());
         }
     }
 }
 
-void Tile::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Tile::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
     // Run on_destroy event
     if (on_destroy) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_ptr<Tile>());
         ad.setLuaPos(mc);
         on_destroy->execute(ad);
@@ -223,13 +223,13 @@ bool Tile::targettable() const
 }
 
 void Tile::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor,
-                      Player *player, ActivateType act_type, bool success)
+                      const Originator &originator, ActivateType act_type, bool success)
 {
     // NB act_type isn't used here, but it is used in subclasses (in particular Lockable).
     if (on_activate) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setSuccess(success);
         ad.setLuaPos(mc);
@@ -237,48 +237,48 @@ void Tile::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
     }
 }
 
-void Tile::onWalkOver(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Tile::onWalkOver(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
     if (on_walk_over && actor && actor->getHeight() == H_WALKING) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setLuaPos(mc);
         on_walk_over->execute(ad);
     }
 }
 
-void Tile::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Tile::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
     if (on_approach) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setLuaPos(mc);
         on_approach->execute(ad);
     }
 }
 
-void Tile::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Tile::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
     if (on_withdraw) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setLuaPos(mc);
         on_withdraw->execute(ad);
     }
 }
 
-void Tile::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Tile::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
     if (on_hit) {
         ActionData ad;
         ad.setActor(actor, false);
-        ad.setPlayer(player);
+        ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setLuaPos(mc);
         on_hit->execute(ad);
@@ -384,22 +384,22 @@ void Tile::setItemsAllowed(DungeonMap *dmap, const MapCoord &mc, bool allow, boo
     }
 }
 
-void Tile::setAccess(DungeonMap *dmap, const MapCoord &mc, MapHeight height, MapAccess acc, Player *player)
+void Tile::setAccess(DungeonMap *dmap, const MapCoord &mc, MapHeight height, MapAccess acc, const Originator &originator)
 {
     access[height] = acc;
     if (dmap) {
         // We don't need to tell Mediator about access changes, but we do need 
         // to call SweepCreatures.
-        SweepCreatures(*dmap, mc, true, height, player);
+        SweepCreatures(*dmap, mc, true, height, originator);
     }
 }
 
-void Tile::setAccess(DungeonMap *dmap, const MapCoord &mc, MapAccess acc, Player *player)
+void Tile::setAccess(DungeonMap *dmap, const MapCoord &mc, MapAccess acc, const Originator &originator)
 {
     for (int i=0; i<=H_MISSILES; ++i) {
         access[i] = acc;
     }
-    SweepCreatures(*dmap, mc, false, H_MISSILES, player);
+    SweepCreatures(*dmap, mc, false, H_MISSILES, originator);
 }
 
 

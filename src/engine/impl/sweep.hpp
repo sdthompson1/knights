@@ -30,7 +30,7 @@
 // the new access level.
 // If "use_height" is true then restrict to creatures at the given height only. (If
 // "use_height" is false then pass in a dummy value for ht, eg H_MISSILES.)
-void SweepCreatures(DungeonMap &dmap, const MapCoord &mc, bool use_height, MapHeight ht, Player *player);
+void SweepCreatures(DungeonMap &dmap, const MapCoord &mc, bool use_height, MapHeight ht, const Originator &originator);
 
 // SweepItems moves aside any item at mc (or destroys it if it can't
 // be moved). Called when items-allowed becomes FALSE.

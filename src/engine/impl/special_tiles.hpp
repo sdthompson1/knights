@@ -40,13 +40,13 @@ public:
     void doorConstruct(const Graphic *og, const Graphic *cg, const MapAccess acc[]);
 
     virtual void damage(DungeonMap &, const MapCoord &, int amt, shared_ptr<Creature> actor);
-    virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, Player *);
+    virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &);
     virtual bool targettable() const;
     
 protected:
     virtual shared_ptr<Tile> doClone(bool);
-    virtual void openImpl(DungeonMap &, const MapCoord &, Player *player);
-    virtual void closeImpl(DungeonMap &, const MapCoord &, Player *player);
+    virtual void openImpl(DungeonMap &, const MapCoord &, const Originator &originator);
+    virtual void closeImpl(DungeonMap &, const MapCoord &, const Originator &originator);
     
 private:
     const Graphic *open_graphic;
@@ -75,14 +75,14 @@ public:
     virtual bool canPlaceItem() const;
     virtual shared_ptr<Item> getPlacedItem() const;
     virtual void placeItem(shared_ptr<Item>);
-    virtual void onDestroy(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *);
+    virtual void onDestroy(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
 
     virtual bool generateTrap(DungeonMap &, const MapCoord &);
     
 protected:
     virtual shared_ptr<Tile> doClone(bool);
-    virtual void openImpl(DungeonMap &, const MapCoord &, Player *);
-    virtual void closeImpl(DungeonMap &, const MapCoord &, Player *);
+    virtual void openImpl(DungeonMap &, const MapCoord &, const Originator &);
+    virtual void closeImpl(DungeonMap &, const MapCoord &, const Originator &);
 
 private:
     const Graphic *open_graphic;
@@ -100,7 +100,7 @@ public:
     virtual bool canPlaceItem() const;
     virtual shared_ptr<Item> getPlacedItem() const;
     virtual void placeItem(shared_ptr<Item>);
-    virtual void onDestroy(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *);
+    virtual void onDestroy(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
 
 protected:
     virtual shared_ptr<Tile> doClone(bool);
@@ -115,8 +115,8 @@ public:
     void homeConstruct(MapDirection fcg, shared_ptr<const ColourChange> cc_unsecured);
     
     // onApproach/onWithdraw are overridden to handle healing and quest-checking.
-    virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *);
-    virtual void onWithdraw(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *);
+    virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
+    virtual void onWithdraw(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
 
     // get facing -- the facing direction points inwards, towards the home.
     MapDirection getFacing() const { return facing; }

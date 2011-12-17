@@ -380,7 +380,7 @@ bool DungeonMap::rmItem(const MapCoord &mc)
     return true;
 }
 
-bool DungeonMap::addTile(const MapCoord &mc, shared_ptr<Tile> t, Player *player)
+bool DungeonMap::addTile(const MapCoord &mc, shared_ptr<Tile> t, const Originator &originator)
 {
     if (!valid(mc)) return false;
     if (!t) return false;
@@ -408,7 +408,7 @@ bool DungeonMap::addTile(const MapCoord &mc, shared_ptr<Tile> t, Player *player)
     tiles[idx].insert(it, t);
 
     // "post" events
-    Mediator::instance().onAddTile(*this, mc, *t, player);
+    Mediator::instance().onAddTile(*this, mc, *t, originator);
     if (need_destroy_items) {
         rmItem(mc);
     } else if (need_sweep_items) {
@@ -417,7 +417,7 @@ bool DungeonMap::addTile(const MapCoord &mc, shared_ptr<Tile> t, Player *player)
     return true;
 }
 
-bool DungeonMap::rmTile(const MapCoord &mc, shared_ptr<Tile> t, Player *player)
+bool DungeonMap::rmTile(const MapCoord &mc, shared_ptr<Tile> t, const Originator &originator)
 {
     if (!valid(mc)) return false;
     if (!t) return false;
@@ -432,7 +432,7 @@ bool DungeonMap::rmTile(const MapCoord &mc, shared_ptr<Tile> t, Player *player)
     tiles[idx].erase(it);
 
     // "post" events
-    Mediator::instance().onRmTile(*this, mc, *t, player);
+    Mediator::instance().onRmTile(*this, mc, *t, originator);
 
     return true;
 }
@@ -444,7 +444,7 @@ void DungeonMap::clearTiles(const MapCoord &mc)
 
     for (list<shared_ptr<Tile> >::iterator it = tiles[idx].begin();
     it != tiles[idx].end(); ++it) {
-        Mediator::instance().onRmTile(*this, mc, **it, 0);
+        Mediator::instance().onRmTile(*this, mc, **it, Originator(OT_None()));
     }
     tiles[idx].clear();
 }

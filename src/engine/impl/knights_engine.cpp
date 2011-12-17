@@ -319,6 +319,7 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
         inf.player_num = plyr_num;
         inf.kills = (*it)->getKills();
         inf.deaths = (*it)->getNSkulls();
+        inf.frags = (*it)->getFrags();
         inf.eliminated = (*it)->getElimFlag();
         player_list.push_back(inf);
     }

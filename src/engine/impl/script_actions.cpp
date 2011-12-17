@@ -69,7 +69,7 @@ void A_AddTile::execute(const ActionData &ad) const
     shared_ptr<Tile> dummy;
     ad.getTile(dmap, mc, dummy);
     if (!dmap) return;
-    dmap->addTile(mc, tile->clone(false), ad.getPlayer());
+    dmap->addTile(mc, tile->clone(false), ad.getOriginator());
 }
 
 A_AddTile::Maker A_AddTile::Maker::register_me;
@@ -163,8 +163,8 @@ void A_ChangeTile::execute(const ActionData &ad) const
     shared_ptr<Tile> old_tile;
     ad.getTile(dmap, mc, old_tile);
     if (!dmap || !old_tile || !tile) return;
-    dmap->rmTile(mc, old_tile, ad.getPlayer());
-    dmap->addTile(mc, tile->clone(false), ad.getPlayer());
+    dmap->rmTile(mc, old_tile, ad.getOriginator());
+    dmap->addTile(mc, tile->clone(false), ad.getOriginator());
 }
 
 A_ChangeTile::Maker A_ChangeTile::Maker::register_me;
@@ -248,7 +248,7 @@ void A_Damage::execute(const ActionData &ad) const
     if (cr) {
         const int amt = amount? amount->get() : 0;
         const int stun = stun_time? stun_time->get() : 0;
-        cr->damage(amt, ad.getPlayer(), Mediator::instance().getGVT() + stun, inhibit_squelch);
+        cr->damage(amt, ad.getOriginator(), Mediator::instance().getGVT() + stun, inhibit_squelch);
     }
 }
 
@@ -468,7 +468,7 @@ void A_PitKill::execute(const ActionData &ad) const
     shared_ptr<Creature> cr = ad.getActor();
     if (!cr || !cr->getMap()) return;
     if (cr->getHeight() != H_WALKING) return;
-    cr->onDeath(Creature::PIT_MODE, ad.getPlayer());
+    cr->onDeath(Creature::PIT_MODE, ad.getOriginator());
     cr->rmFromMap();
 }
 
@@ -601,7 +601,7 @@ void A_Shoot::execute(const ActionData &ad) const
     if (dm) {
         mc.setX(mc.getX() + dx);
         mc.setY(mc.getY() + dy);
-        CreateMissile(*dm, mc, dir, itype, false, false, ad.getPlayer(), true);
+        CreateMissile(*dm, mc, dir, itype, false, false, ad.getOriginator(), true);
         Mediator::instance().runHook("HOOK_SHOOT", dm, mc);
     }
 }
@@ -682,7 +682,7 @@ void A_ZombieKill::execute(const ActionData &ad) const
     // Kills the *victim* if it is a zombie (Used as a melee_action)
     shared_ptr<Creature> cr = ad.getVictim();
     if (cr && cr->getMap() && dynamic_cast<Zombie*>(cr.get())) {
-        cr->onDeath(Creature::NORMAL_MODE, ad.getPlayer());
+        cr->onDeath(Creature::NORMAL_MODE, ad.getOriginator());
         cr->rmFromMap();
     }
 }

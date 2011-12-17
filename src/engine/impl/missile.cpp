@@ -164,7 +164,7 @@ void MissileTask::execute(TaskManager &tm)
 
 bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
                    const ItemType &itype, bool drop_after, bool with_strength,
-                   Player * owner, bool allow_friendly_fire)
+                   const Originator &owner, bool allow_friendly_fire)
 {
     // Check if we can place a missile here
     if (!dmap.canPlaceMissile(mc, dir)) return false;
@@ -192,7 +192,7 @@ bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
     return true;
 }
 
-Missile::Missile(const ItemType &it, bool da, Player * ownr, bool aff)
+Missile::Missile(const ItemType &it, bool da, const Originator & ownr, bool aff)
     : itype(it), range_left(it.getMissileRange()), drop_after(da), owner(ownr), allow_friendly_fire(aff)
 {
     setAnim(it.getMissileAnim());
@@ -209,23 +209,23 @@ Missile::HitResult Missile::canHitPlayer(const Player *pl) const
     // If friendly fire is allowed then we can hit anything
     if (allow_friendly_fire) return CAN_HIT;
 
-    // If the target is a monster (!pl), or the missile was shot by a monster (!owner),
-    // then we can hit
+    // If the target is a monster (!pl), or the missile was NOT shot by a player (!owner.isPlayer()),
+    // then the missile can hit
     if (!pl) return CAN_HIT;
-    if (!owner) return CAN_HIT;
+    if (!owner.isPlayer()) return CAN_HIT;
     
     // If the firer and target are both the same player then it is an IGNORE situation
     // (e.g. crossbow bolt hitting the firer)
-    if (pl == owner) return IGNORE;
+    if (pl == owner.getPlayer()) return IGNORE;
 
     // Otherwise, it is either CAN_HIT or FRIENDLY_FIRE depending on whether players 
     // are on same team or different team
-    if (owner->getTeamNum() == -1 || pl->getTeamNum() == -1) {
+    if (owner.getPlayer()->getTeamNum() == -1 || pl->getTeamNum() == -1) {
         // Not a team game. So it is always CAN_HIT
         return CAN_HIT;
     } else {
         // Team game. Friendly fire if the teams match, otherwise CAN_HIT.
-        if (owner->getTeamNum() == pl->getTeamNum()) return FRIENDLY_FIRE;
+        if (owner.getPlayer()->getTeamNum() == pl->getTeamNum()) return FRIENDLY_FIRE;
         else return CAN_HIT;
     }
 }

@@ -415,6 +415,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     inf.house_colour.b = buf.readUbyte();
                     inf.kills = buf.readVarInt();
                     inf.deaths = buf.readVarInt();
+                    inf.frags = buf.readVarInt();
                     inf.ping = buf.readVarInt();
                     player_list.push_back(inf);
                 }

@@ -26,6 +26,7 @@
 #include "dungeon_map.hpp"
 #include "gore_manager.hpp"
 #include "mediator.hpp"
+#include "originator.hpp"
 #include "tile.hpp"
 
 GoreManager::GoreManager()
@@ -117,14 +118,14 @@ void GoreManager::placeTile(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Til
         if ((*tile)->getDepth() <= new_tile->getDepth()) {
 
             if (find(blood_tiles.begin(), blood_tiles.end(), *tile) != blood_tiles.end()) {
-                dmap.rmTile(mc, *tile, 0);
+                dmap.rmTile(mc, *tile, Originator(OT_None()));
                 continue;
             } 
 
             for (map<const Player*, KnightCorpse>::iterator kt = knight_corpses.begin();
             kt != knight_corpses.end(); ++kt) {
                 if (kt->second.with_blood == *tile || kt->second.without_blood == *tile) {
-                    dmap.rmTile(mc, *tile, 0);
+                    dmap.rmTile(mc, *tile, Originator(OT_None()));
                     continue;
                 }
             }
@@ -133,7 +134,7 @@ void GoreManager::placeTile(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Til
             vecp = monster_corpses.begin(); vecp != monster_corpses.end(); ++vecp) {
                 if (find(vecp->second.begin(), vecp->second.end(), *tile)
                 != vecp->second.end()) {
-                    dmap.rmTile(mc, *tile, 0);
+                    dmap.rmTile(mc, *tile, Originator(OT_None()));
                     continue;
                 }
             }
@@ -143,7 +144,7 @@ void GoreManager::placeTile(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Til
     // We are now ready to add the new tile.
     // Note -- the tile is shared, rather than copied, because we want to be able to identify
     // it again.... (corpse/blood tiles are assumed not to have any mutable state).
-    dmap.addTile(mc, new_tile, 0);
+    dmap.addTile(mc, new_tile, Originator(OT_None()));
 }
 
 

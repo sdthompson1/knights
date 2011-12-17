@@ -910,6 +910,7 @@ void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list)
         if (it->kills >= 0) str << it->kills;
         str << "\t";
         if (it->deaths >= 0) str << it->deaths;
+        str << "\t" << it->frags;
         str << "\t" << it->ping;
         pimpl->ingame_player_list.add(str.str());
     }

@@ -34,7 +34,7 @@ void EventManager::onAddCreature(Creature &cr)
 {
     // Do on_walk_over
     if (cr.getMap() && !cr.isMoving() && !cr.isApproaching()) {
-        walkOverEvent(cr, cr.getPlayer());
+        walkOverEvent(cr, cr.getOriginator());
     }
 }
 
@@ -51,7 +51,7 @@ void EventManager::postRepositionCreature(Creature &cr)
     // Do on_walk_over
     if (cr.getMap() && !cr.isMoving() && !cr.isApproaching()
     && cr.queryWalkOverFlag()) {
-        walkOverEvent(cr, cr.getPlayer());
+        walkOverEvent(cr, cr.getOriginator());
     }
 }
 
@@ -69,13 +69,13 @@ void EventManager::onChangeEntityMotion(Creature &cr)
         shared_ptr<Creature> crs(static_pointer_cast<Creature>(cr.shared_from_this()));
         for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
         ++it) {
-            (*it)->onApproach(*cr.getMap(), cr.getPos(), crs, 0);
+            (*it)->onApproach(*cr.getMap(), cr.getPos(), crs, Originator(OT_None()));
             if (!cr.getMap()) return;
         }
     }
 }
 
-void EventManager::onAddTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, Player *player)
+void EventManager::onAddTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, const Originator &originator)
 {
     // NB we don't bother running on_approach from here.
     // Do on_walk_over event if necessary (just for this tile though).
@@ -85,13 +85,13 @@ void EventManager::onAddTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, P
         if (!(*it)->isMoving()) {
             shared_ptr<Creature> cr = dynamic_pointer_cast<Creature>(*it);
             if (cr) {
-                tile.onWalkOver(dmap, mc, cr, player);
+                tile.onWalkOver(dmap, mc, cr, originator);
             }
         }
     }
 }
 
-void EventManager::onRmTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, Player *player)
+void EventManager::onRmTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, const Originator &originator)
 {
     // Run on_withdraw if necessary (just for this tile though)
     vector<shared_ptr<Entity> > ents;
@@ -104,7 +104,7 @@ void EventManager::onRmTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, Pl
             && (*it)->getFacing() == Opposite(MapDirection(d))) {
                 shared_ptr<Creature> cr = dynamic_pointer_cast<Creature>(*it);
                 if (cr) {
-                    tile.onWithdraw(dmap, mc, cr, player);  // (not mc2; we want the tile's position, not the creature's.)
+                    tile.onWithdraw(dmap, mc, cr, originator);  // (not mc2; we want the tile's position, not the creature's.)
                 }
             }
         }
@@ -112,7 +112,7 @@ void EventManager::onRmTile(DungeonMap &dmap, const MapCoord &mc, Tile &tile, Pl
 }
 
 
-void EventManager::walkOverEvent(Creature &cr, Player * player)
+void EventManager::walkOverEvent(Creature &cr, const Originator &originator)
 {
     // Do on_walk_over
     if (cr.getMap()) {
@@ -121,7 +121,7 @@ void EventManager::walkOverEvent(Creature &cr, Player * player)
         shared_ptr<Creature> crs(static_pointer_cast<Creature>(cr.shared_from_this()));
         for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
         ++it) {
-            (*it)->onWalkOver(*cr.getMap(), cr.getPos(), crs, player);
+            (*it)->onWalkOver(*cr.getMap(), cr.getPos(), crs, originator);
             if (!cr.getMap()) return;  // don't process any further events
         }
 
@@ -143,7 +143,7 @@ void EventManager::withdrawEvent(Creature &cr)
         shared_ptr<Creature> crs(static_pointer_cast<Creature>(cr.shared_from_this()));
         for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
         ++it) {
-            (*it)->onWithdraw(*cr.getMap(), mc, crs, 0);
+            (*it)->onWithdraw(*cr.getMap(), mc, crs, Originator(OT_None()));
             if (!cr.getMap()) return;
         }
     }

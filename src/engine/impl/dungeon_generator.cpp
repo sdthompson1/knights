@@ -924,20 +924,20 @@ void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap, CoordTransform &ct)
                 for (int x=0; x<rwidth+2; ++x) {
                     MapCoord mc(xs*(rwidth+1)+x, ys*(rheight+1));
                     dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), 0);
+                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
                     mc.setY((ys+1)*(rheight+1));
                     dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), 0);
+                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
                 }
                 
                 // vertical walls
                 for (int y=0; y<rheight+2; ++y) {
                     MapCoord mc(xs*(rwidth+1), ys*(rheight+1)+y);
                     dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), 0);
+                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
                     mc.setX((xs+1)*(rwidth+1));
                     dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), 0);
+                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
                 }
             }
         }
@@ -952,7 +952,7 @@ void DungeonGenerator::fillWithWalls(DungeonMap & dmap, const MapCoord &corner,
             for (int x=0; x<width; ++x) {
                 const MapCoord mc(corner.getX() + x, corner.getY() + y);
                 dmap.clearTiles(mc);
-                dmap.addTile(mc, wall->clone(false), 0);
+                dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
             }
         }
     }
@@ -1000,12 +1000,12 @@ bool DungeonGenerator::placeDoor(DungeonMap & dmap, const MapCoord &mc,
     // OK.
     // Remove all existing tiles
     dmap.getTiles(mc, tiles);
-    for (int i=0; i<tiles.size(); ++i) dmap.rmTile(mc, tiles[i], 0);
+    for (int i=0; i<tiles.size(); ++i) dmap.rmTile(mc, tiles[i], Originator(OT_None()));
 
     // Add the new door tile.
-    dmap.addTile(mc, door_tile_1->clone(false), 0);
+    dmap.addTile(mc, door_tile_1->clone(false), Originator(OT_None()));
     if (door_tile_2) {
-        dmap.addTile(mc, door_tile_2->clone(false), 0);
+        dmap.addTile(mc, door_tile_2->clone(false), Originator(OT_None()));
     }
 
     return true;

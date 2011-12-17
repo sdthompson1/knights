@@ -118,7 +118,7 @@ namespace {
             // note: we don't care if CreateMissile was successful or not...
             CreateMissile(*dmap, actor->getPos(), actor->getFacing(),
                           *itype->getAmmo(), false, actor->hasStrength(),
-                          actor->getPlayer(), false);
+                          actor->getOriginator(), false);
 
             // unload the crossbow, and stun
             actor->setItemInHand(itype->getUnloaded());
@@ -248,7 +248,7 @@ void A_Activate::execute(const ActionData &ad) const
     vector<shared_ptr<Tile> > tiles;
     dm->getTiles(mc, tiles);
     for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
-        (*it)->onActivate(*dm, mc, actor, ad.getPlayer(), act_type);
+        (*it)->onActivate(*dm, mc, actor, ad.getOriginator(), act_type);
     }
 
     // Check if there was a (direct) creature. If so, stun him for "action_delay".
@@ -349,7 +349,7 @@ void A_Attack::execute(const ActionData &ad) const
             // want to automatically drop the book.)
             ActionData data;
             data.setActor(actor, true);
-            data.setPlayer(actor->getPlayer());
+            data.setOriginator(actor->getOriginator());
             A_DropHeld action;
             action.execute(data);
         }
@@ -432,7 +432,7 @@ void A_Suicide::execute(const ActionData &ad) const
     shared_ptr<Creature> actor = ExtractCreature(ad);
     if (!actor) return;
     Mediator::instance().runHook("HOOK_KNIGHT_DAMAGE", actor);
-    actor->onDeath(Creature::NORMAL_MODE, 0);
+    actor->onDeath(Creature::NORMAL_MODE, ad.getOriginator());
     actor->rmFromMap();
 }
 
@@ -610,7 +610,7 @@ void A_PickLock::execute(const ActionData &ad) const
     if (g_rng.getBool(prob/100.0f)) {
         // lock pick was successful
         // We can call "open" directly to make the tile open (even though it is locked)
-        t->open(*cr->getMap(), DisplaceCoord(cr->getPos(), cr->getFacing()), ad.getPlayer());
+        t->open(*cr->getMap(), DisplaceCoord(cr->getPos(), cr->getFacing()), ad.getOriginator());
     }
     
     // compute stun time (lock picking is faster with quickness)
@@ -819,7 +819,7 @@ void A_SetBearTrap::execute(const ActionData &ad) const
     if (curr_item) return; // bear traps shouldn't be able to stack.
 
     shared_ptr<Item> trap_item(new Item(trap_itype, 1));
-    trap_item->setOwner(ad.getPlayer());
+    trap_item->setOwner(ad.getOriginator());
     actor->getMap()->addItem(mc, trap_item);
     actor->setItemInHand(0);
     DoStun(actor, gvt);

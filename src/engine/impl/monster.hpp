@@ -45,7 +45,9 @@ public:
           monster_manager(mmgr), type(type_) { }
 
     virtual ~Monster();
-    virtual void onDeath(DeathMode dmode, Player *);
+    virtual void onDeath(DeathMode dmode, const Originator &);
+
+    virtual Originator getOriginator() const { return Originator(OT_Monster()); }
 
 private:
     MonsterManager &monster_manager;

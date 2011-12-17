@@ -66,19 +66,19 @@ shared_ptr<Tile> Door::doClone(bool)
     return shared_ptr<Tile>(new Door(*this));
 }
 
-void Door::openImpl(DungeonMap &dmap, const MapCoord &mc, Player *player)
+void Door::openImpl(DungeonMap &dmap, const MapCoord &mc, const Originator &originator)
 {
     setGraphic(&dmap, mc, open_graphic, shared_ptr<const ColourChange>());
     setItemsAllowed(&dmap, mc, true, false);
-    setAccess(&dmap, mc, A_CLEAR, player);
+    setAccess(&dmap, mc, A_CLEAR, originator);
 }
 
-void Door::closeImpl(DungeonMap &dmap, const MapCoord &mc, Player *player)
+void Door::closeImpl(DungeonMap &dmap, const MapCoord &mc, const Originator &originator)
 {
     setGraphic(&dmap, mc, closed_graphic, shared_ptr<const ColourChange>());
     setItemsAllowed(&dmap, mc, false, false);
     for (int h=0; h<=H_MISSILES; ++h) {
-        setAccess(&dmap, mc, MapHeight(h), closed_access[MapHeight(h)], player);
+        setAccess(&dmap, mc, MapHeight(h), closed_access[MapHeight(h)], originator);
     }
 }
 
@@ -90,11 +90,11 @@ void Door::damage(DungeonMap &dmap, const MapCoord &mc, int amt, shared_ptr<Crea
     }
 }
 
-void Door::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Door::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
     // Filter out on_hit if the door is open!
     if (isClosed()) {
-        Lockable::onHit(dmap, mc, actor, player);
+        Lockable::onHit(dmap, mc, actor, originator);
     }
 }
 
@@ -125,7 +125,7 @@ shared_ptr<Tile> Chest::doClone(bool)
     return new_tile;
 }
 
-void Chest::openImpl(DungeonMap &dmap, const MapCoord &mc, Player *)
+void Chest::openImpl(DungeonMap &dmap, const MapCoord &mc, const Originator &)
 {
     setGraphic(&dmap, mc, open_graphic, shared_ptr<const ColourChange>());
     setItemsAllowed(&dmap, mc, true, false);
@@ -133,7 +133,7 @@ void Chest::openImpl(DungeonMap &dmap, const MapCoord &mc, Player *)
     stored_item = shared_ptr<Item>();
 }
 
-void Chest::closeImpl(DungeonMap &dmap, const MapCoord &mc, Player *)
+void Chest::closeImpl(DungeonMap &dmap, const MapCoord &mc, const Originator &)
 {
     setGraphic(&dmap, mc, closed_graphic, shared_ptr<const ColourChange>());
     stored_item = dmap.getItem(mc);
@@ -162,9 +162,9 @@ void Chest::placeItem(shared_ptr<Item> i)
     stored_item = i;
 }
 
-void Chest::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Chest::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
-    Tile::onDestroy(dmap, mc, actor, player);
+    Tile::onDestroy(dmap, mc, actor, originator);
     if (stored_item && !stored_item->getType().isFragile()) {
         // NB don't set actor, because the creature isn't actually dropping the item himself.
         // Also: no need to set allow_nonlocal - because the chest tile should always be free
@@ -213,7 +213,7 @@ shared_ptr<Tile> Home::doClone(bool)
     return shared_ptr<Tile>(new Home(*this));
 }
 
-void Home::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> creature, Player *player)
+void Home::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> creature, const Originator &originator)
 {
     // If creature is a kt, then do healing and check quest conditions.
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(creature);
@@ -235,10 +235,10 @@ void Home::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
             }
         }
     }
-    Tile::onApproach(dmap, mc, creature, player);
+    Tile::onApproach(dmap, mc, creature, originator);
 }
 
-void Home::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> creature, Player *player)
+void Home::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> creature, const Originator &originator)
 {
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(creature);
     if (kt) {
@@ -248,7 +248,7 @@ void Home::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         }
         kt->getPlayer()->getDungeonView().cancelContinuousMessages();
     }
-    Tile::onWithdraw(dmap, mc, creature, player);
+    Tile::onWithdraw(dmap, mc, creature, originator);
 }
 
 void Home::secure(DungeonMap &dmap, const MapCoord &mc, shared_ptr<const ColourChange> newcc)
@@ -286,9 +286,9 @@ void Barrel::placeItem(shared_ptr<Item> i)
     stored_item = i;
 }
 
-void Barrel::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, Player *player)
+void Barrel::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
-    Tile::onDestroy(dmap, mc, actor, player);
+    Tile::onDestroy(dmap, mc, actor, originator);
     if (stored_item && !stored_item->getType().isFragile()) {
         // NB don't set actor, because the creature isn't actually dropping the item himself.
         // Also: should always be able to drop on the barrel tile itself, so don't set "allow_nonlocal"

@@ -52,7 +52,7 @@ class Entity;
 class Item;
 class ItemReplacementTask; // used internally
 class ItemType;
-class Player;
+class Originator;
 class RoomMap;
 class Task;
 class TaskManager;
@@ -103,12 +103,10 @@ public:
     
     // add/remove items/tiles
     // these return true if successful.
-    // NOTE: for addTile and rmTile, "player" is set to the player who caused this tile to come into existence
-    // (or be removed). Used for attributing kills. Set it to null if this is not relevant.
     bool addItem(const MapCoord &mc, shared_ptr<Item> it);
     bool rmItem(const MapCoord &mc);
-    bool addTile(const MapCoord &mc, shared_ptr<Tile> ti, Player *player);
-    bool rmTile(const MapCoord &mc, shared_ptr<Tile> ti, Player *player);
+    bool addTile(const MapCoord &mc, shared_ptr<Tile> ti, const Originator &);
+    bool rmTile(const MapCoord &mc, shared_ptr<Tile> ti, const Originator &);
 
     // this removes all tiles at a given mapcoord.
     void clearTiles(const MapCoord &mc);

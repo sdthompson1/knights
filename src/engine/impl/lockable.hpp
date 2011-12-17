@@ -29,6 +29,7 @@
 #ifndef LOCKABLE_HPP
 #define LOCKABLE_HPP
 
+#include "originator.hpp"
 #include "tile.hpp"
 
 #include "boost/shared_ptr.hpp"
@@ -43,7 +44,7 @@ class Lockable : public Tile {
     enum { PICK_ONLY_LOCK_NUM=99998, SPECIAL_LOCK_NUM = 99999 };
     
 public:
-    Lockable() : closed(true), lock(-1), lock_chance(0), pick_only_chance(0), keymax(1), trap_owner(0),
+    Lockable() : closed(true), lock(-1), lock_chance(0), pick_only_chance(0), keymax(1), trap_owner(OT_None()),
                  on_open_or_close(0) { }
 
     void setOpenInitially() { closed = false; }
@@ -54,12 +55,12 @@ public:
 
     // Override canActivateHere, onActivate to deal with opening and closing.
     virtual bool canActivateHere() const { return false; }
-    virtual void onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>, Player *,
+    virtual void onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>, const Originator &,
                             ActivateType, bool success = true);
 
     // Methods for opening and closing Lockable tiles. Called by the Lua "open" and "close" commands.
-    void close(DungeonMap &, const MapCoord &, Player *);
-    void open(DungeonMap &, const MapCoord &, Player *);
+    void close(DungeonMap &, const MapCoord &, const Originator &);
+    void open(DungeonMap &, const MapCoord &, const Originator &);
 
     // Check whether the tile is currently closed
     bool isClosed() const { return closed; }
@@ -84,7 +85,7 @@ public:
     void setTrap(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr,
                  shared_ptr<Trap> newtrap);
     virtual bool generateTrap(DungeonMap &, const MapCoord &) { return false; }
-    virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *);
+    virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
 
 
     // Mini map colour of anything lockable should always be COL_FLOOR.
@@ -94,12 +95,12 @@ public:
 protected:
     // "openImpl", "closeImpl" are implemented by subclasses, and handle the actual opening
     // and closing.
-    virtual void openImpl(DungeonMap &, const MapCoord &, Player *player) = 0;
-    virtual void closeImpl(DungeonMap &, const MapCoord &, Player *player) = 0; 
+    virtual void openImpl(DungeonMap &, const MapCoord &, const Originator &) = 0;
+    virtual void closeImpl(DungeonMap &, const MapCoord &, const Originator &) = 0; 
 
 private:
-    bool doOpen(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *, ActivateType);
-    bool doClose(DungeonMap &, const MapCoord &, shared_ptr<Creature>, Player *, ActivateType);
+    bool doOpen(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &, ActivateType);
+    bool doClose(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &, ActivateType);
     bool checkUnlock(shared_ptr<Creature>) const;
     void activateTraps(DungeonMap &, const MapCoord &, shared_ptr<Creature>);
     void disarmTraps(DungeonMap &, const MapCoord &);
@@ -114,7 +115,7 @@ private:
 
     int lock_chance, pick_only_chance, keymax;
     shared_ptr<Trap> trap;
-    Player *trap_owner;
+    Originator trap_owner;
 
     const Action *on_open_or_close;
 };

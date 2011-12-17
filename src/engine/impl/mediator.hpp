@@ -76,6 +76,7 @@ class KnightsCallbacks;
 class MapCoord;
 class MonsterManager;
 class MonsterType;
+class Originator;
 class Player;
 class Sound;
 class StuffManager;
@@ -166,8 +167,8 @@ public:
     void onPickup(const Player &, const ItemType &);
 
     // Tiles
-    void onAddTile(DungeonMap &, const MapCoord &, Tile &, Player *);
-    void onRmTile(DungeonMap &, const MapCoord &, Tile &, Player *);
+    void onAddTile(DungeonMap &, const MapCoord &, Tile &, const Originator &);
+    void onRmTile(DungeonMap &, const MapCoord &, Tile &, const Originator &);
     void onChangeTile(const DungeonMap &, const MapCoord &, const Tile &);
 
     // Generic Event Hooks (Usually used for sound effects.)

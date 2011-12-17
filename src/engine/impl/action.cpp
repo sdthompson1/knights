@@ -35,6 +35,19 @@
 
 #include "boost/thread/mutex.hpp"
 
+namespace {
+    void PushOriginator(lua_State *lua, const Originator &originator)
+    {
+        if (originator.isPlayer()) {
+            NewLuaPtr<Player>(lua, originator.getPlayer());
+        } else if (originator.isMonster()) {
+            lua_pushstring(lua, "monster");
+        } else {
+            lua_pushnil(lua);  // unknown originator
+        }
+    }
+}
+
 void ActionData::setItem(DungeonMap *dmap, const MapCoord &mc, const ItemType * it)
 {
     // Can't set the item location (dmap & mc) without setting an item
@@ -221,7 +234,7 @@ void LuaAction::execute(const ActionData &ad) const
     NewLuaWeakPtr<Creature>(lua, ad.getActor());   // [cxt actor]
     lua_setfield(lua, -2, "actor");                   // [cxt]
 
-    NewLuaPtr<Player>(lua, ad.getPlayer());   // [cxt player]
+    PushOriginator(lua, ad.getOriginator());  // [cxt player]
     lua_setfield(lua, -2, "player");          // [cxt]
 
     const MapCoord &mc = ad.getLuaPos();

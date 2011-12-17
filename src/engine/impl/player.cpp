@@ -164,7 +164,7 @@ Player::Player(int plyr_num,
       default_item(di), backpack_capacities(bc), control_set(cs),
       quests(qs),
       secured_home_cc(sec_home_cc),
-      nskulls(0), nkills(0), name(name_), elim_flag(false), respawn_type(R_NORMAL),
+      nskulls(0), nkills(0), frags(0), name(name_), elim_flag(false), respawn_type(R_NORMAL),
       team_num(team_num_),
       teleport_flag(false), speech_bubble(false), approach_based_controls(true), action_bar_controls(false)
 {
@@ -586,7 +586,7 @@ void Player::computeAvailableControls()
                 // to approach-based controls.
                 ActionData ad;
                 ad.setActor(kt, true);
-                ad.setPlayer(this);
+                ad.setOriginator(Originator(OT_Player(), this));
                 if ((*it)->getAction() && (*it)->getAction()->possible(ad)
                 && (getApproachBasedControls() || ((*it)->getMenuSpecial() & UserControl::MS_APPR_BASED) == 0 )) {
                     new_controls.insert(make_pair(*it, ControlInfo()));
@@ -669,7 +669,7 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
             if (ok) {
                 ActionData ad;
                 ad.setActor(cr, true);
-                ad.setPlayer(cr->getPlayer());
+                ad.setOriginator(cr->getOriginator());
                 ad.setTile(dmap, mc, *it);
                 if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {
                     ControlInfo ci;
@@ -691,7 +691,7 @@ void Player::addItemControls(const ItemType &itype, map<const Control *, Control
     if (ctrl) {
         ActionData ad;
         ad.setActor(cr, true);
-        ad.setPlayer(this);
+        ad.setOriginator(Originator(OT_Player(), this));
         ad.setItem(0, MapCoord(), &itype);
         if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {
             ControlInfo ci;
