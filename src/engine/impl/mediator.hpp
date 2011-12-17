@@ -198,7 +198,8 @@ public:
                     MapDirection facing, shared_ptr<Tile> secured_wall_tile);
 
     // End-of-Game handling
-    void winGame(const Player *p, std::string msg = "");  // ends the game. if p==0 then all players lose.
+    void winGame(const Player & p); // makes p win the game (if team game, everyone on p's team wins)
+    void timeLimitExpired();        // all players lose, except for deathmatch games where plyr(s) with most frags win(s)
     void eliminatePlayer(Player &);
     bool gameRunning() const { return game_running; }
     int getNumPlayersRemaining() const
@@ -224,7 +225,8 @@ public:
                                MonsterManager &mm, StuffManager &sm, TaskManager &tm,
                                ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
                                boost::shared_ptr<TutorialManager> tut_m,
-                               boost::shared_ptr<lua_State> lua);
+                               boost::shared_ptr<lua_State> lua,
+                               bool deathmatch_mode);
     static void destroyInstance();  // must be called before the game thread exits, otherwise will leak memory
     void setMap(shared_ptr<DungeonMap> dm, shared_ptr<CoordTransform> ct) { dmap = dm; coord_transform = ct; }
     void addPlayer(Player &);
@@ -235,15 +237,15 @@ private:
     // Here, we mostly only have to keep references to things...
     Mediator(EventManager &em, GoreManager &gm, HomeManager &hm, MonsterManager &mm,
              StuffManager &sm, TaskManager &tm, ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
-             boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua)
+             boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua, bool dm)
         : config_map(cmap), event_manager(em), gore_manager(gm), home_manager(hm), monster_manager(mm),
           stuff_manager(sm), task_manager(tm), view_manager(vm), tutorial_manager(tut_m), game_running(true), callbacks(0),
-          lua_state(lua) { }
+          lua_state(lua), deathmatch_mode(dm) { }
     void operator=(const Mediator &) const;  // not defined
     Mediator(const Mediator &);              // not defined
 
 
-    std::string getWinningTeamMessage(int team_num) const;
+    void endGame(const std::vector<const Player*> &, std::string msg);
     
 private:
 
@@ -274,6 +276,9 @@ private:
 
     // Keep a pointer to the lua state for easy access from various places.
     boost::shared_ptr<lua_State> lua_state;
+
+    // this affects the behaviour of timeLimitExpired()
+    bool deathmatch_mode;
 };
 
 #endif

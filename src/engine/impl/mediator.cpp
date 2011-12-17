@@ -57,10 +57,11 @@ namespace {
 void Mediator::createInstance(EventManager &em, GoreManager &gm, HomeManager &hm,
                               MonsterManager &mm, StuffManager &sm, TaskManager &tm,
                               ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
-                              boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua)
+                              boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua,
+                              bool deathmatch_mode)
 {
     if (g_mediator_ptr.get()) throw MediatorCreatedTwice();
-    g_mediator_ptr.reset(new Mediator(em, gm, hm, mm, sm, tm, vm, cmap, tut_m, lua));
+    g_mediator_ptr.reset(new Mediator(em, gm, hm, mm, sm, tm, vm, cmap, tut_m, lua, deathmatch_mode));
 }
 
 void Mediator::destroyInstance()
@@ -330,30 +331,82 @@ void Mediator::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &po
 // ending the game
 //
 
-void Mediator::winGame(const Player *pl, std::string msg)
+void Mediator::winGame(const Player &pl)
+{
+    std::vector<const Player*> winners;
+
+    const int team_num = pl.getTeamNum();
+    if (team_num == -1) {
+        winners.push_back(&pl);
+    } else {
+        for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
+            if ((*it)->getTeamNum() == team_num) {
+                winners.push_back(*it);
+            }
+        }
+    }
+    endGame(winners, "");
+}
+
+void Mediator::timeLimitExpired()
+{
+    std::vector<const Player *> winners;
+    std::string msg;
+    
+    if (deathmatch_mode) {
+
+        // Find out who has the most frags...
+        int most_frags = -999999;
+
+        for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
+
+            if ((*it)->getFrags() > most_frags) {
+                most_frags = (*it)->getFrags();
+                winners.clear();
+            }
+
+            if ((*it)->getFrags() == most_frags) {
+                winners.push_back(*it);
+            }
+        }
+
+    } else {
+        msg = "Time limit expired! ";
+    }
+    
+    endGame(winners, msg);
+}
+
+void Mediator::endGame(const std::vector<const Player *> &winners, std::string msg)
 {
     game_running = false;
 
-    const int team_num = pl ? pl->getTeamNum() : -1;
-    
     // tell clients that the game has ended
     for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
-        if ( (team_num == -1 && *it == pl) || (team_num != -1 && (*it)->getTeamNum() == team_num) ) {
-            Mediator::getCallbacks().winGame((*it)->getPlayerNum());
-        } else {
+        if (std::find(winners.begin(), winners.end(), *it) == winners.end()) {
             Mediator::getCallbacks().loseGame((*it)->getPlayerNum());
+        } else {
+            Mediator::getCallbacks().winGame((*it)->getPlayerNum());
         }
     }
 
-    if (!msg.empty()) {
-        Mediator::getCallbacks().gameMsg(-1, msg);
+    // Send the message saying who has won.
+
+    if (winners.empty()) {
+        msg += "All players lose!";
+        
+    } else if (winners.size() == 1) {
+        msg += winners.front()->getName() + " is the winner!";
+        
     } else {
-        if (pl && !pl->getName().empty()) {
-            Mediator::getCallbacks().gameMsg(-1, pl->getName() + " is the winner!");
-        } else {
-            Mediator::getCallbacks().gameMsg(-1, "All players lose!");
+        for (int i = 0; i < int(winners.size()) - 2; ++i) {
+            msg += winners[i]->getName() + ", ";
         }
+        msg += winners[winners.size()-2]->getName() + " and ";
+        msg += winners[winners.size()-1]->getName() + " are the winners!";
     }
+    
+    Mediator::getCallbacks().gameMsg(-1, msg);
 
     // print length of game, in mins and seconds
     const int time = getGVT()/1000;
@@ -406,15 +459,7 @@ void Mediator::eliminatePlayer(Player &pl)
         || (team_game && !two_teams_found);
     
     if (game_over) {
-
-        const Player * winner = *remaining_players.begin();
-        
-        std::string msg;
-        if (team_game) {
-            msg = getWinningTeamMessage(winner->getTeamNum());
-        }
-        
-        winGame(winner, msg);
+        winGame(**remaining_players.begin());        
     } else {
         // this puts him into observer mode, but he is still in the game (as an observer).
         Mediator::getCallbacks().onElimination(pl.getPlayerNum());
@@ -432,33 +477,4 @@ KnightsCallbacks & Mediator::getCallbacks() const
         throw CallbacksUnavailable();
     }
     return *callbacks;
-}
-
-std::string Mediator::getWinningTeamMessage(int winning_team) const
-{
-    // Find names of all the winning players
-    std::vector<std::string> winner_names;
-    for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
-        if ((*it)->getTeamNum() == winning_team) {
-            winner_names.push_back((*it)->getName());
-        }
-    }
-
-    if (winner_names.size() < 2) {
-        return "";  // The default message ("Fred wins") is fine
-
-    } else {
-        // Otherwise, need custom message for two or more winners
-
-        std::string msg;
-        
-        for (int i = 0; i < int(winner_names.size()) - 2; ++i) {
-            msg += winner_names[i] + ", ";
-        }
-
-        msg += winner_names[winner_names.size()-2] + " and ";
-        msg += winner_names[winner_names.size()-1] + " are the winners!";
-
-        return msg;
-    }
 }

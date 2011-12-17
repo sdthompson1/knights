@@ -187,7 +187,7 @@ void A_CheckQuest::execute(const ActionData &ad) const
         vector<string> dummy;
         if (kt->getMap() && kt->getPlayer()->checkQuests(dummy)) {
             // Player has won the game
-            Mediator::instance().winGame(kt->getPlayer());
+            Mediator::instance().winGame(*kt->getPlayer());
         }
     }
 }

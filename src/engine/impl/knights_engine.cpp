@@ -96,6 +96,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
                              const std::vector<std::string> &player_names,
                              bool tutorial_mode,
+                             bool deathmatch_mode,
                              std::string &warning_msg)
     : pimpl(new KnightsEngineImpl(hse_cols.size()))
 {
@@ -108,7 +109,8 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              pimpl->home_manager, pimpl->monster_manager,
                              pimpl->stuff_manager, pimpl->task_manager,
                              pimpl->view_manager, config->getConfigMap(),
-                             tutorial_manager, config->getLuaState());
+                             tutorial_manager, config->getLuaState(),
+                             deathmatch_mode);
 
     try {
         // Most initialization work is delegated to the KnightsConfig object

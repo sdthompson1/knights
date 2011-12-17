@@ -582,8 +582,7 @@ namespace {
 
         if (do_update) {
             // If they've changed a non-quest item then change the quest to CUSTOM
-            // NOTE: Time Limit is exempt from this at the moment.
-            if (key != "quest" && key != "#time" && impl.menu_selections.getValue(key) != value) {
+            if (key != "quest" && impl.menu_selections.getValue(key) != value) {
                 impl.menu_selections.setValue("quest", 0);
             }
             
@@ -719,7 +718,7 @@ namespace {
                 std::string warning_msg;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, kg.menu_selections, hse_cols, player_names,
-                                                   kg.tutorial_mode, warning_msg));
+                                                   kg.tutorial_mode, kg.is_deathmatch, warning_msg));
                 } catch (const std::exception &e) {
                     kg.startup_err_msg = e.what();
                     if (kg.startup_err_msg.empty()) kg.startup_err_msg = "Unknown error";

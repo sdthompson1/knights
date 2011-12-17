@@ -22,7 +22,7 @@
  */
 
 /*
- * This task terminates the game when it executes. All players lose.
+ * This task terminates the game (by calling Mediator::timeLimitExpired) when it executes.
  *
  */
 

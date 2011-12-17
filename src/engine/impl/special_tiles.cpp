@@ -227,7 +227,7 @@ void Home::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
             bool result = kt->getPlayer()->checkQuests(msgs);
             if (result) {
                 // Player has won the game
-                Mediator::instance().winGame(&pl);
+                Mediator::instance().winGame(pl);
             } else {
                 for (int i=0; i<msgs.size(); ++i) {
                     kt->getPlayer()->getDungeonView().addContinuousMessage(msgs[i]);

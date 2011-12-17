@@ -28,10 +28,5 @@
 
 void TimeLimitTask::execute(TaskManager &tm)
 {
-    Mediator::instance().winGame(0, "Time limit expired! All players lose!");
+    Mediator::instance().timeLimitExpired();
 }
-
-
-
-    
-    

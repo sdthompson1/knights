@@ -65,6 +65,7 @@ public:
                   const std::vector<int> &hse_cols,
                   const std::vector<std::string> &player_names,
                   bool tutorial_mode,
+                  bool deathmatch_mode,  // HACK, this should really be in the KnightsConfig.
                   std::string &warning_msg);
     ~KnightsEngine();
 
