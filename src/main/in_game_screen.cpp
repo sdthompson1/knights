@@ -55,6 +55,7 @@ namespace {
 
 InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, 
                            boost::shared_ptr<const ClientConfig> cfg, int nplayers_,
+                           bool deathmatch_mode_,
                            const std::vector<std::string> &names,
                            bool sgl_plyr, bool tut)
     : single_player(sgl_plyr),
@@ -64,6 +65,7 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
       auto_mouse(false),
       speech_bubble_flag(false),
       init_nplayers(nplayers_),
+      deathmatch_mode(deathmatch_mode_),
       prevent_drawing(false),
       knights_app(ka),
       knights_client(kc),
@@ -132,6 +134,7 @@ void InGameScreen::setupDisplay()
                                    left_controller,
                                    right_controller,
                                    init_nplayers,
+                                   deathmatch_mode,
                                    init_player_names,
                                    knights_app.getTimer(),
                                    knights_app.getGameManager().getChatList(),

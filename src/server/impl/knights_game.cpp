@@ -135,9 +135,9 @@ public:
     std::auto_ptr<std::deque<unsigned int> > random_seeds; // ditto
     bool msg_count_update_flag;
 
-    // This is set during initialization, it is used to decide whether to parse the "/t" team chat signal.
-    // (Only valid while game is running!)
-    bool is_team_game;
+    // These are set during initialization (and are only valid when game is running!)
+    bool is_team_game;   // used to decide whether to parse the "/t" team chat signal.
+    bool is_deathmatch;  // used when sending "start_game" message
 };
 
 namespace {
@@ -229,6 +229,11 @@ namespace {
                 "decide which team you are playing for.\n\n"
                 "The objective is to secure all of the entry points using the Wand of Securing, then kill all of "
                 "the other teams' knights to win the game.";
+        } else if (mission == 6) {
+            // Deathmatch
+            result = "Deathmatch\n\n"
+                "Players get 1 frag for killing an enemy knight, and -1 for a suicide. Being killed by a monster doesn't affect your frags total. "
+                "The player with the most frags when time runs out is the winner.";
         } else if (quest > 0) {
             result = knights_config.getQuestDescription(quest, exit_string);
         } else if (quest == 0) {
@@ -302,8 +307,13 @@ namespace {
         const int time_limit = GetSelection(msel, "#time"); // in mins, or 0 for none
         if (time_limit > 0) {
             std::ostringstream str;
-            str << "\n\nYou must complete this quest within "
-                << time_limit
+            str << "\n\n";
+            if (mission == 6) {
+                str << "The game will last for ";
+            } else {
+                str << "You must complete this quest within ";
+            }
+            str << time_limit
                 << " minute"
                 << (time_limit > 1 ? "s" : "")
                 << ".";
@@ -315,7 +325,12 @@ namespace {
 
     bool IsTeam(const MenuSelections &msel)
     {
-        return GetSelection(msel, "mission") >= 5;
+        return GetSelection(msel, "mission") == 5;
+    }
+
+    bool IsDeathmatch(const MenuSelections &msel)
+    {
+        return GetSelection(msel, "mission") == 6;
     }
 
     // returns true if any difference between msel & msel_old was detected
@@ -1060,7 +1075,7 @@ namespace {
                             pi.player_num = -1;
                             pi.kills = -1;
                             pi.deaths = -1;
-                            pi.frags = -1;
+                            pi.frags = -1000;
                             pi.eliminated = false;
                             player_list.push_back(pi);
                             pings[pi.name] = (*it)->ping_time;
@@ -1242,6 +1257,7 @@ namespace {
 
         // Don't start if it's a team game and all players are on the same team
         kg.is_team_game = IsTeam(kg.menu_selections);
+        kg.is_deathmatch = IsDeathmatch(kg.menu_selections);
         if (ready_to_start && kg.is_team_game) {
             int team_found = -1;
             bool two_teams_found = false;
@@ -1335,11 +1351,13 @@ namespace {
                         Coercri::OutputByteBuf buf((*it)->output_data);
                         buf.writeUbyte(SERVER_START_GAME);
                         buf.writeUbyte(num_displays);
+                        buf.writeUbyte(kg.is_deathmatch);
                     } else {
                         // Observer.
                         Coercri::OutputByteBuf buf((*it)->output_data);
                         buf.writeUbyte(SERVER_START_GAME_OBS);
                         buf.writeUbyte(num_displays);
+                        buf.writeUbyte(kg.is_deathmatch);
                         for (int i = 0; i < num_displays; ++i) {
                             buf.writeString(names[i]);
                         }
@@ -1550,6 +1568,7 @@ GameConnection & KnightsGame::newClientConnection(const std::string &client_name
         // send the msg
         buf.writeUbyte(SERVER_START_GAME_OBS);
         buf.writeUbyte(pimpl->all_player_names.size());
+        buf.writeUbyte(pimpl->is_deathmatch);
         for (std::vector<std::string>::const_iterator it = pimpl->all_player_names.begin(); it != pimpl->all_player_names.end(); ++it) {
             buf.writeString(*it);
         }

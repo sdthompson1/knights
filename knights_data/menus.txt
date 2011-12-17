@@ -61,7 +61,9 @@ MAIN_MENU = [
                     Constrain("entry",0)  Constrain("exit",1)
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",0)  Constrain("bats",0) ],
+                    Constrain("zombies",0)  Constrain("bats",0) 
+                    Constrain("#time", 0)  ],
+
             ["The Big Quest for Gems", 
                     Constrain("mission",1)
                     Constrain("book",0)  Constrain("wand",0)  Constrain("num_wands",0)
@@ -70,7 +72,8 @@ MAIN_MENU = [
                     Constrain("entry",0)  Constrain("exit",1)
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",0)  Constrain("bats",0) ],
+                    Constrain("zombies",0)  Constrain("bats",0) 
+                    Constrain("#time", 0) ],
 
             # Shock assault is limited to two players, for obvious reasons
             ["Shock Assault", 
@@ -83,7 +86,9 @@ MAIN_MENU = [
                     Constrain("pretrapped",0)  Constrain("stuff",4)  Constrain("stuff_respawn",2)
                     Constrain("zombies",0)  Constrain("bats",0)
                     ConstrainMinPlayers("",2)
-                    ConstrainMaxPlayers("",2)  ]
+                    ConstrainMaxPlayers("",2)  
+                    Constrain("#time", 0) ]
+
             ["War of Survival",
                     Constrain("mission",0)
                     Constrain("book",0)  Constrain("wand",3)  Constrain("num_wands",2)
@@ -93,7 +98,9 @@ MAIN_MENU = [
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
                     Constrain("zombies",0)  Constrain("bats",1)  
-                    ConstrainMinPlayers("",2) ]
+                    ConstrainMinPlayers("",2) 
+                    Constrain("#time", 0) ]
+
             ["The Dungeon of Death",
                     Constrain("mission",1)
                     Constrain("book",0)  Constrain("wand",0)  Constrain("num_wands",0)
@@ -102,7 +109,9 @@ MAIN_MENU = [
                     Constrain("entry",0)  Constrain("exit",4)
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",0)  Constrain("bats",4) ]
+                    Constrain("zombies",0)  Constrain("bats",4)
+                    Constrain("#time", 0) ]
+
             ["The Lost Book of the Gnome King",
                     Constrain("mission",2)
                     Constrain("book",4)  Constrain("wand",0)  Constrain("num_wands",0)
@@ -111,7 +120,9 @@ MAIN_MENU = [
                     Constrain("entry",0)  Constrain("exit",1)
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",4)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",0)  Constrain("bats",1) ]
+                    Constrain("zombies",0)  Constrain("bats",1) 
+                    Constrain("#time", 0) ]
+
             ["The Tomb of the Liche Lord",
                     Constrain("mission",2)
                     Constrain("book",3)  Constrain("wand",4)  Constrain("num_wands",1)
@@ -120,7 +131,9 @@ MAIN_MENU = [
                     Constrain("entry",0)  Constrain("exit",1)
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",5)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",2)  Constrain("bats",1) ]
+                    Constrain("zombies",2)  Constrain("bats",1) 
+                    Constrain("#time", 0) ]
+
             ["The Ancient Wand of Death",
                     Constrain("mission",3)
                     Constrain("book",0)  Constrain("wand",1)  Constrain("num_wands",1)
@@ -129,7 +142,9 @@ MAIN_MENU = [
                     Constrain("entry",0)  Constrain("exit",2)
                     Constrain("starting_gear",0)  Constrain("keys",2)
                     Constrain("pretrapped",1)  Constrain("stuff",4)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",1)  Constrain("bats",0) ]
+                    Constrain("zombies",1)  Constrain("bats",0) 
+                    Constrain("#time", 0) ]
+
             ["The Way to the Paradise",
                     Constrain("mission",4)
                     Constrain("book",1)  Constrain("wand",2)  Constrain("num_wands",1)
@@ -138,7 +153,9 @@ MAIN_MENU = [
                     Constrain("entry",0)  Constrain("exit",0)
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",1)  Constrain("bats",0) ]
+                    Constrain("zombies",1)  Constrain("bats",0) 
+                    Constrain("#time", 0) ]
+
             ["The Quest of Giants",
                     Constrain("mission",2)
                     Constrain("book",2)  Constrain("wand",1)  Constrain("num_wands",1)
@@ -147,7 +164,9 @@ MAIN_MENU = [
                     Constrain("entry",1)  Constrain("exit",4)
                     Constrain("starting_gear",1)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",4)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",3)  Constrain("bats",3) ]
+                    Constrain("zombies",3)  Constrain("bats",3) 
+                    Constrain("#time", 0) ]
+
             ["Run for the Freedom",
                     Constrain("mission",1)
                     Constrain("book",0)  Constrain("wand",0)  Constrain("num_wands",0)
@@ -156,7 +175,9 @@ MAIN_MENU = [
                     Constrain("entry",1)  Constrain("exit",4)
                     Constrain("starting_gear",0)  Constrain("keys",1)
                     Constrain("pretrapped",0)  Constrain("stuff",1)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",0)  Constrain("bats",5) ]
+                    Constrain("zombies",0)  Constrain("bats",5) 
+                    Constrain("#time", 0) ]
+
             ["Team Duel to the Death",
                     Constrain("mission", 5)
                     Constrain("book", 0)  Constrain("wand", 3)  Constrain("num_wands", 1)
@@ -166,14 +187,26 @@ MAIN_MENU = [
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
                     Constrain("zombies",0)  Constrain("bats",1)  
-                    ConstrainMinPlayers("",2) ]
+                    ConstrainMinPlayers("",2) 
+                    Constrain("#time", 0) ]
+
+            ["Knights Deathmatch",
+                    Constrain("mission", 6)
+                    Constrain("book", 0)  Constrain("wand", 0)  Constrain("num_wands", 0)
+                    Constrain("num_gems", 0)  Constrain("gems_needed", 0)
+                    Constrain("dungeon_type", 2)  Constrain("premapped", 0)
+                    Constrain("entry", 3)  Constrain("exit", 0)
+                    Constrain("starting_gear", 3)  Constrain("keys", 3)
+                    Constrain("pretrapped", 1)  Constrain("stuff", 4)  Constrain("stuff_respawn", 2)
+                    Constrain("zombies", 2)  Constrain("bats", 2)  
+                    ConstrainMinPlayers("", 2)  
+                    Constrain("#time", 10)  ]
         ]
     }
 
     {
-        # NOTE: The code in knights_game.cpp (IsTeam function) assumes that 
-        # mission types greater than or equal to 5 are team games.
-        # If adding new missions then this may need to be updated.
+        # NOTE: The code in knights_game.cpp (IsTeam, IsDeathmatch functions)
+        # may need to be updated if new missions are added.
         id="mission"
         title="Mission Type"
         values=[
@@ -199,6 +232,10 @@ MAIN_MENU = [
                                          ConstrainMin("num_wands", 1)  Constrain("wand", 3)
                                          Constrain("book",0) ConstrainMinPlayers("",2)
                                          DungeonTeam() ]
+            ["Deathmatch",               Constrain("exit", 0)
+                                         Constrain("book", 0)
+                                         Constrain("num_gems",0)  Constrain("gems_needed", 0)
+                                         ConstrainMinPlayers("", 2) ]
         ]
     }
 

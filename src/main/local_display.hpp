@@ -75,6 +75,7 @@ public:
                  const Controller *ctrlr1,
                  const Controller *ctrlr2,
                  int nplyrs,
+                 bool deathmatch_mode,
                  const std::vector<std::string> &player_names_,
                  Coercri::Timer &timer,
                  ChatList &chat_list_,
@@ -327,6 +328,7 @@ private:
     const Graphic *speech_bubble;
 
     bool action_bar_tool_tips;
+    bool deathmatch_mode;
 };
 
 #endif

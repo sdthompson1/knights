@@ -231,14 +231,19 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_START_GAME:
             {
                 pimpl->ndisplays = buf.readUbyte();
+                const bool deathmatch_mode = buf.readUbyte() != 0;
                 pimpl->player = 0;
-                if (client_cb) client_cb->startGame(pimpl->ndisplays, std::vector<std::string>(), false);
+                if (client_cb) {
+                    client_cb->startGame(pimpl->ndisplays, deathmatch_mode,
+                                         std::vector<std::string>(), false);
+                }
             }
             break;
 
         case SERVER_START_GAME_OBS:
             {
                 pimpl->ndisplays = buf.readUbyte();
+                const bool deathmatch_mode = buf.readUbyte() != 0;
                 pimpl->player = 0;
                 std::vector<std::string> player_names;
                 player_names.reserve(pimpl->ndisplays);
@@ -246,7 +251,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     player_names.push_back(buf.readString());
                 }
                 const bool already_started = buf.readUbyte() != 0;
-                if (client_cb) client_cb->startGame(pimpl->ndisplays, player_names, already_started);
+                if (client_cb) {
+                    client_cb->startGame(pimpl->ndisplays, deathmatch_mode,
+                                         player_names, already_started);
+                }
             }
             break;
 

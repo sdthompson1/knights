@@ -52,6 +52,7 @@ class InGameScreen : public Screen, public Coercri::WindowListener {
 public:
     InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> knights_client, 
                  boost::shared_ptr<const ClientConfig> config, int nplayers_,
+                 bool deathmatch_mode,
                  const std::vector<std::string> &player_names,
                  bool single_player_, bool tutorial);
     virtual bool start(KnightsApp &, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
@@ -97,6 +98,7 @@ private:
     // held across initialization only:
     std::vector<std::string> init_player_names;
     int init_nplayers;
+    bool deathmatch_mode;
 
     // mouse handling. (for action bar)
     int mx, my;

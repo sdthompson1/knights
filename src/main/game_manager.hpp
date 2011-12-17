@@ -204,7 +204,8 @@ public:
     virtual void leaveGame();     // goes to lobby
     virtual void setMenuSelection(const std::string &key, int val, const std::vector<int> &allowed_vals);
     virtual void setQuestDescription(const std::string &quest_descr);
-    virtual void startGame(int ndisplays, const std::vector<std::string> &player_names, bool already_started);  // goes to InGameScreen
+    virtual void startGame(int ndisplays, bool deathmatch_mode,
+                           const std::vector<std::string> &player_names, bool already_started);  // goes to InGameScreen
     virtual void gotoMenu();     // goes to MenuScreen
 
     virtual void playerJoinedThisGame(const std::string &name, bool obs_flag, int house_col);

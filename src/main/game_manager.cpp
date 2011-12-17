@@ -368,7 +368,7 @@ public:
           chat_list(ka.getConfigMap().getInt("max_chat_lines"), true, true),   // want formatting and timestamps
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
-          my_player_name(plyr_nm), doing_menu_widget_update(false)
+          my_player_name(plyr_nm), doing_menu_widget_update(false), deathmatch_mode(false)
     { }
     
     KnightsApp &knights_app;
@@ -418,6 +418,7 @@ public:
     std::string saved_chat;
 
     bool doing_menu_widget_update;
+    bool deathmatch_mode;
 };
 
 void GameManager::setServerName(const std::string &sname)
@@ -907,10 +908,13 @@ void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list)
         str << ColToText(it->house_colour) << " " << it->name;
         if (pimpl->ready_to_end.find(it->name) != pimpl->ready_to_end.end()) str << " (Ready)"; // indicate players who have clicked.
         str << "\t";
-        if (it->kills >= 0) str << it->kills;
-        str << "\t";
-        if (it->deaths >= 0) str << it->deaths;
-        str << "\t" << it->frags;
+        if (pimpl->deathmatch_mode) {
+            if (it->frags >= -999) str << it->frags;
+        } else {
+            if (it->kills >= 0) str << it->kills;
+            str << "\t";
+            if (it->deaths >= 0) str << it->deaths;
+        }
         str << "\t" << it->ping;
         pimpl->ingame_player_list.add(str.str());
     }
@@ -1004,7 +1008,8 @@ const std::string & GameManager::getQuestDescription() const
     return pimpl->quest_description;
 }
 
-void GameManager::startGame(int ndisplays, const std::vector<std::string> &player_names, bool already_started)
+void GameManager::startGame(int ndisplays, bool deathmatch_mode,
+                            const std::vector<std::string> &player_names, bool already_started)
 {
     if (!pimpl->client_config) throw UnexpectedError("Cannot start game -- config not loaded");
 
@@ -1016,10 +1021,12 @@ void GameManager::startGame(int ndisplays, const std::vector<std::string> &playe
                                                           pimpl->knights_client, 
                                                           pimpl->client_config,
                                                           ndisplays,
+                                                          deathmatch_mode,
                                                           player_names,
                                                           pimpl->single_player,
                                                           pimpl->tutorial_mode));
     pimpl->knights_app.requestScreenChange(in_game_screen);
+    pimpl->deathmatch_mode = deathmatch_mode;
 
     // clear chat buffer when game begins
     pimpl->chat_list.clear();

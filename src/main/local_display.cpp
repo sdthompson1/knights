@@ -240,6 +240,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            const Controller *ctrlr1, 
                            const Controller *ctrlr2,
                            int nplyrs,
+                           bool dm_mode,
                            const std::vector<std::string> &player_names,
                            Coercri::Timer & timer_,
                            ChatList &chat_list_,
@@ -307,7 +308,8 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
       action_string(a_key), suicide_string(s_key),
       
       speech_bubble(speech_bubble_),
-      action_bar_tool_tips(tool_tips)
+      action_bar_tool_tips(tool_tips),
+      deathmatch_mode(dm_mode)
 {
     for (int i = 0; i < 2; ++i) {
         attack_mode[i] = false;
@@ -544,14 +546,17 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
     if (!tutorial_mode) {
         // Titles ("Player", "Kills", "Deaths" etc)
         titles.clear();
-        titles.reserve(4);
+        titles.reserve(deathmatch_mode ? 3 : 4);
         titles.push_back("Player");
-        titles.push_back("Kills");
-        titles.push_back("Deaths");
-        titles.push_back("Frags");
+        if (deathmatch_mode) {
+            titles.push_back("Frags");
+        } else {        
+            titles.push_back("Kills");
+            titles.push_back("Deaths");
+        }
         titles.push_back("Ping");
         widths.clear();
-        widths.reserve(5);
+        widths.reserve(titles.size());
         
         int num_width = gui_font->getWidth("9999");
         for (int i = 1; i < titles.size(); ++i) {
@@ -559,11 +564,9 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         }
         num_width += gui_font->getWidth("  ") + 4;
         
-        widths.push_back(plyr_list_width - 4*num_width);
-        widths.push_back(num_width);
-        widths.push_back(num_width);
-        widths.push_back(num_width);
-        widths.push_back(num_width);
+        widths.push_back(plyr_list_width - (titles.size()-1)*num_width);
+        for (int i = 0; i < titles.size()-1; ++i) widths.push_back(num_width);
+
         plyr_list_titleblock.reset(new TitleBlock(titles, widths));
         plyr_list_titleblock->setFont(gui_font.get());
         plyr_list_titleblock->setBaseColor(gcn::Color(0x66, 0x66, 0x44));

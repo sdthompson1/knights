@@ -112,7 +112,7 @@ public:
     virtual void setQuestDescription(const std::string &quest_descr) = 0;
 
     // switching between menu and in-game states
-    virtual void startGame(int ndisplays, const std::vector<std::string> &player_names, bool already_started) = 0;
+    virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<std::string> &player_names, bool already_started) = 0;
     virtual void gotoMenu() = 0;
     
     // called when players join/leave my current game, or change state.

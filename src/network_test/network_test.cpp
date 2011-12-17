@@ -136,10 +136,10 @@ public:
         Log("Set quest description. Descr = %s", quest_descr.c_str());
     }
 
-    void startGame(int ndisplays, const std::vector<std::string> &player_names, bool already_started)
+    void startGame(int ndisplays, bool deathmatch_mode, const std::vector<std::string> &player_names, bool already_started)
     {
         Log("Start game. Ndisplays = %d", ndisplays);
-	game_started = true;
+        game_started = true;
     }
     void gotoMenu() { Log("Goto menu"); }
 
