@@ -103,7 +103,7 @@ ZOMBIE_ANIM = a_zombie
 # Zombie AI:
 
 # List of tiles that zombies don't want to walk onto:
-ZOMBIE_AI_AVOID = [t_open_pit_vert, t_open_pit_wooden, t_open_pit_normal]
+ZOMBIE_AI_AVOID = [t_open_pit_vert, t_open_pit_horiz, t_open_pit_wooden, t_open_pit_normal]
 
 # Item that zombies will whack with sword instead of walking onto:
 ZOMBIE_AI_HIT = i_bear_trap_open
