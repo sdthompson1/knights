@@ -54,9 +54,11 @@ class FlyingMonster;
 class FlyingMonsterType : public MonsterType {
     friend class FlyingMonster;
 public:
-    FlyingMonsterType(const RandomInt *health_, int speed_, const Anim *anim_,
-                      int dmg_, const RandomInt *stun_)
-        : health(health_), speed(speed_), anim(anim_), dmg(dmg_), stun(stun_) { }
+    FlyingMonsterType() : health(0), speed(0), anim(0), dmg(0), stun(0) { }
+    void construct(const RandomInt *health_, int speed_, const Anim *anim_,
+                   int dmg_, const RandomInt *stun_)
+        { health = health_; speed = speed_; anim = anim_; dmg = dmg_; stun = stun_; }
+
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_FLYING; }
 
@@ -103,13 +105,15 @@ private:
 
 class WalkingMonsterType : public MonsterType {
 public:
-    WalkingMonsterType(const RandomInt *health_, int speed_, const ItemType *weapon_,
-                       const Anim *anim_,
-                       const std::vector<shared_ptr<Tile> > & avoid_tiles_,
-                       const ItemType * fear_item_,
-                       const ItemType * hit_item_)
-        : health(health_), speed(speed_), weapon(weapon_), anim(anim_),
-          avoid_tiles(avoid_tiles_), fear_item(fear_item_), hit_item(hit_item_) { }
+    WalkingMonsterType() : health(0), speed(0), weapon(0), anim(0), fear_item(0), hit_item(0) { }
+    void construct(const RandomInt *health_, int speed_, const ItemType *weapon_,
+                   const Anim *anim_,
+                   const std::vector<shared_ptr<Tile> > & avoid_tiles_,
+                   const ItemType * fear_item_,
+                   const ItemType * hit_item_)
+        { health = health_; speed = speed_; weapon = weapon_; anim = anim_;
+          avoid_tiles = avoid_tiles_; fear_item = fear_item_; hit_item = hit_item_; }
+
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_WALKING; }
 private:

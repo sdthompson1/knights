@@ -164,6 +164,12 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     MyFileLoader my_file_loader;
     kf.reset(new KFile(config_file_name, my_file_loader, random_ints, lua_state.get()));
 
+    // Get overlay offsets
+    // Note: Needs to be done before Lua code is loaded, because one of the Lua callbacks ends up
+    // creating the wand of undeath which needs to create the zombie monster type which... (etc)
+    kf->pushSymbol("OVERLAY_OFFSETS");
+    popOverlayOffsets();
+
     // Load some lua code into the context
     // TODO: The lua file name should probably be an input to the ctor, like the kconfig name is ?
     LuaLoadFromRStream(lua_state.get(), "lua_test.lua");
@@ -173,10 +179,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     lua_getglobal(lua_state.get(), "MISC_CONFIG");
     config_map.reset(new ConfigMap);
     PopConfigMap(lua_state.get(), *config_map);
-
-    // Get overlay offsets
-    kf->pushSymbol("OVERLAY_OFFSETS");
-    popOverlayOffsets();
 
     // Load the Dungeon Environment Customization Menu
     kf->pushSymbol("MAIN_MENU");
@@ -223,8 +225,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     // Monsters
     kf->pushSymbol("VAMPIRE_BAT_MONSTER");
     vampire_bat_type = popMonsterType();
-    kf->pushSymbol("ZOMBIE_MONSTER");
-    zombie_type = popMonsterType();
 
     // Zombie activity table
     kf->pushSymbol("ZOMBIE_ACTIVITY");
@@ -1192,27 +1192,37 @@ MonsterType * KnightsConfigImpl::popMonsterType()
     map<const Value *, MonsterType *>::iterator it = monster_types.find(p);
 
     if (it == monster_types.end()) {
-        it = monster_types.insert(std::pair<const Value*, MonsterType*>(p, 0)).first;
         
         KFile::Table tab(*kf, "MonsterType");
 
         tab.push("type", false);
         const string type = kf->popString();
 
-        // If new types are added then isMonsterType must be updated also
-        bool is_flying = type == "flying";
-        bool is_walking = type == "walking";
-        if (!is_flying && !is_walking) {
+        // NOTE: If new monster types are added then isMonsterType must be updated also
+        
+        FlyingMonsterType * flying = 0;
+        WalkingMonsterType * walking = 0;
+        MonsterType * mon = 0;
+        
+        if (type == "flying") {
+            flying = new FlyingMonsterType;
+            mon = flying;
+        } else if (type == "walking") {
+            walking = new WalkingMonsterType;
+            mon = walking;
+        } else {
             kf->error("invalid monster type");
             return 0;
-        }
+        }            
         
+        it = monster_types.insert(std::make_pair(p, mon)).first;
+
         tab.reset();
 
         std::vector<shared_ptr<Tile> > ai_avoid;
         ItemType * ai_hit = 0;
         ItemType * ai_fear = 0;
-        if (is_walking) {
+        if (walking) {
             tab.push("ai_avoid");
             if (kf->isNone()) kf->pop(); else popTileList(ai_avoid);
 
@@ -1228,7 +1238,7 @@ MonsterType * KnightsConfigImpl::popMonsterType()
 
         int attack_damage = 0;
         const RandomInt * attack_stun_time = 0;
-        if (is_flying) {
+        if (flying) {
             tab.push("attack_damage");
             attack_damage = kf->popInt();
 
@@ -1262,16 +1272,16 @@ MonsterType * KnightsConfigImpl::popMonsterType()
         kf->pop();
 
         ItemType * weapon = 0;
-        if (is_walking) {
+        if (walking) {
             tab.push("weapon");
             weapon = popItemType();
         }
 
-        if (is_walking) {
-            it->second = new WalkingMonsterType(health, speed, weapon, anim, ai_avoid, ai_fear, ai_hit);
+        if (walking) {
+            walking->construct(health, speed, weapon, anim, ai_avoid, ai_fear, ai_hit);
         } else {
-            ASSERT(is_flying);
-            it->second = new FlyingMonsterType(health, speed, anim, attack_damage, attack_stun_time);
+            ASSERT(flying);
+            flying->construct(health, speed, anim, attack_damage, attack_stun_time);
         }
 
         monster_corpse_tiles.insert(std::make_pair(it->second, corpse_tiles));
@@ -2259,7 +2269,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     monster_manager.limitMonster(vampire_bat_type, vampire_bats*3);
     monster_manager.limitTotalMonsters(config_map->getInt("monster_limit"));
 
-    monster_manager.setHardCodedMonsterTypes(*zombie_type, *vampire_bat_type);
+    monster_manager.setHardCodedMonsterTypes(*vampire_bat_type);
     
 
     // set up event manager

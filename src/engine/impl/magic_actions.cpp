@@ -503,15 +503,15 @@ Action * A_WipeMap::Maker::make(ActionPars &pars) const
 //
 
 namespace {
-    void ZombifyCreature(shared_ptr<Creature> cr, const Originator &originator)
+    void ZombifyCreature(shared_ptr<Creature> cr, const MonsterType &zom_type, const Originator &originator)
     {
         // Only Knights can be zombified. This prevents zombification
         // of vampire bats or other weird things like that. Of course,
         // if new monster types are added (and they are to be
         // zombifiable) then this rule might need to change ... (maybe
-        // only zombify things which are not of class Zombie and are
-        // at height H_WALKING?)
-        shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(cr);        
+        // only zombify things which are not already of type "zom_type"
+        // and are at height H_WALKING?)
+        shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(cr);
         if (kt && kt->getMap()) {
             DungeonMap *dmap = kt->getMap();
             MapCoord mc = kt->getPos();
@@ -519,22 +519,28 @@ namespace {
             kt->onDeath(Creature::ZOMBIE_MODE, originator);       // this drops items, etc.
             kt->rmFromMap();
             MonsterManager &mm = Mediator::instance().getMonsterManager();
-            mm.placeMonster(mm.getZombieType(), *dmap, mc, facing);
+            mm.placeMonster(zom_type, *dmap, mc, facing);
         }
     }
 }
 
 void A_ZombifyActor::execute(const ActionData &ad) const
 {
-    ZombifyCreature(ad.getActor(), ad.getOriginator());
+    ZombifyCreature(ad.getActor(), zom_type, ad.getOriginator());
 }
 
 A_ZombifyActor::Maker A_ZombifyActor::Maker::register_me;
 
 Action * A_ZombifyActor::Maker::make(ActionPars &pars) const
 {
-    pars.require(0);
-    return new A_ZombifyActor;
+    pars.require(1);
+    const MonsterType * mtype = pars.getMonsterType(0);
+    if (!mtype) {
+        pars.error();
+        return 0;
+    } else {
+        return new A_ZombifyActor(*mtype);
+    }
 }
 
 bool A_ZombifyTarget::possible(const ActionData &ad) const
@@ -545,13 +551,19 @@ bool A_ZombifyTarget::possible(const ActionData &ad) const
 
 void A_ZombifyTarget::execute(const ActionData &ad) const
 {
-    ZombifyCreature(ad.getVictim(), ad.getOriginator());
+    ZombifyCreature(ad.getVictim(), zom_type, ad.getOriginator());
 }
 
 A_ZombifyTarget::Maker A_ZombifyTarget::Maker::register_me;
 
 Action * A_ZombifyTarget::Maker::make(ActionPars &pars) const
 {
-    pars.require(0);
-    return new A_ZombifyTarget;
+    pars.require(1);
+    const MonsterType * mtype = pars.getMonsterType(0);
+    if (!mtype) {
+        pars.error();
+        return 0;
+    } else {
+        return new A_ZombifyTarget(*mtype);
+    }
 }

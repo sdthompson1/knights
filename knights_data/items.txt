@@ -213,7 +213,7 @@ i_wand_of_undeath = basic_wand & {
     melee_damage = 0
     melee_stun_time = ts
     melee_action = [ wandzap,
-                     ZombifyTarget(), 
+                     ZombifyTarget(m_zombie),
                      OnSuccess(snd_zombie),
                      ZombieKill(m_zombie),
                      OnSuccess(snd_zombie),
@@ -402,7 +402,7 @@ i_gem = {
 # For zombification we play the sound *before* zombifying (i.e. while the actor still exists!)
 my_teleport = [Teleport(), snd_teleport]
 my_attractor = [Attractor(), snd_teleport]
-my_zombify = [snd_zombie, ZombifyActor()]
+my_zombify = [snd_zombie, ZombifyActor(m_zombie)]
 
 # These potion and scroll effects have been designed to be exactly equivalent to what 
 # the original Knights does, which is why they are a bit complicated.

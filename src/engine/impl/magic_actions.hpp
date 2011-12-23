@@ -208,17 +208,21 @@ private:
 
 class A_ZombifyActor : public Action {
 public:
+    explicit A_ZombifyActor(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("ZombifyActor");
+    const MonsterType & zom_type;
 };
 
 class A_ZombifyTarget : public Action {
 public:
+    explicit A_ZombifyTarget(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("ZombifyTarget");
+    const MonsterType & zom_type;
 };
 
 

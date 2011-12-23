@@ -341,7 +341,7 @@ private:
     const Graphic *blood_icon;
     std::vector<boost::shared_ptr<Tile> > blood_tiles, dead_knight_tiles;
     
-    MonsterType *vampire_bat_type, *zombie_type; // Will eventually get rid of these (hopefully...)
+    MonsterType *vampire_bat_type; // Will eventually get rid of these (hopefully...)
 
 
     // The generic hook system

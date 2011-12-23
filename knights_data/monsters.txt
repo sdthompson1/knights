@@ -19,11 +19,9 @@
 #
 
 
-# For now the game has hard-coded knowledge of the "vampire bat" and 
-# "zombie" monsters. This will be removed in due course.
+# For now the game has hard-coded knowledge of the "vampire bat"
+# monster type. This will be removed in due course.
 VAMPIRE_BAT_MONSTER = m_vampire_bat
-ZOMBIE_MONSTER = m_zombie
-
 
 
 m_vampire_bat = {
