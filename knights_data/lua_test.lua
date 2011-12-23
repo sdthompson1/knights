@@ -386,7 +386,7 @@ function shoot(x, y, direction, itemtype)
 end
 
 -- teleports a knight
-function teleport(x, y)
+function teleport_actor(x, y)
 
   -- account for map rotation/reflection
   local xt, yt = transform_offset(cxt.pos, x, y)

@@ -3514,10 +3514,10 @@ knights_rooms = {
 68 66 68 68 8 66 75 66 75 66 75 66 
  ]
  switches = [
-   [8 5 "teleport(1,-3)"]
-   [6 7 "teleport(3,-5)"]
-   [10 7 "teleport(-1,-5)"]
-   [8 9 "teleport(1,-7)"]
+   [8 5 "teleport_actor(1,-3)"]
+   [6 7 "teleport_actor(3,-5)"]
+   [10 7 "teleport_actor(-1,-5)"]
+   [8 9 "teleport_actor(1,-7)"]
  ]
  rooms = [[0, 7, 6, 7], [0, 0, 6, 8], [5, 0, 9, 5], [5, 4, 9, 10]]
 }

@@ -128,7 +128,7 @@ def gtrap(x, y, mjr, mnr):
     if mjr>=201 and mjr<=204:
         return ('shoot', x, y, facing[mjr-201] + ',i_bolt_trap')
     elif mjr == 220:
-        return ('teleport', x, y)
+        return ('teleport_actor', x, y)
     else:
         lo = min(mjr,mnr)
         hi = max(mjr,mnr)
