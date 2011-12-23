@@ -46,15 +46,17 @@ void MonsterManager::addZombieReanimate(shared_ptr<Tile> from, const MonsterType
     MonsterInfo m;
     m.monster_type = to;
     m.zombie_mode = true;
+    m.chance = 0;
     monster_map.insert(make_pair(from, m));
 }
 
-void MonsterManager::addMonsterGenerator(shared_ptr<Tile> from, const MonsterType * to)
+void MonsterManager::addMonsterGenerator(shared_ptr<Tile> from, const MonsterType * to, int chance)
 {
     if (!from || !to) return;
     MonsterInfo m;
     m.monster_type = to;
     m.zombie_mode = false;
+    m.chance = chance;
     monster_map.insert(make_pair(from, m));
 }
 
@@ -149,11 +151,10 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
 
                 } else {
 
-                    // Vampire bats also have a dice roll, this is to reduce the vampire bat generation
-                    // to sane levels (unless bats of 5 have been selected!). NOTE: If we ever add
-                    // other monster types (non-bat, non-zombie) then this may need some refactoring
-                    // (won't be able to assume non-zombie == bat...)
-                    if (!rollBatActivity()) return;
+                    // Vampire bats and other "tile-generated" monsters.
+                    // also have a dice roll, this is to reduce the vampire bat generation
+                    // to sane levels (unless bats of 5 have been selected!).
+                    if (!rollTileGeneratedMonster(m->second.chance)) return;
                 }
                 // create the monster and add it to the map
                 addMonsterToMap(*m->second.monster_type, dmap, mc);
@@ -182,7 +183,7 @@ void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bot
         // Limit the number of attempts for each monster
         // (we allow quite a few attempts, since the idea is that the generation
         // should succeed if at all possible...)
-        for (int attempts=0; attempts<60; ++attempts) {
+        for (int attempts=0; attempts<3*(right-left)*(top-bottom); ++attempts) {
             bool zombie_placed = false;
             
             // Pick a random square
@@ -196,20 +197,27 @@ void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bot
             // zombify them.
             for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
             ++it) {
-                bool zombify = decay_sequence.find(*it) != decay_sequence.end();
-                if (!zombify) {
-                    map<shared_ptr<Tile>,MonsterInfo>::iterator m = monster_map.find(*it);
-                    if (m != monster_map.end() && m->second.zombie_mode) {
-                        zombify = true;
-                    }
+
+                // Chase it through the decay sequence
+                shared_ptr<Tile> tile = *it;
+                while (1) {
+                    map<shared_ptr<Tile>, shared_ptr<Tile> >::const_iterator find_it
+                        = decay_sequence.find(tile);
+                    if (find_it == decay_sequence.end()) break;
+                    tile = find_it->second;
                 }
 
-                // Note -- we cheat slightly here because we use placeZombie, rather than
-                // using the specific MonsterType from the monster_map. This works, but it
-                // relies on the assumption that there is only one kind of zombie.
-                if (zombify && dmap.getAccess(mc, H_WALKING) == A_CLEAR) {
+                // Now see if we have reached a "reanimating" tile
+                const MonsterType * mon_type = 0;
+                map<shared_ptr<Tile>, MonsterInfo>::const_iterator find_it
+                    = monster_map.find(tile);
+                if (find_it != monster_map.end() && find_it->second.zombie_mode) {
+                    mon_type = find_it->second.monster_type;
+                }
+                
+                if (mon_type && dmap.getAccess(mc, H_WALKING) == A_CLEAR) {
                     dmap.rmTile(mc, *it, Originator(OT_None()));
-                    placeZombie(dmap, mc, MapDirection(g_rng.getInt(0,4)));
+                    addMonsterToMap(*mon_type, dmap, mc);
                     zombie_placed = true;
                     break; // Succeeded in placing a zombie!
                 }
@@ -218,6 +226,11 @@ void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bot
             if (zombie_placed) break;
         }
     }
+}
+
+void MonsterManager::placeMonster(const MonsterType &type, DungeonMap &dmap, const MapCoord &mc, MapDirection facing)
+{
+    addMonsterToMap(type, dmap, mc)->setFacing(facing);
 }
 
 void MonsterManager::subtractMonster(const MonsterType &mt)
@@ -231,9 +244,9 @@ bool MonsterManager::rollZombieActivity() const
     return necronomicon_counter > 0 || g_rng.getBool(zombie_chance * 0.01f);
 }
 
-bool MonsterManager::rollBatActivity() const
+bool MonsterManager::rollTileGeneratedMonster(int chance) const
 {
-    return g_rng.getBool(bat_chance * 0.01f);
+    return g_rng.getBool(chance * 0.01f);
 }
 
 bool MonsterManager::reachedMonsterLimit(const MonsterType * m) const
@@ -260,16 +273,13 @@ bool MonsterManager::reachedMonsterLimit(const MonsterType * m) const
 
 
 //
-// manual monster generation
-// These are a bit primitive at the moment -- they just look for the first "zombie mode"
-// or "non zombie mode" monster. It works at the moment but will obviously need modification
-// if any more monster types are added.
+// helper function to add monster to map (updates the monster counts also).
 //
 
 shared_ptr<Monster> MonsterManager::addMonsterToMap(const MonsterType &mt, DungeonMap &dmap,
                                                     const MapCoord &mc)
 {
-    shared_ptr<Monster> mnstr = mt.makeMonster(*this, Mediator::instance().getTaskManager());
+    shared_ptr<Monster> mnstr = mt.makeMonster(Mediator::instance().getTaskManager());
     mnstr->addToMap(&dmap, mc);
 
     // add to the monster counts
@@ -278,25 +288,3 @@ shared_ptr<Monster> MonsterManager::addMonsterToMap(const MonsterType &mt, Dunge
 
     return mnstr;
 }           
-
-void MonsterManager::placeZombie(DungeonMap &dmap, const MapCoord &mc, MapDirection facing)
-{
-    for (map<shared_ptr<Tile>, MonsterInfo>::iterator it = monster_map.begin();
-    it != monster_map.end(); ++it) {
-        if (it->second.zombie_mode) {
-            addMonsterToMap(*it->second.monster_type, dmap, mc)->setFacing(facing);
-            return;
-        }
-    }
-}
-
-void MonsterManager::placeVampireBat(DungeonMap &dmap, const MapCoord &mc)
-{
-    for (map<shared_ptr<Tile>, MonsterInfo>::iterator it = monster_map.begin();
-    it != monster_map.end(); ++it) {
-        if (!it->second.zombie_mode) {
-            addMonsterToMap(*it->second.monster_type, dmap, mc);
-            return;
-        }
-    }
-}

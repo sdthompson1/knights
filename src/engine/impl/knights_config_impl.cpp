@@ -108,6 +108,8 @@ namespace {
         virtual int getProbability(int i) { lst.push(i); return kc.popProbability(); }
         virtual const RandomInt * getRandomInt(int i)
             { lst.push(i); return kc.getKFile()->popRandomInt(kc.getRandomIntContainer(), 0); }
+        virtual const MonsterType * getMonsterType(int i)
+            { lst.push(i); return kc.popMonsterType(); }
         virtual const Sound * getSound(int i) { lst.push(i); return kc.popSound(); }
         virtual string getString(int i) { lst.push(i); return kc.getKFile()->popString(); }
         virtual shared_ptr<Tile> getTile(int i) { lst.push(i); return kc.popTile(); }
@@ -147,12 +149,7 @@ KnightsConfigImpl::Popper::~Popper()
 KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     : knight_anim(0), default_item(0),
       stuff_bag_graphic(0),
-      blood_icon(0),
-      bat_speed(0), zombie_speed(0),
-      bat_health(0), zombie_health(0),
-      bat_anim(0), zombie_anim(0),
-      zombie_weapon(0),
-      zombie_ai_hit(0), zombie_ai_fear(0)
+      blood_icon(0)
 {
     Sentry s(*this);
 
@@ -222,44 +219,16 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     popTileList(blood_tiles);
     kf->pushSymbol("DEAD_KNIGHT_TILES");
     popTileList(dead_knight_tiles);
-    kf->pushSymbol("DEAD_BAT_TILES");
-    popTileList(dead_bat_tiles);
-    kf->pushSymbol("DEAD_ZOMBIE_TILE");
-    dead_zombie_tile = popTile();
-    kf->pushSymbol("OTHER_ZOMBIE_TILES");
-    popTileList(other_zombie_tiles);
-    kf->pushSymbol("BAT_PIT_TILES");
-    popTileList(bat_pit_tiles);
 
-    // create some monster types...
-    kf->pushSymbol("BAT_HEALTH");
-    const RandomInt * health = kf->popRandomInt(random_ints, 0);
-    kf->pushSymbol("BAT_SPEED");
-    int speed = kf->popInt();
-    kf->pushSymbol("BAT_ANIM");
-    const Anim *anim = popAnim(true);
-    kf->pushSymbol("BAT_ATTACK_DAMAGE");
-    int ba_dmg = kf->popInt();
-    kf->pushSymbol("BAT_ATTACK_STUN_TIME");
-    const RandomInt * ba_stun = kf->popRandomInt(random_ints, 0);
-    vampire_bat_type.reset(new VampireBatMonsterType(health, speed, anim, ba_dmg, ba_stun));
-    kf->pushSymbol("ZOMBIE_HEALTH");
-    health = kf->popRandomInt(random_ints, 0);
-    kf->pushSymbol("ZOMBIE_SPEED");
-    speed = kf->popInt();
-    kf->pushSymbol("ZOMBIE_WEAPON");
-    const ItemType *weapon = popItemType();
-    kf->pushSymbol("ZOMBIE_ANIM");
-    anim = popAnim();
-    zombie_type.reset(new ZombieMonsterType(health, speed, weapon, anim));
+    // Monsters
+    kf->pushSymbol("VAMPIRE_BAT_MONSTER");
+    vampire_bat_type = popMonsterType();
+    kf->pushSymbol("ZOMBIE_MONSTER");
+    zombie_type = popMonsterType();
 
-    // ai info. Note these could be tweaked/generalized if wanted...
-    kf->pushSymbol("ZOMBIE_AI_AVOID");
-    if (kf->isNone()) kf->pop(); else popTileList(zombie_ai_avoid);
-    kf->pushSymbol("ZOMBIE_AI_HIT");
-    zombie_ai_hit = popItemType(0);
-    kf->pushSymbol("ZOMBIE_AI_FEAR");
-    zombie_ai_fear = popItemType(0);
+    // Zombie activity table
+    kf->pushSymbol("ZOMBIE_ACTIVITY");
+    popZombieActivityTable();
 
     // misc other stuff
     kf->pushSymbol("STUFF_BAG_GRAPHIC");
@@ -335,6 +304,7 @@ KnightsConfigImpl::~KnightsConfigImpl()
     for_each(item_types.begin(), item_types.end(), Delete<ItemType>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
+    for_each(monster_types.begin(), monster_types.end(), Delete<MonsterType>());
     for_each(overlays.begin(), overlays.end(), Delete<Overlay>());
     for_each(random_dungeon_layouts.begin(), random_dungeon_layouts.end(),
              Delete<RandomDungeonLayout>());
@@ -496,18 +466,28 @@ Action * KnightsConfigImpl::popAction(Action *dflt)
     }
 }
 
-Anim * KnightsConfigImpl::popAnim(bool batmode)
+Anim * KnightsConfigImpl::popAnim()
 {
     if (!kf) return 0;
     const Value * p = kf->getTop();
     map<const Value *,Anim*>::const_iterator it = anims.find(p);
     if (it == anims.end()) {
-        it = anims.insert(make_pair(p, new Anim(anims.size()+1, batmode))).first;
-        KFile::List lst(*kf, "Anim", 4, 12, 16, 32);
+        it = anims.insert(make_pair(p, new Anim(anims.size()+1))).first;
+        KFile::List lst(*kf, "Anim", 4, 5, 12, 16, 32);
+
+        int sz = lst.getSize();
+        int first_entry = 0;
+        if (sz == 5) {
+            // This is really a 4-element Anim with the string "bat" identifying "bat mode"
+            it->second->setBatMode();
+            --sz;
+            first_entry = 1;
+        }
+        
         for (int f=0; f<8; ++f) {
-            if (lst.getSize() >= (f+1)*4) {
+            if (sz >= (f+1)*4) {
                 for (int d=0; d<4; ++d) {
-                    lst.push(f*4+d);
+                    lst.push(f*4+d + first_entry);
                     Graphic *g = popGraphic();
                     it->second->setGraphic(MapDirection(d), f, g);
                 }
@@ -519,14 +499,14 @@ Anim * KnightsConfigImpl::popAnim(bool batmode)
     return it->second;
 }
 
-Anim * KnightsConfigImpl::popAnim(Anim *dflt, bool batmode)
+Anim * KnightsConfigImpl::popAnim(Anim *dflt)
 {
     if (!kf) return false;
     if (kf->isNone()) {
         kf->pop();
         return dflt;
     } else {
-        return popAnim(batmode);
+        return popAnim();
     }
 }
 
@@ -1191,6 +1171,119 @@ string KnightsConfigImpl::popMenuValueName(int val)
     return "error";
 }
 
+bool KnightsConfigImpl::isMonsterType()
+{
+    // This tries to identify whether the top entry is a table representing a MonsterType.
+    // Currently it is not too intelligent, it just looks at the "type" to see if it is a recognized monster type.
+    if (!kf) return false;
+    if (!kf->isTable()) return false;
+    const Value * val = kf->getTop()->getTableOptional("type");
+    if (!val) return false;
+    if (!val->isString()) return false;
+    std::string type = val->getString();
+    return type == "flying" || type == "walking";
+}
+
+MonsterType * KnightsConfigImpl::popMonsterType()
+{
+    if (!kf) return 0;
+
+    const Value * p = kf->getTop();
+    map<const Value *, MonsterType *>::iterator it = monster_types.find(p);
+
+    if (it == monster_types.end()) {
+        it = monster_types.insert(std::pair<const Value*, MonsterType*>(p, 0)).first;
+        
+        KFile::Table tab(*kf, "MonsterType");
+
+        tab.push("type", false);
+        const string type = kf->popString();
+
+        // If new types are added then isMonsterType must be updated also
+        bool is_flying = type == "flying";
+        bool is_walking = type == "walking";
+        if (!is_flying && !is_walking) {
+            kf->error("invalid monster type");
+            return 0;
+        }
+        
+        tab.reset();
+
+        std::vector<shared_ptr<Tile> > ai_avoid;
+        ItemType * ai_hit = 0;
+        ItemType * ai_fear = 0;
+        if (is_walking) {
+            tab.push("ai_avoid");
+            if (kf->isNone()) kf->pop(); else popTileList(ai_avoid);
+
+            tab.push("ai_fear");
+            ai_fear = popItemType(0);
+        
+            tab.push("ai_hit");
+            ai_hit = popItemType(0);
+        }
+
+        tab.push("anim");
+        Anim * anim = popAnim();
+
+        int attack_damage = 0;
+        const RandomInt * attack_stun_time = 0;
+        if (is_flying) {
+            tab.push("attack_damage");
+            attack_damage = kf->popInt();
+
+            tab.push("attack_stun_time");
+            attack_stun_time = kf->popRandomInt(random_ints);
+        }
+
+        tab.push("corpse_tiles");
+        std::vector<shared_ptr<Tile> > corpse_tiles;
+        if (kf->isNone()) {
+            kf->pop();  // corpse_tiles is optional
+        } else {
+            popTileList(corpse_tiles); // but if present it must be a tile list
+        }
+
+        tab.push("generator_tiles");
+        std::vector<shared_ptr<Tile> > generator_tiles;
+        if (kf->isNone()) {
+            kf->pop();
+        } else {
+            popTileList(generator_tiles);
+        }
+        
+        tab.push("health");
+        const RandomInt * health = kf->popRandomInt(random_ints);
+
+        tab.push("speed");
+        int speed = kf->popInt();
+
+        tab.push("type");
+        kf->pop();
+
+        ItemType * weapon = 0;
+        if (is_walking) {
+            tab.push("weapon");
+            weapon = popItemType();
+        }
+
+        if (is_walking) {
+            it->second = new WalkingMonsterType(health, speed, weapon, anim, ai_avoid, ai_fear, ai_hit);
+        } else {
+            ASSERT(is_flying);
+            it->second = new FlyingMonsterType(health, speed, anim, attack_damage, attack_stun_time);
+        }
+
+        monster_corpse_tiles.insert(std::make_pair(it->second, corpse_tiles));
+        monster_generator_tiles.insert(std::make_pair(it->second, generator_tiles));
+        
+    } else {
+        kf->pop();
+    }
+
+    return it->second;
+}
+
 
 Overlay* KnightsConfigImpl::popOverlay()
 {
@@ -1405,7 +1498,7 @@ boost::shared_ptr<Tile> KnightsConfigImpl::makeDeadKnightTile(boost::shared_ptr<
 }
     
 void KnightsConfigImpl::processTile(const vector<SegmentTileData> &tile_map, Segment &segment,
-                               int x, int y)
+                                    int x, int y)
 {
     const int tile = kf->popInt();
     const SegmentTileData & seg_tile(tileFromInt(tile_map, tile));
@@ -1881,6 +1974,42 @@ void KnightsConfigImpl::popTutorial()
     }
 }
 
+void KnightsConfigImpl::popZombieActivityTable()
+{
+    KConfig::KFile::List lst(*kf, "ZombieActivityTable");
+    for (int i = 0; i < lst.getSize(); ++i) {
+        lst.push(i);
+        KConfig::KFile::List lst2(*kf, "ZombieActivityEntry", 2);
+
+        ZombieActivityEntry ent;
+        
+        lst2.push(0);
+        ent.from = popTile();
+
+        lst2.push(1);
+        const bool is_monster = isMonsterType();  // pops the table!
+
+        lst2.push(1);
+        if (is_monster) {
+            ent.to_monster_type = popMonsterType();
+        } else {
+            ent.to_monster_type = 0;
+            ent.to_tile = popTile();
+        }
+
+        zombie_activity.push_back(ent);
+    }
+}
+
+void KnightsConfigImpl::addZombieActivity(MonsterManager &mm, shared_ptr<Tile> from, const ZombieActivityEntry &ze)
+{
+    if (ze.to_tile) {
+        mm.addZombieDecay(from, ze.to_tile);
+    } else {
+        mm.addZombieReanimate(from, ze.to_monster_type);
+    }
+}
+
 int KnightsConfigImpl::getSegmentCategory(const string &cname) 
 {
     if (cname.empty()) return -1;
@@ -2074,11 +2203,13 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
             gore_manager.setKnightCorpse(*players[i], dead_knight_tiles[hse_cols[i] * 4 + offset], dead_knight_tiles[hse_cols[i] * 4 + offset + 1]);
         }
     }
-    
-    for (int i = 0; i < dead_bat_tiles.size(); ++i) {
-        gore_manager.addMonsterCorpse(vampire_bat_type.get(), dead_bat_tiles[i]);
+
+    for (std::map<MonsterType *, std::vector<shared_ptr<Tile> > >::const_iterator it = monster_corpse_tiles.begin();
+    it != monster_corpse_tiles.end(); ++it) {
+        for (std::vector<shared_ptr<Tile> >::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+            gore_manager.addMonsterCorpse(it->first, *it2);
+        }
     }
-    gore_manager.addMonsterCorpse(zombie_type.get(), dead_zombie_tile);
 
     for (int i = 0; i < blood_tiles.size(); ++i) {
         gore_manager.addBloodTile(blood_tiles[i]);
@@ -2086,45 +2217,57 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
 
     gore_manager.setBloodIcon(blood_icon);
 
-    // set up monster manager - vampire bats
-    for (int i = 0; i < bat_pit_tiles.size(); ++i) {
-        monster_manager.addMonsterGenerator(bat_pit_tiles[i], vampire_bat_type.get());
-    }
+    // set up monster manager - tile-generated monsters
 
-    // set up monster manager - zombies
-    // -- Dead knights and "other zombie tiles" decay into "dead zombie tile"
-    // -- "Dead zombie tile" can be reanimated into a zombie.
-    for (int i=0; i<dead_knight_tiles.size(); ++i) {
-        monster_manager.addZombieDecay(dead_knight_tiles[i], dead_zombie_tile);
-    }
-    for (int i=0; i<other_zombie_tiles.size(); ++i) {
-        monster_manager.addZombieDecay(other_zombie_tiles[i], dead_zombie_tile);
-    }
-    monster_manager.addZombieReanimate(dead_zombie_tile, zombie_type.get());
-
-    // -- Set the zombie and bat activity levels
-    const int zombie_activity = dg->getZombieActivity();
+    // TODO: There should not be a single "vampire_bats" setting, rather there should probably be one
+    // "monster chance" setting per (tile-generated) monster type.
+    // However we are going to hard wire them all to the same menu setting for now
+    // (this is OK for the moment since there is only one tile-generated monster type currently!!).
     const int vampire_bats = dg->getVampireBats();
-    monster_manager.setZombieChance(4*zombie_activity*zombie_activity);   // quadratic from 0 to 100%
-    monster_manager.setBatChance(20*vampire_bats);  // linear from 0 to 100%
+    
+    for (std::map<MonsterType *, std::vector<shared_ptr<Tile> > >::const_iterator it = monster_generator_tiles.begin();
+    it != monster_generator_tiles.end(); ++it) {
+        for (std::vector<shared_ptr<Tile> >::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+            monster_manager.addMonsterGenerator(*it2, it->first, 20*vampire_bats);  // generation chance is linear from 0 to 100%
+        }
+    }
 
+    // set up monster manager - zombie activity
+    for (std::vector<ZombieActivityEntry>::const_iterator it = zombie_activity.begin(); it != zombie_activity.end(); ++it) {
+        addZombieActivity(monster_manager, it->from, *it);
+
+        // if from_tile is one of the dead knight tiles, we have to make sure that the duplicates for additional house colours
+        // are also dealt with properly.
+        const size_t dead_kt_size = dead_knight_tiles.size() / house_colours_normal.size();
+        for (size_t j = 0; j < dead_kt_size; ++j) {
+            if (it->from == dead_knight_tiles[j]) {
+                for (size_t i = 1; i < house_colours_normal.size(); ++i) {
+                    size_t idx = i * dead_kt_size + j;
+                    addZombieActivity(monster_manager, dead_knight_tiles[idx], *it);
+                }
+            }
+        }
+    }
+
+    const int zombie_activity = dg->getZombieActivity();
+    monster_manager.setZombieChance(4*zombie_activity*zombie_activity);   // quadratic from 0 to 100%
+
+    
     // -- Monster limits
-    //   -- Number of bats is limited to three times the vampire bats level
-    //   -- Number of zombies is not limited
     //   -- Total number of monsters is limited to CfgInt("monster_limit").
-    monster_manager.limitMonster(vampire_bat_type.get(), vampire_bats*3);
+    //   -- Vampire bats are limited to vampire_bats*3 (TODO: Don't hard code this!!)
+    monster_manager.limitMonster(vampire_bat_type, vampire_bats*3);
     monster_manager.limitTotalMonsters(config_map->getInt("monster_limit"));
 
-    // -- AI
-    monster_manager.setZombieAI(zombie_ai_avoid, zombie_ai_hit, zombie_ai_fear);
+    monster_manager.setHardCodedMonsterTypes(*zombie_type, *vampire_bat_type);
+    
 
     // set up event manager
     event_manager.setupHooks(hooks);
 
     // add initial vampire bats
-    const int vbat_level = dg->getVampireBats();
-    const int nbats_normal = vbat_level==0 ? 0 : 2*vbat_level + 1;
-    const int nbats_guarded = vbat_level + 5;
+    const int nbats_normal = vampire_bats==0 ? 0 : 2*vampire_bats + 1;
+    const int nbats_guarded = vampire_bats + 5;
     dg->addVampireBats(*dungeon_map, monster_manager, nbats_normal, nbats_guarded);
 
     // set up a task to run the monster manager every so often

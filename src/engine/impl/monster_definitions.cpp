@@ -28,7 +28,6 @@
 #include "item.hpp"
 #include "mediator.hpp"
 #include "monster_definitions.hpp"
-#include "monster_manager.hpp"
 #include "monster_support.hpp"
 #include "rng.hpp"
 #include "special_tiles.hpp"
@@ -41,15 +40,17 @@ using namespace KConfig;
 
 
 //
-// vampire bats
+// flying monsters
 //
 
-class VampireBatAI : public Task {
+class FlyingMonsterAI : public Task {
 public:
-    explicit VampireBatAI(weak_ptr<VampireBat> v) : vbat(v), next_bite_time(0) { }
+    explicit FlyingMonsterAI(weak_ptr<FlyingMonster> v) : vbat(v), next_bite_time(0) { }
     virtual void execute(TaskManager &tm);
 private:
-    weak_ptr<VampireBat> vbat;
+    // note: vbat can be any flying monster (not necessarily a vampire bat) but at the
+    // current time, vampire bats are the only defined flying monster.
+    weak_ptr<FlyingMonster> vbat;
     int next_bite_time;
 };
 
@@ -68,7 +69,7 @@ namespace {
     bool TargetUnderneathMe(const Creature &me, const Creature &target)
     {
         Mediator &mediator = Mediator::instance();
-        const int bat_targetting_offset = mediator.cfgInt("bat_targetting_offset");
+        const int flying_monster_targetting_offset = mediator.cfgInt("flying_monster_targetting_offset");
 
         int dist = 0;
 
@@ -88,7 +89,7 @@ namespace {
             return false;
         }
 
-        return dist < bat_targetting_offset;
+        return dist < flying_monster_targetting_offset;
     }
 
 
@@ -126,13 +127,13 @@ namespace {
     }
 }
 
-void VampireBatAI::execute(TaskManager &tm)
+void FlyingMonsterAI::execute(TaskManager &tm)
 {
     Mediator &mediator = Mediator::instance();
     const float monster_wait_chance_as_fraction = mediator.cfgInt("monster_wait_chance") / 100.0f;
-    const int bat_bite_wait = mediator.cfgInt("bat_bite_wait");
+    const int flying_monster_bite_wait = mediator.cfgInt("flying_monster_bite_wait");
 
-    shared_ptr<VampireBat> bat = vbat.lock();
+    shared_ptr<FlyingMonster> bat = vbat.lock();
     if (!bat || !bat->getMap()) return;  // the bat has died
 
     // These vars store whether we should move (and in which dir) and whether we should bite
@@ -201,7 +202,7 @@ void VampireBatAI::execute(TaskManager &tm)
         } else if (bite) {
             ASSERT(bite_allowed);
             ASSERT(target);  // implied by bite_allowed
-            next_bite_time = tm.getGVT() + bat_bite_wait;
+            next_bite_time = tm.getGVT() + flying_monster_bite_wait;
             bat->bite(target);
         }
     }
@@ -210,35 +211,34 @@ void VampireBatAI::execute(TaskManager &tm)
     ReplaceTask(tm, shared_from_this(), *bat, allow_bite_halfway);
 }
 
-shared_ptr<Monster> VampireBatMonsterType::makeMonster(MonsterManager &mm, TaskManager &tm)
-    const
+shared_ptr<Monster> FlyingMonsterType::makeMonster(TaskManager &tm) const
 {
     const int h = health ? health->get() : 1; 
-    shared_ptr<VampireBat> vbat(new VampireBat(mm, *this, h, anim, speed));
-    shared_ptr<Task> ai(new VampireBatAI(vbat));
+    shared_ptr<FlyingMonster> mon(new FlyingMonster(*this, h, anim, speed));
+    shared_ptr<Task> ai(new FlyingMonsterAI(mon));
     tm.addTask(ai, TP_LOW, tm.getGVT()+1);
-    return vbat;
+    return mon;
 }
 
 
-void VampireBat::damage(int amount, const Originator &attacker, int su, bool inhibit_squelch)
+void FlyingMonster::damage(int amount, const Originator &attacker, int su, bool inhibit_squelch)
 {
     // run vampire bat hook (usually plays "screech" sound effect)
     // -- Only want this if the bat was not killed.
-    shared_ptr<VampireBat> self(static_pointer_cast<VampireBat>(shared_from_this()));
+    shared_ptr<FlyingMonster> self(static_pointer_cast<FlyingMonster>(shared_from_this()));
     if (amount < getHealth()) {
-        Mediator::instance().runHook("HOOK_BAT", self);
+        Mediator::instance().runHook("HOOK_BAT", self);  // TODO should be monster type dependent, not hard coded to BAT
     } else if (!inhibit_squelch) {
         Mediator::instance().runHook("HOOK_CREATURE_SQUELCH", self);
     }
     
-    // Vampire bats will run away after they get hit.
-    // Also: Vampire bats are immune to being "stunned" by weapon impacts.
+    // Flying monsters will run away after they get hit.
+    // Also: Flying monsters are immune to being "stunned" by weapon impacts.
     Creature::damage(amount, attacker, -1, inhibit_squelch);
     run_away_flag = true;
 }
 
-void VampireBat::bite(shared_ptr<Creature> target)
+void FlyingMonster::bite(shared_ptr<Creature> target)
 {
     if (isStunned()) return;
     Mediator &mediator = Mediator::instance();
@@ -258,16 +258,29 @@ void VampireBat::bite(shared_ptr<Creature> target)
 
 
 //
-// zombies
+// walking monsters
 //
 
-class ZombieAI : public Task {
+class WalkingMonsterAI : public Task {
 public:
-    ZombieAI(const MonsterManager &mm, weak_ptr<Monster> z) : mmgr(mm), zombie(z) { }
+    WalkingMonsterAI(weak_ptr<WalkingMonster> m,
+                     const std::vector<shared_ptr<Tile> > &avoid_tiles_,
+                     const ItemType *fear_item_,
+                     const ItemType *hit_item_)
+        : monster(m),
+          avoid_tiles(avoid_tiles_),
+          fear_item(fear_item_),
+          hit_item(hit_item_)
+    { }
+
     virtual void execute(TaskManager &tm);
+
 private:
-    const MonsterManager &mmgr;
-    weak_ptr<Monster> zombie;
+    weak_ptr<WalkingMonster> monster;
+    
+    const std::vector<shared_ptr<Tile> > & avoid_tiles;
+    const ItemType * fear_item;
+    const ItemType * hit_item;
 };
 
 namespace {
@@ -288,8 +301,10 @@ namespace {
     };
 
     struct ZombieCanWalk {
-        explicit ZombieCanWalk(const MonsterManager &m) : mm(m) { }
-        const MonsterManager &mm;
+        explicit ZombieCanWalk(const std::vector<shared_ptr<Tile> > &avoid_tiles_) : avoid_tiles(avoid_tiles_) { }
+
+        const std::vector<shared_ptr<Tile> > & avoid_tiles;
+        
         bool operator()(DungeonMap &dmap, const MapCoord &mc) const {
             // If the access is not A_CLEAR then we may not walk into this square
             if (dmap.getAccess(mc, H_WALKING) != A_CLEAR) return false;
@@ -299,8 +314,7 @@ namespace {
             dmap.getTiles(mc, tiles);
             for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
             ++it) {
-                if (find(mm.getZombieAvoid().begin(), mm.getZombieAvoid().end(), *it)
-                != mm.getZombieAvoid().end()) {
+                if (find(avoid_tiles.begin(), avoid_tiles.end(), *it) != avoid_tiles.end()) {
                     return false;
                 }
             }
@@ -310,22 +324,27 @@ namespace {
     };
 
     struct ZombieCanFight {
-        explicit ZombieCanFight(const MonsterManager &m) : mm(m) { }
-        const MonsterManager &mm;
+        explicit ZombieCanFight(const ItemType *fear_item_, const ItemType *hit_item_)
+            : fear_item(fear_item_), hit_item(hit_item_) { }
+
+        const ItemType *fear_item;
+        const ItemType *hit_item;
+
         bool operator()(DungeonMap &dmap, const MapCoord &mc) const {
             
-            // A zombie can always attack a knight (assuming we're not afraid of him)
+            // A walking monster can always attack a knight (assuming the knight is not
+            // carrying the feared item).
             // Note: this means a zombie will be able to attack an invisible knight if it
             // is next to such a knight. But zombies will not *target* invisible knights
             // from a distance.
-            if (KnightAt(dmap, mc, mm.getZombieFear())) return true;
+            if (KnightAt(dmap, mc, fear_item)) return true;
 
-            // A zombie can fight a "bear trap" tile
-            if (dmap.getItem(mc) && &dmap.getItem(mc)->getType() == mm.getZombieHit()) {
+            // A walking monster can fight a "bear trap" tile
+            if (dmap.getItem(mc) && &dmap.getItem(mc)->getType() == hit_item) {
                 return true;
             }
             
-            // A zombie can also try to smash furniture tiles (as long as they're
+            // A walking monster can also try to smash furniture tiles (as long as they're
             // not doors).
             vector<shared_ptr<Tile> > tiles;
             dmap.getTiles(mc, tiles);
@@ -341,20 +360,27 @@ namespace {
     };
 
     struct ZombieCanMove {
-        explicit ZombieCanMove(const MonsterManager &m) : mm(m) { }
-        bool operator()(DungeonMap &dmap, const MapCoord &mc) const {
-            const ZombieCanWalk zcw(mm);
-            const ZombieCanFight zcf(mm);
+        explicit ZombieCanMove(const std::vector<shared_ptr<Tile> > &avoid_tiles,
+                               const ItemType *fear_item,
+                               const ItemType *hit_item)
+            : zcw(avoid_tiles),
+              zcf(fear_item, hit_item)
+        { }
+        
+        const ZombieCanWalk zcw;
+        const ZombieCanFight zcf;
+        
+        bool operator()(DungeonMap &dmap, const MapCoord &mc) const
+        {
             return zcw(dmap,mc) || zcf(dmap,mc);
         }
-        const MonsterManager &mm;
     };
 }
 
-void ZombieAI::execute(TaskManager &tm)
+void WalkingMonsterAI::execute(TaskManager &tm)
 {
-    shared_ptr<Monster> zom = zombie.lock();
-    if (!zom || !zom->getMap()) return;  // our zombie appears to have died.
+    shared_ptr<WalkingMonster> mon = monster.lock();
+    if (!mon || !mon->getMap()) return;  // our monster appears to have died.
 
     Mediator &mediator = Mediator::instance();
 
@@ -362,13 +388,13 @@ void ZombieAI::execute(TaskManager &tm)
     p.second = false;
     
     // Find a target (or something to run away from!)
-    shared_ptr<Knight> target = FindClosestKnight(zom,
-            VisibleAndCarrying(mmgr.getZombieFear()));
+    shared_ptr<Knight> target = FindClosestKnight(mon,
+            VisibleAndCarrying(fear_item));
     bool run_away;
     if (target) {
         run_away = true;
     } else {
-        target = FindClosestKnight(zom, IsVisible());
+        target = FindClosestKnight(mon, IsVisible());
         run_away = false;
     }
     
@@ -376,69 +402,70 @@ void ZombieAI::execute(TaskManager &tm)
     // (If there is no target, then there is a chance that the monster will stay
     // where it is and do nothing, rather than randomly walking about.)
     if (!(!target && g_rng.getBool(mediator.cfgInt("monster_wait_chance")/100.0f))) {
-        p = ChooseDirection(zom, target? target->getPos() : MapCoord(), run_away,
-                            ZombieCanMove(mmgr));
+        p = ChooseDirection(mon, target? target->getPos() : MapCoord(), run_away,
+                            ZombieCanMove(avoid_tiles, fear_item, hit_item));
     }
 
     // Move (if we can act)
-    if (!zom->isStunned() && !zom->isMoving()) {
+    if (!mon->isStunned() && !mon->isMoving()) {
 
         if (p.second) {
             // A direction was chosen above. Turn to face this direction
-            zom->setFacing(p.first);
+            mon->setFacing(p.first);
             
             // Either fight or walk, depending on what's in the tile ahead.
-            MapCoord sq_ahead = DisplaceCoord(zom->getPos(), zom->getFacing());
-            const ZombieCanFight zcf(mmgr);
-            const ZombieCanWalk zcw(mmgr);
-            if (zcf(*zom->getMap(), sq_ahead)) {
-                zom->swing();
-            } else if (zcw(*zom->getMap(), sq_ahead)) {
-                zom->move(MT_MOVE);
+            MapCoord sq_ahead = DisplaceCoord(mon->getPos(), mon->getFacing());
+            const ZombieCanWalk zcw(avoid_tiles);
+            const ZombieCanFight zcf(fear_item, hit_item);
+            if (zcf(*mon->getMap(), sq_ahead)) {
+                mon->swing();
+            } else if (zcw(*mon->getMap(), sq_ahead)) {
+                mon->move(MT_MOVE);
                 // Play a moo sound 1 in every 20 zombie moves
+                // TODO this should not be hard coded to HOOK_ZOMBIE ...
                 if (g_rng.getBool(0.05f)) {
-                    mediator.runHook("HOOK_ZOMBIE", zom);
+                    mediator.runHook("HOOK_ZOMBIE", mon);
                 }
             }
         } else {
             // We have chosen to stay where we are. But we should at least
             // turn to face the player (this looks a bit better).
             if (target) {
-                zom->setFacing(DirectionFromTo(zom->getPos(), target->getPos()));
+                mon->setFacing(DirectionFromTo(mon->getPos(), target->getPos()));
             } else {
-                zom->setFacing(MapDirection(g_rng.getInt(0,4)));
+                mon->setFacing(MapDirection(g_rng.getInt(0,4)));
             }
         }
     }
 
     // Now wait for an appropriate time before making the next move. 
-    ReplaceTask(tm, shared_from_this(), *zom, false);
+    ReplaceTask(tm, shared_from_this(), *mon, false);
 }
 
-shared_ptr<Monster> ZombieMonsterType::makeMonster(MonsterManager &mm, TaskManager &tm) const
+shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
 {
     const int h = health ? health->get() : 1;
-    shared_ptr<Monster> zombie(new Zombie(mm, *this, h, weapon, anim, speed));
-    zombie->setFacing(MapDirection(g_rng.getInt(0,4))); // random initial facing
-    shared_ptr<Task> ai(new ZombieAI(mm, zombie));
+    shared_ptr<WalkingMonster> monster(new WalkingMonster(*this, h, weapon, anim, speed));
+    monster->setFacing(MapDirection(g_rng.getInt(0,4))); // random initial facing
+    shared_ptr<Task> ai(new WalkingMonsterAI(monster, avoid_tiles, fear_item, hit_item));
     tm.addTask(ai, TP_LOW, tm.getGVT()+1);
-    return zombie;
+    return monster;
 }
 
 //
-// This routine makes zombies 'recoil' when they're hit.
+// This routine makes walking monsters 'recoil' when they're hit.
 // Also it runs the hooks (usually sound effects).
 
-void Zombie::damage(int amount, const Originator &attacker, int stun_until, bool inhibit_squelch)
+void WalkingMonster::damage(int amount, const Originator &attacker, int stun_until, bool inhibit_squelch)
 {
     Mediator &mediator = Mediator::instance();
-    shared_ptr<Zombie> self(static_pointer_cast<Zombie>(shared_from_this()));
-    mediator.runHook("HOOK_ZOMBIE", self);
+    shared_ptr<WalkingMonster> self(static_pointer_cast<WalkingMonster>(shared_from_this()));
+    mediator.runHook("HOOK_ZOMBIE", self); // TODO don't hard code to ZOMBIE hook
     if (amount >= getHealth() && !inhibit_squelch) {
         mediator.runHook("HOOK_CREATURE_SQUELCH", self);
     }
     Creature::damage(amount, attacker, stun_until, inhibit_squelch);
     setAnimFrame(AF_PARRY,
                  stun_until != -1 ? stun_until
-                                  : (mediator.getGVT() + mediator.cfgInt("zombie_damage_delay")));
+                                  : (mediator.getGVT() + mediator.cfgInt("walking_monster_damage_delay")));
 }

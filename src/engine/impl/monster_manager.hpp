@@ -49,7 +49,7 @@ public:
         : total_current_monsters(0), total_monster_limit(-1), zombie_chance(0), bat_chance(0),
           necronomicon_counter(0), necromancy_flag(false) { }
     
-    // Initialization:
+    // Initialization of zombie activity:
     
     // addZombieDecay: tile "from" is to be changed into tile "to" as
     // a result of zombie activity
@@ -59,19 +59,26 @@ public:
     // with a zombie as a result of zombie activity
     void addZombieReanimate(shared_ptr<Tile> from, const MonsterType * zombie_type);
 
-    // addMonsterGenerator: the given tile will be treated as a
-    // "monster generator" (this is used for vampire bats, which are
-    // generated at pits).
-    void addMonsterGenerator(shared_ptr<Tile> tile, const MonsterType * monster_type);
-
     // setZombieChance: this must be called to activate the zombie activity.
     // it is set to a number from 0--100 (100 being the highest zombie activity)
     void setZombieChance(int z) { zombie_chance = z; }
     int getZombieChance() const { return zombie_chance; }
 
-    // setBatChance: ditto, but for vampire bats.
-    void setBatChance(int v) { bat_chance = v; }
-    int getBatChance() const { return bat_chance; }
+
+    // Initialization of monster generator tiles
+    // (used for vampire bat activity):
+
+    // addMonsterGenerator: the given tile will be treated as a
+    // "monster generator" (this is used for vampire bats, which are
+    // generated at pits).
+    // 
+    // "chance" is a number from 0 to 100 which controls how often
+    // monsters will be generated.
+    //
+    void addMonsterGenerator(shared_ptr<Tile> tile, const MonsterType * monster_type, int chance);
+
+
+    // Initialization of monster limits:
     
     // Limit the number of a certain monster that can be added to the dungeon
     void limitMonster(const MonsterType * monster_type, int max_number);
@@ -79,11 +86,6 @@ public:
     // Limit the *total* number of monsters that can be added to the dungeon
     void limitTotalMonsters(int max_number);
 
-    // AI
-    void setZombieAI(const vector<shared_ptr<Tile> > &avoid,
-                     const ItemType *hit, const ItemType *fear)
-    { zombie_ai_avoid = avoid; zombie_ai_hit = hit; zombie_ai_fear = fear; }
-    
     
     //
     // doMonsterGeneration:
@@ -104,23 +106,27 @@ public:
     //
     // manual monster generation
     //
-    void placeZombie(DungeonMap &dmap, const MapCoord &mc, MapDirection facing);
-    void placeVampireBat(DungeonMap &dmap, const MapCoord &mc);
+    void placeMonster(const MonsterType &type, DungeonMap &dmap, const MapCoord &mc, MapDirection facing);
+
+    // hard coded monster types. TODO get rid of these.
+    const MonsterType & getZombieType() const { return *zombie_type; }
+    const MonsterType & getVampireBatType() const { return *vampire_bat_type; }
+    void setHardCodedMonsterTypes(const MonsterType &zom, const MonsterType &bat) { zombie_type = &zom; vampire_bat_type = &bat; }
+    
 
     //
     // temporary changes to zombie activity (used by Necronomicon)
     //
     void fullZombieActivity() { ++necronomicon_counter; }
     void normalZombieActivity() { --necronomicon_counter; }
-    
+
     
     //
-    // Accessor functions
-    //
-    
-    const vector<shared_ptr<Tile> > & getZombieAvoid() const { return zombie_ai_avoid; }
-    const ItemType * getZombieHit() const { return zombie_ai_hit; }
-    const ItemType * getZombieFear() const { return zombie_ai_fear; }
+    // this is called by Mediator::onMonsterDeath, it should not need to be
+    // called manually
+    //    
+    void subtractMonster(const MonsterType &mt);    
+
 
 private:
     // Noncopyable
@@ -128,21 +134,18 @@ private:
     MonsterManager(const MonsterManager &);
     
 private:
-    friend class Monster;
-    void subtractMonster(const MonsterType &mt);    
-    
-private:
-    bool rollZombieActivity() const;
-    bool rollBatActivity() const;
+    bool rollZombieActivity() const;                   // for zombie decay/reanimation
+    bool rollTileGeneratedMonster(int chance) const;   // for bats and other "tile generated" monsters
     bool reachedMonsterLimit(const MonsterType * m) const;
     shared_ptr<Monster> addMonsterToMap(const MonsterType &mt, DungeonMap &dmap,
-                                        const MapCoord &mc);
+                                        const MapCoord &mc);    // gives it a random initial facing
     
 private:
     map<shared_ptr<Tile>, shared_ptr<Tile> > decay_sequence;
     struct MonsterInfo {
         const MonsterType * monster_type;
         bool zombie_mode;
+        int chance;  // only used for zombie_mode == false
     };
     map<shared_ptr<Tile>, MonsterInfo> monster_map;
 
@@ -153,11 +156,10 @@ private:
     int zombie_chance, bat_chance;
     int necronomicon_counter;  // if +ve, should act as if zombie_chance was 100%.
     bool necromancy_flag;  // set true when doNecromancy is called.
-    
-    // zombie AI
-    vector<shared_ptr<Tile> > zombie_ai_avoid;
-    const ItemType * zombie_ai_hit;
-    const ItemType * zombie_ai_fear;
+
+    // TODO remove these
+    const MonsterType * zombie_type;
+    const MonsterType * vampire_bat_type;
 };
 
 #endif

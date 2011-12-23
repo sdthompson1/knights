@@ -42,8 +42,9 @@ class Graphic;
 
 class Anim {
 public:
-    explicit Anim(int id_, bool vbat) : id(id_), vbat_mode(vbat)
+    explicit Anim(int id_) : id(id_), vbat_mode(false)
         { for (int i=0; i<4; ++i) for (int j=0; j<NFRAMES; ++j) g[i][j] = 0; }
+    void setBatMode() { vbat_mode = true; }
 
     const Graphic * getGraphic(MapDirection facing, int frame) const
         { return g[facing][frame]; }

@@ -107,7 +107,7 @@ namespace KConfig {
         public:
             // n1,n2,etc are expected no of list elements.
             // n is a "name" for the list (this will be reported in error messages). 
-            List(KFile &kf_, const string &n, int n1=-1, int n2=-1, int n3=-1, int n4=-1);
+            List(KFile &kf_, const string &n, int n1=-1, int n2=-1, int n3=-1, int n4=-1, int n5=-1);
             ~List();
             int getSize() const;
             void push(int);  // push element (indices <0 are an error, indices >= getSize() push "None").

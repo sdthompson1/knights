@@ -171,8 +171,8 @@ public:
     void popAccessTable(MapAccess out[], MapAccess dflt);
     Action * popAction();
     Action * popAction(Action *dflt);
-    Anim * popAnim(bool batmode = false);
-    Anim * popAnim(Anim *dflt, bool batmode = false);
+    Anim * popAnim();
+    Anim * popAnim(Anim *dflt);
     BlockType popBlockType();
     bool popBool();
     bool popBool(bool dflt);
@@ -200,6 +200,8 @@ public:
     void popMenuValue(int val, MenuItem &menu_item);
     string popMenuValueName(int val);
     void popMenuValueDirective(const string &key, int value);
+    bool isMonsterType();
+    MonsterType * popMonsterType();
     Overlay * popOverlay();
     Overlay * popOverlay(Overlay *dflt);
     void popOverlayOffsets();
@@ -230,6 +232,7 @@ public:
     int popTileItems(const MapAccess acc[]);  // acc is just there to provide a default answer.
     void popTileList(std::vector<boost::shared_ptr<Tile> > &output);
     void popTutorial();
+    void popZombieActivityTable();
 
     int getSegmentCategory(const std::string &); // returns -1 if empty string given
     int getTileCategory(const std::string &);    // ditto
@@ -253,7 +256,7 @@ private:
 
     void * doLuaCast(unsigned int type_tag, void *ud) const;
     
-    
+
     //
     // helper classes
     //
@@ -286,6 +289,7 @@ private:
     std::map<const Value *, ItemType *> item_types;
     std::vector<ItemType *> special_item_types;
     std::map<const Value *, MenuInt *> menu_ints;
+    std::map<const Value *, MonsterType *> monster_types;
     std::map<const Value *, Overlay *> overlays;
     std::map<const Value *, RandomDungeonLayout *> random_dungeon_layouts;
     KConfig::RandomIntContainer random_ints;
@@ -322,21 +326,23 @@ private:
     std::vector<std::string> standard_quest_descriptions;
 
     // Monsters, gore
+
+    std::map<MonsterType *, std::vector<shared_ptr<Tile> > > monster_corpse_tiles;
+    std::map<MonsterType *, std::vector<shared_ptr<Tile> > > monster_generator_tiles;
+
+    struct ZombieActivityEntry {
+        shared_ptr<Tile> from;
+        shared_ptr<Tile> to_tile;
+        const MonsterType * to_monster_type;
+    };
+    std::vector<ZombieActivityEntry> zombie_activity;
+    static void addZombieActivity(MonsterManager &mm, shared_ptr<Tile> from, const ZombieActivityEntry &ze);
+    
     const Graphic *blood_icon;
-    std::vector<boost::shared_ptr<Tile> > blood_tiles, dead_knight_tiles, dead_bat_tiles;
-    boost::shared_ptr<Tile> dead_zombie_tile;
-    std::vector<boost::shared_ptr<Tile> > other_zombie_tiles;
-    std::vector<boost::shared_ptr<Tile> > bat_pit_tiles;
-    boost::scoped_ptr<MonsterType> vampire_bat_type, zombie_type;
-    int bat_speed, zombie_speed;
-    const KConfig::RandomInt * bat_health;
-    const KConfig::RandomInt * zombie_health;
-    const Anim * bat_anim;
-    const Anim * zombie_anim;
-    const ItemType * zombie_weapon;
-    std::vector<boost::shared_ptr<Tile> > zombie_ai_avoid;
-    const ItemType * zombie_ai_hit;
-    const ItemType * zombie_ai_fear;
+    std::vector<boost::shared_ptr<Tile> > blood_tiles, dead_knight_tiles;
+    
+    MonsterType *vampire_bat_type, *zombie_type; // Will eventually get rid of these (hopefully...)
+
 
     // The generic hook system
     std::map<std::string, const Action *> hooks;

@@ -380,6 +380,10 @@ t_closed_pit_normal = closed_pit & { # 80
 }
 
 
+# This is a list of all "open pit" tiles, used in monsters.txt
+all_open_pit_tiles = [t_open_pit_horiz, t_open_pit_vert, t_open_pit_wooden, t_open_pit_normal]
+
+
 # Floor tiles of all kinds.
 
 floor = {

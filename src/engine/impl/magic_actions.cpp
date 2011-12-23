@@ -518,7 +518,8 @@ namespace {
             MapDirection facing = kt->getFacing();
             kt->onDeath(Creature::ZOMBIE_MODE, originator);       // this drops items, etc.
             kt->rmFromMap();
-            Mediator::instance().getMonsterManager().placeZombie(*dmap, mc, facing);
+            MonsterManager &mm = Mediator::instance().getMonsterManager();
+            mm.placeMonster(mm.getZombieType(), *dmap, mc, facing);
         }
     }
 }

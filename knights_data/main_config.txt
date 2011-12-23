@@ -27,6 +27,7 @@ include "tiles.txt"
 include "tutorial.txt"
 include "dungeon_layouts.txt"
 include "item_generation.txt"
+include "monsters.txt"
 
 DEFAULT_ITEM = i_sword
 
@@ -66,47 +67,7 @@ STUFF_BAG_GRAPHIC = g_stuff_bag
 BLOOD_ICON = g_blood_icon
 BLOOD_TILES = [t_blood_1, t_blood_2, t_blood_3]
 DEAD_KNIGHT_TILES = [t_dead_knight_1, t_dead_knight_2, t_dead_knight_3, t_dead_knight_4]
-DEAD_BAT_TILES = [t_dead_vbat_1, t_dead_vbat_2, t_dead_vbat_3]
-DEAD_ZOMBIE_TILE = t_dead_zombie   # this will be converted into zombies
-OTHER_ZOMBIE_TILES = [t_floor6]    # these will decay into DEAD_ZOMBIE_TILE 
-                                   # (as will dead knights)
 
+# also note that monster corpses and zombie activity sequence
+# are defined in monster.txt.
 
-# Monsters
-
-# Where bats will be generated from:
-BAT_PIT_TILES = [t_open_pit_vert, t_open_pit_wooden, t_open_pit_normal]
-
-# Vampire bat stats and graphics
-BAT_HEALTH = d2     # bats are not very tough
-BAT_SPEED  = 86     # slightly slower than a knight 
-BAT_ANIM   = a_vbat
-BAT_ATTACK_DAMAGE = 1
-BAT_ATTACK_STUN_TIME = ts*(d2+1)
-
-
-# Zombie stats and graphics
-ZOMBIE_HEALTH = d5+1   # zombies are tough (need about 3 sword hits on average)
-ZOMBIE_SPEED  = 67     # zombies are slow
-ZOMBIE_WEAPON = {
-    # Like an axe, but it takes slightly longer to do the backswing; also there is a slightly
-    # lower tile damage. (don't want zombies smashing up the dungeon too quickly.)
-    type = "held"
-    melee_backswing_time = 3*ts
-    melee_downswing_time = 3*ts
-    melee_damage         = d3
-    melee_stun_time      = ts*(d4+1)
-    melee_tile_damage    = 3
-}
-ZOMBIE_ANIM = a_zombie
-
-# Zombie AI:
-
-# List of tiles that zombies don't want to walk onto:
-ZOMBIE_AI_AVOID = [t_open_pit_vert, t_open_pit_horiz, t_open_pit_wooden, t_open_pit_normal]
-
-# Item that zombies will whack with sword instead of walking onto:
-ZOMBIE_AI_HIT = i_bear_trap_open
-
-# Item that zombies will run away from (if a knight is carrying it):
-ZOMBIE_AI_FEAR = i_wand_of_undeath

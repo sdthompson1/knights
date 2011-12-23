@@ -34,23 +34,23 @@
 
 #include "creature.hpp"
 
-class MonsterManager;
 class MonsterType;
 
 class Monster : public Creature {
 public:
-    Monster(MonsterManager &mmgr, const MonsterType &type_, int health, MapHeight ht,
+    Monster(const MonsterType &type_, int health, MapHeight ht,
             const ItemType *item_in_hand, const Anim *anim, int speed)
         : Creature(health, ht, item_in_hand, anim, speed),
-          monster_manager(mmgr), type(type_) { }
+          type(type_) { }
 
     virtual ~Monster();
     virtual void onDeath(DeathMode dmode, const Originator &);
 
     virtual Originator getOriginator() const { return Originator(OT_Monster()); }
 
+    const MonsterType & getMonsterType() const { return type; }
+
 private:
-    MonsterManager &monster_manager;
     const MonsterType &type;
 };
 

@@ -22,8 +22,15 @@
  */
 
 /*
- * Defines Vampire Bats and Zombies.
+ * Defines two types of monster: WalkingMonster and FlyingMonster.
  *
+ * The configuration of these into particular monster types (zombies, ogres,
+ * vampire bats) is done entirely in the knights_data files; the engine
+ * is (mostly) unaware of those particular monster types.
+ *
+ * Note: it is a design principle that MonsterTypes and Monsters
+ * should not depend directly on MonsterManager.
+ * 
  */
 
 #ifndef MONSTER_DEFINITIONS_HPP
@@ -39,18 +46,18 @@ class Anim;
 class ItemType;
 
 //
-// Vampire Bats
+// Flying Monsters (vampire bats)
 //
 
-class VampireBat;
+class FlyingMonster;
 
-class VampireBatMonsterType : public MonsterType {
-    friend class VampireBat;
+class FlyingMonsterType : public MonsterType {
+    friend class FlyingMonster;
 public:
-    VampireBatMonsterType(const RandomInt *health_, int speed_, const Anim *anim_,
-                          int dmg_, const RandomInt *stun_)
+    FlyingMonsterType(const RandomInt *health_, int speed_, const Anim *anim_,
+                      int dmg_, const RandomInt *stun_)
         : health(health_), speed(speed_), anim(anim_), dmg(dmg_), stun(stun_) { }
-    virtual shared_ptr<Monster> makeMonster(MonsterManager &mm, TaskManager &tm) const;
+    virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_FLYING; }
 
 private:
@@ -62,17 +69,18 @@ private:
 };
 
 //
-// We have a special class VampireBat (instead of just using Monster) because
-// (among other reasons) vampire bats have their own special attack method.
+// We have a special class FlyingMonster (instead of just using Monster) because
+// (among other reasons) flying monsters have their own special attack method.
 //
 
-class VampireBat : public Monster {
+class FlyingMonster : public Monster {
 public:
-    VampireBat(MonsterManager &mmgr,
-               const VampireBatMonsterType &type, int health, const Anim *bat_anim,
-               int speed)
-        : Monster(mmgr, type, health, H_FLYING, 0, bat_anim, speed), mtype(type),
-          run_away_flag(false) { }
+    FlyingMonster(const FlyingMonsterType &type, int health, const Anim *anim,
+                  int speed)
+        : Monster(type, health, H_FLYING, 0, anim, speed),
+          mtype(type),
+          run_away_flag(false)
+    { }
 
     virtual int bloodLevel() const { return 0; }
     virtual void damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch);
@@ -83,45 +91,51 @@ public:
     void bite(shared_ptr<Creature> cr);   // note: does NOT check that the creature is in range !!
 
 private:
-    const VampireBatMonsterType &mtype;
+    const FlyingMonsterType &mtype;
     bool run_away_flag;
 };
 
 
 
 //
-// Zombies
+// Walking Monsters (zombies, ogres)
 //
 
-class ZombieMonsterType : public MonsterType {
+class WalkingMonsterType : public MonsterType {
 public:
-    ZombieMonsterType(const RandomInt *health_, int speed_, const ItemType *weapon_,
-                      const Anim *anim_)
-        : health(health_), speed(speed_), weapon(weapon_), anim(anim_) { }
-    virtual shared_ptr<Monster> makeMonster(MonsterManager &mm, TaskManager &tm) const;
+    WalkingMonsterType(const RandomInt *health_, int speed_, const ItemType *weapon_,
+                       const Anim *anim_,
+                       const std::vector<shared_ptr<Tile> > & avoid_tiles_,
+                       const ItemType * fear_item_,
+                       const ItemType * hit_item_)
+        : health(health_), speed(speed_), weapon(weapon_), anim(anim_),
+          avoid_tiles(avoid_tiles_), fear_item(fear_item_), hit_item(hit_item_) { }
+    virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_WALKING; }
 private:
     const RandomInt *health;
     int speed;
     const ItemType *weapon;
     const Anim *anim;
+
+    std::vector<shared_ptr<Tile> > avoid_tiles;
+    const ItemType * fear_item;
+    const ItemType * hit_item;
 };
 
 //
-// A new Monster subclass is created for Zombies, because we want to set blood level to 0,
-// and also switch the animation frame when the zombie gets hit.
+// A new Monster subclass is created for WalkingMonsters, because we want to set blood level to 0,
+// and also switch the animation frame when the monster gets hit.
 //
 
-class Zombie : public Monster {
+class WalkingMonster : public Monster {
 public:
-    Zombie(MonsterManager &mmgr,
-           const MonsterType &type, int health, const ItemType *weapon,
-           const Anim *zombie_anim, int speed)
-        : Monster(mmgr, type, health, H_WALKING, weapon, zombie_anim, speed) { }
+    WalkingMonster(const MonsterType &type, int health, const ItemType *weapon,
+                   const Anim *anim, int speed)
+        : Monster(type, health, H_WALKING, weapon, anim, speed) { }
     virtual int bloodLevel() const { return 0; }
     virtual void damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch);
-    virtual const char * getWeaponDownswingHook() const { return "HOOK_ZOMBIE"; } // zombies moo on downswing.
+    virtual const char * getWeaponDownswingHook() const { return "HOOK_ZOMBIE"; } // zombies moo on downswing. (TODO shouldn't hard code this as zombie!)
 };
-
 
 #endif

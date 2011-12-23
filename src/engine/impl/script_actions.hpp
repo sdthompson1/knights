@@ -253,12 +253,16 @@ private:
     ACTION_MAKER("UpdateQuestStatus");
 };
 
+// ZombieKill kills a monster of a particular type
+// (it doesn't have to be a zombie; the name is for historical reasons)
 class A_ZombieKill : public Action {
 public:
+    explicit A_ZombieKill(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("ZombieKill");
+    const MonsterType &zom_type;
 };
 
 #endif

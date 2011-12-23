@@ -182,6 +182,10 @@ public:
     void placeKnightCorpse(DungeonMap &, const MapCoord &, const Player &, bool blood);
     void placeMonsterCorpse(DungeonMap &, const MapCoord &, const MonsterType &);
 
+    // Notification of monster death (passed to MonsterManager, to keep track of how many
+    // monsters of each type there are)
+    void onMonsterDeath(const MonsterType &);
+
     // Misc view effects
     void flashScreen(shared_ptr<Entity> ent, int delay);
     void playSound(DungeonMap &, const MapCoord &, const Sound &sound, int frequency, bool all);

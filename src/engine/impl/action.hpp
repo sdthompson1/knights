@@ -41,6 +41,7 @@ class Creature;
 class DungeonMap;
 class Item;
 class ItemType;
+class MonsterType;
 class Player;
 class Sound;
 class TaskManager;
@@ -236,6 +237,7 @@ public:
     virtual const Sound * getSound(int index) { error(); return 0; }
     virtual string getString(int index) { error(); return string(); }
     virtual shared_ptr<Tile> getTile(int index) { error(); return shared_ptr<Tile>(); }
+    virtual const MonsterType * getMonsterType(int index) { error(); return 0; }
 
     // this is called if anything goes wrong.
     virtual void error() { }

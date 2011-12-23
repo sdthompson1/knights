@@ -195,27 +195,29 @@ void KFile::pushSymbolOptional(const string &symbol_name)
     stk.push_back(kcfg.getOptional(symbol_name));
 }
 
-KFile::List::List(KFile &kf_, const string &n, int n1, int n2, int n3, int n4)
+KFile::List::List(KFile &kf_, const string &n, int n1, int n2, int n3, int n4, int n5)
     : kf(kf_), stksize(kf_.stk.size())
 {
     if (!kf.isList()) {
         kf.errExpected(n);
     } else {
-        bool good[4];
+        bool good[5];
         size_t sz = kf.getTop()->getListSize();
         good[0] = n1 < 0 || n1 == sz;
         good[1] = n2 >= 0 && n2 == sz;
         good[2] = n3 >= 0 && n3 == sz;
         good[3] = n4 >= 0 && n4 == sz;
+        good[4] = n5 >= 0 && n5 == sz;
         // If at least one good, then pass
         // If everybody is bad, then fail
-        if (!good[0] && !good[1] && !good[2] && !good[3]) {
+        if (!good[0] && !good[1] && !good[2] && !good[3] && !good[4]) {
             ostringstream ost;
             ost << "list has wrong size, expected ";
             ost << n1;
             if (n2 >= 0) ost << " or " << n2;
             if (n3 >= 0) ost << " or " << n3;
             if (n4 >= 0) ost << " or " << n4;
+            if (n5 >= 0) ost << " or " << n5;
             ost << " entries, found " << sz;
             kf.error(ost.str());
         } else {

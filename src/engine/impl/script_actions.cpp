@@ -31,7 +31,7 @@
 #include "knights_callbacks.hpp"
 #include "mediator.hpp"
 #include "missile.hpp"
-#include "monster_definitions.hpp" // for ZombieKill (needs Zombie class)
+#include "monster.hpp"
 #include "monster_manager.hpp"  // for Necromancy, *ZombieActivity
 #include "player.hpp"
 #include "room_map.hpp"
@@ -674,14 +674,24 @@ Action * A_UpdateQuestStatus::Maker::make(ActionPars &pars) const
 
 bool A_ZombieKill::possible(const ActionData &ad) const
 {
-    return dynamic_pointer_cast<Zombie>(ad.getVictim());
+    // See if the victim is a monster
+    shared_ptr<Monster> mon = dynamic_pointer_cast<Monster>(ad.getVictim());
+    if (mon) {
+        // See if it has the correct type
+        if (&mon->getMonsterType() == &zom_type) {
+            return true;
+        }
+    }
+
+    // otherwise the ZombieKill won't work
+    return false;
 }
 
 void A_ZombieKill::execute(const ActionData &ad) const
 {
     // Kills the *victim* if it is a zombie (Used as a melee_action)
-    shared_ptr<Creature> cr = ad.getVictim();
-    if (cr && cr->getMap() && dynamic_cast<Zombie*>(cr.get())) {
+    shared_ptr<Monster> cr = dynamic_pointer_cast<Monster>(ad.getVictim());
+    if (cr && cr->getMap() && &cr->getMonsterType() == &zom_type) {
         cr->onDeath(Creature::NORMAL_MODE, ad.getOriginator());
         cr->rmFromMap();
     }
@@ -691,6 +701,12 @@ A_ZombieKill::Maker A_ZombieKill::Maker::register_me;
 
 Action * A_ZombieKill::Maker::make(ActionPars &pars) const
 {
-    pars.require(0);
-    return new A_ZombieKill;
+    pars.require(1);
+    const MonsterType * mtype = pars.getMonsterType(0);
+    if (!mtype) {
+        pars.error();
+        return 0;
+    } else {
+        return new A_ZombieKill(*mtype);
+    }
 }

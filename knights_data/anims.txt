@@ -30,8 +30,7 @@ a_purple_knight = [
 ]
 
 a_vbat = [
-    # This is TODO. The following is a placeholder
-    g_vbat_1, g_vbat_2, g_vbat_3, g_vbat_bite
+    "bat", g_vbat_1, g_vbat_2, g_vbat_3, g_vbat_bite
 ]
 
 a_zombie = [

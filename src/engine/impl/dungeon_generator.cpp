@@ -470,7 +470,7 @@ std::string DungeonGenerator::generate(DungeonMap &dmap, CoordTransform &ct, int
                 // If we get here then we have had a successful dungeon generation.
                 std::string warning_msg;
                 if (i != layouts.begin()) {
-                    warning_msg = "Note: Could not generate a \"" + (*layouts.begin())->getName() + "\" dungeon for this quest."
+                    warning_msg = "Could not generate a \"" + (*layouts.begin())->getName() + "\" dungeon for this quest."
                         " Using \"" + (*i)->getName() + "\" instead.";
                 }
                 return warning_msg;
@@ -1377,7 +1377,8 @@ void DungeonGenerator::placeRegularBats(DungeonMap &dmap, MonsterManager &mmgr,
             if (!ok) continue;
 
             // Place the bat
-            mmgr.placeVampireBat(dmap, mc);
+            // (Note: facing is irrelevant for flying monsters, we just set it to D_NORTH)
+            mmgr.placeMonster(mmgr.getVampireBatType(), dmap, mc, D_NORTH);
             break;
         }
     }
@@ -1402,7 +1403,7 @@ void DungeonGenerator::placeGuardedBats(DungeonMap &dmap, MonsterManager &mmgr, 
                 if (find(tiles.begin(), tiles.end(), bat_tile) != tiles.end()) {
                     // Found it
                     // Place bat here.
-                    mmgr.placeVampireBat(dmap, mc);
+                    mmgr.placeMonster(mmgr.getVampireBatType(), dmap, mc, D_NORTH);
                     break;
                 }
             }

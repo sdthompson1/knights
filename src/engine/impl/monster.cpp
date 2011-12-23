@@ -25,11 +25,10 @@
 
 #include "mediator.hpp"
 #include "monster.hpp"
-#include "monster_manager.hpp"
 
 Monster::~Monster()
 {
-    monster_manager.subtractMonster(type);
+    Mediator::instance().onMonsterDeath(type);
 }
 
 void Monster::onDeath(DeathMode dmode, const Originator &)

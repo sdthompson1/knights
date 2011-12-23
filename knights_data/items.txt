@@ -215,7 +215,7 @@ i_wand_of_undeath = basic_wand & {
     melee_action = [ wandzap,
                      ZombifyTarget(), 
                      OnSuccess(snd_zombie),
-                     ZombieKill(),
+                     ZombieKill(m_zombie),
                      OnSuccess(snd_zombie),
                    ]
 }
@@ -263,7 +263,7 @@ i_necronomicon = i_basic_book & {
     # Necronomicon
     # Note on Necromancy: first number is the number of zombies to generate (I have increased
     # this slightly compared to the original Knights), and second number is the range (in squares). 
-    on_pick_up = [ Necromancy(10, 7),    # Attempt to raise nearby zombies. (Will only work the first time.)
+    on_pick_up = [ Necromancy(10, 10),   # Attempt to raise nearby zombies. (Will only work the first time.)
                    OnSuccess(wandzap),   # Flash screen if necromancy actually took place.
                    FullZombieActivity(), # Always set full zombie activity while necronomicon is held.
                    UpdateQuestStatus() ]

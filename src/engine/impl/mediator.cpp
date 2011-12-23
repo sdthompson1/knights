@@ -33,6 +33,7 @@
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
 #include "mediator.hpp"
+#include "monster_manager.hpp"
 #include "originator.hpp"
 #include "player.hpp"
 #include "player_task.hpp"
@@ -270,6 +271,15 @@ void Mediator::placeKnightCorpse(DungeonMap &dmap, const MapCoord &mc, const Pla
 void Mediator::placeMonsterCorpse(DungeonMap &dmap, const MapCoord &mc, const MonsterType &m)
 {
     gore_manager.placeMonsterCorpse(dmap, mc, m);
+}
+
+//
+// monster death notification
+//
+
+void Mediator::onMonsterDeath(const MonsterType &type)
+{
+    monster_manager.subtractMonster(type);
 }
 
 

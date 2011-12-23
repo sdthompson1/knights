@@ -42,7 +42,7 @@ public:
     virtual ~MonsterType() { }
 
     // makeMonster should both return a new monster object, and start off an AI task.
-    virtual shared_ptr<Monster> makeMonster(MonsterManager &mm, TaskManager &tm) const = 0;
+    virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const = 0;
 
     // at which height will this monster be generated?
     virtual MapHeight getHeight() const = 0;
