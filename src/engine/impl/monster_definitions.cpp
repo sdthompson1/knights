@@ -314,7 +314,7 @@ namespace {
             dmap.getTiles(mc, tiles);
             for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
             ++it) {
-                if (find(avoid_tiles.begin(), avoid_tiles.end(), *it) != avoid_tiles.end()) {
+                if (find(avoid_tiles.begin(), avoid_tiles.end(), (*it)->getOriginalTile()) != avoid_tiles.end()) {
                     return false;
                 }
             }

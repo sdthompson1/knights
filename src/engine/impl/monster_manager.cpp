@@ -30,6 +30,7 @@
 #include "monster_type.hpp"
 #include "originator.hpp"
 #include "rng.hpp"
+#include "tile.hpp"
 
 #include <algorithm>
 using namespace std;
@@ -122,7 +123,7 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
         // Now check for "reanimating" corpses and "monster generator tiles"
         for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
         ++it) {
-            map<shared_ptr<Tile>,MonsterInfo>::iterator m = monster_map.find(*it);
+            map<shared_ptr<Tile>,MonsterInfo>::iterator m = monster_map.find((*it)->getOriginalTile());
             if (m != monster_map.end()) {
                 
                 // Check if we have reached our monster limit.
@@ -198,8 +199,11 @@ void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bot
             for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
             ++it) {
 
+                // Find the original tile (the decay sequence contains
+                // pointers to the original tiles, not cloned tiles)
+                shared_ptr<Tile> tile = (*it)->getOriginalTile();
+
                 // Chase it through the decay sequence
-                shared_ptr<Tile> tile = *it;
                 while (1) {
                     map<shared_ptr<Tile>, shared_ptr<Tile> >::const_iterator find_it
                         = decay_sequence.find(tile);

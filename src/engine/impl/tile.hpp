@@ -93,6 +93,12 @@ public:
     // make a clone with a different graphic to the original.
     shared_ptr<Tile> cloneWithNewGraphic(const Graphic *new_graphic);
 
+    // If a tile was cloned this returns a pointer back to the original tile.
+    // Otherwise it returns this.
+    // Used for things like monster_ai_avoid tiles, monster generator tiles etc.
+    // See also #139
+    shared_ptr<Tile> getOriginalTile() const { return original_tile; }
+    
     // Graphic, visibility, etc
     const Graphic * getGraphic() const { return graphic; }
     shared_ptr<const ColourChange> getColourChange() const { return cc; }
@@ -236,6 +242,7 @@ private:
     int tutorial_key;
 
     boost::shared_ptr<Tile> reflect, rotate;
+    boost::shared_ptr<Tile> original_tile;
 };
 
 

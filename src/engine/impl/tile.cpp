@@ -82,6 +82,7 @@ void Tile::construct(shared_ptr<lua_State> lua,
 
     reflect = reflect_ ? reflect_ : shared_from_this();
     rotate = rotate_ ? rotate_ : shared_from_this();
+    original_tile = shared_from_this();
 }
 
 void Tile::construct(shared_ptr<lua_State> lua, const Graphic *g, int dpth)
@@ -91,7 +92,7 @@ void Tile::construct(shared_ptr<lua_State> lua, const Graphic *g, int dpth)
     items_mode = ALLOWED;
     // the rest take default values as set in the ctor.
 
-    reflect = rotate = shared_from_this();
+    reflect = rotate = original_tile = shared_from_this();
 }
 
 void Tile::construct(shared_ptr<lua_State> lua, const Action *walkover, const Action *activate)
@@ -101,7 +102,7 @@ void Tile::construct(shared_ptr<lua_State> lua, const Action *walkover, const Ac
     on_activate = activate;
     items_mode = ALLOWED;
 
-    reflect = rotate = shared_from_this();
+    reflect = rotate = original_tile = shared_from_this();
 }
 
 Tile::~Tile()
@@ -164,6 +165,8 @@ shared_ptr<Tile> Tile::clone(bool force_copy)
         lua_settable(lua, LUA_REGISTRYINDEX);   // [func]
         lua_pop(lua, 1);   // []
     }
+
+    new_tile->original_tile = shared_from_this();
     
     return new_tile;
 }
