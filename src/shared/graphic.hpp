@@ -42,9 +42,12 @@ class Graphic {
 public:
     explicit Graphic(const std::string &filename_,
                      int hx_ = 0, int hy_ = 0,
-                     int r_ = -1, int g_ = -1, int b_ = -1)
+                     int r_ = -1, int g_ = -1, int b_ = -1,
+                     int size_hint_num_ = 1, int size_hint_denom_ = 1)
         : filename(filename_),
-          hx(hx_), hy(hy_), r(r_), g(g_), b(b_), id(0)
+          hx(hx_), hy(hy_), r(r_), g(g_), b(b_),
+          size_hint_num(size_hint_num_), size_hint_denom(size_hint_denom_),
+          id(0)
     { }
 
     // copy ctor. takes copy of the colour change if there is one.
@@ -58,6 +61,10 @@ public:
     int getR() const { return r; }
     int getG() const { return g; }
     int getB() const { return b; }
+
+    // this is used for gfx like the Ogre which are drawn at a larger-than-normal size.
+    // (e.g. size_hint == 1 implies the graphic is drawn at 3x the normal size)
+    float getSizeHint() const { return float(size_hint_num)/float(size_hint_denom); }
 
     void setColourChange(ColourChange cc) { colour_change.reset(new ColourChange(cc)); }
     const ColourChange * getColourChange() const { return colour_change.get(); }
@@ -73,6 +80,7 @@ private:
     std::string filename;
     int hx, hy;
     int r, g, b;
+    int size_hint_num, size_hint_denom;  // stored as numerator/denominator to avoid complication of having to serialize floats.
     int id;
     std::auto_ptr<ColourChange> colour_change;  // most tiles don't use this. only used for the dead knight tiles currently.
 };

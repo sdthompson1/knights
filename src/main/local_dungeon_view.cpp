@@ -27,6 +27,7 @@
 #include "config_map.hpp"
 #include "draw.hpp"
 #include "gfx_manager.hpp"
+#include "graphic.hpp"
 #include "local_dungeon_view.hpp"
 #include "round.hpp"
 
@@ -143,8 +144,9 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
 
                     int old_width, old_height;
                     gm.getGraphicSize(*it2->gr, old_width, old_height);
-                    const int new_width = Round(old_width * dungeon_scale_factor);
-                    const int new_height = Round(old_height * dungeon_scale_factor);
+                    const float size_hint = it2->gr->getSizeHint();
+                    const int new_width = Round(old_width * dungeon_scale_factor / size_hint);
+                    const int new_height = Round(old_height * dungeon_scale_factor / size_hint);
                     
                     if (it2->cc) {
                         gm.drawTransformedGraphic(gc, it2->sx, it2->sy, *it2->gr, new_width, new_height, *it2->cc);

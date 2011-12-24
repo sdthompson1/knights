@@ -1703,6 +1703,23 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/menu_pickup.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/menu_poison_trap.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/menu_suicide.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/monsters.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_stand_2e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_stand_2n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_stand_2s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_stand_2w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_1e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_1n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_1s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_1w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_3e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_3n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_3s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_strike_3w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_walk_1e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_walk_1n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_walk_1s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/ogre_walk_1w.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/open_bear_trap.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/open_chest_east.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/open_chest_north.bmp $(DATA_DIR)
@@ -1815,6 +1832,7 @@ install_server: $(SERVER_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/lua_test.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/main_config.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/menus.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/monsters.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/quests.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/server_config.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/sounds.txt $(DATA_DIR)
@@ -2079,6 +2097,23 @@ uninstall:
 	rm -f $(DATA_DIR)/menu_pickup.bmp
 	rm -f $(DATA_DIR)/menu_poison_trap.bmp
 	rm -f $(DATA_DIR)/menu_suicide.bmp
+	rm -f $(DATA_DIR)/monsters.txt
+	rm -f $(DATA_DIR)/ogre_stand_2e.bmp
+	rm -f $(DATA_DIR)/ogre_stand_2n.bmp
+	rm -f $(DATA_DIR)/ogre_stand_2s.bmp
+	rm -f $(DATA_DIR)/ogre_stand_2w.bmp
+	rm -f $(DATA_DIR)/ogre_strike_1e.bmp
+	rm -f $(DATA_DIR)/ogre_strike_1n.bmp
+	rm -f $(DATA_DIR)/ogre_strike_1s.bmp
+	rm -f $(DATA_DIR)/ogre_strike_1w.bmp
+	rm -f $(DATA_DIR)/ogre_strike_3e.bmp
+	rm -f $(DATA_DIR)/ogre_strike_3n.bmp
+	rm -f $(DATA_DIR)/ogre_strike_3s.bmp
+	rm -f $(DATA_DIR)/ogre_strike_3w.bmp
+	rm -f $(DATA_DIR)/ogre_walk_1e.bmp
+	rm -f $(DATA_DIR)/ogre_walk_1n.bmp
+	rm -f $(DATA_DIR)/ogre_walk_1s.bmp
+	rm -f $(DATA_DIR)/ogre_walk_1w.bmp
 	rm -f $(DATA_DIR)/open_bear_trap.bmp
 	rm -f $(DATA_DIR)/open_chest_east.bmp
 	rm -f $(DATA_DIR)/open_chest_north.bmp

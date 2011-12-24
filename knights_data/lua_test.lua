@@ -271,6 +271,28 @@ g_zom4s = Graphic("zom4s.bmp", 0,0,0)
 g_zom4w = Graphic("zom4w.bmp", 0,0,0)
 
 
+-- Ogres
+
+--g_ogre_stand_2n  = Graphic("ogre_stand_2n.bmp",  255,255,255, 0,0, 3,1)
+--g_ogre_stand_2e  = Graphic("ogre_stand_2e.bmp",  255,255,255, 0,0, 3,1)
+--g_ogre_stand_2s  = Graphic("ogre_stand_2s.bmp",  255,255,255, 0,0, 3,1)
+--g_ogre_stand_2w  = Graphic("ogre_stand_2w.bmp",  255,255,255, 0,0, 3,1)
+
+--g_ogre_strike_1n = Graphic("ogre_strike_1n.bmp", 255,255,255, 0,0, 3,1)
+--g_ogre_strike_1e = Graphic("ogre_strike_1e.bmp", 255,255,255, 0,0, 3,1)
+--g_ogre_strike_1s = Graphic("ogre_strike_1s.bmp", 255,255,255, 0,0, 3,1)
+--g_ogre_strike_1w = Graphic("ogre_strike_1w.bmp", 255,255,255, 0,0, 3,1)
+
+--g_ogre_strike_3n = Graphic("ogre_strike_3n.bmp", 255,255,255, 0,12, 3,1)
+--g_ogre_strike_3e = Graphic("ogre_strike_3e.bmp", 255,255,255, 0,0,  3,1)
+--g_ogre_strike_3s = Graphic("ogre_strike_3s.bmp", 255,255,255, 0,0,  3,1)
+--g_ogre_strike_3w = Graphic("ogre_strike_3w.bmp", 255,255,255, 12,0, 3,1)
+
+--g_ogre_walk_1n   = Graphic("ogre_walk_1n.bmp",   255,255,255, 0,0, 3,1)
+--g_ogre_walk_1e   = Graphic("ogre_walk_1e.bmp",   255,255,255, 0,0, 3,1)
+--g_ogre_walk_1s   = Graphic("ogre_walk_1s.bmp",   255,255,255, 0,0, 3,1)
+--g_ogre_walk_1w   = Graphic("ogre_walk_1w.bmp",   255,255,255, 0,0, 3,1)
+
 
 -- SOUNDS
 
