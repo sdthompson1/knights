@@ -25,6 +25,7 @@
 
 #include "dungeon_map.hpp"
 #include "item.hpp"
+#include "monster_manager.hpp"
 #include "room_map.hpp"
 #include "segment.hpp"
 #include "special_tiles.hpp"  // for Home
@@ -77,13 +78,25 @@ void Segment::addItem(int x, int y, const ItemType *itype)
     items.push_back(ii);
 }
 
+void Segment::addMonster(int x, int y, const MonsterType *mtype)
+{
+    if (!mtype) return;
+    if (x < 0 || x >= width || y < 0 || y >= height) return;
+    MonsterInfo mi;
+    mi.x = x;
+    mi.y = y;
+    mi.mtype = mtype;
+    monsters.push_back(mi);
+}
+
 void Segment::addRoom(int tlx, int tly, int w, int h)
 {
     RoomInfo ri = { tlx, tly, w, h };
     rooms.push_back(ri);
 }
 
-void Segment::copyToMap(DungeonMap &dmap, const MapCoord &top_left,
+void Segment::copyToMap(DungeonMap &dmap, MonsterManager &monster_manager,
+                        const MapCoord &top_left,
                         bool x_reflect, int nrot) const
 {
     // If transformations are applied then the segment must be square
@@ -115,7 +128,12 @@ void Segment::copyToMap(DungeonMap &dmap, const MapCoord &top_left,
         MapCoord mc = TransformMapCoord(width, x_reflect, nrot, top_left, it->x, it->y);
         dmap.addItem(mc, item);
     }
-        
+
+    for (vector<MonsterInfo>::const_iterator it = monsters.begin(); it != monsters.end(); ++it) {
+        MapCoord mc = TransformMapCoord(width, x_reflect, nrot, top_left, it->x, it->y);
+        monster_manager.placeMonster(*it->mtype, dmap, mc, D_NORTH);
+    }
+    
     if (dmap.getRoomMap()) {
         for (vector<RoomInfo>::const_iterator it = rooms.begin(); it != rooms.end(); ++it) {
             // get the two opposite room corners (inclusive)

@@ -95,11 +95,11 @@ public:
     
     // "generate" routine -- generates the dungeon map.
     // Returns a warning message to display to players, or "" if there were no warnings.
-    std::string generate(DungeonMap &dmap, CoordTransform &ct, int nplayers, bool tutorial_mode);
+    std::string generate(DungeonMap &dmap, MonsterManager &monster_manager, CoordTransform &ct, int nplayers, bool tutorial_mode);
 
     // Add vampire bats to an already-generated dungeon map.
     void addVampireBats(DungeonMap &dmap, MonsterManager &mmgr,
-                        int nbats_normal, int nbats_guarded_exit);
+                        int nbats_normal);
     
     // query home/exit locations
     int getNumHomes() const { return 2; }
@@ -145,7 +145,7 @@ private:
     void chopLeftSide();
     void chopRightSide();
     void compress();
-    void copySegmentsToMap(DungeonMap&, CoordTransform&);
+    void copySegmentsToMap(DungeonMap&, MonsterManager&, CoordTransform&);
     void fillWithWalls(DungeonMap&, const MapCoord&, int, int);
     bool placeDoor(DungeonMap&, const MapCoord &, const MapCoord &, const MapCoord &,
                    const MapCoord &, const MapCoord &, shared_ptr<Tile>, shared_ptr<Tile>);
@@ -166,9 +166,6 @@ private:
     bool getVertExit(int x, int y) { return horiz_exits[y*lwidth+x]; }
 
     void placeRegularBats(DungeonMap &dmap, MonsterManager &mmgr, int nbats);
-    void placeGuardedBats(DungeonMap &dmap, MonsterManager &mmgr, int nbats,
-                          shared_ptr<Tile> bat_tile, int left, int bottom,
-                          int right, int top);
     void checkConnectivity(DungeonMap &dmap, const MapCoord &from_where, int num_keys);
     
 private:

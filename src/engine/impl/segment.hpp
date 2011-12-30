@@ -41,6 +41,8 @@ using namespace std;
 
 class DungeonMap;
 class ItemType;
+class MonsterManager;
+class MonsterType;
 class Tile;
 
 struct lua_State;
@@ -64,15 +66,12 @@ public:
     // x,y range from 0 to w-1, h-1, and increase rightwards and upwards as usual.
     void addTile(int x, int y, shared_ptr<Tile> t);
     void addItem(int x, int y, const ItemType * i);
+    void addMonster(int x, int y, const MonsterType * m);
         
     // set a room (coords are relative to bottom left of segment -- note that the
     // outer boundary wall is not counted as part of the segment).
     void addRoom(int blx, int bly, int w, int h);
 
-    // get/set "bat placement tile" (used by the dungeon generator)
-    void setBatPlacementTile(shared_ptr<Tile> t) { bat_placement_tile = t; }
-    shared_ptr<Tile> getBatPlacementTile() const { return bat_placement_tile; }
-        
     // copy the tiles and items into a dungeon map
     // The tiles replace any that were already there.
     // This routine also adds appropriate rooms to the RoomMap.
@@ -82,7 +81,8 @@ public:
     // where R=clockwise rotation of 90 degrees
     // X=x reflection (only applied if x_reflect==true).
     //
-    void copyToMap(DungeonMap &dmap, const MapCoord &bottom_left,
+    void copyToMap(DungeonMap &dmap, MonsterManager &monster_manager,
+                   const MapCoord &bottom_left,
                    bool x_reflect, int nrot) const;
 
     // access to homes
@@ -101,17 +101,25 @@ private:
     vector<HomeInfo> homes;
     int width;
     int height;
+
     struct RoomInfo {
         int tlx, tly, w, h;
     };
     vector<RoomInfo> rooms;
+
     struct ItemInfo {
         int x;
         int y;
         const ItemType * itype;
     };
     vector<ItemInfo> items;
-    shared_ptr<Tile> bat_placement_tile;
+
+    struct MonsterInfo {
+        int x;
+        int y;
+        const MonsterType *mtype;
+    };
+    vector<MonsterInfo> monsters;
 };
 
 #endif

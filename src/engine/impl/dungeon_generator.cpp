@@ -406,7 +406,8 @@ void DungeonGenerator::setStuff(int tile_category, int chance, const ItemGenerat
     stuff[tile_category] = si;
 }
 
-std::string DungeonGenerator::generate(DungeonMap &dmap, CoordTransform &ct, int nplayers, bool tutorial_mode)
+std::string DungeonGenerator::generate(DungeonMap &dmap, MonsterManager &monster_manager,
+                                       CoordTransform &ct, int nplayers, bool tutorial_mode)
 {
     // If there is an exception of any kind we just re-try the
     // generation. If it still fails after N attempts (e.g. because
@@ -442,7 +443,7 @@ std::string DungeonGenerator::generate(DungeonMap &dmap, CoordTransform &ct, int
 
                 // create the DungeonMap itself
                 dmap.create(lwidth*(rwidth+1)+1, lheight*(rheight+1)+1);
-                copySegmentsToMap(dmap, ct);         // copies the segments into the map.
+                copySegmentsToMap(dmap, monster_manager, ct);         // copies the segments into the map.
                 knockThroughDoors(dmap);      // creates doorways between the different segments.
 
                 // fill in exits
@@ -893,7 +894,7 @@ void DungeonGenerator::compress()
     }
 }
 
-void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap, CoordTransform &ct)
+void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap, MonsterManager &monster_manager, CoordTransform &ct)
 {
     if (!dmap.getRoomMap()) {
         dmap.setRoomMap(new RoomMap);
@@ -904,7 +905,7 @@ void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap, CoordTransform &ct)
         for (int y=0; y<lheight; ++y) {
             MapCoord corner( x*(rwidth+1)+1, y*(rheight+1)+1 );
             if (segments[y*lwidth+x]) {                
-                segments[y*lwidth+x]->copyToMap(dmap, corner, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]);
+                segments[y*lwidth+x]->copyToMap(dmap, monster_manager, corner, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]);
                 ct.add(corner, rwidth, rheight, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]);
             } else {
                 fillWithWalls(dmap, corner, rwidth, rheight);
@@ -1328,30 +1329,13 @@ void DungeonGenerator::generateLocksAndTraps(DungeonMap &dmap, int nkeys)
 
 
 void DungeonGenerator::addVampireBats(DungeonMap &dmap, MonsterManager &mmgr,
-                                      int nbats_normal, int nbats_guarded_exit)
+                                      int nbats_normal)
 {
     if (segments.empty()) return;  // dungeon was not generated yet!    
     ASSERT(segments.size() == lwidth*lheight);
 
     // First, place "regular" bats
     placeRegularBats(dmap, mmgr, nbats_normal);
-
-    // Now place "guarded exit" bats.
-    // First, we have to find the guarded exit segment
-    for (int x=0; x<lwidth; ++x) {
-        for (int y=0; y<lheight; ++y) {
-            const Segment *seg = segments[y*lwidth+x];
-            if (seg) {
-                shared_ptr<Tile> bat_tile = seg->getBatPlacementTile();
-                if (bat_tile) {
-                    // Place "guarded" bats on this segment.
-                    placeGuardedBats(dmap, mmgr, nbats_guarded_exit, bat_tile,
-                                     x*(rwidth+1), y*(rwidth+1),
-                                     (x+1)*(rwidth+1), (y+1)*(rwidth+1));
-                }
-            }
-        }
-    }
 }
 
 void DungeonGenerator::placeRegularBats(DungeonMap &dmap, MonsterManager &mmgr,
@@ -1383,52 +1367,6 @@ void DungeonGenerator::placeRegularBats(DungeonMap &dmap, MonsterManager &mmgr,
         }
     }
 }
-
-void DungeonGenerator::placeGuardedBats(DungeonMap &dmap, MonsterManager &mmgr, int nbats,
-                                        shared_ptr<Tile> bat_tile, int left, int bottom,
-                                        int right, int top)
-{
-    vector<shared_ptr<Tile> > tiles;
-    for (int i=0; i<nbats; ++i) {
-        // Generate a random starting point for the search
-        int x = g_rng.getInt(left, right);
-        int y = g_rng.getInt(bottom, top);
-        const int startx = x;
-        const int starty = y;
-        while (1) {
-            // We look for a square that's clear at H_FLYING and has the bat_tile on it.
-            const MapCoord mc(x,y);
-            if (dmap.getAccess(mc, H_FLYING) == A_CLEAR) {
-                dmap.getTiles(mc, tiles);
-                if (find(tiles.begin(), tiles.end(), bat_tile) != tiles.end()) {
-                    // Found it
-                    // Place bat here.
-                    mmgr.placeMonster(mmgr.getVampireBatType(), dmap, mc, D_NORTH);
-                    break;
-                }
-            }
-            
-            // Hmm. Have to go on to next square
-            ++x;
-            if (x == right) {
-                // Hit end of row; go to start of next row
-                x = left;
-                ++y;
-                if (y == top) {
-                    // Went off the top. Start again from the bottom
-                    y = bottom;
-                }
-            }
-
-            if (x == startx && y == starty) {
-                // We have come full circle without placing a bat. This means there are
-                // no more bat placement squares available; abort.
-                return;
-            }
-        }
-    }
-}
-
 
 void DungeonGenerator::checkConnectivity(DungeonMap &dmap, const MapCoord &from_where, int num_keys)
 {

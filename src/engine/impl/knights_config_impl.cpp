@@ -1446,16 +1446,6 @@ Segment * KnightsConfigImpl::popSegment(const vector<SegmentTileData> &tile_map,
     int w = kf->popInt();
     tab.reset();
 
-    tab.push("bat_placement_tile");
-    int t = kf->popInt(0);
-    shared_ptr<Tile> bat_tile;
-    if (t != 0) {
-        // Bats will be placed on the *first* tile in the tile-list
-        // for the given number.
-        const SegmentTileData & st = tileFromInt(tile_map, t);
-        if (!st.tiles.empty()) bat_tile = st.tiles.front();
-    }
-    
     tab.push("category");
     string catname = kf->popString("");
     category = getSegmentCategory(catname);
@@ -1463,7 +1453,6 @@ Segment * KnightsConfigImpl::popSegment(const vector<SegmentTileData> &tile_map,
     tab.push("data");
     Segment *segment = popSegmentData(tile_map, w, h);
     if (!segment) return 0;
-    segment->setBatPlacementTile(bat_tile);
     tab.push("height"); kf->pop();
     tab.push("name"); kf->pop();  // used only by the map editor
     tab.push("rooms");
@@ -1517,6 +1506,9 @@ void KnightsConfigImpl::processTile(const vector<SegmentTileData> &tile_map, Seg
     }
     for (int i=0; i<seg_tile.items.size(); ++i) {
         segment.addItem(x, y, seg_tile.items[i]);
+    }
+    for (int i=0; i<seg_tile.monsters.size(); ++i) {
+        segment.addMonster(x, y, seg_tile.monsters[i]);
     }
 }
 
@@ -1625,36 +1617,42 @@ void KnightsConfigImpl::popSegmentTiles(vector<SegmentTileData> &tile_map)
     for (int i=0; i<lst.getSize(); ++i) {
         SegmentTileData seg_tile;
         bool items_yet = false;
+        bool monsters_yet = false;
         lst.push(i);
 
         if (kf->isList()) {
             KFile::List lst2(*kf, "SegmentTile");
             for (int j=0; j<lst2.getSize(); ++j) {
                 lst2.push(j);
-                popSegmentTile(seg_tile, items_yet);
+                popSegmentTile(seg_tile, items_yet, monsters_yet);
             }
         } else {
-            popSegmentTile(seg_tile, items_yet);
+            popSegmentTile(seg_tile, items_yet, monsters_yet);
         }
         tile_map.push_back(seg_tile);
     }
 }
 
-void KnightsConfigImpl::popSegmentTile(SegmentTileData &seg_tile, bool &items_yet)
+void KnightsConfigImpl::popSegmentTile(SegmentTileData &seg_tile, bool &items_yet, bool &monsters_yet)
 {
-    if (items_yet) {
+    if (kf->isInt()) {
+        // This is a slight hack: You put an integer (usually '0') to signify
+        // the end of tiles and the beginning of items. (& likewise for monsters: #144)
+        if (items_yet) {
+            monsters_yet = true;
+        } else {
+            items_yet = true;
+        }
+        kf->pop();
+    } else if (monsters_yet) {
+        const MonsterType * mtype = popMonsterType();
+        seg_tile.monsters.push_back(mtype);
+    } else if (items_yet) {
         const ItemType *itype = popItemType();
         seg_tile.items.push_back(itype);
     } else {
-        if (kf->isInt()) {
-            // This is a slight hack: You put an integer (usually '0') to signify
-            // the end of tiles and the beginning of items. 
-            items_yet = true;
-            kf->pop();
-        } else {
-            shared_ptr<Tile> t = popTile();
-            if (t) seg_tile.tiles.push_back(t);
-        }
+        shared_ptr<Tile> t = popTile();
+        if (t) seg_tile.tiles.push_back(t);
     }
 }
 
@@ -1997,9 +1995,8 @@ void KnightsConfigImpl::popZombieActivityTable()
         ent.from = popTile();
 
         lst2.push(1);
-        const bool is_monster = isMonsterType();  // pops the table!
+        const bool is_monster = isMonsterType();
 
-        lst2.push(1);
         if (is_monster) {
             ent.to_monster_type = popMonsterType();
         } else {
@@ -2148,7 +2145,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     dungeon_map.reset(new DungeonMap);
     coord_transform.reset(new CoordTransform);
     const std::string dungeon_generator_msg =
-        dg->generate(*dungeon_map, *coord_transform, hse_cols.size(), tutorial_manager != 0);
+        dg->generate(*dungeon_map, monster_manager, *coord_transform, hse_cols.size(), tutorial_manager != 0);
     
     // Add homes to the home manager
     for (int i = 0; i < dg->getNumHomesOverall(); ++i) {
@@ -2277,8 +2274,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
 
     // add initial vampire bats
     const int nbats_normal = vampire_bats==0 ? 0 : 2*vampire_bats + 1;
-    const int nbats_guarded = vampire_bats + 5;
-    dg->addVampireBats(*dungeon_map, monster_manager, nbats_normal, nbats_guarded);
+    dg->addVampireBats(*dungeon_map, monster_manager, nbats_normal);
 
     // set up a task to run the monster manager every so often
     shared_ptr<MonsterTask> mtsk (new MonsterTask);

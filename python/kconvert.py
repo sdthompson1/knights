@@ -107,6 +107,7 @@ knights_rooms = {
         [t_door_vert_locked, t_vdoor_background] # 88
         [t_iron_door_horiz_locked, t_hdoor_background] # 89
         [t_iron_door_vert_locked, t_vdoor_background], # 90
+        [t_floor7, 0, 0, m_vampire_bat]   # 91
     ]
 
     segments = [
@@ -340,8 +341,6 @@ for a in range(nrooms):
         outfile.write(' height = 12\n')
         if (roomtype != None):
             outfile.write(' category = "' + roomtype + '"\n')
-            if roomtype == 'guarded_exit':
-                outfile.write(' bat_placement_tile = 73\n')
         outfile.write(' name = "%s%02d.%d"\n' % (letter,nroom,nrot+1))
         outfile.write(' data = [\n')
         
@@ -373,6 +372,9 @@ for a in range(nrooms):
 
                 if (t == 1 or t == 76) and roomtype == "special_pentagram":
                     t = 86 #  Special pentagram
+
+                if t == 73 and roomtype == "guarded_exit":
+                    t = 91 #  Scratched floor tile + Vampire bat
 
                 if letter == "Z" and nroom == 3 and nrot == 0 and x == 12 and y == 10:
                     # This particular tile should be replaced with 81 (stair-top)

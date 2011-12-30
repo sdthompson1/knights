@@ -99,6 +99,7 @@ knights_rooms = {
         [t_door_vert_locked, t_vdoor_background] # 88
         [t_iron_door_horiz_locked, t_hdoor_background] # 89
         [t_iron_door_vert_locked, t_vdoor_background], # 90
+        [t_floor7, 0, 0, m_vampire_bat]   # 91
     ]
 
     segments = [
@@ -174,16 +175,15 @@ knights_rooms = {
  width  = 12
  height = 12
  category = "guarded_exit"
- bat_placement_tile = 73
  name = "X01.1"
  data = [
 26 66 66 66 8 68 68 68 68 66 66 68 
 2 7 2 2 2 68 66 66 66 66 68 68 
 66 66 2 13 2 2 2 2 2 2 2 7 
 66 66 2 82 2 49 72 59 66 49 2 68 
-66 66 2 82 2 72 73 73 73 72 2 68 
-66 66 2 82 2 72 72 73 73 72 2 66 
-66 40 2 81 10 85 66 73 73 73 2 66 
+66 66 2 82 2 72 91 91 91 72 2 68 
+66 66 2 82 2 72 72 91 91 72 2 66 
+66 40 2 81 10 85 66 91 91 91 2 66 
 66 42 2 2 2 2 2 2 2 9 2 66 
 66 18 2 49 2 68 68 66 66 67 2 66 
 7 2 2 7 2 7 2 2 2 2 2 7 

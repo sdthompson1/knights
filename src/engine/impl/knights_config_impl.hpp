@@ -31,7 +31,6 @@
 #include "map_support.hpp"
 #include "menu.hpp"
 #include "menu_constraints.hpp"
-#include "monster_type.hpp"
 #include "overlay.hpp"
 #include "segment_set.hpp"
 
@@ -63,11 +62,13 @@ class MenuInt;
 class MenuItem;
 class MenuSelections;
 class MonsterManager;
+class MonsterType;
 class Player;
 class Quest;
 class Segment;
 class Sound;
 class StuffManager;
+class TaskManager;
 class Tile;
 class TutorialManager;
 class UserControl;
@@ -95,6 +96,7 @@ public:
     struct SegmentTileData {
         std::vector<boost::shared_ptr<Tile> > tiles;
         std::vector<const ItemType*> items;
+        std::vector<const MonsterType*> monsters;
     };
 
 
@@ -218,7 +220,7 @@ public:
     void popSegmentSet();
     void popSegmentSwitches(Segment &);
     void popSegmentTiles(std::vector<SegmentTileData> &tile_map);
-    void popSegmentTile(SegmentTileData &seg_tile, bool &items_yet);
+    void popSegmentTile(SegmentTileData &seg_tile, bool &items_yet, bool &monsters_yet);
     void popSkullRenderer();
     Sound * popSound();
     struct StairInfo {
