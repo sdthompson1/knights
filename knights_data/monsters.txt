@@ -18,6 +18,8 @@
 # along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+include "anims.txt"
+
 
 # For now the game has hard-coded knowledge of the "vampire bat"
 # monster type. This will be removed in due course.
