@@ -43,6 +43,7 @@ class ItemType;
 class KnightsConfigImpl;
 class MenuSelections;
 class MonsterManager;
+class MonsterType;
 class RandomDungeonLayout;
 class Segment;
 class SegmentSet;
@@ -66,7 +67,7 @@ public:
           vert_door_1(vdoor1), vert_door_2(vdoor2), rlayout(0), exit_type(E_NONE),
           exit_category(-1),
           home_type(H_NONE), premapped(false), pretrapped(false), nkeys(0),
-          vampire_bats(0), zombie_activity(0), total_stuff_weight(0),
+          tile_generated_monster_level(0), zombie_activity(0), total_stuff_weight(0),
           item_respawn_time(-1),
           lockpicks(0), lockpick_init_time(-1), lockpick_interval(-1),
           team_mode(false)
@@ -84,7 +85,7 @@ public:
     void addRequiredSegment(int segment_category)
         { required_segments.push_back(segment_category); }
     void setStuff(int tile_category, int chance, const ItemGenerator *generator, int weight);
-    void setVampireBats(int v) { vampire_bats = v; }
+    void setTileGeneratedMonsterLevel(int x) { tile_generated_monster_level = x; }
     void setZombieActivity(int z) { zombie_activity = z; }
     void addStartingGear(const ItemType &it, const vector<int> &nos) { gears.push_back(make_pair(&it, nos)); }
     void setRespawnItems(const vector<const ItemType *> &items) { respawn_items = items; }
@@ -92,15 +93,15 @@ public:
     void setLockpicks(const ItemType *i) { lockpicks = i; }
     void setLockpickSpawn(int it, int i) { lockpick_init_time = it; lockpick_interval = i; }
     void setTeamMode(bool t) { team_mode = t; }
+    void setMonsterLimit(const MonsterType *m, int max_monsters);
+    void setInitialMonsters(const MonsterType *m, int count);
     
     // "generate" routine -- generates the dungeon map.
+    // (this also creates initial monsters, and sets monster limits in the monster manager,
+    //   but does NOT set monster generation properties.)
     // Returns a warning message to display to players, or "" if there were no warnings.
     std::string generate(DungeonMap &dmap, MonsterManager &monster_manager, CoordTransform &ct, int nplayers, bool tutorial_mode);
 
-    // Add vampire bats to an already-generated dungeon map.
-    void addVampireBats(DungeonMap &dmap, MonsterManager &mmgr,
-                        int nbats_normal);
-    
     // query home/exit locations
     int getNumHomes() const { return 2; }
     void getHome(int i, MapCoord &pos, MapDirection &facing_toward_home) const;
@@ -114,7 +115,7 @@ public:
     // Note: Should maybe factor these out into a separate class (MiscGameSettings?) but that is slightly
     // difficult because of the way the "dungeon directives" system works. For now it's more convenient
     // to store these settings here, even though they have nothing to do with dungeon generation.
-    int getVampireBats() const { return vampire_bats; }
+    int getTileGeneratedMonsterLevel() const { return tile_generated_monster_level; }
     int getZombieActivity() const { return zombie_activity; }
     bool isPremapped() const { return premapped; }
     const vector<pair<const ItemType*, vector<int> > > & getStartingGears() const { return gears; }
@@ -165,7 +166,7 @@ private:
     bool getHorizExit(int x, int y) { return horiz_exits[y*(lwidth-1)+x]; }
     bool getVertExit(int x, int y) { return horiz_exits[y*lwidth+x]; }
 
-    void placeRegularBats(DungeonMap &dmap, MonsterManager &mmgr, int nbats);
+    void placeInitialMonsters(DungeonMap &dmap, MonsterManager &mmgr, const MonsterType &mtype, int n_monsters);
     void checkConnectivity(DungeonMap &dmap, const MapCoord &from_where, int num_keys);
     
 private:
@@ -182,7 +183,8 @@ private:
     int nkeys;
     vector<int> required_segments;  // contains segment categories
     vector<const ItemType*> required_items; // contains only non-null pointers
-    int vampire_bats, zombie_activity;
+    int tile_generated_monster_level;
+    int zombie_activity;
     struct StuffInfo {
         int chance;
         int weight;   // actually max(input weight, 0)
@@ -198,6 +200,8 @@ private:
     int lockpick_init_time;
     int lockpick_interval;
     bool team_mode;
+    map<const MonsterType *, int> monster_limits;
+    map<const MonsterType *, int> initial_monsters;
     
     // "temporary" data (set during dungeon generation)
     vector<BlockInfo> blocks, edges;  // layout info.

@@ -21,11 +21,6 @@
 include "anims.txt"
 
 
-# For now the game has hard-coded knowledge of the "vampire bat"
-# monster type. This will be removed in due course.
-VAMPIRE_BAT_MONSTER = m_vampire_bat
-
-
 m_vampire_bat = {
 
     type = "flying"

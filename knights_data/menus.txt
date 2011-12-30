@@ -24,9 +24,9 @@
 # Dungeon Environment Customization Menu
 
 ### NOTE : The "GetMenu" directive currently only works with
-### DungeonItem, DungeonZombies, and DungeonBats (and also Constrain
-### directives). We should document somewhere where GetMenu can be
-### used and where it can't.
+### DungeonItem, DungeonZombies, and the monster related directives
+### (and also Constrain directives). We should document somewhere
+### where GetMenu can be used and where it can't.
 
 include "quests.txt"  # quest descriptions
 
@@ -427,7 +427,26 @@ MAIN_MENU = [
         id="bats"
         title="Vampire Bats"
         values=[
-            [MenuIcon("I") DungeonBats(GetMenu("bats"))]:6
+            [MenuIcon("I") 
+
+             # DungeonMonsterGeneration sets the generation rates of monsters which spawn
+             # from a particular tile type. (See "generator_tiles" in monsters.txt.)
+             # Currently there is no way to set this on a per monster type basis, instead 
+             # there is one global setting for all monster types (from 0 to 5).
+             DungeonMonsterGeneration(GetMenu("bats"))
+
+             # DungeonInitialMonsters places a number of the given monster type into the 
+             # dungeon, on random squares, at the beginning of the game.
+             # (This is in addition to any monsters that may have been placed in the map editor.)
+             DungeonInitialMonsters(m_vampire_bat, GetMenu("bats"))
+
+             # DungeonMonsterLimit limits the total number of monsters of the given type.
+             DungeonMonsterLimit(m_vampire_bat, GetMenu("bats"))
+
+             # NOTE: all three of the above will be generalized when we convert the menus
+             # to use Lua...
+
+            ]:6
         ]
     }
 

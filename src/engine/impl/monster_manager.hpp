@@ -108,11 +108,6 @@ public:
     //
     void placeMonster(const MonsterType &type, DungeonMap &dmap, const MapCoord &mc, MapDirection facing);
 
-    // hard coded monster types. TODO get rid of these (have already got rid of
-    // zombie, just need to do vampire bat now...)
-    const MonsterType & getVampireBatType() const { return *vampire_bat_type; }
-    void setHardCodedMonsterTypes(const MonsterType &bat) { vampire_bat_type = &bat; }
-    
 
     //
     // temporary changes to zombie activity (used by Necronomicon)
@@ -156,9 +151,6 @@ private:
     int zombie_chance, bat_chance;
     int necronomicon_counter;  // if +ve, should act as if zombie_chance was 100%.
     bool necromancy_flag;  // set true when doNecromancy is called.
-
-    // TODO remove this
-    const MonsterType * vampire_bat_type;
 };
 
 #endif

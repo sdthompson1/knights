@@ -222,10 +222,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     kf->pushSymbol("DEAD_KNIGHT_TILES");
     popTileList(dead_knight_tiles);
 
-    // Monsters
-    kf->pushSymbol("VAMPIRE_BAT_MONSTER");
-    vampire_bat_type = popMonsterType();
-
     // Zombie activity table
     kf->pushSymbol("ZOMBIE_ACTIVITY");
     popZombieActivityTable();
@@ -2226,16 +2222,19 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
 
     // set up monster manager - tile-generated monsters
 
-    // TODO: There should not be a single "vampire_bats" setting, rather there should probably be one
-    // "monster chance" setting per (tile-generated) monster type.
-    // However we are going to hard wire them all to the same menu setting for now
-    // (this is OK for the moment since there is only one tile-generated monster type currently!!).
-    const int vampire_bats = dg->getVampireBats();
+    // TODO: There should not be a single "tile generated monster level" setting, rather there should be one
+    // per monster type;
+    // however, there is currently only one tile generated monster type (the vampire bat), so we can get
+    // away with this for now...
+    // NOTE: the generation chance is linear from 0% to 100%, as generation level goes from 0 to 5.
+    const int tile_generated_monster_chance = 20 * dg->getTileGeneratedMonsterLevel();
     
     for (std::map<MonsterType *, std::vector<shared_ptr<Tile> > >::const_iterator it = monster_generator_tiles.begin();
     it != monster_generator_tiles.end(); ++it) {
         for (std::vector<shared_ptr<Tile> >::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
-            monster_manager.addMonsterGenerator(*it2, it->first, 20*vampire_bats);  // generation chance is linear from 0 to 100%
+            monster_manager.addMonsterGenerator(*it2,    // tile
+                                                it->first,  // monster type
+                                                tile_generated_monster_chance);
         }
     }
 
@@ -2259,22 +2258,13 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     const int zombie_activity = dg->getZombieActivity();
     monster_manager.setZombieChance(4*zombie_activity*zombie_activity);   // quadratic from 0 to 100%
 
-    
-    // -- Monster limits
+    // Monster limits
     //   -- Total number of monsters is limited to CfgInt("monster_limit").
-    //   -- Vampire bats are limited to vampire_bats*3 (TODO: Don't hard code this!!)
-    monster_manager.limitMonster(vampire_bat_type, vampire_bats*3);
+    //   -- Individual monster types are set elsewhere (DungeonGenerator::generate()).
     monster_manager.limitTotalMonsters(config_map->getInt("monster_limit"));
-
-    monster_manager.setHardCodedMonsterTypes(*vampire_bat_type);
-    
 
     // set up event manager
     event_manager.setupHooks(hooks);
-
-    // add initial vampire bats
-    const int nbats_normal = vampire_bats==0 ? 0 : 2*vampire_bats + 1;
-    dg->addVampireBats(*dungeon_map, monster_manager, nbats_normal);
 
     // set up a task to run the monster manager every so often
     shared_ptr<MonsterTask> mtsk (new MonsterTask);

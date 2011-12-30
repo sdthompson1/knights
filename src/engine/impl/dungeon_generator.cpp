@@ -33,6 +33,7 @@
 #include "menu_int.hpp"
 #include "menu_selections.hpp"
 #include "monster_manager.hpp"
+#include "monster_type.hpp"
 #include "rng.hpp"
 #include "room_map.hpp"
 #include "segment.hpp"
@@ -48,15 +49,6 @@ using namespace KConfig;
 //
 // DungeonDirectives
 //
-
-class DungeonBats : public DungeonDirective {
-public:
-    explicit DungeonBats(const MenuInt &b) : bat_level(b) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
-        { dg.setVampireBats(bat_level.getValue(ms)); }
-private:
-    const MenuInt &bat_level;
-};
 
 class DungeonExit : public DungeonDirective {
 public:
@@ -85,6 +77,20 @@ public:
         { dg.setHomeType(ht); }
 private:
     HomeType ht;
+};
+
+class DungeonInitialMonsters : public DungeonDirective {
+public:
+    DungeonInitialMonsters(const MonsterType *m, const MenuInt &n) : mtype(m), number(n) { }
+    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
+    {
+        // Initially there are 0 monsters if n == 0, otherwise 2*n + 1 monsters.
+        const int n = number.getValue(ms);
+        dg.setInitialMonsters(mtype, n == 0 ? 0 : 2*n + 1);
+    }
+private:
+    const MonsterType * mtype;
+    const MenuInt & number;
 };
 
 class DungeonItem : public DungeonDirective {
@@ -151,6 +157,28 @@ private:
     int interval;   // interval between generations, in ms
 };
 
+class DungeonMonsterGeneration : public DungeonDirective {
+public:
+    explicit DungeonMonsterGeneration(const MenuInt &m) : monster_level(m) { }
+    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
+    { dg.setTileGeneratedMonsterLevel(monster_level.getValue(ms)); }
+private:
+    const MenuInt & monster_level;
+};
+
+class DungeonMonsterLimit : public DungeonDirective {
+public:
+    DungeonMonsterLimit(const MonsterType *m, const MenuInt &n) : mtype(m), number(n) { }
+    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
+    {
+        // Limit to 3*n monsters
+        dg.setMonsterLimit(mtype, 3 * number.getValue(ms));
+    }
+private:
+    const MonsterType *mtype;
+    const MenuInt &number;
+};
+
 class DungeonPremapped : public DungeonDirective {
 public:
     virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
@@ -211,6 +239,7 @@ public:
 
 class DungeonZombies : public DungeonDirective { 
 public:
+    // sets the zombie activity level
     explicit DungeonZombies(const MenuInt &a) : activity(a) { }
     virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
         { dg.setZombieActivity(activity.getValue(ms)); }
@@ -234,16 +263,12 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
     }
     string n = name.substr(7);
 
-    if (n == "Bats" || n == "Zombies") {
+    if (n == "Zombies") {
         KFile::List lst(*kc.getKFile(), "", 1);
         lst.push(0);
         const MenuInt *number = kc.popMenuInt();
         if (!number) kc.getKFile()->errExpected("integer or GetMenu directive");
-        if (n=="Bats") {
-            return new DungeonBats(*number);
-        } else {
-            return new DungeonZombies(*number);
-        }
+        return new DungeonZombies(*number);
 
     } else if (n == "Exit") {
         KFile::List lst(*kc.getKFile(), "", 1);
@@ -291,6 +316,14 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
         else if (x == "different_every_time") return new DungeonHome(H_DIFFERENT_EVERY_TIME);
         else kc.getKFile()->errExpected("entry type");
 
+    } else if (n == "InitialMonsters") {
+        KFile::List lst(*kc.getKFile(), "", 2);
+        lst.push(0);
+        const MonsterType * mtype = kc.popMonsterType();
+        lst.push(1);
+        const MenuInt *number = kc.popMenuInt();
+        return new DungeonInitialMonsters(mtype, *number);
+        
     } else if (n == "Item") {
         KFile::List lst(*kc.getKFile(), "", 2);
         lst.push(0);
@@ -321,6 +354,20 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
         lst.push(1);
         const int interval = kc.getKFile()->popInt();
         return new DungeonLockpickSpawn(init_time, interval);
+
+    } else if (n == "MonsterGeneration") {
+        KFile::List lst(*kc.getKFile(), "", 1);
+        lst.push(0);
+        const MenuInt *number = kc.popMenuInt();
+        return new DungeonMonsterGeneration(*number);
+        
+    } else if (n == "MonsterLimit") {
+        KFile::List lst(*kc.getKFile(), "", 2);
+        lst.push(0);
+        const MonsterType * mtype = kc.popMonsterType();
+        lst.push(1);
+        const MenuInt *number = kc.popMenuInt();
+        return new DungeonMonsterLimit(mtype, *number);
         
     } else if (n == "Premapped") {
         KFile::List lst(*kc.getKFile(), "", 0);
@@ -406,6 +453,16 @@ void DungeonGenerator::setStuff(int tile_category, int chance, const ItemGenerat
     stuff[tile_category] = si;
 }
 
+void DungeonGenerator::setMonsterLimit(const MonsterType *m, int max_monsters)
+{
+    monster_limits[m] = max_monsters;
+}
+
+void DungeonGenerator::setInitialMonsters(const MonsterType *m, int count)
+{
+    initial_monsters[m] = count;
+}
+
 std::string DungeonGenerator::generate(DungeonMap &dmap, MonsterManager &monster_manager,
                                        CoordTransform &ct, int nplayers, bool tutorial_mode)
 {
@@ -456,6 +513,17 @@ std::string DungeonGenerator::generate(DungeonMap &dmap, MonsterManager &monster
                 generateRequiredItems(dmap);
                 generateStuff(dmap);
 
+                // Generate initial monsters
+                for (map<const MonsterType *, int>::const_iterator it = initial_monsters.begin(); it != initial_monsters.end(); ++it) {
+                    placeInitialMonsters(dmap, monster_manager, *it->first, it->second);
+                }
+                
+                // Set monster limits
+                // Note: we only set the individual monster limits here. The total monsters limit is set in KnightsConfigImpl::initializeGame.
+                for (map<const MonsterType *, int>::const_iterator it = monster_limits.begin(); it != monster_limits.end(); ++it) {
+                    monster_manager.limitMonster(it->first, it->second);
+                }
+                
                 // Check that all keys/lockpicks are accessible.
                 // We do this check separately for each of the player homes.
                 for (vector<pair<MapCoord,MapDirection> >::const_iterator it = assigned_homes.begin(); it != assigned_homes.end(); ++it) {
@@ -1327,29 +1395,20 @@ void DungeonGenerator::generateLocksAndTraps(DungeonMap &dmap, int nkeys)
     }
 }
 
-
-void DungeonGenerator::addVampireBats(DungeonMap &dmap, MonsterManager &mmgr,
-                                      int nbats_normal)
+void DungeonGenerator::placeInitialMonsters(DungeonMap &dmap, MonsterManager &mmgr,
+                                            const MonsterType &mtype, int num_monsters)
 {
-    if (segments.empty()) return;  // dungeon was not generated yet!    
-    ASSERT(segments.size() == lwidth*lheight);
-
-    // First, place "regular" bats
-    placeRegularBats(dmap, mmgr, nbats_normal);
-}
-
-void DungeonGenerator::placeRegularBats(DungeonMap &dmap, MonsterManager &mmgr,
-                                        int nbats_normal)
-{
+    const MapHeight monster_height = mtype.getHeight();
+    
     vector<shared_ptr<Tile> > tiles;
-    for (int i=0; i<nbats_normal; ++i) {
-        for (int tries=0; tries<10; ++tries) {
-            const int x = g_rng.getInt(0,dmap.getWidth());
-            const int y = g_rng.getInt(0,dmap.getHeight());
-            const MapCoord mc(x,y);
+    for (int i = 0; i < num_monsters; ++i) {
+        for (int tries = 0; tries < 10; ++tries) {
+            const int x = g_rng.getInt(0, dmap.getWidth());
+            const int y = g_rng.getInt(0, dmap.getHeight());
+            const MapCoord mc(x, y);
 
-            // To place a regular bat, need a non-stair tile with clear access at H_FLYING.
-            if (dmap.getAccess(mc, H_FLYING) != A_CLEAR) continue;
+            // To place a monster, need a non-stair tile with clear access at the relevant height.
+            if (dmap.getAccess(mc, monster_height) != A_CLEAR) continue;
             dmap.getTiles(mc, tiles);
             bool ok = true;
             for (int i=0; i<tiles.size(); ++i) {
@@ -1360,9 +1419,9 @@ void DungeonGenerator::placeRegularBats(DungeonMap &dmap, MonsterManager &mmgr,
             }
             if (!ok) continue;
 
-            // Place the bat
-            // (Note: facing is irrelevant for flying monsters, we just set it to D_NORTH)
-            mmgr.placeMonster(mmgr.getVampireBatType(), dmap, mc, D_NORTH);
+            // Place the monster
+            // (Note: facing is just set to D_NORTH initially; the monster AI will soon turn around if it wants to)
+            mmgr.placeMonster(mtype, dmap, mc, D_NORTH);
             break;
         }
     }
