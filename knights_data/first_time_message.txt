@@ -6,7 +6,7 @@
 
 After that, you can join a multiplayer game on the Knights server, or start up a LAN game. There is also a singleplayer mode, but this is mainly intended for practice -- this game is definitely more fun in multiplayer!
 
-If you're looking for other players, check out the Knights game finder service -- go to the Knights web site and click Server List. You can use this to schedule a time to meet other Knights players online.
+Don't forget you can go to the Server List page on the Knights web site to find out when other players will be online.
 
 Have fun...
 
