@@ -544,7 +544,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\engine\impl\menu_constraint.hpp"
+				RelativePath="..\..\src\engine\menu_constraints.hpp"
 				>
 			</File>
 			<File
@@ -577,6 +577,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\monster_type.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\originator.hpp"
 				>
 			</File>
 			<File
