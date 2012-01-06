@@ -2,8 +2,8 @@
 
 KNIGHTS
 
-Release 018
-Released 17-Sep-2011
+Release 019
+Released 08-Jan-2012
 
 
 Programmed by 
@@ -31,7 +31,7 @@ http://www.moddb.com/games/knights
 
 
 %l
-Copyright (C) Stephen Thompson, 2006 - 2011.
+Copyright (C) Stephen Thompson, 2006 - 2012.
 Copyright (C) Kalle Marjola, 1994.
 
 Knights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

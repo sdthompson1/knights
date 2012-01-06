@@ -1,4 +1,4 @@
-Knights Release 018
+Knights Release 019
 -------------------
 
 KNIGHTS is a remake of a classic Amiga game for two players, in which
@@ -10,7 +10,7 @@ all graphics, sound effects and room layouts are his work. You can
 visit his website at http://iki.fi/marjola/.
 
 This version has been programmed in C++ from scratch by Stephen
-Thompson and has many enhancements compared to the original, such as
+Thompson and has many improvements compared to the original, such as
 support for multiple players (more than two) and network games.
 
 For full instructions on how to play, please refer to the manual
@@ -24,4 +24,4 @@ GPL.txt for a copy of the licence itself.
 -----
 Stephen Thompson
 stephen@solarflare.org.uk
-September 2011
+January 2012
