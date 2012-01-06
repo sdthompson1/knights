@@ -9,7 +9,7 @@
  *   21-Oct-2011
  *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2011.
+ *   Copyright (C) Stephen Thompson, 2008 - 2012.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
