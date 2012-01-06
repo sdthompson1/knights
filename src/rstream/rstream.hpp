@@ -1,9 +1,9 @@
 /*
  * rstream.hpp
- * Resource streams. Like ifstream except we load from "resources" rather than files.
+ *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2011.
+ * Copyright (C) Stephen Thompson, 2006 - 2012.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -22,6 +22,8 @@
  */
 
 /*
+ * Resource streams. Like ifstream except we load from "resources" rather than files.
+ *
  * A resource is currently just a file (but loaded from a standard path, so we don't have to worry about
  * current working directory etc), but in the future could be some sort of virtual file system.
  *
