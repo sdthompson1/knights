@@ -235,7 +235,7 @@ void LuaAction::execute(const ActionData &ad) const
     lua_setfield(lua, -2, "actor");                   // [cxt]
 
     PushOriginator(lua, ad.getOriginator());  // [cxt player]
-    lua_setfield(lua, -2, "player");          // [cxt]
+    lua_setfield(lua, -2, "originator");          // [cxt]
 
     const MapCoord &mc = ad.getLuaPos();
     PushMapCoord(lua, mc);   // [cxt pos]

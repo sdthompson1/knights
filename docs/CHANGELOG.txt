@@ -5,7 +5,12 @@ Note: Numbers in square brackets refer to Trac
 Release 019
 ===========
 
-Not Yet Released
+Released 8-Jan-2012
+
+New features:
+
+
+
 
 Code changes:
 
