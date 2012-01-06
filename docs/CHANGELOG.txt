@@ -9,13 +9,79 @@ Released 8-Jan-2012
 
 New features:
 
+[#131] New "Deathmatch" quest type. Knights compete to score the
+highest number of frags before the time runs out.
+
+[#135] New entry point setting: "Different every time", in which your
+entry point is randomized every time you respawn.
+
+[#41] The dungeon generator can now randomly reflect and/or rotate the
+predefined rooms. This introduces a bit more variety into the
+generated dungeons.
+
+[#128] Friendly fire is now disabled for team games. Note this applies
+to direct weapon hits (e.g. sword hits or thrown daggers), but not
+"indirect" hits (e.g. if you press a switch which fires a bolt into a
+team mate, then they will still be harmed).
+
+[#122] Team chat is now available.
+
+[#123] More than two teams can play in team games.
+
+[#121] Fixed bug where knights could not use an entry point if it had
+been secured by another knight on the same team.
+
+[#126] You can now map a room if a team mate is in it.
+
+[#47] A message is displayed if the dungeon type had to be expanded
+(this can happen e.g. if you choose a "Tiny" dungeon for a very large
+quest).
 
 
+Bug fixes and other improvements:
 
-Code changes:
+[#139] Fixed bug where zombies were walking down pits, and also
+vampire bats were not being generated from pit tiles when they were
+supposed to.
+
+[#140] Increased the range of the zombie-raising effect that occurs
+when the Necronomicon is first picked up.
+
+[#127] It is now possible to throw axes over barrels.
+
+[#143] Fixed "Stack overflow error" that was happening in the room
+with eight pentagrams around a crystal ball.
+
+[#132] Fixed bug where daggers would sometimes drop onto the wrong
+square after being thrown.
+
+[#118] Prevented game from crashing if full screen mode fails to open
+for any reason. The game now falls back to windowed mode if full
+screen mode is unavailable. (Reported by Stugol.)
+
+[#44] Fixed bug where pressing up/down keys in dropdowns moves up/down
+by 2 items, not 1.
+
+[#120] Fixed incorrect display of "Please press key for X" on the
+change controls screen.
+
+
+Server side changes:
+
+[#46] The command line server no longer depends on SDL.
+
+[#116] Server config file now supports "OldMOTDFile" once again.
+
+
+Internal code changes:
+
+[#138, #141, #144] Monster code has been refactored. This makes it
+possible to define new monsters from the text config files, and paves
+the way for Loki's "ogre quest" to be added in the future.
 
 * Updated "Coercri" library to the latest version. (The interface for
-  keyboard handling has changed somewhat.)
+keyboard handling has changed somewhat.)
+
 
 
 Release 018
