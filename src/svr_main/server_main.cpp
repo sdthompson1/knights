@@ -57,6 +57,7 @@
 #include <iostream>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -438,7 +439,7 @@ bool ProcessReplayFile(ReplayFile & file, std::list<UpdateStruct> & update_struc
         }
         
     } else if (msg != "RNG" && msg != "UPD") {
-        throw std::exception("Unknown message code!!");
+        throw std::runtime_error("Unknown message code!!");
     }
 
     return true;

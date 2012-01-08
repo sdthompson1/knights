@@ -29,6 +29,7 @@
 #ifndef DUNGEON_LAYOUT_HPP
 #define DUNGEON_LAYOUT_HPP
 
+#include <string>
 #include <vector>
 using namespace std;
 
