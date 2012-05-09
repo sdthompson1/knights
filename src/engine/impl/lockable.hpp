@@ -79,6 +79,7 @@ public:
     // Traps
     // setTrap: Set a trap which will be triggered when the door/chest is opened. If a trap
     // is already present, then the existing trap will be set off.
+    //   -- Note: "mc" must be the position of the door/chest, not the position of the knight setting the trap! (#167)
     // generateTrap: like setTrap but called during initial "pretrapped chests" generation.
     // (returns true if a trap was generated.)
     // onHit: Override this to deal with setting off traps when a door/chest is hit.

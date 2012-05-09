@@ -840,7 +840,7 @@ Action * A_SetBearTrap::Maker::make(ActionPars &pars) const
 // If more trap types are added it may be worth factoring this out.
 
 namespace {
-    shared_ptr<Lockable> CheckSetTrap(const ActionData &ad)
+    shared_ptr<Lockable> CheckSetTrap(const ActionData &ad, MapCoord &mc)
     {
         shared_ptr<Creature> actor = ExtractCreature(ad);
 
@@ -858,7 +858,7 @@ namespace {
         }
 
         if (!actor || !approach_check) return shared_ptr<Lockable>();
-        MapCoord mc = DisplaceCoord(actor->getPos(), actor->getFacing());
+        mc = DisplaceCoord(actor->getPos(), actor->getFacing());
         vector<shared_ptr<Tile> > tiles;
         actor->getMap()->getTiles(mc, tiles);
         for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
@@ -880,17 +880,19 @@ namespace {
 
 bool A_SetBladeTrap::possible(const ActionData &ad) const
 {
-    return bool(CheckSetTrap(ad));
+    MapCoord dummy;
+    return bool(CheckSetTrap(ad, dummy));
 }
 
 void A_SetBladeTrap::execute(const ActionData &ad) const
 {
-    shared_ptr<Lockable> target = CheckSetTrap(ad);
+    MapCoord target_pos;
+    shared_ptr<Lockable> target = CheckSetTrap(ad, target_pos);
     shared_ptr<Creature> actor = ExtractCreature(ad);
     if (target && actor) {
         const ItemType *it = ExtractItemType(ad);
         shared_ptr<Trap> trap(new BladeTrap(it, missile_type, Opposite(actor->getFacing())));
-        target->setTrap(*actor->getMap(), actor->getPos(), actor, trap);
+        target->setTrap(*actor->getMap(), target_pos, actor, trap);
         RemoveItem(actor, it);
     }
 }
@@ -908,17 +910,19 @@ Action * A_SetBladeTrap::Maker::make(ActionPars &pars) const
 
 bool A_SetPoisonTrap::possible(const ActionData &ad) const
 {
-    return bool(CheckSetTrap(ad));
+    MapCoord dummy;
+    return bool(CheckSetTrap(ad, dummy));
 }
 
 void A_SetPoisonTrap::execute(const ActionData &ad) const
 {
-    shared_ptr<Lockable> target = CheckSetTrap(ad);
+    MapCoord target_pos;
+    shared_ptr<Lockable> target = CheckSetTrap(ad, target_pos);
     shared_ptr<Creature> actor = ExtractCreature(ad);
     if (target && actor) {
         const ItemType *it = ExtractItemType(ad);
         shared_ptr<Trap> trap(new PoisonTrap(it));
-        target->setTrap(*actor->getMap(), actor->getPos(), actor, trap);
+        target->setTrap(*actor->getMap(), target_pos, actor, trap);
         RemoveItem(actor, it);
     }
 }
