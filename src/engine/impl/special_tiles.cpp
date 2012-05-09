@@ -34,16 +34,6 @@
 #include "rng.hpp"
 #include "special_tiles.hpp"
 
-namespace {
-    void DoDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Item> stored_item)
-    {
-        if (stored_item && !stored_item->getType().isFragile()) {
-            
-        }
-    }
-}
-
-
 
 //
 // Door
