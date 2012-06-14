@@ -664,14 +664,21 @@ namespace {
                                                               kg.game_name.length(), kg.game_name.c_str());
 
                 // Setup house colours and player names
+                // Also count how many players on each team.
                 std::vector<int> hse_cols;
                 std::vector<std::string> player_names;
+                std::map<int, int> team_counts;
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     if (!(*it)->obs_flag) {
-                        hse_cols.push_back((*it)->house_colour);
+                        int col = (*it)->house_colour;
+                        hse_cols.push_back(col);
+                        ++team_counts[col];
                         player_names.push_back((*it)->name);
+                        
                         if (!(*it)->name2.empty()) {
-                            hse_cols.push_back((*it)->house_colour + 1);
+                            ++col;  // split screen mode: house colours are consecutive (0 and 1)
+                            hse_cols.push_back(col);
+                            ++team_counts[col];
                             player_names.push_back((*it)->name2);
                         }
                     }
@@ -686,7 +693,8 @@ namespace {
                 }
 
                 nplayers = player_names.size();
-                
+
+                // Create the KnightsEngine. Pass any dungeon generation warnings back to the players
                 std::string warning_msg;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, kg.menu_selections, hse_cols, player_names,
@@ -729,7 +737,7 @@ namespace {
                 }
 
                 // Send the warning message (from the dungeon generator) to all players and observers (Trac #47)
-                // Also send the team chat notification (if applicable)
+                // Also send the team chat notification (but only if more than 1 player on the team; #151)
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     Coercri::OutputByteBuf buf((*it)->output_data);
 
@@ -738,7 +746,7 @@ namespace {
                         buf.writeString(warning_msg);
                     }
 
-                    if (!(*it)->obs_flag) {
+                    if (!(*it)->obs_flag && team_counts[(*it)->house_colour] > 1) {
                         buf.writeUbyte(SERVER_ANNOUNCEMENT);
                         buf.writeString("Note: Team chat is available. Type /t at the start of your message to send to your team only.");
                     }
