@@ -803,6 +803,13 @@ void KnightsConfigImpl::popHouseColours(const ConfigMap &config_map)
             Colour rgb;
             cols.push(0);
             rgb = popRGB();
+            // (As a special rule, if all components are $40 or less, the colour value is 
+            // doubled. This is to prevent homes secured by Black knights being invisible.)
+            if (rgb.r <= 0x40 && rgb.g <= 0x40 && rgb.b <= 0x40) {
+                rgb.r *= 2;
+                rgb.g *= 2;
+                rgb.b *= 2;
+            }
             shared_ptr<ColourChange> cc(new ColourChange);
             cc->add(Colour(255,0,0),rgb);
             secured_cc.push_back(cc);
