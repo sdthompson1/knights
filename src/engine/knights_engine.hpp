@@ -90,6 +90,7 @@ public:
 
     // Get the player list
     // Only players still in the game are included.
+    // NOTE: the result is sorted by house colour, then name. (#172)
     void getPlayerList(std::vector<PlayerInfo> &player_list) const;
 
     // Get total of skulls and kills across all players (including eliminated players).

@@ -305,6 +305,20 @@ void KnightsEngine::eliminatePlayer(int player)
     pimpl->players_to_eliminate.push_back(player);
 }
 
+namespace {
+    struct ComparePlayerInfo {
+        bool operator()(const PlayerInfo &lhs, const PlayerInfo &rhs) const
+        {
+            // have to write in this strange way (call operator< directly)
+            // because some other operator< is coming in (from boost?)
+            // and causing ambiguity.
+            return lhs.house_colour.operator< (rhs.house_colour) ? true
+                : rhs.house_colour.operator< (lhs.house_colour) ? false
+                : lhs.name < rhs.name;
+        }
+    };
+}
+
 void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
 {
     player_list.clear();
@@ -325,6 +339,8 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
         inf.eliminated = (*it)->getElimFlag();
         player_list.push_back(inf);
     }
+
+    std::sort(player_list.begin(), player_list.end(), ComparePlayerInfo());
 }
 
 int KnightsEngine::getSkullsPlusKills() const
