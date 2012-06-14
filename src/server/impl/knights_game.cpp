@@ -230,8 +230,8 @@ namespace {
         if (IsDeathmatch(msel)) {
             // Deathmatch
             result = "Deathmatch\n\n"
-                "Players get 1 frag for killing an enemy knight, and -1 for a suicide. Being killed by a monster doesn't affect your frags total. "
-                "The player with the most frags when time runs out is the winner.";
+                "Players get 1 point for killing an enemy knight, and -1 for a suicide. (Being killed by a monster doesn't affect your score.) "
+                "The player with the highest score when time runs out is the winner.";
         } else if (quest > 0) {
             result = knights_config.getQuestDescription(quest, exit_string);
         } else if (quest == 0) {

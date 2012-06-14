@@ -549,7 +549,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         titles.reserve(deathmatch_mode ? 3 : 4);
         titles.push_back("Player");
         if (deathmatch_mode) {
-            titles.push_back("Frags");
+            titles.push_back("Score");
         } else {        
             titles.push_back("Kills");
             titles.push_back("Deaths");
