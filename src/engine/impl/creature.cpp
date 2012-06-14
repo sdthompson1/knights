@@ -78,7 +78,6 @@ ImpactTask::ImpactResult ImpactTask::tryCreatureImpact(Creature &me)
     
     // If the target creature is on the same team as me, then disallow the impact (Trac #128)
     if (target_creature->getPlayer() && me.getPlayer()
-        && me.getPlayer()->getTeamNum() >= 0
         && target_creature->getPlayer()->getTeamNum() == me.getPlayer()->getTeamNum()) {
             return NO_TARGET;
     }

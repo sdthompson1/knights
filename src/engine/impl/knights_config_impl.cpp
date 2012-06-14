@@ -2159,7 +2159,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
 
     for (int i = 0; i < hse_cols.size(); ++i) {
         dg->getHome(i, pos, facing);
-        const int team_num = dg->getTeamMode() ? hse_cols[i] : -1;
+        const int team_num = hse_cols[i];
         boost::shared_ptr<Player> player(new Player(i, *dungeon_map, pos, facing,
                                                     knight_anims.at(hse_cols[i]), default_item,
                                                     0, control_set, quests,

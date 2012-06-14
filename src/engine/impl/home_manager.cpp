@@ -51,7 +51,7 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
     if (it->second == &pl) return; // don't secure homes twice ...
 
     // Also: don't secure homes twice by different members of the same team.
-    if (it->second && it->second->getTeamNum() != -1 && it->second->getTeamNum() == pl.getTeamNum()) return;
+    if (it->second && it->second->getTeamNum() == pl.getTeamNum()) return;
     
     // We have to secure the home
     // First find the home tile
@@ -91,15 +91,8 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
             my_home_secured = true;   // My home has been secured by two players
         } else if (it->second) {
             // My home has been secured by some knight
-            if (it->second->getTeamNum() == -1) {
-                // Not a team game
-                // My home is secured if the securing player is some player other than myself.
-                my_home_secured = it->second != players[i];
-            } else {
-                // Team game
-                // My home is secured if the securing player's team is not equal to my team.
-                my_home_secured = it->second->getTeamNum() != players[i]->getTeamNum();
-            }
+            // My home is secured if the securing player's team is not equal to my team.
+            my_home_secured = it->second->getTeamNum() != players[i]->getTeamNum();
         }
         
         if (my_home_secured) {
@@ -121,18 +114,15 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
 
 pair<MapCoord,MapDirection> HomeManager::getRandomHomeFor(const Player &pl) const
 {
-    const bool is_team_game = pl.getTeamNum() >= 0;
-    
     // First of all, work out which homes are not secured against pl
     std::vector<std::pair<MapCoord, MapDirection> > unsecured_homes;
     
     for (HomeMap::const_iterator it = homes.begin(); it != homes.end(); ++it) {
 
         const bool unsecured = it->second == 0;
-        const bool secured_by_me = it->second == &pl;
         const bool secured_by_my_team = !unsecured && it->second->getTeamNum() == pl.getTeamNum();
         
-        if (unsecured || (is_team_game && secured_by_my_team) || (!is_team_game && secured_by_me)) {
+        if (unsecured || secured_by_my_team) {
             unsecured_homes.push_back(it->first);
         }
     }

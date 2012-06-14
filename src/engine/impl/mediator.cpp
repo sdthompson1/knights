@@ -346,13 +346,9 @@ void Mediator::winGame(const Player &pl)
     std::vector<const Player*> winners;
 
     const int team_num = pl.getTeamNum();
-    if (team_num == -1) {
-        winners.push_back(&pl);
-    } else {
-        for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
-            if ((*it)->getTeamNum() == team_num) {
-                winners.push_back(*it);
-            }
+    for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
+        if ((*it)->getTeamNum() == team_num) {
+            winners.push_back(*it);
         }
     }
     endGame(winners, "");
@@ -448,25 +444,17 @@ void Mediator::eliminatePlayer(Player &pl)
     pl.setElimFlag();
 
     bool two_teams_found = false;
-    bool team_game = false;
     int team = -1;
     for (std::set<const Player*>::const_iterator it = remaining_players.begin(); it != remaining_players.end(); ++it) {
-        if ((*it)->getTeamNum() == -1) {
-            team_game = false;
+        if (team == -1) {
+            team = (*it)->getTeamNum();
+        } else if (team != (*it)->getTeamNum()) {
+            // Two different teams found
+            two_teams_found = true;
             break;
-        } else {
-            team_game = true;
-            if (team == -1) {
-                team = (*it)->getTeamNum();
-            } else if (team != (*it)->getTeamNum()) {
-                // Two different teams found
-                two_teams_found = true;
-                break;
-            }
         }
     }
-    const bool game_over = (!team_game && remaining_players.size() == 1)
-        || (team_game && !two_teams_found);
+    const bool game_over = !two_teams_found;
     
     if (game_over) {
         winGame(**remaining_players.begin());        

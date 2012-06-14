@@ -47,6 +47,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <set>
 
 #ifdef min
 #undef min
@@ -136,7 +137,6 @@ public:
     bool msg_count_update_flag;
 
     // These are set during initialization (and are only valid when game is running!)
-    bool is_team_game;   // used to decide whether to parse the "/t" team chat signal.
     bool is_deathmatch;  // used when sending "start_game" message
 };
 
@@ -197,6 +197,11 @@ namespace {
         else return it->second.value;
     }
     
+    bool IsDeathmatch(const MenuSelections &msel)
+    {
+        return GetSelection(msel, "mission") == 5;
+    }
+
     std::string GenerateQuestDescription(const MenuSelections &msel, const KnightsConfig &knights_config)
     {
         const int quest = GetSelection(msel, "quest");
@@ -222,14 +227,7 @@ namespace {
 
         const int mission = GetSelection(msel, "mission");
 
-        if (mission == 5) {
-            // Team Duel to the Death
-            result = "Team Duel to the Death\n\n"
-                "In this quest players divide into two or more teams. Set your Knight House Colours to "
-                "decide which team you are playing for.\n\n"
-                "The objective is to secure all of the entry points using the Wand of Securing, then kill all of "
-                "the other teams' knights to win the game.";
-        } else if (mission == 6) {
+        if (IsDeathmatch(msel)) {
             // Deathmatch
             result = "Deathmatch\n\n"
                 "Players get 1 frag for killing an enemy knight, and -1 for a suicide. Being killed by a monster doesn't affect your frags total. "
@@ -323,20 +321,9 @@ namespace {
         return result;
     }
 
-    bool IsTeam(const MenuSelections &msel)
-    {
-        return GetSelection(msel, "mission") == 5;
-    }
-
-    bool IsDeathmatch(const MenuSelections &msel)
-    {
-        return GetSelection(msel, "mission") == 6;
-    }
-
     // returns true if any difference between msel & msel_old was detected
     // (i.e. if anything was sent).
-    bool SendMenuSelections(Coercri::OutputByteBuf &buf, const MenuSelections &msel_old, const MenuSelections &msel_new,
-                            bool * need_hse_col_update)
+    bool SendMenuSelections(Coercri::OutputByteBuf &buf, const MenuSelections &msel_old, const MenuSelections &msel_new)
     {
         bool retval = false;
         for (std::map<std::string, MenuSelections::Sel>::const_iterator it = msel_new.selections.begin(); 
@@ -359,10 +346,6 @@ namespace {
             }
         }
 
-        const bool old_is_team = IsTeam(msel_old);
-        const bool new_is_team = IsTeam(msel_new);
-        if (need_hse_col_update) *need_hse_col_update = old_is_team != new_is_team;
-        
         return retval;
     }
 
@@ -498,7 +481,7 @@ namespace {
         }
         
         // Send the current menu selections
-        SendMenuSelections(buf, MenuSelections(), impl.menu_selections, 0);
+        SendMenuSelections(buf, MenuSelections(), impl.menu_selections);
         SendQuestDescription(buf, "", impl.quest_description);
 
         // Send the available knight house colours
@@ -548,19 +531,8 @@ namespace {
         for (game_conn_vector::iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
 
-            bool need_hse_col_update;
-            updated = SendMenuSelections(buf, msel_old, impl.menu_selections, &need_hse_col_update);
-
-            if (need_hse_col_update) {
-                const int n_hse_col = GetNumAvailHouseCols(impl);
-                if ((*it)->house_colour >= n_hse_col && !(*it)->obs_flag) {
-                    // re-set his house colour.
-                    DoSetHouseColour(impl, **it, n_hse_col - 1);
-                }
-                // re-send him the list of available house colours.
-                SendAvailableHouseColours(impl, buf);
-            }
-                        
+            updated = SendMenuSelections(buf, msel_old, impl.menu_selections);
+            
             if (!updated) break;
             SendQuestDescription(buf, quest_descr_old, impl.quest_description);
             (*it)->is_ready = false;
@@ -766,7 +738,7 @@ namespace {
                         buf.writeString(warning_msg);
                     }
 
-                    if (kg.is_team_game && !(*it)->obs_flag) {
+                    if (!(*it)->obs_flag) {
                         buf.writeUbyte(SERVER_ANNOUNCEMENT);
                         buf.writeString("Note: Team chat is available. Type /t at the start of your message to send to your team only.");
                     }
@@ -1249,36 +1221,42 @@ namespace {
         const int min_players_required = kg.knights_config->getMenuConstraints().getMinPlayers(kg.menu_selections);
         if (ready_to_start && nplayers < min_players_required) {
             std::ostringstream str;
-            str << "This quest requires at least " << min_players_required << " players.";
+            str << "ERROR: This quest requires at least " << min_players_required << " players.";
             Announcement(kg, str.str());
             ready_to_start = false;
         }
 
-        // Don't start if it's a team game and all players are on the same team
-        kg.is_team_game = IsTeam(kg.menu_selections);
-        kg.is_deathmatch = IsDeathmatch(kg.menu_selections);
-        if (ready_to_start && kg.is_team_game) {
-            int team_found = -1;
-            bool two_teams_found = false;
+        // Don't start if there are insufficient teams for the current quest
+        if (ready_to_start) {
+            const int min_teams_required = kg.knights_config->getMenuConstraints().getMinTeams(kg.menu_selections);
+
+            // we need to count how many teams there are!
+            std::set<int> teams;
             for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                 if (!(*it)->obs_flag) {
+                    // not an observer
                     if (!(*it)->name2.empty()) {
-                        two_teams_found = true;
-                        break;
-                    } else if (team_found == -1) {
-                        team_found = (*it)->house_colour;
-                    } else if ((*it)->house_colour != team_found) {
-                        two_teams_found = true;
-                        break;
+                        // split screen mode. the house colours are hard coded.
+                        teams.insert(0);
+                        teams.insert(1);
+                    } else {
+                        teams.insert((*it)->house_colour);
                     }
                 }
             }
-            if (!two_teams_found) {
-                Announcement(kg, "Cannot start game if all players are on the same team!");
+
+            if (int(teams.size()) < min_teams_required) {
+                std::ostringstream str;
+                str << "ERROR: This quest requires at least " << min_teams_required << " teams. (Choose your team by changing your Knight House Colour.)";
+                Announcement(kg, str.str());
                 ready_to_start = false;
             }
         }
 
+        // Set is_deathmatch flag
+        kg.is_deathmatch = IsDeathmatch(kg.menu_selections);
+        
+        // See if we are still ready to start
         if (ready_to_start) {
 
             // Clear everybody's "finished_loading" flag. Assign player nums.
@@ -1671,9 +1649,9 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_o
     // Determine whether this is a Team chat message
     bool is_team;
     std::string msg;
-    if (!pimpl->update_thread.joinable() || !pimpl->is_team_game || conn.obs_flag) {
+    if (!pimpl->update_thread.joinable() || conn.obs_flag) {
         // Team chat not available (either because we are on the quest selection menu, 
-        // or this is not a team game, or because sender is an observer).
+        // or because sender is an observer).
         is_team = false;
         msg = msg_orig;
     } else {
@@ -1942,12 +1920,6 @@ void KnightsGame::randomQuest(GameConnection &conn)
             // the same set of quests that you can enter manually.)
             if (**key_it == "num_wands") {
                 allowed_values.erase(std::remove_if(allowed_values.begin(), allowed_values.end(), GtrThan(nplayers+2)),
-                                     allowed_values.end());
-            }
-
-            // another special case: don't generate "team duel to the death" unless there are at least four players
-            if (**key_it == "mission" && nplayers < 4) {
-                allowed_values.erase(std::remove(allowed_values.begin(), allowed_values.end(), 5),
                                      allowed_values.end());
             }
 

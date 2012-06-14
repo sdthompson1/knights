@@ -76,6 +76,8 @@ MAIN_MENU = [
                     Constrain("#time", 0) ],
 
             # Shock assault is limited to two players, for obvious reasons
+            # (We also limit to two teams. Although you *could* play a shock assault
+            # as a co-op game, it doesn't really make much sense...)
             ["Shock Assault", 
                     Constrain("mission",1)
                     Constrain("book",0)  Constrain("wand",0)  Constrain("num_wands",0)
@@ -86,7 +88,8 @@ MAIN_MENU = [
                     Constrain("pretrapped",0)  Constrain("stuff",4)  Constrain("stuff_respawn",2)
                     Constrain("zombies",0)  Constrain("bats",0)
                     ConstrainMinPlayers("",2)
-                    ConstrainMaxPlayers("",2)  
+                    ConstrainMaxPlayers("",2)
+                    ConstrainMinTeams("",2)
                     Constrain("#time", 0) ]
 
             ["War of Survival",
@@ -98,7 +101,7 @@ MAIN_MENU = [
                     Constrain("starting_gear",0)  Constrain("keys",3)
                     Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
                     Constrain("zombies",0)  Constrain("bats",1)  
-                    ConstrainMinPlayers("",2) 
+                    ConstrainMinPlayers("",2)
                     Constrain("#time", 0) ]
 
             ["The Dungeon of Death",
@@ -178,20 +181,8 @@ MAIN_MENU = [
                     Constrain("zombies",0)  Constrain("bats",5) 
                     Constrain("#time", 0) ]
 
-            ["Team Duel to the Death",
-                    Constrain("mission", 5)
-                    Constrain("book", 0)  Constrain("wand", 3)  Constrain("num_wands", 1)
-                    Constrain("num_gems",0)  Constrain("gems_needed", 0)
-                    Constrain("dungeon_type", 3)  Constrain("premapped", 0)
-                    Constrain("entry", 0)  Constrain("exit", 0)
-                    Constrain("starting_gear",0)  Constrain("keys",3)
-                    Constrain("pretrapped",1)  Constrain("stuff",3)  Constrain("stuff_respawn",2)
-                    Constrain("zombies",0)  Constrain("bats",1)  
-                    ConstrainMinPlayers("",2) 
-                    Constrain("#time", 0) ]
-
             ["Knights Deathmatch",
-                    Constrain("mission", 6)
+                    Constrain("mission", 5)
                     Constrain("book", 0)  Constrain("wand", 0)  Constrain("num_wands", 0)
                     Constrain("num_gems", 0)  Constrain("gems_needed", 0)
                     Constrain("dungeon_type", 2)  Constrain("premapped", 0)
@@ -213,7 +204,8 @@ MAIN_MENU = [
             ["Duel to the Death",        Constrain("exit",0)
                                          Constrain("num_gems",0)  Constrain("gems_needed", 0)
                                          ConstrainMin("num_wands",1)  Constrain("wand", 3)
-                                         Constrain("book",0) ConstrainMinPlayers("",2) ]
+                                         Constrain("book",0) 
+                                         ConstrainMinPlayers("",2) ConstrainMinTeams("",2) ]
             ["Escape From the Dungeon",  ConstrainMin("exit",1) Constrain("book",0)]
             ["Retrieve Book and Escape", ConstrainMin("exit",1)
                                          ConstrainMin("book",1)
@@ -227,15 +219,10 @@ MAIN_MENU = [
                                          ConstrainMin("book",1)
                                          QuestDestroy(all_books, all_wands)
                                          DungeonSegment("special_pentagram")]
-            ["Team Duel to the Death",   Constrain("exit",0)
-                                         Constrain("num_gems",0)  Constrain("gems_needed", 0)
-                                         ConstrainMin("num_wands", 1)  Constrain("wand", 3)
-                                         Constrain("book",0) ConstrainMinPlayers("",2)
-                                         DungeonTeam() ]
             ["Deathmatch",               Constrain("exit", 0)
                                          Constrain("book", 0)
                                          Constrain("num_gems",0)  Constrain("gems_needed", 0)
-                                         ConstrainMinPlayers("", 2) ]
+                                         ConstrainMinPlayers("", 2) ConstrainMinTeams("", 2) ]
         ]
     }
 

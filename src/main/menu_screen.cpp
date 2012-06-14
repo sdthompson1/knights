@@ -83,7 +83,7 @@ public:
     boost::scoped_ptr<GuiTextWrap> quest_description_box;
     std::auto_ptr<gcn::ScrollArea> quest_description_scroll_area;
     
-    boost::scoped_ptr<gcn::Label> house_colour_label;
+    boost::scoped_ptr<gcn::Label> house_colour_label, team_label;
     boost::scoped_ptr<gcn::DropDown> house_colour_dropdown;
     boost::scoped_ptr<HouseColourListModel> house_colour_list_model;
     boost::scoped_ptr<GuiButton> join_button;
@@ -176,7 +176,12 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
         house_colour_dropdown->addActionListener(this);
         house_colour_dropdown->setSelectionColor(gcn::Color(255,255,255));
         container->add(house_colour_dropdown.get(), house_colour_label->getX() + house_colour_label->getWidth(), rhs_y);
-        rhs_y += house_colour_dropdown->getHeight() + vpad_rhs;
+        rhs_y += house_colour_dropdown->getHeight() + 1;
+
+        // Add a small label
+        team_label.reset(new gcn::Label("(Knights of the same House Colour play on the same team.)"));
+        container->add(team_label.get(), rhs_x, rhs_y);
+        rhs_y += team_label->getHeight() + vpad_rhs;
         
         // Add chat field (at bottom)
         int ybelow = y_after_menu;

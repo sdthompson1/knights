@@ -231,12 +231,6 @@ private:
     int weight;
 };
 
-class DungeonTeam : public DungeonDirective {
-public:
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setTeamMode(true); }
-};
-
 class DungeonZombies : public DungeonDirective { 
 public:
     // sets the zombie activity level
@@ -416,9 +410,6 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
         int wt = kc.getKFile()->popInt(0);
         return new DungeonStuff(tcat, prob, ig, wt);
 
-    } else if (n == "Team") {
-        return new DungeonTeam;
-        
     } else {
         kc.getKFile()->errExpected("MenuDirective");
     }

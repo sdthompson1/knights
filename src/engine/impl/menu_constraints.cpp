@@ -43,6 +43,20 @@ public:
     virtual bool apply(MenuSelections &msel, int nplayers) const = 0;
     virtual bool canSetTo(const MenuSelections &msel, const std::string &key, int val, int nplayers) const = 0;
 
+    // Note that Constrain Min/Max Players and Constrain Min Teams are
+    // treated slightly differently by the quest selection menu (see
+    // knights_game.cpp).
+    // 
+    // Min/max players --> menu won't even show the options if the
+    // number of players is wrong (e.g. Shock Assault cannot be
+    // selected unless there are exactly 2 players present).
+    //
+    // Min teams --> menu will show the options, but the game won't
+    // start unless the number of teams constraint is met.
+    
+    virtual int getMinPlayers(const MenuSelections &msel) const { return 0; }
+    virtual int getMinTeams(const MenuSelections &msel) const { return 0; }
+    
 private:
     // The constraint is only active if the given key has the given value.
     // (unless key.empty(), in which case the constraint is always active.)
@@ -245,6 +259,39 @@ int ConstrainMinMaxPlayers::getMinPlayers(const MenuSelections &msel) const
     }
 }
 
+// ConstrainMinTeams
+
+class ConstrainMinTeams : public MenuConstraint {
+public:
+    ConstrainMinTeams(const string &k, int v, const MenuInt *mnt)
+        : MenuConstraint("", 0), key(k), value(v), min_teams(mnt) { }
+
+    // as mentioned above, MinTeams is not "applied" as a menu
+    // constraint, rather it is enforced as an error message when the
+    // players try to start the game. therefore, apply and canSetTo
+    // have dummy implementations.
+    virtual bool apply(MenuSelections &msel, int nplayers) const { return false; }
+    virtual bool canSetTo(const MenuSelections &msel, const std::string &k, int v, int nplayers) const { return true; }
+
+    int getMinTeams(const MenuSelections &msel) const;
+
+private:
+    std::string key;
+    int value;
+    const MenuInt * min_teams;
+};
+
+int ConstrainMinTeams::getMinTeams(const MenuSelections &msel) const
+{
+    if (key.empty()) return 0;
+    if (msel.getValue(key) == value) {
+        return min_teams ? min_teams->getValue(msel) : 0;
+    } else {
+        return 0;
+    }
+}
+
+
 //
 // Create function
 //
@@ -288,6 +335,8 @@ boost::shared_ptr<MenuConstraint> CreateMenuConstraint(const std::string &key, i
         result.reset(new ConstrainMinMaxPlayers(key, val, 0, con_mi));
     } else if (name == "ConstrainMinPlayers") {
         result.reset(new ConstrainMinMaxPlayers(key, val, con_mi, 0));
+    } else if (name == "ConstrainMinTeams") {
+        result.reset(new ConstrainMinTeams(key, val, con_mi));
     } else {
         kc.getKFile()->errExpected("MenuDirective");
     }
@@ -383,12 +432,17 @@ int MenuConstraints::getMinPlayers(const MenuSelections &msel) const
     int min_players = 0;
     for (std::vector<boost::shared_ptr<MenuConstraint> >::const_iterator con = constraints.begin();
     con != constraints.end(); ++con) {
-        // TODO: cleaner way of doing this? (problem is basically that ConstrainMinMaxPlayers doesn't use the
-        // standard "applicable()" method of deciding whether the constraint is active.)
-        ConstrainMinMaxPlayers *c = dynamic_cast<ConstrainMinMaxPlayers*>(con->get());
-        if (c) {
-            min_players = std::max(min_players, c->getMinPlayers(msel));
-        }
+        min_players = std::max(min_players, (*con)->getMinPlayers(msel));
     }
     return min_players;
+}
+
+int MenuConstraints::getMinTeams(const MenuSelections &msel) const
+{
+    int min_teams = 0;
+    for (std::vector<boost::shared_ptr<MenuConstraint> >::const_iterator con = constraints.begin();
+    con != constraints.end(); ++con) {
+        min_teams = std::max(min_teams, (*con)->getMinTeams(msel));
+    }
+    return min_teams;
 }

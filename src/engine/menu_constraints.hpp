@@ -45,8 +45,9 @@ public:
     // also update 'allowed settings'.
     void apply(const Menu &menu, MenuSelections &msel, int nplayers) const;
 
-    // determine min number of players for current quest
+    // determine min number of players (or teams) for current quest
     int getMinPlayers(const MenuSelections &msel) const;
+    int getMinTeams(const MenuSelections &msel) const;
     
     // construction
     void addConstraintFromKFile(const std::string &key, int val, const std::string &dname, KnightsConfigImpl &kc);

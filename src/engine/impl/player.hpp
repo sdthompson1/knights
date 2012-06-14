@@ -192,7 +192,7 @@ public:
     void addKill() { ++nkills; }
     void addToFrags(int i) { frags += i; }
 
-    // team_num is -1 for a normal game or >= 0 for team games
+    // team_num is >= 0. (all games are now team games, see #160)
     int getTeamNum() const { return team_num; }
     
 private:

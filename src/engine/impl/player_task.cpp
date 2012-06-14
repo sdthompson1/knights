@@ -80,10 +80,8 @@ void PlayerTask::execute(TaskManager &tm)
                             // Check if he is on the same team, if so disregard
                             if (cr->getPlayer()) {
                                 const int my_team_num = kt->getPlayer()->getTeamNum();
-                                if (my_team_num != -1) {
-                                    const int other_team_num = cr->getPlayer()->getTeamNum();
-                                    if (other_team_num == my_team_num) continue;
-                                }
+                                const int other_team_num = cr->getPlayer()->getTeamNum();
+                                if (other_team_num == my_team_num) continue;
                             }
 
                             // Found an "enemy" creature so set the flag and break out of loop.

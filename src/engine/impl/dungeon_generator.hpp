@@ -69,8 +69,7 @@ public:
           home_type(H_NONE), premapped(false), pretrapped(false), nkeys(0),
           tile_generated_monster_level(0), zombie_activity(0), total_stuff_weight(0),
           item_respawn_time(-1),
-          lockpicks(0), lockpick_init_time(-1), lockpick_interval(-1),
-          team_mode(false)
+          lockpicks(0), lockpick_init_time(-1), lockpick_interval(-1)
     { }
 
     // dungeon generation parameters
@@ -92,7 +91,6 @@ public:
     void setItemRespawnTime(int ms) { item_respawn_time = ms; }
     void setLockpicks(const ItemType *i) { lockpicks = i; }
     void setLockpickSpawn(int it, int i) { lockpick_init_time = it; lockpick_interval = i; }
-    void setTeamMode(bool t) { team_mode = t; }
     void setMonsterLimit(const MonsterType *m, int max_monsters);
     void setInitialMonsters(const MonsterType *m, int count);
     
@@ -124,7 +122,6 @@ public:
     const ItemType * getLockpicks() const { return lockpicks; }
     int getLockpickInitialTime() const { return lockpick_init_time; }
     int getLockpickInterval() const { return lockpick_interval; }
-    bool getTeamMode() const { return team_mode; }
     
 private:
     struct BlockInfo {
@@ -199,7 +196,6 @@ private:
     const ItemType * lockpicks;
     int lockpick_init_time;
     int lockpick_interval;
-    bool team_mode;
     map<const MonsterType *, int> monster_limits;
     map<const MonsterType *, int> initial_monsters;
     

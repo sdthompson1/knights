@@ -220,12 +220,6 @@ Missile::HitResult Missile::canHitPlayer(const Player *pl) const
 
     // Otherwise, it is either CAN_HIT or FRIENDLY_FIRE depending on whether players 
     // are on same team or different team
-    if (owner.getPlayer()->getTeamNum() == -1 || pl->getTeamNum() == -1) {
-        // Not a team game. So it is always CAN_HIT
-        return CAN_HIT;
-    } else {
-        // Team game. Friendly fire if the teams match, otherwise CAN_HIT.
-        if (owner.getPlayer()->getTeamNum() == pl->getTeamNum()) return FRIENDLY_FIRE;
-        else return CAN_HIT;
-    }
+    if (owner.getPlayer()->getTeamNum() == pl->getTeamNum()) return FRIENDLY_FIRE;
+    else return CAN_HIT;
 }

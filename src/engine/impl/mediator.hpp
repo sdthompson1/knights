@@ -202,7 +202,7 @@ public:
                     MapDirection facing, shared_ptr<Tile> secured_wall_tile);
 
     // End-of-Game handling
-    void winGame(const Player & p); // makes p win the game (if team game, everyone on p's team wins)
+    void winGame(const Player & p); // makes p win the game (everyone on p's team wins)
     void timeLimitExpired();        // all players lose, except for deathmatch games where plyr(s) with most frags win(s)
     void eliminatePlayer(Player &);
     bool gameRunning() const { return game_running; }
