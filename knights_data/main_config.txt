@@ -40,23 +40,35 @@ DUNGEON_SEGMENTS = knights_rooms
 
 KNIGHT_ANIM = a_purple_knight   # must use the house colours of the first house in the list.
 KNIGHT_HOUSE_COLOURS = [
-    [$664477, $553366, $442255],
-    [$116622, $115522, $114422],
-    [$aa3300, $882200, $661100],
-    [$0000aa, $000088, $000066],
-    [$aa7700, $996600, $885500],
-    [$333333, $222222, $111111],
-    [$007755, $005544, $003333]
+    [$664477, $553366, $442255],   # purple
+    [$116622, $115522, $114422],   # green
+    [$aa3300, $882200, $661100],   # red
+    [$0000aa, $000088, $000066],   # blue
+    [$aa7700, $996600, $885500],   # gold
+    [$333333, $222222, $111111],   # black
+    [$007755, $005544, $003333],   # turquoise
+
+    [$cc8844, $bb7744, $aa6644]    # peach
+    [$993377, $882266, $771155],   # pink
+    [$662200, $552200, $442200],   # brown
+    [$0077aa, $006688, $005566],   # sky blue
+    [$ddbb00, $bb9900, $997700],   # yellow
 ]
 
 KNIGHT_HOUSE_COLOURS_MENU = [ 
-   $aa55bb,
-   $189933,
-   $ff2200,
-   $0000ff,
-   $ffaa00,
-   $444444,
-   $00bb88
+   $aa55bb,    # purple
+   $189933,    # green
+   $ff2200,    # red
+   $0000ff,    # blue
+   $ffaa00,    # gold
+   $444444,    # black
+   $00bb88,    # turquoise
+
+   $ffc699,    # peach
+   $ff44bb,    # pink
+   $772800,    # brown
+   $00b3ff,    # sky blue
+   $ffee00,    # yellow
 ]
 
 # Stuff bag graphic ...
