@@ -58,22 +58,20 @@ void ServerStatusDisplay::setPotionMagic(PotionMagic pm, bool poison_immunity)
     buf.writeUbyte((poison_immunity?128:0) + int(pm));
 }
 
-void ServerStatusDisplay::setQuestMessage(const std::string &msg)
+void ServerStatusDisplay::setQuestIcons(const std::vector<StatusDisplay::QuestIcon> &icons)
 {
     Coercri::OutputByteBuf buf(out);
-    buf.writeUbyte(SERVER_SET_QUEST_MESSAGE);
-    buf.writeString(msg);
-}
+    buf.writeUbyte(SERVER_EXTENDED_MESSAGE);
+    buf.writeVarInt(SERVER_EXT_SET_QUEST_ICONS);
 
-void ServerStatusDisplay::setQuestIcons(const std::vector<StatusDisplay::QuestIconInfo> &icons)
-{
-    Coercri::OutputByteBuf buf(out);
-    buf.writeUbyte(SERVER_SET_QUEST_ICONS);
+    size_t scratch;
+    buf.writePayloadSize(scratch);
+    
     buf.writeUbyte(icons.size());
     for (int i = 0; i < int(icons.size()); ++i) {
-        buf.writeUbyte(icons[i].num_held);
-        buf.writeUbyte(icons[i].num_required);
-        buf.writeVarInt(icons[i].gfx_missing ? icons[i].gfx_missing->getID() : 0);
-        buf.writeVarInt(icons[i].gfx_held ? icons[i].gfx_held->getID() : 0);
+        buf.writeString(icons[i].msg);
+        buf.writeUbyte(icons[i].complete);
     }
+
+    buf.backpatchPayloadSize(scratch);
 }

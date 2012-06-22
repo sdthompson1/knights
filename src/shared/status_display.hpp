@@ -65,13 +65,11 @@ public:
     virtual void setPotionMagic(PotionMagic pm, bool poison_immunity) = 0;
 
     // Set quest status info
-    struct QuestIconInfo {
-        int num_held, num_required;
-        const Graphic *gfx_missing;
-        const Graphic *gfx_held;
+    struct QuestIcon {
+        std::string msg;
+        bool complete;
     };
-    virtual void setQuestMessage(const std::string &msg) = 0;
-    virtual void setQuestIcons(const std::vector<QuestIconInfo> &quest_icons) = 0;
+    virtual void setQuestIcons(const std::vector<QuestIcon> &quest_icons) = 0;
 };
 
 #endif

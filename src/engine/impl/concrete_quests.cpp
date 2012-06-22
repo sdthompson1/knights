@@ -76,26 +76,46 @@ void QuestRetrieve::getRequiredItems(std::map<const ItemType *, int> & required_
     }
 }
 
-void QuestRetrieve::appendQuestIcon(const Knight *kt, std::vector<StatusDisplay::QuestIconInfo> &icons) const
+StatusDisplay::QuestIcon QuestRetrieve::getQuestIcon(const Knight &kt, QuestCircumstance c) const
 {
-    StatusDisplay::QuestIconInfo qi;
-    qi.num_held = 0;
-    qi.num_required = no;
-    qi.gfx_missing = qi.gfx_held = 0; // TODO
-    if (kt) {
-        if (find(itypes.begin(), itypes.end(), kt->getItemInHand()) != itypes.end()) {
-            qi.num_held = 1;
-        } else {
-            for (int i = 0; i < kt->getBackpackCount(); ++i) {
-                if (find(itypes.begin(), itypes.end(), &kt->getBackpackItem(i)) != itypes.end()) {
-                    qi.num_held = kt->getNumCarried(i);
-                    break;
-                }
+    StatusDisplay::QuestIcon qi;
+
+    int num_held = 0;
+    
+    if (find(itypes.begin(), itypes.end(), kt.getItemInHand()) != itypes.end()) {
+        num_held = 1;
+    } else {
+        for (int i = 0; i < kt.getBackpackCount(); ++i) {
+            if (find(itypes.begin(), itypes.end(), &kt.getBackpackItem(i)) != itypes.end()) {
+                num_held = kt.getNumCarried(i);
+                break;
             }
         }
     }
-    icons.push_back(qi);
+
+    std::ostringstream str;
+    str << "Get ";
+
+    // Parse the item name, it should be of form "A gem" or "The book".
+    const std::string & name = itypes.front()->getName();
+    if (name[0] == 'A') {
+        str << no << ' ' << name.substr(2);     // "<N> gem"
+        if (no > 1) str << 's';                 // add "s" if plural
+    } else {
+        str << 't';
+        str << name.substr(1);   // "the book"
+    }
+    
+    if (num_held > 0 && num_held < no) {
+        str << " [" << no - num_held << " more required]";
+    }
+
+    qi.msg = str.str();
+    qi.complete = (num_held >= no);
+    
+    return qi;
 }
+
 
 //
 // QuestDestroy
@@ -128,4 +148,12 @@ void QuestDestroy::getRequiredItems(std::map<const ItemType *, int> &required_it
     for (std::vector<const ItemType *>::const_iterator it = wand.begin(); it != wand.end(); ++it) {
         required_items[*it] = std::max(required_items[*it], 1);
     }
+}
+
+StatusDisplay::QuestIcon QuestDestroy::getQuestIcon(const Knight &kt, QuestCircumstance c) const
+{
+    StatusDisplay::QuestIcon qi;
+    qi.msg = "Destroy book with wand";
+    qi.complete = (c == WIN_FROM_COMPLETE_QUEST);
+    return qi;
 }

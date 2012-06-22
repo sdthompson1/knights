@@ -113,7 +113,7 @@ void ServerMiniMap::appendMiniMapCmds(std::vector<ubyte> &vec) const
             buf.writeUbyte(it->start_x);
             buf.writeUbyte(it->y);
             buf.writeUbyte(it->cols.size());
-            for (int i = 0; i < it->cols.size(); ++i) {
+            for (size_t i = 0; i < it->cols.size(); ++i) {
                 // TODO: could compress even more (each square would fit
                 // into 2 bits) but we'll just use one byte per square...
                 buf.writeUbyte(it->cols[i]);

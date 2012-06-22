@@ -187,6 +187,7 @@ void A_CheckQuest::execute(const ActionData &ad) const
         vector<string> dummy;
         if (kt->getMap() && kt->getPlayer()->checkQuests(dummy)) {
             // Player has won the game
+            Mediator::instance().updateQuestIcons(*kt->getPlayer(), WIN_FROM_COMPLETE_QUEST);
             Mediator::instance().winGame(*kt->getPlayer());
         }
     }
@@ -654,9 +655,7 @@ void A_UpdateQuestStatus::execute(const ActionData &ad) const
     Knight *kt = dynamic_cast<Knight*>(cr.get());
     if (kt) {
         // Send updated quest icons.
-        std::vector<StatusDisplay::QuestIconInfo> icons;
-        kt->getPlayer()->getQuestIcons(icons);
-        Mediator::instance().getCallbacks().getStatusDisplay(kt->getPlayer()->getPlayerNum()).setQuestIcons(icons);
+        Mediator::instance().updateQuestIcons(*kt->getPlayer(), JUST_AN_UPDATE);
     }
 }
 

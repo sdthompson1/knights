@@ -65,8 +65,7 @@ public:
     virtual void addSkull() { }
     virtual void setHealth(int) { }
     virtual void setPotionMagic(PotionMagic, bool) { }
-    virtual void setQuestMessage(const std::string &) { }
-    virtual void setQuestIcons(const std::vector<StatusDisplay::QuestIconInfo> &) { }
+    virtual void setQuestIcons(const std::vector<StatusDisplay::QuestIcon> &) { }
 };
 
 class DummyCallbacks : public KnightsCallbacks {

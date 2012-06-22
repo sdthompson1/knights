@@ -200,4 +200,16 @@ namespace Coercri {
         }
     }
 
+    void OutputByteBuf::writePayloadSize(size_t &pos)
+    {
+        pos = buf.size();
+        writeUshort(0);
+    }
+
+    void OutputByteBuf::backpatchPayloadSize(size_t pos)
+    {
+        size_t payload_size = buf.size() - pos - 2;
+        buf[pos] = payload_size >> 8;
+        buf[pos+1] = payload_size & 0xff;
+    }
 }

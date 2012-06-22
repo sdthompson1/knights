@@ -258,24 +258,15 @@ bool Player::isItemInteresting(const ItemType &itype) const
     return false;
 }
 
-std::string Player::getQuestMessage() const
-{
-    std::string msg;
-    for (vector<shared_ptr<Quest> >::const_iterator it = quests.begin();
-    msg.empty() && it != quests.end(); ++it) {
-        msg = (*it)->getQuestMessage();
-    }
-    return msg;
-}
-
-void Player::getQuestIcons(vector<StatusDisplay::QuestIconInfo> &quests_out) const
+void Player::getQuestIcons(vector<StatusDisplay::QuestIcon> &quests_out, QuestCircumstance c) const
 {
     quests_out.clear();
     shared_ptr<Knight> kt = getKnight();
     
     for (vector<shared_ptr<Quest> >::const_iterator it = quests.begin();
     it != quests.end(); ++it) {
-        (*it)->appendQuestIcon(kt.get(), quests_out);
+        const StatusDisplay::QuestIcon icon = (*it)->getQuestIcon(*kt, c);
+        quests_out.push_back(icon);
     }
 }
 

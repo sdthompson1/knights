@@ -1,5 +1,5 @@
 /*
- * server_status_display.hpp
+ * quest_circumstance.hpp
  *
  * This file is part of Knights.
  *
@@ -21,26 +21,15 @@
  *
  */
 
-#ifndef SERVER_STATUS_DISPLAY_HPP
-#define SERVER_STATUS_DISPLAY_HPP
+#ifndef QUEST_CIRCUMSTANCE_HPP
+#define QUEST_CIRCUMSTANCE_HPP
 
-#include "status_display.hpp"
+// this is passed as a parameter to Mediator::updateQuestIcons()
 
-#include <vector>
-
-class ServerStatusDisplay : public StatusDisplay {
-public:
-    typedef unsigned char ubyte;
-    explicit ServerStatusDisplay(std::vector<ubyte> &out_) : out(out_) { }
-
-    virtual void setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max);
-    virtual void addSkull();
-    virtual void setHealth(int h);
-    virtual void setPotionMagic(PotionMagic pm, bool poison_immunity);
-    virtual void setQuestIcons(const std::vector<StatusDisplay::QuestIcon> &icons);
-    
-private:
-    std::vector<ubyte> &out;
+enum QuestCircumstance {
+    WIN_FROM_KILL_KNIGHTS,   // win by killing all other knights (with all homes secured)
+    WIN_FROM_COMPLETE_QUEST,     // win from completing the quest (escape from dgn, destroy book, etc)
+    JUST_AN_UPDATE                 // just updating quest requirements mid-game, no-one has won yet
 };
 
 #endif

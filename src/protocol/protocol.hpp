@@ -153,11 +153,19 @@ enum ServerMessageCode {
     SERVER_ADD_SKULL = 201,          // no data
     SERVER_SET_HEALTH = 202,         // followed by ubyte (health)
     SERVER_SET_POTION_MAGIC = 203,   // followed by ubyte (bit7 = poison immun, bits0-6 = potion_magic)
-    SERVER_SET_QUEST_MESSAGE = 204,  // followed by string
-    SERVER_SET_QUEST_ICONS = 205,    // complex
+    // NOTE: 204, 205 no longer used (were set quest message / set quest icons)
 
     // misc
-    SERVER_SWITCH_PLAYER = 250       // followed by ubyte (player number)
+    SERVER_SWITCH_PLAYER = 250,      // followed by ubyte (player number)
+
+    // extended messages
+    // (will be ignored if the client doesn't know the message.)
+    SERVER_EXTENDED_MESSAGE = 255    // followed by extended code (varint), payload length (ushort) and payload.
 };
+
+enum ServerExtendedCode {
+    SERVER_EXT_SET_QUEST_ICONS = 1
+};
+
 
 #endif

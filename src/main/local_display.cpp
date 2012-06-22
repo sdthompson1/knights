@@ -445,6 +445,7 @@ void LocalDisplay::setTimeLimitCaption()
 
 void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_width, int chat_area_height,
                             int plyr_list_x, int plyr_list_y, int plyr_list_width, int plyr_list_height,
+                            int quest_rqmts_x, int quest_rqmts_y, int quest_rqmts_width, int quest_rqmts_height,
                             GfxManager &gm)
 {
     const bool chat_should_be_focused = chat_field && chat_field->isFocused();
@@ -676,69 +677,41 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         
         updateTutorialWidget();
     }
-    
 
-    // Unfinished code for quest requirements follows.
-    // Will probably rewrite this at some point.
-    
-    /*
-    std::string msg0 = status_display[plyr_num]->getQuestMsg();
-    const bool special_quest_msg = !msg0.empty();
+    //
+    // QUEST REQUIREMENTS
+    //
 
-    if (!special_quest_msg) {
-        if (status_display[plyr_num]->getQuestIcons().empty()) {
-            msg0 = "Quest: Duel to the Death";
-        } else {
-            msg0 = "Quest Requirements:";
-        }
+    if (quest_rqmts_height > 0) {
+
+        std::vector<std::string> titles(1, "Quest Requirements");
+        std::vector<int> widths(1, quest_rqmts_width);
+        quest_titleblock.reset(new TitleBlock(titles, widths));
+        quest_titleblock->setFont(gui_font.get());
+        quest_titleblock->setBaseColor(gcn::Color(0x66, 0x66, 0x44));
+        quest_titleblock->setForegroundColor(gcn::Color(0xff, 0xff, 0xff));
+        quest_titleblock->setFocusable(true);
+        container.add(quest_titleblock.get(), quest_rqmts_x, quest_rqmts_y);
+
+        quest_listbox.reset(new ListBoxNoMouse);
+        quest_listbox->setBackgroundColor(gcn::Color(0,0,0));
+        quest_listbox->setSelectionColor(gcn::Color(0,0,0));
+        quest_listbox->setFont(gui_font.get());
+        quest_listbox->setForegroundColor(gcn::Color(255,255,255));
+        quest_listbox->setListModel(0);   // TODO: need a "quest list model"
+        quest_listbox->setWidth(quest_rqmts_width - DEFAULT_SCROLLBAR_WIDTH);
+
+        quest_scrollarea.reset(new gcn::ScrollArea);
+        quest_scrollarea->setContent(quest_listbox.get());
+        quest_scrollarea->setSize(quest_rqmts_width, quest_rqmts_height - quest_titleblock->getHeight() - 2);
+        quest_scrollarea->setScrollbarWidth(DEFAULT_SCROLLBAR_WIDTH);
+        quest_scrollarea->setFrameSize(0);
+        quest_scrollarea->setHorizontalScrollPolicy(gcn::ScrollArea::SHOW_NEVER);
+        quest_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_AUTO);
+        quest_scrollarea->setBaseColor(bg_col);
+        quest_scrollarea->setBackgroundColor(gcn::Color(0,0,0));
+        container.add(quest_scrollarea.get(), quest_rqmts_x, quest_rqmts_y + quest_titleblock->getHeight() + 2);
     }
-
-    typedef std::vector<StatusDisplay::QuestIconInfo> QuestIcons;
-    const QuestIcons & qi = status_display[plyr_num]->getQuestIcons();
-    std::string msg1;
-    if (special_quest_msg && !qi.empty()) {
-        msg1 = "Gems Required:";
-    }
-
-    std::string msg2 = "Exit Point: TODO";
-    
-    msg0_label[plyr_num].reset(new gcn::Label(msg0));
-    msg0_label[plyr_num]->setFont(gui_font.get()); 
-    msg0_label[plyr_num]->adjustSize();
-    msg0_panel[plyr_num].reset(new GuiPanel2(msg0_label[plyr_num].get()));
-    container.add(msg0_panel[plyr_num].get(), x, y);
-
-    int xnext = x + msg0_panel[plyr_num]->getWidth();
-
-    if (!msg1.empty()) {
-        msg1_label[plyr_num].reset(new gcn::Label(msg1));
-        msg1_label[plyr_num]->setFont(gui_font.get());
-        msg1_label[plyr_num]->adjustSize();
-        msg1_panel[plyr_num].reset(new GuiPanel2(msg1_label[plyr_num].get()));
-        container.add(msg1_panel[plyr_num].get(), xnext, y);
-        xnext += msg1_panel[plyr_num]->getWidth();
-    }
-
-    icon_panels[plyr_num].clear();
-    for (QuestIcons::const_iterator it = qi.begin(); it != qi.end(); ++it) {
-        for (int i = 0; i < it->num_required; ++i) {
-            boost::shared_ptr<GuiPanel2> panel(new GuiPanel2(0));
-            panel->setSize(32, msg0_panel[plyr_num]->getHeight());  // TODO set size properly
-            icon_panels[plyr_num].push_back(panel);
-            container.add(panel.get(), xnext, y);
-            xnext += panel->getWidth();
-        }
-    }
-    
-    if (!msg2.empty()) {
-        msg2_label[plyr_num].reset(new gcn::Label(msg2));
-        msg2_label[plyr_num]->setFont(gui_font.get());
-        msg2_label[plyr_num]->adjustSize();
-        msg2_panel[plyr_num].reset(new GuiPanel2(msg2_label[plyr_num].get()));
-        container.add(msg2_panel[plyr_num].get(), xnext, y);
-        xnext += msg2_panel[plyr_num]->getWidth();
-    }
-    */
 }
 
 void LocalDisplay::action(const gcn::ActionEvent &event)
@@ -1314,6 +1287,7 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
 
         int player_list_x, player_list_y, player_list_width, player_list_height;
         int chat_area_x, chat_area_y, chat_area_width, chat_area_height;
+        int quest_rqmts_x, quest_rqmts_y, quest_rqmts_width, quest_rqmts_height;
         
         if (horiz_split) {
             // Want horizontal split (i.e. "left" and "right" panels)
@@ -1331,9 +1305,12 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             chat_area_y = player_list_y;
             chat_area_width = player_list_width;
             chat_area_height = player_list_height;
+
+            // Quest requirements not shown in this mode
+            quest_rqmts_x = quest_rqmts_y = quest_rqmts_width = quest_rqmts_height = 0;
             
         } else {
-            // Want vertical split (i.e. "top" and "bottom" panels)
+            // Want vertical split (i.e. stack player list, quest requirements, chat area vertically.)
             
             // Work out where to draw the player list / tutorial window (top)
             const int player_list_margin = 6;
@@ -1343,21 +1320,31 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
 
             player_list_height = gui_font->getHeight() * (tutorial_mode ? 20 : 12);
 
-            const int half_height = vp_height/2 - 2*player_list_margin;
-            if (player_list_height > half_height) player_list_height = half_height;
+            const int third_height = vp_height/3 - 2*player_list_margin;
+            if (player_list_height > third_height) player_list_height = third_height;
 
             const int player_list_bottom = player_list_y + player_list_height + player_list_margin;
-        
+
+            // Work out where to draw the quest requirements (middle)
+            quest_rqmts_x = player_list_x;
+            quest_rqmts_y = player_list_bottom + player_list_margin;
+            quest_rqmts_width = player_list_width;
+            quest_rqmts_height = gui_font->getHeight() * 8;
+            if (quest_rqmts_height > third_height) quest_rqmts_height = third_height;
+
+            const int quest_rqmts_bottom = quest_rqmts_y + quest_rqmts_height + player_list_margin;
+            
             // Work out where to draw the chat area (bottom)
             const int chat_area_margin = player_list_margin;
             chat_area_x = vp_x + chat_area_margin;
-            chat_area_y = player_list_bottom + chat_area_margin;
+            chat_area_y = quest_rqmts_bottom + chat_area_margin;
             chat_area_width = vp_width - 2*chat_area_margin;
-            chat_area_height = vp_height - player_list_bottom - 2*chat_area_margin;
-        }            
+            chat_area_height = vp_height - quest_rqmts_bottom - 2*chat_area_margin;
+        }
         
         setupGui(chat_area_x, chat_area_y, chat_area_width, chat_area_height,
                  player_list_x, player_list_y, player_list_width, player_list_height,
+                 quest_rqmts_x, quest_rqmts_y, quest_rqmts_width, quest_rqmts_height,
                  gm);
     }
 

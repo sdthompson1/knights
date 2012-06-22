@@ -230,16 +230,9 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
             }
         }
 
-        // Send out special quest message if needed
-        for (int i = 0; i < players.size(); ++i) {
-            Mediator::instance().getCallbacks().getStatusDisplay(i).setQuestMessage(players[i]->getQuestMessage());
-        }
-        
         // Send out initial quest icons
         for (int i = 0; i < players.size(); ++i) {
-            std::vector<StatusDisplay::QuestIconInfo> icons;
-            players[i]->getQuestIcons(icons);
-            Mediator::instance().getCallbacks().getStatusDisplay(i).setQuestIcons(icons);
+            Mediator::instance().updateQuestIcons(*players[i], JUST_AN_UPDATE);
         }
 
         initial_update_needed = false;

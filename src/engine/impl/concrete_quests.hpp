@@ -45,7 +45,7 @@ public:
     virtual string getHint() const;
     virtual bool isItemInteresting(const ItemType &itype) const;
     virtual void getRequiredItems(std::map<const ItemType *, int> & required_items) const;
-    virtual void appendQuestIcon(const Knight *kt, std::vector<StatusDisplay::QuestIconInfo> &icons) const;
+    virtual StatusDisplay::QuestIcon getQuestIcon(const Knight &kt, QuestCircumstance c) const;
 private:
     int no;
     const vector<const ItemType*> itypes;
@@ -63,8 +63,7 @@ public:
     virtual bool check(Knight &) const;
     virtual bool isItemInteresting(const ItemType &itype) const;
     virtual void getRequiredItems(std::map<const ItemType *, int> & required_items) const;    
-    virtual void appendQuestIcon(const Knight *, std::vector<StatusDisplay::QuestIconInfo> &icons) const { }
-    virtual std::string getQuestMessage() const { return "Destroy Book with Wand"; }
+    virtual StatusDisplay::QuestIcon getQuestIcon(const Knight &kt, QuestCircumstance c) const;
 private:
     vector<const ItemType*> book;
     vector<const ItemType*> wand;

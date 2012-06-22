@@ -336,6 +336,16 @@ void Mediator::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &po
     home_manager.secureHome(pl, dmap, pos, facing, wall);
 }
 
+//
+// updateQuestIcons
+//
+
+void Mediator::updateQuestIcons(const Player &player, QuestCircumstance c)
+{
+    std::vector<StatusDisplay::QuestIcon> icons;
+    player.getQuestIcons(icons, c);
+    getCallbacks().getStatusDisplay(player.getPlayerNum()).setQuestIcons(icons);
+}
 
 //
 // ending the game
@@ -457,7 +467,17 @@ void Mediator::eliminatePlayer(Player &pl)
     const bool game_over = !two_teams_found;
     
     if (game_over) {
-        winGame(**remaining_players.begin());        
+
+        // all living players have now completed the "destroy enemy
+        // knights" objective, so send out a quest icon update to them
+        // all.
+        for (std::set<const Player*>::const_iterator it = remaining_players.begin(); it != remaining_players.end(); ++it) {
+            updateQuestIcons(**it, WIN_FROM_KILL_KNIGHTS);
+        }
+
+        // and now end the game
+        winGame(**remaining_players.begin());
+        
     } else {
         // this puts him into observer mode, but he is still in the game (as an observer).
         Mediator::getCallbacks().onElimination(pl.getPlayerNum());

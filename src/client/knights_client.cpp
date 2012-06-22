@@ -711,30 +711,6 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
-        case SERVER_SET_QUEST_MESSAGE:
-            {
-                const std::string msg = buf.readString();
-                if (status_display) status_display->setQuestMessage(msg);
-            }
-            break;
-
-        case SERVER_SET_QUEST_ICONS:
-            {
-                int num_icons = buf.readUbyte();
-                std::vector<StatusDisplay::QuestIconInfo> icons;
-                icons.reserve(num_icons);
-                for (int i = 0; i < num_icons; ++i) {
-                    StatusDisplay::QuestIconInfo qi;
-                    qi.num_held = buf.readUbyte();
-                    qi.num_required = buf.readUbyte();
-                    qi.gfx_missing = pimpl->readGraphic(buf);
-                    qi.gfx_held = pimpl->readGraphic(buf);
-                    icons.push_back(qi);
-                }
-                if (status_display) status_display->setQuestIcons(icons);
-            }
-            break;
-            
         case SERVER_SWITCH_PLAYER:
             {
                 const int new_player = buf.readUbyte();
@@ -759,6 +735,44 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             {
                 const std::string player = buf.readString();
                 if (client_cb) client_cb->playerIsReadyToEnd(player);
+            }
+            break;
+
+        case SERVER_EXTENDED_MESSAGE:
+            {
+                int ext_code = buf.readVarInt();
+                int payload_length = buf.readUshort();
+
+                size_t pos_before_payload = buf.getPos();
+
+                switch (ext_code) {
+
+                case SERVER_EXT_SET_QUEST_ICONS:
+                    {
+                        int num_icons = buf.readUbyte();
+                        std::vector<StatusDisplay::QuestIcon> icons;
+                        icons.reserve(num_icons);
+                        for (int i = 0; i < num_icons; ++i) {
+                            StatusDisplay::QuestIcon qi;
+                            qi.msg = buf.readString();
+                            qi.complete = buf.readUbyte() != 0;
+                            icons.push_back(qi);
+                        }
+                        if (status_display) status_display->setQuestIcons(icons);
+                    }
+                    break;
+                    
+                default:
+                    // unknown message, just skip the payload.
+                    for (int i = 0; i < payload_length; ++i) buf.readUbyte();
+                    break;
+                }
+
+                // check that we read the entire payload
+                size_t pos_after_payload = buf.getPos();
+                if (pos_after_payload - pos_before_payload != size_t(payload_length)) {
+                    throw ProtocolError("Bad message from server (payload length was incorrect)");
+                }
             }
             break;
             

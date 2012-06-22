@@ -26,6 +26,7 @@
 
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
+#include "quest_circumstance.hpp"
 #include "status_display.hpp"
 
 #include "boost/weak_ptr.hpp"
@@ -105,8 +106,7 @@ public:
     RoomMap * getRoomMap() const; // convenience
     bool checkQuests(vector<string> &hints_out) const;
     bool isItemInteresting(const ItemType &itm) const; // check item against quest rqmts.
-    std::string getQuestMessage() const;
-    void getQuestIcons(std::vector<StatusDisplay::QuestIconInfo> &icons_out) const;
+    void getQuestIcons(std::vector<StatusDisplay::QuestIcon> &icons_out, QuestCircumstance c) const;
     shared_ptr<const ColourChange> getSecuredCC() const { return secured_home_cc; }
 
     // get player num

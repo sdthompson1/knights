@@ -596,6 +596,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\quest_circumstance.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\room_map.hpp"
 				>
 			</File>

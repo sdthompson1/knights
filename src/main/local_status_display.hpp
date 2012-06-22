@@ -65,8 +65,7 @@ public:
     void clearMenuHighlight() { menu_highlight = false; }
 
     // get quest info
-    const std::string & getQuestMsg() const { return quest_msg; }
-    const std::vector<StatusDisplay::QuestIconInfo> & getQuestIcons() const { return quest_icons; }
+    const std::vector<StatusDisplay::QuestIcon> & getQuestIcons() const { return quest_icons; }
     bool needGuiUpdate() { const bool result = need_gui_update; need_gui_update = false; return result; }
     
     //
@@ -78,8 +77,7 @@ public:
     void addSkull();
     void setHealth(int h);
     void setPotionMagic(PotionMagic pm, bool poison_immunity);
-    void setQuestMessage(const std::string &msg) { quest_msg = msg; }
-    void setQuestIcons(const std::vector<StatusDisplay::QuestIconInfo> &);
+    void setQuestIcons(const std::vector<StatusDisplay::QuestIcon> &);
     
 private:
     const ConfigMap &config_map;
@@ -119,8 +117,7 @@ private:
     MapDirection menu_highlight_dir;
 
     // quest status info from server
-    std::string quest_msg;
-    std::vector<StatusDisplay::QuestIconInfo> quest_icons;
+    std::vector<StatusDisplay::QuestIcon> quest_icons;
     bool need_gui_update;
 };
 

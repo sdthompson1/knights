@@ -24,6 +24,7 @@
 #ifndef QUEST_HPP
 #define QUEST_HPP
 
+#include "quest_circumstance.hpp"
 #include "status_display.hpp"
 
 #include <map>
@@ -40,7 +41,7 @@ public:
 
     // Check is called in two circumstances:
     // (i)  The knight has just whacked the special pentagram square. (See A_CheckQuest.)
-    // (ii) The knight has just approached his own exit point. (See A_HomeStart.)
+    // (ii) The knight has just approached his own exit point. (See Home::onApproach.)
     virtual bool check(Knight &kt) const = 0;
 
     // getHint() is called when we approach the exit point but check() returns false.
@@ -57,13 +58,8 @@ public:
     // of the existing number in the map and the number required for this quest.
     virtual void getRequiredItems(std::map<const ItemType *, int> &required_items) const = 0;
     
-    // This appends a QuestIconInfo for this quest (if applicable).
-    // The num_held will be set to zero if a Knight is not supplied.
-    virtual void appendQuestIcon(const Knight *kt, std::vector<StatusDisplay::QuestIconInfo> &icons) const = 0;
-
-    // returns msg describing this quest, or blank
-    // currently only used for "Destroy Book with Wand"
-    virtual std::string getQuestMessage() const { return ""; }
+    // Get the QuestIcon (i.e. "quest requirements" display) for this quest
+    virtual StatusDisplay::QuestIcon getQuestIcon(const Knight &kt, QuestCircumstance c) const = 0;
 };
 
 #endif

@@ -193,6 +193,7 @@ private:
     void setMenuControl(int plyr, MapDirection d, const UserControl *ctrl, const UserControl *prev);
     void setupGui(int chat_area_x, int chat_area_y, int chat_area_width, int chat_area_height,
                   int plyr_list_x, int plyr_list_y, int plyr_list_width, int plyr_list_height,
+                  int quest_rqmts_x, int quest_rqmts_y, int quest_rqmts_width, int quest_rqmts_height,
                   GfxManager &gm);
     void setupFonts(GfxManager &gm);
     std::string replaceSpecialChars(std::string msg) const;
@@ -306,6 +307,10 @@ private:
     boost::scoped_ptr<gcn::Label> tutorial_label;
     boost::scoped_ptr<gcn::Button> tutorial_left, tutorial_right;
     boost::scoped_ptr<gcn::Label> time_limit_label;
+
+    boost::scoped_ptr<TitleBlock> quest_titleblock;
+    boost::scoped_ptr<gcn::ListBox> quest_listbox;
+    boost::scoped_ptr<gcn::ScrollArea> quest_scrollarea;
 
     boost::shared_ptr<Coercri::Font> my_font, txt_font;
 

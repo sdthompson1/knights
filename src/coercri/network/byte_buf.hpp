@@ -67,7 +67,8 @@ namespace Coercri {
         InputByteBuf(const std::vector<ubyte> &buf_) : buf(buf_), iter(buf_.begin()) { }
 
         bool eof() const { return iter == buf.end(); }
-
+        size_t getPos() const { return iter - buf.begin(); }
+        
         int readUbyte();
         int readByte();
         int readUshort();
@@ -75,7 +76,7 @@ namespace Coercri {
         int readVarInt();  // variable length int (1,2,3 or 4 bytes)
         void readNibbles(int &x, int &y);   // two numbers in range [0,15], encoded in one byte
         std::string readString();  // encoded as length (as VarInt) + data.
-
+        
     private:
         const std::vector<ubyte> &buf;
         std::vector<ubyte>::const_iterator iter;
@@ -94,6 +95,10 @@ namespace Coercri {
         void writeVarInt(int x);
         void writeNibbles(int x, int y);
         void writeString(const std::string &x);
+
+        void writePayloadSize(size_t &pos);  // writes "0" as a ushort; memorizes buffer position
+        void backpatchPayloadSize(size_t pos);  // backpatches the "0" with the no of bytes written since then
+                                                // (excluding the two bytes for the payload-size)        
 
     private:
         std::vector<ubyte> &buf;
