@@ -110,6 +110,8 @@ public:
     //
     virtual void setItemInHand(const ItemType *i);
     bool canDropHeld() const { return getItemInHand() && getItemInHand() != default_item; }
+
+    virtual void removeItem(const ItemType &itype, int number); // removes from either item-in-hand or backpack    
     
     int getBackpackCount() const { return backpack.size(); }   // get no of itemtypes in backpack
     const ItemType & getBackpackItem(int idx) const { return *backpack[idx].first; }   // get itemtype

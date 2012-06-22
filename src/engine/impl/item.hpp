@@ -104,10 +104,14 @@ bool CanDropItem(const ItemType &drop_item, DungeonMap &dmap, const MapCoord &mc
 
 // DropItem: adds the given item to the map at the given square or one
 // of the four surrounding squares. If "allow_nonlocal" is true then
-// additional nearby squares will be considered as well. If "actor" is
-// non-null then the "onDrop" event is run.
+// additional nearby squares will be considered as well.
 
-// Returns true if the item was added to the map.
+// If "actor" is non-null, then the appropriate no. of items are
+// removed from the creature's inventory, and after that, "onDrop"
+// event(s) is/are run (one for each drop-square).
+
+// Returns true if the item was added to the map. (In this case
+// "drop_item" is unchanged.)
 
 // Returns false if the item was not added to the map, but instead we
 // decreased the number of the item, and increased the number of some

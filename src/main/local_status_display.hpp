@@ -66,7 +66,7 @@ public:
 
     // get quest info
     const std::vector<StatusDisplay::QuestIcon> & getQuestIcons() const { return quest_icons; }
-    bool needGuiUpdate() { const bool result = need_gui_update; need_gui_update = false; return result; }
+    bool needQuestIconUpdate() { const bool result = need_gui_update; need_gui_update = false; return result; }
     
     //
     // functions from StatusDisplay

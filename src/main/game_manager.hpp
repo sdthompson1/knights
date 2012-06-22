@@ -159,6 +159,7 @@ public:
     NameList & getGamePlayersList() const;    // names of players in the current game
     ChatList & getChatList() const;
     ChatList & getIngamePlayerList() const;
+    ChatList & getQuestRequirementsList() const;
     Coercri::Color getAvailHouseColour(int) const;  // translate house-colour-code into RGB colour.
     int getNumAvailHouseColours() const;
     bool getMyObsFlag() const;

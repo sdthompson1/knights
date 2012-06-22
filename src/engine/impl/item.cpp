@@ -28,6 +28,7 @@
 
 #include "misc.hpp"
 
+#include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "item.hpp"
 #include "mediator.hpp"
@@ -165,6 +166,7 @@ bool DropItem(shared_ptr<Item> drop_item, DungeonMap &dmap, const MapCoord &mc,
         } else if (curr_item) {
             // Found an existing stack
             const Graphic * old_graphic = curr_item->getGraphic();
+            const int drop_item_orig_num = drop_item->getNumber();
             int new_number = curr_item->getNumber() + drop_item->getNumber();
             int max_stack = drop_item->getType().getMaxStack();
             bool drop_all;
@@ -182,10 +184,19 @@ bool DropItem(shared_ptr<Item> drop_item, DungeonMap &dmap, const MapCoord &mc,
             if (curr_item->getGraphic() != old_graphic) {
                 mediator.onChangeItemGraphic(dmap, dest, *curr_item);
             }
+
             if (actor) {
+                const int num_dropped = drop_item_orig_num - drop_item->getNumber();
+            
+                // remove the item(s) from inventory
+                if (num_dropped > 0) {
+                    actor->removeItem(drop_item->getType(), num_dropped);
+                }
+                
                 // do the "onDrop" event
                 curr_item->getType().onDrop(dmap, dest, actor);
             }
+            
             if (drop_all) {
                 if (drop_mc) *drop_mc = dest;
                 return false;
@@ -195,10 +206,15 @@ bool DropItem(shared_ptr<Item> drop_item, DungeonMap &dmap, const MapCoord &mc,
         } else {
             // The square is empty -- we can just drop outright.
             dmap.addItem(dest, drop_item);
+            
             if (actor) {
+                // remove from inventory
+                actor->removeItem(drop_item->getType(), drop_item->getNumber());
+                
                 // do the "onDrop" event
                 drop_item->getType().onDrop(dmap, dest, actor);
             }
+            
             if (drop_mc) *drop_mc = dest;
             return true;
         }

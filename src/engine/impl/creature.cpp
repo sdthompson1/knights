@@ -259,10 +259,13 @@ void ThrowingTask::execute(TaskManager &tm)
     // get rid of the item - if throw was unsuccessful then drop at feet
     // (Note: we don't check if the drop succeeded or not. If there is nowhere
     // to drop the item then that's just tough - the item is lost.)
-    me->throwAwayItem(&itype);
     if (!success) {
+        // call DropItem, this will remove it from inventory
         shared_ptr<Item> item(new Item(itype));
         DropItem(item, *dmap, me->getPos(), true, false, me->getFacing(), me);
+    } else {
+        // remove from inventory manually
+        me->throwAwayItem(&itype);
     }
 }
 
@@ -281,6 +284,12 @@ Creature::Creature(int h, MapHeight ht, const ItemType * i, const Anim * a, int 
     if (i) setOverlay(i->getOverlay());
 }
 
+void Creature::removeItem(const ItemType &itype, int number)
+{
+    if (item_in_hand == &itype && number > 0) {
+        doSetItemInHand(0);
+    }
+}
 
 bool Creature::isStunned() const
 {

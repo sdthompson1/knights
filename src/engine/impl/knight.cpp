@@ -325,6 +325,18 @@ void Knight::setItemInHand(const ItemType *i)
     }
 }
 
+void Knight::removeItem(const ItemType &itype, int number)
+{
+    if (getItemInHand() == &itype && number > 0) {
+        doSetItemInHand(default_item);
+        --number;
+    }
+
+    if (number > 0) {
+        rmFromBackpack(itype, number);
+    }
+}
+
 int Knight::backpackFind(const ItemType &itype) const
 {
     for (int i=0; i<backpack.size(); ++i) {
@@ -445,7 +457,7 @@ void Knight::dropAllItems(bool move_back /* = false */)
             // could not drop it into the map. so add to "displaced items" (for later respawning)
             // and also manually run the on_drop event.
             getMap()->addDisplacedItem(item);
-            item->getType().onDrop(*getMap(), MapCoord(), self);            
+            item->getType().onDrop(*getMap(), MapCoord(), self);
         }
 
         setItemInHand(0);

@@ -139,6 +139,7 @@ void InGameScreen::setupDisplay()
                                    knights_app.getTimer(),
                                    knights_app.getGameManager().getChatList(),
                                    knights_app.getGameManager().getIngamePlayerList(),
+                                   knights_app.getGameManager().getQuestRequirementsList(),
                                    *knights_client,
                                    *container,
                                    Coercri::RawKeyName(options.ctrls[2][0]), Coercri::RawKeyName(options.ctrls[2][1]),

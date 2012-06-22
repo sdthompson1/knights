@@ -486,15 +486,7 @@ void A_Drop::execute(const ActionData &ad) const
                                  drop_ahead, actor->getFacing(),
                                  actor);
 
-    if (added_to_map) {
-        actor->rmFromBackpack(this->it, no_to_drop);
-    } else {
-        int no_dropped = no_to_drop - item->getNumber();
-        if (no_dropped > 0) {
-            actor->rmFromBackpack(this->it, no_dropped);
-            added_to_map = true;
-        }
-    }
+    if (item->getNumber() < no_to_drop) added_to_map = true;
 
     if (added_to_map) {
         // drop was successful
@@ -557,7 +549,6 @@ void A_DropHeld::execute(const ActionData &ad) const
                                  drop_ahead, actor->getFacing(),
                                  actor);
     if (added_to_map) {
-        actor->setItemInHand(0);
         DoStun(actor, gvt);
     }
 }

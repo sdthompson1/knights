@@ -367,6 +367,7 @@ public:
           is_split_screen(false), is_lan_game(false),
           chat_list(ka.getConfigMap().getInt("max_chat_lines"), true, true),   // want formatting and timestamps
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
+          quest_rqmts_list(9999, false, false),    // ditto
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
           my_player_name(plyr_nm), doing_menu_widget_update(false), deathmatch_mode(false)
     { }
@@ -407,6 +408,7 @@ public:
 
     // player list
     ChatList ingame_player_list;
+    ChatList quest_rqmts_list;
     std::vector<ClientPlayerInfo> saved_client_player_info;
     std::set<std::string> ready_to_end; // names of players who have clicked mouse at end of game.
 
@@ -712,6 +714,11 @@ ChatList & GameManager::getChatList() const
 ChatList & GameManager::getIngamePlayerList() const
 {
     return pimpl->ingame_player_list;
+}
+
+ChatList & GameManager::getQuestRequirementsList() const
+{
+    return pimpl->quest_rqmts_list;
 }
 
 bool GameManager::setSavedChat(const std::string &s)
@@ -1051,6 +1058,9 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     pimpl->ingame_player_list.clear();
     pimpl->saved_client_player_info.clear();
     pimpl->ready_to_end.clear();
+
+    // clear quest requirements
+    pimpl->quest_rqmts_list.clear();
     
     pimpl->gui_invalid = true;
 }

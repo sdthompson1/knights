@@ -80,6 +80,7 @@ public:
                  Coercri::Timer &timer,
                  ChatList &chat_list_,
                  ChatList &ingame_player_list_,
+                 ChatList &quest_rqmts_list_,
                  KnightsClient &knights_client_,
                  gcn::Container &container_,
                  const std::string &up_key,
@@ -287,6 +288,7 @@ private:
     // gui stuff
     ChatList &chat_list;
     ChatList &ingame_player_list;
+    ChatList &quest_rqmts_list;
     KnightsClient &knights_client;
     gcn::Container &container;
     bool chat_updated;

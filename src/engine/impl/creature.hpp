@@ -62,6 +62,10 @@ public:
     virtual void setItemInHand(const ItemType * i)  // pass 0 to mean 'no item in hand'
         { doSetItemInHand(i); }
 
+    // remove given no. of a given itemtype from inventory.
+    // for creatures, this removes from item-in-hand (*if* the given itemtype is currently held).
+    // for knights, this is overridden to remove items from the backpack as well.
+    virtual void removeItem(const ItemType &itype, int number);
 
 
     //

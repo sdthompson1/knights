@@ -245,6 +245,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            Coercri::Timer & timer_,
                            ChatList &chat_list_,
                            ChatList &ingame_player_list_,
+                           ChatList &quest_rqmts_list_,
                            KnightsClient &knights_client_,
                            gcn::Container &container_,
                            const std::string &u_key, const std::string &d_key, const std::string &l_key,
@@ -292,6 +293,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
 
       chat_list(chat_list_),
       ingame_player_list(ingame_player_list_),
+      quest_rqmts_list(quest_rqmts_list_),
       knights_client(knights_client_),
       container(container_),
       chat_updated(false),
@@ -698,7 +700,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         quest_listbox->setSelectionColor(gcn::Color(0,0,0));
         quest_listbox->setFont(gui_font.get());
         quest_listbox->setForegroundColor(gcn::Color(255,255,255));
-        quest_listbox->setListModel(0);   // TODO: need a "quest list model"
+        quest_listbox->setListModel(&quest_rqmts_list);
         quest_listbox->setWidth(quest_rqmts_width - DEFAULT_SCROLLBAR_WIDTH);
 
         quest_scrollarea.reset(new gcn::ScrollArea);
@@ -1274,6 +1276,16 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             gcn::Rectangle rect(0, chat_listbox->getHeight() - chat_listbox->getFont()->getHeight(),
                                 1, chat_listbox->getFont()->getHeight());
             chat_scrollarea->showWidgetPart(chat_listbox.get(), rect);
+        }
+    }
+
+    if (!status_display.empty() && status_display[0]->needQuestIconUpdate()) {
+        quest_rqmts_list.clear();
+        for (std::vector<StatusDisplay::QuestIcon>::const_iterator it = status_display[0]->getQuestIcons().begin();
+        it != status_display[0]->getQuestIcons().end(); ++it) {
+            std::string msg = it->msg;
+            if (it->complete) msg = "[DONE] " + msg;  // TODO: make a tick icon or something
+            quest_rqmts_list.add(msg);
         }
     }
 
