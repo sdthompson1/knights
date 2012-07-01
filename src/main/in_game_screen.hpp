@@ -72,6 +72,7 @@ public:
 
 private:
     void setupDisplay();
+    void checkChatFocus();
     
 private:
     bool single_player;
@@ -105,6 +106,12 @@ private:
     bool mleft, mright;
 
     unsigned int focus_timer;
+
+    // chat keys
+    Coercri::RawKey global_chat_key, team_chat_key;
+    bool waiting_to_focus_chat;
+    bool waiting_to_chat_all;
+    std::string stored_chat_field_contents;
 };
 
 #endif

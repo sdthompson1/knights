@@ -73,7 +73,9 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
       init_player_names(names),
       curr_obs_player(0),
       mx(0), my(0), mleft(false), mright(false),
-      focus_timer(0)
+      focus_timer(0),
+      waiting_to_focus_chat(false),
+      waiting_to_chat_all(false)
 {
 }
 
@@ -119,6 +121,11 @@ void InGameScreen::setupDisplay()
     
     const Options & options = knights_app.getOptions();
     
+    const std::string chat_keys = 
+        Coercri::RawKeyName(options.global_chat_key)
+        + " or " +
+        Coercri::RawKeyName(options.team_chat_key);
+
     display.reset(new LocalDisplay(knights_app.getConfigMap(),
                                    client_config->approach_offset,
                                    knights_app.getWinnerImage(),
@@ -147,15 +154,37 @@ void InGameScreen::setupDisplay()
                                    Coercri::RawKeyName(options.ctrls[2][4]), Coercri::RawKeyName(options.ctrls[2][5]),
                                    single_player,
                                    tutorial_mode,
-                                   knights_app.getOptions().action_bar_tool_tips));
+                                   knights_app.getOptions().action_bar_tool_tips,
+                                   chat_keys));
     knights_client->setKnightsCallbacks(display.get());
 
     init_nplayers = 0;
     init_player_names.clear();
+
+    global_chat_key = options.global_chat_key;
+    team_chat_key = options.team_chat_key;
+}
+
+void InGameScreen::checkChatFocus()
+{
+    if (waiting_to_focus_chat && display) {
+        waiting_to_focus_chat = false;
+
+        // The purpose of the following "if" is to prevent typing a
+        // backtick character from deactivating the chat field (but we
+        // do want a TAB to deactivate the chat field).
+        if (display->getChatFieldContents() == stored_chat_field_contents) {
+            display->toggleChatMode(waiting_to_chat_all);
+        }
+
+        stored_chat_field_contents = std::string();
+    }
 }
 
 void InGameScreen::draw(Coercri::GfxContext &gc)
 {
+    checkChatFocus();
+    
     const std::vector<std::string> & player_names = display->getPlayerNamesForObsMode();
     const int nplayers = display->getNPlayers();
     
@@ -303,6 +332,8 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
     // Keys only work when in game
     if (prevent_drawing) return;
 
+    checkChatFocus();
+
     const std::vector<std::string> & player_names = display->getPlayerNamesForObsMode();
     const int nplayers = display->getNPlayers();
     
@@ -310,11 +341,16 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
     const bool escape_pressed = pressed && rk == Coercri::RK_ESCAPE;
     const bool space_pressed = pressed && rk == Coercri::RK_SPACE;
     const bool q_pressed = pressed && rk == Coercri::RK_Q;
-    const bool tab_pressed = pressed && rk == Coercri::RK_TAB;
+    const bool tab_pressed = pressed && rk == global_chat_key;
+    const bool backtick_pressed = pressed && rk == team_chat_key;
 
-    // TAB => toggle chat mode
-    if (tab_pressed) {
-        display->toggleChatMode();
+    // TAB or ` => toggle chat mode
+    if (tab_pressed || backtick_pressed) {
+        // Do not call toggleChatMode immediately; instead, we wait until the next call to onRawKey
+        // or to draw. This ensures that the ` character does not get inserted into the chat box.
+        waiting_to_focus_chat = true;
+        stored_chat_field_contents = display->getChatFieldContents();
+        waiting_to_chat_all = tab_pressed;
     }
     
     // ESC if tutorial active => Cancel all tutorial windows, and unpause
@@ -328,8 +364,14 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
         display->clearTutorialWindow();
         if (!display->tutorialActive()) knights_client->setPauseMode(pause_mode);
     }
+
+    // ESC in game, and chat active => exit chat
+    if (escape_pressed && display->chatFieldSelected()) {
+        display->toggleChatMode(true);
+        return;
+    }
     
-    // ESC in game => enter/exit "pause mode".
+    // ESC in game, otherwise => enter/exit "pause mode".
     // (Note this only actually pauses the gameplay in split screen mode...)
     if (escape_pressed) {
         pause_mode = !pause_mode;

@@ -91,7 +91,8 @@ public:
                  const std::string &suicide_key,
                  bool sgl_plyr,
                  bool tutorial,
-                 bool tool_tips);
+                 bool tool_tips,
+                 const std::string &chat_keys);
     ~LocalDisplay();
 
     //
@@ -161,7 +162,7 @@ public:
 
     std::string getChatFieldContents() const;
     bool chatFieldSelected() const;
-    void toggleChatMode();
+    void toggleChatMode(bool global);
     
     
     //
@@ -202,6 +203,8 @@ private:
     static void setWidgetEnabled(gcn::Widget &, bool);
     void setTimeLimitCaption();
     bool mouseInGuiControl(int mx, int my) const;
+    void activateChatField();
+    void deactivateChatField();
 
 private:
     const ConfigMap &config_map;
@@ -336,6 +339,7 @@ private:
 
     bool action_bar_tool_tips;
     bool deathmatch_mode;
+    std::string chat_msg;
 };
 
 #endif

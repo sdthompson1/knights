@@ -52,28 +52,12 @@
 #include <limits>
 #include <sstream>
 
-namespace {
+namespace {    
     // a version of ListBox that doesn't react to mouse clicks on it.
     class ListBoxNoMouse : public gcn::ListBox {
     public:
         virtual void mousePressed(gcn::MouseEvent &) { }
     };
-
-    const char * CHAT_MSG = "<Click here or press TAB to chat>";
-    
-    void ActivateChatField(gcn::TextField &f)
-    {
-        if (f.getText() == CHAT_MSG) {
-            f.setText("");
-        }
-    }
-
-    void DeactivateChatField(gcn::TextField &f)
-    {
-        if (f.getText().empty()) {
-            f.setText(CHAT_MSG);
-        }
-    }
 
     // draw "key" lines in the ESC menu.
     void DrawKeyLine(int xc, int y, const Coercri::Color &col1, const Coercri::Color &col2,
@@ -252,7 +236,8 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            const std::string &r_key, const std::string &a_key, const std::string &s_key,
                            bool sgl_plyr,
                            bool tut,
-                           bool tool_tips)
+                           bool tool_tips,
+                           const std::string &chat_keys)
     : config_map(cfg),
       approach_offset(aofs),
       potion_renderer(potion_rend),
@@ -311,7 +296,9 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
       
       speech_bubble(speech_bubble_),
       action_bar_tool_tips(tool_tips),
-      deathmatch_mode(dm_mode)
+      deathmatch_mode(dm_mode),
+
+      chat_msg("<Click here or press " + chat_keys + " to chat>")
 {
     for (int i = 0; i < 2; ++i) {
         attack_mode[i] = false;
@@ -501,11 +488,11 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         const int chat_y2 = chat_y + std::max(0, (send_button->getHeight() - chat_field->getHeight())/2);
         container.add(chat_field.get(), chat_area_x, chat_y2);
         if (chat_should_be_focused) {
-            ActivateChatField(*chat_field);
+            activateChatField();
             chat_field->requestFocus();
         } else {
             container.requestFocus();
-            DeactivateChatField(*chat_field);
+            deactivateChatField();
         }
 
         y2 = chat_y - 8;
@@ -724,11 +711,11 @@ void LocalDisplay::action(const gcn::ActionEvent &event)
             knights_client.sendChatMessage(msg);
             chat_field->setText("");
             container.requestFocus();
-            DeactivateChatField(*chat_field);
+            deactivateChatField();
         }
     } else if (event.getSource() == clear_button.get()) {
         chat_field->setText("");
-        if (!chat_field->isFocused()) DeactivateChatField(*chat_field);
+        if (!chat_field->isFocused()) deactivateChatField();
     } else if (event.getSource() == tutorial_left.get()) {
         if (tutorial_selected_window > tutorial_windows.size()) tutorial_selected_window = tutorial_windows.size();
         --tutorial_selected_window;
@@ -843,14 +830,14 @@ void LocalDisplay::setupFonts(GfxManager &gm)
 void LocalDisplay::focusGained(const gcn::Event &event)
 {
     if (event.getSource() == chat_field.get()) {
-        ActivateChatField(*chat_field);
+        activateChatField();
     }
 }
 
 void LocalDisplay::focusLost(const gcn::Event &event)
 {
     if (event.getSource() == chat_field.get()) {
-        DeactivateChatField(*chat_field);
+        deactivateChatField();
     }
 }
 
@@ -1456,7 +1443,7 @@ const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mle
 
     // Right mouse button: Attack.
     if (mright && !mleft) {
-        if (chat_field) DeactivateChatField(*chat_field);
+        if (chat_field) deactivateChatField();
         return standard_controls[SC_ATTACK_NO_DIR];
     }
     
@@ -1835,7 +1822,7 @@ void LocalDisplay::setWidgetEnabled(gcn::Widget &widget, bool enabled)
 
 std::string LocalDisplay::getChatFieldContents() const
 {
-    if (chat_field && chat_field->getText() != CHAT_MSG) return chat_field->getText();
+    if (chat_field && chat_field->getText() != chat_msg) return chat_field->getText();
     else return std::string();
 }
 
@@ -1844,13 +1831,39 @@ bool LocalDisplay::chatFieldSelected() const
     return chat_field && chat_field->isFocused();
 }
 
-void LocalDisplay::toggleChatMode()
+void LocalDisplay::toggleChatMode(bool global)
 {
     if (chat_field) {
         if (chat_field->isFocused()) {
             container.requestFocus();
         } else {
             chat_field->requestFocus();
+
+            // if chat was entered by pressing BACKQUOTE, and the chat
+            // field is empty, then insert "/t " at the beginning.
+            // Otherwise, leave it alone (let the player sort it out).
+
+            if (!global && chat_field->getText().empty()) {
+                chat_field->setText("/t ");
+                chat_field->setCaretPosition(3);
+            }
         }
+    }
+}
+
+void LocalDisplay::activateChatField()
+{
+    if (chat_field->getText() == chat_msg) {
+        chat_field->setText("");
+    }
+}
+
+void LocalDisplay::deactivateChatField()
+{
+    // if they just pressed TAB or BACKQUOTE
+    // (i.e. if chat field is "" or "/t ")
+    // then clear the chat field, otherwise leave it be
+    if (chat_field->getText().empty() || chat_field->getText() == "/t ") {
+        chat_field->setText(chat_msg);
     }
 }
