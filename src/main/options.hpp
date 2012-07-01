@@ -61,6 +61,9 @@ public:
     // added in version 4 of options file (version 016 of Knights)
     bool new_control_system;   // whether to use action bar
     bool action_bar_tool_tips;
+
+    // added in version 5 of options file (version 020 of Knights)
+    Coercri::RawKey global_chat_key, team_chat_key;
 };
 
 Options LoadOptions(std::istream &);

@@ -42,6 +42,7 @@
 
 namespace {
     const char * control_names[] = { "UP", "DOWN", "LEFT", "RIGHT", "ACTION", "SUICIDE" };
+    const char * chat_names[] = { "GLOBAL CHAT", "TEAM CHAT" };
 
     class ScalingListModel : public gcn::ListModel {
     public:
@@ -244,7 +245,7 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     tooltip_checkbox->addActionListener(this);
     container->add(tooltip_checkbox.get(), pad, y - 2 * (control_label[0][1]->getHeight() + pad_small) + 25);
     
-    y += 40;
+    y += 25;
 
     bad_key_area.reset(new GuiTextWrap);
     bad_key_area->setWidth(overall_width - 2*pad);
@@ -328,7 +329,7 @@ void OptionsScreenImpl::action(const gcn::ActionEvent &event)
     if (event.getSource() == change_button[0].get()) {
         setupChangeControls(show_controls_dropdown->getSelected() ? 0 : 2);
     } else if (event.getSource() == change_button[1].get()) {
-        setupChangeControls(1);
+        setupChangeControls(show_controls_dropdown->getSelected() ? 1 : 3);
     } else if (event.getSource() == scaling_dropdown.get()) {
         current_opts.use_scale2x = (scaling_dropdown->getSelected() == 0);
     } else if (event.getSource() == non_integer_checkbox.get()) {
@@ -367,18 +368,25 @@ void OptionsScreenImpl::transferToGui()
     control_system_dropdown->setVisible(!split_screen);
 
     tooltip_checkbox->setSelected(current_opts.action_bar_tool_tips);
-    tooltip_checkbox->setVisible(new_ctrls);
+    //    tooltip_checkbox->setVisible(new_ctrls);
+    tooltip_checkbox->setVisible(false);
 
     if (split_screen) {
         control_system_label->setCaption("Control keys:");
         control_label[0][0]->setCaption("Player 1");
+        control_label[1][0]->setCaption("Player 2");
     } else {
         control_system_label->setCaption("Control system: ");
         control_label[0][0]->setCaption("Control keys:");
+        control_label[1][0]->setCaption("Chat keys:");
     }
     control_system_label->adjustSize();
     control_label[0][0]->adjustSize();
-    
+    control_label[1][0]->adjustSize();
+
+    // i=0: split screen keys, player 1
+    // i=1: split screen keys, player 2
+    // i=2: singleplayer/online keys.
     const int imin = split_screen ? 0 : 2;
     const int imax = split_screen ? 1 : 2;
 
@@ -397,17 +405,43 @@ void OptionsScreenImpl::transferToGui()
             control_setting[which_label][j]->adjustSize();
         }
     }
+
+    // now the chat keys (overrides the above)
+    if (!split_screen) {
+        // global chat key setting
+        control_setting[1][0]->setCaption(Coercri::RawKeyName(current_opts.global_chat_key));
+        if (change_active && change_player == 3 && change_key == 0) {
+            control_setting[1][0]->setCaption("<Press>");
+        }
+        control_setting[1][0]->adjustSize();
+
+        // team chat key setting
+        control_setting[1][1]->setCaption(Coercri::RawKeyName(current_opts.team_chat_key));
+        if (change_active && change_player == 3) {
+            if (change_key == 1) {
+                control_setting[1][1]->setCaption("<Press>");
+            } else {
+                control_setting[1][1]->setCaption("");
+            }
+        }
+        control_setting[1][1]->adjustSize();
+    }
+    
     if (change_active) {
         change_button[0]->setVisible(false);
         change_button[1]->setVisible(false);
         change_label->setVisible(true);
-        change_label->setCaption(std::string("** Please press a key for ") + control_names[change_key] + " **");
+
+        std::string key_name = control_names[change_key];
+        if (!split_screen && change_player == 3) key_name = chat_names[change_key];
+        change_label->setCaption(std::string("** Please press a key for ") + key_name + " **");
         change_label->adjustSize();
+        
         show_controls_dropdown->setEnabled(false);
         control_system_dropdown->setEnabled(false);
     } else {
         change_button[0]->setVisible(true);
-        change_button[1]->setVisible(split_screen);
+        change_button[1]->setVisible(true);
         change_label->setVisible(false);
         show_controls_dropdown->setEnabled(true);
         control_system_dropdown->setEnabled(true);
@@ -418,13 +452,12 @@ void OptionsScreenImpl::transferToGui()
 
     for (int i = 0; i < 2; ++i) {
 
-        control_label[i][0]->setVisible(split_screen || i == 0);
-        
         for (int j = 0; j < 6; ++j) {
-            const bool col_visible = split_screen || i == 0;
-            const bool row_visible = !new_ctrls || j < 4;
-            const bool visible = col_visible && row_visible;
-            
+            bool visible = !new_ctrls || j < 4;
+
+            // special case for non-split-screen: i==1 case is hijacked for the chat keys.
+            if (!split_screen && i==1) visible = j < 2;
+
             control_setting[i][j]->setVisible(visible);
             control_label[i][j+1]->setVisible(visible);
         }
@@ -436,6 +469,17 @@ void OptionsScreenImpl::transferToGui()
 
     // Position the change label to same Y as change button (Trac #120)
     change_label->setY(change_button[0]->getY());
+    
+    // we also need to change the labels for the chat keys if required
+    if (split_screen) {
+        control_label[1][1]->setCaption("Up:");
+        control_label[1][2]->setCaption("Down:");
+    } else {
+        control_label[1][1]->setCaption("Global:");
+        control_label[1][2]->setCaption("Team:");
+    }
+    control_label[1][1]->adjustSize();
+    control_label[1][2]->adjustSize();
 
     const bool show_lower = !change_active || bad_key_msg.empty();
     options_label->setVisible(show_lower);
@@ -473,24 +517,50 @@ void OptionsScreenImpl::onRawKey(bool pressed, Coercri::RawKey rk)
             bool allowed = true;
             
             // Check for duplicate control keys
-            for (int i = 0; i < change_key; ++i) {
-                if (current_opts.ctrls[change_player][i] == rk) {
+            if (change_player == 3) {
+                // special case: changing chat keys
+                if (change_key == 1 && rk == current_opts.global_chat_key) {
                     allowed = false;
-                    bad_key_msg = "Key already in use. Please choose another key.";
+                }
+            } else {
+                // normal case: changing player controls
+                for (int i = 0; i < change_key; ++i) {
+                    if (current_opts.ctrls[change_player][i] == rk) {
+                        allowed = false;
+                        break;
+                    }
                 }
             }
 
+            if (!allowed) {
+                bad_key_msg = "Key already in use. Please choose another key.";
+            }
+
             if (allowed) {
-                current_opts.ctrls[change_player][change_key] = rk;
-                ++change_key;
-
-                const bool four_key_mode = 
-                    current_opts.new_control_system     // Using NEW control system (4-key) for LAN/Internet/SglPlyr
-                    && show_controls_dropdown->getSelected() == 0;  // Currently editing ctrls for LAN/Internet/SglPlyr
-
-                if (change_key >= 6 || (four_key_mode && change_key >= 4)) {
-                    change_active = false;
+                if (change_player == 3) {
+                    // special case: changing chat keys
+                    if (change_key == 0) {
+                        current_opts.global_chat_key = rk;
+                        change_key = 1;
+                    } else {
+                        current_opts.team_chat_key = rk;
+                        change_active = false;
+                    }
+                } else {
+                    // normal case: changing player controls
+                    
+                    current_opts.ctrls[change_player][change_key] = rk;
+                    ++change_key;
+                    
+                    const bool four_key_mode = 
+                        current_opts.new_control_system     // Using NEW control system (4-key) for LAN/Internet/SglPlyr
+                        && show_controls_dropdown->getSelected() == 0;  // Currently editing ctrls for LAN/Internet/SglPlyr
+                    
+                    if (change_key >= 6 || (four_key_mode && change_key >= 4)) {
+                        change_active = false;
+                    }
                 }
+
                 bad_key_msg = "";
             }
         }

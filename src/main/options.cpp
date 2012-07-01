@@ -64,6 +64,9 @@ Options::Options()
     allow_non_integer_scaling = false;
     window_width = 950;
     window_height = 710;
+
+    global_chat_key = Coercri::RK_TAB;
+    team_chat_key = Coercri::RK_BACKQUOTE;
 }
 
 Options LoadOptions(std::istream &str)
@@ -74,23 +77,23 @@ Options LoadOptions(std::istream &str)
     char buf[8] = {0};
     str.getline(buf, 6);
 
-    const bool version1 = (std::strcmp(buf, "KOPT1") == 0);
-    const bool version2 = (std::strcmp(buf, "KOPT2") == 0);
-    const bool version3 = (std::strcmp(buf, "KOPT3") == 0);
-    const bool version4 = (std::strcmp(buf, "KOPT4") == 0);
+    if (buf[0] != 'K'
+        || buf[1] != 'O'
+        || buf[2] != 'P'
+        || buf[3] != 'T'
+        || !std::isdigit(buf[4])
+        || buf[5] != '\0') return Options();
 
-    if (!version1 && !version2 && !version3 && !version4) return Options();
+    const int version = buf[4] - '0';
 
-    const bool version2plus = version2 || version3 || version4;
-    const bool version3plus = version3 || version4;
-    const bool version4plus = version4;
-
+    if (version < 1 || version > 5) return Options();
+    
     bool load_ok = false;
 
     // All Versions
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 6; ++j) {
-            if (i<2 || version3plus) {
+            if (i<2 || version >= 3) {
                 // Read from file.
                 int x;
                 str >> x;
@@ -106,13 +109,13 @@ Options LoadOptions(std::istream &str)
     str >> o.fullscreen;
 
     // Version 2+
-    if (version2plus) {
+    if (version >= 2) {
         str >> o.allow_non_integer_scaling;
         str >> o.window_width >> o.window_height;
     }
 
     // Version 4+
-    if (version4plus) {
+    if (version >= 4) {
         str >> o.new_control_system;
         str >> o.action_bar_tool_tips;
     } else {
@@ -120,11 +123,24 @@ Options LoadOptions(std::istream &str)
         // They can set up the new controls through the options screen if they wish.
         o.new_control_system = false;
         o.action_bar_tool_tips = true;
-    }    
+    }
+
+    // Version 5+
+    if (version >= 5) {
+        int x;
+        str >> x;
+        o.global_chat_key = Coercri::RawKey(x);
+
+        str >> x;
+        o.team_chat_key = Coercri::RawKey(x);
+    }
+    // (for versions < 5, Options::Options() will have set up default
+    // chat keys, which are fine for us.)
+    
     
     // Version 3+ -- Player Name
     // (Leave this to the end since we want to ignore loading errors)
-    if (version3plus) {
+    if (version >= 3) {
         // Ignore any errors on loading the player name
         // (in particular we want to ignore any EOF error if the player name is blank).
         if (str) load_ok = true;
@@ -147,7 +163,7 @@ Options LoadOptions(std::istream &str)
 
 void SaveOptions(const Options &o, std::ostream &str)
 {
-    str << "KOPT4\n";
+    str << "KOPT5\n";
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 6; ++j) {
             str << o.ctrls[i][j] << " ";
@@ -159,5 +175,6 @@ void SaveOptions(const Options &o, std::ostream &str)
     str << o.allow_non_integer_scaling << "\n";
     str << o.window_width << " " << o.window_height << "\n";
     str << o.new_control_system << " " << o.action_bar_tool_tips << "\n";
+    str << o.global_chat_key << " " << o.team_chat_key << "\n";
     str << o.player_name << "\n";
 }
