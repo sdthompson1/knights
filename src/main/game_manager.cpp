@@ -1035,8 +1035,13 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     pimpl->knights_app.requestScreenChange(in_game_screen);
     pimpl->deathmatch_mode = deathmatch_mode;
 
-    // clear chat buffer when game begins
-    pimpl->chat_list.clear();
+    // add separator lines to chat (or clear it, if single player mode)
+    if (pimpl->single_player) {
+        pimpl->chat_list.clear();
+    } else {
+        pimpl->chat_list.add("\n");
+        pimpl->chat_list.add("\n");
+    }
     pimpl->saved_chat.clear();
     
     if (!player_names.empty()) {  // I am an observer
@@ -1048,6 +1053,8 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
         if (player_names.size() > 2) {
             pimpl->chat_list.add("Use left and right arrow keys to switch between players.");
         }
+    } else {
+        pimpl->chat_list.add("Game started.");
     }
 
     // clear ready flags
