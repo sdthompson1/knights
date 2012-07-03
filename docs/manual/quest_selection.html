@@ -31,17 +31,13 @@
 
 <p><img src="images/quest_selection.png" alt="Screenshot"></p>
 
-<p>(Note that for split screen games, a cut-down version of the above
-  screen, without the chat area and player list, is displayed.)</p>
+<p>(Note split screen and single player games use a cut-down version
+  of this screen, without the chat area and player list.)</p>
 
 <p>The main part of the screen, on the left, is taken up with the
- quest settings, which are explained below. The right-hand half of the
- screen is used for chat, and you can also adjust your knight's House
- Colours here.</p>
-
-<p>Once all players in the game click on "Ready to Start", the game
-  will begin. (There must be at least two players present to start a
-  game.)</p>
+ quest settings, which are explained below. The right-hand area is
+ used for chat. At the bottom is a "Ready to Start" button; once all
+ players click this, the game begins.</p>
 
 <p>If you click "Observe" then you will "sit out" of the next game.
   You will be able to watch the game but not take part. To re-join the
@@ -52,12 +48,15 @@
 
 <p>To play one of the pre-defined quests, simply select it from the
   Quest drop-down. A brief description of the mission will appear in
-  the small window at the bottom left. Alternatively, you can set up a
-  custom quest by adjusting the various settings (see below).</p>
+  the small window at the bottom left.</p>
 
-<p>There is also a "Random Quest" button. This will randomize all the
-  settings and is good for times when you can't decide what quest you
-  want to play.</p>
+<p>To set up a custom quest, use the drop-down boxes to enter your
+  desired mission objectives and other settings. (These are
+  described in detail below.)</p>
+
+<p>To allow the game to randomly choose a quest for you, click on
+  "Random Quest". You can then either accept the quest as-is, make
+  some tweaks of your own, or ask for another random quest.</p>
 
 
 <h4>Quest Objectives</h4>
@@ -68,24 +67,31 @@
 <ul>
   <li><b>Mission Type:</b> Can be set to:
     <ul>
-      <li><i>Escape from the Dungeon:</i> Your knight must leave the
+      <li><b>Escape from the Dungeon:</b> Your knight must leave the
         dungeon via the exit point to win.</li>
-      <li><i>Retrieve Book and Escape:</i> Your knight must retrieve
+      <li><b>Retrieve Book and Escape:</b> Your knight must retrieve
         the book and then escape via the exit point.</li>
-      <li><i>Retrieve Wand and Escape:</i> Your knight must retrieve
+      <li><b>Retrieve Wand and Escape:</b> Your knight must retrieve
         the wand and then escape via the exit point.</li>
-      <li><i>Destroy Book with Wand:</i> Your knight must find the
+      <li><b>Destroy Book with Wand:</b> Your knight must find the
         book, place it in the "special" pentagram and then destroy it
         by striking it with the wand. (The special pentagram will be
         surrounded by stairs or other decorations and is easily
         distinguishable from a normal pentagram. See
         also <a href="dungeon_features.html#pentagram">Pentagrams</a>.)</li>
-      <li><i>Duel to the Death:</i> The last knight alive wins! In
+      <li><b>Duel to the Death:</b> The last knight alive wins! In
         order to win this quest you will first need to "secure" all
-        the entry points, so that your enemy cannot re-enter the
-        dungeon when he dies.
+        the entry points, so that your enemies cannot re-enter the
+        dungeon when they die.
         See also <a href="items.html#wand_of_securing">Wand of
         Securing</a>.</li>
+      <li><b>Deathmatch:</b> In this game you score one point for
+        killing an enemy knight, and lose one point when you commit
+        suicide. (Being killed by a monster is "neutral" and does not
+        affect your score.) The winner is the player with the highest
+        score when the time runs out. (If no time limit is set then
+        the game will go on forever, or at least until the players get
+        bored...)</li>
     </ul>
   </li>
   <li><b>Type of Book:</b> If the quest involves a book then you can
@@ -117,15 +123,16 @@
     map of the dungeon.</li>
   <li><b>Entry Point:</b> Controls where each knight enters the
     dungeon. Choose from Total Random, Close to Other (the knights
-    start close together), or Away from Other (the knights start far
-    apart from each other).</li>
-  <li><b>Exit Point:</b> This is the place where the knight has to
-    go to escape from the dungeon. Choose from Same as Entry (leave
-    via your own entry point), Other's Entry (leave via your
-    opponent's entry point), Guarded (the exit point is behind locked
-    doors and guarded by vampire bats), or Total Random (the exit
-    point is in an unknown, random location). Note that Other's Entry
-    is only available in two-player games.</li>
+    start close together), Away from Other (the knights start far
+    apart from each other), or Different every Time (a different
+    random entry point is chosen every time you respawn).</li>
+  <li><b>Exit Point:</b> This is the place where the knight has to go
+    to escape from the dungeon. Choose from Same as Entry (leave via
+    your own entry point), Other's Entry (leave via your opponent's
+    entry point), Guarded (the exit point is behind locked doors and
+    guarded by vampire bats), or Total Random (the exit point is at an
+    unknown, random location). Note that Other's Entry is only
+    available in two-player games.</li>
   <li><b>Starting Gear:</b> Knights may start the game with daggers,
     traps, both, or just their trusty sword.</li>
   <li><b>Number of Keys:</b> Controls the number of keys generated
@@ -154,10 +161,32 @@
 
 <h4>Time Limit</h4>
 
-<p>There is also an option to set a time limit. This is mainly
-  intended for use with the single player game mode, but it can also
-  be used in multiplayer games. If the time limit runs out, then all
-  players lose.</p>
+<p>There is also an option to set a time limit. If the time limit runs
+  out, then all players lose. (The exception is deathmatch games,
+  where the player with the highest score will be declared the winner
+  when time runs out.)</p>
+
+<h4>House Colours and Team Games</h4>
+
+<p>At the right-hand side of the screen, you can set your knight's
+  House Colours. Knights of the same House are deemed to be allies;
+  therefore, depending on the colours chosen, the game will either be
+  "all against all" (if every knight has their own colour) or a "team"
+  game (if some knights share the same colour).</p>
+
+<p>In team games, there are some changes to the normal rules:</p>
+
+<ul>
+  <li>Friendly fire is disabled; your weapon blows will not harm other
+  knights on your own team.</li>
+
+  <li>Only one team member can complete the quest. For example, if the
+  quest is to retrieve 3 gems and the book, then it is not allowed for
+  one knight to take the gems, and another to take the book; there
+  must be one knight who has both the gems and the book. However, as
+  soon as one knight finishes the quest, all knights on that team will
+  be declared "winners".</li>
+</ul>
 
 <div class="footer2">
 <table><tr>
