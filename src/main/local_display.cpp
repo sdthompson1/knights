@@ -1288,6 +1288,11 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             std::string msg = it->msg;
             quest_rqmts_list.add(msg);
         }
+
+        if (deathmatch_mode) {
+            // Deathmatch requirements are hard coded
+            quest_rqmts_list.add("Score points by killing enemy knights");
+        }
     }
 
     // Reset the gui positions/sizes if the viewport has changed.
