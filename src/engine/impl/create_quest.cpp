@@ -47,9 +47,9 @@ namespace {
     }
 }
 
-shared_ptr<Quest> CreateQuest(const string &name, KnightsConfigImpl &kc)
+void CreateQuests(const string &name, KnightsConfigImpl &kc,
+                  std::vector<boost::shared_ptr<Quest> > &output)
 {
-    shared_ptr<Quest> result;
     if (name == "QuestRetrieve") {
         KFile::List lst(*kc.getKFile(), "", 3, 4);
         lst.push(0);
@@ -61,7 +61,9 @@ shared_ptr<Quest> CreateQuest(const string &name, KnightsConfigImpl &kc)
         string sing = kc.getKFile()->popString();
         lst.push(3);
         string pl = kc.getKFile()->popString(sing + "S");
-        result.reset(new QuestRetrieve(n, items, sing, pl));
+
+        shared_ptr<Quest> q(new QuestRetrieve(n, items, sing, pl));
+        output.push_back(q);
 
     } else if (name == "QuestDestroy") {
         vector<const ItemType *> book, wand;
@@ -70,11 +72,41 @@ shared_ptr<Quest> CreateQuest(const string &name, KnightsConfigImpl &kc)
         PopItemList(kc, book);
         lst.push(1);
         PopItemList(kc, wand);
-        result.reset(new QuestDestroy(book, wand));
+
+        shared_ptr<Quest> q(new QuestGeneric("Place the book on the special pentagram", 100));
+        output.push_back(q);
+        q.reset(new QuestDestroy(book, wand));
+        output.push_back(q);
+
+    } else if (name == "QuestSecure") {
+        
+        shared_ptr<Quest> q(new QuestSecure);
+        output.push_back(q);
+        q.reset(new QuestDestroyKnights);
+        output.push_back(q);
 
     } else {
         kc.getKFile()->errExpected("MenuDirective");
     }
+}
 
-    return result;
+void CreateEscapeQuest(ExitType e,
+                       std::vector<boost::shared_ptr<Quest> > &output)
+{
+    boost::shared_ptr<Quest> escape_quest;
+    switch (e) {
+    case E_SELF:
+        escape_quest.reset(new QuestGeneric("Escape via your entry point", 120));
+        break;
+    case E_OTHER:
+        escape_quest.reset(new QuestGeneric("Escape via your opponent's entry point", 120));
+        break;
+    case E_RANDOM:
+        escape_quest.reset(new QuestGeneric("Escape via the random exit point", 120));
+        break;
+    case E_SPECIAL:
+        escape_quest.reset(new QuestGeneric("Escape via the guarded exit", 120));
+        break;
+    }
+    if (escape_quest) output.push_back(escape_quest);
 }

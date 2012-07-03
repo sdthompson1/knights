@@ -247,7 +247,8 @@ MAIN_MENU = [
             "No Wands in the Dungeon"
             ["Wand of Destruction"  DungeonItem(GetMenu("num_wands"), i_wand_of_destruction) ]
             ["Wand of Open Ways"    DungeonItem(GetMenu("num_wands"), i_wand_of_open_ways)   ]
-            ["Wand of Securing"     DungeonItem(GetMenu("num_wands"), i_wand_of_securing)    ]
+            ["Wand of Securing"     DungeonItem(GetMenu("num_wands"), i_wand_of_securing) 
+                                     QuestSecure()                                           ]
             ["Wand of Undeath"      DungeonItem(GetMenu("num_wands"), i_wand_of_undeath)     ]
         ]
     }

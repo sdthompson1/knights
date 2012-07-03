@@ -24,6 +24,8 @@
 #ifndef CREATE_QUEST_HPP
 #define CREATE_QUEST_HPP
 
+#include "dungeon_generator.hpp"  // for ExitType
+
 #include "boost/shared_ptr.hpp"
 #include <string>
 
@@ -31,6 +33,12 @@ class Quest;
 class KnightsConfigImpl;
 
 // the following pops an argument list from the kfile.
-boost::shared_ptr<Quest> CreateQuest(const std::string &name, KnightsConfigImpl &kc);
+// created quest(s) are appended to the vector.
+void CreateQuests(const std::string &name,
+                  KnightsConfigImpl &kc,
+                  std::vector<boost::shared_ptr<Quest> > &output);
+
+void CreateEscapeQuest(ExitType e,
+                       std::vector<boost::shared_ptr<Quest> > &output);
 
 #endif

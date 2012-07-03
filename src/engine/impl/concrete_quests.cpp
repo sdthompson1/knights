@@ -94,22 +94,26 @@ StatusDisplay::QuestIcon QuestRetrieve::getQuestIcon(const Knight &kt, QuestCirc
     }
 
     std::ostringstream str;
-    str << "Get ";
+    str << "Retrieve ";
 
     // Parse the item name, it should be of form "A gem" or "The book".
     const std::string & name = itypes.front()->getName();
+    const bool is_big = itypes.front()->isBig();
     if (name[0] == 'A') {
-        str << no << ' ' << name.substr(2);     // "<N> gem"
-        if (no > 1) str << 's';                 // add "s" if plural
+        if (is_big) {
+            // TODO: In quests with multiple wands we should probably 
+            // say "Retrieve a wand" rather than "Retrieve the wand"?
+            str << "the " << name.substr(2);   // "the wand"
+        } else {
+            str << no << ' ' << name.substr(2);     // "<N> gem"
+            if (no > 1) str << 's';                 // add "s" if plural
+        }
     } else {
         str << 't';
         str << name.substr(1);   // "the book"
     }
-    
-    if (num_held > 0 && num_held < no) {
-        str << " [" << no - num_held << " more required]";
-    }
 
+    qi.sort = is_big ? 10 : 20;
     qi.msg = str.str();
     qi.complete = (num_held >= no);
     
@@ -153,7 +157,35 @@ void QuestDestroy::getRequiredItems(std::map<const ItemType *, int> &required_it
 StatusDisplay::QuestIcon QuestDestroy::getQuestIcon(const Knight &kt, QuestCircumstance c) const
 {
     StatusDisplay::QuestIcon qi;
-    qi.msg = "Destroy book with wand";
+    qi.sort = 110;
+    qi.msg = "Strike the book with the wand";
     qi.complete = (c == WIN_FROM_COMPLETE_QUEST);
+    return qi;
+}
+
+StatusDisplay::QuestIcon QuestGeneric::getQuestIcon(const Knight &kt, QuestCircumstance c) const
+{
+    StatusDisplay::QuestIcon qi;
+    qi.sort = sort;
+    qi.msg = msg;
+    qi.complete = (c == WIN_FROM_COMPLETE_QUEST);
+    return qi;
+}
+
+StatusDisplay::QuestIcon QuestSecure::getQuestIcon(const Knight &kt, QuestCircumstance c) const
+{
+    StatusDisplay::QuestIcon qi;
+    qi.sort = 1010;
+    qi.msg = "Secure all entry points using the Wand of Securing";
+    qi.complete = false; // TODO
+    return qi;
+}
+
+StatusDisplay::QuestIcon QuestDestroyKnights::getQuestIcon(const Knight &kt, QuestCircumstance c) const
+{
+    StatusDisplay::QuestIcon qi;
+    qi.sort = 1020;
+    qi.msg = "Destroy all enemy knights";
+    qi.complete = (c == WIN_FROM_KILL_KNIGHTS);
     return qi;
 }

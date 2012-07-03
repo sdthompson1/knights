@@ -66,8 +66,25 @@ public:
 
     // Set quest status info
     struct QuestIcon {
+        int sort;       // sort order (see below)
         std::string msg;
         bool complete;
+
+        // Currently the sort order is as follows:
+        // 
+        // sort=10: retrieve backpack item(s)
+        // sort=20: retrieve held item
+        // sort=100: place book in pentagram
+        // sort=110: strike book with wand
+        // sort=120: escape via ...
+        // sort=1010: secure all exits
+        // sort=1020: kill all enemy knights
+        //
+        // NOTE: sort%1000 is used as the "group" for the either/or quests.
+        
+        bool operator<(const QuestIcon &other) const {
+            return sort < other.sort;
+        }
     };
     virtual void setQuestIcons(const std::vector<QuestIcon> &quest_icons) = 0;
 };

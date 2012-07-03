@@ -69,4 +69,36 @@ private:
     vector<const ItemType*> wand;
 };
 
+class QuestGeneric : public Quest {
+public:
+    // Displays a generic Quest Requirement message, that is only fulfilled when
+    // the player wins the quest.
+    QuestGeneric(const std::string &msg_, int sort_) : msg(msg_), sort(sort_) { }
+    virtual bool check(Knight &) const { return true; }
+    virtual bool isItemInteresting(const ItemType &itype) const { return false; }
+    virtual void getRequiredItems(std::map<const ItemType *, int> &) const { }
+    virtual StatusDisplay::QuestIcon getQuestIcon(const Knight &kt, QuestCircumstance c) const;
+private:
+    std::string msg;
+    int sort;
+};
+
+class QuestSecure : public Quest {
+public:
+    // Displays the "Secure all entry points" message
+    virtual bool check(Knight &) const { return true; }
+    virtual bool isItemInteresting(const ItemType &itype) const { return false; }
+    virtual void getRequiredItems(std::map<const ItemType *, int> &) const { }
+    virtual StatusDisplay::QuestIcon getQuestIcon(const Knight &kt, QuestCircumstance c) const;
+};
+
+class QuestDestroyKnights : public Quest {
+public:
+    // Displays the "destroy all enemy knights" message
+    virtual bool check(Knight &) const { return true; }
+    virtual bool isItemInteresting(const ItemType &itype) const { return false; }
+    virtual void getRequiredItems(std::map<const ItemType *, int> &) const { }
+    virtual StatusDisplay::QuestIcon getQuestIcon(const Knight &kt, QuestCircumstance c) const;
+};
+    
 #endif

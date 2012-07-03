@@ -1268,10 +1268,24 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
 
     if (!status_display.empty() && status_display[0]->needQuestIconUpdate()) {
         quest_rqmts_list.clear();
-        for (std::vector<StatusDisplay::QuestIcon>::const_iterator it = status_display[0]->getQuestIcons().begin();
-        it != status_display[0]->getQuestIcons().end(); ++it) {
+        int prev_group = -999;
+
+        std::vector<StatusDisplay::QuestIcon> icons = status_display[0]->getQuestIcons();
+        std::sort(icons.begin(), icons.end());
+
+        for (std::vector<StatusDisplay::QuestIcon>::const_iterator it = icons.begin();
+        it != icons.end(); ++it) {
+
+            const int group = it->sort / 1000;
+
+            if (prev_group != -999 && prev_group != group) {
+                quest_rqmts_list.add("");
+                quest_rqmts_list.add("--- OR ---");
+                quest_rqmts_list.add("");
+            }
+            prev_group = group;
+
             std::string msg = it->msg;
-            if (it->complete) msg = "[DONE] " + msg;  // TODO: make a tick icon or something
             quest_rqmts_list.add(msg);
         }
     }

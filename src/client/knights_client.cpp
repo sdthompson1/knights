@@ -745,8 +745,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
                 size_t pos_before_payload = buf.getPos();
 
+                // See if we want to parse any of the payload contents.
                 switch (ext_code) {
-
                 case SERVER_EXT_SET_QUEST_ICONS:
                     {
                         int num_icons = buf.readUbyte();
@@ -754,6 +754,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                         icons.reserve(num_icons);
                         for (int i = 0; i < num_icons; ++i) {
                             StatusDisplay::QuestIcon qi;
+                            qi.sort = buf.readUshort();
                             qi.msg = buf.readString();
                             qi.complete = buf.readUbyte() != 0;
                             icons.push_back(qi);
@@ -761,17 +762,22 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                         if (status_display) status_display->setQuestIcons(icons);
                     }
                     break;
-                    
-                default:
-                    // unknown message, just skip the payload.
-                    for (int i = 0; i < payload_length; ++i) buf.readUbyte();
-                    break;
                 }
 
                 // check that we read the entire payload
-                size_t pos_after_payload = buf.getPos();
-                if (pos_after_payload - pos_before_payload != size_t(payload_length)) {
-                    throw ProtocolError("Bad message from server (payload length was incorrect)");
+                size_t pos_now = buf.getPos();
+                size_t should_be = pos_before_payload + size_t(payload_length);
+                
+                // If we did not read all of the payload, then skip over the unread payload 
+                // bytes. (This is for forwards compatibility.)
+                while (pos_now < should_be) {
+                    buf.readUbyte();
+                    ++pos_now;
+                }
+
+                // If we read MORE than the payload then something has gone wrong.
+                if (pos_now != should_be) {
+                    throw ProtocolError("Bad EXT code from server");
                 }
             }
             break;

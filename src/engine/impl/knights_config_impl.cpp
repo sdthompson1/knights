@@ -1116,8 +1116,7 @@ void KnightsConfigImpl::popMenuValueDirective(const string &key, int val)
         if (d) menu_dungeon_directives[key][val].push_back(d);
     } else if (dname.substr(0,5) == "Quest") {
         dir.pushArgList();
-        shared_ptr<Quest> q = CreateQuest(dname, *this);
-        if (q) menu_quests[key][val].push_back(q);
+        CreateQuests(dname, *this, menu_quests[key][val]);
     } else if (dname.substr(0,9) == "Constrain") {
         dir.pushArgList();
         menu_constraints.addConstraintFromKFile(key, val, dname, *this);
@@ -2149,7 +2148,10 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     coord_transform.reset(new CoordTransform);
     const std::string dungeon_generator_msg =
         dg->generate(*dungeon_map, monster_manager, *coord_transform, hse_cols.size(), tutorial_manager != 0);
-    
+
+    // add QuestEscape if need be
+    CreateEscapeQuest(dg->getExitType(), quests);
+
     // Add homes to the home manager
     for (int i = 0; i < dg->getNumHomesOverall(); ++i) {
         MapCoord pos;

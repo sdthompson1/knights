@@ -69,6 +69,7 @@ void ServerStatusDisplay::setQuestIcons(const std::vector<StatusDisplay::QuestIc
     
     buf.writeUbyte(icons.size());
     for (int i = 0; i < int(icons.size()); ++i) {
+        buf.writeUshort(icons[i].sort);
         buf.writeString(icons[i].msg);
         buf.writeUbyte(icons[i].complete);
     }
