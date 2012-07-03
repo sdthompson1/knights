@@ -125,9 +125,9 @@ public:
     // -- "destructible": can the target be destroyed. Used by zombies to see if they should
     //    attack a tile. (Destructible implies targettable, but not vice versa.)
     //    (Also used by the default mini map colouring, see Tile::getColour().)
-    // -- "targettable": used by A_Attack to decide whether to make a melee attack against
-    //    this tile; also used to determine whether an item's melee_action should be called
-    //    when attacking this tile.
+    // -- "targettable": used to determine whether an item's melee_action should be called
+    //    when attacking this tile. (e.g. does the wand flash the screen if you zap it against
+    //    this tile.)
     // These fns are virtual because some tiles (doors) can be immune to damage
     // (if they are open).
     virtual void damage(DungeonMap &, const MapCoord &, int amount, shared_ptr<Creature> actor);

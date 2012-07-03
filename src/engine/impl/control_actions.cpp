@@ -295,8 +295,9 @@ void A_Attack::execute(const ActionData &ad) const
         if (can_swing && missile_attack) {
             // Both melee and missile attacks are possible.
             // If a creature is on my square or the square ahead,
-            // or a targettable tile is on square ahead,
+            // or an "open" tile is on square ahead,
             // then do former, else do latter.
+            // ("Open" means A_CLEAR at H_WALKING)
 
             // Find creature on my square or square_ahead:
             shared_ptr<Creature> target_cr = actor->getMap()->getTargetCreature(*actor, true);
@@ -305,18 +306,13 @@ void A_Attack::execute(const ActionData &ad) const
                 can_throw = can_shoot = missile_attack = false;
             }
             if (missile_attack) {
-                // Now check for targettable tiles on square ahead:
+                // Now check tile-access on square ahead:
                 // (use getDestinationPos because we can do this while moving & we want sq at the end of the move)
                 const MapCoord sq_ahead = DisplaceCoord(actor->getDestinationPos(), actor->getFacing());
-                vector<shared_ptr<Tile> > tiles;
-                actor->getMap()->getTiles(sq_ahead, tiles);
-                for (vector<shared_ptr<Tile> >::iterator it = tiles.begin();
-                it != tiles.end(); ++it) {
-                    if ((*it)->targettable()) {
-                        // Melee attack possible -- Cancel the missile option
-                        can_throw = can_shoot = missile_attack = false;
-                        break;
-                    }
+                if (actor->getMap()->getAccessTilesOnly(sq_ahead, H_WALKING) != A_CLEAR) {
+                    // The square ahead is blocked (or "semi blocked", like a closed gate)
+                    // Cancel the missile option
+                    can_throw = can_shoot = missile_attack = false;
                 }
 
                 // If we would not be able to place a missile on the sq ahead either, then we
