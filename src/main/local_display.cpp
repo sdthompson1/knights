@@ -1266,7 +1266,11 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
         }
     }
 
+    bool force_setup_gui = false;
+
     if (!status_display.empty() && status_display[0]->needQuestIconUpdate()) {
+        int old_size = quest_rqmts_list.getNumberOfElements();
+
         quest_rqmts_list.clear();
         int prev_group = -999;
 
@@ -1293,10 +1297,14 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             // Deathmatch requirements are hard coded
             quest_rqmts_list.add("Score points by killing enemy knights");
         }
+
+        if (quest_rqmts_list.getNumberOfElements() != old_size) force_setup_gui = true;
     }
 
     // Reset the gui positions/sizes if the viewport has changed.
-    if (vp_x != prev_gui_x || vp_y != prev_gui_y || vp_width != prev_gui_width || vp_height != prev_gui_height) {
+    if (vp_x != prev_gui_x || vp_y != prev_gui_y 
+    || vp_width != prev_gui_width || vp_height != prev_gui_height
+    || force_setup_gui) {
 
         prev_gui_x = vp_x;
         prev_gui_y = vp_y;
@@ -1347,7 +1355,7 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             quest_rqmts_x = player_list_x;
             quest_rqmts_y = player_list_bottom + player_list_margin;
             quest_rqmts_width = player_list_width;
-            quest_rqmts_height = gui_font->getHeight() * 8;
+            quest_rqmts_height = gui_font->getHeight() * (quest_rqmts_list.getNumberOfElements() + 3);  // the +3 just gives it a bit of extra black space underneath.
             if (quest_rqmts_height > third_height) quest_rqmts_height = third_height;
 
             const int quest_rqmts_bottom = quest_rqmts_y + quest_rqmts_height + player_list_margin;
