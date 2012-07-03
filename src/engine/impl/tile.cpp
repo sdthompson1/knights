@@ -410,19 +410,17 @@ MiniMapColour Tile::getColour() const
 {
     // Current method of determining mini map colour is as follows: 
     // 
-    // * colour is COL_WALL if access level != A_CLEAR at all available heights, AND
-    //   tile is indestructible
+    // * colour is COL_WALL if 
+    //     access level != A_CLEAR at walking and flying heights, 
+    //     AND access_level == A_BLOCKED at missile height (added for #119),
+    //     AND tile is indestructible
     // * else, colour is COL_FLOOR
     //
     // This can be overridden by subclasses if required.
 
     if (destructible()) return COL_FLOOR;
-
-    for (int h=0; h<=H_MISSILES; ++h) {
-        if (getAccess(MapHeight(h)) == A_CLEAR) {
-            return COL_FLOOR;
-        }
-    }
-
+    if (getAccess(H_WALKING) == A_CLEAR) return COL_FLOOR;
+    if (getAccess(H_FLYING) == A_CLEAR) return COL_FLOOR;
+    if (getAccess(H_MISSILES) != A_BLOCKED) return COL_FLOOR;
     return COL_WALL;
 }
