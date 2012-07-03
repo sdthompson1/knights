@@ -179,7 +179,7 @@ void ServerDungeonView::setCurrentRoom(int r, int width, int height)
 
 void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                                   const Anim *anim, const Overlay *ovr, int af, int atz_diff,
-                                  bool ainvuln,
+                                  bool ainvis, bool ainvuln,
                                   int cur_ofs, MotionType motion_type, int motion_time_remaining,
                                   const std::string &name)
 {
@@ -190,7 +190,7 @@ void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight
     buf.writeNibbles(int(ht), facing);
     buf.writeVarInt(anim ? anim->getID() : 0);
     buf.writeVarInt(ovr ? ovr->getID() : 0);
-    buf.writeNibbles(af, (int(motion_type)<<1) + int(ainvuln));
+    buf.writeNibbles(af, (int(motion_type)<<2) + (int(ainvis)<<1) + int(ainvuln));
     if (af != 0) buf.writeShort(ClampToShort(atz_diff));
     buf.writeUshort(ClampToUshort(cur_ofs));
     if (motion_type != MT_NOT_MOVING) buf.writeUshort(ClampToUshort(motion_time_remaining));
@@ -232,14 +232,14 @@ void ServerDungeonView::flipEntityMotion(unsigned short int id, int initial_dela
 }
 
 void ServerDungeonView::setAnimData(unsigned short int id, const Anim *anim, const Overlay *ovr,
-                                    int af, int atz_diff, bool ainvuln, bool currently_moving)
+                                    int af, int atz_diff, bool ainvis, bool ainvuln, bool currently_moving)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_SET_ANIM_DATA);
     buf.writeVarInt(id);
     buf.writeVarInt(anim ? anim->getID() : 0);
     buf.writeVarInt(ovr ? ovr->getID() : 0);
-    buf.writeNibbles(af, int(ainvuln)*2 + int(currently_moving));
+    buf.writeNibbles(af, (int(ainvis)<<2) + (int(ainvuln)<<1) + int(currently_moving));
     buf.writeShort(ClampToShort(atz_diff));
 }
 

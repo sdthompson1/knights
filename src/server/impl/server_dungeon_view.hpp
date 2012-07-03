@@ -45,7 +45,7 @@ public:
 
     virtual void addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                            const Anim * anim, const Overlay *ovr, int af, int atz_diff,
-                           bool ainvuln, // (anim data)
+                           bool ainvis, bool ainvuln, // (anim data)
                            int cur_ofs, MotionType motion_type, int motion_time_remaining,
                            const std::string &name);
     virtual void rmEntity(unsigned short int id);
@@ -54,7 +54,7 @@ public:
                             int motion_duration, bool missile_mode);
     virtual void flipEntityMotion(unsigned short int id, int initial_delay, int motion_duration);
     virtual void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af,
-                             int atz_diff, bool ainvuln, bool currently_moving);
+                             int atz_diff, bool ainvis, bool ainvuln, bool currently_moving);
     virtual void setFacing(unsigned short int id, MapDirection new_facing);
     virtual void setSpeechBubble(unsigned short int id, bool show);
 

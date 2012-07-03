@@ -102,6 +102,8 @@ private:
     void doAddEntity(int plyr, shared_ptr<Entity>, bool mine);
     void reallyAddEntity(int plyr, shared_ptr<Entity> ent, unsigned short int id, DungeonView &dungeon_view);
     void doRmEntity(int plyr, weak_ptr<Entity> ent, unsigned short int id);
+
+    void sendAnimChange(int plyr, const Entity &ent, unsigned short int id);
     
     void setItemIfVisible(const DungeonMap &, const MapCoord &, const Graphic *);
     void setTileIfVisible(const DungeonMap &, const MapCoord &, int, const Graphic *,

@@ -47,7 +47,7 @@ public:
     explicit EntityMap(const ConfigMap &cfg, int approach_offset_);
 
     void addEntity(int time, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
-                   const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvuln,
+                   const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvis, bool ainvuln,
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
                    const std::string &name);
     void rmEntity(unsigned short int key);
@@ -55,7 +55,7 @@ public:
     void flipEntityMotion(int time, unsigned short int key, int initial_delay, int motion_duration);
     void repositionEntity(unsigned short int key, int new_x, int new_y);
     void setAnimData(unsigned short int key, const Anim *, const Overlay *,
-                     int af, int atz, bool ainvuln, bool during_motion);
+                     int af, int atz, bool ainvis, bool ainvuln, bool during_motion);
     void setFacing(unsigned short int key, MapDirection new_facing);
     void setSpeechBubble(unsigned short int key, bool show);
     void clear() { entities.clear(); } // delete all contained entities
@@ -95,7 +95,7 @@ private:
                 const Overlay *ovr;
                 int af;
                 int atz;
-                bool ainvuln;
+                bool ainvis, ainvuln;
             } anim_info;
             MapDirection facing_info;
         };
@@ -108,7 +108,7 @@ private:
         const Overlay *ovr;
         int af;
         int atz;
-        bool ainvuln;
+        bool ainvis, ainvuln;
         MapDirection facing;
         bool approached;          // true if currently "approached" (and not moving)
         bool show_speech_bubble;

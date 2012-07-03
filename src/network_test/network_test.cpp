@@ -188,7 +188,7 @@ public:
     void setCurrentRoom(int r, int width, int height) { Log("Set current room"); }
     void addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                    const Anim * anim, const Overlay *ovr, int af, int atz_diff,
-                   bool ainvuln, // (anim data)
+                   bool ainvis, bool ainvuln, // (anim data)
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
                    const std::string &name)
     {
@@ -205,7 +205,7 @@ public:
         Log("dview: flip entity motion");
     }
     void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af, int atz_diff,
-                     bool ainvuln, bool currently_moving)
+                     bool ainvis, bool ainvuln, bool currently_moving)
     {
         Log("dview: set anim data");
     }

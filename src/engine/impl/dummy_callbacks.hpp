@@ -33,12 +33,12 @@ class DummyDungeonView : public DungeonView {
 public:
     virtual void setCurrentRoom(int,int,int) { }
     virtual void addEntity(unsigned short int, int, int, MapHeight, MapDirection,
-        const Anim *, const Overlay *, int, int, bool, int, MotionType, int, const std::string &) { }
+        const Anim *, const Overlay *, int, int, bool, bool, int, MotionType, int, const std::string &) { }
     virtual void rmEntity(unsigned short int) { }
     virtual void repositionEntity(unsigned short int, int, int) { }
     virtual void moveEntity(unsigned short int, MotionType, int, bool) { }
     virtual void flipEntityMotion(unsigned short int, int, int) { }
-    virtual void setAnimData(unsigned short int, const Anim *, const Overlay *, int, int, bool, bool) { }
+    virtual void setAnimData(unsigned short int, const Anim *, const Overlay *, int, int, bool, bool, bool) { }
     virtual void setFacing(unsigned short int, MapDirection) { }
     virtual void setSpeechBubble(unsigned short int, bool) { }
     virtual void clearTiles(int,int,bool) { }

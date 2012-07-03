@@ -64,6 +64,8 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
                             bool show_own_name,
                             int &room_tl_x, int &room_tl_y)
 {
+    static const ColourChange empty_cc;
+
     // Clear out expired icons
     while (!icons.empty() && time > icons.top().expiry) {
         map<int,RoomData>::iterator ri = rooms.find(icons.top().room_no);
@@ -126,6 +128,7 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
                             ge.sy = screen_y;
                             ge.gr = it->gfx;
                             ge.cc = it->cc.get();
+                            ge.semitransparent = false;
                             gfx_buffer[it->depth].push_back(ge);
                         }
                     }
@@ -147,9 +150,11 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
                     const float size_hint = it2->gr->getSizeHint();
                     const int new_width = Round(old_width * dungeon_scale_factor / size_hint);
                     const int new_height = Round(old_height * dungeon_scale_factor / size_hint);
-                    
+
                     if (it2->cc) {
-                        gm.drawTransformedGraphic(gc, it2->sx, it2->sy, *it2->gr, new_width, new_height, *it2->cc);
+                        gm.drawTransformedGraphic(gc, it2->sx, it2->sy, *it2->gr, new_width, new_height, *it2->cc, it2->semitransparent);
+                    } else if (it2->semitransparent) {
+                        gm.drawTransformedGraphic(gc, it2->sx, it2->sy, *it2->gr, new_width, new_height, empty_cc, true);
                     } else {
                         gm.drawTransformedGraphic(gc, it2->sx, it2->sy, *it2->gr, new_width, new_height);
                     }
@@ -226,11 +231,12 @@ void LocalDungeonView::setCurrentRoom(int r, int w, int h)
 
 void LocalDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                                  const Anim * anim, const Overlay *ovr, int af, int atz_diff,
-                                 bool ainvuln,
+                                 bool ainvis, bool ainvuln,
                                  int cur_ofs, MotionType motion_type, int motion_time_remaining,
                                  const std::string &name)
 {
-    entity_map.addEntity(time, id, x, y, ht, facing, anim, ovr, af, atz_diff ? atz_diff + time : 0, ainvuln,
+    entity_map.addEntity(time, id, x, y, ht, facing, anim, ovr, af, atz_diff ? atz_diff + time : 0, 
+                         ainvis, ainvuln,
                          cur_ofs, motion_type, motion_time_remaining, name);
     if (id == 0) {
         // my knight
@@ -283,9 +289,9 @@ void LocalDungeonView::flipEntityMotion(unsigned short int id, int initial_delay
 }
 
 void LocalDungeonView::setAnimData(unsigned short int id, const Anim *a, const Overlay *o,
-                                   int af, int atz_diff, bool ainvuln, bool currently_moving)
+                                   int af, int atz_diff, bool ainvis, bool ainvuln, bool currently_moving)
 {
-    entity_map.setAnimData(id, a, o, af, atz_diff ? atz_diff + time : 0, ainvuln, currently_moving);
+    entity_map.setAnimData(id, a, o, af, atz_diff ? atz_diff + time : 0, ainvis, ainvuln, currently_moving);
 }
 
 void LocalDungeonView::setFacing(unsigned short int id, MapDirection new_facing)

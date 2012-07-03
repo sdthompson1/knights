@@ -64,7 +64,7 @@ int EntityMap::getFinalOffset(MotionType type)
 }
 
 void EntityMap::addEntity(int time, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
-                          const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvuln,
+                          const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvis, bool ainvuln,
                           int cur_ofs, MotionType motion_type, int motion_time_remaining,
                           const std::string &name)
 {
@@ -76,6 +76,7 @@ void EntityMap::addEntity(int time, unsigned short int key, int x, int y, MapHei
     d.ovr = ovr;
     d.af = af;
     d.atz = atz;
+    d.ainvis = ainvis;
     d.ainvuln = ainvuln;
     d.facing = facing;
     d.approached = (motion_type == MT_NOT_MOVING && cur_ofs != 0);
@@ -293,7 +294,7 @@ void EntityMap::repositionEntity(unsigned short int key, int new_x, int new_y)
 }
 
 void EntityMap::setAnimData(unsigned short int key, const Anim *anim, const Overlay *ovr,
-                            int af, int atz, bool ainvuln, bool during_motion)
+                            int af, int atz, bool ainvis, bool ainvuln, bool during_motion)
 {
     map<unsigned short int, Data>::iterator it = entities.find(key);
     if (it == entities.end()) return;
@@ -303,6 +304,7 @@ void EntityMap::setAnimData(unsigned short int key, const Anim *anim, const Over
     cmd.anim_info.ovr = ovr;
     cmd.anim_info.af = af;
     cmd.anim_info.atz = atz;
+    cmd.anim_info.ainvis = ainvis;
     cmd.anim_info.ainvuln = ainvuln;
 
     if (during_motion) {
@@ -404,6 +406,7 @@ void EntityMap::update(int time, EntityMap::Data &ent)
             ent.ovr = cmd.anim_info.ovr;
             ent.af = cmd.anim_info.af;
             ent.atz = cmd.anim_info.atz;
+            ent.ainvis = cmd.anim_info.ainvis;
             ent.ainvuln = cmd.anim_info.ainvuln;
             break;
                         
@@ -519,6 +522,7 @@ void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int en
             ge.sy = entity_y;
             ge.gr = lower_graphic;
             ge.cc = lower_cc;
+            ge.semitransparent = ent.ainvis;
             gfx_buffer[d].push_back(ge);
                         
             const Overlay *ovr = ent.ovr;

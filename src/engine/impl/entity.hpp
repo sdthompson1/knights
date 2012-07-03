@@ -43,6 +43,7 @@ class Anim;
 class ColourChange;
 class DungeonMap;
 class Overlay;
+class Player;
 
 class Entity : public enable_shared_from_this<Entity> {
     friend class MapHelper;
@@ -74,6 +75,11 @@ public:
     // visibility. This is used for invisibility potions. (Default is visible.)
     bool isVisible() const { return (flags & VISIBLE_BIT) != 0; }
     void setVisible(bool);
+
+    // Entity::isVisibleToPlayer checks if (a) this entity does not have INVISIBILITY
+    // *or* (b) this entity is a teammate of the given player. (Overridden in Knight.)
+    // Note: Not to be confused with ViewManager::entityVisibleToPlayer().
+    virtual bool isVisibleToPlayer(const Player &p) const { return isVisible(); }
 
     // Anim controls what the "lower" graphic looks like.
     // OverlayGraphic controls the "upper" graphic.

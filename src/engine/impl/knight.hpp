@@ -97,6 +97,9 @@ public:
     virtual bool hasStrength() const;
     virtual bool hasQuickness() const;
 
+    // overridden from Entity:
+    virtual bool isVisibleToPlayer(const Player &p) const;
+
     virtual const char * getWeaponDownswingHook() const { return "HOOK_WEAPON_DOWNSWING"; }
 
     //

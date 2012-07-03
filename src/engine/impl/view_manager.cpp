@@ -95,7 +95,7 @@ bool ViewManager::entityVisibleToPlayer(const Entity &ent, const Player &p, bool
     shared_ptr<Knight> kt(p.getKnight());
     if (&ent == kt.get()) return true;    // players are always visible to themselves.
     if (!ent.getMap()) return false;
-    if (!ent.isVisible() && !trueview) return false;
+    if (!ent.isVisibleToPlayer(p) && !trueview) return false;
     if (squareVisibleToPlayer(*ent.getMap(), ent.getPos(), p)) return true;
     if (ent.isMoving() && !ent.isApproaching()) {
         MapCoord mc = DisplaceCoord(ent.getPos(), ent.getFacing());
@@ -297,7 +297,7 @@ bool ViewManager::updateRoom(int plyr)
                 for (vector<shared_ptr<Entity> >::iterator it = ents.begin();
                 it != ents.end(); ++it) {
                     bool mine = (*it == kt);
-                    if ((*it)->isVisible() || mine) {
+                    if ((*it)->isVisibleToPlayer(*players[plyr]) || mine) {
                         doAddEntity(plyr, *it, mine);
                     }
                 }
@@ -327,9 +327,10 @@ void ViewManager::reallyAddEntity(int plyr, shared_ptr<Entity> ent, unsigned sho
     const Anim *anim;
     const Overlay *ovr;
     int af, atz, x, y;
-    bool ainv;
+    bool ainvis, ainvuln;
     getRelativePos(*players[plyr], ent->getMap(), ent->getPos(), x, y);
-    ent->getAnimData(anim, ovr, af, atz, ainv);
+    ent->getAnimData(anim, ovr, af, atz, ainvuln);
+    ainvis = !ent->isVisible();
     const int gvt = Mediator::instance().getGVT();
     int motion_time_remaining = ent->getArrivalTime() - gvt;
     if (motion_time_remaining < 0) motion_time_remaining = 0;
@@ -342,7 +343,9 @@ void ViewManager::reallyAddEntity(int plyr, shared_ptr<Entity> ent, unsigned sho
         show_speech_bubble = kt->getPlayer()->getSpeechBubble();
     }
     dungeon_view.addEntity(id, x, y, ent->getHeight(), ent->getFacing(), anim, ovr, af,
-                           atz ? atz - gvt : 0, ainv, ent->getOffset(), ent->getMotionType(), motion_time_remaining,
+                           atz ? atz - gvt : 0, 
+                           ainvis, ainvuln, 
+                           ent->getOffset(), ent->getMotionType(), motion_time_remaining,
                            name);
     if (show_speech_bubble) dungeon_view.setSpeechBubble(id, true);
 }
@@ -506,21 +509,28 @@ void ViewManager::onFlipEntityMotion(shared_ptr<Entity> ent)
 // event handler routines for entity updates (not involving motion)
 //
 
+void ViewManager::sendAnimChange(int p, const Entity &ent, unsigned short int id_first)
+{
+    const Anim *anim;
+    const Overlay *ovr;
+    int af, atz;
+    bool ainvuln;
+    ent.getAnimData(anim, ovr, af, atz, ainvuln);
+    const bool ainvis = !ent.isVisible();
+    const int gvt = Mediator::instance().getGVT();
+    if (atz==gvt) atz++; // avoid setting atz_diff to zero in this special case ...
+    players[p]->getDungeonView().setAnimData(id_first, anim, ovr,
+                                             af, atz ? atz - gvt : 0, 
+                                             ainvis, ainvuln, ent.isMoving());
+}
+
 void ViewManager::onChangeEntityAnim(shared_ptr<Entity> ent)
 {
     for (int p=0; p<players.size(); ++p) {
         pair<unsigned short int, bool> id = fetchID(p, ent);
         if (id.second) {
             ASSERT(ent && ent->getMap());
-            const Anim *anim;
-            const Overlay *ovr;
-            int af, atz;
-            bool ainv;
-            ent->getAnimData(anim, ovr, af, atz, ainv);
-            const int gvt = Mediator::instance().getGVT();
-            if (atz==gvt) atz++; // avoid setting atz_diff to zero in this special case ...
-            players[p]->getDungeonView().setAnimData(id.first, anim, ovr,
-                                                     af, atz ? atz - gvt : 0, ainv, ent->isMoving());
+            sendAnimChange(p, *ent, id.first);
         }
     }
 }
@@ -556,25 +566,34 @@ void ViewManager::onChangeEntityFacing(shared_ptr<Entity> ent)
 
 void ViewManager::onChangeEntityVisible(shared_ptr<Entity> ent)
 {
+    ASSERT(ent);
+
     // this one works slightly differently.
     for (int p=0; p<players.size(); ++p) {
-        if (ent == players[p]->getKnight()) continue; // Our own kt is always visible...
-        if (ent->isVisible()) {
-            // Entity has become visible (was invisible);
-            // add it if it is on a square that we can see.
-            if (entityVisibleToPlayer(*ent, *players[p], false)) {
-                doAddEntity(p, ent, false);
-            }
-        } else {
-            // entity has become invisible (was visible);
-            // remove it if it is on-screen currently.
-            pair<unsigned short int, bool> id = fetchID(p, ent);
-            if (id.second) {
-                doRmEntity(p, ent, id.first);
-            }
+
+        // is the entity currently displayed on this player's screen?
+        pair<unsigned short int, bool> id = fetchID(p, ent);
+        const bool on_screen_now = id.second;
+        const bool should_be_on_screen = 
+            ent->getMap() && entityVisibleToPlayer(*ent, *players[p], false);
+
+        if (on_screen_now && !should_be_on_screen) {
+            // Remove it
+            doRmEntity(p, ent, id.first);
+
+        } else if (!on_screen_now && should_be_on_screen) {
+            // Add it
+            doAddEntity(p, ent, false);
+
+        } else if (on_screen_now && should_be_on_screen) {
+            // The player needs to be told of an anim-change, this will 
+            // make the knight fade to semitransparent status (or go back to 
+            // solid from semitransparent).
+            sendAnimChange(p, *ent, id.first);
         }
     }
 }
+
 
 //
 // Entity ID management

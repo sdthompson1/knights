@@ -311,6 +311,10 @@ bool Knight::hasQuickness() const
     return pm == QUICKNESS || (pm == SUPER && getHealth() == getMaxHealth());
 }
 
+bool Knight::isVisibleToPlayer(const Player &p) const
+{
+    return isVisible() || (this->player.getTeamNum() == p.getTeamNum());
+}
 
 //
 // inventory

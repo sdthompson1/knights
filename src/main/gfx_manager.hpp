@@ -84,7 +84,8 @@ public:
                                 const Graphic &gfx, int new_width, int new_height);
     void drawTransformedGraphic(Coercri::GfxContext &gc, int x, int y,
                                 const Graphic &gfx, int new_width, int new_height,
-                                const ColourChange &cc);
+                                const ColourChange &cc, 
+                                bool semitransparent = false); // used for drawing invisible teammates
 
 private:
     // typedefs, structs
@@ -98,6 +99,7 @@ private:
     struct GraphicKey {
         const Coercri::Graphic * original;
         ColourChange cc;
+        bool semitransparent;
         int new_width, new_height;
 
         bool operator<(const GraphicKey &rhs) const
@@ -107,6 +109,8 @@ private:
                 rhs.original < original ? false :
                 cc < rhs.cc ? true :
                 rhs.cc < cc ? false :
+                semitransparent < rhs.semitransparent ? true :
+                semitransparent > rhs.semitransparent ? false :
                 new_width < rhs.new_width ? true :
                 rhs.new_width < new_width ? false :
                 new_height < rhs.new_height;
@@ -128,7 +132,7 @@ private:
     const Coercri::Graphic & getGraphic(const GraphicKey &key);
     bool tooBig() const;
     void deleteOld();
-    const Coercri::Graphic & getGraphicWithCC(const Coercri::Graphic &original, const ColourChange &cc);
+    const Coercri::Graphic & getGraphicWithCC(const Coercri::Graphic &original, const ColourChange &cc, bool semitransparent);
     const Coercri::Graphic & getResizedGraphic(const Coercri::Graphic &original, int new_width, int new_height);
     const Coercri::Graphic & getCoercriGraphic(const Graphic &gfx) const;
     

@@ -37,6 +37,7 @@ public:
     int sx, sy;
     const Graphic *gr;
     const ColourChange *cc;
+    bool semitransparent;
 };
 
 class TextElement {

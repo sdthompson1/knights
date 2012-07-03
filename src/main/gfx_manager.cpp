@@ -79,7 +79,7 @@ void GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
             ColourChange cc;
             cc.add(Colour(gfx.getR(), gfx.getG(), gfx.getB(), 255), 
                    Colour(gfx.getR(), gfx.getG(), gfx.getB(), 0));   // make it transparent
-            pixels = CreateGraphicWithCC(pixels, cc);
+            pixels = CreateGraphicWithCC(pixels, cc, false);
         }
         
         // Create the graphic
@@ -135,12 +135,13 @@ boost::shared_ptr<GfxResizer> GfxManager::getGfxResizer()
 boost::shared_ptr<Coercri::Graphic> GfxManager::createGraphic(const GraphicKey &key)
 {
     // NOTE: This routine should be called with either a resize or a colour-change,
-    // but not both at the same time.    
+    // but not both at the same time.
+    // (Semitransparency counts as part of the colour-change.)
     boost::shared_ptr<const Coercri::PixelArray> new_pixels;
     int new_hx, new_hy;
     key.original->getHandle(new_hx, new_hy);
     
-    if (key.cc.empty()) {
+    if (key.cc.empty() && !key.semitransparent) {
         // Resize only
         ASSERT(key.new_width != key.original->getWidth() || key.new_height != key.original->getHeight());
 
@@ -153,7 +154,7 @@ boost::shared_ptr<Coercri::Graphic> GfxManager::createGraphic(const GraphicKey &
         ASSERT(key.new_width == key.original->getWidth() && key.new_height == key.original->getHeight());
 
         // Call the colour-changing routine
-        new_pixels = CreateGraphicWithCC(key.original->getPixels(), key.cc);
+        new_pixels = CreateGraphicWithCC(key.original->getPixels(), key.cc, key.semitransparent);
     }
     
     boost::shared_ptr<Coercri::Graphic> new_graphic(gfx_driver->createGraphic(new_pixels, new_hx, new_hy));
@@ -230,15 +231,16 @@ void GfxManager::deleteOld()
     }
 }
 
-const Coercri::Graphic & GfxManager::getGraphicWithCC(const Coercri::Graphic &original, const ColourChange &cc)
+const Coercri::Graphic & GfxManager::getGraphicWithCC(const Coercri::Graphic &original, const ColourChange &cc, bool semitransparent)
 {
     // Short cut:
-    if (cc.empty()) return original;
+    if (cc.empty() && !semitransparent) return original;
 
     // Look it up in cache (creating if necessary):
     GraphicKey key;
     key.original = &original;
     key.cc = cc;
+    key.semitransparent = semitransparent;
     key.new_width = original.getWidth();
     key.new_height = original.getHeight();
     return getGraphic(key);
@@ -253,6 +255,7 @@ const Coercri::Graphic & GfxManager::getResizedGraphic(const Coercri::Graphic &o
     GraphicKey key;
     key.original = &original;
     key.cc = ColourChange();
+    key.semitransparent = false;
     key.new_width = new_width;
     key.new_height = new_height;
     return getGraphic(key);
@@ -270,7 +273,7 @@ void GfxManager::drawGraphic(Coercri::GfxContext &gc, int x, int y, const Graphi
     const Coercri::Graphic & gfx_original = getCoercriGraphic(gfx);
 
     if (gfx.getColourChange()) {
-        const Coercri::Graphic & gfx_cc = getGraphicWithCC(gfx_original, *gfx.getColourChange());
+        const Coercri::Graphic & gfx_cc = getGraphicWithCC(gfx_original, *gfx.getColourChange(), false);
         gc.drawGraphic(x, y, gfx_cc);
     } else {
         gc.drawGraphic(x, y, gfx_original);
@@ -284,7 +287,7 @@ void GfxManager::drawTransformedGraphic(Coercri::GfxContext &gc, int x, int y,
 
     const Coercri::Graphic * gfx_cc = &gfx_original;
     if (gfx.getColourChange()) {
-        gfx_cc = &getGraphicWithCC(gfx_original, *gfx.getColourChange());
+        gfx_cc = &getGraphicWithCC(gfx_original, *gfx.getColourChange(), false);
     }
 
     const Coercri::Graphic & gfx_cc_resized = getResizedGraphic(*gfx_cc, new_width, new_height);
@@ -293,10 +296,10 @@ void GfxManager::drawTransformedGraphic(Coercri::GfxContext &gc, int x, int y,
 
 void GfxManager::drawTransformedGraphic(Coercri::GfxContext &gc, int x, int y,
                                         const Graphic &gfx, int new_width, int new_height,
-                                        const ColourChange &cc)
+                                        const ColourChange &cc, bool semitransparent)
 {
     const Coercri::Graphic & gfx_original = getCoercriGraphic(gfx);
-    const Coercri::Graphic & gfx_cc = getGraphicWithCC(gfx_original, cc);
+    const Coercri::Graphic & gfx_cc = getGraphicWithCC(gfx_original, cc, semitransparent);
     const Coercri::Graphic & gfx_cc_resized = getResizedGraphic(gfx_cc, new_width, new_height);
     gc.drawGraphic(x, y, gfx_cc_resized);
 }
