@@ -901,8 +901,8 @@ void DungeonGenerator::compress()
         }
         if (empty) {
             chopLeftSide();
-            shiftHomes(assigned_homes, -rwidth+1, 0);
-            shiftHomes(unassigned_homes, -rwidth+1, 0);
+            shiftHomes(assigned_homes, -(rwidth+1), 0);
+            shiftHomes(unassigned_homes, -(rwidth+1), 0);
         } else {
             break;
         }
@@ -937,8 +937,8 @@ void DungeonGenerator::compress()
         }
         if (empty) {
             chopTopSide();
-            shiftHomes(assigned_homes, 0, -rheight+1);
-            shiftHomes(unassigned_homes, 0, -rheight+1);
+            shiftHomes(assigned_homes, 0, -(rheight+1));
+            shiftHomes(unassigned_homes, 0, -(rheight+1));
         } else {
             break;
         }
