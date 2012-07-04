@@ -36,11 +36,11 @@
 class ColourChange;
 class GfxResizer;
 
-// if semitransparent == true, will additionally change the alpha channel
-// to render the graphic semitransparent (used for drawing invisible teammates).
+// alpha of the new graphic = max(original alpha, max_alpha)
+// This is used for drawing invisible teammates
 boost::shared_ptr<const Coercri::PixelArray> CreateGraphicWithCC(boost::shared_ptr<const Coercri::PixelArray> original,
                                                           const ColourChange &cc,
-                                                          bool semitransparent);
+                                                          unsigned char max_alpha = 255);
 
 boost::shared_ptr<const Coercri::PixelArray> CreateResizedGraphic(const GfxResizer &resizer,
                                                            boost::shared_ptr<const Coercri::PixelArray> original,

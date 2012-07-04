@@ -109,14 +109,6 @@ screen_flash_b = 119;
 pot_flash_time = 160;      -- for super, poison immun. (controls duration of each flash)
 pi_flash_delay = 6;        -- for poison immun. (controls how frequent flashes are)
 
--- In-game chat params
-chat_min_lines = 3;
-chat_max_lines = 10;
-chat_percentage = 20;
-chat_top_margin = 20;
-chat_bottom_margin = 10;
-chat_alpha = 160;  -- used for the chat> prompt at the moment.
-
 -- Pause mode colours
 pause1r = 200;
 pause1g = 80;
@@ -135,6 +127,8 @@ pause4g = 136;
 pause4b = 85;
 
 pausealpha = 220;
+
+invisalpha = 140;       -- 0 to 255
 
 }
 

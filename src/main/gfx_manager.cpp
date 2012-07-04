@@ -35,13 +35,15 @@
 GfxManager::GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                        boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
                        const std::vector<std::string> &ttf_font_names_,
-                       const std::vector<std::string> &bmp_font_names_)
+                       const std::vector<std::string> &bmp_font_names_,
+                       unsigned char invis_alpha_)
     : gfx_driver(gfx_driver_),
       ttf_loader(ttf_loader_),
       ttf_font_names(ttf_font_names_),
       bmp_font_names(bmp_font_names_),
       font_size(0),
-      npix(0)
+      npix(0),
+      invis_alpha(invis_alpha_)
 {
 }
 
@@ -79,7 +81,7 @@ void GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
             ColourChange cc;
             cc.add(Colour(gfx.getR(), gfx.getG(), gfx.getB(), 255), 
                    Colour(gfx.getR(), gfx.getG(), gfx.getB(), 0));   // make it transparent
-            pixels = CreateGraphicWithCC(pixels, cc, false);
+            pixels = CreateGraphicWithCC(pixels, cc);
         }
         
         // Create the graphic
@@ -154,7 +156,8 @@ boost::shared_ptr<Coercri::Graphic> GfxManager::createGraphic(const GraphicKey &
         ASSERT(key.new_width == key.original->getWidth() && key.new_height == key.original->getHeight());
 
         // Call the colour-changing routine
-        new_pixels = CreateGraphicWithCC(key.original->getPixels(), key.cc, key.semitransparent);
+        new_pixels = CreateGraphicWithCC(key.original->getPixels(), key.cc, 
+            key.semitransparent ? invis_alpha : 255);
     }
     
     boost::shared_ptr<Coercri::Graphic> new_graphic(gfx_driver->createGraphic(new_pixels, new_hx, new_hy));

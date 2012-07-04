@@ -427,7 +427,10 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
                            pimpl->config_map.getInt("font_size"));
 
     // Setup gfx & sound managers
-    pimpl->gfx_manager.reset(new GfxManager(pimpl->gfx_driver, pimpl->ttf_loader, ttf_font_names, bitmap_font_names));
+    pimpl->gfx_manager.reset(
+        new GfxManager(pimpl->gfx_driver, pimpl->ttf_loader,
+                       ttf_font_names, bitmap_font_names,
+                       static_cast<unsigned char>(pimpl->config_map.getInt("invisalpha"))));
     setupGfxResizer();
     pimpl->sound_manager.reset(new SoundManager(pimpl->sound_driver));
 

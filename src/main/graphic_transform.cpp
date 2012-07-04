@@ -29,8 +29,8 @@
 #include "round.hpp"
 
 boost::shared_ptr<const Coercri::PixelArray> CreateGraphicWithCC(boost::shared_ptr<const Coercri::PixelArray> pixels,
-                                                          const ColourChange &cc,
-                                                          bool semitransparent)
+                                                                 const ColourChange &cc,
+                                                                 unsigned char max_alpha)
 {
     const int width = pixels->getWidth();
     const int height = pixels->getHeight();
@@ -51,10 +51,7 @@ boost::shared_ptr<const Coercri::PixelArray> CreateGraphicWithCC(boost::shared_p
             }
 
             // semitransparency feature.
-            const unsigned char SEMITRANSPARENT_ALPHA = 128;
-            if (semitransparent && out.a > SEMITRANSPARENT_ALPHA) {
-                out.a = SEMITRANSPARENT_ALPHA;
-            }
+            if (out.a > max_alpha) out.a = max_alpha;
         }
     }
 

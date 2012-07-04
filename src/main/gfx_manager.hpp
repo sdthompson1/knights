@@ -62,7 +62,8 @@ public:
     GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
                const vector<string> &ttf_font_names_,
-               const vector<string> &bmp_font_names_);
+               const vector<string> &bmp_font_names_,
+               unsigned char invis_alpha_);
     ~GfxManager();
     
     // Fonts and text
@@ -154,6 +155,9 @@ private:
     CachedGfxMap cached_gfx_map;
     RecentList recent_list;
     int npix;
+
+    // Cached config value
+    unsigned char invis_alpha;
 };
 
 #endif
