@@ -138,6 +138,7 @@ private:
     void setSpecialSegment(int,int,int);
     void doLayout(int);
     static void shiftHomes(vector<pair<MapCoord,MapDirection> > &, int, int);
+    void chop(int xofs, int yofs, int new_lwidth, int new_lheight);
     void chopTopSide();
     void chopBottomSide();
     void chopLeftSide();

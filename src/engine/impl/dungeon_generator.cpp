@@ -818,76 +818,73 @@ void DungeonGenerator::shiftHomes(vector<pair<MapCoord,MapDirection> > &homes, i
     }
 }
 
-void DungeonGenerator::chopLeftSide()
+void DungeonGenerator::chop(int xofs, int yofs, int new_lwidth, int new_lheight)
 {
-    vector<const Segment *> new_segments((lwidth-1)*lheight);
-    vector<int> new_cats((lwidth-1)*lheight);
-    vector<bool> new_x_reflect((lwidth-1)*lheight);
-    vector<int> new_nrot((lwidth-1)*lheight);
-    for (int x=0; x<lwidth-1; ++x) {
-        for (int y=0; y<lheight; ++y) {
-            new_segments[y*(lwidth-1)+x] = segments[y*lwidth+x+1];
-            new_cats[y*(lwidth-1)+x] = segment_categories[y*lwidth+x+1];
-            new_x_reflect[y*(lwidth-1)+x] = segment_x_reflect[y*lwidth+x+1];
-            new_nrot[y*(lwidth-1)+x] = segment_nrot[y*lwidth+x+1];
+    vector<const Segment *> new_segments(new_lwidth * new_lheight);
+    vector<int> new_cats(new_lwidth * new_lheight);
+    vector<bool> new_x_reflect(new_lwidth * new_lheight);
+    vector<int> new_nrot(new_lwidth * new_lheight);
+
+    for (int x = 0; x < new_lwidth; ++x) {
+        for (int y = 0; y < new_lheight; ++y) {
+
+            const int new_idx = y * new_lwidth + x;
+            const int old_idx = (y + yofs) * lwidth + (x + xofs);
+
+            new_segments[new_idx] = segments[old_idx];
+            new_cats[new_idx] = segment_categories[old_idx];
+            new_x_reflect[new_idx] = segment_x_reflect[old_idx];
+            new_nrot[new_idx] = segment_nrot[old_idx];
         }
     }
+
     segments.swap(new_segments);
     segment_categories.swap(new_cats);
     segment_x_reflect.swap(new_x_reflect);
     segment_nrot.swap(new_nrot);
-    --lwidth;
+
+    vector<bool> new_horiz_exits((new_lwidth - 1) * new_lheight);
+    for (int x = 0; x < new_lwidth - 1; ++x) {
+        for (int y = 0; y < new_lheight; ++y) {
+            const int new_idx = y * (new_lwidth - 1) + x;
+            const int old_idx = (y + yofs) * (lwidth - 1) + (x + xofs);
+            new_horiz_exits[new_idx] = horiz_exits[old_idx];
+        }
+    }
+    horiz_exits.swap(new_horiz_exits);
+
+    vector<bool> new_vert_exits(new_lwidth * (new_lheight - 1));
+    for (int x = 0; x < new_lwidth; ++x) {
+        for (int y = 0; y < new_lheight - 1; ++y) {
+            const int new_idx = y * new_lwidth + x;
+            const int old_idx = (y + yofs) * lwidth + (x + xofs);
+            new_vert_exits[new_idx] = vert_exits[old_idx];
+        }
+    }
+    vert_exits.swap(new_vert_exits);
+
+    lwidth = new_lwidth;
+    lheight = new_lheight;
+}
+
+void DungeonGenerator::chopLeftSide()
+{
+    chop(1, 0, lwidth - 1, lheight);
 }
 
 void DungeonGenerator::chopRightSide()
 {
-    vector<const Segment *> new_segments((lwidth-1)*lheight);
-    vector<int> new_cats((lwidth-1)*lheight);
-    vector<bool> new_x_reflect((lwidth-1)*lheight);
-    vector<int> new_nrot((lwidth-1)*lheight);
-    for (int x=0; x<lwidth-1; ++x) {
-        for (int y=0; y<lheight; ++y) {
-            new_segments[y*(lwidth-1)+x] = segments[y*lwidth+x];
-            new_cats[y*(lwidth-1)+x] = segment_categories[y*lwidth+x];
-            new_x_reflect[y*(lwidth-1)+x] = segment_x_reflect[y*lwidth+x];
-            new_nrot[y*(lwidth-1)+x] = segment_nrot[y*lwidth+x];
-        }
-    }
-    segments.swap(new_segments);
-    segment_categories.swap(new_cats);
-    segment_x_reflect.swap(new_x_reflect);
-    segment_nrot.swap(new_nrot);
-    --lwidth;
-}
-
-void DungeonGenerator::chopBottomSide()
-{
-    vector<const Segment *> new_segments(lwidth*(lheight-1));
-    vector<int> new_cats(lwidth*(lheight-1));
-    vector<bool> new_x_reflect(lwidth*(lheight-1));
-    vector<int> new_nrot(lwidth*(lheight-1));
-    for (int x=0; x<lwidth; ++x) {
-        for (int y=0; y<lheight-1; ++y) {
-            new_segments[y*lwidth+x] = segments[(y+1)*lwidth+x];
-            new_cats[y*lwidth+x] = segment_categories[(y+1)*lwidth+x];
-            new_x_reflect[y*lwidth+x] = segment_x_reflect[(y+1)*lwidth+x];
-            new_nrot[y*lwidth+x] = segment_nrot[(y+1)*lwidth+x];
-        }
-    }
-    segments.swap(new_segments);
-    segment_categories.swap(new_cats);
-    segment_x_reflect.swap(new_x_reflect);
-    segment_nrot.swap(new_nrot);
-    --lheight;
+    chop(0, 0, lwidth - 1, lheight);
 }
 
 void DungeonGenerator::chopTopSide()
 {
-    segments.resize(segments.size()-lwidth);
-    segment_categories.resize(segment_categories.size()-lwidth);
-    segment_x_reflect.resize(segment_x_reflect.size()-lwidth);
-    segment_nrot.resize(segment_nrot.size()-lwidth);
-    --lheight;
+    chop(0, 1, lwidth, lheight - 1);
+}
+
+void DungeonGenerator::chopBottomSide()
+{
+    chop(0, 0, lwidth, lheight - 1);
 }
 
 void DungeonGenerator::compress()
@@ -928,7 +925,7 @@ void DungeonGenerator::compress()
         }
     }
 
-    // crop bottom side
+    // crop top side
     while (1) {
         if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
         bool empty = true;
@@ -939,7 +936,7 @@ void DungeonGenerator::compress()
             }
         }
         if (empty) {
-            chopBottomSide();
+            chopTopSide();
             shiftHomes(assigned_homes, 0, -rheight+1);
             shiftHomes(unassigned_homes, 0, -rheight+1);
         } else {
@@ -947,7 +944,7 @@ void DungeonGenerator::compress()
         }
     }
 
-    // crop top side
+    // crop bottom side
     while (1) {
         if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
         bool empty = true;
@@ -958,7 +955,7 @@ void DungeonGenerator::compress()
             }
         }
         if (empty) {
-            chopTopSide();
+            chopBottomSide();
         } else {
             break;
         }
@@ -1097,6 +1094,12 @@ void DungeonGenerator::knockThroughDoors(DungeonMap & dmap)
             if (segments[y*lwidth+x] && segments[(y+1)*lwidth+x] && vert_exits[y*lwidth+x]) {
 
                 // Try to place 3 doors (but only up to max_attempts attempts)
+
+                // NOTE: some of the doors may actually be "duplicates" i.e. the same 
+                // square is selected for a door more than once.
+                // This is OK, it just means that we will get fewer than three doors
+                // connecting the segments in this case.
+
                 int ndoors_placed = 0;
                 for (int i=0; i<max_attempts; ++i) {
                     MapCoord mc(g_rng.getInt(0, rwidth) + x*(rwidth+1) + 1,
