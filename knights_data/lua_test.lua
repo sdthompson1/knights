@@ -485,6 +485,7 @@ end
 
 t_closed_pit_normal = kconfig_tile("t_closed_pit_normal")
 t_closed_pit_vert = kconfig_tile("t_closed_pit_vert")
+t_closed_pit_horiz = kconfig_tile("t_closed_pit_horiz")
 t_closed_pit_wooden = kconfig_tile("t_closed_pit_wooden")
 t_crystal_ball = kconfig_tile("t_crystal_ball")
 t_dead_pentagram = kconfig_tile("t_dead_pentagram")
@@ -495,6 +496,7 @@ t_open_gate_horiz = kconfig_tile("t_open_gate_horiz")
 t_open_gate_vert = kconfig_tile("t_open_gate_vert")
 t_open_pit_normal = kconfig_tile("t_open_pit_normal")
 t_open_pit_vert = kconfig_tile("t_open_pit_vert")
+t_open_pit_horiz = kconfig_tile("t_open_pit_horiz")
 t_open_pit_wooden = kconfig_tile("t_open_pit_wooden")
 t_wall_pillar = kconfig_tile("t_wall_pillar")
 
@@ -506,6 +508,9 @@ user_table(t_closed_pit_normal).open = t_open_pit_normal
 
 user_table(t_open_pit_vert).close = t_closed_pit_vert
 user_table(t_closed_pit_vert).open = t_open_pit_vert
+
+user_table(t_open_pit_horiz).close = t_closed_pit_horiz
+user_table(t_closed_pit_horiz).open = t_open_pit_horiz
 
 user_table(t_open_pit_wooden).close = t_closed_pit_wooden
 user_table(t_closed_pit_wooden).open = t_open_pit_wooden

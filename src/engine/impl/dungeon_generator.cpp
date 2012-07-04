@@ -46,6 +46,14 @@ using namespace KConfig;
 #undef lst2
 #endif
 
+namespace {
+    void GenerateRandomTransform(bool &x_reflect, int &nrot)
+    {
+        x_reflect = g_rng.getBool();
+        nrot = g_rng.getInt(0, 4);
+    }
+}
+
 //
 // DungeonDirectives
 //
@@ -592,8 +600,10 @@ void DungeonGenerator::setHomeSegment(int x, int y, int minhomes, int assign)
     segments[y*lwidth+x] = r;
 
     // Trac #41. Generate random rotation/reflection for the segment
-    segment_x_reflect[y*lwidth+x] = g_rng.getBool();
-    segment_nrot[y*lwidth+x] = g_rng.getInt(0,4);
+    bool rand_reflect;
+    GenerateRandomTransform(rand_reflect,
+                            segment_nrot[y*lwidth+x]);
+    segment_x_reflect[y*lwidth+x] = rand_reflect;
 
     // copy homes to appropriate lists (either assigned or unassigned).
     if (r) {
@@ -628,11 +638,13 @@ void DungeonGenerator::setSpecialSegment(int x, int y, int category)
     }
     if (!r) throw DungeonGenerationFailed();
     segments[y*lwidth + x] = r;
-    segment_x_reflect[y*lwidth + x] = g_rng.getBool();
-    
-    // Trac #41. Generate random rotation/reflection for the segment
-    segment_nrot[y*lwidth + x] = g_rng.getInt(0, 4);
     segment_categories[y*lwidth+x] = category;
+
+    // Trac #41. Generate random rotation/reflection for the segment
+    bool rand_reflect;
+    GenerateRandomTransform(rand_reflect,
+                            segment_nrot[y*lwidth + x]);
+    segment_x_reflect[y*lwidth + x] = rand_reflect;
 }
 
 void DungeonGenerator::doLayout(int nplayers)
