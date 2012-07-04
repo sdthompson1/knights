@@ -91,14 +91,3 @@ void LuaLoadFromString(lua_State *lua, const char *str)
     const int result = luaL_loadstring(lua, str);
     if (result != 0) HandleLuaError(lua);
 }
-
-void LuaExec(lua_State *lua)
-{
-    const int result = lua_pcall(lua, 0, 0, 0);
-    if (result != 0) {
-        // get the error msg & throw exception
-        const std::string err_msg = lua_tostring(lua, -1);
-        lua_pop(lua, 1);
-        throw LuaError(err_msg);
-    }
-}

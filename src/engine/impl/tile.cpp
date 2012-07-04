@@ -29,8 +29,10 @@
 #include "item.hpp"
 #include "item_type.hpp"
 #include "knights_callbacks.hpp"
+#include "lua_exec.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
+#include "my_exceptions.hpp"
 #include "sweep.hpp"
 #include "tile.hpp"
 
@@ -309,18 +311,17 @@ const Control * Tile::getControl(const MapCoord &pos) const
         } else {
         
             PushMapCoord(lua.get(), pos);   // [func pos]
-            const int result = lua_pcall(lua.get(), 1, 1, 0);  // [result]
 
-            if (result != 0) {
-                const std::string err_msg = lua_tostring(lua.get(), -1);
-                lua_pop(lua.get(), 1);   // []
-                Mediator::instance().getCallbacks().gameMsg(-1, err_msg);
+            try {
+                LuaExec(lua.get(), 1, 1);
+            } catch (const LuaError &e) {
+                Mediator::instance().getCallbacks().gameMsg(-1, e.what());
                 return 0;
-            } else {
-                const Control * ctrl = ReadLuaPtr<Control>(lua.get(), -1);
-                lua_pop(lua.get(), 1);   // []
-                return ctrl;
             }
+
+            const Control * ctrl = ReadLuaPtr<Control>(lua.get(), -1);
+            lua_pop(lua.get(), 1);   // []
+            return ctrl;
         }
     }
 }

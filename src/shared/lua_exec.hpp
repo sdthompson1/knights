@@ -1,5 +1,5 @@
 /*
- * lua_load_from_rstream.hpp
+ * lua_exec.hpp
  *
  * This file is part of Knights.
  *
@@ -21,19 +21,27 @@
  *
  */
 
-#ifndef LUA_LOAD_FROM_RSTREAM_HPP
-#define LUA_LOAD_FROM_RSTREAM_HPP
-
-#include <string>
+#ifndef LUA_EXEC_HPP
+#define LUA_EXEC_HPP
 
 struct lua_State;
 
-// Read a chunk from an Rstream and push it on to the lua stack
-// (as a lua function).
-// If there is an error, throws LuaError and leaves the stack unchanged.
-void LuaLoadFromRStream(lua_State *lua, const std::string &filename);
-
-// Ditto but reads from a string instead
-void LuaLoadFromString(lua_State *lua, const char *str);
+// Execute the lua function (and args) on top of the stack. The stack on entry is
+//
+// [<stuff> func arg1 ... argn]
+//
+// The stack on exit will be
+//
+// [<stuff> result1 ... resultn]
+//
+// except if there was an error, in which case the stack on exit will be
+//
+// [<stuff>]
+// 
+// and LuaError will be thrown. (The message will contain a full stack traceback.)
+//
+// Note: <stuff> denotes zero or more items, which are ignored by LuaExec.
+// 
+void LuaExec(lua_State *lua, int nargs, int nresults);
 
 #endif

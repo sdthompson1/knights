@@ -27,7 +27,7 @@
 #include "creature.hpp"
 #include "knights_callbacks.hpp"
 #include "lua.hpp"
-#include "lua_load_from_rstream.hpp"  // for LuaExec
+#include "lua_exec.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
 #include "my_exceptions.hpp"
@@ -248,7 +248,7 @@ void LuaAction::execute(const ActionData &ad) const
 
     try {
         // call the function (with no arguments)
-        LuaExec(lua);    // []
+        LuaExec(lua, 0, 0);    // []
     } catch (const LuaError &err) {
         Mediator::instance().getCallbacks().gameMsg(-1, err.what());
     }

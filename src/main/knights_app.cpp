@@ -36,6 +36,7 @@
 #include "knights_app.hpp"
 #include "knights_client.hpp"
 #include "knights_server.hpp"
+#include "lua_exec.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_sandbox.hpp"
 #include "load_font.hpp"
@@ -299,7 +300,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
 
         SetupLuaConfigFunctions(lua, &pimpl->config_gfx);
         LuaLoadFromRStream(lua, "client_config.lua");
-        LuaExec(lua);
+        LuaExec(lua, 0, 0);
 
         lua_getglobal(lua, "MISC_CONFIG");
         PopConfigMap(lua, pimpl->config_map);
