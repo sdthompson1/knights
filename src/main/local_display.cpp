@@ -707,12 +707,23 @@ void LocalDisplay::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == chat_field.get() || event.getSource() == send_button.get()) {
         const std::string msg = getChatFieldContents();
-        if (!msg.empty()) {
-            knights_client.sendChatMessage(msg);
-            chat_field->setText("");
-            container.requestFocus();
-            deactivateChatField();
+
+        bool empty = true;
+        for (std::string::const_iterator it = msg.begin(); it != msg.end(); ++it) {
+            if (*it != ' ') {
+                empty = false;
+                break;
+            }
         }
+        
+        if (!empty) {
+            knights_client.sendChatMessage(msg);
+        }
+        
+        chat_field->setText("");
+        container.requestFocus();
+        deactivateChatField();
+        
     } else if (event.getSource() == clear_button.get()) {
         chat_field->setText("");
         if (!chat_field->isFocused()) deactivateChatField();
