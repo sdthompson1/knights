@@ -359,7 +359,7 @@ walking_monster_damage_delay = 1000;      -- Timing for zombie animation (when a
 -- Timing stuff
 control_poll_interval = 50;    -- how frequently to poll the controller
 player_task_interval = 200;    -- How often to recheck the mini-map?
-missile_check_interval = 25;   -- How often to check for missile collisions.
+missile_check_interval = 12;   -- How often to check for missile collisions.
 
 -- Graphics settings
 blood_icon_duration = 300;  -- how long to show blood for (when a knight is hit)
