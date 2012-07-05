@@ -77,6 +77,11 @@ namespace Coercri {
     {
         boost::shared_ptr<PixelArray> result;
 
+        // Check stream is valid
+        if (!str) {
+            throw CoercriError("Failed to load BMP file: could not open file");
+        }
+
         // Check the magic number
         char magic[2] = {0,0};
         str.read(magic, 2);
