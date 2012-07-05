@@ -93,6 +93,13 @@ public:
     void requestSpeechBubble(GameConnection &, bool show);
     void setObsFlag(GameConnection &, bool flag);
 
+    // This should be called after any calls to sendControl() or
+    // requestSpeechBubble(), it makes sure that these messages get
+    // through to the game engine. NOTE: wait until you have sent a
+    // batch of sendControl()s and/or requestSpeechBubble()s, THEN
+    // call endOfMessagePacket().
+    void endOfMessagePacket();
+    
     // Get any outgoing msgs that need to be sent to the client.
     // Any existing contents of "data" are replaced.
     void getOutputData(GameConnection &conn, std::vector<unsigned char> &data);

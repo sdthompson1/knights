@@ -42,6 +42,7 @@
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/weak_ptr.hpp"
+#include "boost/thread/condition_variable.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/thread.hpp"
 
@@ -138,6 +139,12 @@ public:
 
     // These are set during initialization (and are only valid when game is running!)
     bool is_deathmatch;  // used when sending "start_game" message
+
+    // Condition variable used to wake up the update thread when a control comes in
+    // (instead of polling, like it used to do).
+    // Note, this is controlled using the same mutex (my_mutex) as the rest of the data.
+    boost::condition_variable wake_up_cond_var;
+    bool wake_up_flag;
 };
 
 namespace {
@@ -751,31 +758,56 @@ namespace {
                         buf.writeString("Note: Team chat is available. Type /t at the start of your message to send to your team only.");
                     }
                 }
-                
+
                 // Go into game loop. NOTE: This will run forever until the main thread interrupts us
                 // (or an exception occurs, or update() returns false).
                 int last_time = timer->getMsec();
+                int time_now = last_time;
                 while (1) {
                     // work out how long since the last update
-                    const int new_time = timer->getMsec();
-                    const int time_delta = new_time - last_time;
+                    const int update_delta_t = time_now - last_time;
 
-                    // only run an update if delta is min_time_delta or more.
-                    // if > max_time_delta then only run an update of max_time_delta, and 'drop'
-                    // the rest of the time (ie run more slowly than real-time).
-                    const int min_time_delta = 50;
-                    const int max_time_delta = 200;
-                    if (time_delta > min_time_delta) {                        
-                        const bool should_continue = update(std::min(time_delta, max_time_delta));
-                        if (!should_continue) break;
-                        last_time += time_delta;
+                    // run an update
+                    const bool should_continue = update(update_delta_t);
+                    if (!should_continue) break;   // End of game
+                    last_time += update_delta_t;
+
+                    // schedule the next update
+                    const int max_time_to_update = 250;
+                    const unsigned int time_of_next_update =
+                        last_time + std::min(max_time_to_update, engine->getTimeToNextUpdate());
+                    
+                    // Sleep until main thread signals us, or until we reach time_of_next_update
+                    while (1)
+                    {
+                        // Update time_now, and work out how long we need to wait
+                        time_now = timer->getMsec();
+                        int wait_time = time_of_next_update - time_now;
+
+                        if (wait_time <= 0) break;  // The update has arrived!
+
+                        // OK, so we need to wait for a bit. Lock mutex
+                        boost::unique_lock<boost::mutex> lock(kg.my_mutex);
+
+                        // The call to timed_wait UNLOCKS the mutex, WAITS for either the time to expire, or
+                        // the main loop to signal us, then LOCKS the mutex again before returning.
+                        kg.wake_up_cond_var.timed_wait(lock, 
+                            boost::posix_time::milliseconds(wait_time));
+
+                        if (kg.wake_up_flag) {
+                            // The reason that timed_wait() returned was that the main loop signalled us.
+                            // Acknowledge the signal (by clearing the flag), then break (which will force
+                            // the next update -- as well as releasing the mutex).
+                            kg.wake_up_flag = false;
+                            break;
+                        }
+
+                        // Go round again.
+                        // If the return from timed_wait was spurious, then the "if wait_time<=0" check will
+                        // fail and we will go round again.
+                        // If the return from timed_wait was because the timer expired, then the "if" will
+                        // succeed and we will break out, and do the next update.
                     }
-
-                    // work out how long until the next update (taking
-                    // into account how long the update itself took).
-                    const int time_since_update = timer->getMsec() - last_time;
-                    const int time_to_wait = std::max(0, min_time_delta - time_since_update) + 1;
-                    boost::this_thread::sleep(boost::posix_time::milliseconds(time_to_wait));
                 }
                 
             } catch (boost::thread_interrupted &) {
@@ -1425,6 +1457,8 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
     if (time_deltas.get()) pimpl->time_deltas = time_deltas;
     if (random_seeds.get()) pimpl->random_seeds = random_seeds;
     pimpl->msg_count_update_flag = true;
+
+    pimpl->wake_up_flag = false;
 }
 
 KnightsGame::~KnightsGame()
@@ -1970,7 +2004,7 @@ void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control
     if (!pimpl->update_thread.joinable()) return; // Game is not running
 
     WaitForMsgCounter(*pimpl);
-    
+
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag && p >= 0 && p < (conn.name2.empty() ? 1 : 2)) {
@@ -1984,13 +2018,32 @@ void KnightsGame::requestSpeechBubble(GameConnection &conn, bool show)
     if (!pimpl->update_thread.joinable()) return;  // Game is not running
 
     WaitForMsgCounter(*pimpl);
-    
+
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag) {
         conn.speech_request = true;
         conn.speech_bubble = show;
     }
+}
+
+void KnightsGame::endOfMessagePacket()
+{
+    // This should always be called after a batch of sendControl()s or requestSpeechBubble()s are done.
+
+    // It checks whether wake_up_flag is set, and if so, notifies the UpdateThread.
+    // That thread will respond by doing a game update (thus responding to the players' controls and/or
+    // speech bubble requests.)
+
+    // This is better than the previous model which was to poll every 50ms or so, because that just added
+    // (upto) 50ms of lag on the controls.
+
+    bool flag;
+    {
+        boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+        flag = (pimpl->wake_up_flag);
+    }
+    if (flag) pimpl->wake_up_cond_var.notify_one();
 }
 
 void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)

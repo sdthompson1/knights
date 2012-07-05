@@ -657,6 +657,8 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
             }
         }
 
+        if (conn.game) conn.game->endOfMessagePacket();
+
         return;  // everything below here is error handling code.
         
     } catch (std::exception &e) {

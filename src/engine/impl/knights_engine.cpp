@@ -180,6 +180,11 @@ KnightsEngine::~KnightsEngine()
 // update
 //
 
+int KnightsEngine::getTimeToNextUpdate() const
+{
+    return pimpl->task_manager.getTimeToNextUpdate();
+}
+
 void KnightsEngine::update(int time_delta, KnightsCallbacks &callbacks)
 {
     Mediator::instance().setCallbacks(&callbacks); 

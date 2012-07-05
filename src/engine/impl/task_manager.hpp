@@ -56,6 +56,9 @@ public:
     // This increases time then runs tasks as they become ready.
     void advanceToTime(int target_time);
 
+    // How long (from current GVT) until the next task is going to become ready.
+    int getTimeToNextUpdate() const;
+    
     // For information
     int getGVT() const { return gvt; }
     

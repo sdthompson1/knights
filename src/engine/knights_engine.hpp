@@ -73,6 +73,9 @@ public:
     // Uses KnightsCallbacks to inform caller of what happened during the update.
     void update(int time_delta, KnightsCallbacks &callbacks);
 
+    // Find out how long until the next update is required.
+    int getTimeToNextUpdate() const;
+    
     // Input cmds that might be received from players.
     void setControl(int player, const UserControl *control);
     void setApproachBasedControls(int player, bool flag);

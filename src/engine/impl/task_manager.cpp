@@ -111,3 +111,18 @@ void TaskManager::advanceToTime(int target_time)
     // finally bring gvt up to target_time
     gvt = target_time;
 }
+
+int TaskManager::getTimeToNextUpdate() const
+{
+    int result = 60 * 60 * 1000;  // returns 1 hour if all queues are empty...
+    
+    for (int tp = 1; tp >= 0; --tp) {
+        if (!task_queue[tp].empty()) {
+            const int time = (*task_queue[tp].begin())->time;
+            const int delta = std::max(1, time - gvt);  // Put a floor of 1 on the result (negative or 0 time to next update would be weird)
+            result = std::min(result, delta);
+        }
+    }
+
+    return result;
+}
