@@ -1,15 +1,18 @@
 /*
  * FILE:
- *   font.hpp
+ *   kern_table.hpp
  *
  * PURPOSE:
- *   Font interface
- *   
+ *   An interface used to support kerning with BitmapFonts.
+ *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   21-May-2012
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2012.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,33 +44,15 @@
  *
  */
 
-#ifndef COERCRI_FONT_HPP
-#define COERCRI_FONT_HPP
-
-#include "color.hpp"
-
-#include <string>
+#ifndef COERCRI_KERN_TABLE_HPP
+#define COERCRI_KERN_TABLE_HPP
 
 namespace Coercri {
 
-    class GfxContext;
-    
-    class Font {
+    class KernTable {
     public:
-        virtual ~Font() { }
-
-        // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const = 0;
-        virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const std::string &text, int &w, int &h) const = 0;
-
-        // Convenience function, if only width is required
-        int getTextWidth(const std::string &text) const {
-            int w,h;
-            getTextSize(text,w,h);
-            return w;
-        }
-
+        // The returned kern value is added to the x-position of the second character.        
+        virtual int getKern(char first, char second) const = 0;
     };
 
 }

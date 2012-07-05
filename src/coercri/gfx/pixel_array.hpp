@@ -54,6 +54,7 @@ namespace Coercri {
     class PixelArray {
     public:
         PixelArray(int w, int h) : data(w*h), width(w), height(h) { }
+        PixelArray(int w, int h, Color c) : data(w*h, c), width(w), height(h) { }
 
         int getWidth() const { return width; }
         int getHeight() const { return height; }

@@ -158,7 +158,7 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         if (show_time) {
             const int phy_x = Round(float(ref_time_x) * scale) + x - gm.getFont()->getTextWidth(time_limit_string)/2;
             const int phy_y = Round(float(ref_time_y) * scale) + y;
-            gc.drawText(phy_x, phy_y, *gm.getFont(), time_limit_string, Coercri::Color(255,255,255), true);
+            gc.drawText(phy_x, phy_y, *gm.getFont(), time_limit_string, Coercri::Color(255,255,255));
         }
     }
 }

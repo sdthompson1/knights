@@ -55,13 +55,8 @@ namespace Coercri {
     class CGFont : public gcn::Font {
     public:
         // f must be non-null
-        explicit CGFont(boost::shared_ptr<Coercri::Font> f, bool aa = true)
-            : font(f), antialias(aa) { }
-
-        // guichan has no way to set antialiasing so we will consider this to be a property of the font.
-        // text color can be set using Graphics::setColor.
-        bool getAntiAlias() const { return antialias; }
-        void setAntiAlias(bool aa) { antialias = aa; }
+        explicit CGFont(boost::shared_ptr<Coercri::Font> f)
+            : font(f) { }
 
         // overridden from gcn::Font:
         virtual void drawString(gcn::Graphics *graphics, const std::string &text, int x, int y);
@@ -70,7 +65,6 @@ namespace Coercri {
 
     private:
         boost::shared_ptr<Coercri::Font> font;
-        bool antialias;
     };
 
 }

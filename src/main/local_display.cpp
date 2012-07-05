@@ -66,8 +66,8 @@ namespace {
         const char * separator = ": ";
         const int w1 = gm.getFont()->getTextWidth(msg1 + separator);
         const int w = gm.getFont()->getTextWidth(msg1 + separator + msg2);
-        gc.drawText(xc - w/2, y, *gm.getFont(), msg1 + separator, col1, true);
-        gc.drawText(xc - w/2 + w1, y, *gm.getFont(), msg2, col2, true);
+        gc.drawText(xc - w/2, y, *gm.getFont(), msg1 + separator, col1);
+        gc.drawText(xc - w/2 + w1, y, *gm.getFont(), msg2, col2);
     }
 
     struct CountingPrinter : Printer {
@@ -95,7 +95,7 @@ namespace {
                   int x, int y) : gc(gc_), font(font_), col(col_), x0(x), y0(y) { }
         int getTextWidth(const std::string &t) { return font.getTextWidth(t); }
         int getTextHeight() { return font.getTextHeight(); }
-        void printLine(const std::string &text, int y, bool do_centre) { gc.drawText(x0, y0 + y, font, text, col, true); }
+        void printLine(const std::string &text, int y, bool do_centre) { gc.drawText(x0, y0 + y, font, text, col); }
 
         Coercri::GfxContext &gc;
         const Coercri::Font &font;
@@ -535,6 +535,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
     chat_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_ALWAYS);
     chat_scrollarea->setBaseColor(bg_col);
     chat_scrollarea->setBackgroundColor(gcn::Color(0,0,0));
+    chat_scrollarea->setOpaque(false);
     container.add(chat_scrollarea.get(), chat_area_x, chat_area_y + chat_titleblock->getHeight() + 2);
 
     //
@@ -604,6 +605,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         plyr_list_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_AUTO);
         plyr_list_scrollarea->setBaseColor(bg_col);
         plyr_list_scrollarea->setBackgroundColor(gcn::Color(0,0,0));
+        plyr_list_scrollarea->setOpaque(false);
         container.add(plyr_list_scrollarea.get(), plyr_list_x, plyr_list_y + plyr_list_titleblock->getHeight() + 2);
 
         if (time_limit_label.get()) {
@@ -670,6 +672,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         tutorial_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_AUTO);
         tutorial_scrollarea->setBaseColor(bg_col);
         tutorial_scrollarea->setBackgroundColor(gcn::Color(0,0,0));
+        tutorial_scrollarea->setOpaque(false);
         container.add(tutorial_scrollarea.get(), plyr_list_x, plyr_list_y + plyr_list_titleblock->getHeight() + 2);
         
         updateTutorialWidget();
@@ -994,7 +997,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             x = dungeon_x + dungeon_width/2;  // centre of dungeon area
         }
         x -= w/2;
-        gc.drawText(x, vp_y + obs_margin, *my_font, names[player_num], Coercri::Color(255,255,255), true);
+        gc.drawText(x, vp_y + obs_margin, *my_font, names[player_num], Coercri::Color(255,255,255));
     }
 
     // Draw Winner/Loser screen
@@ -1007,13 +1010,13 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             if (winner_image) {
                 image = winner_image;
             } else {
-                gc.drawText(vp_x + 10, 50, *gm.getFont(), "WINNER", Coercri::Color(255,255,255), true);
+                gc.drawText(vp_x + 10, 50, *gm.getFont(), "WINNER", Coercri::Color(255,255,255));
             }
         } else {
             if (loser_image) {
                 image = loser_image;
             } else {
-                gc.drawText(vp_x + 10, 50, *gm.getFont(), "LOSER", Coercri::Color(255,255,255), true);
+                gc.drawText(vp_x + 10, 50, *gm.getFont(), "LOSER", Coercri::Color(255,255,255));
             }
         }
 
@@ -1038,8 +1041,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                             msg,
                             Coercri::Color(config_map.getInt("game_over_r"), 
                                            config_map.getInt("game_over_g"), 
-                                           config_map.getInt("game_over_b")),
-                            true);
+                                           config_map.getInt("game_over_b")));
             }
         }
     }
@@ -1084,7 +1086,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                 if (mos >= 0 && mos < NUM_ACTION_BAR_SLOTS) {
                     const UserControl *ctrl = slot_controls[player_num][mos];
                     const std::string & name = ctrl ? ctrl->getName() : "";
-                    gc.drawText(action_bar_x, action_bar_y + pixels_per_square + 2, *txt_font, name, Coercri::Color(255,255,255), true);
+                    gc.drawText(action_bar_x, action_bar_y + pixels_per_square + 2, *txt_font, name, Coercri::Color(255,255,255));
                 }
             }
         }
@@ -1142,7 +1144,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         const int x_margin = 20;
         const int title_xofs = std::max(0, (t_w - title_width)/2);
         const int title_txt_yofs = title_yofs + std::max(0, title_height - text_height)/2;
-        gc.drawText(t_x + title_xofs, t_y + title_txt_yofs, *gm.getFont(), title, col3, true);
+        gc.drawText(t_x + title_xofs, t_y + title_txt_yofs, *gm.getFont(), title, col3);
 
         // draw the "1/6" string
         if (!won[0]) {
@@ -1150,7 +1152,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             str << tutorial_windows.size() - tutorial_popups.size();
             str << '/';
             str << tutorial_windows.size() - 1;
-            gc.drawText(t_x + t_w - gm.getFont()->getTextWidth(str.str()) - x_margin, t_y + title_txt_yofs, *gm.getFont(), str.str(), col3, true);
+            gc.drawText(t_x + t_w - gm.getFont()->getTextWidth(str.str()) - x_margin, t_y + title_txt_yofs, *gm.getFont(), str.str(), col3);
         }
         
         // draw the message
@@ -1251,7 +1253,7 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     const string pstr = is_paused ? "GAME PAUSED" : "KNIGHTS";
     const int pwidth = gm.getFont()->getTextWidth(pstr);
     
-    gc.drawText(vp_x + vp_width/2 - pwidth/2, y, *gm.getFont(), pstr, col1, true);
+    gc.drawText(vp_x + vp_width/2 - pwidth/2, y, *gm.getFont(), pstr, col1);
     y += th;
     y += th/2;
     
@@ -1278,8 +1280,8 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
             // Move right if necessary, so as not to overlap left-hand text.
             if (x < left_bound) x = left_bound;
                 
-            gc.drawText(x0,     y, *gm.getFont(), p.first, col3, true);
-            gc.drawText(x0 + x, y, *gm.getFont(), p.second, col4, true);
+            gc.drawText(x0,     y, *gm.getFont(), p.first, col3);
+            gc.drawText(x0 + x, y, *gm.getFont(), p.second, col4);
             y += th;
         }
     }

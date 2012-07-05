@@ -1,15 +1,18 @@
 /*
  * FILE:
- *   font.hpp
+ *   dx11_graphic.hpp
  *
  * PURPOSE:
- *   Font interface
- *   
+ *   DirectX 11 implementation of Graphic
+ *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   21-Oct-2011
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2011.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,33 +44,51 @@
  *
  */
 
-#ifndef COERCRI_FONT_HPP
-#define COERCRI_FONT_HPP
+#ifndef DX11_GRAPHIC_HPP
+#define DX11_GRAPHIC_HPP
 
-#include "color.hpp"
+#include "../core/com_ptr_wrapper.hpp"
+#include "../../gfx/graphic.hpp"
 
-#include <string>
+#include <d3d11.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 namespace Coercri {
 
-    class GfxContext;
-    
-    class Font {
+    class DX11Graphic : public Graphic {
     public:
-        virtual ~Font() { }
+        DX11Graphic(ID3D11Device *device, boost::shared_ptr<const PixelArray> pixels, int hx_, int hy_);
 
-        // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const = 0;
-        virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const std::string &text, int &w, int &h) const = 0;
+        // overridden from Graphic
+        int getWidth() const;
+        int getHeight() const;
+        void getHandle(int &x, int &y) const { x = hx; y = hy; }
+        boost::shared_ptr<const PixelArray> getPixels() const { return parr; }
 
-        // Convenience function, if only width is required
-        int getTextWidth(const std::string &text) const {
-            int w,h;
-            getTextSize(text,w,h);
-            return w;
-        }
+        // access the underlying D3D texture
+        ID3D11ShaderResourceView * getShaderResourceView() const { return m_psShaderResourceView.get(); }
 
+    private:
+        ComPtrWrapper<ID3D11Texture2D> m_psTexture;
+
+        // slightly naughty to make this mutable, but logically we are not modifying the 
+        // shader resource view, we just may be binding it to the pipeline
+        // (which may call AddRef())...
+        mutable ComPtrWrapper<ID3D11ShaderResourceView> m_psShaderResourceView;
+
+        int hx;
+        int hy;
+
+        // This is a bit of a cop-out, we could probably read the texture back from the gfx card
+        // if we really wanted to (but this would require different CPU access flags when creating it).
+        // Alternatively we could change the coercri interface so you have to specify if you will
+        // be calling getPixels()...
+        boost::shared_ptr<const PixelArray> parr;
     };
 
 }

@@ -43,6 +43,11 @@ namespace {
 
 void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int npy, int t) const
 {
+    using Coercri::Pixel;
+
+    static std::vector<Pixel> pixel_buf;
+    pixel_buf.clear();
+    
     if (width==0 || height==0) return;
     if (npx == 0 || npy == 0) return;  // will cause division by zero otherwise
 
@@ -91,7 +96,7 @@ void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int
                     }
                 }
 
-                gc.plotPixel(x, y, col[csel]);
+                pixel_buf.push_back(Pixel(x, y, col[csel]));
 
                 xrem += xinc;
                 xbase += extend_right ? recip_scale+1 : recip_scale;
@@ -149,25 +154,25 @@ void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int
 
                 for (int j=0; j<scale; ++j) {
                     for (int i=0; i<scale; ++i) {
-                        gc.plotPixel(xbase+i, ybase+j, col[chere]);
+                        pixel_buf.push_back(Pixel(xbase+i, ybase+j, col[chere]));
                     }
                 }
 
                 if (extend_right) {
                     MiniMapColour csel = max(chere, cright);
                     for (int j=0; j<scale; ++j) {
-                        gc.plotPixel(xbase+scale, ybase+j, col[csel]);
+                        pixel_buf.push_back(Pixel(xbase+scale, ybase+j, col[csel]));
                     }
                     if (extend_up) {
                         csel = max(csel, cabove);
                         csel = max(csel, caboveright);
-                        gc.plotPixel(xbase+scale, ybase+scale, col[csel]);
+                        pixel_buf.push_back(Pixel(xbase+scale, ybase+scale, col[csel]));
                     }
                 }
                 if (extend_up) {
                     const MiniMapColour csel = max(chere, cabove);
                     for (int i=0; i<scale; ++i) {
-                        gc.plotPixel(xbase+i, ybase+scale, col[csel]);
+                        pixel_buf.push_back(Pixel(xbase+i, ybase+scale, col[csel]));
                     }
                 }
 
@@ -178,6 +183,10 @@ void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int
             yrem += yinc;
             ybase += extend_up ? scale+1 : scale;
         }
+    }
+
+    if (!pixel_buf.empty()) {
+        gc.plotPixelBatch(&pixel_buf[0], pixel_buf.size());
     }
 }
 

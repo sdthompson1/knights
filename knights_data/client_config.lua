@@ -50,7 +50,6 @@ fps = 120;
 
 -- Font
 font_size = 15;       -- Font size for title screens, menus etc
-font_antialias = 1;
 dpy_font_base_size = 600;   -- Controls the in-game font size
 dpy_font_min_size = 14;   -- Smallest allowed font size in game
 

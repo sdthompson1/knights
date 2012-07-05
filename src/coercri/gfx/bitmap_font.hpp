@@ -9,7 +9,7 @@
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2012.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -46,25 +46,81 @@
 
 #include "font.hpp"
 
+#include "boost/noncopyable.hpp"
 #include "boost/shared_ptr.hpp"
+
+#ifdef _MSC_VER
+#pragma warning (disable:4200)
+#endif
 
 namespace Coercri {
 
+    class KernTable;
     class PixelArray;
     
-    class BitmapFont : public Font {
+    class BitmapFont : public Font, boost::noncopyable {
     public:
-        // NOTE: Alpha channel in the supplied PixelArray is ignored.
+        // Updated 21-May-2012.
+
+        // Old constructor, imports SFont-style bitmap and interprets
+        // it as a "two colour" font.
+        // 
+        // The alpha channel in the PixelArray is ignored. For the
+        // colour channels:
+        //
+        // 1) The top row should contain colours (255,0,255) and
+        // (0,0,0), these are the SFont markers defining the extents
+        // of each character.
+        //
+        // 2) The rest of the image is interpreted as a
+        // black-and-white image of the font (black = "transparent"
+        // pixels, anything other than black = "opaque" pixels).
+        //
+        // There is no kerning when this ctor is used.
+        //
         explicit BitmapFont(boost::shared_ptr<PixelArray> pix);
 
+        
+        // New constructor. Ctor takes a kern table and the (uniform)
+        // height of each character, and the setupCharacter() and
+        // plotPixel() methods are used to define the actual
+        // characters. (setupCharacter "creates" a character and
+        // initializes alpha to zero; plotPixel sets the alpha for one
+        // pixel at a time.)
+        //
+        // Note char 32 is a special case, it is always completely
+        // blank and plotPixel has no effect for this character.
+        //
+        // Note plotPixel() is harmless (and does nothing) if called
+        // with "out of range" x,y values. However, it crashes if
+        // called on a "c" that hasn't been set up by setupChar.
+        //
+        BitmapFont(boost::shared_ptr<KernTable> kern_table, int height_);
+        void setupCharacter(char c, int width, int height, int xofs, int yofs, int xadvance);
+        void plotPixel(char c, int x, int y, unsigned char alpha);
+
+        
+        // destructor
+        ~BitmapFont();
+
+        
+        // Overridden from Font:
         void getTextSize(const std::string &text, int &w, int &h) const;
         int getTextHeight() const;
-        void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col, bool antialias) const;
+        void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const;
 
     private:
-        boost::shared_ptr<PixelArray> pixels;
-        int ofs[256];
-        int width[256];
+        struct Character {
+            int width, height;  // width and height of pixels[] array
+            int xofs, yofs;     // offset from "pen position" (top left of character) to top left of pixels[] array.
+            int xadvance;       // amount to move right after drawing this character.
+            unsigned char pixels[];      // Variable sized array, row major, contains alpha values from 0-255.
+        };
+
+    private:
+        Character * characters[256];
+        boost::shared_ptr<KernTable> kern_table;
+        int text_height;
     };
 }
 

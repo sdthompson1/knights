@@ -150,7 +150,7 @@ void DrawUI::drawMessage(const ConfigMap &config_map, Coercri::GfxContext &gc,
                                         text_width + text_margin_x*2,
                                         text_height + text_margin_y*2),
                      Coercri::Color(0, 0, 0, config_map.getInt("msg_alpha")));
-    gc.drawText(tx, ty, *font, message, Coercri::Color(255,255,255), true);
+    gc.drawText(tx, ty, *font, message, Coercri::Color(255,255,255));
 }
 
 

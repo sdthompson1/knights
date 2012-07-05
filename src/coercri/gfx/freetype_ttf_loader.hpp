@@ -1,15 +1,21 @@
 /*
  * FILE:
- *   font.hpp
+ *   freetype_ttf_loader.hpp
  *
  * PURPOSE:
- *   Font interface
- *   
+ *   This implementation of TTFLoader uses Freetype to render a TTF
+ *   font file into a bitmap, then returns a corresponding BitmapFont
+ *   object. Kerning and anti-aliasing are supported via the new
+ *   BitmapFont interface.
+ *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   21-May-2012
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2012.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,33 +47,16 @@
  *
  */
 
-#ifndef COERCRI_FONT_HPP
-#define COERCRI_FONT_HPP
+#ifndef COERCRI_FREETYPE_TTF_LOADER
+#define COERCRI_FREETYPE_TTF_LOADER
 
-#include "color.hpp"
-
-#include <string>
+#include "ttf_loader.hpp"
 
 namespace Coercri {
-
-    class GfxContext;
     
-    class Font {
+    class FreetypeTTFLoader : public TTFLoader {
     public:
-        virtual ~Font() { }
-
-        // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const = 0;
-        virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const std::string &text, int &w, int &h) const = 0;
-
-        // Convenience function, if only width is required
-        int getTextWidth(const std::string &text) const {
-            int w,h;
-            getTextSize(text,w,h);
-            return w;
-        }
-
+        virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str, int size);
     };
 
 }

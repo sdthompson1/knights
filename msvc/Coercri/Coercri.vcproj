@@ -180,6 +180,26 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_gfx_context.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_graphic.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_window.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\core\dx_error.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\coercri\enet\enet_network_connection.cpp"
 				>
 			</File>
@@ -189,6 +209,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\coercri\enet\enet_udp_socket.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\gfx\freetype_ttf_loader.cpp"
 				>
 			</File>
 			<File
@@ -212,7 +236,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\coercri\dx11\core\load_dx11_dlls.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\coercri\gfx\load_system_ttf.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\primitive_batch.cpp"
 				>
 			</File>
 			<File
@@ -310,7 +342,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\coercri\dx11\core\com_ptr_wrapper.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\coercri\sdl\gfx\delete_sdl_surface.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_gfx_context.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_graphic.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\dx11_window.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\core\dx_error.hpp"
 				>
 			</File>
 			<File
@@ -327,6 +383,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\coercri\gfx\font.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\gfx\freetype_ttf_loader.hpp"
 				>
 			</File>
 			<File
@@ -354,6 +414,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\coercri\dx11\core\load_dx11_dlls.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\coercri\gfx\load_system_ttf.hpp"
 				>
 			</File>
@@ -371,6 +435,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\coercri\gfx\pixel_array.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\coercri\dx11\gfx\primitive_batch.hpp"
 				>
 			</File>
 			<File

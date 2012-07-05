@@ -68,7 +68,7 @@ namespace Coercri {
         virtual void getTextSize(const std::string &text, int &w, int &h) const;
         virtual int getTextHeight() const;
 
-        void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col, bool antialias) const;
+        void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const;
         
     private:
         boost::shared_ptr<TTF_Font> font;  // constructed with DeleteTTFFont

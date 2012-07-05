@@ -1,15 +1,19 @@
 /*
  * FILE:
- *   font.hpp
+ *   com_ptr_wrapper.hpp
  *
  * PURPOSE:
- *   Font interface
- *   
+ *   Class that automatically Release()s a COM pointer in the destructor.
+ *   (Similar to CComPtr but avoids the dependency on ATL.)
+ *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   20-Oct-2011
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2011.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,35 +45,33 @@
  *
  */
 
-#ifndef COERCRI_FONT_HPP
-#define COERCRI_FONT_HPP
+#ifndef COERCRI_COM_PTR_WRAPPER_HPP
+#define COERCRI_COM_PTR_WRAPPER_HPP
 
-#include "color.hpp"
-
-#include <string>
+#include "boost/noncopyable.hpp"
 
 namespace Coercri {
 
-    class GfxContext;
-    
-    class Font {
+    template<class T>
+    class ComPtrWrapper : boost::noncopyable {
     public:
-        virtual ~Font() { }
-
-        // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const = 0;
-        virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const std::string &text, int &w, int &h) const = 0;
-
-        // Convenience function, if only width is required
-        int getTextWidth(const std::string &text) const {
-            int w,h;
-            getTextSize(text,w,h);
-            return w;
-        }
-
+        ComPtrWrapper() : p(0) { }
+        explicit ComPtrWrapper(T* p_) : p(p_) { }
+        ~ComPtrWrapper() { if (p) p->Release(); }
+        
+        void reset(T* p_) { if (p) p->Release(); p = p_; }
+        
+        T& operator*() { return *p; }
+        const T& operator*() const { return *p; }
+        T* operator->() { return p; }
+        const T* operator->() const { return p; }
+        T* get() { return p; }
+        const T* get() const { return p; }
+        
+    private:
+        T* p;
     };
-
+    
 }
 
 #endif

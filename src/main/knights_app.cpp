@@ -57,13 +57,17 @@
 #include "enet/enet_network_driver.hpp"
 #include "gcn/cg_font.hpp"
 #include "gcn/cg_listener.hpp"
+#include "gfx/freetype_ttf_loader.hpp"
 #include "gfx/window_listener.hpp"
 #include "network/network_connection.hpp"
 #include "network/udp_socket.hpp"
 #include "sdl/gfx/sdl_gfx_driver.hpp"
-#include "sdl/gfx/sdl_ttf_loader.hpp"
 #include "sdl/sound/sdl_sound_driver.hpp"
-#include "sdl/timer/sdl_timer.hpp"
+#include "timer/generic_timer.hpp"
+
+#ifdef WIN32
+#include "dx11/gfx/dx11_gfx_driver.hpp"
+#endif
 
 #include <curl/curl.h>
 
@@ -254,6 +258,9 @@ public:
 
     // autostart mode
     bool autostart;
+
+    // are we using DX11 or SDL
+    bool using_dx11;
     
     // functions
     KnightsAppImpl() : last_time(0), update_interval(0), running(true), player_name_changed(false) { }
@@ -347,9 +354,28 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     }    
     
     // Set up Coercri
-    // (Here we use SDL, but a different backend could be selected
-    // just by changing the following few lines.)
-    pimpl->gfx_driver.reset(new Coercri::SDLGfxDriver);
+    // -- Use DX11 if available, but fall back to SDL if that fails.
+    try {
+
+#ifdef WIN32
+        unsigned int flags = 0;
+
+#ifndef NDEBUG
+        flags = D3D11_CREATE_DEVICE_DEBUG;
+#endif
+        pimpl->gfx_driver.reset(new Coercri::DX11GfxDriver(D3D_DRIVER_TYPE_HARDWARE, 
+                                                           flags,
+                                                           D3D_FEATURE_LEVEL_9_1));
+        pimpl->using_dx11 = true;
+
+#else // WIN32
+        throw CoercriError("This platform does not support DirectX");
+#endif // WIN32
+
+    } catch (Coercri::CoercriError &) {
+        pimpl->gfx_driver.reset(new Coercri::SDLGfxDriver);
+        pimpl->using_dx11 = false;
+    }
 
 #ifndef DISABLE_SOUND
     try {
@@ -360,8 +386,8 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     }
 #endif
     
-    pimpl->timer.reset(new Coercri::SDLTimer);
-    pimpl->ttf_loader.reset(new Coercri::SDLTTFLoader);
+    pimpl->timer.reset(new Coercri::GenericTimer);
+    pimpl->ttf_loader.reset(new Coercri::FreetypeTTFLoader);
 
     // use the enet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
@@ -455,8 +481,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     pimpl->window->addWindowListener(pimpl->wcl.get());
     
     // Set guichan's global widget font
-    pimpl->gcn_font.reset(new Coercri::CGFont(pimpl->font, 
-                                              pimpl->config_map.getInt("font_antialias") != 0));
+    pimpl->gcn_font.reset(new Coercri::CGFont(pimpl->font));
     gcn::Widget::setGlobalFont(pimpl->gcn_font.get());
 }
 
@@ -531,6 +556,11 @@ void KnightsApp::setPlayerName(const std::string &name)
         pimpl->options->player_name = name;
         pimpl->player_name_changed = true;
     }
+}
+
+bool KnightsApp::usingDX11() const
+{
+    return pimpl->using_dx11;
 }
 
 //////////////////////////////////////////////

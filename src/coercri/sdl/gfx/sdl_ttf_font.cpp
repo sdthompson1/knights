@@ -74,7 +74,7 @@ namespace Coercri {
         }
     }
 
-    void SDLTTFFont::drawText(GfxContext &cxt, int x, int y, const std::string &text, Color col, bool antialias) const
+    void SDLTTFFont::drawText(GfxContext &cxt, int x, int y, const std::string &text, Color col) const
     {
         // TODO: transparency support
         if (col.a != 255) {
@@ -95,11 +95,11 @@ namespace Coercri {
         // Render the text
         SDL_Color sdl_col = {col.r, col.g, col.b};
         boost::shared_ptr<SDL_Surface> text_surface;
-        if (antialias) {
+        //if (antialias) {
             text_surface.reset(TTF_RenderText_Blended(font.get(), text.c_str(), sdl_col), DeleteSDLSurface());
-        } else {
-            text_surface.reset(TTF_RenderText_Solid(font.get(), text.c_str(), sdl_col), DeleteSDLSurface());
-        }
+        //} else {
+        //    text_surface.reset(TTF_RenderText_Solid(font.get(), text.c_str(), sdl_col), DeleteSDLSurface());
+        //}
 
         if (text_surface) {
             SDL_Rect dest_rect;

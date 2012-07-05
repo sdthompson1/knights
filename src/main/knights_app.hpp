@@ -120,6 +120,9 @@ public:
     const std::string & getPlayerName() const;
     void setPlayerName(const std::string &name);
 
+    // which gfx driver are we using? true=dx11, false=sdl
+    bool usingDX11() const;
+    
 
     //
     // GameManager methods

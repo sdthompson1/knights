@@ -49,6 +49,9 @@
 #include <iosfwd>
 
 namespace Coercri {
+
+    class Font;
+
     class TTFLoader {
     public:
         

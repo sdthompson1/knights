@@ -112,8 +112,15 @@ namespace Coercri {
         }
     }
 
-    void GfxContext::drawText(int x, int y, const Font &font, const std::string &text, Color col, bool antialias)
+    void GfxContext::drawText(int x, int y, const Font &font, const std::string &text, Color col)
     {
-        font.drawText(*this, x, y, text, col, antialias);
+        font.drawText(*this, x, y, text, col);
+    }
+
+    void GfxContext::plotPixelBatch(const Pixel *buf, int num_pixels)
+    {
+        for (int i = 0; i < num_pixels; ++i) {
+            plotPixel(buf[i].x, buf[i].y, buf[i].col);
+        }
     }
 }

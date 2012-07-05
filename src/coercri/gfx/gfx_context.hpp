@@ -53,7 +53,16 @@ namespace Coercri {
     class Font;
     class Graphic;
     class Rectangle;
-    
+
+    // This struct is used in plotPixelBatch.
+    struct Pixel {
+        Pixel(int x_, int y_, Color col_) : x(x_), y(y_), col(col_) { }
+        
+        int x;
+        int y;
+        Color col;
+    };
+
     class GfxContext {
     public:
         // NOTE: If any "EndDrawing" type calls are required,
@@ -77,13 +86,14 @@ namespace Coercri {
         virtual void drawGraphic(int x, int y, const Graphic &graphic) = 0;
 
         // this just calls through to font.drawText.
-        void drawText(int x, int y, const Font &font, const std::string &text, Color col, bool antialias);
+        void drawText(int x, int y, const Font &font, const std::string &text, Color col);
 
         // The following have default implementations but can be
         // overridden if more efficient implementations are available.
         virtual void drawLine(int x1, int y1, int x2, int y2, Color col);
         virtual void drawRectangle(const Rectangle &rect, Color col);  // draws outline only.
         virtual void fillRectangle(const Rectangle &rect, Color col);  // draws a solid rectangle.
+        virtual void plotPixelBatch(const Pixel *buf_start, int num_pixels);
     };
 
 }

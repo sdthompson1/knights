@@ -166,8 +166,8 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
             for (vector<TextElement>::const_iterator it = txt_buffer.begin(); it != txt_buffer.end(); ++it) {
                 const int x = it->sx - txt_font.getTextWidth(it->text)/2;
                 const int y = it->sy + txt_yofs;
-                gc.drawText(x+1, y+1, txt_font, it->text, Coercri::Color(0,0,0), true);
-                gc.drawText(x, y, txt_font, it->text, Coercri::Color(255,255,255), true);
+                gc.drawText(x+1, y+1, txt_font, it->text, Coercri::Color(0,0,0));
+                gc.drawText(x, y, txt_font, it->text, Coercri::Color(255,255,255));
             }
         }
     } else {

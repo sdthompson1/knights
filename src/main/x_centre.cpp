@@ -30,6 +30,6 @@ void XCentre(Coercri::GfxContext &gc, const Coercri::Font &font, int y, const st
     const int w = font.getTextWidth(text);
     const int x = (gc.getWidth() - w) / 2;
 
-    // This routine always draws in white with antialiasing
-    gc.drawText(x, y, font, text, Coercri::Color(255,255,255), true);
+    // This routine always draws in white
+    gc.drawText(x, y, font, text, Coercri::Color(255,255,255));
 }

@@ -139,6 +139,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="..\..\SDL\lib\SDL.lib ws2_32.lib winmm.lib"
+				GenerateDebugInformation="true"
 				LinkTimeCodeGeneration="0"
 			/>
 			<Tool

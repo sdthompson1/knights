@@ -1,15 +1,20 @@
 /*
  * FILE:
- *   font.hpp
+ *   dx_error.hpp
  *
  * PURPOSE:
- *   Font interface
- *   
+ *   Subclass of CoercriError that automatically appends error message
+ *   information based on the given HRESULT, and any COM error info that
+ *   is available.
+ *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   20-Oct-2011
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2011.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,35 +46,25 @@
  *
  */
 
-#ifndef COERCRI_FONT_HPP
-#define COERCRI_FONT_HPP
+#ifndef COERCRI_DX_ERROR_HPP
+#define COERCRI_DX_ERROR_HPP
 
-#include "color.hpp"
+#include "../../core/coercri_error.hpp"
 
-#include <string>
+#include <windows.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 namespace Coercri {
 
-    class GfxContext;
-    
-    class Font {
+    class DXError : public CoercriError {
     public:
-        virtual ~Font() { }
-
-        // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const = 0;
-        virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const std::string &text, int &w, int &h) const = 0;
-
-        // Convenience function, if only width is required
-        int getTextWidth(const std::string &text) const {
-            int w,h;
-            getTextSize(text,w,h);
-            return w;
-        }
-
+        DXError(const std::string &msg, HRESULT hr);
     };
-
 }
 
 #endif

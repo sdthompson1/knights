@@ -1,15 +1,18 @@
 /*
  * FILE:
- *   font.hpp
+ *   dx11_gfx_context.hpp
  *
  * PURPOSE:
- *   Font interface
- *   
+ *   DirectX 11 implementation of GfxContext
+ *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
+ * CREATED:
+ *   20-Oct-2011
+ *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2011.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -41,33 +44,55 @@
  *
  */
 
-#ifndef COERCRI_FONT_HPP
-#define COERCRI_FONT_HPP
+#ifndef DX11_GFX_CONTEXT_HPP
+#define DX11_GFX_CONTEXT_HPP
 
-#include "color.hpp"
+#include "../../gfx/gfx_context.hpp"
 
-#include <string>
+#include <d3d11.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 namespace Coercri {
 
-    class GfxContext;
+    class PrimitiveBatch;
     
-    class Font {
+    class DX11GfxContext : public GfxContext {
     public:
-        virtual ~Font() { }
+        // ctor not intended to be called directly. Use Window::createGfxContext.
+        DX11GfxContext(ID3D11DeviceContext *pDeviceContext,
+                       ID3D11RenderTargetView *pRenderTargetView,
+                       IDXGISwapChain *pSwapChain,
+                       PrimitiveBatch &prim_batch);
+        virtual ~DX11GfxContext();
 
-        // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const = 0;
-        virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const std::string &text, int &w, int &h) const = 0;
+        // overridden from GfxContext
+        void setClipRectangle(const Rectangle &rect);
+        void clearClipRectangle();
+        Rectangle getClipRectangle() const;
 
-        // Convenience function, if only width is required
-        int getTextWidth(const std::string &text) const {
-            int w,h;
-            getTextSize(text,w,h);
-            return w;
-        }
+        int getWidth() const;
+        int getHeight() const;
 
+        void clearScreen(Color col);
+        void plotPixel(int x, int y, Color col);
+        void drawGraphic(int x, int y, const Graphic &graphic);
+
+        void drawLine(int x1, int y1, int x2, int y2, Color col);
+        // drawRectangle is not overridden: use default implementation
+        void fillRectangle(const Rectangle &rect, Color col);
+
+        void plotPixelBatch(const Pixel *buf, int num);
+        
+    private:
+        ID3D11DeviceContext *device_context;
+        ID3D11RenderTargetView *render_target_view;
+        IDXGISwapChain *swap_chain;
+        PrimitiveBatch &primitive_batch;
     };
 
 }

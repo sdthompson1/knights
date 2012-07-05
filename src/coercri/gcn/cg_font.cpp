@@ -62,7 +62,7 @@ namespace Coercri {
         const gcn::Color &col = graphics->getColor();
         Coercri::Color coercri_col(col.r, col.g, col.b, col.a);
         
-        gfx_context->drawText(clip_area.xOffset + x, clip_area.yOffset + y, *font, text, coercri_col, antialias);
+        gfx_context->drawText(clip_area.xOffset + x, clip_area.yOffset + y, *font, text, coercri_col);
     }
 
     int CGFont::getHeight() const
