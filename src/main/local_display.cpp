@@ -298,7 +298,10 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
       action_bar_tool_tips(tool_tips),
       deathmatch_mode(dm_mode),
 
-      chat_msg("<Click here or press " + chat_keys + " to chat>")
+      chat_msg("<Click here or press " + chat_keys + " to chat>"),
+
+      quest_rqmts_minimized(false),
+      force_setup_gui(false)
 {
     for (int i = 0; i < 2; ++i) {
         attack_mode[i] = false;
@@ -441,6 +444,11 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
     
     const gcn::Color bg_col(0x66, 0x66, 0x44);
 
+    // Clear out the container as we are going to re-populate it.
+    // (Not strictly necessary because DeathListener will remove the widgets when
+    // they get reset()... but it makes things neater.)
+    container.clear();
+    
     // Resize and reposition the container
     container.setSize(std::max(chat_area_x+chat_area_width, plyr_list_x+plyr_list_width),
                       std::max(chat_area_y+chat_area_height, plyr_list_y+plyr_list_height));
@@ -674,32 +682,40 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
     if (quest_rqmts_height > 0) {
 
         std::vector<std::string> titles(1, "Quest Requirements");
+        if (quest_rqmts_minimized) titles.front().append(" (click to show)");
         std::vector<int> widths(1, quest_rqmts_width);
         quest_titleblock.reset(new TitleBlock(titles, widths));
         quest_titleblock->setFont(gui_font.get());
         quest_titleblock->setBaseColor(gcn::Color(0x66, 0x66, 0x44));
         quest_titleblock->setForegroundColor(gcn::Color(0xff, 0xff, 0xff));
         quest_titleblock->setFocusable(true);
+        quest_titleblock->addMouseListener(this);
         container.add(quest_titleblock.get(), quest_rqmts_x, quest_rqmts_y);
 
-        quest_listbox.reset(new ListBoxNoMouse);
-        quest_listbox->setBackgroundColor(gcn::Color(0,0,0));
-        quest_listbox->setSelectionColor(gcn::Color(0,0,0));
-        quest_listbox->setFont(gui_font.get());
-        quest_listbox->setForegroundColor(gcn::Color(255,255,255));
-        quest_listbox->setListModel(&quest_rqmts_list);
-        quest_listbox->setWidth(quest_rqmts_width - DEFAULT_SCROLLBAR_WIDTH);
+        if (quest_rqmts_minimized) {
+            quest_listbox.reset();
+            quest_scrollarea.reset();
+        } else {
 
-        quest_scrollarea.reset(new gcn::ScrollArea);
-        quest_scrollarea->setContent(quest_listbox.get());
-        quest_scrollarea->setSize(quest_rqmts_width, quest_rqmts_height - quest_titleblock->getHeight() - 2);
-        quest_scrollarea->setScrollbarWidth(DEFAULT_SCROLLBAR_WIDTH);
-        quest_scrollarea->setFrameSize(0);
-        quest_scrollarea->setHorizontalScrollPolicy(gcn::ScrollArea::SHOW_NEVER);
-        quest_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_AUTO);
-        quest_scrollarea->setBaseColor(bg_col);
-        quest_scrollarea->setBackgroundColor(gcn::Color(0,0,0));
-        container.add(quest_scrollarea.get(), quest_rqmts_x, quest_rqmts_y + quest_titleblock->getHeight() + 2);
+            quest_listbox.reset(new ListBoxNoMouse);
+            quest_listbox->setBackgroundColor(gcn::Color(0,0,0));
+            quest_listbox->setSelectionColor(gcn::Color(0,0,0));
+            quest_listbox->setFont(gui_font.get());
+            quest_listbox->setForegroundColor(gcn::Color(255,255,255));
+            quest_listbox->setListModel(&quest_rqmts_list);
+            quest_listbox->setWidth(quest_rqmts_width - DEFAULT_SCROLLBAR_WIDTH);
+            
+            quest_scrollarea.reset(new gcn::ScrollArea);
+            quest_scrollarea->setContent(quest_listbox.get());
+            quest_scrollarea->setSize(quest_rqmts_width, quest_rqmts_height - quest_titleblock->getHeight() - 2);
+            quest_scrollarea->setScrollbarWidth(DEFAULT_SCROLLBAR_WIDTH);
+            quest_scrollarea->setFrameSize(0);
+            quest_scrollarea->setHorizontalScrollPolicy(gcn::ScrollArea::SHOW_NEVER);
+            quest_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_AUTO);
+            quest_scrollarea->setBaseColor(bg_col);
+            quest_scrollarea->setBackgroundColor(gcn::Color(0,0,0));
+            container.add(quest_scrollarea.get(), quest_rqmts_x, quest_rqmts_y + quest_titleblock->getHeight() + 2);
+        }
     }
 }
 
@@ -740,6 +756,14 @@ void LocalDisplay::action(const gcn::ActionEvent &event)
     }
 }
 
+void LocalDisplay::mouseClicked(gcn::MouseEvent &event)
+{
+    if (event.getSource() == quest_titleblock.get() && event.getButton() == gcn::MouseEvent::LEFT) {
+        quest_rqmts_minimized = !quest_rqmts_minimized;
+        force_setup_gui = true;
+    }
+}
+
 // Checks whether the mouse is in a gui control e.g. the chat box, the Clear/Send buttons, etc.
 // The idea is to prevent LMB from controlling the knight when you are clicking on important GUI buttons.
 bool LocalDisplay::mouseInGuiControl(int mx, int my) const
@@ -751,7 +775,8 @@ bool LocalDisplay::mouseInGuiControl(int mx, int my) const
             widget == send_button.get() ||
             widget == clear_button.get() ||
             widget == tutorial_left.get() ||
-            widget == tutorial_right.get()) {
+            widget == tutorial_right.get() ||
+            widget == quest_titleblock.get()) {
                 return true;
         } else if (widget == chat_scrollarea.get()) {
             const int relx = mx - chat_scrollarea->getX();
@@ -1277,8 +1302,6 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
         }
     }
 
-    bool force_setup_gui = false;
-
     if (!status_display.empty() && status_display[0]->needQuestIconUpdate()) {
         int old_size = quest_rqmts_list.getNumberOfElements();
 
@@ -1317,6 +1340,8 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
     || vp_width != prev_gui_width || vp_height != prev_gui_height
     || force_setup_gui) {
 
+        force_setup_gui = false;
+        
         prev_gui_x = vp_x;
         prev_gui_y = vp_y;
         prev_gui_width = vp_width;
@@ -1366,7 +1391,14 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             quest_rqmts_x = player_list_x;
             quest_rqmts_y = player_list_bottom + player_list_margin;
             quest_rqmts_width = player_list_width;
-            quest_rqmts_height = gui_font->getHeight() * (quest_rqmts_list.getNumberOfElements() + 3);  // the +3 just gives it a bit of extra black space underneath.
+
+            if (quest_rqmts_minimized) {
+                quest_rqmts_height = gui_font->getHeight() + 8;
+            } else {
+                quest_rqmts_height = gui_font->getHeight() * (quest_rqmts_list.getNumberOfElements() + 3);
+                // the +3 just gives it a bit of extra black space underneath.
+            }
+            
             if (quest_rqmts_height > third_height) quest_rqmts_height = third_height;
 
             const int quest_rqmts_bottom = quest_rqmts_y + quest_rqmts_height + player_list_margin;

@@ -58,7 +58,11 @@ class SoundManager;
 class TabFont;
 class TitleBlock;
 
-class LocalDisplay : public KnightsCallbacks, public gcn::ActionListener, public gcn::FocusListener {
+class LocalDisplay : public KnightsCallbacks,
+                     public gcn::ActionListener,
+                     public gcn::FocusListener,
+                     public gcn::MouseListener
+{
 public:
     LocalDisplay(const ConfigMap &config_map_,
                  int approach_offset,
@@ -152,7 +156,8 @@ public:
     void action(const gcn::ActionEvent &event);
     void focusGained(const gcn::Event &event);
     void focusLost(const gcn::Event &event);
-
+    void mouseClicked(gcn::MouseEvent &event);
+    
     bool tutorialActive() const { return !tutorial_popups.empty(); }
     void clearTutorialWindow();
     void clearAllTutorialWindows() { while (tutorialActive()) clearTutorialWindow(); }
@@ -340,6 +345,9 @@ private:
     bool action_bar_tool_tips;
     bool deathmatch_mode;
     std::string chat_msg;
+
+    bool quest_rqmts_minimized;
+    bool force_setup_gui;  // used to force gui update when the quest rqmts area is minimized.
 };
 
 #endif
