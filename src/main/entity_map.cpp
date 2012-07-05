@@ -514,17 +514,17 @@ void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int en
             GraphicElement ge;
             const int entity_x = tl_x
                 + ent.x * pixels_per_square
-                + ox * pixels_per_square / 1000;
+                + (ox * pixels_per_square + 500) / 1000;
             ge.sx = entity_x;
             const int entity_y = tl_y
                 + ent.y * pixels_per_square
-                + oy * pixels_per_square / 1000;
+                + (oy * pixels_per_square + 500) / 1000;
             ge.sy = entity_y;
             ge.gr = lower_graphic;
             ge.cc = lower_cc;
             ge.semitransparent = ent.ainvis;
             gfx_buffer[d].push_back(ge);
-                        
+
             const Overlay *ovr = ent.ovr;
             if (ovr) {
                 const Graphic *upper_graphic;
