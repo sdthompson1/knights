@@ -191,9 +191,10 @@ bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
 // Home
 //
 
-void Home::homeConstruct(MapDirection fcg, shared_ptr<const ColourChange> cc_unsec)
+void Home::homeConstruct(MapDirection fcg, shared_ptr<const ColourChange> cc_unsec, bool se)
 {
     facing = fcg;
+    special_exit = se;
     setGraphic(0, MapCoord(), getGraphic(), cc_unsec); // "default" colour change for home.
 }
 

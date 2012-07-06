@@ -112,7 +112,7 @@ private:
     
 class Home : public Tile {
 public:
-    void homeConstruct(MapDirection fcg, shared_ptr<const ColourChange> cc_unsecured);
+    void homeConstruct(MapDirection fcg, shared_ptr<const ColourChange> cc_unsecured, bool se);
     
     // onApproach/onWithdraw are overridden to handle healing and quest-checking.
     virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
@@ -123,12 +123,17 @@ public:
 
     // "secure" (this resets the colour-change).
     void secure(DungeonMap &, const MapCoord &, shared_ptr<const ColourChange> new_cc);
+
+    // This is used during map generation to decide which home should be assigned as the special exit point.
+    // It is not used in-game at all.
+    bool isSpecialExit() const { return special_exit; }
     
 protected:
     virtual shared_ptr<Tile> doClone(bool);
 
 private:
     MapDirection facing;
+    bool special_exit;
 };
 
 #endif

@@ -52,6 +52,18 @@ namespace {
         x_reflect = g_rng.getBool();
         nrot = g_rng.getInt(0, 4);
     }
+
+    bool FindSpecialExit(const Segment &seg, bool x_reflect, int nrot, HomeInfo &hi)
+    {
+        const std::vector<HomeInfo> & homes = seg.getHomes(x_reflect, nrot);
+        for (std::vector<HomeInfo>::const_iterator it = homes.begin(); it != homes.end(); ++it) {
+            if (it->special_exit) {
+                hi = *it;
+                return true;
+            }
+        }
+        return false;
+    }        
 }
 
 //
@@ -1162,6 +1174,7 @@ void DungeonGenerator::generateExits()
             // Look for the first segment of the given category.
             // Then look for the first home within that segment.
             // Then add it to unassigned_homes, as well as setting it as the exit point.
+            // UPDATE for #20: We now insist that the home has the special_exit flag set on it.
             bool found = false;
             for (int x=0; x<lwidth; ++x) {
                 for (int y=0; y<lheight; ++y) {
@@ -1169,18 +1182,27 @@ void DungeonGenerator::generateExits()
                         const Segment *seg = segments[y*lwidth+x];
                         ASSERT(seg); // if seg_category is set, then so must seg be
                         if (seg->getNumHomes() > 0) {
-                            for (int i=0; i<assigned_homes.size(); ++i) {
-                                const HomeInfo hi = seg->getHomes(segment_x_reflect[y*lwidth+x],
-                                                                  segment_nrot[y*lwidth+x]).front();
-                                exits.push_back(make_pair(MapCoord(hi.x + x*(rwidth+1)+1,
-                                                                   hi.y + y*(rheight+1)+1),
-                                                          hi.facing));
+
+                            // find the first home with special exit flag set.
+                            HomeInfo hi;
+                            found = FindSpecialExit(*seg, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x], hi);
+
+                            if (found) {
+                                                            
+                                // assigned_homes.size() is just giving us the number of players here.
+                                for (int i=0; i<assigned_homes.size(); ++i) {
+                                
+                                    exits.push_back(make_pair(MapCoord(hi.x + x*(rwidth+1)+1,
+                                                                       hi.y + y*(rheight+1)+1),
+                                                              hi.facing));
+                                }
+
                                 // add it to unassigned_homes, too (this is so wand of
                                 // securing can work on it):
                                 unassigned_homes.push_back(exits.back());
+                            
+                                break;
                             }
-                            found = true;
-                            break;
                         }
                     }
                 }

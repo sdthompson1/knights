@@ -51,6 +51,7 @@ struct HomeInfo {
     int x;
     int y; 
     MapDirection facing; // points inwards, towards the home
+    bool special_exit;
 };
 
 

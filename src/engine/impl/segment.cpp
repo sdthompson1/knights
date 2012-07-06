@@ -63,6 +63,7 @@ void Segment::addTile(int x, int y, shared_ptr<Tile> t)
         hi.x = x;
         hi.y = y;
         hi.facing = h->getFacing();
+        hi.special_exit = h->isSpecialExit();
         homes.push_back(hi);
     }
 }

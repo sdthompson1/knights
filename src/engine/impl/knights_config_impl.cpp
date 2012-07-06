@@ -1802,6 +1802,13 @@ shared_ptr<Tile> KnightsConfigImpl::popTile()
         tab.push("rotate");
         shared_ptr<Tile> rotate = popTile(shared_ptr<Tile>());
 
+        // #20
+        bool special_exit = false;
+        if (home) {
+            tab.push("special_exit");
+            special_exit = popBool(false);
+        }
+        
         // doors/chests can have "special_lock" property
         bool special_locked = false;
         if (door || chest) {
@@ -1892,7 +1899,7 @@ shared_ptr<Tile> KnightsConfigImpl::popTile()
         } else if (home) {
             shared_ptr<ColourChange> cc(new ColourChange);
             cc->add(Colour(255,0,0), uns_col);
-            home->homeConstruct(facing, cc);
+            home->homeConstruct(facing, cc, special_exit);
         }
 
         if (has_user_table) {

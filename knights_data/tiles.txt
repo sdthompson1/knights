@@ -196,6 +196,11 @@ t_home_west   = home & { graphic=g_home_west,  facing="west", rotate=t_home_nort
 t_home_north  = home & { graphic=g_home_north, facing="north", rotate=t_home_east }     # 13
 t_home_east   = home & { graphic=g_home_east,  facing="east", rotate=t_home_south, reflect=t_home_west }      # 14
 
+t_home_south_special = t_home_south & { special_exit = 1, editor_label = "X", rotate = t_home_west_special }  # 92
+t_home_west_special  = t_home_west  & { special_exit = 1, editor_label = "X", rotate = t_home_north_special } # 93
+t_home_north_special = t_home_north & { special_exit = 1, editor_label = "X", rotate = t_home_east_special }  # 94
+t_home_east_special  = t_home_east  & { special_exit = 1, editor_label = "X", rotate = t_home_south_special } # 95
+
 
 # Crystal balls.
 
