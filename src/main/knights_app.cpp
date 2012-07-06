@@ -369,7 +369,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
         pimpl->using_dx11 = true;
 
 #else // WIN32
-        throw CoercriError("This platform does not support DirectX");
+        throw Coercri::CoercriError("This platform does not support DirectX");
 #endif // WIN32
 
     } catch (Coercri::CoercriError &) {
