@@ -47,6 +47,7 @@
 #include "primitive_batch.hpp"
 #include "../core/dx_error.hpp"
 #include "../core/load_dx11_dlls.hpp"
+#include "../../gfx/pixel_array.hpp"
 
 #include "boost/scoped_array.hpp"
 
@@ -247,6 +248,10 @@ namespace Coercri {
     boost::shared_ptr<Graphic> DX11GfxDriver::createGraphic(boost::shared_ptr<const PixelArray> pixels,
                                                             int hx, int hy)
     {
+        if (pixels->getHeight() == 0 || pixels->getWidth() == 0) {
+            throw CoercriError("Attempting to create zero-sized graphic");
+        }
+
         boost::shared_ptr<Graphic> g(new DX11Graphic(m_psDevice.get(), pixels, hx, hy));
         return g;
     }

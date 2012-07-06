@@ -286,6 +286,8 @@ void GfxManager::drawGraphic(Coercri::GfxContext &gc, int x, int y, const Graphi
 void GfxManager::drawTransformedGraphic(Coercri::GfxContext &gc, int x, int y,
                                         const Graphic &gfx, int new_width, int new_height)
 {
+    if (new_width == 0 || new_height == 0) return;   // Drawing zero-sized graphic; effectively a no-op
+
     const Coercri::Graphic & gfx_original = getCoercriGraphic(gfx);
 
     const Coercri::Graphic * gfx_cc = &gfx_original;
@@ -301,6 +303,8 @@ void GfxManager::drawTransformedGraphic(Coercri::GfxContext &gc, int x, int y,
                                         const Graphic &gfx, int new_width, int new_height,
                                         const ColourChange &cc, bool semitransparent)
 {
+    if (new_width == 0 || new_height == 0) return;   // Drawing zero-sized graphic; effectively a no-op
+
     const Coercri::Graphic & gfx_original = getCoercriGraphic(gfx);
     const Coercri::Graphic & gfx_cc = getGraphicWithCC(gfx_original, cc, semitransparent);
     const Coercri::Graphic & gfx_cc_resized = getResizedGraphic(gfx_cc, new_width, new_height);
