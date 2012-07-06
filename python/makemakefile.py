@@ -153,7 +153,7 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     incflags = make_include_flags(incdirs)
     print get_obj_file(srcfile) + ": " + srcfile
     if (srcfile.endswith(".cpp")):
-        print "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` " + incflags + " -MD -c -o $@ $<"
+        print "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` " + incflags + " -MD -c -o $@ $<"
     elif (srcfile.endswith("SDL_ttf.c")):
         print "\t$(CC) $(CPPFLAGS) $(CFLAGS) `sdl-config --cflags` `freetype-config --cflags` " + incflags + " -MD -c -o $@ $<"
     else:  # enet .c files
