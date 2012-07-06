@@ -33,6 +33,7 @@
 class CoordTransform {
 public:
     void add(const MapCoord &corner, int width, int height, bool x_reflect, int nrot);
+    void clear();
 
     void transformOffset(const MapCoord &base, int &x, int &y) const;
     void transformDirection(const MapCoord &base, MapDirection &dir) const;

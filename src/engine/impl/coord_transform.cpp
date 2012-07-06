@@ -36,6 +36,11 @@ void CoordTransform::add(const MapCoord &corner, int width, int height, bool x_r
     zones.push_back(z);
 }
 
+void CoordTransform::clear()
+{
+    zones.clear();
+}
+
 void CoordTransform::transformOffset(const MapCoord &base, int &x, int &y) const
 {
     for (std::vector<Zone>::const_iterator it = zones.begin(); it != zones.end(); ++it) {

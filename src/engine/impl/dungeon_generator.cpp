@@ -492,6 +492,7 @@ std::string DungeonGenerator::generate(DungeonMap &dmap, MonsterManager &monster
                 unassigned_homes.clear();
                 assigned_homes.clear();
                 exits.clear();
+                ct.clear();
 
                 // create the layout
                 doLayout(nplayers);    // lays out the segments, and 'assigns' homes and special exit point.
