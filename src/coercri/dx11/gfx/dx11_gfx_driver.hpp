@@ -88,7 +88,7 @@ namespace Coercri {
 
         // DXGI accessors
         // Note: getPrimaryOutput returns the primary monitor (i.e. the one we will go full-screen onto).
-        IDXGIFactory * getDXGIFactory() { return m_pFactory; }
+        IDXGIFactory * getDXGIFactory() { return m_psFactory.get(); }
         IDXGIOutput * getPrimaryOutput() { return m_psOutput.get(); }
 
         // Access the PrimitiveBatch
@@ -101,7 +101,7 @@ namespace Coercri {
     private:
         ComPtrWrapper<ID3D11Device> m_psDevice;
         ComPtrWrapper<ID3D11DeviceContext> m_psDeviceContext;
-        IDXGIFactory *m_pFactory;
+        ComPtrWrapper<IDXGIFactory> m_psFactory;
         ComPtrWrapper<IDXGIOutput> m_psOutput;
 
         std::auto_ptr<PrimitiveBatch> m_psPrimitiveBatch;

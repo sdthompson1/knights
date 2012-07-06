@@ -333,7 +333,8 @@ namespace Coercri {
     
     DX11Window::DX11Window(int width, int height, bool resizable, bool fullscreen, const std::string &title, int icon_id,
                            DX11GfxDriver &gfx_driver_)
-        : gfx_driver(gfx_driver_), hwnd(0), in_size_move(false), is_minimized(false)
+        : gfx_driver(gfx_driver_), hwnd(0), 
+          inhibit_back_buffer_resize(false), is_minimized(false)
     {
         // Make sure the window procedure is ready to run
         InitKeyTable();
@@ -365,47 +366,55 @@ namespace Coercri {
                           HRESULT_FROM_WIN32(GetLastError()));
         }
 
-        // Make an association between that hwnd and this DX11Window object
-        // (for window proc to use)
-        g_window_table.insert(std::make_pair(hwnd, this));
+        // We need to ensure that hwnd gets destroyed if there is an exception
+        try {
 
-        // Grab the DXGI factory
-        IDXGIFactory *pFactory = gfx_driver.getDXGIFactory();
+            // Make an association between that hwnd and this DX11Window object
+            // (for window proc to use)
+            g_window_table.insert(std::make_pair(hwnd, this));
+            
+            // Grab the DXGI factory
+            IDXGIFactory *pFactory = gfx_driver.getDXGIFactory();
+            
+            // Create the windowed swap chain
+            DXGI_SWAP_CHAIN_DESC sd;
+            sd.BufferDesc.Width = width;
+            sd.BufferDesc.Height = height;
+            sd.BufferDesc.RefreshRate.Numerator = 0;  // ignored for windowed mode (http://forums.create.msdn.com/forums/t/2353.aspx)
+            sd.BufferDesc.RefreshRate.Denominator = 0;  // ignored for windowed mode
+            sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;  // our preferred pixel format
+            sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;  // ignored for windowed mode
+            sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;  // ignored for windowed mode
+            sd.SampleDesc.Count = 1;   // no antialiasing
+            sd.SampleDesc.Quality = 0; // no antialiasing
+            sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+            sd.BufferCount = 1;
+            sd.OutputWindow = hwnd;
+            sd.Windowed = true;
+            sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+            sd.Flags = 0;
+            
+            IDXGISwapChain *pSwapChain;
+            HRESULT hr = pFactory->CreateSwapChain(gfx_driver.getDevice(), &sd, &pSwapChain);
+            if (FAILED(hr)) {
+                throw DXError("IDXGIFactory::CreateSwapChain failed", hr);
+            }
+            m_psSwapChain.reset(pSwapChain);
+            
+            // Show the window -- this will also generate a WM_SIZE event,
+            // which will do the initial call to handleWindowResize().
+            ShowWindow(hwnd, SW_SHOWNORMAL);
+            
+            // Go into fullscreen mode if requested
+            // (Note width, height are ignored in the current
+            // implementation, and it just uses the desktop mode)
+            if (fullscreen) {
+                switchToFullScreen(width, height);
+            }
 
-        // Create the windowed swap chain
-        DXGI_SWAP_CHAIN_DESC sd;
-        sd.BufferDesc.Width = width;
-        sd.BufferDesc.Height = height;
-        sd.BufferDesc.RefreshRate.Numerator = 0;  // ignored for windowed mode (http://forums.create.msdn.com/forums/t/2353.aspx)
-        sd.BufferDesc.RefreshRate.Denominator = 0;  // ignored for windowed mode
-        sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;  // our preferred pixel format
-        sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;  // ignored for windowed mode
-        sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;  // ignored for windowed mode
-        sd.SampleDesc.Count = 1;   // no antialiasing
-        sd.SampleDesc.Quality = 0; // no antialiasing
-        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.BufferCount = 1;
-        sd.OutputWindow = hwnd;
-        sd.Windowed = true;
-        sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-        sd.Flags = 0;
-
-        IDXGISwapChain *pSwapChain;
-        HRESULT hr = pFactory->CreateSwapChain(gfx_driver.getDevice(), &sd, &pSwapChain);
-        if (FAILED(hr)) {
-            throw DXError("IDXGIFactory::CreateSwapChain failed", hr);
-        }
-        m_psSwapChain.reset(pSwapChain);
-
-        // Show the window -- this will also generate a WM_SIZE event,
-        // which will do the initial call to handleWindowResize().
-        ShowWindow(hwnd, SW_SHOWNORMAL);
-
-        // Go into fullscreen mode if requested
-        // (Note width, height are ignored in the current
-        // implementation, and it just uses the desktop mode)
-        if (fullscreen) {
-            switchToFullScreen(width, height);
+        } catch (...) {
+            cleanUpWindow();
+            throw;
         }
     }
 
@@ -430,6 +439,26 @@ namespace Coercri {
 
     DX11Window::~DX11Window()
     {
+        cleanUpWindow();
+    }
+
+    void DX11Window::cleanUpWindow()
+    {
+        // This runs from within destructor, so should not throw
+
+        // It is not allowed to destroy a swap chain that is in fullscreen mode (see MSDN).
+        // So set to windowed mode first.
+        if (m_psSwapChain.get()) {
+            // The following call to SetFullscreenState fires off a WM_SIZE event which
+            // in turn causes the swap chain / back buffer to be resized.
+            // For some reason this causes warning messages from DX11 about objects not
+            // being cleaned up properly.
+            // The fix is to inhibit the back buffer resizing -- it is not needed anyway
+            // since we are about to destroy the window...
+            inhibit_back_buffer_resize = true;
+            m_psSwapChain->SetFullscreenState(false, 0);
+        }
+
         DestroyWindow(hwnd);
         g_window_table.erase(hwnd);
     }
@@ -647,7 +676,7 @@ namespace Coercri {
                     const wl_vec &listeners = window.getListeners();
                     
                     // resize the back-buffer if necessary
-                    if (!window.in_size_move) {
+                    if (!window.inhibit_back_buffer_resize) {
                         window.handleWindowResize();
                     }
 
@@ -671,13 +700,14 @@ namespace Coercri {
                 break;
 
             case WM_ENTERSIZEMOVE:
-                FindWindow(hwnd).in_size_move = true;
+                // Prevent back buffer resizing while user is dragging/resizing the window.
+                FindWindow(hwnd).inhibit_back_buffer_resize = true;
                 break;
 
             case WM_EXITSIZEMOVE:
                 {
                     DX11Window& window = FindWindow(hwnd);
-                    window.in_size_move = false;
+                    window.inhibit_back_buffer_resize = false;
                     window.handleWindowResize();
                 }
                 break;

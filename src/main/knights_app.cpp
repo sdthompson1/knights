@@ -1037,8 +1037,7 @@ void KnightsApp::runKnights()
     // Call resetAll -- this closes network connections among other things.
     resetAll();
 
-    // delete GfxManager, this has the last reference to the Coercri::GfxDriver. This 
-    // will close the main window.
+    // delete GfxManager, this has the last reference to the Coercri::GfxDriver.
     pimpl->gfx_manager.reset();
     
     // Shut down curl.

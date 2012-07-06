@@ -88,7 +88,7 @@ namespace Coercri {
     DX11GfxDriver::DX11GfxDriver(D3D_DRIVER_TYPE driver_type,
                                  UINT flags,
                                  D3D_FEATURE_LEVEL feature_level)
-        : m_pFactory(0), icon_id(-1)
+        : icon_id(-1)
     {
         memset(&desktop_mode, 0, sizeof(desktop_mode));  // in case it fails to initialize in getAvailableDisplayModes()
         
@@ -110,7 +110,7 @@ namespace Coercri {
     {
         // Find the default display adapter
         IDXGIAdapter *pAdapter = 0;
-        HRESULT hr = m_pFactory->EnumAdapters(0, &pAdapter);
+        HRESULT hr = m_psFactory->EnumAdapters(0, &pAdapter);
         if (FAILED(hr)) {
             throw DXError("IDXGIFactory::EnumAdapters failed", hr);
         }
@@ -206,11 +206,14 @@ namespace Coercri {
         if (FAILED(hr)) {
             throw DXError("GetParent of DXGIDevice failed", hr);
         }
+        ComPtrWrapper<IDXGIAdapter> psDXGIAdapter(pDXGIAdapter); // ensure it gets Released
 
-        hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void **)&m_pFactory);
+        IDXGIFactory * pFactory;
+        hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void **)&pFactory);
         if (FAILED(hr)) {
             throw DXError("GetParent of DXGIAdapter failed", hr);
         }
+        m_psFactory.reset(pFactory);
     }
         
 

@@ -80,6 +80,7 @@ namespace Coercri {
         void operator=(const DX11Window&);
 
     private:
+        void cleanUpWindow();
         void createRenderTargetView();
         static LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
         void handleWindowResize();
@@ -87,7 +88,7 @@ namespace Coercri {
     private:
         DX11GfxDriver &gfx_driver;
         HWND hwnd;
-        bool in_size_move;  // inhibit back buffer resizing while user is resizing window with the mouse.
+        bool inhibit_back_buffer_resize;  // inhibit back buffer resizing while user is resizing window with the mouse.
         bool is_minimized;
 
         ComPtrWrapper<IDXGISwapChain> m_psSwapChain;
