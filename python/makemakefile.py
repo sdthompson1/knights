@@ -111,7 +111,7 @@ STRIP = strip
 CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG
 CFLAGS = -O3 -ffast-math
 CXXFLAGS = $(CFLAGS)
-BOOST_LIBS = -lboost_thread-mt
+BOOST_LIBS = -lboost_thread
 
 INSTALL = install
 
