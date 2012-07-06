@@ -266,6 +266,7 @@ void Mediator::placeBlood(DungeonMap &dmap, const MapCoord &mc)
 void Mediator::placeKnightCorpse(DungeonMap &dmap, const MapCoord &mc, const Player &p, bool b)
 {
     gore_manager.placeKnightCorpse(dmap, mc, p, b);
+    monster_manager.onPlaceKnightCorpse(mc);
 }
 
 void Mediator::placeMonsterCorpse(DungeonMap &dmap, const MapCoord &mc, const MonsterType &m)

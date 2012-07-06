@@ -124,9 +124,10 @@ public:
     void subtractMonster(const MonsterType &mt);    
 
     //
-    // this is called by Mediator::placeMonsterCorpse
+    // these are called by Mediator::placeMonsterCorpse
     //
     void onPlaceMonsterCorpse(const MapCoord &mc, const MonsterType &m);
+    void onPlaceKnightCorpse(const MapCoord &mc);
 
 private:
     // Noncopyable

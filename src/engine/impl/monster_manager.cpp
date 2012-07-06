@@ -276,6 +276,13 @@ void MonsterManager::onPlaceMonsterCorpse(const MapCoord &mc, const MonsterType 
     }
 }
 
+void MonsterManager::onPlaceKnightCorpse(const MapCoord &mc)
+{
+    // Reset the zombie activity counter for this square
+    // (we assume knight corpses are always zombifiable).
+    addZombieActivityCounter(mc);
+}
+
 bool MonsterManager::rollZombieActivity() const
 {
     return necronomicon_counter > 0 || g_rng.getBool(zombie_chance * 0.01f);
