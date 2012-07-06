@@ -499,6 +499,13 @@ void A_PlaySound::execute(const ActionData &ad) const
         shared_ptr<Tile> dummy;
         ad.getTile(dmap, mc, dummy);
     }
+
+    // "Lua pos" will override the pos from above
+    // Fixes: #100 (Door sound not heard when the door is opened by someone in the room outside)
+    if (!ad.getLuaPos().isNull()) {
+        mc = ad.getLuaPos();
+    }
+
     if (dmap) {
         Mediator::instance().playSound(*dmap, mc, *sound, frequency->get(), all);
     }
