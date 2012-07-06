@@ -284,6 +284,11 @@ private:
     struct MySound {
         const Sound *sound;
         int frequency;
+
+        // This vector tells us which players can hear this sound. This is relevant if we are an observer
+        // and there are more than two players in the game; in that case, we receive sounds for all players
+        // from the server, but we only actually want to play sounds for the two players who are currently
+        // on-screen.
         std::vector<bool> plyr;
     };
     std::vector<MySound> sounds;
