@@ -35,6 +35,12 @@
 #include <algorithm>
 using namespace std;
 
+MonsterManager::MonsterManager()
+    : total_current_monsters(0), total_monster_limit(-1), zombie_chance(0), bat_chance(0),
+      necronomicon_counter(0), necromancy_flag(false),
+      monster_respawn_wait(0)
+{ }
+
 void MonsterManager::addZombieDecay(shared_ptr<Tile> from, shared_ptr<Tile> to)
 {
     if (!from || !to) return;
@@ -86,6 +92,9 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
 {
     vector<shared_ptr<Tile> > tiles;
 
+    // Update the zombie respawn counters (#152)
+    decrementZombieActivityCounters();
+
     // First of all, we reduce the chances of doing anything in proportion to the
     // number of monsters already in the dungeon:
     if (total_monster_limit > 0
@@ -103,6 +112,8 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
         MapCoord mc = GetRandomSquare(left, bottom, right, top);
         if (!dmap.valid(mc)) continue;
 
+        const bool zombie_activity_inhibited = zombieActivityInhibited(mc);
+        
         // Get list of tiles at the square:
         dmap.getTiles(mc, tiles);
         
@@ -141,6 +152,12 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
 
                 if (m->second.zombie_mode) {
 
+                    // If zombie activity is temporarily inhibited, then skip this tile
+                    // (i.e. proceed as if it is not really a monster-tile at all)
+                    if (zombie_activity_inhibited) {
+                        continue;
+                    }
+                    
                     // Zombie activity:
                     // (i) roll to see if we should do zombie activity at all
                     // (ii) if we should, then remove the corpse tile.
@@ -243,6 +260,22 @@ void MonsterManager::subtractMonster(const MonsterType &mt)
     --total_current_monsters;
 }
 
+void MonsterManager::onPlaceMonsterCorpse(const MapCoord &mc, const MonsterType &mt)
+{
+    // See if this counts as a zombie monster
+    bool found = false;
+    for (map<shared_ptr<Tile>, MonsterInfo>::const_iterator it = monster_map.begin(); it != monster_map.end(); ++it) {
+        if (it->second.monster_type == &mt && it->second.zombie_mode) {
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        addZombieActivityCounter(mc);
+    }
+}
+
 bool MonsterManager::rollZombieActivity() const
 {
     return necronomicon_counter > 0 || g_rng.getBool(zombie_chance * 0.01f);
@@ -292,3 +325,32 @@ shared_ptr<Monster> MonsterManager::addMonsterToMap(const MonsterType &mt, Dunge
 
     return mnstr;
 }           
+
+//
+// zombie activity counters (#152) -- support functions
+//
+
+bool MonsterManager::zombieActivityInhibited(const MapCoord &mc) const
+{
+    return zombie_activity_counters.find(mc) != zombie_activity_counters.end();
+}
+
+void MonsterManager::decrementZombieActivityCounters()
+{
+    std::map<MapCoord, int>::iterator it = zombie_activity_counters.begin();
+    while (it != zombie_activity_counters.end()) {
+        --(it->second);
+        if (it->second <= 0) {
+            std::map<MapCoord, int>::iterator it2 = it;
+            ++it;
+            zombie_activity_counters.erase(it2);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void MonsterManager::addZombieActivityCounter(const MapCoord &mc)
+{
+    zombie_activity_counters[mc] = monster_respawn_wait;
+}

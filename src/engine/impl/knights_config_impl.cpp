@@ -2273,6 +2273,8 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     //   -- Individual monster types are set elsewhere (DungeonGenerator::generate()).
     monster_manager.limitTotalMonsters(config_map->getInt("monster_limit"));
 
+    monster_manager.setRespawnWait(config_map->getInt("monster_respawn_wait"));
+    
     // set up event manager
     event_manager.setupHooks(hooks);
 

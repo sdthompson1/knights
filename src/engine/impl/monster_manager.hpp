@@ -45,9 +45,7 @@ class MonsterType;
 
 class MonsterManager {
 public:
-    explicit MonsterManager()
-        : total_current_monsters(0), total_monster_limit(-1), zombie_chance(0), bat_chance(0),
-          necronomicon_counter(0), necromancy_flag(false) { }
+    MonsterManager();
     
     // Initialization of zombie activity:
     
@@ -64,6 +62,9 @@ public:
     void setZombieChance(int z) { zombie_chance = z; }
     int getZombieChance() const { return zombie_chance; }
 
+    // sets delay before a monster can respawn (in terms of number of doMonsterGeneration calls) (#152)
+    void setRespawnWait(int w) { monster_respawn_wait = w; }
+    
 
     // Initialization of monster generator tiles
     // (used for vampire bat activity):
@@ -122,6 +123,10 @@ public:
     //    
     void subtractMonster(const MonsterType &mt);    
 
+    //
+    // this is called by Mediator::placeMonsterCorpse
+    //
+    void onPlaceMonsterCorpse(const MapCoord &mc, const MonsterType &m);
 
 private:
     // Noncopyable
@@ -134,7 +139,11 @@ private:
     bool reachedMonsterLimit(const MonsterType * m) const;
     shared_ptr<Monster> addMonsterToMap(const MonsterType &mt, DungeonMap &dmap,
                                         const MapCoord &mc);    // gives it a random initial facing
-    
+
+    bool zombieActivityInhibited(const MapCoord &mc) const;
+    void decrementZombieActivityCounters();
+    void addZombieActivityCounter(const MapCoord &mc);
+                                  
 private:
     map<shared_ptr<Tile>, shared_ptr<Tile> > decay_sequence;
     struct MonsterInfo {
@@ -151,6 +160,9 @@ private:
     int zombie_chance, bat_chance;
     int necronomicon_counter;  // if +ve, should act as if zombie_chance was 100%.
     bool necromancy_flag;  // set true when doNecromancy is called.
+
+    map<MapCoord, int> zombie_activity_counters;  // Force wait before zombie can respawn (#152)
+    int monster_respawn_wait;
 };
 
 #endif

@@ -349,6 +349,8 @@ item_respawn_interval = 2000;  -- How often to check for item respawns.
 
 monster_radius = 10;      -- How far away from player can monsters be generated
 monster_interval = 112;   -- How often to run the monster generator.
+monster_respawn_wait = 45;   -- How many multiples of monster_interval after a zombie dies, before
+                             -- it can be reanimated. (Trac #152)
 monster_limit = 15;       -- Total monsters allowed in the dungeon. (15 in original Knights.)
 monster_wait_time = 200;  -- How long monsters can 'pause' for
 monster_wait_chance = 20; -- Percentage chance of a monster 'pausing', if nobody can see it.
