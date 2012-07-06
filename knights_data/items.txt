@@ -398,10 +398,10 @@ i_gem = {
 #
 
 # Teleportation needs to play a sound effect as well (ditto zombification)
-# N.B. We play the sound *after* the teleport occurs. This ensures that the sound goes to both players.
+# N.B. We play the sound both before & after teleport, this ensures that the sound goes to both players.
 # For zombification we play the sound *before* zombifying (i.e. while the actor still exists!)
-my_teleport = [Teleport(), snd_teleport]
-my_attractor = [Attractor(), snd_teleport]
+my_teleport = [snd_teleport, Teleport(), snd_teleport]
+my_attractor = [snd_teleport, Attractor(), snd_teleport]
 my_zombify = [snd_zombie, ZombifyActor(m_zombie)]
 
 # These potion and scroll effects have been designed to be exactly equivalent to what 
