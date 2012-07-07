@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SDL\lib\SDL.lib ws2_32.lib winmm.lib"
+				AdditionalDependencies="..\..\SDL\lib\x86\SDL.lib ws2_32.lib winmm.lib"
 				GenerateDebugInformation="true"
 				OptimizeReferences="1"
 				EnableCOMDATFolding="1"
@@ -138,7 +138,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SDL\lib\SDL.lib ws2_32.lib winmm.lib"
+				AdditionalDependencies="..\..\SDL\lib\x86\SDL.lib ws2_32.lib winmm.lib"
 				GenerateDebugInformation="true"
 				LinkTimeCodeGeneration="0"
 			/>
