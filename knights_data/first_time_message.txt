@@ -2,11 +2,9 @@
 
 %lKnights is a multiplayer game involving several knights who must explore random dungeons and solve various quests.
 
-%lIf you haven't played before, you might like to start with the Tutorial, which will explain the controls and the basics of the game to you.
+If you haven't played before, you might like to start with the Tutorial, or play some singleplayer games for practice. However, remember that Knights is a lot more fun in multiplayer, so don't be afraid to jump in and join a few games online.
 
-After that, you can join a multiplayer game on the Knights server, or start up a LAN game. There is also a singleplayer mode, but this is mainly intended for practice -- this game is definitely more fun in multiplayer!
-
-Don't forget you can go to the Server List page on the Knights web site to find out when other players will be online.
+There is also a web-based system to help you find other players. Just go to "Server List" on the Knights website, and follow the instructions.
 
 Have fun...
 
