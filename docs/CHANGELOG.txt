@@ -7,7 +7,89 @@ Release 020
 
 Released 7-Jul-2012
 
-...
+New features:
+
+[#160] Team games can now be played for any quest type, not just Duel
+  to the Death. (The House Colours determine whether a game is a team
+  game or not; if two or more knights share a colour, then they play
+  on the same team.) Also, five new House Colours were added.
+
+[#170] Invisible knights are now shown with a transparency effect.
+  Also, invisible knights can now be seen by other players on the same
+  team.
+
+[#28] Added a Quest Requirements display to the in-game screen. (This
+  can be minimized, if you wish, by clicking on its title bar.)
+
+[#159] The ` key (this is above TAB on most keyboards) can now be used
+  as a shortcut to start typing a team chat message. Also, the chat
+  keys can now be re-defined on the Options screen.
+
+[#57] On Windows, Knights now uses DirectX 11 for drawing (if
+  available). This results in lower CPU usage and (potentially)
+  smoother animation. If DirectX is not available, or is not up to
+  date enough, then SDL is used as a fallback (the Options screen will
+  tell you whether this happened on your system).
+
+
+Bug fixes:
+
+[#155, #179] Fixed some dungeon generator bugs, including: switches in
+  gnome room not always working; switches firing bolts out of the
+  wrong square or in the wrong direction; inaccessible areas in some
+  Ring dungeons.
+
+[#175] When swinging an axe at the special pentagram, the axe was being
+  swung, instead of thrown as usual. This has been fixed.
+
+[#158] Fixed bug where you could sometimes walk through a flying axe
+  or bolt if you were moving straight towards it.
+
+[#167] If you set a trap on a chest that already had a dart trap, then
+  the dart was firing out from the wrong square. Now fixed.
+
+[#160] In Duel to the Death quests, if the black team used a wand of
+  securing, the entry point was marked by a dark grey rectangle on a
+  black background, which was very difficult to see. This has been
+  changed to light grey.
+
+[#119] Following some changes to the mini-map code (a couple of
+  releases ago), the "closed gate" tiles had started appearing as
+  walls on the mini-map. This has now been reverted.
+
+[#100] Fixed bug where sounds were sometimes not played correctly (for
+  example, if a knight in an adjacent room opened a door into your
+  room, then the "door opening" sound was not being played.)
+
+[#172] The in-game player list is now sorted so that players on the
+  same team are grouped together.
+
+[#151] The "team chat is available" message is no longer shown if you
+  are the only player on your team.
+
+[#77] Chat from the quest selection screen is now carried through into
+  the game.
+
+
+Other changes:
+
+[#152] Zombies can no longer instantly respawn after they die. There
+  is now a minimum time of five seconds after a zombie dies before it
+  can respawn.
+
+[#20] Added one more guarded exit room (with three locked doors
+  instead of the usual two).
+
+[#169] Knights now opens in windowed mode by default. (Full screen
+  mode can be selected from the Options screen, as usual.)
+
+[#130] Traceback added to Lua error messages. This should make it
+  easier to debug any Lua related problems in the future.
+
+[#171] "Frags" renamed to "points" in Deathmatch mode.
+
+[#163] Pressing Enter with nothing typed will now exit chat mode
+  (instead of doing nothing).
 
 
 
