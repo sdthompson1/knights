@@ -1,4 +1,4 @@
-Knights Release 019 -- Source Code
+Knights Release 020 -- Source Code
 ----------------------------------
 
 This is the source code for KNIGHTS, a game of multi-player violent
@@ -25,4 +25,4 @@ Instructions for building can be found in docs/building.html.
 -----
 Stephen Thompson
 stephen@solarflare.org.uk
-January 2012
+July 2012

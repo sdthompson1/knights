@@ -2,6 +2,15 @@ Note: Numbers in square brackets refer to Trac
 <http://www.knightsgame.org.uk:8000/>.
 
 
+Release 020
+===========
+
+Released 7-Jul-2012
+
+...
+
+
+
 Release 019
 ===========
 
