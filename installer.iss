@@ -42,6 +42,9 @@ Type: files; Name: "{app}\libfreetype-6.dll"
 Type: files; Name: "{app}\freetype6.dll"
 Type: files; Name: "{app}\zlib1.dll"
 Type: files; Name: "{app}\LICENCE.txt"
+Type: files; Name: "{app}\docs\manual\images\quest_selection.png"
+Type: files; Name: "{app}\docs\manual\images\in_game_screen.png"
+Type: files; Name: "{app}\docs\manual\images\game_options.png"
 
 [Icons]
 Name: "{group}\Knights"; Filename: "{app}\Knights.exe"; WorkingDir: "{app}"
