@@ -1895,10 +1895,10 @@ install_docs:
 	$(INSTALL) -m 644 docs/manual/images/daggers.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/entry_point.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/find_server_screen.png $(DOC_DIR)/manual/images
-	$(INSTALL) -m 644 docs/manual/images/game_options.png $(DOC_DIR)/manual/images
+	$(INSTALL) -m 644 docs/manual/images/game_options_1.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/gem.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/hammer.png $(DOC_DIR)/manual/images
-	$(INSTALL) -m 644 docs/manual/images/in_game_screen.png $(DOC_DIR)/manual/images
+	$(INSTALL) -m 644 docs/manual/images/in_game_screen_1.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/iron_door.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/key.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/lobby.png $(DOC_DIR)/manual/images
@@ -1921,7 +1921,7 @@ install_docs:
 	$(INSTALL) -m 644 docs/manual/images/pit.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/portcullis.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/potion.png $(DOC_DIR)/manual/images
-	$(INSTALL) -m 644 docs/manual/images/quest_selection.png $(DOC_DIR)/manual/images
+	$(INSTALL) -m 644 docs/manual/images/quest_selection_1.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/scroll.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/staff.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/switch.png $(DOC_DIR)/manual/images
@@ -2252,10 +2252,10 @@ uninstall:
 	rm -f $(DOC_DIR)/manual/images/daggers.png
 	rm -f $(DOC_DIR)/manual/images/entry_point.png
 	rm -f $(DOC_DIR)/manual/images/find_server_screen.png
-	rm -f $(DOC_DIR)/manual/images/game_options.png
+	rm -f $(DOC_DIR)/manual/images/game_options_1.png
 	rm -f $(DOC_DIR)/manual/images/gem.png
 	rm -f $(DOC_DIR)/manual/images/hammer.png
-	rm -f $(DOC_DIR)/manual/images/in_game_screen.png
+	rm -f $(DOC_DIR)/manual/images/in_game_screen_1.png
 	rm -f $(DOC_DIR)/manual/images/iron_door.png
 	rm -f $(DOC_DIR)/manual/images/key.png
 	rm -f $(DOC_DIR)/manual/images/lobby.png
@@ -2278,7 +2278,7 @@ uninstall:
 	rm -f $(DOC_DIR)/manual/images/pit.png
 	rm -f $(DOC_DIR)/manual/images/portcullis.png
 	rm -f $(DOC_DIR)/manual/images/potion.png
-	rm -f $(DOC_DIR)/manual/images/quest_selection.png
+	rm -f $(DOC_DIR)/manual/images/quest_selection_1.png
 	rm -f $(DOC_DIR)/manual/images/scroll.png
 	rm -f $(DOC_DIR)/manual/images/staff.png
 	rm -f $(DOC_DIR)/manual/images/switch.png
