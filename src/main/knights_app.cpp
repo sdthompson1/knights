@@ -777,7 +777,7 @@ void KnightsAppImpl::popPotionSetup(lua_State *lua)
     lua_pushstring(lua, "colours");
     lua_gettable(lua, -2);  // 'colours' list is now at top of stack, with potion setup table 1 below that.
 
-    const int num_colours = lua_objlen(lua, -1);
+    const int num_colours = lua_rawlen(lua, -1);
     
     for (int i = 0; i < num_colours; ++i) {
         lua_pushinteger(lua, i+1);
@@ -791,7 +791,7 @@ void KnightsAppImpl::popPotionSetup(lua_State *lua)
     lua_pushstring(lua, "graphics");
     lua_gettable(lua, -2);  // 'graphics' table is top of stack; potion setup table is below
 
-    const int num_graphics = lua_objlen(lua, -1);
+    const int num_graphics = lua_rawlen(lua, -1);
 
     for (int i = 0; i < num_graphics; ++i) {
         lua_pushinteger(lua, i+1);
@@ -810,7 +810,7 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
     lua_pushstring(lua, "columns");
     lua_gettable(lua, -2);  // 'columns' at top of stack, orig table below
 
-    const int num_columns = lua_objlen(lua, -1);
+    const int num_columns = lua_rawlen(lua, -1);
 
     for (int i = 0; i < num_columns; ++i) {
         lua_pushinteger(lua, i+1);
@@ -825,7 +825,7 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
     lua_pushstring(lua, "graphics");
     lua_gettable(lua, -2);  // gfx table now top of stack, orig table below
 
-    const int num_graphics = lua_objlen(lua, -1);
+    const int num_graphics = lua_rawlen(lua, -1);
 
     for (int i = 0; i < num_graphics; ++i) {
         lua_pushinteger(lua, i+1);
@@ -839,7 +839,7 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
     lua_pushstring(lua, "rows");
     lua_gettable(lua, -2);   // rows table top of stack, orig table below
 
-    const int num_rows = lua_objlen(lua, -1);
+    const int num_rows = lua_rawlen(lua, -1);
 
     for (int i = 0; i < num_rows; ++i) {
         lua_pushinteger(lua, i+1);

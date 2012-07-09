@@ -78,7 +78,7 @@ void LuaLoadFromRStream(lua_State *lua, const std::string &filename)
     rc.filename = &filename;
     rc.str = &str;
     const std::string chunkname = "@" + filename;
-    const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str());  // pushes 1 result value
+    const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str(), 0);  // pushes 1 result value
     if (result != 0) HandleLuaError(lua);
 }
 

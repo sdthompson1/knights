@@ -65,6 +65,7 @@ namespace {
         "_G",         // not a problem: we don't care if they have access to global environment
         "_VERSION",   // safe
         "assert",     // safe
+        "bit32",      // safe (whitelisted)
         // NOT: collectgarbage
         "coroutine",  // no problem; theoretically they could modify this table, thus affecting
                       // code outside the sandbox, but:
@@ -74,16 +75,12 @@ namespace {
         // NOT: debug
         // NOT: dofile
         "error",      // safe
-        "getfenv",    // not a problem: they can access whatever environments they want,
-                      // it won't do them any good, because we control the global environment
         "getmetatable",  // they might use this to e.g. redefine string metatable, but we don't care
         // NOT: io
         "ipairs",     // safe
         // NOT: load
         // NOT: loadfile
-        // NOT: loadstring (might be ok, not sure, but disable for now)
         "math",       // no problem (see whitelist below)
-        // NOT: module
         // NOT: newproxy (undocumented base library function)
         "next",       // safe
         // NOT: os
@@ -93,17 +90,16 @@ namespace {
         "print",      // safe (printing to stdio is harmless)
         "rawequal",   // bypasses metatables but we don't care
         "rawget",     // bypasses metatables but we don't care
+        "rawlen",     // bypasses metatables but we don't care
         "rawset",     // bypasses metatables but we don't care
         // NOT: require
         "select",     // safe
-        "setfenv",    // can modify environments of other functions, but we don't care
         "setmetatable",   // they might use this to e.g. redefine string metatable, but we don't care
         "string",     // no problem (see whitelist below)
         "table",      // no problem (see whitelist below)
         "tonumber",   // safe
         "tostring",   // safe
         "type",       // safe
-        "unpack",     // safe
         "xpcall",     // safe
         0
     };
@@ -139,6 +135,7 @@ namespace {
         "maxn",    // safe
         "remove",  // safe
         "sort",    // safe
+        "unpack",  // safe
         0
     };
     const char * math_whitelist[] = {
@@ -158,7 +155,6 @@ namespace {
         "huge",  // safe
         "ldexp", // safe
         "log",   // safe
-        "log10", // safe
         "max",   // safe
         "min",   // safe
         "modf",  // safe
@@ -172,6 +168,22 @@ namespace {
         "sqrt",  // safe
         "tan",   // safe
         "tanh",  // safe
+        0
+    };
+
+    const char * bit32_whitelist[] = {
+        "arshift",  // safe
+        "band",     // safe
+        "bnot",     // safe
+        "bor",      // safe
+        "btest",    // safe
+        "bxor",     // safe
+        "extract",  // safe
+        "lrotate",  // safe
+        "lshift",   // safe
+        "replace",  // safe
+        "rrotate",  // safe
+        "rshift",   // safe
         0
     };
 
@@ -229,9 +241,11 @@ namespace {
 
     // The lua libraries that we want to open
     const luaL_Reg kts_lua_libs[] = {
-          {"", luaopen_base},
+          {"_G", luaopen_base},
+          {LUA_COLIBNAME, luaopen_coroutine},
           {LUA_TABLIBNAME, luaopen_table},
           {LUA_STRLIBNAME, luaopen_string},
+          {LUA_BITLIBNAME, luaopen_bit32},
           {LUA_MATHLIBNAME, luaopen_math},
           {0, 0}
     };
@@ -241,18 +255,24 @@ namespace {
 boost::shared_ptr<lua_State> MakeLuaSandbox()
 {
     boost::shared_ptr<lua_State> lua(luaL_newstate(), LuaDeleter());
+
+    if (!lua) {
+        throw LuaError("Could not create Lua state");
+    }
     
     // Copied from linit.c (but with modified library list):
     const luaL_Reg *lib = kts_lua_libs;
     for (; lib->func; lib++) {
-        lua_pushcfunction(lua.get(), lib->func);
-        lua_pushstring(lua.get(), lib->name);
-        lua_call(lua.get(), 1, 0);
+        luaL_requiref(lua.get(), lib->name, lib->func, 1);
+        lua_pop(lua.get(), 1);  // remove lib
     }
 
     // Apply our whitelists.
-    lua_pushvalue(lua.get(), LUA_GLOBALSINDEX);
+    lua_rawgeti(lua.get(), LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
     ApplyWhitelist(lua.get(), global_whitelist);
+
+    lua_getglobal(lua.get(), "bit32");
+    ApplyWhitelist(lua.get(), bit32_whitelist);
 
     lua_getglobal(lua.get(), "coroutine");
     ApplyWhitelist(lua.get(), coroutine_whitelist);

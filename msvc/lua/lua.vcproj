@@ -164,7 +164,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\external\lua\lbitlib.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\external\lua\lcode.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\external\lua\lcorolib.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\external\lua\lctype.c"
 				>
 			</File>
 			<File
@@ -256,6 +268,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\external\lua\lua.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\external\lua\lundump.c"
 				>
 			</File>
@@ -265,10 +281,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\external\lua\lzio.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\external\lua\print.c"
 				>
 			</File>
 		</Filter>
@@ -287,6 +299,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\external\lua\lcode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\external\lua\lctype.h"
 				>
 			</File>
 			<File
