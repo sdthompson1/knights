@@ -33,7 +33,7 @@ void SoundManager::loadSound(const Sound &sound)
 
     if (sound_map.find(&sound) == sound_map.end()) {
         boost::shared_ptr<RStream> str(new RStream(sound.getFilename()));
-        sound_map.insert(make_pair(&sound, sound_driver->loadSound(str)));
+        sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
     }
 }
 
@@ -41,7 +41,7 @@ void SoundManager::playSound(const Sound &sound, int frequency)
 {
     if (!sound_driver) return;
     
-    map<const Sound *, boost::shared_ptr<Coercri::Sound> >::iterator it = sound_map.find(&sound);
+    std::map<const Sound *, boost::shared_ptr<Coercri::Sound> >::iterator it = sound_map.find(&sound);
     if (it == sound_map.end()) {
         loadSound(sound);
         it = sound_map.find(&sound);
