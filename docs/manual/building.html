@@ -27,8 +27,9 @@
 <h3>Linux</h3>
 
 <p>For Linux a Makefile is provided. Most users should just be able to
-  type "make" followed by "make install" to build and install
-  respectively.</p>
+  type <b>make</b> followed by <b>make install</b> to build and
+  install respectively. After installing, type <b>knights</b> to run
+  the game.</p>
 
 <p>Before compiling, make sure you have the necessary dependencies
   installed. The game requires Boost, SDL, libcurl, Freetype and Fontconfig. On
@@ -47,7 +48,7 @@
 <p>If you only want to build the server (and not the game itself) then
   you only need the first three of the above.</p>
 
-<p>Also, make sure that you have at least version 1.35 of Boost. Some
+<p>Also, make sure that you have at least version 1.48 of Boost. Some
   Linux distributions come with older versions, which will not work
   with <i>Knights</i>. Also, if your Boost is installed in a
   non-standard location, you may need to edit CPPFLAGS and/or
@@ -108,19 +109,57 @@
   you want to try building the game from source code, then read
   on.</p>
 
-<p>Project and solution files for Visual Studio are included. (You can
+<p>I will assume that you are building with Visual Studio. (You can
   get the Visual Studio Express Edition for free from Microsoft.)</p>
 
-<p>Before building, certain dependencies must be obtained. These
-  are:</p>
+<p>Before starting, you will need to
+  install <a href="http://www.boost.org/">Boost</a> on your system (if
+  you don't already have it). Proceed as follows:</p>
 
 <ul>
-  <li> <a href="http://www.boost.org/">Boost:</a> You'll need to
-    install Boost on your computer &ndash; the simplest way is to
-    download the latest installer (see the Getting Started section on
-    the Boost website, or go directly
-    to <a href="http://www.boostpro.com/download">http://www.boostpro.com/download</a>).
-  </li>
+ <li>Visit the Boost website and download the latest .7z or .zip
+ archive of Boost.</li>
+
+ <li>Unzip it to a directory of your choice (e.g.
+    C:\boost_1_50_0). </li>
+
+  <li>Open a command prompt in the Boost directory, and enter the
+    following commands:
+<pre>
+bootstrap
+.\b2
+</pre>
+</li>
+
+<li>We now need to add the Boost directories to Visual Studio's
+    paths. 
+
+  <ul><li>In VS2008, you can do this by going to Tools -&gt; Options,
+    then Projects and Solutions -&gt; VC++ Directories, and select
+    "Show directories for: Include files". Add the path for the Boost
+    root directory e.g. "C:\boost_1_50_0". Then select "Show
+    directories for: Library files" and add the "lib" subdirectory of
+    Boost e.g. "C:\boost_1_50_0\lib".</li>
+
+  <li>In VS2010, I think they got rid of "VC++ Directories", so you
+  may have to add the paths directly to the relevant Knights project
+  files. (I don't currently use VS2010, so I can't provide any more
+  details, unfortunately.)</li></ul>
+
+</li>
+</ul>
+
+<p>That completes the installation of Boost. (If you run into
+  problems, check the "Getting Started" section of the Boost website
+  for more detailed instructions.)</p>
+
+<p>Next, download the Knights source code and extract it to a
+  directory of your choice.</p>
+
+<p>Before we can build Knights, certain additional dependencies must
+  be obtained. These are:</p>
+
+<ul>
   <li> <a href="http://www.libsdl.org/">SDL:</a> Download both the
     "runtime libraries for Win32" and the "development libraries for
     Win32". </li>
@@ -130,23 +169,10 @@
     latest stable release of freetype2. </li>
 </ul>
 
-<p>Extract the Knights source code to a directory of your choice. Then
-  extract the above dependencies as follows:</p>
+<p>These must be unpacked into the Knights folder, as follows:</p>
 
 <ul>
-  <li>Run the Boost installer. (Note that this is a change from the
-    previous version of <i>Knights</i>, where the Boost files were
-    just copied into the source directory. This won't work any more
-    because we now need the Boost.Threads libraries as well as just
-    the header files.) You'll also need to set the include and library
-    directories in Visual Studio. Go to Tools -&gt; Options, then
-    Projects and Solutions -&gt; VC++ Directories, and select "Show
-    directories for: Include files". Add the path for the Boost root
-    directory e.g. "C:\Program Files\boost\boost_1_39". Then select
-    "Show directories for: Library files" and add the "lib"
-    subdirectory of Boost e.g. "C:\Program
-    Files\boost\boost_1_39\lib". </li>
-  <li>Unpack the SDL development libraries directly to
+  <li>Unpack the SDL development libraries directly into
     "knights_020_src". Rename the "SDL-1.2.x" folder to just
     "SDL".</li>
   <li>Unpack libcurl directly to "knights_020_src". Rename the
@@ -218,12 +244,6 @@ knights_020_src\
 
 <p>This will build the "knights_020_installer.exe" in the current
   directory.</p>
-
-<h3>Scons</h3>
-
-<p>The Scons build files, present in earlier versions
-  of <i>Knights</i>, have now been removed and are no longer
-  supported.</p>
 
 <div class="footer2">
 <table><tr>
