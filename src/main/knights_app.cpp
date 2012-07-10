@@ -69,11 +69,16 @@
 #include "dx11/gfx/dx11_gfx_driver.hpp"
 #endif
 
+// curl
 #include <curl/curl.h>
 
+// guichan
 #include "guichan.hpp"
 #include "lua.hpp"
 
+// boost
+#include "boost/filesystem.hpp"
+#include "boost/filesystem/fstream.hpp"
 #include "boost/scoped_ptr.hpp"
 
 #include "kconfig_loader.hpp"  // needed for KConfigError
@@ -205,7 +210,7 @@ public:
     boost::scoped_ptr<gcn::Font> gcn_font;
 
     boost::scoped_ptr<Options> options;
-    std::string options_filename;
+    boost::filesystem::path options_filename;
     bool player_name_changed;  // has options->player_name been changed
 
     ConfigMap config_map;
@@ -334,13 +339,13 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     pimpl->options.reset(new Options);
 #ifdef WIN32
     // options stored in "app data" directory
-    TCHAR szPath[MAX_PATH];
-    if(SUCCEEDED(SHGetFolderPath(NULL, 
-                                 CSIDL_APPDATA,
-                                 NULL,
-                                 0,
-                                 szPath))) {
-        pimpl->options_filename = szPath;
+    wchar_t path[MAX_PATH];
+    if(SUCCEEDED(SHGetFolderPathW(NULL, 
+                                  CSIDL_APPDATA,
+                                  NULL,
+                                  0,
+                                  path))) {
+        pimpl->options_filename = path;
         pimpl->options_filename += "/knights_config.txt";
     }
 #else
@@ -349,9 +354,9 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     pimpl->options_filename += "/.knights_config";
 #endif
     if (!pimpl->options_filename.empty()) {
-        ifstream str(pimpl->options_filename.c_str());
+        boost::filesystem::ifstream str(pimpl->options_filename);
         *pimpl->options = LoadOptions(str);
-    }    
+    }
     
     // Set up Coercri
     // -- Use DX11 if available, but fall back to SDL if that fails.
