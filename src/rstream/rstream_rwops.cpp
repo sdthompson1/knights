@@ -30,13 +30,13 @@ int Rseek(SDL_RWops *context, int offset, int whence)
 	RStream *str = static_cast<RStream *>(context->hidden.unknown.data1);
 	switch (whence) {
 	case SEEK_SET:
-		str->seekg(offset, ios_base::beg);
+        str->seekg(offset, std::ios_base::beg);
 		break;
 	case SEEK_CUR:
-		str->seekg(offset, ios_base::cur);
+        str->seekg(offset, std::ios_base::cur);
 		break;
 	case SEEK_END:
-		str->seekg(offset, ios_base::end);
+        str->seekg(offset, std::ios_base::end);
 		break;
 	default:
 		return -1; // error
@@ -69,7 +69,7 @@ int Rclose(SDL_RWops *context)
 }  // namespace
 
 
-SDL_RWops* RWFromRStream(const string &resource_name)
+SDL_RWops* RWFromRStream(const std::string &resource_name)
 {
 	// hmm, not quite exception safe. that's the price of a c-like interface
 	// (although could write a c++ wrapper i guess).

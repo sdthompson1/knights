@@ -25,16 +25,38 @@
  * Resource streams. Like ifstream except we load from "resources" rather than files.
  *
  * A resource is currently just a file (but loaded from a standard path, so we don't have to worry about
- * current working directory etc), but in the future could be some sort of virtual file system.
+ * current working directory etc), but in theory it could be something more complicated, e.g.
+ * some sort of virtual file system.
  *
- * API:
- * RStream rs("fred.txt");   (%%% perhaps a more url like syntax in future?)
- *  -- the system will automatically find fred.txt from the "standard" location(s)
- * Then manipulate rs as an ordinary istream.
+ * Usage:
+ * 
+ * First, set the base directory by calling
+ * 
+ * RStream::Initialize(path);
  *
- * The standard location is currently "." but can optionally be reset by calling
- * RStream::Initialize(path); eg if(argc>1)RStream::Initialize(argv[1]); is useful for testing.
+ * Then, create RStreams passing a resource name to the ctor:
+ * 
+ * RStream rs("fred.txt");
+ * 
+ * The system will automatically find fred.txt from the base
+ * directory. rs can now be used as an ordinary istream.
  *
+ * Resource names can be paths relative to the base directory, e.g.
+ * 
+ * RStream rs("somedir/somefile.png");
+ *
+ * However, it is checked that relative paths do not go "above" the
+ * base directory, e.g. the following would fail:
+ * 
+ * RStream rs("../something");   // wrong
+ * RStream rs("/etc/passwd");    // wrong
+ *
+ * This is to prevent user-supplied scripts (etc) from accessing parts
+ * of the filesystem that they are not supposed to.
+ *
+ * Note: resource names are assumed to be ASCII strings. The base
+ * directory, however, is a boost::filesystem::path.
+ * 
  */
 
 #ifndef RSTREAM_HPP
@@ -44,35 +66,39 @@
 #include <istream>
 #include <fstream>
 #include <exception>
-using namespace std;
+
+#include "boost/filesystem.hpp"
+#include "boost/filesystem/fstream.hpp"
 
 class RStreamError : public std::exception {
 public:
-	RStreamError(const string &r, const string &e);
-	virtual ~RStreamError() throw() { }
-	const string &getResource() const { return resource; }
-	const string &getErrorMsg() const { return error_msg; }
-	const char *what() const throw();
+    RStreamError(const std::string &r, const std::string &e);
+    virtual ~RStreamError() throw() { }
+    const std::string & getResource() const { return resource; }
+    const std::string &getErrorMsg() const { return error_msg; }
+    const char *what() const throw();
 
 private:
-	string resource, error_msg, what_str;
+    std::string resource, error_msg, what_str;
 };
 
 
-class RStream : public istream {
+class RStream : public std::istream {
 public:
-	static void Initialize(const string &resource_path_);
-	explicit RStream(const string &resource_name);
-	~RStream();
+    explicit RStream(const std::string &resource_name);
+    ~RStream();
+
+    static void Initialize(const boost::filesystem::path &base_path_);
 
 private:
-	// at the moment we only implement by using a filebuf. could add a custom stream buffer
-	// to do more sophisticated stuff. (but still want rstream itself to inherit from istream.)
-	filebuf my_filebuf;
-	enum { BUFSIZE = 1024 };
-	char buffer[BUFSIZE];
-	static string resource_path;
-	static bool initialized;
+    // at the moment we only implement by using a filebuf. could add a custom stream buffer
+    // to do more sophisticated stuff. (but still want rstream itself to inherit from istream.)
+    boost::filesystem::filebuf my_filebuf;
+    enum { BUFSIZE = 1024 };
+    char buffer[BUFSIZE];
+    
+    static boost::filesystem::path base_path;
+    static bool initialized;
 };
 
 #endif  // RSTREAM_HPP

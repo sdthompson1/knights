@@ -40,6 +40,6 @@
 // At the moment can load only from a resource name,
 // but extension to loading from a given rstream is easy.
 // The returned ptr must be freed in usual way (using SDL_RWclose)
-SDL_RWops* RWFromRStream(const string &resource_name);
+SDL_RWops* RWFromRStream(const std::string &resource_name);
 
 #endif  // RSTREAM_RWOPS_HPP
