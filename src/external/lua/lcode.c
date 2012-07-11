@@ -847,6 +847,11 @@ void luaK_posfix (FuncState *fs, BinOpr op,
       codearith(fs, cast(OpCode, op - OPR_ADD + OP_ADD), e1, e2, line);
       break;
     }
+    case OPR_TABLEMERGE: {
+        // SDT 11-Jul-2012
+        codearith(fs, OP_TABLEMERGE, e1, e2, line);
+        break;
+    }
     case OPR_EQ: case OPR_LT: case OPR_LE: {
       codecomp(fs, cast(OpCode, op - OPR_EQ + OP_EQ), 1, e1, e2);
       break;

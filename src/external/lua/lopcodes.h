@@ -221,11 +221,13 @@ OP_CLOSURE,/*	A Bx	R(A) := closure(KPROTO[Bx])			*/
 
 OP_VARARG,/*	A B	R(A), R(A+1), ..., R(A+B-2) = vararg		*/
 
-OP_EXTRAARG/*	Ax	extra (larger) argument for previous opcode	*/
+OP_EXTRAARG,/*	Ax	extra (larger) argument for previous opcode	*/
+
+OP_TABLEMERGE/* A B C   R(A) := merge(RK(B), RK(C))   SDT 11-Jul-2012   */
 } OpCode;
 
 
-#define NUM_OPCODES	(cast(int, OP_EXTRAARG) + 1)
+#define NUM_OPCODES	(cast(int, OP_TABLEMERGE) + 1)  // SDT 11-Jul-2012 changed from OP_EXTRAARG
 
 
 

@@ -32,6 +32,45 @@
 #define MAXTAGLOOP	100
 
 
+//// SDT 11-Jul-2012 : Table merge code
+
+static void AddTable(lua_State *L, int from, int to)
+{
+    // Traverse all keys of "from" table
+    lua_pushnil(L);
+    while (lua_next(L, from) != 0) {
+        // Key at index -2
+        // Value at index -1
+        lua_pushvalue(L, -2);  // Push another copy of key
+        lua_pushvalue(L, -2);  // Push another copy of value
+        lua_rawset(L, to);  // Pops key and value, set corresponding field in "to" table
+        lua_pop(L, 1);   // Pops value, leaves key for next call to lua_next
+    }
+}
+
+static int TableMergeFunc(lua_State *L)
+{
+    // Stack on entry: [t1 t2]
+    lua_assert(lua_gettop(L) == 2);
+
+    if (lua_type(L, 1) != LUA_TTABLE
+    || lua_type(L, 2) != LUA_TTABLE) {
+        lua_pushstring(L, "'&' can only be used on tables");
+        lua_error(L);
+    }
+
+    lua_newtable(L);   // [t1 t2 res]
+
+    AddTable(L, 1, 3);
+    AddTable(L, 2, 3);
+    
+    // Stack on exit: [... res]
+    return 1;
+}
+
+//// END of table merge code
+
+
 const TValue *luaV_tonumber (const TValue *obj, TValue *n) {
   lua_Number num;
   if (ttisnumber(obj)) return obj;
@@ -429,7 +468,10 @@ void luaV_finishOp (lua_State *L) {
   switch (op) {  /* finish its execution */
     case OP_ADD: case OP_SUB: case OP_MUL: case OP_DIV:
     case OP_MOD: case OP_POW: case OP_UNM: case OP_LEN:
-    case OP_GETTABUP: case OP_GETTABLE: case OP_SELF: {
+    case OP_GETTABUP: case OP_GETTABLE: case OP_SELF:
+    case OP_TABLEMERGE:   // SDT 11-Jul-2012  -- not sure if this is correct but hopefully TABLEMERGE won't be
+                          // interrupted by a yield anyway.
+        {
       setobjs2s(L, base + GETARG_A(inst), --L->top);
       break;
     }
@@ -633,6 +675,18 @@ void luaV_execute (lua_State *L) {
       vmcase(OP_POW,
         arith_op(luai_numpow, TM_POW);
       )
+
+      // SDT 11-Jul-2012
+      vmcase(OP_TABLEMERGE,
+        TValue * rb = RKB(i);
+        TValue * rc = RKC(i);
+
+        TValue func;
+        setfvalue(&func, &TableMergeFunc);
+        
+        Protect(callTM(L, &func, rb, rc, ra, 1));
+      )
+             
       vmcase(OP_UNM,
         TValue *rb = RB(i);
         if (ttisnumber(rb)) {

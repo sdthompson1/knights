@@ -342,6 +342,7 @@ static void PrintCode(const Proto* f)
    case OP_EQ:
    case OP_LT:
    case OP_LE:
+   case OP_TABLEMERGE:  // SDT 11-Jul-2012
     if (ISK(b) || ISK(c))
     {
      printf("\t; ");
