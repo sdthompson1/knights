@@ -89,20 +89,6 @@ namespace {
     }
 }
 
-
-RStreamError::RStreamError(const std::string &r, const std::string &e)
-    : resource(r), error_msg(e)
-{
-    what_str = "error loading '" + getResource() +
-        "': " + getErrorMsg();
-}
-
-const char *RStreamError::what() const throw()
-{
-    return what_str.c_str();
-}
-
-
 bfs::path RStream::base_path;
 bool RStream::initialized = false;
 
@@ -122,24 +108,25 @@ void RStream::Initialize(const boost::filesystem::path &base_path_)
     initialized = true;
 }
 
-RStream::RStream(const std::string &resource_name)
-: std::istream(&my_filebuf)
+RStream::RStream(const bfs::path & resource_path)
+  : std::istream(&my_filebuf)
 {
     if (!initialized) {
-        throw RStreamError(resource_name, "Resource Loader Not Initialized");
+        throw RStreamError(resource_path, "Resource Loader Not Initialized");
     }
     
-    boost::filesystem::path path_to_open = base_path / resource_name;
+    boost::filesystem::path path_to_open = base_path / resource_path;
 
+    // check we are still inside the resource directory
     if (!CheckPath(base_path, path_to_open)) {
-        throw RStreamError(resource_name, "Path points outside of the base directory");
+        throw RStreamError(resource_path, "Path points outside of the base directory");
     }
     
     // Open the resource as a binary file
     bool success = my_filebuf.open(path_to_open,
                                    ios_base::in | ios_base::binary) != 0;
     my_filebuf.pubsetbuf(buffer, BUFSIZE);
-    if (!success) throw RStreamError(resource_name, "could not open file");
+    if (!success) throw RStreamError(resource_path, "could not open file");
 }
 
 RStream::~RStream()

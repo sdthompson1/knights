@@ -156,6 +156,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\rstream\rstream_error.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\rstream\rstream_rwops.cpp"
 				>
 			</File>
@@ -167,6 +171,10 @@
 			>
 			<File
 				RelativePath="..\..\src\rstream\rstream.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\rstream\rstream_error.hpp"
 				>
 			</File>
 			<File
