@@ -22,14 +22,22 @@
  */
 
 #include "rstream.hpp"
+#include "rstream_error.hpp"
 
 namespace bfs = boost::filesystem;
 
 namespace {
+
+    enum CheckPathResult {
+        CP_OK,          // file found, and confirmed it is within the resource dir tree.
+        CP_NOT_FOUND,   // file not found.
+        CP_WRONG_DIR,   // file found, but is not under the resource dir tree.
+        CP_ERROR        // file found, but there was an error in boost::canonical (can this happen??)
+    };
+
     // CheckPath
     
-    // Returns true if 'file' is under a subdirectory of 'dir',
-    // otherwise returns false.
+    // Checks whether 'file' exists and is under a subdirectory of 'dir'.
 
     // Used to implement the security check whereby we ensure that
     // resource files truly are being loaded from the resource
@@ -45,15 +53,22 @@ namespace {
     // Preconditions: It is assumed that 'dir' is in canonical form,
     // although 'file' may not be.
 
-    // NOTE: This will throw a boost::filesystem::filesystem_error if
-    // there is any problem calling canonical() on file.
-    // This is not ideal (arguably it should throw an RStreamError)
-    // but it is good enough for now.
-
-    bool CheckPath(const bfs::path &dir, const bfs::path &file)
+    CheckPathResult CheckPath(const bfs::path &dir, const bfs::path &file)
     {
-        bfs::path c_file = canonical(file);
-        
+        boost::system::error_code ec;
+
+        // canonical requires that the file exist... so first check this
+        if (!exists(file)) {
+            // The file doesn't exist
+            return CP_NOT_FOUND;
+        }
+
+        bfs::path c_file = canonical(file, ec);
+        if (ec) {
+            // An unexpected / "other" error occurred
+            return CP_ERROR;
+        }
+
         bfs::path::iterator dir_it = dir.begin(),
             c_file_it = c_file.begin();
 
@@ -67,12 +82,12 @@ namespace {
 
             // If we have reached the end of file-path, then that is an error
             // (case where file-path is the parent, or some ancestor, of dir-path).
-            if (c_file_it == c_file.end()) return false;
+            if (c_file_it == c_file.end()) return CP_WRONG_DIR;
 
             // We are in the middle of both dir-path and file-path
             // Check that the two components are equal
             // (If not, they are "sibling" or "cousin" directories)
-            if (*dir_it != *c_file_it) return false;
+            if (*dir_it != *c_file_it) return CP_WRONG_DIR;
 
             // Advance to next component of each path
             ++dir_it;
@@ -85,7 +100,7 @@ namespace {
         // In other words we have proved that dir-path is a prefix of
         // file-path, as required.
         
-        return true;
+        return CP_OK;
     }
 }
 
@@ -108,6 +123,20 @@ void RStream::Initialize(const boost::filesystem::path &base_path_)
     initialized = true;
 }
 
+bool RStream::Exists(const boost::filesystem::path &resource_path)
+{
+    boost::filesystem::path path_to_open = base_path / resource_path;
+
+    switch (CheckPath(base_path, path_to_open)) {
+    case CP_NOT_FOUND:
+        return false;
+    default:
+        // Anything else means the file exists. (It may be that we are not able to access it
+        // for whatever reason, but we still report to the caller that it exists.)
+        return true;
+    }
+}
+
 RStream::RStream(const bfs::path & resource_path)
   : std::istream(&my_filebuf)
 {
@@ -118,7 +147,12 @@ RStream::RStream(const bfs::path & resource_path)
     boost::filesystem::path path_to_open = base_path / resource_path;
 
     // check we are still inside the resource directory
-    if (!CheckPath(base_path, path_to_open)) {
+    switch (CheckPath(base_path, path_to_open)) {
+    case CP_NOT_FOUND:
+        throw RStreamError(resource_path, "File not found");
+    case CP_ERROR:
+        throw RStreamError(resource_path, "Could not access file");
+    case CP_WRONG_DIR:
         throw RStreamError(resource_path, "Path points outside of the base directory");
     }
     

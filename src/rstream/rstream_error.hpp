@@ -31,8 +31,8 @@
 
 // Exception class for RStreams.
 
-// NOTE: This is not consistently used everywhere. Sometimes std or
-// boost exceptions are thrown on errors. This might be considered an
+// NOTE: This may not consistently used everywhere. Sometimes std or
+// boost exceptions may be thrown on errors. This might be considered an
 // implementation bug.
 
 class RStreamError : public std::exception {

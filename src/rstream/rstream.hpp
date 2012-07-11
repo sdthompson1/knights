@@ -24,8 +24,6 @@
 #ifndef RSTREAM_HPP
 #define RSTREAM_HPP
 
-#include "rstream_error.hpp"
-
 #include <istream>
 #include <fstream>
 
@@ -64,7 +62,11 @@ public:
     explicit RStream(const boost::filesystem::path &resource_path);
     ~RStream();
 
+    // Initialize function
     static void Initialize(const boost::filesystem::path &base_path_);
+
+    // Static function to tell whether a given resource exists.
+    static bool Exists(const boost::filesystem::path &resource_path);
 
 private:
     // at the moment we only implement by using a filebuf. could add a
