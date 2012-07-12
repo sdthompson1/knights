@@ -42,9 +42,14 @@ namespace {
         
         lua_pushstring(lua, "\nTraceback:"); ++ct;
 
-        // note: level 0 is this error handler function, so start from level 1.
+        // To avoid "double traceback" problem, we stop traceback when we find a C function.
+        // (Outer error handler will attach a separate traceback if there is anything above that.)
+        // (This is not perfect, but should be good enough.)
         const int MAXLEVEL = 15;
-        for (int level = 1; level <= MAXLEVEL; ++level) {
+
+        bool found_lua_yet = false;
+        
+        for (int level = 0; level <= MAXLEVEL; ++level) {
             lua_Debug ar;
             const int result = lua_getstack(lua, level, &ar);
             if (result == 0) {
@@ -53,8 +58,20 @@ namespace {
             }
 
             lua_getinfo(lua, "Sl", &ar);
+
+            if (*ar.what == 'C') {
+                if (found_lua_yet) {
+                    // We have reached an enclosing C function. Stop traceback.
+                    break;
+                } else {
+                    // Skip lowest level C functions (they include this error handler function)
+                    continue;
+                }
+            }
+            
             const char * fmtstr = ",   %s:%d";
-            if (level == 1) ++fmtstr;  // don't show the comma for first entry
+            if (!found_lua_yet) ++fmtstr;  // don't show the comma for first entry
+            found_lua_yet = true;
             lua_pushfstring(lua, fmtstr, ar.short_src, ar.currentline); ++ct;
         }
         
