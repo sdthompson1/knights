@@ -29,6 +29,10 @@
 #include "lua.hpp"
 
 namespace {
+
+    // The Lua error handler function (for pcall).
+    // This is responsible for adding the stack traceback.
+
     int LuaExecErrFunc(lua_State *lua)
     {
         // Called with one error message: [msg]
@@ -71,7 +75,7 @@ void LuaExec(lua_State *lua, int nargs, int nresults)
 
 
     // Implementation:
-    
+
     // We need to insert our error handling function so that the stack looks like this:
     // [<stuff> errfunc func arg1 ... argn]
 
@@ -81,17 +85,28 @@ void LuaExec(lua_State *lua, int nargs, int nresults)
     // now we can do the call
 
     const int old_top = lua_gettop(lua);
-    
     const int result = lua_pcall(lua, nargs, nresults, -(2 + nargs));
+
     if (result != 0) {
 
         // stack is now: [<stuff> errfunc msg]
         
-        // get the error msg & throw exception
-        const std::string err_msg = lua_tostring(lua, -1);
-        lua_pop(lua, 2);
-        throw LuaError(err_msg);
+        // Determine if there is some running lua code higher up the stack. 
+        // This determines whether error should be thrown as a lua_error call, or a 
+        // LuaError exception
 
+        lua_Debug dummy;
+        const bool use_lua_err = lua_getstack(lua, 0, &dummy) != 0;
+
+        if (use_lua_err) {
+            // Lua stack will be reset in this case so don't worry about popping errfunc.
+            lua_error(lua);
+        } else {
+            // get the error msg & throw exception
+            const std::string err_msg = lua_tostring(lua, -1);
+            lua_pop(lua, 2);
+            throw LuaError(err_msg);
+        }
     }
 
     // stack is now: [<stuff> errfunc result1 .. resultn]

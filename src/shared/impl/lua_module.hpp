@@ -28,7 +28,8 @@ struct lua_State;
 
 // Add "module" functions to a lua_State:
 //  * dofile
-//  * packages table.
+//  * require
+//  * packages.loaded (and registry _LOADED)
 
 void AddModuleFuncs(lua_State *s);
 

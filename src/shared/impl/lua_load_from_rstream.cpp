@@ -52,14 +52,6 @@ namespace {
         return &rc->buf[0];
     }
 
-    void HandleLuaError(lua_State *lua)
-    {
-        // get the error msg & throw exception
-        const std::string err_msg = lua_tostring(lua, -1);
-        lua_pop(lua, 1);
-        throw LuaError(err_msg);
-    }
-
     boost::filesystem::path RemoveDotDot(const boost::filesystem::path &p)
     {
         // This is like a cut-down canonical(), that does not chase symlinks.
@@ -96,37 +88,80 @@ namespace {
 }
 
 // Load and execute lua code in rstream named 'filename'
-void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename, int nresults)
+void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
+                    int nargs, int nresults,
+                    bool look_in_cwd)
 {
-    // look for it both in CWD, and in the root
-    boost::filesystem::path old_cwd = GetCWD(lua);
+    // Catch exceptions and convert them to lua errors if required.
+    try {
 
-    boost::filesystem::path to_load = RemoveDotDot(old_cwd / filename);
-    if (!RStream::Exists(to_load)) {
-        to_load = filename;
-    }
+        boost::filesystem::path to_load;
+        boost::filesystem::path old_cwd = GetCWD(lua);
+        
+        bool ready = false;
 
-    // open stream
-    RStream str(to_load);
-    if (!str) throw LuaError(std::string("Error opening Lua file '") + filename.generic_string() + "'");
+        if (look_in_cwd && !filename.has_root_path()) {
+            // look for it in CWD
+            to_load = RemoveDotDot(old_cwd / filename);
+            ready = RStream::Exists(to_load);
+        }
+        if (!ready) {
+            // look for it in the root
+            to_load = filename;
+        }
 
-    // set _CWD to the new cwd
-    SetCWD(lua, to_load.parent_path());
+        // open stream
+        // (may throw)
+        RStream str(to_load);
+
+        if (!str) {
+            // Throw a C++ error.
+            // (Will be converted to a Lua error by the below catch block, if necessary.)
+            std::string err_msg = std::string("Error opening Lua file '") + filename.generic_string() + "'";
+            throw LuaError(err_msg);
+        }
+
+        // set _CWD to the new cwd
+        SetCWD(lua, to_load.parent_path());
+        
+        // now load it (pushes lua function onto the stack)
+        // note: we accept only text chunks, for security reasons
+        ReadContext rc;
+        rc.filename = to_load.generic_string();
+        rc.str = &str;
+        const std::string chunkname = "@" + rc.filename;
+        const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str(), "t");  // pushes 1 lua function
+        if (result != 0) {
+            // Pick up the Lua message and convert it to a C++ exception.
+            const std::string err_msg = lua_tostring(lua, -1);
+            lua_pop(lua, 1);
+            throw LuaError(err_msg);
+        }
+
+        // stack is currently [<stuff> arg1 .. argn func]
+        // change this to [<stuff> func arg1 .. argn], as required for LuaExec
+        lua_insert(lua, -nargs-1);
+        
+        // execute the script
+        // stack will be changed to [<stuff> result1 .. resultn]
+        LuaExec(lua, nargs, nresults);
+
+        // now restore _CWD and return.
+        SetCWD(lua, old_cwd);
     
-    // now load it (pushes lua function onto the stack)
-    // note: we accept only text chunks, for security reasons
-    ReadContext rc;
-    rc.filename = to_load.generic_string();
-    rc.str = &str;
-    const std::string chunkname = "@" + rc.filename;
-    const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str(), "t");  // pushes 1 lua function
-    if (result != 0) HandleLuaError(lua);
+    } catch (std::exception &e) {
 
-    // execute it (pops the function; pushes results.)
-    LuaExec(lua, 0, nresults);
-
-    // now restore _CWD and return.
-    SetCWD(lua, old_cwd);
+        // See if we need to convert this to a Lua error
+        lua_Debug dummy;
+        if (lua_getstack(lua, 0, &dummy)) {
+            // convert to lua exception
+            lua_pushstring(lua, e.what());
+            lua_error(lua);
+        } else {
+            // re-throw as C++ exception
+            throw;
+        }
+    }
 }
 
 // Load lua code from a string
@@ -137,5 +172,10 @@ void LuaLoadFromString(lua_State *lua, const char *str)
     if (str[0] == 27) throw LuaError("Lua string is in binary format, which is not supported");
 
     const int result = luaL_loadstring(lua, str);
-    if (result != 0) HandleLuaError(lua);
+    if (result != 0) {
+        // throw a C++ exception on errors.
+        const std::string err_msg = lua_tostring(lua, -1);
+        lua_pop(lua, 1);
+        throw LuaError(err_msg);
+    }
 }

@@ -30,21 +30,23 @@
 
 struct lua_State;
 
-// Read a chunk from an Rstream, and execute it, with no args, and the given no.
-//   of return values (can be LUA_MULTRET).
-// On error, throws LuaError.
-// Nothing is read from the stack on entry.
-// On exit, the return values are pushed (as in lua_call).
+// Read a chunk from an Rstream, and execute it, with the given no of args,
+//   and the given no of return values (can be LUA_MULTRET).
 //
-// Pathing: The global variable _CWD will be read, this will be used as a path prefix.
-// If the file does not exist under that directory (according to RStream::Exists)
-// then it will be looked for in the resource root directory. If still not found, an
-// exception will be thrown.
+// On entry, pops the given no of args from the stack.
+// On exit, pushes the given no of return values (or all return values if LUA_MULTRET).
+// On error, raises a Lua error message if there is enclosing Lua code, otherwise
+//  throws LuaError.
 //
 // While the chunk is executing _CWD will be set to the directory that the chunk was
 // loaded from. It will be restored back again when the chunk exits.
+//
+// If look_in_cwd is set, then the file will be looked for in _CWD first, then the RStream root.
+// If look_in_cwd is clear, the file will be looked for only in the RStream root.
 
-void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename, int nresults);
+void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
+                    int nargs, int nresults,
+                    bool look_in_cwd);
 
 
 // Reads a lua chunk from a string and pushes it onto the lua stack.

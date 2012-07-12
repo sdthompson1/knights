@@ -143,8 +143,12 @@ RStream::RStream(const bfs::path & resource_path)
     if (!initialized) {
         throw RStreamError(resource_path, "Resource Loader Not Initialized");
     }
-    
-    boost::filesystem::path path_to_open = base_path / resource_path;
+
+    if (resource_path.has_root_path()) {
+        throw RStreamError(resource_path, "Path cannot be absolute");
+    }
+
+    boost::filesystem::path path_to_open = base_path / resource_path;   
 
     // check we are still inside the resource directory
     switch (CheckPath(base_path, path_to_open)) {

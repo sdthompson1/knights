@@ -34,15 +34,18 @@ struct lua_State;
 //
 //   [<stuff> result1 ... resultn]
 //
-// except if there was an error, in which case the stack on exit will be
+// except if there was an error, in which case:
 //
-//   [<stuff>]
-// 
-// and LuaError will be thrown. (The message will contain a full stack traceback.)
+//  a) If an enclosing Lua function is currently executing, the error will be
+//     reported as a normal Lua error message.
 //
-// Note: <stuff> denotes zero or more items, which are ignored by LuaExec.
+//  b) If this is a "top level" Lua call, then the stack will be reset to
+//     [<stuff>] and a LuaError C++ exception will be thrown.
 //
-// nresults may be any non-negative integer, or LUA_MULTRET.
+// (In either case the message will contain a Lua stack traceback.)
+//
+// Note 1: <stuff> denotes zero or more items, which are ignored by LuaExec.
+// Note 2: nresults may be any non-negative integer, or LUA_MULTRET.
 
 void LuaExec(lua_State *lua, int nargs, int nresults);
 

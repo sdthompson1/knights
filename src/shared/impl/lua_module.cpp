@@ -44,12 +44,72 @@ namespace {
         lua_settop(lua, 0);
 
         // execute the file (convert the lua string directly to a path.)
-        LuaExecRStream(lua, filename, LUA_MULTRET);
+        LuaExecRStream(lua, filename, 0, LUA_MULTRET, 
+                       true);   // look in both cwd & root dir
 
         // return the actual no of results.
         return lua_gettop(lua);
     }
 
+    std::string ModNameToFilename(const char *modname)
+    {
+        // module "a.b.c" converts to "a/b/c/init.lua".
+        
+        std::string result;
+        for (const char *p = modname; *p != 0; ++p) {
+            if (*p == '.') result += '/';
+            else result += *p;
+        }
+        result += "/init.lua";
+        return result;
+    }        
+
+    int Require(lua_State *lua)
+    {
+        // This is a cut-down version of the standard lua require function, ll_require.
+
+        const char *name = luaL_checkstring(lua, 1);
+
+        lua_settop(lua, 1);   // [name]
+        lua_getfield(lua, LUA_REGISTRYINDEX, "_LOADED");   // [name _LOADED]
+        lua_getfield(lua, 2, name);   // [name _LOADED _LOADED[name]]
+
+        if (lua_toboolean(lua, -1)) {
+            // package is already loaded
+            return 1;
+        }
+
+        // else must load package
+
+        lua_pop(lua, 1);  // [name _LOADED]
+
+        const std::string filename = ModNameToFilename(name);
+        
+        // we must pass module name and file name as arguments.
+        lua_pushstring(lua, name);                 // [name _LOADED name]
+        lua_pushstring(lua, filename.c_str());     // [name _LOADED name filename]
+
+        // Run the module.
+        LuaExecRStream(lua, filename, 2, 1, 
+            false);  // look in root dir only (not cwd)
+
+        // [name _LOADED result]
+
+        if (!lua_isnil(lua, -1)) {
+            lua_setfield(lua, 2, name);   // [name _LOADED] and set _LOADED[name] = result
+        }
+
+        lua_getfield(lua, 2, name);   // [name _LOADED _LOADED[name]]
+
+        if (lua_isnil(lua, -1)) {
+            // module did not set a value in _LOADED[name]
+            lua_pushboolean(lua, 1);   // [name _LOADED nil true]
+            lua_pushvalue(lua, -1);    // [name _LOADED nil true true]
+            lua_setfield(lua, 2, name);  // [name _LOADED nil true] and set _LOADED[name]=true
+        }
+
+        return 1;   // Return the contents of _LOADED[name].
+    }
 }
 
 void AddModuleFuncs(lua_State *lua)
@@ -57,4 +117,14 @@ void AddModuleFuncs(lua_State *lua)
     // Global "dofile" function
     lua_pushcfunction(lua, &DoFile);
     lua_setglobal(lua, "dofile");
+
+    // Global "require" function
+    lua_pushcfunction(lua, &Require);
+    lua_setglobal(lua, "require");
+
+    // "package" table
+    lua_createtable(lua, 0, 1);  // [{}]
+    luaL_getsubtable(lua, LUA_REGISTRYINDEX, "_LOADED");   // [{} {}]  (second tbl is also in registry as _LOADED)
+    lua_setfield(lua, -2, "loaded");    // [{loaded={}}]
+    lua_setglobal(lua, "package");      // []
 }
