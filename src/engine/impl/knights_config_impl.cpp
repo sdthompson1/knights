@@ -173,8 +173,7 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
 
     // Load some lua code into the context
     // TODO: The lua file name should probably be an input to the ctor, like the kconfig name is ?
-    LuaLoadFromRStream(lua_state.get(), "lua_test.lua");
-    LuaExec(lua_state.get(), 0, 0);
+    LuaExecRStream(lua_state.get(), "lua_test.lua");
 
     // Load the Config Map
     lua_getglobal(lua_state.get(), "MISC_CONFIG");

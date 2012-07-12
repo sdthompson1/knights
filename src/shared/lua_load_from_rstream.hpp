@@ -24,16 +24,29 @@
 #ifndef LUA_LOAD_FROM_RSTREAM_HPP
 #define LUA_LOAD_FROM_RSTREAM_HPP
 
+#include "boost/filesystem.hpp"
+
 #include <string>
 
 struct lua_State;
 
-// Read a chunk from an Rstream and push it on to the lua stack
-// (as a lua function).
-// If there is an error, throws LuaError and leaves the stack unchanged.
-void LuaLoadFromRStream(lua_State *lua, const std::string &filename);
+// Read a chunk from an Rstream, and execute it, with no args and no return values.
+// On error, throws LuaError.
+// The stack is left unchanged.
+//
+// Pathing: The global variable _CWD will be read, this will be used as a path prefix.
+// If the file does not exist under that directory (according to RStream::Exists)
+// then it will be looked for in the resource root directory. If still not found, an
+// exception will be thrown.
+//
+// While the chunk is executing _CWD will be set to the directory that the chunk was
+// loaded from. It will be restored back again when the chunk exits.
 
-// Ditto but reads from a string instead
+void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename);
+
+
+// Reads a lua chunk from a string and pushes it onto the lua stack.
+// (Deprecated, will be removed once we convert knights_data to lua.)
 void LuaLoadFromString(lua_State *lua, const char *str);
 
 #endif

@@ -28,20 +28,20 @@ struct lua_State;
 
 // Execute the lua function (and args) on top of the stack. The stack on entry is
 //
-// [<stuff> func arg1 ... argn]
+//   [<stuff> func arg1 ... argn]
 //
 // The stack on exit will be
 //
-// [<stuff> result1 ... resultn]
+//   [<stuff> result1 ... resultn]
 //
 // except if there was an error, in which case the stack on exit will be
 //
-// [<stuff>]
+//   [<stuff>]
 // 
 // and LuaError will be thrown. (The message will contain a full stack traceback.)
 //
 // Note: <stuff> denotes zero or more items, which are ignored by LuaExec.
-// 
+
 void LuaExec(lua_State *lua, int nargs, int nresults);
 
 #endif

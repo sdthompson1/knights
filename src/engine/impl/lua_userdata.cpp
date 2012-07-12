@@ -35,7 +35,13 @@ namespace {
         PTR_WEAK
     };
 
-    // All Lua userdatas in Knights have this type (or one of its subtypes).
+    // Note: Userdata policy.
+    //  -- Full userdatas are always a memory block of type UserData, or one of 
+    //     its subclasses.
+    //  -- Light userdatas can be more or less anything depending on context. However, if a 
+    //     light userdata is used as a registry key, we insist that it be a valid 
+    //     address in the C++ address space (this is to avoid clashes between different
+    //     "users" of the registry).
     struct UserData {
         unsigned short int tag;
         unsigned short int ptr_type;
