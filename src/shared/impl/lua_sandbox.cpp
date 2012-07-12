@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "lua.hpp"
+#include "lua_module.hpp"
 #include "lua_sandbox.hpp"
 #include "my_exceptions.hpp"
 
@@ -286,5 +287,7 @@ boost::shared_ptr<lua_State> MakeLuaSandbox()
     lua_getglobal(lua.get(), "table");
     ApplyWhitelist(lua.get(), table_whitelist);
 
+    AddModuleFuncs(lua.get());
+    
     return lua;
 }

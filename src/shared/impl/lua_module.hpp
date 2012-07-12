@@ -1,5 +1,5 @@
 /*
- * lua_exec.hpp
+ * lua_module.hpp
  *
  * This file is part of Knights.
  *
@@ -21,29 +21,15 @@
  *
  */
 
-#ifndef LUA_EXEC_HPP
-#define LUA_EXEC_HPP
+#ifndef LUA_MODULE_HPP
+#define LUA_MODULE_HPP
 
 struct lua_State;
 
-// Execute the lua function (and args) on top of the stack. The stack on entry is
-//
-//   [<stuff> func arg1 ... argn]
-//
-// The stack on exit will be
-//
-//   [<stuff> result1 ... resultn]
-//
-// except if there was an error, in which case the stack on exit will be
-//
-//   [<stuff>]
-// 
-// and LuaError will be thrown. (The message will contain a full stack traceback.)
-//
-// Note: <stuff> denotes zero or more items, which are ignored by LuaExec.
-//
-// nresults may be any non-negative integer, or LUA_MULTRET.
+// Add "module" functions to a lua_State:
+//  * dofile
+//  * packages table.
 
-void LuaExec(lua_State *lua, int nargs, int nresults);
+void AddModuleFuncs(lua_State *s);
 
 #endif

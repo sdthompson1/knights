@@ -96,7 +96,7 @@ namespace {
 }
 
 // Load and execute lua code in rstream named 'filename'
-void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename)
+void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename, int nresults)
 {
     // look for it both in CWD, and in the root
     boost::filesystem::path old_cwd = GetCWD(lua);
@@ -113,17 +113,17 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename)
     // set _CWD to the new cwd
     SetCWD(lua, to_load.parent_path());
     
-    // now load it
+    // now load it (pushes lua function onto the stack)
     // note: we accept only text chunks, for security reasons
     ReadContext rc;
     rc.filename = to_load.generic_string();
     rc.str = &str;
     const std::string chunkname = "@" + rc.filename;
-    const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str(), "t");  // pushes 1 result value
+    const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str(), "t");  // pushes 1 lua function
     if (result != 0) HandleLuaError(lua);
 
-    // execute it (pops the function)
-    LuaExec(lua, 0, 0);
+    // execute it (pops the function; pushes results.)
+    LuaExec(lua, 0, nresults);
 
     // now restore _CWD and return.
     SetCWD(lua, old_cwd);

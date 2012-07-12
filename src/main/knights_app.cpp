@@ -311,7 +311,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
         lua_State * const lua = lua_sh_ptr.get();
 
         SetupLuaConfigFunctions(lua, &pimpl->config_gfx);
-        LuaExecRStream(lua, "client_config.lua");
+        LuaExecRStream(lua, "client_config.lua", 0);
 
         lua_getglobal(lua, "MISC_CONFIG");
         PopConfigMap(lua, pimpl->config_map);

@@ -64,26 +64,28 @@ void LuaExec(lua_State *lua, int nargs, int nresults)
     // This function is like lua_pcall except that it throws LuaError on errors.
     // A stack traceback is added to the error message.
     
-    // input stack: [func arg1 ... argn]
+    // input stack: [<stuff> func arg1 ... argn]
 
-    // output stack: [result1 ... resultn]
+    // output stack: [<stuff> result1 ... resultn]
     // or [] if exception thrown
 
 
     // Implementation:
     
     // We need to insert our error handling function so that the stack looks like this:
-    // [errfunc func arg1 ... argn]
+    // [<stuff> errfunc func arg1 ... argn]
 
     lua_pushcfunction(lua, &LuaExecErrFunc);
     lua_insert(lua, -(2 + nargs));
     
     // now we can do the call
+
+    const int old_top = lua_gettop(lua);
     
     const int result = lua_pcall(lua, nargs, nresults, -(2 + nargs));
     if (result != 0) {
 
-        // stack is now: [errfunc msg]
+        // stack is now: [<stuff> errfunc msg]
         
         // get the error msg & throw exception
         const std::string err_msg = lua_tostring(lua, -1);
@@ -92,10 +94,17 @@ void LuaExec(lua_State *lua, int nargs, int nresults)
 
     }
 
-    // stack is now: [errfunc result1 .. resultn]
+    // stack is now: [<stuff> errfunc result1 .. resultn]
+    // where n = nargs + 1 + new_top - old_top
+
+    const int new_top = lua_gettop(lua);
+    const int actual_nresults = nargs + 1 + new_top - old_top;
+
+    // the following will always be true at this point:
+    ASSERT(nresults == LUA_MULTRET || actual_nresults == nresults);    
     
-    // We need to remove that errfunc from the stack.
-    lua_remove(lua, -(1 + nresults));
+    // We now need to remove that errfunc from the stack.
+    lua_remove(lua, -(1 + actual_nresults));
     
-    // stack is now [result1 ... resultn] as required.
+    // Stack is now [<stuff> result1 ... resultn], as required.
 }

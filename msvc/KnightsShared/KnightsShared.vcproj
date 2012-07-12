@@ -172,7 +172,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\lua_sandbox.cpp"
+				RelativePath="..\..\src\shared\impl\lua_module.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\impl\lua_sandbox.cpp"
 				>
 			</File>
 			<File
@@ -235,6 +239,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\lua_load_from_rstream.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\impl\lua_module.hpp"
 				>
 			</File>
 			<File
