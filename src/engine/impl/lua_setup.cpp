@@ -255,29 +255,35 @@ namespace {
 
 void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
 {
+    // all functions go in "kts" table.
+    lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);   // [env]
+    luaL_getsubtable(lua, -1, "kts");                         // [env kts]
+    
     lua_pushlightuserdata(lua, kc);
     lua_pushcclosure(lua, &MakeGraphic, 1);
-    lua_setglobal(lua, "Graphic");
+    lua_setfield(lua, -2, "Graphic");
 
     lua_pushlightuserdata(lua, kc);
     lua_pushcclosure(lua, &MakeSound, 1);
-    lua_setglobal(lua, "Sound");
+    lua_setfield(lua, -2, "Sound");
 
     /*
     lua_pushlightuserdata(lua, kc);
     lua_pushcclosure(lua, &MakeItemType, 1);
-    lua_setglobal(lua, "ItemType");
+    lua_setfield(lua, -2, "ItemType");
     */
     
     lua_pushlightuserdata(lua, kc);
     lua_pushcclosure(lua, &MakeKconfigItemType, 1);
-    lua_setglobal(lua, "kconfig_itemtype");
+    lua_setfield(lua, -2, "kconfig_itemtype");
 
     lua_pushlightuserdata(lua, kc);
     lua_pushcclosure(lua, &MakeKconfigTile, 1);
-    lua_setglobal(lua, "kconfig_tile");
+    lua_setfield(lua, -2, "kconfig_tile");
 
     lua_pushlightuserdata(lua, kc);
     lua_pushcclosure(lua, &MakeKconfigControl, 1);
-    lua_setglobal(lua, "kconfig_control");
+    lua_setfield(lua, -2, "kconfig_control");
+
+    lua_pop(lua, 2); // []
 }

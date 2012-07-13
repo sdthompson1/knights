@@ -423,48 +423,54 @@ namespace {
 
 void AddLuaIngameFunctions(lua_State *lua)
 {
+    // all functions go in "kts" table.
+    lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);   // [env]
+    luaL_getsubtable(lua, -1, "kts");                         // [env kts]
+    
     lua_pushcfunction(lua, &Open);
-    lua_setglobal(lua, "open_door");
+    lua_setfield(lua, -2, "open_door");
 
     lua_pushcfunction(lua, &Close);
-    lua_setglobal(lua, "close_door");
+    lua_setfield(lua, -2, "close_door");
 
     lua_pushcfunction(lua, &OpenOrClose);
-    lua_setglobal(lua, "open_or_close_door");
+    lua_setfield(lua, -2, "open_or_close_door");
 
     lua_pushcfunction(lua, &IsOpen);
-    lua_setglobal(lua, "is_door_open");
+    lua_setfield(lua, -2, "is_door_open");
     
     lua_pushcfunction(lua, &AddMissile);
-    lua_setglobal(lua, "add_missile");
+    lua_setfield(lua, -2, "add_missile");
 
     lua_pushcfunction(lua, &Teleport);
-    lua_setglobal(lua, "teleport");
+    lua_setfield(lua, -2, "teleport");
 
     lua_pushcfunction(lua, &GetTiles);
-    lua_setglobal(lua, "get_tiles");
+    lua_setfield(lua, -2, "get_tiles");
 
     lua_pushcfunction(lua, &RemoveTile);
-    lua_setglobal(lua, "remove_tile");
+    lua_setfield(lua, -2, "remove_tile");
 
     lua_pushcfunction(lua, &AddTile);
-    lua_setglobal(lua, "add_tile");
+    lua_setfield(lua, -2, "add_tile");
 
     lua_pushcfunction(lua, &UserTable);
-    lua_setglobal(lua, "user_table");
+    lua_setfield(lua, -2, "user_table");
 
     lua_pushcfunction(lua, &PlaySound);
-    lua_setglobal(lua, "play_sound");
+    lua_setfield(lua, -2, "play_sound");
 
     lua_pushcfunction(lua, &GetPos);
-    lua_setglobal(lua, "get_pos");
+    lua_setfield(lua, -2, "get_pos");
 
     lua_pushcfunction(lua, &Print);
-    lua_setglobal(lua, "print");
+    lua_setfield(lua, -2, "print");
 
     lua_pushcfunction(lua, &TransformOffset);
-    lua_setglobal(lua, "transform_offset");
+    lua_setfield(lua, -2, "transform_offset");
 
     lua_pushcfunction(lua, &TransformDirection);
-    lua_setglobal(lua, "transform_direction");
+    lua_setfield(lua, -2, "transform_direction");
+
+    lua_pop(lua, 2);
 }

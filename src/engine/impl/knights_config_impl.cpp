@@ -176,8 +176,12 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     LuaExecRStream(lua_state.get(), "main.lua", 0, 0, 
         false);   // look in top level rsrc directory only
 
+    // Get the "kts" table
+    lua_rawgeti(lua_state.get(), LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);  // [env]
+    luaL_getsubtable(lua_state.get(), -1, "kts");                       // [env kts]
+
     // Load the Config Map
-    lua_getglobal(lua_state.get(), "MISC_CONFIG");
+    lua_getfield(lua_state.get(), -1, "MISC_CONFIG");
     config_map.reset(new ConfigMap);
     PopConfigMap(lua_state.get(), *config_map);
 
@@ -256,6 +260,9 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     // Tutorial
     kf->pushSymbol("TUTORIAL");
     popTutorial();
+
+    // now pop env and "kts" table from lua stack
+    lua_pop(lua_state.get(), 2);
 
     // make colour-changed versions of the dead knight tiles
     // (this has to be done last)

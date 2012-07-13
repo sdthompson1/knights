@@ -29,6 +29,10 @@
 
 void PopConfigMap(lua_State *lua, ConfigMap &cmap)
 {
+    if (!lua_istable(lua, -1)) {
+        throw LuaError("MISC_CONFIG table not found");
+    }
+
     lua_pushnil(lua);  // table is now at index -2, key at -1
     while (lua_next(lua, -2) != 0) {
         // new key is now at index -2, value at index -1
