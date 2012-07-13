@@ -405,7 +405,7 @@ function shoot(x, y, direction, itemtype)
   -- add the missile
   local from = add_pos(cxt.tile_pos, xt, yt)
   kts.add_missile(from, dt, itemtype, false)
-  kts.click_sound(cxt.tile_pos)
+  click_sound(cxt.tile_pos)
   crossbow_sound(from)
 end
 
