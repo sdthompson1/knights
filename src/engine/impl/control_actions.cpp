@@ -208,7 +208,7 @@ bool A_Activate::possible(const ActionData &ad) const
     // activate treasure chests from behind.
 
     shared_ptr<Creature> actor = ad.getActor();
-    if (actor && ad.isDirect()) {
+    if (actor) {
         // Get the tile
         DungeonMap *dm;
         MapCoord mc;
@@ -232,9 +232,8 @@ void A_Activate::execute(const ActionData &ad) const
     // For "primary" activate commands, see what the abilities of the actor are.
     // For "secondary" activate commands (this is things like switches), assume that
     // all locks and traps can always be opened.
-    const ActivateType act_type = ad.isDirect() ?
-        (CanOpenTraps(actor) ? ACT_DISARM_TRAPS : ACT_NORMAL)
-        : ACT_UNLOCK_ALL;
+    const ActivateType act_type = 
+        (CanOpenTraps(actor) ? ACT_DISARM_TRAPS : ACT_NORMAL);
     
     // We get mc from the Tile.
     DungeonMap *dm;
@@ -251,8 +250,8 @@ void A_Activate::execute(const ActionData &ad) const
         (*it)->onActivate(*dm, mc, actor, ad.getOriginator(), act_type);
     }
 
-    // Check if there was a (direct) creature. If so, stun him for "action_delay".
-    if (actor && ad.isDirect()) {
+    // Check if there was a creature. If so, stun him for "action_delay".
+    if (actor) {
         Mediator &mediator(Mediator::instance());
         actor->stunUntil(mediator.getGVT() + mediator.cfgInt("action_delay"));
     }
@@ -344,7 +343,7 @@ void A_Attack::execute(const ActionData &ad) const
             // Try dropping it. (E.g. if a player holding a book tries to attack, then we 
             // want to automatically drop the book.)
             ActionData data;
-            data.setActor(actor, true);
+            data.setActor(actor);
             data.setOriginator(actor->getOriginator());
             A_DropHeld action;
             action.execute(data);

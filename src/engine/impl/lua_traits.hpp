@@ -53,7 +53,7 @@ struct LuaTraits<Sound> {
 };
 
 template<>
-struct LuaTraits<ItemType> {
+struct LuaTraits<const ItemType> {
     enum { tag = 3 };
 };
 

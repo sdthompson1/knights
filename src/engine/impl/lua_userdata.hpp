@@ -40,7 +40,7 @@ boost::shared_ptr<void> ReadLuaSharedPtr_Impl(lua_State *lua, int index, LuaTag 
 boost::weak_ptr<void> ReadLuaWeakPtr_Impl(lua_State *lua, int index, LuaTag expected_tag);
 
 // Create a new Lua userdata object and push it onto the stack
-template<class T> inline void NewLuaPtr(lua_State *lua, T *ptr) { NewLuaPtr_Impl(lua, ptr, LuaTraits<T>::tag); }
+template<class T> inline void NewLuaPtr(lua_State *lua, T *ptr) { NewLuaPtr_Impl(lua, (void*)ptr, LuaTraits<T>::tag); }
 template<class T> inline void NewLuaSharedPtr(lua_State *lua, boost::shared_ptr<T> ptr) { NewLuaSharedPtr_Impl(lua, ptr, LuaTraits<T>::tag); }
 template<class T> inline void NewLuaWeakPtr(lua_State *lua, boost::weak_ptr<T> ptr) { NewLuaWeakPtr_Impl(lua, ptr, LuaTraits<T>::tag); }
 

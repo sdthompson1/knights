@@ -191,8 +191,8 @@ public:
     ItemGenerator * popItemGenerator();
     ItemSize popItemSize();
     ItemSize popItemSize(ItemSize dflt);
-    ItemType * popItemType();
-    ItemType * popItemType(ItemType *dflt);
+    const ItemType * popItemType();
+    const ItemType * popItemType(const ItemType *dflt);
     MapDirection popMapDirection();
     MapDirection popMapDirection(MapDirection dflt);
     void popMenu();
@@ -288,7 +288,7 @@ private:
     std::map<const Value *, DungeonDirective *> dungeon_directives;
     std::map<const Value *, DungeonLayout *> dungeon_layouts;
     std::map<const Value *, ItemGenerator *> item_generators;
-    std::map<const Value *, ItemType *> item_types;
+    std::map<const Value *, const ItemType *> item_types;
     std::vector<ItemType *> special_item_types;
     std::map<const Value *, MenuInt *> menu_ints;
     std::map<const Value *, MonsterType *> monster_types;
@@ -322,7 +322,7 @@ private:
     std::vector<boost::shared_ptr<ColourChange> > secured_cc;
     Anim * knight_anim;   // In colours of house 0, ie house_colours[0] is always 'empty'.
     std::vector<Anim *> knight_anims;   // copies of 'knight_anim' with appropriate colour changes
-    ItemType * default_item;
+    const ItemType * default_item;
     std::vector<const Control *> control_set;
     const Graphic *stuff_bag_graphic;
     std::vector<std::string> standard_quest_descriptions;

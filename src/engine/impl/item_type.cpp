@@ -147,7 +147,7 @@ void ItemType::onPickUp(DungeonMap &dmap, const MapCoord &mc,
 {
     if (on_pick_up) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
         ad.setOriginator(actor->getOriginator());
         on_pick_up->execute(ad);
@@ -158,7 +158,7 @@ void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 {
     if (on_drop) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
         ad.setOriginator(actor->getOriginator());
         on_drop->execute(ad);
@@ -172,7 +172,7 @@ void ItemType::onWalkOver(DungeonMap &dmap, const MapCoord &mc,
 {
     if (on_walk_over && actor && actor->getHeight() == H_WALKING) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         
         // the originator of an item-walk-over event (e.g. stepping on a beartrap)
         // is considered to be the person who put the beartrap there, NOT the player stepping on it.
@@ -186,7 +186,7 @@ void ItemType::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> 
 {
     if (on_hit) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
         ad.setOriginator(actor->getOriginator());
         on_hit->execute(ad);
@@ -197,7 +197,7 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> v
 {
     if (melee_action) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
         ad.setVictim(victim);
         ad.setItem(0, MapCoord(), this);
@@ -211,7 +211,7 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor,
 {
     if (melee_action) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
         ad.setTile(&dmap, mc, tile);
         ad.setItem(0, MapCoord(), this);

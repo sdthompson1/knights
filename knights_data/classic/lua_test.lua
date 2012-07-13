@@ -399,24 +399,24 @@ i_bolt_trap = kts.kconfig_itemtype("i_bolt_trap")
 function shoot(x, y, direction, itemtype)
 
   -- account for map rotation/reflection
-  local xt, yt = kts.transform_offset(cxt.pos, x, y)
-  local dt = kts.transform_direction(cxt.pos, direction)
+  local xt, yt = kts.transform_offset(cxt.tile_pos, x, y)
+  local dt = kts.transform_direction(cxt.tile_pos, direction)
 
   -- add the missile
-  local from = add_pos(cxt.pos, xt, yt)
+  local from = add_pos(cxt.tile_pos, xt, yt)
   kts.add_missile(from, dt, itemtype, false)
-  kts.click_sound(cxt.pos)
+  kts.click_sound(cxt.tile_pos)
   crossbow_sound(from)
 end
 
 -- teleports a knight
 function teleport_actor(x, y)
 
-  -- account for map rotation/reflection
-  local xt, yt = kts.transform_offset(cxt.pos, x, y)
-
   local from = kts.get_pos(cxt.actor)
-  local to = add_pos(cxt.pos, xt, yt)
+
+  local xt, yt = kts.transform_offset(from, x, y)    -- account for map rotation/reflection
+  local to = add_pos(from, xt, yt)
+
   kts.teleport(cxt.actor, to)
   pentagram_sound(from)
   teleport_sound(from)
@@ -426,9 +426,9 @@ end
 -- implements open, close, toggle
 function toggle_impl(x, y, door_function, tile_function, sound_flag)
 
-  local xt, yt = kts.transform_offset(cxt.pos, x, y)
+  local xt, yt = kts.transform_offset(cxt.tile_pos, x, y)
 
-  local pos = add_pos(cxt.pos, xt, yt)
+  local pos = add_pos(cxt.tile_pos, xt, yt)
 
   door_function(pos)
 
@@ -444,8 +444,8 @@ function toggle_impl(x, y, door_function, tile_function, sound_flag)
   end
 
   if sound_flag then
-    click_sound(cxt.pos)
-    door_sound(cxt.pos)
+    click_sound(cxt.tile_pos)
+    door_sound(cxt.tile_pos)
     door_sound(pos)
   end
 end
@@ -456,7 +456,7 @@ function toggle(x, y)
     if (not new_tile) then new_tile = utable.close end
     return new_tile
   end
-  toggle_impl(x, y, open_or_close_door, my_tile_function, true)
+  toggle_impl(x, y, kts.open_or_close_door, my_tile_function, true)
 end
 
 function toggle_no_sound(x, y)
@@ -465,21 +465,21 @@ function toggle_no_sound(x, y)
     if (not new_tile) then new_tile = utable.close end
     return new_tile
   end
-  toggle_impl(x, y, open_or_close_door, my_tile_function, false)
+  toggle_impl(x, y, kts.open_or_close_door, my_tile_function, false)
 end
 
 function open(x, y)
   local function my_tile_function(utable)
     return utable.open
   end
-  toggle_impl(x, y, open_door, my_tile_function, true)
+  toggle_impl(x, y, kts.open_door, my_tile_function, true)
 end
 
 function close(x, y)
   local function my_tile_function(utable)
     return utable.close
   end
-  toggle_impl(x, y, close_door, my_tile_function, true)
+  toggle_impl(x, y, kts.close_door, my_tile_function, true)
 end
 
 

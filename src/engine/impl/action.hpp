@@ -29,6 +29,7 @@
 #include "originator.hpp"
 
 #include "boost/shared_ptr.hpp"
+#include "boost/thread/mutex.hpp"
 #include "boost/weak_ptr.hpp"
 using namespace boost;
 
@@ -42,7 +43,6 @@ class DungeonMap;
 class Item;
 class ItemType;
 class MonsterType;
-class Player;
 class Sound;
 class TaskManager;
 class Tile;
@@ -59,10 +59,6 @@ struct lua_State;
 // a pit), A_Teleport teleports the Actor, etc. An exception is the
 // melee actions, which are usually applied to the Victim instead (see
 // below).
-//
-// DIRECT is true if the action was called directly from a control; it
-// is false if the action was called by an onSomething routine or some
-// such. (This seems only to be used within A_Activate at the moment.)
 //
 // VICTIM is only used with melee_action, and is set to the *target*
 // creature. (Actor is set to the *attacking* creature for these
@@ -82,7 +78,8 @@ struct lua_State;
 // been removed from the map).
 //
 // The FLAG parameter is a hack, used only by the pretrapped chests
-// code.
+// code. (It is not represented in Lua "cxt" and is hard-wired to false in
+// Lua contexts.)
 //
 // SUCCESS will be set if this action was invoked as a result of
 // something "successful", where "successful" is defined as follows
@@ -93,25 +90,36 @@ struct lua_State;
 //    reflects whether possible() was true for the previous action in the list.
 //    (i.e. "possible" is used as a proxy for "success" of the previous action,
 //    in this case.)
+// TODO: Remove success and replace it with the concept of actions returning a bool
+// flag to lua.
 //
-// PLAYER is the player who set this action in motion. It's used for
-// attributing kills (in certain actions). For example, if player 1
-// presses a switch which opens a pit beneath player 2, then A_PitKill
-// is called with Actor set to player 2's knight and Player set to
-// player 1. The kill is then attributed to player 1.
+// ORIGINATOR is the player who set this action in motion. It's used
+// for attributing kills (in certain actions). For example, if player
+// 1 presses a switch which opens a pit beneath player 2, then
+// A_PitKill is called with Actor set to player 2's knight and
+// Originator set to player 1. The kill is then attributed to player
+// 1.
 //
-// Also, when the item on_walk_over event is called, Player is always
-// set to the player who placed the item into the dungeon (rather than
-// the player who, for example, teleported the knight onto the item).
-// This is important for bear traps.
+// Also, when the item on_walk_over event is called, Originator is
+// always set to the player who placed the item into the dungeon
+// (rather than the player who, for example, teleported the knight
+// onto the item). This is important for bear traps.
 //
 
 class ActionData {
 public:
     ActionData()
-        : direct(false), flag(false), success(true), item(0), item_dmap(0), tile_dmap(0), originator(OT_None()) { }
+        : flag(false), success(true), item(0), item_dmap(0), tile_dmap(0), originator(OT_None()) { }
 
-    void setActor(shared_ptr<Creature> c, bool dir) { actor = c; direct = dir; }
+    // construct from global var "cxt" in lua state
+    // (See also fn GetOriginatorFromLua, below)
+    explicit ActionData(lua_State *lua);
+
+    // fill global var "cxt" in lua state w/ contents of *this
+    void writeToCxt(lua_State *lua) const;
+    
+    // modifier fns:
+    void setActor(shared_ptr<Creature> c) { actor = c; }
     void setVictim(shared_ptr<Creature> c) { victim = c; }
     void setItem(DungeonMap *, const MapCoord &, const ItemType *);
     void setTile(DungeonMap *, const MapCoord &, shared_ptr<Tile>);
@@ -119,12 +127,9 @@ public:
     void setSuccess(bool f) { success = f; }
     void setOriginator(const Originator &o) { originator = o; }
 
-    // this is used for the lua "pos" field
-    void setLuaPos(const MapCoord &mc) { lua_pos = mc; }
-    
+    // accessor fns:
     shared_ptr<Creature> getActor() const { return actor; }
     shared_ptr<Creature> getVictim() const { return victim; }
-    bool isDirect() const { return direct; } // see above
     void getItem(DungeonMap *&dm, MapCoord &mc, const ItemType * &it) const
         { dm = item_dmap; mc = item_coord; it = item; }
     void getTile(DungeonMap *&dm, MapCoord &mc, shared_ptr<Tile> &t) const
@@ -132,21 +137,26 @@ public:
     bool getFlag() const { return flag; }
     bool getSuccess() const { return success; }
     const Originator & getOriginator() const { return originator; }
-
-    pair<DungeonMap*, MapCoord> getPos() const;  // lookup pos from creature, item and tile (in that order).
-
-    const MapCoord & getLuaPos() const { return lua_pos; }
     
 private:
     shared_ptr<Creature> actor, victim;
-    bool direct, flag, success;
+    bool flag, success;
     const ItemType * item;
     shared_ptr<Tile> tile;
     DungeonMap *item_dmap, *tile_dmap;
     MapCoord item_coord, tile_coord;
-    MapCoord lua_pos;
     Originator originator;
 };
+
+// shortcuts to access certain fields of lua cxt table directly:
+Originator GetOriginatorFromCxt(lua_State *lua);
+
+// this helper function gets a pos in the order: Tile, then Item, then Actor.
+// The reason for this order is to fix #100 (bug where door sound was not heard when
+// the door was opened by someone in the room outside).
+// Note: on return, it is guaranteed that dmap==0 if and only if pos.isNull()
+void GetActionDataPos(const ActionData &ad, DungeonMap *& dmap, MapCoord &pos);
+
 
 
 //
@@ -255,7 +265,7 @@ public:
     // be called from different threads.
     static Action * createAction(const string &name, ActionPars &);
 
-protected:
+    // Create an Action given an ActionMaker and ActionPars.
     virtual Action * make(ActionPars &) const = 0;
 };
 
@@ -267,6 +277,12 @@ protected:
       static Maker register_me; \
       Maker() : ActionMaker(n) { } \
   }
+
+
+// this allows access to the global "makers map" (maps action name -> ActionMaker).
+// make sure you lock g_makers_mutex while accessing it.
+extern boost::mutex g_makers_mutex;
+std::map<std::string, const ActionMaker *> & MakersMap();
 
 
 // LuaAction

@@ -2038,6 +2038,9 @@ void KnightsGame::endOfMessagePacket()
     // This is better than the previous model which was to poll every 50ms or so, because that just added
     // (upto) 50ms of lag on the controls.
 
+    // (Note: There is still at least one polling delay, and that is in KnightTask which
+    // only runs every 'control_poll_interval', currently 50ms.)
+
     bool flag;
     {
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);

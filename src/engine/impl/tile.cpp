@@ -206,10 +206,9 @@ void Tile::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> 
     // Run on_destroy event
     if (on_destroy) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_ptr<Tile>());
-        ad.setLuaPos(mc);
         on_destroy->execute(ad);
     }
     
@@ -233,11 +232,10 @@ void Tile::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
     // NB act_type isn't used here, but it is used in subclasses (in particular Lockable).
     if (on_activate) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setSuccess(success);
-        ad.setLuaPos(mc);
         on_activate->execute(ad);
     }
 }
@@ -246,10 +244,9 @@ void Tile::onWalkOver(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 {
     if (on_walk_over && actor && actor->getHeight() == H_WALKING) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
-        ad.setLuaPos(mc);
         on_walk_over->execute(ad);
     }
 }
@@ -258,10 +255,9 @@ void Tile::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 {
     if (on_approach) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
-        ad.setLuaPos(mc);
         on_approach->execute(ad);
     }
 }
@@ -270,10 +266,9 @@ void Tile::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 {
     if (on_withdraw) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
-        ad.setLuaPos(mc);
         on_withdraw->execute(ad);
     }
 }
@@ -282,10 +277,9 @@ void Tile::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> acto
 {
     if (on_hit) {
         ActionData ad;
-        ad.setActor(actor, false);
+        ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
-        ad.setLuaPos(mc);
         on_hit->execute(ad);
     }
 }

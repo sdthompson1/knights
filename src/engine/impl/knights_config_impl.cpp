@@ -305,7 +305,7 @@ KnightsConfigImpl::~KnightsConfigImpl()
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
     for_each(dungeon_layouts.begin(), dungeon_layouts.end(), Delete<DungeonLayout>());
     for_each(item_generators.begin(), item_generators.end(), Delete<ItemGenerator>());
-    for_each(item_types.begin(), item_types.end(), Delete<ItemType>());
+    for_each(item_types.begin(), item_types.end(), Delete<const ItemType>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
     for_each(monster_types.begin(), monster_types.end(), Delete<MonsterType>());
@@ -906,34 +906,35 @@ ItemSize KnightsConfigImpl::popItemSize(ItemSize dflt)
     }
 }
 
-ItemType * KnightsConfigImpl::popItemType()
+const ItemType * KnightsConfigImpl::popItemType()
 {
     if (!kf) return 0;
 
-    ItemType * result = 0;
+    const ItemType * result = 0;
     
     if (kf->isLua()) {
 
         kf->popLua();  // pop from kfile stack, push to lua stack
-        result = ReadLuaPtr<ItemType>(lua_state.get(), -1);
+        result = ReadLuaPtr<const ItemType>(lua_state.get(), -1);
         if (!result) kf->errExpected("item type");
         
     } else {
             
         const Value * p = kf->getTop();
-        const map<const Value *, ItemType*>::const_iterator itor = item_types.find(p);
+        const map<const Value *, const ItemType*>::const_iterator itor = item_types.find(p);
         if (itor == item_types.end()) {
 
             // Haven't seen this KValue before. Make a new itemtype from it.
-            result = new ItemType;
+            ItemType *result2 = new ItemType;
+            result = result2;
             item_types.insert(std::make_pair(p, result));
-            PopKFileItemType(this, kf.get(), result);  // pop from kfile stack
+            PopKFileItemType(this, kf.get(), result2);  // pop from kfile stack
 
             // If a crossbow, then also set up a second itemtype for the loaded version.
             if (result->canLoad()) {
                 ItemType *it2 = new ItemType(*result);   // make a copy of the old itemtype
                 special_item_types.push_back(it2);
-                result->setLoaded(it2);
+                result2->setLoaded(it2);
                 it2->setUnloaded(result);
             }
 
@@ -946,7 +947,7 @@ ItemType * KnightsConfigImpl::popItemType()
     return result;
 }
 
-ItemType * KnightsConfigImpl::popItemType(ItemType *dflt)
+const ItemType * KnightsConfigImpl::popItemType(const ItemType *dflt)
 {
     if (!kf) return 0;
     if (kf->isNone()) {
@@ -1230,8 +1231,8 @@ MonsterType * KnightsConfigImpl::popMonsterType()
         tab.reset();
 
         std::vector<shared_ptr<Tile> > ai_avoid;
-        ItemType * ai_hit = 0;
-        ItemType * ai_fear = 0;
+        const ItemType * ai_hit = 0;
+        const ItemType * ai_fear = 0;
         if (walking) {
             tab.push("ai_avoid");
             if (kf->isNone()) kf->pop(); else popTileList(ai_avoid);
@@ -1281,7 +1282,7 @@ MonsterType * KnightsConfigImpl::popMonsterType()
         tab.push("type");
         kf->pop();
 
-        ItemType * weapon = 0;
+        const ItemType * weapon = 0;
         if (walking) {
             tab.push("weapon");
             weapon = popItemType();
@@ -2449,8 +2450,8 @@ void KnightsConfigImpl::kconfigItemType(const char *name)
         lua_pushnil(lua_state.get());
     } else {
         kf->pushSymbol(name);
-        ItemType * itype = popItemType();
-        NewLuaPtr<ItemType>(lua_state.get(), itype);
+        const ItemType * itype = popItemType();
+        NewLuaPtr<const ItemType>(lua_state.get(), itype);
     }
 }
 

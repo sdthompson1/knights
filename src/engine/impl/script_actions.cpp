@@ -383,11 +383,15 @@ bool A_Necromancy::possible(const ActionData &) const
 void A_Necromancy::execute(const ActionData &ad) const
 {
     if (possible(ad)) {
-        pair<DungeonMap *,MapCoord> p = ad.getPos();
-        if (p.first && !p.second.isNull()) {
-            Mediator::instance().getMonsterManager().doNecromancy(nzoms, *p.first,
-                    p.second.getX() - range, p.second.getY() - range,
-                    p.second.getX() + range + 1, p.second.getY() + range + 1);
+
+        DungeonMap *dmap;
+        MapCoord pos;
+        GetActionDataPos(ad, dmap, pos);
+
+        if (dmap) {
+            Mediator::instance().getMonsterManager().doNecromancy(nzoms, *dmap,
+                    pos.getX() - range,     pos.getY() - range,
+                    pos.getX() + range + 1, pos.getY() + range + 1);
         }
     }
 }
@@ -489,22 +493,11 @@ Action * A_PitKill::Maker::make(ActionPars &pars) const
 void A_PlaySound::execute(const ActionData &ad) const
 {
     if (!frequency) return;
-    DungeonMap *dmap = 0;
-    MapCoord mc;
     shared_ptr<Creature> actor = ad.getActor();
-    if (actor && actor->getMap()) {
-        dmap = actor->getMap();
-        mc = actor->getPos();
-    } else {
-        shared_ptr<Tile> dummy;
-        ad.getTile(dmap, mc, dummy);
-    }
 
-    // "Lua pos" will override the pos from above
-    // Fixes: #100 (Door sound not heard when the door is opened by someone in the room outside)
-    if (!ad.getLuaPos().isNull()) {
-        mc = ad.getLuaPos();
-    }
+    DungeonMap *dmap;
+    MapCoord mc;    
+    GetActionDataPos(ad, dmap, mc);
 
     if (dmap) {
         Mediator::instance().playSound(*dmap, mc, *sound, frequency->get(), all);

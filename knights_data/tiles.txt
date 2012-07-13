@@ -124,8 +124,8 @@ chest_control = door_control & { name = "Open/Close Chest" }
 door_control_low_pri = door_control & { tap_priority = 1 }
 chest_control_low_pri = chest_control & { tap_priority = 1 }
 
-door_control_lua_func = "if is_door_open(...) then return door_control_low_pri; else return door_control; end"
-chest_control_lua_func = "if is_door_open(...) then return chest_control_low_pri; else return chest_control; end"
+door_control_lua_func = "if kts.is_door_open(...) then return door_control_low_pri; else return door_control; end"
+chest_control_lua_func = "if kts.is_door_open(...) then return chest_control_low_pri; else return chest_control; end"
 
 door_base = {
     type     = "door"

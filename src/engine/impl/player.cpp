@@ -576,7 +576,7 @@ void Player::computeAvailableControls()
                 // also, check if it has MS_APPR_BASED flag; if so, the control only applies
                 // to approach-based controls.
                 ActionData ad;
-                ad.setActor(kt, true);
+                ad.setActor(kt);
                 ad.setOriginator(Originator(OT_Player(), this));
                 if ((*it)->getAction() && (*it)->getAction()->possible(ad)
                 && (getApproachBasedControls() || ((*it)->getMenuSpecial() & UserControl::MS_APPR_BASED) == 0 )) {
@@ -659,7 +659,7 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
             }
             if (ok) {
                 ActionData ad;
-                ad.setActor(cr, true);
+                ad.setActor(cr);
                 ad.setOriginator(cr->getOriginator());
                 ad.setTile(dmap, mc, *it);
                 if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {
@@ -681,7 +681,7 @@ void Player::addItemControls(const ItemType &itype, map<const Control *, Control
     const Control *ctrl = itype.getControl();
     if (ctrl) {
         ActionData ad;
-        ad.setActor(cr, true);
+        ad.setActor(cr);
         ad.setOriginator(Originator(OT_Player(), this));
         ad.setItem(0, MapCoord(), &itype);
         if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {

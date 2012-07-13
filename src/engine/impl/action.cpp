@@ -46,7 +46,132 @@ namespace {
             lua_pushnil(lua);  // unknown originator
         }
     }
+
+    Originator ReadOriginator(lua_State *lua, int idx)
+    {
+        Originator orig = Originator(OT_None());
+    
+        if (lua_isstring(lua, idx)) {
+            if (strcmp("monster", lua_tostring(lua, idx)) == 0) {
+                orig = Originator(OT_Monster());
+            }
+        } else {
+            Player * p = ReadLuaPtr<Player>(lua, idx);
+            orig = Originator(OT_Player(), p);
+        }
+
+        return orig;
+    }
 }
+
+// Read the originator from "cxt"
+Originator GetOriginatorFromCxt(lua_State *lua)
+{
+    lua_getglobal(lua, "cxt");              // [cxt]
+    lua_getfield(lua, -1, "originator");    // [cxt originator]
+    Originator orig = ReadOriginator(lua, -1);
+    lua_pop(lua, 2);                        // []
+    return orig;
+}
+
+// Read everything from "cxt", create new ActionData
+ActionData::ActionData(lua_State *lua)
+    : originator(OT_None()) // will overwrite below
+{
+    // read cxt table.
+    lua_getglobal(lua, "cxt");   // [cxt]
+
+    lua_pushstring(lua, "actor"); // [cxt "actor"]
+    lua_gettable(lua, -2);        // [cxt actor]
+    actor = ReadLuaSharedPtr<Creature>(lua, -1);
+    lua_pop(lua, 1);              // [cxt]
+
+    lua_pushstring(lua, "victim");
+    lua_gettable(lua, -2);
+    victim = ReadLuaSharedPtr<Creature>(lua, -1);
+    lua_pop(lua, 1);
+
+    flag = false;
+
+    success = false;  // TODO success should be removed.
+
+    lua_pushstring(lua, "item");
+    lua_gettable(lua, -2);
+    item = ReadLuaPtr<const ItemType>(lua, -1);
+    lua_pop(lua, 1);
+
+    lua_pushstring(lua, "tile");
+    lua_gettable(lua, -2);
+    tile = ReadLuaSharedPtr<Tile>(lua, -1);
+    lua_pop(lua, 1);
+
+    lua_pushstring(lua, "item_pos");
+    lua_gettable(lua, -2);
+    item_coord = GetMapCoord(lua, -1);
+    lua_pop(lua, 1);
+
+    lua_pushstring(lua, "tile_pos");
+    lua_gettable(lua, -2);
+    tile_coord = GetMapCoord(lua, -1);
+    lua_pop(lua, 1);
+
+    lua_pushstring(lua, "originator");
+    lua_gettable(lua, -2);
+    originator = ReadOriginator(lua, -1);
+    lua_pop(lua, 1);
+
+    if (!item_coord.isNull() || !tile_coord.isNull()) {
+        // We don't currently support multiple DungeonMaps, so just get the map from Mediator.
+        DungeonMap *dmap = Mediator::instance().getMap().get();
+        item_dmap = item_coord.isNull() ? 0 : dmap;
+        tile_dmap = tile_coord.isNull() ? 0 : dmap;
+    }
+}
+
+void ActionData::writeToCxt(lua_State *lua) const
+{
+    // create 'cxt' table
+    lua_createtable(lua, 0, 9);   // [cxt]
+
+    // use weak ptr for the creature, so that the creature is not
+    // prevented from dying just because the lua code kept a
+    // reference to it.
+    NewLuaWeakPtr<Creature>(lua, getActor());   // [cxt actor]
+    lua_setfield(lua, -2, "actor");                   // [cxt]
+
+    if (getActor()) {
+        PushMapCoord(lua, getActor()->getPos());  // [cxt pos]
+        lua_setfield(lua, -2, "actor_pos");     // [cxt]
+    }
+
+    // same for 'victim'
+    NewLuaWeakPtr<Creature>(lua, getVictim());
+    lua_setfield(lua, -2, "victim");
+
+    if (getVictim()) {
+        PushMapCoord(lua, getVictim()->getPos());
+        lua_setfield(lua, -2, "victim_pos");
+    }
+
+    NewLuaPtr<const ItemType>(lua, item);
+    lua_setfield(lua, -2, "item_type");
+
+    PushMapCoord(lua, item_coord);
+    lua_setfield(lua, -2, "item_pos");
+
+    NewLuaSharedPtr<Tile>(lua, tile);
+    lua_setfield(lua, -2, "tile");
+
+    PushMapCoord(lua, tile_coord);
+    lua_setfield(lua, -2, "tile_pos");
+    
+    PushOriginator(lua, getOriginator());  // [cxt player]
+    lua_setfield(lua, -2, "originator");          // [cxt]
+
+    // finally, set it as new value of "cxt".
+    lua_setglobal(lua, "cxt");      // []
+}
+
 
 void ActionData::setItem(DungeonMap *dmap, const MapCoord &mc, const ItemType * it)
 {
@@ -79,25 +204,29 @@ void ActionData::setTile(DungeonMap *dmap, const MapCoord &mc, shared_ptr<Tile> 
     }
 }
 
-pair<DungeonMap *, MapCoord> ActionData::getPos() const
+void GetActionDataPos(const ActionData &ad, DungeonMap *& dmap, MapCoord &pos)
 {
-    DungeonMap *dmap;
-    MapCoord mc;
+    boost::shared_ptr<Tile> dummy;
+    ad.getTile(dmap, pos, dummy);
     
-    if (actor && actor->getMap()) dmap = actor->getMap();
-    else if (victim && victim->getMap()) dmap = victim->getMap();
-    else if (item_dmap) dmap = item_dmap;
-    else if (tile_dmap) dmap = tile_dmap;
-    else dmap = 0;
+    if (!dmap || pos.isNull()) {
+        const ItemType *dummy;
+        ad.getItem(dmap, pos, dummy);
 
-    if (dmap) {
-        if (actor && actor->getMap()) mc = actor->getPos();
-        else if (victim && victim->getMap()) mc = victim->getPos();
-        else if (!item_coord.isNull()) mc = item_coord;
-        else if (!tile_coord.isNull()) mc = tile_coord;
+        if (!dmap || pos.isNull()) {
+            boost::shared_ptr<Creature> actor = ad.getActor();
+
+            if (actor && actor->getMap()) {
+                // note: relying on Entity invariant: getMap() null iff getPos() null.
+                dmap = actor->getMap();
+                pos = actor->getPos();
+
+            } else {
+                dmap = 0;
+                pos = MapCoord();
+            }
+        }
     }
-
-    return make_pair(dmap, mc);
 }
 
 void RandomAction::add(const Action *ac, int wt)
@@ -225,29 +354,15 @@ void LuaAction::execute(const ActionData &ad) const
     shared_ptr<lua_State> lua_lock(lua_state);
     lua_State * lua = lua_lock.get();
 
-    // create 'cxt' table
-    lua_createtable(lua, 0, 3);   // [cxt]
-
-    // use weak ptr for the creature, so that the creature is not
-    // prevented from dying just because the lua code kept a
-    // reference to it.
-    NewLuaWeakPtr<Creature>(lua, ad.getActor());   // [cxt actor]
-    lua_setfield(lua, -2, "actor");                   // [cxt]
-
-    PushOriginator(lua, ad.getOriginator());  // [cxt player]
-    lua_setfield(lua, -2, "originator");          // [cxt]
-
-    const MapCoord &mc = ad.getLuaPos();
-    PushMapCoord(lua, mc);   // [cxt pos]
-    lua_setfield(lua, -2, "pos");   // [cxt]
-    lua_setglobal(lua, "cxt");      // []
+    // Set up "cxt" table
+    ad.writeToCxt(lua);
     
-    // get the function from the registry
+    // Get the function from the registry
     lua_pushlightuserdata(lua, const_cast<LuaAction*>(this));  // [key]
     lua_gettable(lua, LUA_REGISTRYINDEX);  // [func]
 
     try {
-        // call the function (with no arguments)
+        // Call the function (with no arguments)
         LuaExec(lua, 0, 0);    // []
     } catch (const LuaError &err) {
         Mediator::instance().getCallbacks().gameMsg(-1, err.what());

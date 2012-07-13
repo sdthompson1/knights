@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "action.hpp"
 #include "coord_transform.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
@@ -33,9 +34,12 @@
 #include "map_support.hpp"
 #include "mediator.hpp"
 #include "missile.hpp"
+#include "my_exceptions.hpp"
 #include "teleport.hpp"
 
 #include "lua.hpp"
+
+#include "boost/scoped_ptr.hpp"
 
 #include <cstring>
 
@@ -43,56 +47,140 @@ class Player;
 
 namespace {
 
-    // Read a position (MapCoord) from the lua stack at the given index
-    MapCoord GetMapCoord(lua_State *lua, int index)
+
+    // This is an implementation of ActionPars that reads its parameters from the Lua stack.
+    class LuaActionPars : public ActionPars {
+    public:
+        explicit LuaActionPars(lua_State *lua_) : lua(lua_) { }
+
+        void require(int n1, int n2 = -1);
+
+        int getSize();
+
+        const Action * getAction(int index);
+        int getInt(int index);
+        const ItemType * getItemType(int index);
+        MapDirection getMapDirection(int index);
+        int getProbability(int index);
+        const KConfig::RandomInt * getRandomInt(int index);
+        const Sound * getSound(int index);
+        std::string getString(int index);
+        shared_ptr<Tile> getTile(int index);
+        const MonsterType * getMonsterType(int index);
+
+        void error();
+        
+    private:
+        lua_State *lua;
+    };
+
+    void LuaActionPars::require(int n1, int n2)
     {
-        if (lua_isnil(lua, index)) {
-            return MapCoord();
-        } else {
-            lua_getfield(lua, index, "x");
-            if (lua_isnil(lua, -1)) return MapCoord();
-            const int x = lua_tointeger(lua, -1);
-            lua_pop(lua, 1);
-
-            lua_getfield(lua, index, "y");
-            if (lua_isnil(lua, -1)) return MapCoord();
-            const int y = lua_tointeger(lua, -1);
-            lua_pop(lua, 1);
-
-            return MapCoord(x, y);
-        }
-    }
-
-    MapDirection GetMapDirection(lua_State *lua, int index)
-    {
-        const char * x = lua_tostring(lua, index);
-        if (strcmp(x, "south") == 0) return D_SOUTH;
-        else if (strcmp(x, "west") == 0) return D_WEST;
-        else if (strcmp(x, "east") == 0) return D_EAST;
-        else return D_NORTH;
-    }
-
-    // Read the originator from "cxt"
-    Originator GetOriginator(lua_State *lua)
-    {
-        lua_getglobal(lua, "cxt");          // [cxt]
-        lua_getfield(lua, -1, "originator");    // [cxt originator]
-
-        Originator orig = Originator(OT_None());
-
-        if (lua_isstring(lua, -1)) {
-            if (strcmp("monster", lua_tostring(lua, -1)) == 0) {
-                orig = Originator(OT_Monster());
+        const int sz = getSize();
+        if (sz != n1 && (n2 < 0 || sz != n2)) {
+            // push error message as a series of strings/numbers which we concatenate.
+            // (beware, number of elements set in lua_concat call below.)
+            lua_pushstring(lua, "Wrong number of arguments to action function: expected ");
+            lua_pushinteger(lua, n1);
+            if (n2 >= 0) {
+                lua_pushstring(lua, " or ");
+                lua_pushinteger(lua, n2);
             }
-        } else {
-            Player * p = ReadLuaPtr<Player>(lua, -1);
-            orig = Originator(OT_Player(), p);
+            lua_pushstring(lua, ", got ");
+            lua_pushinteger(lua, sz);
+            lua_concat(lua, n2 >= 0 ? 6 : 4);
+            lua_error(lua);
         }
-
-        lua_pop(lua, 2);
-        return orig;
     }
 
+    int LuaActionPars::getSize()
+    {
+        return lua_gettop(lua);
+    }
+
+    const Action * LuaActionPars::getAction(int index)
+    {
+        // TODO: this function will be removed from ActionPars base class eventually.
+        throw LuaError("LuaActionPars::getAction: Not Implemented");
+    }
+
+    int LuaActionPars::getInt(int index)
+    {
+        return luaL_checkinteger(lua, index);
+    }
+
+    void ErrMsg(lua_State *lua, int index, const char *expected)
+    {
+        luaL_error(lua, "bad type for argument #%d: expected %s", index, expected);
+    }
+    
+    template<class T> T* CheckLuaPtr(lua_State *lua, int index, const char *expected)
+    {
+        T* result = ReadLuaPtr<T>(lua, index);
+        if (!result) {
+            ErrMsg(lua, index, expected);
+        }
+        return result;
+    }
+
+    template<class T> boost::shared_ptr<T> CheckLuaSharedPtr(lua_State *lua, int index, const char *expected)
+    {
+        boost::shared_ptr<T> result = ReadLuaSharedPtr<T>(lua, index);
+        if (!result) {
+            ErrMsg(lua, index, expected);
+        }
+        return result;
+    }
+    
+    const ItemType * LuaActionPars::getItemType(int index)
+    {
+        return CheckLuaPtr<const ItemType>(lua, index, "item type");
+    }
+    
+    MapDirection LuaActionPars::getMapDirection(int index)
+    {
+        return GetMapDirection(lua, index);
+    }
+    
+    int LuaActionPars::getProbability(int index)
+    {
+        // TODO: convert probabilities to float. for now just get integer.
+        return luaL_checkinteger(lua, index);
+    }
+
+    const KConfig::RandomInt * LuaActionPars::getRandomInt(int index)
+    {
+        // TODO: probably just a conversion from userdata.
+        throw LuaError("LuaActionPars::getRandomInt: not implemented");
+    }
+
+    const Sound * LuaActionPars::getSound(int index)
+    {
+        return CheckLuaPtr<Sound>(lua, index, "sound");
+    }
+
+    std::string LuaActionPars::getString(int index)
+    {
+        const char * s = luaL_checkstring(lua, index);
+        return s;
+    }
+
+    boost::shared_ptr<Tile> LuaActionPars::getTile(int index)
+    {
+        return CheckLuaSharedPtr<Tile>(lua, index, "tile");
+    }
+
+    const MonsterType * LuaActionPars::getMonsterType(int index)
+    {
+        throw LuaError("LuaActionPars::getMonsterType: not implemented");
+        //return CheckLuaPtr<MonsterType>(lua, index);
+    }
+
+    void LuaActionPars::error()
+    {
+        luaL_error(lua, "Action failed to execute");
+    }
+    
 
     typedef void (Lockable::* LockableFnPtr)(DungeonMap &, const MapCoord &, const Originator &);
 
@@ -113,13 +201,13 @@ namespace {
             Tile *tile = it->get();
             Lockable *lockable = dynamic_cast<Lockable*>(tile);
             if (lockable) {
-                (lockable->*function_ptr)(*dmap, mc, GetOriginator(lua));
+                (lockable->*function_ptr)(*dmap, mc, GetOriginatorFromCxt(lua));
             }
         }
     }
 
     // Input: position
-    // Cxt: player
+    // Cxt: originator
     // Output: none
     int Open(lua_State *lua)
     {
@@ -128,7 +216,7 @@ namespace {
     }
 
     // Input: position
-    // Cxt: player
+    // Cxt: originator
     // Output: none
     int Close(lua_State *lua)
     {
@@ -137,7 +225,7 @@ namespace {
     }
 
     // Input: position
-    // Cxt: player
+    // Cxt: originator
     // Output: none
     int OpenOrClose(lua_State *lua)
     {
@@ -146,7 +234,7 @@ namespace {
         if (!dmap) return 0;
 
         MapCoord mc = GetMapCoord(lua, 1);
-        Originator orig = GetOriginator(lua);
+        Originator orig = GetOriginatorFromCxt(lua);
 
         std::vector<shared_ptr<Tile> > tiles;
         dmap->getTiles(mc, tiles);
@@ -193,7 +281,7 @@ namespace {
     }
     
     // Input: position, direction, item type, boolean (drop_after flag)
-    // Cxt: player
+    // Cxt: originator
     // Output: none
     int AddMissile(lua_State *lua)
     {
@@ -203,11 +291,11 @@ namespace {
 
         const MapCoord mc = GetMapCoord(lua, 1);
         const MapDirection dir = GetMapDirection(lua, 2);
-        const ItemType * itype = ReadLuaPtr<ItemType>(lua, 3);
+        const ItemType * itype = ReadLuaPtr<const ItemType>(lua, 3);
         const bool drop_after = lua_toboolean(lua, 4) != 0;
 
         if (itype) {
-            CreateMissile(*dmap, mc, dir, *itype, drop_after, false, GetOriginator(lua), true);
+            CreateMissile(*dmap, mc, dir, *itype, drop_after, false, GetOriginatorFromCxt(lua), true);
         }
 
         return 0;
@@ -256,7 +344,7 @@ namespace {
     }
 
     // Input: position, tile
-    // Cxt: player
+    // Cxt: originator
     // Output: none
     int RemoveTile(lua_State *lua)
     {
@@ -267,12 +355,12 @@ namespace {
         const MapCoord &mc = GetMapCoord(lua, 1);
         shared_ptr<Tile> tile = ReadLuaSharedPtr<Tile>(lua, 2);
 
-        dmap->rmTile(mc, tile, GetOriginator(lua));
+        dmap->rmTile(mc, tile, GetOriginatorFromCxt(lua));
         return 0;
     }
 
     // Input: position, tile
-    // Cxt: player
+    // Cxt: originator
     // Output: none
     int AddTile(lua_State *lua)
     {
@@ -283,7 +371,7 @@ namespace {
         const MapCoord mc = GetMapCoord(lua, 1);
         shared_ptr<Tile> tile = ReadLuaSharedPtr<Tile>(lua, 2);
 
-        if (tile) dmap->addTile(mc, tile->clone(false), GetOriginator(lua));
+        if (tile) dmap->addTile(mc, tile->clone(false), GetOriginatorFromCxt(lua));
         return 0;
     }
 
@@ -419,6 +507,32 @@ namespace {
         PushMapDirection(lua, dir);
         return 1;
     }
+
+    // Input: various
+    // Cxt: all ActionData fields
+    // Output: none
+    // Upvalue: ActionMaker pointer.
+    int LuaActionFunc(lua_State *lua)
+    {
+        // Make a LuaActionPars
+        LuaActionPars p(lua);
+
+        // Get the upvalue which is the ActionMaker
+        const ActionMaker *maker = static_cast<const ActionMaker *>(lua_touserdata(lua, lua_upvalueindex(1)));
+
+        // Call the maker to produce an Action.
+        // Store in a scoped_ptr
+        boost::scoped_ptr<Action> action( maker->make(p) );
+
+        // Create the ActionData from cxt
+        ActionData ad( lua );
+
+        // Call the action
+        action->execute(ad);
+
+        // Done.
+        return 0;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -472,5 +586,20 @@ void AddLuaIngameFunctions(lua_State *lua)
     lua_pushcfunction(lua, &TransformDirection);
     lua_setfield(lua, -2, "transform_direction");
 
+    // Now we want to add all the in-game Actions as Lua functions.
+    {
+        boost::unique_lock<boost::mutex> lock(g_makers_mutex);
+        const std::map<std::string, const ActionMaker *> & makers_map = MakersMap();
+        for (std::map<std::string, const ActionMaker *>::const_iterator it = makers_map.begin();
+        it != makers_map.end(); ++it) {
+            // const_cast is ok: we promise to cast it back to const again when 
+            // we get it back from Lua...
+            lua_pushlightuserdata(lua, const_cast<ActionMaker*>(it->second));
+            lua_pushcclosure(lua, &LuaActionFunc, 1);
+            lua_setfield(lua, -2, it->first.c_str());
+        }
+    }
+
+    // pop the "kts" and environment tables.
     lua_pop(lua, 2);
 }

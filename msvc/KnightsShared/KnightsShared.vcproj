@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\impl\map_support.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\impl\menu.cpp"
 				>
 			</File>

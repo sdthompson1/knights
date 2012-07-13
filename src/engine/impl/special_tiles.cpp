@@ -174,7 +174,7 @@ bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
         dummy->setFacing(Opposite(facing));  // this makes sure the bolt traps fire the right way
         dummy->addToMap(&dmap, DisplaceCoord(mc, facing));  // position him in front of the chest
         ActionData ad;
-        ad.setActor(dummy, false);
+        ad.setActor(dummy);
         ad.setItem(0, MapCoord(), ti.itype);  // this should ensure the correct item gets dropped if the trap is disarmed
         ad.setFlag(true);  // enable hack on the control_actions side...
         ti.action->execute(ad);

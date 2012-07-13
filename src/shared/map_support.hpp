@@ -31,6 +31,8 @@
 
 #include "boost/shared_ptr.hpp"
 
+struct lua_State;
+
 
 //
 // MapCoord
@@ -64,6 +66,9 @@ private:
 
 size_t hash_value(const MapCoord &);
 
+// get from lua (raises lua error on failure)
+MapCoord GetMapCoord(lua_State *lua, int index);
+
 
 //
 // MapDirection -- the 4 compass points
@@ -73,6 +78,8 @@ enum MapDirection {
     D_NORTH, D_EAST, D_SOUTH, D_WEST
 };
 
+// get from lua (raises lua error on failure)
+MapDirection GetMapDirection(lua_State *lua, int index);
 
 
 //

@@ -38,47 +38,6 @@
 #include "tile.hpp"
 
 
-/////////////////////////
-//  Map support stuff  //
-/////////////////////////
-
-MapDirection Opposite(MapDirection m)
-{
-    return MapDirection((int(m) + 2) % 4);
-}
-
-MapDirection Clockwise(MapDirection m)
-{
-    return MapDirection((int(m) + 1) % 4);
-}
-
-MapDirection Anticlockwise(MapDirection m)
-{
-    return MapDirection((int(m) + 3) % 4);
-}
-
-MapCoord DisplaceCoord(const MapCoord &base, MapDirection dir, int amt)
-{
-    switch (dir) {
-    case D_EAST:
-        return MapCoord(base.getX() + amt, base.getY());
-    case D_NORTH:
-        return MapCoord(base.getX(), base.getY() - amt);
-    case D_SOUTH:
-        return MapCoord(base.getX(), base.getY() + amt);
-    case D_WEST:
-        return MapCoord(base.getX() - amt, base.getY());
-    default:
-        return base;
-    }
-}
-
-size_t hash_value(const MapCoord &mc)
-{
-    return (mc.getX() << 16) + (mc.getY());
-}
-
-
 /////////////////
 //  MapHelper  //
 /////////////////

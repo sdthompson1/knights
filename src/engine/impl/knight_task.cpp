@@ -76,7 +76,7 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
             weak_ptr<Tile> tile;
             MapCoord tile_mc;
             player.getControlInfo(ctrl, item_type, tile, tile_mc);
-            ad.setActor(knight, true);
+            ad.setActor(knight);
             ad.setOriginator(knight->getOriginator());
             shared_ptr<Tile> tile_lock = tile.lock();
             if (item_type) ad.setItem(0, MapCoord(), item_type);
@@ -163,7 +163,7 @@ void KnightTask::execute(TaskManager &tm)
     && gvt >= xbow_action_timer + held_item->getReloadActionTime()) {
         xbow_action_timer = gvt;
         ActionData ad;
-        ad.setActor(knight, false);
+        ad.setActor(knight);
         ad.setOriginator(knight->getOriginator());
         held_item->getReloadAction()->execute(ad);
     }   

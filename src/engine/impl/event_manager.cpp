@@ -152,7 +152,7 @@ void EventManager::withdrawEvent(Creature &cr)
 void EventManager::runHook(const string &name, shared_ptr<Creature> cr) const
 {
     ActionData ad;
-    ad.setActor(cr, false);
+    ad.setActor(cr);
     doHook(name, ad);
 }
 
