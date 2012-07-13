@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "lua_exec.hpp"
+#include "lua_func_wrapper.hpp"
 #include "my_exceptions.hpp"
 
 #include "lua.hpp"
@@ -96,7 +97,7 @@ void LuaExec(lua_State *lua, int nargs, int nresults)
     // We need to insert our error handling function so that the stack looks like this:
     // [<stuff> errfunc func arg1 ... argn]
 
-    lua_pushcfunction(lua, &LuaExecErrFunc);
+    PushCFunction(lua, &LuaExecErrFunc);
     lua_insert(lua, -(2 + nargs));
     
     // now we can do the call

@@ -168,6 +168,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\impl\lua_func_wrapper.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\impl\lua_load_from_rstream.cpp"
 				>
 			</File>
@@ -239,6 +243,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\lua_exec.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\lua_func_wrapper.hpp"
 				>
 			</File>
 			<File

@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_module.hpp"
 #include "rstream.hpp"
@@ -115,11 +116,11 @@ namespace {
 void AddModuleFuncs(lua_State *lua)
 {
     // Global "dofile" function
-    lua_pushcfunction(lua, &DoFile);
+    PushCFunction(lua, &DoFile);
     lua_setglobal(lua, "dofile");
 
     // Global "require" function
-    lua_pushcfunction(lua, &Require);
+    PushCFunction(lua, &Require);
     lua_setglobal(lua, "require");
 
     // "package" table

@@ -25,6 +25,7 @@
 
 #include "graphic.hpp"
 #include "knights_config_impl.hpp"
+#include "lua_func_wrapper.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
 
@@ -92,7 +93,7 @@ namespace {
 
     KnightsConfigImpl * GetKC(lua_State *lua, const char * msg)
     {
-        KnightsConfigImpl * kc = static_cast<KnightsConfigImpl*>(lua_touserdata(lua, lua_upvalueindex(1)));
+        KnightsConfigImpl * kc = static_cast<KnightsConfigImpl*>(lua_touserdata(lua, lua_upvalueindex(2)));
         if (!kc->doingConfig()) {
             luaL_error(lua, (std::string("Cannot create new ") + msg + " during the game").c_str());
         }
@@ -260,29 +261,29 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     luaL_getsubtable(lua, -1, "kts");                         // [env kts]
     
     lua_pushlightuserdata(lua, kc);
-    lua_pushcclosure(lua, &MakeGraphic, 1);
+    PushCClosure(lua, &MakeGraphic, 1);
     lua_setfield(lua, -2, "Graphic");
 
     lua_pushlightuserdata(lua, kc);
-    lua_pushcclosure(lua, &MakeSound, 1);
+    PushCClosure(lua, &MakeSound, 1);
     lua_setfield(lua, -2, "Sound");
 
     /*
     lua_pushlightuserdata(lua, kc);
-    lua_pushcclosure(lua, &MakeItemType, 1);
+    PushCClosure(lua, &MakeItemType, 1);
     lua_setfield(lua, -2, "ItemType");
     */
     
     lua_pushlightuserdata(lua, kc);
-    lua_pushcclosure(lua, &MakeKconfigItemType, 1);
+    PushCClosure(lua, &MakeKconfigItemType, 1);
     lua_setfield(lua, -2, "kconfig_itemtype");
 
     lua_pushlightuserdata(lua, kc);
-    lua_pushcclosure(lua, &MakeKconfigTile, 1);
+    PushCClosure(lua, &MakeKconfigTile, 1);
     lua_setfield(lua, -2, "kconfig_tile");
 
     lua_pushlightuserdata(lua, kc);
-    lua_pushcclosure(lua, &MakeKconfigControl, 1);
+    PushCClosure(lua, &MakeKconfigControl, 1);
     lua_setfield(lua, -2, "kconfig_control");
 
     lua_pop(lua, 2); // []

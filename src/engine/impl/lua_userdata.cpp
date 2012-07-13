@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "lua_func_wrapper.hpp"
 #include "lua_userdata.hpp"
 #include "map_support.hpp"
 
@@ -97,7 +98,7 @@ namespace {
         if (created) {
             // Set the __gc method in the metatable.
             lua_pushstring(lua, "__gc");
-            lua_pushcfunction(lua, &GCMethod);
+            PushCFunction(lua, &GCMethod);
             lua_settable(lua, -3);
         }
         // Associate the metatable with the given userdata object.

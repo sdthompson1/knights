@@ -37,6 +37,7 @@
 #include "knights_client.hpp"
 #include "knights_server.hpp"
 #include "lua_exec.hpp"
+#include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_sandbox.hpp"
 #include "load_font.hpp"
@@ -127,7 +128,7 @@ namespace {
 
     int MakeGraphic(lua_State *lua)
     {
-        GfxVector *gfx_vector = static_cast<GfxVector*>(lua_touserdata(lua, lua_upvalueindex(1)));
+        GfxVector *gfx_vector = static_cast<GfxVector*>(lua_touserdata(lua, lua_upvalueindex(2)));
         const unsigned int old_size = gfx_vector->size();
 
         std::auto_ptr<Graphic> gfx(CreateGraphicFromLua(lua));
@@ -142,7 +143,7 @@ namespace {
     void SetupLuaConfigFunctions(lua_State *lua, GfxVector *gfx_vector)
     {
         lua_pushlightuserdata(lua, gfx_vector);
-        lua_pushcclosure(lua, &MakeGraphic, 1);
+        PushCClosure(lua, &MakeGraphic, 1);
         lua_setglobal(lua, "Graphic");
     }
 

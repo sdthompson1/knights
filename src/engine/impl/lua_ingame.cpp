@@ -29,6 +29,7 @@
 #include "dungeon_map.hpp"
 #include "knights_callbacks.hpp"
 #include "lockable.hpp"
+#include "lua_func_wrapper.hpp"
 #include "lua_ingame.hpp"
 #include "lua_userdata.hpp"
 #include "map_support.hpp"
@@ -518,7 +519,7 @@ namespace {
         LuaActionPars p(lua);
 
         // Get the upvalue which is the ActionMaker
-        const ActionMaker *maker = static_cast<const ActionMaker *>(lua_touserdata(lua, lua_upvalueindex(1)));
+        const ActionMaker *maker = static_cast<const ActionMaker *>(lua_touserdata(lua, lua_upvalueindex(2)));
 
         // Call the maker to produce an Action.
         // Store in a scoped_ptr
@@ -541,49 +542,49 @@ void AddLuaIngameFunctions(lua_State *lua)
     lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);   // [env]
     luaL_getsubtable(lua, -1, "kts");                         // [env kts]
     
-    lua_pushcfunction(lua, &Open);
+    PushCFunction(lua, &Open);
     lua_setfield(lua, -2, "open_door");
 
-    lua_pushcfunction(lua, &Close);
+    PushCFunction(lua, &Close);
     lua_setfield(lua, -2, "close_door");
 
-    lua_pushcfunction(lua, &OpenOrClose);
+    PushCFunction(lua, &OpenOrClose);
     lua_setfield(lua, -2, "open_or_close_door");
 
-    lua_pushcfunction(lua, &IsOpen);
+    PushCFunction(lua, &IsOpen);
     lua_setfield(lua, -2, "is_door_open");
     
-    lua_pushcfunction(lua, &AddMissile);
+    PushCFunction(lua, &AddMissile);
     lua_setfield(lua, -2, "add_missile");
 
-    lua_pushcfunction(lua, &Teleport);
+    PushCFunction(lua, &Teleport);
     lua_setfield(lua, -2, "teleport");
 
-    lua_pushcfunction(lua, &GetTiles);
+    PushCFunction(lua, &GetTiles);
     lua_setfield(lua, -2, "get_tiles");
 
-    lua_pushcfunction(lua, &RemoveTile);
+    PushCFunction(lua, &RemoveTile);
     lua_setfield(lua, -2, "remove_tile");
 
-    lua_pushcfunction(lua, &AddTile);
+    PushCFunction(lua, &AddTile);
     lua_setfield(lua, -2, "add_tile");
 
-    lua_pushcfunction(lua, &UserTable);
+    PushCFunction(lua, &UserTable);
     lua_setfield(lua, -2, "user_table");
 
-    lua_pushcfunction(lua, &PlaySound);
+    PushCFunction(lua, &PlaySound);
     lua_setfield(lua, -2, "play_sound");
 
-    lua_pushcfunction(lua, &GetPos);
+    PushCFunction(lua, &GetPos);
     lua_setfield(lua, -2, "get_pos");
 
-    lua_pushcfunction(lua, &Print);
+    PushCFunction(lua, &Print);
     lua_setfield(lua, -2, "print");
 
-    lua_pushcfunction(lua, &TransformOffset);
+    PushCFunction(lua, &TransformOffset);
     lua_setfield(lua, -2, "transform_offset");
 
-    lua_pushcfunction(lua, &TransformDirection);
+    PushCFunction(lua, &TransformDirection);
     lua_setfield(lua, -2, "transform_direction");
 
     // Now we want to add all the in-game Actions as Lua functions.
@@ -595,7 +596,7 @@ void AddLuaIngameFunctions(lua_State *lua)
             // const_cast is ok: we promise to cast it back to const again when 
             // we get it back from Lua...
             lua_pushlightuserdata(lua, const_cast<ActionMaker*>(it->second));
-            lua_pushcclosure(lua, &LuaActionFunc, 1);
+            PushCClosure(lua, &LuaActionFunc, 1);
             lua_setfield(lua, -2, it->first.c_str());
         }
     }
