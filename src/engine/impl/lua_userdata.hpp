@@ -40,11 +40,13 @@ boost::shared_ptr<void> ReadLuaSharedPtr_Impl(lua_State *lua, int index, LuaTag 
 boost::weak_ptr<void> ReadLuaWeakPtr_Impl(lua_State *lua, int index, LuaTag expected_tag);
 
 // Create a new Lua userdata object and push it onto the stack
+// NOTE: These might raise a Lua error. They do not throw any C++ exceptions though.
 template<class T> inline void NewLuaPtr(lua_State *lua, T *ptr) { NewLuaPtr_Impl(lua, (void*)ptr, LuaTraits<T>::tag); }
 template<class T> inline void NewLuaSharedPtr(lua_State *lua, boost::shared_ptr<T> ptr) { NewLuaSharedPtr_Impl(lua, ptr, LuaTraits<T>::tag); }
 template<class T> inline void NewLuaWeakPtr(lua_State *lua, boost::weak_ptr<T> ptr) { NewLuaWeakPtr_Impl(lua, ptr, LuaTraits<T>::tag); }
 
 // Read a Lua userdata object from a given stack index
+// NOTE: These can throw an exception, but do not raise a Lua error.
 // Conversions:
 // ReadLuaPtr can be used on a raw or shared ptr (but NOT a weak ptr).
 // ReadLuaSharedPtr can be used on a shared or weak ptr.

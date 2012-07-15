@@ -383,8 +383,7 @@ namespace {
     {
         Tile * tile = ReadLuaPtr<Tile>(lua, 1);
         if (tile) {
-            lua_pushlightuserdata(lua, tile);     // [tile]
-            lua_gettable(lua, LUA_REGISTRYINDEX); // [usertable]
+            lua_rawgetp(lua, LUA_REGISTRYINDEX, tile); // [usertable]
         } else {
             lua_pushnil(lua);   // [nil]
         }

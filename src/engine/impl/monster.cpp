@@ -28,7 +28,11 @@
 
 Monster::~Monster()
 {
-    Mediator::instance().onMonsterDeath(type);
+    try {
+        Mediator::instance().onMonsterDeath(type);
+    } catch (...) {
+        // ensure no exceptions escape from this dtor.
+    }
 }
 
 void Monster::onDeath(DeathMode dmode, const Originator &)

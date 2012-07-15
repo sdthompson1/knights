@@ -50,11 +50,16 @@ Knight::Knight(Player &pl, const map<const ItemType *, int> * b,
 
 Knight::~Knight()
 {
-    // Tell Player that Knight has died (so that a new Knight can be respawned).
-    player.onDeath();
+    try {
+        // Tell Player that Knight has died (so that a new Knight can be respawned).
+        player.onDeath();
 
-    // Kill continuous messages.
-    player.getDungeonView().cancelContinuousMessages();
+        // Kill continuous messages.
+        player.getDungeonView().cancelContinuousMessages();
+    
+    } catch (...) {
+        // Make sure no exceptions escape from this dtor.
+    }
 }
 
 

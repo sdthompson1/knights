@@ -144,7 +144,9 @@ namespace {
 
 KnightsConfigImpl::Popper::~Popper()
 {
-    kf.pop();
+    // We want to be careful not to throw an exception from within a dtor; therefore,
+    // explicitly check !isStackEmpty() before calling pop().
+    if (!kf.isStackEmpty()) kf.pop();
 }
 
 KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
@@ -1913,9 +1915,8 @@ shared_ptr<Tile> KnightsConfigImpl::popTile()
         if (has_user_table) {
             // give this tile an empty "user table"
             lua_State *lua = lua_state.get();
-            lua_pushlightuserdata(lua, tile.get());  // [tile]
-            lua_newtable(lua);   // [tile emptytbl]
-            lua_settable(lua, LUA_REGISTRYINDEX);  // []
+            lua_newtable(lua);   // [emptytbl]
+            lua_rawsetp(lua, LUA_REGISTRYINDEX, tile.get());  // []
         }
 
     } else {

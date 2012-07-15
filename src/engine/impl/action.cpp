@@ -332,10 +332,7 @@ Action * ActionMaker::createAction(const string &name, ActionPars &pars)
 LuaAction::LuaAction(boost::shared_ptr<lua_State> lua)
     : lua_state(lua)
 {
-    lua_pushlightuserdata(lua.get(), this);   // [function key]
-    lua_pushvalue(lua.get(), -2);             // [function key function]
-    lua_settable(lua.get(), LUA_REGISTRYINDEX);   // [function]
-    lua_pop(lua.get(), 1);  // []
+    lua_rawsetp(lua.get(), LUA_REGISTRYINDEX, this);   // pops function from the stack.
 }
 
 LuaAction::~LuaAction()
@@ -343,9 +340,8 @@ LuaAction::~LuaAction()
     shared_ptr<lua_State> lua_lock(lua_state.lock());
     if (lua_lock) {
         lua_State * lua = lua_lock.get();
-        lua_pushlightuserdata(lua, this);
-        lua_pushnil(lua);
-        lua_settable(lua, LUA_REGISTRYINDEX);
+        lua_pushnil(lua);                  // does not raise Lua errors
+        lua_rawsetp(lua, LUA_REGISTRYINDEX, this);  // should not raise lua error (except if out of memory, perhaps, but we ignore this possibility.)
     }
 }
 
@@ -358,8 +354,7 @@ void LuaAction::execute(const ActionData &ad) const
     ad.writeToCxt(lua);
     
     // Get the function from the registry
-    lua_pushlightuserdata(lua, const_cast<LuaAction*>(this));  // [key]
-    lua_gettable(lua, LUA_REGISTRYINDEX);  // [func]
+    lua_rawgetp(lua, LUA_REGISTRYINDEX, const_cast<LuaAction*>(this));  // [func]
 
     try {
         // Call the function (with no arguments)

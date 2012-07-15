@@ -26,44 +26,31 @@
 
 #include "lua.hpp"
 
-// The following functions push a "wrapped" C function onto the Lua
-// stack.
-// 
-// The wrapper catches any C++ exceptions and re-throws them as Lua
-// errors.
+// PushCClosure "wraps" a try/catch handler around a lua_CFunction.
+// The handler catches any C++ exceptions and converts them into a lua error.
+//
+// The purpose of this is to prevent C++ exceptions from propagating up into the Lua 
+// codebase (which was not written with C++ exceptions in mind).
 // 
 // IMPORTANT: The wrapper adds one extra upvalue, as upvalue 1.
 // Therefore your code will need to refer to upvalues from index 2
 // onwards, instead of 1, if it has been wrapped.
 
 
-// Note: Explanation of how exception safety works between C++ and
-// Lua.
+// NOTE: I wrote a long description of exception safety in Lua, but in the end it boils 
+// down to three simple rules:
 //
-// -- Generally I write my C++ code such that it is safe for Lua
-//    exceptions to propagate through it:
+// * If calling the Lua API from a C++ destructor:
+//  -- Make sure you leave the stack as you found it
+//  -- NEVER raise a Lua error from inside a dtor (and remember that many Lua API calls can 
+//      raise errors).
+// 
+// * When pushing lua_CFunctions, ALWAYS use PushCClosure to "wrap" the function in an
+//    exception handler.
 //
-//   -- I compile Lua as C++, so it uses exceptions rather than
-//      longjmp to propagate Lua errors.
-//    
-//   -- I write my C++ code to be exception safe, so if a Lua
-//      exception passes up through it, it does no harm (all dtors run
-//      properly).
-//    
-//   -- I cannot catch Lua exceptions directly, but I generally use
-//      lua_pcall rather than lua_call to execute Lua code (see
-//      LuaExec), so can catch lua errors that way. (I think LuaExec
-//      converts them back to C++ exceptions, in fact...)
-//
-// -- Throwing C++ exceptions through Lua itself is probably a bad
-//    idea, because Lua was not written with exception safety in mind
-//    (it catches its own exceptions, but not external ones).
-//
-//   -- Therefore, I use the PushCFunction wrapper, instead of
-//      lua_pushcfunction, to ensure that C++ exceptions never
-//      propagate into Lua (instead they are converted to calls to
-//      lua_error, which Lua is able to process w/o problems.)
-//   
+// * Ensure that there is ALWAYS a lua_pcall somewhere up the call chain -- NEVER allow
+//    Lua errors to escape up to top level, because this would abort the program.
+
 
 void PushCClosure(lua_State *lua, lua_CFunction func, int nupvalues);
 

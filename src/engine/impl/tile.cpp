@@ -109,18 +109,22 @@ void Tile::construct(shared_ptr<lua_State> lua, const Action *walkover, const Ac
 
 Tile::~Tile()
 {
+    // dtors should not raise lua errors (as a general principle)
+    // In this dtor we assume that lua_pushnil and lua_rawsetp does not raise errors.
+    // According to the Lua docs, this is true for lua_pushnil but not lua_rawsetp.
+    // However, as far as I can tell, the only time lua_rawsetp can raise an error is if 
+    // there is an out-of-memory condition; and I choose to ignore that here.
+
     shared_ptr<lua_State> lua_lock(lua_state.lock());
     if (lua_lock) {
         // note: registry keys used are:
         //  this -- "user table" for the tile
         //  this+1 -- control func.
         lua_State * lua = lua_lock.get();
-        lua_pushlightuserdata(lua, this);  // [key]
-        lua_pushnil(lua);          // [key nil]
-        lua_settable(lua, LUA_REGISTRYINDEX);  // []
-        lua_pushlightuserdata(lua, ((char*)(this))+1);  // [key2]
-        lua_pushnil(lua);  // [key2 nil]
-        lua_settable(lua, LUA_REGISTRYINDEX);
+        lua_pushnil(lua);          // [nil]
+        lua_rawsetp(lua, LUA_REGISTRYINDEX, this);  // []
+        lua_pushnil(lua);  // [nil]
+        lua_rawsetp(lua, LUA_REGISTRYINDEX, ((char*)(this))+1);  // []
     }
 }
 
@@ -129,8 +133,7 @@ shared_ptr<Tile> Tile::clone(bool force_copy)
     shared_ptr<lua_State> lua_lock(lua_state);
     lua_State *lua = lua_lock.get();
     
-    lua_pushlightuserdata(lua, this);  // [this]
-    lua_gettable(lua, LUA_REGISTRYINDEX);  // [oldtable]
+    lua_rawgetp(lua, LUA_REGISTRYINDEX, this);  // [oldtable]
     const bool has_lua_table = !lua_isnil(lua, -1);
     
     // if there is a lua user table for this tile then we must force a copy
@@ -147,26 +150,14 @@ shared_ptr<Tile> Tile::clone(bool force_copy)
             lua_settable(lua, -5);      // [oldtable newtable key value]
             lua_pop(lua, 1);            // [oldtable newtable key]
         }
-        lua_pushlightuserdata(lua, new_tile.get());    // [oldtable newtable newtileptr]
-        lua_pushvalue(lua, -2);    // [oldtable newtable newtileptr newtable]
-        lua_settable(lua, LUA_REGISTRYINDEX);     // [oldtable newtable]
-        lua_pop(lua, 2);           // []
-    } else {
-        // clean up the lua stack
-        lua_pop(lua, 1);  // []
+        // [oldtable newtable]
+        lua_rawsetp(lua, LUA_REGISTRYINDEX, new_tile.get());     // [oldtable]
     }
+    lua_pop(lua, 1);  // []
 
-    // copy the reference to the control func, if there is one
-    lua_pushlightuserdata(lua, ((char*)(this))+1);   // [oldkey2]
-    lua_gettable(lua, LUA_REGISTRYINDEX);   // [func]
-    if (lua_isnil(lua, -1)) {
-        lua_pop(lua, 1);  // []
-    } else {
-        lua_pushlightuserdata(lua, ((char*)new_tile.get())+1);  // [func newkey2]
-        lua_pushvalue(lua, -2);    // [func newkey2 func]
-        lua_settable(lua, LUA_REGISTRYINDEX);   // [func]
-        lua_pop(lua, 1);   // []
-    }
+    // copy the reference to the control func
+    lua_rawgetp(lua, LUA_REGISTRYINDEX, ((char*)(this))+1);   // [func]
+    lua_rawsetp(lua, LUA_REGISTRYINDEX, ((char*)new_tile.get())+1);   // []
 
     new_tile->original_tile = shared_from_this();
     
@@ -297,8 +288,7 @@ const Control * Tile::getControl(const MapCoord &pos) const
         shared_ptr<lua_State> lua = lua_state.lock();
         if (!lua) return 0;
 
-        lua_pushlightuserdata(lua.get(), ((char*)this)+1);   // [key2]
-        lua_gettable(lua.get(), LUA_REGISTRYINDEX);   // [func]
+        lua_rawgetp(lua.get(), LUA_REGISTRYINDEX, ((char*)this)+1);   // [func]
         if (lua_isnil(lua.get(), -1)) {
             lua_pop(lua.get(), 1);  // []
             return 0;
@@ -307,11 +297,13 @@ const Control * Tile::getControl(const MapCoord &pos) const
             PushMapCoord(lua.get(), pos);   // [func pos]
 
             try {
-                LuaExec(lua.get(), 1, 1);
+                LuaExec(lua.get(), 1, 1);  // resets stack to [] on exception
             } catch (const LuaError &e) {
                 Mediator::instance().getCallbacks().gameMsg(-1, e.what());
                 return 0;
             }
+
+            // on successful execution stack is [return_val]
 
             const Control * ctrl = ReadLuaPtr<Control>(lua.get(), -1);
             lua_pop(lua.get(), 1);   // []
@@ -330,10 +322,7 @@ void Tile::setControlFunc()
     shared_ptr<lua_State> lua = lua_state.lock();
     if (!lua) return;
 
-    lua_pushlightuserdata(lua.get(), ((char*)this)+1);  // [func key2]
-    lua_pushvalue(lua.get(), -2);   // [func key2 func]
-    lua_settable(lua.get(), LUA_REGISTRYINDEX);  // [func]
-    lua_pop(lua.get(), 1);  // []
+    lua_rawsetp(lua.get(), LUA_REGISTRYINDEX, ((char*)this)+1);  // pops func from stack
 }
 
 
