@@ -281,6 +281,7 @@ void Mediator::placeMonsterCorpse(DungeonMap &dmap, const MapCoord &mc, const Mo
 
 void Mediator::onMonsterDeath(const MonsterType &type)
 {
+    // NOTE: This is called from a dtor, therefore MUST NOT raise Lua errors.
     monster_manager.subtractMonster(type);
 }
 

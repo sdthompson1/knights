@@ -821,11 +821,7 @@ namespace {
 
             // Before we go, delete the KnightsEngine. This will make sure that the Mediator
             // is still around while the KnightsEngine destructor runs.
-            try {
-                engine.reset();
-            } catch (...) {
-                sendError("Error during KnightsEngine shutdown");
-            }
+            engine.reset();  // Never throws
 
             // Tell the main thread that the update thread wants to exit.
             // Note no need to lock mutex because there is only one writer (us) and one reader (the main thread)

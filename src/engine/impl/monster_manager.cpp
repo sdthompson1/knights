@@ -256,6 +256,7 @@ void MonsterManager::placeMonster(const MonsterType &type, DungeonMap &dmap, con
 
 void MonsterManager::subtractMonster(const MonsterType &mt)
 {
+    // NOTE: This is called from a dtor, therefore MUST NOT raise Lua errors.
     --current_monsters[&mt];
     --total_current_monsters;
 }

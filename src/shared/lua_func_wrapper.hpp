@@ -27,30 +27,33 @@
 #include "lua.hpp"
 
 // PushCClosure "wraps" a try/catch handler around a lua_CFunction.
-// The handler catches any C++ exceptions and converts them into a lua error.
+// The handler catches any C++ exceptions and converts them into a lua
+// error.
 //
-// The purpose of this is to prevent C++ exceptions from propagating up into the Lua 
-// codebase (which was not written with C++ exceptions in mind).
+// The purpose of this is to prevent C++ exceptions from propagating
+// up into the Lua codebase (which was not written with C++ exceptions
+// in mind).
 // 
 // IMPORTANT: The wrapper adds one extra upvalue, as upvalue 1.
 // Therefore your code will need to refer to upvalues from index 2
 // onwards, instead of 1, if it has been wrapped.
 
 
-// NOTE: I wrote a long description of exception safety in Lua, but in the end it boils 
-// down to three simple rules:
+// NOTE: I wrote a long description of exception safety in Lua, but in
+// the end it boils down to these simple rules:
 //
 // * If calling the Lua API from a C++ destructor:
 //  -- Make sure you leave the stack as you found it
-//  -- NEVER raise a Lua error from inside a dtor (and remember that many Lua API calls can 
-//      raise errors).
+//  -- NEVER raise a Lua error from inside a dtor (and remember that
+//      many Lua API calls can raise errors).
 // 
-// * When pushing lua_CFunctions, ALWAYS use PushCClosure to "wrap" the function in an
-//    exception handler.
+// * When pushing lua_CFunctions, ALWAYS use PushCClosure to "wrap"
+//    the function in an exception handler.
 //
-// * Ensure that there is ALWAYS a lua_pcall somewhere up the call chain -- NEVER allow
-//    Lua errors to escape up to top level, because this would abort the program.
-
+// * To handle Lua errors, EITHER use lua_pcall, OR set a lua panic
+//   function and throw an exception out of that. Note that in the
+//   latter case, it is best to assume that the lua_State is unusable,
+//   and therefore to close it down as quickly as possible.
 
 void PushCClosure(lua_State *lua, lua_CFunction func, int nupvalues);
 

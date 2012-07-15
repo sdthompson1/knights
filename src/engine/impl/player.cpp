@@ -432,6 +432,10 @@ void Player::onDeath()
 {
     // This is called by the knight's dtor. It schedules the
     // respawning of a new knight, after a short delay.
+
+    // NOTE: This MUST NOT call Lua because we are not allowed to raise Lua errors from
+    // this function...
+
     Mediator &mediator = Mediator::instance();
     shared_ptr<RespawnTask> rt(new RespawnTask(*this));
     respawn_task = rt;

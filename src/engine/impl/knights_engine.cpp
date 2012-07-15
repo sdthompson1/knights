@@ -157,22 +157,27 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
 
 KnightsEngine::~KnightsEngine()
 {
-    // To prevent MediatorUnavailable exceptions we create a "dummy" callbacks object
-    DummyCallbacks dcb;
-    Mediator::instance().setCallbacks(&dcb);
+    try {
+        // To prevent MediatorUnavailable exceptions we create a "dummy" callbacks object
+        DummyCallbacks dcb;
+        Mediator::instance().setCallbacks(&dcb);
 
-    // Clear the map out first. This makes sure that (for example)
-    // Knight dtor does not attempt to call methods on the deleted Player objects.
-    if (pimpl->dungeon_map) {
-        pimpl->dungeon_map->clearAll();
-        pimpl->dungeon_map.reset();
+        // Clear the map out first. This makes sure that (for example)
+        // Knight dtor does not attempt to call methods on the deleted Player objects.
+        if (pimpl->dungeon_map) {
+            pimpl->dungeon_map->clearAll();
+            pimpl->dungeon_map.reset();
+        }
+
+        // Now delete the pimpl
+        pimpl.reset();
+
+        // Finally, release the mediator.
+        Mediator::destroyInstance();
+    
+    } catch (...) {
+        // Prevent exceptions from escaping.
     }
-
-    // Now delete the pimpl
-    pimpl.reset();
-
-    // Finally, release the mediator.
-    Mediator::destroyInstance();
 }
 
 
