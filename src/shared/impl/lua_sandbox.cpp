@@ -34,6 +34,12 @@
 #include <vector>
 
 namespace {
+
+    int OnPanic(lua_State *lua)
+    {
+        throw LuaPanic(lua_tostring(lua, -1));
+    }
+    
     struct LuaDeleter {
         void operator()(lua_State *lua)
         {
@@ -260,6 +266,10 @@ boost::shared_ptr<lua_State> MakeLuaSandbox()
     if (!lua) {
         throw LuaError("Could not create Lua state");
     }
+
+    // set panic function first
+    // (otherwise there is a danger Lua will call abort()!)
+    lua_atpanic(lua.get(), &OnPanic);
     
     // Copied from linit.c (but with modified library list):
     const luaL_Reg *lib = kts_lua_libs;

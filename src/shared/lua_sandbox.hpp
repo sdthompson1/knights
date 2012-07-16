@@ -34,6 +34,10 @@ struct lua_State;
 // lua_close will automatically be called when the shared_ptr is
 // released.
 
+// lua_panic handler will be installed, it will throw a LuaPanic
+// exception when called. If this happens the lua_State should be
+// considered unusable and it should be closed asap.
+
 boost::shared_ptr<lua_State> MakeLuaSandbox();
 
 #endif

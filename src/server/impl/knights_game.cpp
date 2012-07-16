@@ -119,6 +119,7 @@ public:
 
     boost::thread update_thread;
     volatile bool update_thread_wants_to_exit;
+    volatile bool emergency_exit;  // lua_State is unusable; close the game asap.
 
     KnightsLog *knights_log;
     std::string game_name;
@@ -641,7 +642,7 @@ namespace {
         void operator()()
         {
             try {
-            
+
                 // Initialize the game.
                 // NOTE: Main thread is waiting for us to set kg.startup_signal.
                 // We can do whatever we want to kg (without needing to lock it) before we set that flag.
@@ -706,6 +707,12 @@ namespace {
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, kg.menu_selections, hse_cols, player_names,
                                                    kg.tutorial_mode, kg.is_deathmatch, warning_msg));
+
+                } catch (LuaPanic &) {
+                    // This is serious enough that we re-throw and let 
+                    // the game close itself down.
+                    throw;
+                    
                 } catch (const std::exception &e) {
                     kg.startup_err_msg = e.what();
                     if (kg.startup_err_msg.empty()) kg.startup_err_msg = "Unknown error";
@@ -783,7 +790,7 @@ namespace {
                         // Update time_now, and work out how long we need to wait
                         time_now = timer->getMsec();
                         int wait_time = time_of_next_update - time_now;
-
+                        
                         if (wait_time <= 0) break;  // The update has arrived!
 
                         // OK, so we need to wait for a bit. Lock mutex
@@ -812,6 +819,12 @@ namespace {
                 
             } catch (boost::thread_interrupted &) {
                 // Allow this to go through. The code that interrupted us knows what it's doing...
+
+            } catch (LuaPanic &e) {
+                // If this happens we need to exit game asap
+                kg.emergency_exit = true;
+                std::string msg = std::string("Fatal Lua error: ") + e.what();
+                sendError(msg.c_str());
                 
             } catch (std::exception &e) {
                 sendError(e.what());
@@ -1309,6 +1322,7 @@ namespace {
             
             // Start the update thread.
             kg.update_thread_wants_to_exit = false;
+            kg.emergency_exit = false;
             kg.startup_signal = false;
             kg.startup_err_msg.clear();
             UpdateThread thr(kg, kg.timer);
@@ -1324,6 +1338,12 @@ namespace {
 
                 if (kg.update_thread_wants_to_exit) {
                     // The sub-thread has exited. This usually signals an error of some sort.
+
+                    if (kg.emergency_exit) {
+                        // very serious error -- escalate to our caller.
+                        throw LuaError("Fatal Lua error during game startup");
+                    }
+                    
                     if (kg.startup_err_msg.empty()) kg.startup_err_msg = "Update thread failed to start.";
                     break;
                 }
@@ -1434,6 +1454,7 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
     pimpl->game_over = false;
     pimpl->pause_mode = false;
     pimpl->update_thread_wants_to_exit = false;
+    pimpl->emergency_exit = false;
 
     // set up our own controls vector.
     pimpl->controls.clear();
@@ -2127,6 +2148,13 @@ void KnightsGame::getOutputData(GameConnection &conn, std::vector<unsigned char>
     if (do_wait) {
         if (pimpl->update_thread.joinable()) pimpl->update_thread.join();
         pimpl->update_thread_wants_to_exit = false;
+        if (pimpl->emergency_exit) {
+            // Throw an exception and let the caller deal with it.
+            // Currently (16-Jul-2012) this results in the entire server being shut down.
+            // It would be better if only this one game could be closed, but I can't work 
+            // out a clean way of doing that at the moment.
+            throw LuaPanic("Fatal Lua error in update thread.");
+        }
     }
 }
 

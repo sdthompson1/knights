@@ -52,6 +52,13 @@ public:
     LuaError(const string &s) : ExceptionBase(s) { }
 };
 
+// lua panic (lua error in unprotected context).
+// (this should be treated as a fatal error and lua_State should be closed as soon as possible)
+class LuaPanic : public ExceptionBase {
+public:
+    LuaPanic(const string &s) : ExceptionBase(s) { }
+};
+
 // something unexpected happened (throwing this indicates a bug or not-yet-implemented
 // feature)
 

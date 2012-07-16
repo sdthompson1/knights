@@ -28,6 +28,8 @@
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/locks.hpp"
 
+struct lua_longjmp;  // defined in ldo.c
+
 namespace {
 
     boost::mutex g_wrapper_mutex;
@@ -47,10 +49,17 @@ namespace {
         try {
             return func(lua);
 
+        } catch (lua_longjmp *) {
+            // This is a Lua error. Lua knows how to deal with this so
+            // we can re-throw it w/o problems.
+            throw;  
+            
         } catch (const std::exception &e) {
+            // Convert this to a Lua error.
             return luaL_error(lua, e.what());
 
         } catch (...) {
+            // Convert this to a Lua error.
             return luaL_error(lua, "Unknown C++ exception");
         }
     }
