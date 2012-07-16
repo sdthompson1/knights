@@ -577,8 +577,11 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &GetPos);
     lua_setfield(lua, -2, "get_pos");
 
-    PushCFunction(lua, &Print);
-    lua_setfield(lua, -2, "print");
+    // "print" is set both in kts, and globally.
+    PushCFunction(lua, &Print);       // [env kts Print]
+    lua_pushvalue(lua, -1);           // [env kts Print Print]
+    lua_setfield(lua, -3, "print");   // [env kts Print]
+    lua_setfield(lua, -3, "print");   // [env kts]
 
     PushCFunction(lua, &TransformOffset);
     lua_setfield(lua, -2, "transform_offset");

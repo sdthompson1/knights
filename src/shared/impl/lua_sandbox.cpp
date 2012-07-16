@@ -94,7 +94,7 @@ namespace {
         // NOT: package
         "pairs",      // safe
         "pcall",      // safe
-        "print",      // safe (printing to stdio is harmless)
+        "print",      // safe (printing to stdio is harmless) (NOTE: this is overwritten once we enter the game. Might be useful for config debugging though.)
         "rawequal",   // bypasses metatables but we don't care
         "rawget",     // bypasses metatables but we don't care
         "rawlen",     // bypasses metatables but we don't care
