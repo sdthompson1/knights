@@ -396,15 +396,16 @@ function teleport_sound(pos)  kts.play_sound(pos, s_squelch, 4000) end
 i_bolt_trap = kts.kconfig_itemtype("i_bolt_trap")
 
 -- fires a crossbow bolt
+-- (usually attached to a tile, e.g. a switch; cxt.pos is the position of that tile.)
 function shoot(x, y, direction, itemtype)
 
   -- account for map rotation/reflection
-  local from = kts.rotate_add_pos(cxt.tile_pos, x, y)
-  local dt = kts.rotate_direction(cxt.tile_pos, direction)
+  local from = kts.rotate_add_pos(cxt.pos, x, y)
+  local dt = kts.rotate_direction(cxt.pos, direction)
 
   -- add the missile
   kts.add_missile(from, dt, itemtype, false)
-  click_sound(cxt.tile_pos)
+  click_sound(cxt.pos)
   crossbow_sound(from)
 end
 
@@ -423,6 +424,8 @@ end
 -- implements open, close, toggle
 function toggle_impl(x, y, door_function, tile_function, sound_flag)
 
+   -- we could use cxt.pos in the following line, but I decided to explicitly
+   --  use cxt.tile_pos, because 'toggle_impl' only makes sense for tiles anyway.
   local pos = kts.rotate_add_pos(cxt.tile_pos, x, y)
 
   door_function(pos)

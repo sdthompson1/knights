@@ -199,7 +199,8 @@ void Tile::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> 
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(originator);
-        ad.setTile(&dmap, mc, shared_ptr<Tile>());
+        ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         on_destroy->execute(ad);
     }
     
@@ -226,6 +227,7 @@ void Tile::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         ad.setSuccess(success);
         on_activate->execute(ad);
     }
@@ -238,6 +240,7 @@ void Tile::onWalkOver(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         on_walk_over->execute(ad);
     }
 }
@@ -249,6 +252,7 @@ void Tile::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         on_approach->execute(ad);
     }
 }
@@ -260,6 +264,7 @@ void Tile::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         on_withdraw->execute(ad);
     }
 }
@@ -271,6 +276,7 @@ void Tile::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> acto
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         on_hit->execute(ad);
     }
 }

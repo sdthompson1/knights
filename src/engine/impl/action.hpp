@@ -77,6 +77,12 @@ struct lua_State;
 // is being hit, or by on_destroy when the destroyed tile has already
 // been removed from the map).
 //
+// The GENERIC POS (lua cxt field "pos") will be equal to one of the item, 
+// tile, actor or victim positions
+// depending on what is most appropriate. For example, if the action being run
+// is an "on_open_or_close" for a tile, then it will be the tile pos. If it is 
+// "on_hit" for some item, it will be the item pos. Etc.
+//
 // The FLAG parameter is a hack, used only by the pretrapped chests
 // code. (It is not represented in Lua "cxt" and is hard-wired to false in
 // Lua contexts.)
@@ -109,7 +115,8 @@ struct lua_State;
 class ActionData {
 public:
     ActionData()
-        : flag(false), success(true), item(0), item_dmap(0), tile_dmap(0), originator(OT_None()) { }
+        : flag(false), success(true), item(0), item_dmap(0), tile_dmap(0), 
+          generic_dmap(0), originator(OT_None()) { }
 
     // construct from global var "cxt" in lua state
     // (See also fn GetOriginatorFromLua, below)
@@ -123,6 +130,7 @@ public:
     void setVictim(shared_ptr<Creature> c) { victim = c; }
     void setItem(DungeonMap *, const MapCoord &, const ItemType *);
     void setTile(DungeonMap *, const MapCoord &, shared_ptr<Tile>);
+    void setGenericPos(DungeonMap *, const MapCoord &);
     void setFlag(bool f) { flag = f; }
     void setSuccess(bool f) { success = f; }
     void setOriginator(const Originator &o) { originator = o; }
@@ -134,6 +142,8 @@ public:
         { dm = item_dmap; mc = item_coord; it = item; }
     void getTile(DungeonMap *&dm, MapCoord &mc, shared_ptr<Tile> &t) const
         { dm = tile_dmap; mc = tile_coord; t = tile; }
+    void getGenericPos(DungeonMap *&dm, MapCoord &mc) const
+        { dm = generic_dmap; mc = generic_coord; }
     bool getFlag() const { return flag; }
     bool getSuccess() const { return success; }
     const Originator & getOriginator() const { return originator; }
@@ -143,20 +153,13 @@ private:
     bool flag, success;
     const ItemType * item;
     shared_ptr<Tile> tile;
-    DungeonMap *item_dmap, *tile_dmap;
-    MapCoord item_coord, tile_coord;
+    DungeonMap *item_dmap, *tile_dmap, *generic_dmap;
+    MapCoord item_coord, tile_coord, generic_coord;
     Originator originator;
 };
 
 // shortcuts to access certain fields of lua cxt table directly:
 Originator GetOriginatorFromCxt(lua_State *lua);
-
-// this helper function gets a pos in the order: Tile, then Item, then Actor.
-// The reason for this order is to fix #100 (bug where door sound was not heard when
-// the door was opened by someone in the room outside).
-// Note: on return, it is guaranteed that dmap==0 if and only if pos.isNull()
-void GetActionDataPos(const ActionData &ad, DungeonMap *& dmap, MapCoord &pos);
-
 
 
 //

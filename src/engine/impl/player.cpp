@@ -581,6 +581,7 @@ void Player::computeAvailableControls()
                 // to approach-based controls.
                 ActionData ad;
                 ad.setActor(kt);
+                ad.setGenericPos(kt->getMap(), kt->getPos());
                 ad.setOriginator(Originator(OT_Player(), this));
                 if ((*it)->getAction() && (*it)->getAction()->possible(ad)
                 && (getApproachBasedControls() || ((*it)->getMenuSpecial() & UserControl::MS_APPR_BASED) == 0 )) {
@@ -666,6 +667,7 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
                 ad.setActor(cr);
                 ad.setOriginator(cr->getOriginator());
                 ad.setTile(dmap, mc, *it);
+                ad.setGenericPos(dmap, mc);
                 if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {
                     ControlInfo ci;
                     ci.tile = *it;
@@ -688,6 +690,7 @@ void Player::addItemControls(const ItemType &itype, map<const Control *, Control
         ad.setActor(cr);
         ad.setOriginator(Originator(OT_Player(), this));
         ad.setItem(0, MapCoord(), &itype);
+        ad.setGenericPos(cr->getMap(), cr->getPos());
         if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {
             ControlInfo ci;
             ci.item_type = &itype;

@@ -80,7 +80,11 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
             ad.setOriginator(knight->getOriginator());
             shared_ptr<Tile> tile_lock = tile.lock();
             if (item_type) ad.setItem(0, MapCoord(), item_type);
-            if (tile_lock) ad.setTile(knight->getMap(), tile_mc, tile_lock);
+            if (tile_lock) {
+                ad.setTile(knight->getMap(), tile_mc, tile_lock);
+            }
+            ad.setGenericPos(knight->getMap(), 
+                             tile_lock ? knight->getPos() : tile_mc);
             if (!ctrl->getAction()->possible(ad)) {
                 possible = false;
             }
@@ -165,6 +169,7 @@ void KnightTask::execute(TaskManager &tm)
         ActionData ad;
         ad.setActor(knight);
         ad.setOriginator(knight->getOriginator());
+        ad.setGenericPos(knight->getMap(), knight->getPos());
         held_item->getReloadAction()->execute(ad);
     }   
 

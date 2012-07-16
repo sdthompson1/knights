@@ -149,6 +149,7 @@ void ItemType::onPickUp(DungeonMap &dmap, const MapCoord &mc,
         ActionData ad;
         ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
+        ad.setGenericPos(&dmap, mc);
         ad.setOriginator(actor->getOriginator());
         on_pick_up->execute(ad);
     }
@@ -160,6 +161,7 @@ void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ActionData ad;
         ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
+        ad.setGenericPos(&dmap, mc);
         ad.setOriginator(actor->getOriginator());
         on_drop->execute(ad);
     }
@@ -178,6 +180,7 @@ void ItemType::onWalkOver(DungeonMap &dmap, const MapCoord &mc,
         // is considered to be the person who put the beartrap there, NOT the player stepping on it.
         ad.setOriginator(item_owner);
         ad.setItem(&dmap, mc, this);
+        ad.setGenericPos(&dmap, mc);
         on_walk_over->execute(ad);
     }
 }
@@ -188,6 +191,7 @@ void ItemType::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> 
         ActionData ad;
         ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
+        ad.setGenericPos(&dmap, mc);
         ad.setOriginator(actor->getOriginator());
         on_hit->execute(ad);
     }
@@ -201,6 +205,9 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> v
         ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
         ad.setVictim(victim);
         ad.setItem(0, MapCoord(), this);
+        // for generic_pos, use position of the actor rather than null.
+        ad.setGenericPos(actor ? actor->getMap() : 0, 
+                         actor ? actor->getPos() : MapCoord());
         melee_action->execute(ad);
     }
 }
@@ -215,6 +222,8 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor,
         ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
         ad.setTile(&dmap, mc, tile);
         ad.setItem(0, MapCoord(), this);
+        ad.setGenericPos(actor ? actor->getMap() : 0, 
+                         actor ? actor->getPos() : MapCoord());
         melee_action->execute(ad);
     }
 }

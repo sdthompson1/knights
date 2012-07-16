@@ -176,6 +176,8 @@ bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
         ActionData ad;
         ad.setActor(dummy);
         ad.setItem(0, MapCoord(), ti.itype);  // this should ensure the correct item gets dropped if the trap is disarmed
+        ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         ad.setFlag(true);  // enable hack on the control_actions side...
         ti.action->execute(ad);
         dummy->rmFromMap();

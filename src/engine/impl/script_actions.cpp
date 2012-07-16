@@ -386,7 +386,7 @@ void A_Necromancy::execute(const ActionData &ad) const
 
         DungeonMap *dmap;
         MapCoord pos;
-        GetActionDataPos(ad, dmap, pos);
+        ad.getGenericPos(dmap, pos);
 
         if (dmap) {
             Mediator::instance().getMonsterManager().doNecromancy(nzoms, *dmap,
@@ -497,7 +497,7 @@ void A_PlaySound::execute(const ActionData &ad) const
 
     DungeonMap *dmap;
     MapCoord mc;    
-    GetActionDataPos(ad, dmap, mc);
+    ad.getGenericPos(dmap, mc);
 
     if (dmap) {
         Mediator::instance().playSound(*dmap, mc, *sound, frequency->get(), all);

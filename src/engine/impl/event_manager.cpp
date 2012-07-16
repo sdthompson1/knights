@@ -153,6 +153,8 @@ void EventManager::runHook(const string &name, shared_ptr<Creature> cr) const
 {
     ActionData ad;
     ad.setActor(cr);
+    ad.setGenericPos(cr ? cr->getMap() : 0, 
+                     cr ? cr->getPos() : MapCoord());
     doHook(name, ad);
 }
 
@@ -160,6 +162,7 @@ void EventManager::runHook(const string &name, DungeonMap *dmap, const MapCoord 
 {
     ActionData ad;
     ad.setTile(dmap, mc, shared_ptr<Tile>());
+    ad.setGenericPos(dmap, mc);
     doHook(name, ad);
 }
 

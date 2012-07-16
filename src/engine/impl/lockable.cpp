@@ -56,6 +56,7 @@ bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ad.setActor(cr);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         on_open_or_close->execute(ad);
     }
     return true;
@@ -78,6 +79,7 @@ bool Lockable::doClose(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature
         ad.setActor(cr);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
+        ad.setGenericPos(&dmap, mc);
         on_open_or_close->execute(ad);
     }
 

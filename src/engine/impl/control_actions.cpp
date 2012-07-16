@@ -344,6 +344,7 @@ void A_Attack::execute(const ActionData &ad) const
             // want to automatically drop the book.)
             ActionData data;
             data.setActor(actor);
+            data.setGenericPos(actor->getMap(), actor->getPos());
             data.setOriginator(actor->getOriginator());
             A_DropHeld action;
             action.execute(data);

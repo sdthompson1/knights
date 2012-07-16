@@ -116,16 +116,22 @@ ActionData::ActionData(lua_State *lua)
     tile_coord = GetMapCoord(lua, -1);
     lua_pop(lua, 1);
 
+    lua_pushstring(lua, "pos");
+    lua_gettable(lua, -2);
+    generic_coord = GetMapCoord(lua, -1);
+    lua_pop(lua, 1);
+
     lua_pushstring(lua, "originator");
     lua_gettable(lua, -2);
     originator = ReadOriginator(lua, -1);
     lua_pop(lua, 1);
 
-    if (!item_coord.isNull() || !tile_coord.isNull()) {
+    if (!item_coord.isNull() || !tile_coord.isNull() || !generic_coord.isNull()) {
         // We don't currently support multiple DungeonMaps, so just get the map from Mediator.
         DungeonMap *dmap = Mediator::instance().getMap().get();
         item_dmap = item_coord.isNull() ? 0 : dmap;
         tile_dmap = tile_coord.isNull() ? 0 : dmap;
+        generic_dmap = generic_coord.isNull() ? 0 : dmap;
     }
 }
 
@@ -165,6 +171,10 @@ void ActionData::pushCxtTable(lua_State *lua) const
 
     PushMapCoord(lua, tile_coord);
     lua_setfield(lua, -2, "tile_pos");
+
+    // generic pos
+    PushMapCoord(lua, generic_coord);
+    lua_setfield(lua, -2, "pos");
     
     PushOriginator(lua, getOriginator());  // [cxt player]
     lua_setfield(lua, -2, "originator");          // [cxt]
@@ -202,28 +212,14 @@ void ActionData::setTile(DungeonMap *dmap, const MapCoord &mc, shared_ptr<Tile> 
     }
 }
 
-void GetActionDataPos(const ActionData &ad, DungeonMap *& dmap, MapCoord &pos)
+void ActionData::setGenericPos(DungeonMap *dmap, const MapCoord &mc)
 {
-    boost::shared_ptr<Tile> dummy;
-    ad.getTile(dmap, pos, dummy);
-    
-    if (!dmap || pos.isNull()) {
-        const ItemType *dummy;
-        ad.getItem(dmap, pos, dummy);
-
-        if (!dmap || pos.isNull()) {
-            boost::shared_ptr<Creature> actor = ad.getActor();
-
-            if (actor && actor->getMap()) {
-                // note: relying on Entity invariant: getMap() null iff getPos() null.
-                dmap = actor->getMap();
-                pos = actor->getPos();
-
-            } else {
-                dmap = 0;
-                pos = MapCoord();
-            }
-        }
+    if (dmap && !mc.isNull()) {
+        generic_dmap = dmap;
+        generic_coord = mc;
+    } else {
+        generic_dmap = 0;
+        generic_coord = MapCoord();
     }
 }
 
