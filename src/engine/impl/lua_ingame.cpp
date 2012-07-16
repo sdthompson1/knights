@@ -463,8 +463,8 @@ namespace {
 
     // Input: map position + two integers
     // Cxt: none
-    // Output: two integers (transformed offset)
-    int TransformOffset(lua_State *lua)
+    // Output: map position
+    int RotateAddPos(lua_State *lua)
     {
         // Get the CoordTransform
         Mediator &med = Mediator::instance();
@@ -480,15 +480,14 @@ namespace {
         ct->transformOffset(base, x, y);
 
         // Return results
-        lua_pushinteger(lua, x);
-        lua_pushinteger(lua, y);
-        return 2;
+        PushMapCoord(lua, MapCoord(base.getX() + x, base.getY() + y));
+        return 1;
     }
 
     // Input: map position + direction (string)
     // Cxt: none
     // Output: new direction
-    int TransformDirection(lua_State *lua)
+    int RotateDirection(lua_State *lua)
     {
         // Get the CoordTransform
         Mediator &med = Mediator::instance();
@@ -582,11 +581,11 @@ void AddLuaIngameFunctions(lua_State *lua)
     lua_setfield(lua, -3, "print");   // [env kts Print]
     lua_setfield(lua, -3, "print");   // [env kts]
 
-    PushCFunction(lua, &TransformOffset);
-    lua_setfield(lua, -2, "transform_offset");
+    PushCFunction(lua, &RotateAddPos);
+    lua_setfield(lua, -2, "rotate_add_pos");
 
-    PushCFunction(lua, &TransformDirection);
-    lua_setfield(lua, -2, "transform_direction");
+    PushCFunction(lua, &RotateDirection);
+    lua_setfield(lua, -2, "rotate_direction");
 
     // Now we want to add all the in-game Actions as Lua functions.
     {

@@ -399,11 +399,10 @@ i_bolt_trap = kts.kconfig_itemtype("i_bolt_trap")
 function shoot(x, y, direction, itemtype)
 
   -- account for map rotation/reflection
-  local xt, yt = kts.transform_offset(cxt.tile_pos, x, y)
-  local dt = kts.transform_direction(cxt.tile_pos, direction)
+  local from = kts.rotate_add_pos(cxt.tile_pos, x, y)
+  local dt = kts.rotate_direction(cxt.tile_pos, direction)
 
   -- add the missile
-  local from = add_pos(cxt.tile_pos, xt, yt)
   kts.add_missile(from, dt, itemtype, false)
   click_sound(cxt.tile_pos)
   crossbow_sound(from)
@@ -413,9 +412,7 @@ end
 function teleport_actor(x, y)
 
   local from = kts.get_pos(cxt.actor)
-
-  local xt, yt = kts.transform_offset(from, x, y)    -- account for map rotation/reflection
-  local to = add_pos(from, xt, yt)
+  local to = kts.rotate_add_pos(from, x, y)  -- add offset, accounting for map rotation/reflection.
 
   kts.teleport(cxt.actor, to)
   pentagram_sound(from)
@@ -426,9 +423,7 @@ end
 -- implements open, close, toggle
 function toggle_impl(x, y, door_function, tile_function, sound_flag)
 
-  local xt, yt = kts.transform_offset(cxt.tile_pos, x, y)
-
-  local pos = add_pos(cxt.tile_pos, xt, yt)
+  local pos = kts.rotate_add_pos(cxt.tile_pos, x, y)
 
   door_function(pos)
 
