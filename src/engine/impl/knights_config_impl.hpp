@@ -208,8 +208,8 @@ public:
     Overlay * popOverlay(Overlay *dflt);
     void popOverlayOffsets();
     void popPotionRenderer();
-    int popProbability();  // pop a float, multiply by 100 and round to nearest int. (Error if result <0 or >100.)
-    int popProbability(int dflt);
+    float popProbability();  // Read as integer, then divided by 100. Error if result <0 or >1.
+    float popProbability(int dflt);  // The 'dflt' is out of 100.
     void popQuestDescriptions();
     RandomDungeonLayout * popRandomDungeonLayout();
     Colour popRGB();

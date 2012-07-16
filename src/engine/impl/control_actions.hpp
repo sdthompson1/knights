@@ -107,11 +107,12 @@ private:
 
 class A_PickLock : public Action {
 public:
-    A_PickLock(int p, int wt) : prob(p), waiting_time(wt) { }
+    A_PickLock(float p, int wt) : prob(p), waiting_time(wt) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
-    int prob, waiting_time; // prob in %, waiting_time in ticks
+    float prob;
+    int waiting_time;
     ACTION_MAKER("PickLock");
 };
 

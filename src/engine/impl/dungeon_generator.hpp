@@ -83,7 +83,7 @@ public:
     void addRequiredItem(int number, const ItemType &itype);
     void addRequiredSegment(int segment_category)
         { required_segments.push_back(segment_category); }
-    void setStuff(int tile_category, int chance, const ItemGenerator *generator, int weight);
+    void setStuff(int tile_category, float chance, const ItemGenerator *generator, int weight);
     void setTileGeneratedMonsterLevel(int x) { tile_generated_monster_level = x; }
     void setZombieActivity(int z) { zombie_activity = z; }
     void addStartingGear(const ItemType &it, const vector<int> &nos) { gears.push_back(make_pair(&it, nos)); }
@@ -184,7 +184,7 @@ private:
     int tile_generated_monster_level;
     int zombie_activity;
     struct StuffInfo {
-        int chance;
+        float chance;
         int weight;   // actually max(input weight, 0)
         const ItemGenerator *generator;
         bool forbid;  // true if input weight was <0

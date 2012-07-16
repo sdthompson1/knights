@@ -593,7 +593,7 @@ void A_PickLock::execute(const ActionData &ad) const
     if (!cr) return;
     shared_ptr<Lockable> t = GetLockPickTarget(ad);
     if (!t) return;
-    if (g_rng.getBool(prob/100.0f)) {
+    if (g_rng.getBool(prob)) {
         // lock pick was successful
         // We can call "open" directly to make the tile open (even though it is locked)
         t->open(*cr->getMap(), DisplaceCoord(cr->getPos(), cr->getFacing()), ad.getOriginator());
@@ -610,7 +610,7 @@ A_PickLock::Maker A_PickLock::Maker::register_me;
 Action * A_PickLock::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    int p = pars.getProbability(0);
+    float p = pars.getProbability(0);
     int wt = pars.getInt(1);
     return new A_PickLock(p, wt);
 }

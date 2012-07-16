@@ -240,13 +240,13 @@ private:
 
 class DungeonStuff : public DungeonDirective {
 public:
-    DungeonStuff(int tc, int ch, const ItemGenerator *ig_, int wt)
+    DungeonStuff(int tc, float ch, const ItemGenerator *ig_, int wt)
         : tile_cat(tc), chance(ch), ig(ig_), weight(wt) { }
     virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
         { dg.setStuff(tile_cat, chance, ig, weight); }
 private:
     int tile_cat;
-    int chance;
+    float chance;
     const ItemGenerator *ig;
     int weight;
 };
@@ -423,7 +423,7 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
         string tname = kc.getKFile()->popString();
         int tcat = kc.getTileCategory(tname);
         lst.push(1);
-        int prob = kc.popProbability();
+        float prob = kc.popProbability();
         lst.push(2);
         ItemGenerator *ig = kc.popItemGenerator();
         lst.push(3);
@@ -449,7 +449,7 @@ void DungeonGenerator::addRequiredItem(int number, const ItemType &itype)
     }
 }
 
-void DungeonGenerator::setStuff(int tile_category, int chance, const ItemGenerator *generator,
+void DungeonGenerator::setStuff(int tile_category, float chance, const ItemGenerator *generator,
                                 int weight)
 {
     if (stuff.find(tile_category) != stuff.end()) {
@@ -1387,7 +1387,7 @@ void DungeonGenerator::generateStuff(DungeonMap &dmap)
             // Look for the chosen category in "stuff" (our container of ItemGenerators).
             if (chosen_cat >= 0) {
                 map<int,StuffInfo>::const_iterator it = stuff.find(chosen_cat);
-                if (it != stuff.end() && g_rng.getBool(it->second.chance/100.0f)) {
+                if (it != stuff.end() && g_rng.getBool(it->second.chance)) {
                     const ItemGenerator *generator = it->second.generator;
                     if (generator) {
                         // We are to generate an item

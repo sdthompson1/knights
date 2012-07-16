@@ -110,7 +110,7 @@ ImpactTask::ImpactResult ImpactTask::tryCreatureImpact(Creature &me)
             // Now check that the target is carrying a weapon that allows parrying
             const ItemType *parry_weapon = target_creature->getItemInHand();
             if (parry_weapon) {
-                const float parry_chance = parry_weapon->getParryChance() / 100.0f;
+                const float parry_chance = parry_weapon->getParryChance();
                 if (g_rng.getBool(parry_chance)) {
                     // Successful parry
                     target_creature->parry();

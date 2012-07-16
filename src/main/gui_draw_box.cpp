@@ -39,7 +39,7 @@ void GuiDrawBox(gcn::Graphics *graphics, const BoxCol &col, int left, int top, i
         }
 
         // calculate border colour by multiplication
-        const float multiple = 0.85 - 0.15 * lambda;
+        const float multiple = 0.85f - 0.15f * lambda;
         graphics->setColor(gcn::Color(int(r*multiple), int(g*multiple), int(b*multiple)));
 
         if (y == 0 || y == height-1) {

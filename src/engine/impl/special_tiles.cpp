@@ -164,7 +164,7 @@ void Chest::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 
 bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
 {
-    if (g_rng.getBool(float(trap_chance)/100.0f)) {
+    if (g_rng.getBool(trap_chance)) {
         const TrapInfo &ti(traps[g_rng.getInt(0, traps.size())]);
 
         // We create a "simulated creature" and get him to place the trap using the action given in the TrapInfo.

@@ -102,6 +102,13 @@ int Mediator::cfgInt(const std::string &key) const
     return config_map->getInt(key);
 }
 
+float Mediator::cfgProbability(const std::string &key) const
+{
+    float p = config_map->getFloat(key);
+    if (p < 0 || p > 1) throw std::runtime_error("Config error: " + key + " must be between 0 and 1");
+    return p;
+}
+
 const std::string &Mediator::cfgString(const std::string &key) const
 {
     return config_map->getString(key);

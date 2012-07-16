@@ -74,8 +74,8 @@ public:
                    bool fragile,
                    int melee_back_time, int melee_down_time, const RandomInt *melee_dmg, 
                    const RandomInt *melee_stun_time, const RandomInt *melee_tile_damage,
-                   const Action *melee_action, int parry_chance,
-                   bool can_throw, int mssl_rng, int mssl_spd, int mssl_acc_chance,
+                   const Action *melee_action, float parry_chance,
+                   bool can_throw, int mssl_rng, int mssl_spd, float mssl_acc_chance,
                    int mssl_hit_mult,
                    int mssl_bksw_time, int mssl_dswg_time, const RandomInt *mssl_dmg,
                    const RandomInt *mssl_stun_time, const Anim * mssl_anim,
@@ -120,13 +120,13 @@ public:
                           shared_ptr<Creature> target, bool with_strength) const;
     void doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap, const MapCoord &mc, 
                       bool with_strength) const;
-    int getParryChance() const { return parry_chance; } // in percent
+    float getParryChance() const { return parry_chance; }
     
     // Missile properties
     bool canThrow() const { return can_throw; }
     int getMissileRange() const { return missile_range; }
     int getMissileSpeed() const { return missile_speed; }
-    int getMissileAccessChance() const { return missile_access_chance; } // chance of passing through gates etc
+    float getMissileAccessChance() const { return missile_access_chance; } // chance of passing through gates etc
     int getMissileHitMultiplier() const { return missile_hit_multiplier; }  // affects chance of hitting creatures
     int getMissileBackswingTime() const { return missile_backswing_time; }
     int getMissileDownswingTime() const { return missile_downswing_time; }
@@ -203,12 +203,12 @@ private:
     const RandomInt * melee_stun_time;    // in ticks
     const RandomInt * melee_tile_damage;
     const Action * melee_action;
-    int parry_chance;     // in percent
+    float parry_chance;
 
     bool can_throw;
     int missile_range;
     int missile_speed;
-    int missile_access_chance;
+    float missile_access_chance;
     int missile_hit_multiplier;
     int missile_backswing_time;
     int missile_downswing_time;

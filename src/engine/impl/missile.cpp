@@ -121,8 +121,8 @@ void MissileTask::execute(TaskManager &tm)
                                                         MapHeight(H_MISSILES + m->getFacing()));
             if (ma == A_APPROACH) {
                 // 'partial' missile access
-                int chance = m->itype.getMissileAccessChance();
-                if (g_rng.getBool((100-chance) / 100.0f)) {
+                float chance = m->itype.getMissileAccessChance();
+                if (g_rng.getBool(1-chance)) {
                     delete_from_map = true;
                     do_hook = true;
                 }
@@ -172,7 +172,7 @@ bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
     // Check access ahead. If A_APPROACH ("partial missile access") then check random chance that missile cant be placed
     const MapAccess acc = dmap.getAccess(DisplaceCoord(mc, dir), MapHeight(H_MISSILES + dir));
     if (acc == A_APPROACH) {
-        if (g_rng.getBool((100 - itype.getMissileAccessChance()) / 100.0f)) {
+        if (g_rng.getBool(1 - itype.getMissileAccessChance())) {
             return false;
         }
     }

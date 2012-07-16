@@ -66,7 +66,7 @@ public:
 
     Chest() : open_graphic(0), closed_graphic(0), facing(D_NORTH), trap_chance(0) { }
     void chestConstruct(const Graphic *og, const Graphic *cg,
-                        MapDirection f, int trap_chance_,
+                        MapDirection f, float trap_chance_,
                         const vector<TrapInfo> &t)
     { open_graphic = og; closed_graphic = cg; facing = f; trap_chance = trap_chance_; traps = t; }
 
@@ -90,7 +90,7 @@ private:
     shared_ptr<Item> stored_item;
 
     MapDirection facing;
-    int trap_chance; // as a percentage
+    float trap_chance;
     vector<TrapInfo> traps;
 };
 

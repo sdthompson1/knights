@@ -106,7 +106,7 @@ namespace {
         virtual const Action * getAction(int i) { lst.push(i); return kc.popAction(); }
         virtual int getInt(int i) { lst.push(i); return kc.getKFile()->popInt(); }
         virtual const ItemType *getItemType(int i) { lst.push(i); return kc.popItemType(); }
-        virtual int getProbability(int i) { lst.push(i); return kc.popProbability(); }
+        virtual float getProbability(int i) { lst.push(i); return kc.popProbability(); }
         virtual const RandomInt * getRandomInt(int i)
             { lst.push(i); return kc.getKFile()->popRandomInt(kc.getRandomIntContainer(), 0); }
         virtual const MonsterType * getMonsterType(int i)
@@ -1369,7 +1369,7 @@ void KnightsConfigImpl::popOverlayOffsets()
     }
 }
 
-int KnightsConfigImpl::popProbability()
+float KnightsConfigImpl::popProbability()
 {
     if (!kf) return 0;
 
@@ -1380,15 +1380,16 @@ int KnightsConfigImpl::popProbability()
         kf->errExpected("percentage");
         p = 0;
     }
-    return p;
+
+    return p / 100.0f;
 }
 
-int KnightsConfigImpl::popProbability(int dflt)
+float KnightsConfigImpl::popProbability(int dflt)
 {
     if (!kf) return 0;
     if (kf->isNone()) {
         kf->pop();
-        return dflt;
+        return dflt / 100.0f;
     } else {
         return popProbability();
     }
@@ -1764,14 +1765,15 @@ shared_ptr<Tile> KnightsConfigImpl::popTile()
         bool items_allowed = (item_category > -2); // -2 means "no items allowed", -3 means "destroy items"
         bool destroy_items = (item_category == -3);
 
-        int lock_chance = 0, lock_pick_only_chance = 0, keymax = 0;
+        float lock_chance = 0, lock_pick_only_chance = 0;
+        int keymax = 0;
         if (door || chest) {
             tab.push("keymax");
             keymax = kf->popInt(1);
             tab.push("lock_chance");
-            lock_chance = kf->popInt(0);
+            lock_chance = popProbability(0);
             tab.push("lock_pick_only_chance");
-            lock_pick_only_chance = kf->popInt(0);
+            lock_pick_only_chance = popProbability(0);
         }
 
         tab.push("on_activate");
@@ -1830,7 +1832,7 @@ shared_ptr<Tile> KnightsConfigImpl::popTile()
         StairInfo stair_info = popStairsDown();
 
         // chests can have traps
-        int trap_chance = 0;
+        float trap_chance = 0;
         vector<Chest::TrapInfo> traps;
         if (chest) {
             tab.push("trap_chance");
@@ -2253,7 +2255,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     // however, there is currently only one tile generated monster type (the vampire bat), so we can get
     // away with this for now...
     // NOTE: the generation chance is linear from 0% to 100%, as generation level goes from 0 to 5.
-    const int tile_generated_monster_chance = 20 * dg->getTileGeneratedMonsterLevel();
+    const float tile_generated_monster_chance = 0.2f * dg->getTileGeneratedMonsterLevel();
     
     for (std::map<MonsterType *, std::vector<shared_ptr<Tile> > >::const_iterator it = monster_generator_tiles.begin();
     it != monster_generator_tiles.end(); ++it) {
@@ -2282,7 +2284,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     }
 
     const int zombie_activity = dg->getZombieActivity();
-    monster_manager.setZombieChance(4*zombie_activity*zombie_activity);   // quadratic from 0 to 100%
+    monster_manager.setZombieChance(0.04f*zombie_activity*zombie_activity);   // quadratic from 0 to 100%
 
     // Monster limits
     //   -- Total number of monsters is limited to CfgInt("monster_limit").

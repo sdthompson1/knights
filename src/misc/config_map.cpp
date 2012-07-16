@@ -39,7 +39,15 @@ void PopConfigMap(lua_State *lua, ConfigMap &cmap)
         if (lua_type(lua, -2) == LUA_TSTRING) {
             const std::string key = lua_tostring(lua, -2);
             if (lua_type(lua, -1) == LUA_TNUMBER) {
-                cmap.setInt(key, lua_tointeger(lua, -1));
+                const int as_int = lua_tointeger(lua, -1);
+                const double as_double = lua_tonumber(lua, -1);
+                if (double(as_int) == as_double) {
+                    // conversion to int & back to double didn't change it, so store as int
+                    cmap.setInt(key, as_int);
+                } else {
+                    // store as float
+                    cmap.setFloat(key, float(as_double));
+                }
             } else if (lua_type(lua, -1) == LUA_TSTRING) {
                 cmap.setString(key, lua_tostring(lua, -1));
             } else {

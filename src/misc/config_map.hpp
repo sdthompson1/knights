@@ -39,11 +39,19 @@ public:
 class ConfigMap {
 public:
     void setInt(const std::string &key, int val) { ints.insert(std::make_pair(key, val)); }
+    void setFloat(const std::string &key, float val) { floats.insert(std::make_pair(key, val)); }
     void setString(const std::string &key, const std::string &val) { strings.insert(std::make_pair(key, val)); }
 
     int getInt(const std::string &key) const {
         std::map<std::string, int>::const_iterator it = ints.find(key);
         if (it == ints.end()) throw BadConfig(key);
+        else return it->second;
+    }
+
+    // returns corresponding 'int' if there is no 'float' available
+    float getFloat(const std::string &key) const {
+        std::map<std::string, float>::const_iterator it = floats.find(key);
+        if (it == floats.end()) return float(getInt(key));
         else return it->second;
     }
 
@@ -55,6 +63,7 @@ public:
 
 private:
     std::map<std::string, int> ints;
+    std::map<std::string, float> floats;
     std::map<std::string, std::string> strings;
 };
 

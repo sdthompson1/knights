@@ -242,7 +242,7 @@ public:
     virtual int getInt(int index) { error(); return 0; }
     virtual const ItemType * getItemType(int index) { error(); return 0; }
     virtual MapDirection getMapDirection(int index);  // default is to convert from a string
-    virtual int getProbability(int index) { error(); return 0; }
+    virtual float getProbability(int index) { error(); return 0; }
     virtual const KConfig::RandomInt * getRandomInt(int index) { error(); return 0; }
     virtual const Sound * getSound(int index) { error(); return 0; }
     virtual string getString(int index) { error(); return string(); }

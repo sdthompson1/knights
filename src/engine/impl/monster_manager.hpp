@@ -58,9 +58,9 @@ public:
     void addZombieReanimate(shared_ptr<Tile> from, const MonsterType * zombie_type);
 
     // setZombieChance: this must be called to activate the zombie activity.
-    // it is set to a number from 0--100 (100 being the highest zombie activity)
-    void setZombieChance(int z) { zombie_chance = z; }
-    int getZombieChance() const { return zombie_chance; }
+    // it is set to a number from 0 to 1 (1 being the highest zombie activity)
+    void setZombieChance(float z) { zombie_chance = z; }
+    float getZombieChance() const { return zombie_chance; }
 
     // sets delay before a monster can respawn (in terms of number of doMonsterGeneration calls) (#152)
     void setRespawnWait(int w) { monster_respawn_wait = w; }
@@ -73,10 +73,10 @@ public:
     // "monster generator" (this is used for vampire bats, which are
     // generated at pits).
     // 
-    // "chance" is a number from 0 to 100 which controls how often
+    // "chance" is a number from 0 to 1 which controls how often
     // monsters will be generated.
     //
-    void addMonsterGenerator(shared_ptr<Tile> tile, const MonsterType * monster_type, int chance);
+    void addMonsterGenerator(shared_ptr<Tile> tile, const MonsterType * monster_type, float chance);
 
 
     // Initialization of monster limits:
@@ -136,7 +136,7 @@ private:
     
 private:
     bool rollZombieActivity() const;                   // for zombie decay/reanimation
-    bool rollTileGeneratedMonster(int chance) const;   // for bats and other "tile generated" monsters
+    bool rollTileGeneratedMonster(float chance) const;   // for bats and other "tile generated" monsters
     bool reachedMonsterLimit(const MonsterType * m) const;
     shared_ptr<Monster> addMonsterToMap(const MonsterType &mt, DungeonMap &dmap,
                                         const MapCoord &mc);    // gives it a random initial facing
@@ -150,7 +150,7 @@ private:
     struct MonsterInfo {
         const MonsterType * monster_type;
         bool zombie_mode;
-        int chance;  // only used for zombie_mode == false
+        float chance;  // only used for zombie_mode == false
     };
     map<shared_ptr<Tile>, MonsterInfo> monster_map;
 
@@ -158,7 +158,7 @@ private:
     int total_current_monsters;
     map<const MonsterType *, int> monster_limit;
     int total_monster_limit;
-    int zombie_chance, bat_chance;
+    float zombie_chance;
     int necronomicon_counter;  // if +ve, should act as if zombie_chance was 100%.
     bool necromancy_flag;  // set true when doNecromancy is called.
 

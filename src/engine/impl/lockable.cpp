@@ -148,8 +148,8 @@ void Lockable::generateLock(int nkeys)
         if (nkeys <= 0) {
             lock = 0;    // unlocked
         } else {
-            if (g_rng.getBool(float(lock_chance)/100.0f)) {
-                if (g_rng.getBool(float(pick_only_chance)/100.0f)) {
+            if (g_rng.getBool(lock_chance)) {
+                if (g_rng.getBool(pick_only_chance)) {
                     lock = PICK_ONLY_LOCK_NUM;    // locked, and can be opened by lockpicks only
                 } else {
                     lock = g_rng.getInt(1, max(keymax,nkeys)+1); // normal lock

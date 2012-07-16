@@ -36,7 +36,7 @@
 using namespace std;
 
 MonsterManager::MonsterManager()
-    : total_current_monsters(0), total_monster_limit(-1), zombie_chance(0), bat_chance(0),
+    : total_current_monsters(0), total_monster_limit(-1), zombie_chance(0),
       necronomicon_counter(0), necromancy_flag(false),
       monster_respawn_wait(0)
 { }
@@ -57,7 +57,7 @@ void MonsterManager::addZombieReanimate(shared_ptr<Tile> from, const MonsterType
     monster_map.insert(make_pair(from, m));
 }
 
-void MonsterManager::addMonsterGenerator(shared_ptr<Tile> from, const MonsterType * to, int chance)
+void MonsterManager::addMonsterGenerator(shared_ptr<Tile> from, const MonsterType * to, float chance)
 {
     if (!from || !to) return;
     MonsterInfo m;
@@ -286,12 +286,12 @@ void MonsterManager::onPlaceKnightCorpse(const MapCoord &mc)
 
 bool MonsterManager::rollZombieActivity() const
 {
-    return necronomicon_counter > 0 || g_rng.getBool(zombie_chance * 0.01f);
+    return necronomicon_counter > 0 || g_rng.getBool(zombie_chance);
 }
 
-bool MonsterManager::rollTileGeneratedMonster(int chance) const
+bool MonsterManager::rollTileGeneratedMonster(float chance) const
 {
-    return g_rng.getBool(chance * 0.01f);
+    return g_rng.getBool(chance);
 }
 
 bool MonsterManager::reachedMonsterLimit(const MonsterType * m) const

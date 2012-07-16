@@ -130,7 +130,7 @@ namespace {
 void FlyingMonsterAI::execute(TaskManager &tm)
 {
     Mediator &mediator = Mediator::instance();
-    const float monster_wait_chance_as_fraction = mediator.cfgInt("monster_wait_chance") / 100.0f;
+    const float monster_wait_chance_as_fraction = mediator.cfgProbability("monster_wait_chance");
     const int flying_monster_bite_wait = mediator.cfgInt("flying_monster_bite_wait");
 
     shared_ptr<FlyingMonster> bat = vbat.lock();
@@ -401,7 +401,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
     // Choose a direction to move in:
     // (If there is no target, then there is a chance that the monster will stay
     // where it is and do nothing, rather than randomly walking about.)
-    if (!(!target && g_rng.getBool(mediator.cfgInt("monster_wait_chance")/100.0f))) {
+    if (!(!target && g_rng.getBool(mediator.cfgProbability("monster_wait_chance")))) {
         p = ChooseDirection(mon, target? target->getPos() : MapCoord(), run_away,
                             ZombieCanMove(avoid_tiles, fear_item, hit_item));
     }

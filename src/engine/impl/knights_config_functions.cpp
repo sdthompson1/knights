@@ -107,7 +107,7 @@ void PopKFileItemType(KnightsConfigImpl *kcfg, KFile *kf, ItemType *it)
         
     tab.push("missile_access_chance");
     any |= (!kf->isNone()); all &= (!kf->isNone());     
-    int missile_acc_ch = kcfg->popProbability(0);
+    float missile_acc_ch = kcfg->popProbability(0);
         
     tab.push("missile_anim");
     any |= (!kf->isNone()); all &= (!kf->isNone());     
@@ -166,7 +166,7 @@ void PopKFileItemType(KnightsConfigImpl *kcfg, KFile *kf, ItemType *it)
     Overlay *overlay = kcfg->popOverlay(0);
         
     tab.push("parry_chance");
-    int parry_chance = kcfg->popProbability(0);
+    float parry_chance = kcfg->popProbability(0);
 
     tab.push("reload_action");
     const Action * reload_action = kcfg->popAction(0);

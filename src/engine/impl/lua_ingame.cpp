@@ -62,7 +62,7 @@ namespace {
         int getInt(int index);
         const ItemType * getItemType(int index);
         MapDirection getMapDirection(int index);
-        int getProbability(int index);
+        float getProbability(int index);
         const KConfig::RandomInt * getRandomInt(int index);
         const Sound * getSound(int index);
         std::string getString(int index);
@@ -143,10 +143,9 @@ namespace {
         return GetMapDirection(lua, index);
     }
     
-    int LuaActionPars::getProbability(int index)
+    float LuaActionPars::getProbability(int index)
     {
-        // TODO: convert probabilities to float. for now just get integer.
-        return luaL_checkinteger(lua, index);
+        return float(luaL_checknumber(lua, index));
     }
 
     const KConfig::RandomInt * LuaActionPars::getRandomInt(int index)

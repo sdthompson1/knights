@@ -48,8 +48,8 @@ public:
                  on_open_or_close(0) { }
 
     void setOpenInitially() { closed = false; }
-    void setLockChance(int lock_percent, int pick_only_percent, int kmax)
-        { lock_chance = lock_percent; pick_only_chance = pick_only_percent; keymax = kmax; }
+    void setLockChance(float lock_chance_, float pick_only_chance_, int kmax)
+        { lock_chance = lock_chance_; pick_only_chance = pick_only_chance_; keymax = kmax; }
     void setSpecialLock() { lock = SPECIAL_LOCK_NUM; }
     void setOnOpenOrClose(const Action *action) { on_open_or_close = action; }
 
@@ -114,7 +114,8 @@ private:
     // ALSO: if lock is set to SPECIAL_LOCK_NUM then the door cannot be unlocked by keys
     // or lock picks; only switches will work.
 
-    int lock_chance, pick_only_chance, keymax;
+    float lock_chance, pick_only_chance;
+    int keymax;
     shared_ptr<Trap> trap;
     Originator trap_owner;
 

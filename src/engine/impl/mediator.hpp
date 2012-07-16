@@ -134,6 +134,7 @@ public:
     // Access general configuration settings.
     //
     int cfgInt(const std::string &key) const;
+    float cfgProbability(const std::string &key) const;
     const std::string &cfgString(const std::string &key) const;
 
     //

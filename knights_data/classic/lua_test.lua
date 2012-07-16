@@ -353,7 +353,7 @@ monster_respawn_wait = 45;   -- How many multiples of monster_interval after a z
                              -- it can be reanimated. (Trac #152)
 monster_limit = 15;       -- Total monsters allowed in the dungeon. (15 in original Knights.)
 monster_wait_time = 200;  -- How long monsters can 'pause' for
-monster_wait_chance = 20; -- Percentage chance of a monster 'pausing', if nobody can see it.
+monster_wait_chance = 0.2; -- Chance of a monster 'pausing', if nobody can see it.
 flying_monster_targetting_offset = 450;   -- how close do you have to be (in 1000ths of a square) to a bat so that he can bite you.
 flying_monster_bite_wait = 400;           -- After attacking, bat will be unable to attack again for this long (in ms)
 walking_monster_damage_delay = 1000;      -- Timing for zombie animation (when a zombie is damaged) (in ms).
