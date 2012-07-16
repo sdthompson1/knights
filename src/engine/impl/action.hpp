@@ -290,6 +290,12 @@ class LuaAction : public Action {
 public:
     // ctor pops a Lua function off the top of the Lua stack and
     // stores it in the Lua registry
+    // 
+    // NOTE: It is assumed that 'lua' refers to the lua state that
+    // will be stored in the Mediator. (It doesn't have to be in the
+    // Mediator at construction time, but does by the time execute()
+    // is called.)
+    //
     explicit LuaAction(boost::shared_ptr<lua_State> lua);
 
     // dtor removes the function from the Lua registry

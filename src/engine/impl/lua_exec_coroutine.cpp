@@ -25,6 +25,7 @@
 
 #include "knights_callbacks.hpp"
 #include "lua_exec_coroutine.hpp"
+#include "lua_traceback.hpp"
 #include "mediator.hpp"
 #include "task.hpp"
 #include "task_manager.hpp"
@@ -148,11 +149,10 @@ void CoroutineTask::execute(TaskManager &tm)
     default:
         // Coroutine raised an error. The error message is on top of stack
         {
-            std::string err = lua_tostring(thread, -1);
+            std::string err = 
+                std::string(lua_tostring(thread, -1)) + "\nTraceback: " + LuaTraceback(thread);
             lua_pop(thread, lua_gettop(thread));  // clear its stack
-            // TODO: Add stack trace.
-            // Display the error message.
-            mediator.getCallbacks().gameMsg(-1, err);
+            mediator.getCallbacks().gameMsg(-1, err);  // display the error message
             return;
         }
     }

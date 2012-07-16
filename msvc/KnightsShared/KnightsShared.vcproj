@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\impl\lua_traceback.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\impl\map_support.cpp"
 				>
 			</File>
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\lua_sandbox.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\lua_traceback.hpp"
 				>
 			</File>
 			<File

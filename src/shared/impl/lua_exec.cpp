@@ -25,6 +25,7 @@
 
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
+#include "lua_traceback.hpp"
 #include "my_exceptions.hpp"
 
 #include "lua.hpp"
@@ -39,44 +40,10 @@ namespace {
         // Called with one error message: [msg]
         // Should return one error message.
 
-        int ct = 1;
-        
-        lua_pushstring(lua, "\nTraceback:"); ++ct;
-
-        // To avoid "double traceback" problem, we stop traceback when we find a C function.
-        // (Outer error handler will attach a separate traceback if there is anything above that.)
-        // (This is not perfect, but should be good enough.)
-        const int MAXLEVEL = 15;
-
-        bool found_lua_yet = false;
-        
-        for (int level = 0; level <= MAXLEVEL; ++level) {
-            lua_Debug ar;
-            const int result = lua_getstack(lua, level, &ar);
-            if (result == 0) {
-                // Have reached top of stack
-                break;
-            }
-
-            lua_getinfo(lua, "Sl", &ar);
-
-            if (*ar.what == 'C') {
-                if (found_lua_yet) {
-                    // We have reached an enclosing C function. Stop traceback.
-                    break;
-                } else {
-                    // Skip lowest level C functions (they include this error handler function)
-                    continue;
-                }
-            }
-            
-            const char * fmtstr = ",   %s:%d";
-            if (!found_lua_yet) ++fmtstr;  // don't show the comma for first entry
-            found_lua_yet = true;
-            lua_pushfstring(lua, fmtstr, ar.short_src, ar.currentline); ++ct;
-        }
-        
-        lua_concat(lua, ct);
+        std::string result = 
+            std::string(lua_tostring(lua, 1)) + "\nTraceback:" + LuaTraceback(lua);
+        lua_pop(lua, 1);
+        lua_pushstring(lua, result.c_str());
         return 1;
     }
 }
