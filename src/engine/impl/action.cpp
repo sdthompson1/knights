@@ -26,12 +26,13 @@
 #include "action.hpp"
 #include "creature.hpp"
 #include "knights_callbacks.hpp"
-#include "lua.hpp"
-#include "lua_exec.hpp"
+#include "lua_exec_coroutine.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
 #include "my_exceptions.hpp"
 #include "rng.hpp"
+
+#include "lua.hpp"
 
 #include "boost/thread/mutex.hpp"
 
@@ -128,7 +129,7 @@ ActionData::ActionData(lua_State *lua)
     }
 }
 
-void ActionData::writeToCxt(lua_State *lua) const
+void ActionData::pushCxtTable(lua_State *lua) const
 {
     // create 'cxt' table
     lua_createtable(lua, 0, 9);   // [cxt]
@@ -167,9 +168,6 @@ void ActionData::writeToCxt(lua_State *lua) const
     
     PushOriginator(lua, getOriginator());  // [cxt player]
     lua_setfield(lua, -2, "originator");          // [cxt]
-
-    // finally, set it as new value of "cxt".
-    lua_setglobal(lua, "cxt");      // []
 }
 
 
@@ -349,17 +347,13 @@ void LuaAction::execute(const ActionData &ad) const
 {
     shared_ptr<lua_State> lua_lock(lua_state);
     lua_State * lua = lua_lock.get();
-
-    // Set up "cxt" table
-    ad.writeToCxt(lua);
     
-    // Get the function from the registry
-    lua_rawgetp(lua, LUA_REGISTRYINDEX, const_cast<LuaAction*>(this));  // [func]
+    // Set up "cxt" table
+    ad.pushCxtTable(lua);  // [cxt]
 
-    try {
-        // Call the function (with no arguments)
-        LuaExec(lua, 0, 0);    // []
-    } catch (const LuaError &err) {
-        Mediator::instance().getCallbacks().gameMsg(-1, err.what());
-    }
+    // Get the function from the registry
+    lua_rawgetp(lua, LUA_REGISTRYINDEX, const_cast<LuaAction*>(this));  // [cxt func]
+
+    // Call it (with 0 arguments)
+    LuaExecCoroutine(lua, 0);
 }

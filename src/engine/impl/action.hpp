@@ -115,8 +115,8 @@ public:
     // (See also fn GetOriginatorFromLua, below)
     explicit ActionData(lua_State *lua);
 
-    // fill global var "cxt" in lua state w/ contents of *this
-    void writeToCxt(lua_State *lua) const;
+    // push contents of *this as a table onto the lua stack
+    void pushCxtTable(lua_State *lua) const;
     
     // modifier fns:
     void setActor(shared_ptr<Creature> c) { actor = c; }
