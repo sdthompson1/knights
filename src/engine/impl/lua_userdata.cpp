@@ -120,7 +120,23 @@ namespace {
         }
         return 0;
     }
-    
+
+    int EqMethod(lua_State *lua)
+    {
+        // [ud1 ud2]
+
+        // Currently this just checks the underlying pointer for equality.
+        const UserData *ud1 = static_cast<const UserData*>(lua_touserdata(lua, 1));
+        const UserData *ud2 = static_cast<const UserData*>(lua_touserdata(lua, 2));
+        if (!ud1 || !ud2) {
+            luaL_error(lua, "EqMethod: Invalid userdata object found");
+        }
+
+        // Check whether the underlying pointers are equal.
+        lua_pushboolean(lua, GetPtr(*ud1) == GetPtr(*ud2));
+        return 1;
+    }
+
     // The __gc method for a Knights userdata object
     int GCMethod(lua_State *lua)
     {
@@ -167,6 +183,10 @@ namespace {
 
             lua_pushstring(lua, "__newindex");
             PushCFunction(lua, &NewIndexMethod);
+            lua_settable(lua, -3);
+
+            lua_pushstring(lua, "__eq");
+            PushCFunction(lua, &EqMethod);
             lua_settable(lua, -3);
         }
         // Associate the metatable with the given userdata object.

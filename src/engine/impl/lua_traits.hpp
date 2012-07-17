@@ -39,7 +39,8 @@ class Tile;
 
 // tag -- lua tag value for this type
 
-// SEE ALSO: lua_userdata.cpp which maps tags to "table getting functions".
+// SEE ALSO: lua_userdata.cpp which maps tags to "table getting functions"
+// (and equality).
 
 template<class T>
 struct LuaTraits { };
