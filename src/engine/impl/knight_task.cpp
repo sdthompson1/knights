@@ -84,7 +84,7 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
                 ad.setTile(knight->getMap(), tile_mc, tile_lock);
             }
             ad.setGenericPos(knight->getMap(), 
-                             tile_lock ? knight->getPos() : tile_mc);
+                             tile_lock ? tile_mc : knight->getPos());
             if (!ctrl->getAction()->possible(ad)) {
                 possible = false;
             }
