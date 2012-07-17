@@ -27,6 +27,8 @@
 #include "lua_userdata.hpp"
 #include "map_support.hpp"
 
+#include <cstring>
+
 namespace {
     
     enum LuaPtrType {
@@ -100,9 +102,17 @@ namespace {
     {
         // [ud key] --> return value
         if (PushObjectTable(lua, 1)) {
+
             // [ud key table]
-            lua_insert(lua, 2);   // [ud table key]
-            lua_gettable(lua, 2);  // [ud table value]
+
+            const bool requesting_table =
+                lua_isstring(lua, 2) && std::strcmp(lua_tostring(lua, 2), "table");
+            
+            if (!requesting_table) {
+                lua_insert(lua, 2);   // [ud table key]
+                lua_gettable(lua, 2);  // [ud table value]
+            }
+            
         } else {
             // [ud key]
             lua_pushnil(lua);  // [ud key nil]
@@ -113,6 +123,11 @@ namespace {
     int NewIndexMethod(lua_State *lua)
     {
         // [ud key value]
+
+        if (lua_isstring(lua, 2) && std::strcmp(lua_tostring(lua, 2), "table") == 0) {
+            luaL_error(lua, "Can't write to special index 'table'");
+        }
+        
         if (PushObjectTable(lua, 1)) {
             // [ud key value table]
             lua_insert(lua, 2);  // [ud table key value]
