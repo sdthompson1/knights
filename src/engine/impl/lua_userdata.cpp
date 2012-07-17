@@ -60,6 +60,67 @@ namespace {
         boost::weak_ptr<void> ptr;
     };
 
+    void* GetPtr(const UserData &ud)
+    {
+        switch (ud.ptr_type) {
+        case PTR_RAW:
+            return static_cast<const RawUserData &>(ud).ptr;
+        case PTR_SHARED:
+            return static_cast<const SharedUserData &>(ud).ptr.get();
+        case PTR_WEAK:
+            return static_cast<const WeakUserData &>(ud).ptr.lock().get(); // returns 0 if ptr has expired
+        default:
+            return 0;
+        }
+    }
+
+    // This function pushes a table, and returns true, if the given
+    // userdata has an associated Lua table. Otherwise, it returns
+    // false and pushes nothing.
+    bool PushObjectTable(lua_State *lua, int userdata_index)
+    {
+        const UserData *ud = static_cast<UserData*>(lua_touserdata(lua, userdata_index));
+        if (!ud) {
+            // This shouldn't happen, but does no harm to check for it.
+            luaL_error(lua, "PushObjectTable: object is not a userdata");
+        }
+
+        const void *ptr = GetPtr(*ud);
+        
+        switch (ud->tag) {
+            // TODO: Tags that have an associated table should insert
+            // code to push a Lua table onto the stack, and return
+            // true.
+        default:
+            return false;
+        }
+    }
+
+    int IndexMethod(lua_State *lua)
+    {
+        // [ud key] --> return value
+        if (PushObjectTable(lua, 1)) {
+            // [ud key table]
+            lua_insert(lua, 2);   // [ud table key]
+            lua_gettable(lua, 2);  // [ud table value]
+        } else {
+            // [ud key]
+            lua_pushnil(lua);  // [ud key nil]
+        }
+        return 1;
+    }
+
+    int NewIndexMethod(lua_State *lua)
+    {
+        // [ud key value]
+        if (PushObjectTable(lua, 1)) {
+            // [ud key value table]
+            lua_insert(lua, 2);  // [ud table key value]
+            lua_settable(lua, 2);  // [ud table]
+        }
+        return 0;
+    }
+    
     // The __gc method for a Knights userdata object
     int GCMethod(lua_State *lua)
     {
@@ -96,9 +157,16 @@ namespace {
     {
         const int created = luaL_newmetatable(lua, "KTS_UDMETA"); // Pushes the metatable.
         if (created) {
-            // Set the __gc method in the metatable.
             lua_pushstring(lua, "__gc");
             PushCFunction(lua, &GCMethod);
+            lua_settable(lua, -3);
+
+            lua_pushstring(lua, "__index");
+            PushCFunction(lua, &IndexMethod);
+            lua_settable(lua, -3);
+
+            lua_pushstring(lua, "__newindex");
+            PushCFunction(lua, &NewIndexMethod);
             lua_settable(lua, -3);
         }
         // Associate the metatable with the given userdata object.
@@ -106,7 +174,7 @@ namespace {
         lua_setmetatable(lua, index);
     }
 }
-    
+
 void NewLuaPtr_Impl(lua_State *lua, void *ptr, LuaTag tag)
 {
     if (ptr) {
