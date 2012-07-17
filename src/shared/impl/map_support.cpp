@@ -78,19 +78,20 @@ MapCoord GetMapCoord(lua_State *lua, int index)
     }
 }
 
-// Read a map direction from the given lua index (argument position)
+// Read a map direction from the given lua index
 // raise a lua error if it is not a valid direction string
 MapDirection GetMapDirection(lua_State *lua, int index)
 {
     const char * x = lua_tostring(lua, index);
-    if (EqualNoCase(x, "south")) return D_SOUTH;
-    else if (EqualNoCase(x, "west")) return D_WEST;
-    else if (EqualNoCase(x, "east")) return D_EAST;
-    else if (EqualNoCase(x, "north")) return D_NORTH;
-    else {
-        luaL_error(lua, "Argument #%d is not a valid map direction", index);
-        return D_NORTH;  // avoid compiler warning
+    if (x) {
+        if (EqualNoCase(x, "south") || EqualNoCase(x, "down")) return D_SOUTH;
+        else if (EqualNoCase(x, "west") || EqualNoCase(x, "left")) return D_WEST;
+        else if (EqualNoCase(x, "east") || EqualNoCase(x, "right")) return D_EAST;
+        else if (EqualNoCase(x, "north") || EqualNoCase(x, "up")) return D_NORTH;
     }
+    if (x==0) x="<non-string value>";
+    luaL_error(lua, "'%s' is not a valid map direction", x);
+    return D_NORTH;  // avoid compiler warning
 }
 
 

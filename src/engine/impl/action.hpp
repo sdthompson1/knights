@@ -87,18 +87,6 @@ struct lua_State;
 // code. (It is not represented in Lua "cxt" and is hard-wired to false in
 // Lua contexts.)
 //
-// SUCCESS will be set if this action was invoked as a result of
-// something "successful", where "successful" is defined as follows
-// (currently):
-//  - when opening doors, "success" means the door was opened, and
-//    "failure" means that the door was locked and could not be opened.
-//  - for the second and subsequent actions in a ListAction, the "success" flag
-//    reflects whether possible() was true for the previous action in the list.
-//    (i.e. "possible" is used as a proxy for "success" of the previous action,
-//    in this case.)
-// TODO: Remove success and replace it with the concept of actions returning a bool
-// flag to lua.
-//
 // ORIGINATOR is the player who set this action in motion. It's used
 // for attributing kills (in certain actions). For example, if player
 // 1 presses a switch which opens a pit beneath player 2, then
@@ -115,7 +103,7 @@ struct lua_State;
 class ActionData {
 public:
     ActionData()
-        : flag(false), success(true), item(0), item_dmap(0), tile_dmap(0), 
+        : flag(false), item(0), item_dmap(0), tile_dmap(0), 
           generic_dmap(0), originator(OT_None()) { }
 
     // construct from global var "cxt" in lua state
@@ -132,7 +120,6 @@ public:
     void setTile(DungeonMap *, const MapCoord &, shared_ptr<Tile>);
     void setGenericPos(DungeonMap *, const MapCoord &);
     void setFlag(bool f) { flag = f; }
-    void setSuccess(bool f) { success = f; }
     void setOriginator(const Originator &o) { originator = o; }
 
     // accessor fns:
@@ -145,12 +132,11 @@ public:
     void getGenericPos(DungeonMap *&dm, MapCoord &mc) const
         { dm = generic_dmap; mc = generic_coord; }
     bool getFlag() const { return flag; }
-    bool getSuccess() const { return success; }
     const Originator & getOriginator() const { return originator; }
     
 private:
     shared_ptr<Creature> actor, victim;
-    bool flag, success;
+    bool flag;
     const ItemType * item;
     shared_ptr<Tile> tile;
     DungeonMap *item_dmap, *tile_dmap, *generic_dmap;

@@ -107,7 +107,7 @@ bool Lockable::checkUnlock(shared_ptr<Creature> cr) const
 
 void Lockable::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr,
                           const Originator &originator,
-                          ActivateType act_type, bool success_dummy)
+                          ActivateType act_type)
 {
     // An "activate" only succeeds if the relevant doOpen/doClose routine says it does
     bool success = false, doing_open = false;
@@ -117,7 +117,8 @@ void Lockable::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creat
     } else {
         success = doClose(dmap, mc, cr, originator, act_type);
     }
-    Tile::onActivate(dmap, mc, cr, originator, act_type, success);
+    Tile::onActivate(dmap, mc, cr, originator, act_type);
+    // TODO: Locked Message: probably "on_cant_unlock" or smth...
     if (doing_open) Mediator::instance().onOpenLockable(mc); // handles tutorial message (only) currently
 }
 

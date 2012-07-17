@@ -36,8 +36,9 @@ class Graphic;
 
 class Overlay {
 public:
-    explicit Overlay(int id_);
-
+    Overlay();
+    void setID(int id_) { id = id_; }  // called by KnightsConfigImpl
+    
     int getID() const { return id; }
 
     // Given entity's current facing and frame, return which graphic

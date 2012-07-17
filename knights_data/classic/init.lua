@@ -18,5 +18,6 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
+dofile("sounds.lua")
 dofile("lua_test.lua")
-
+dofile("items.lua")

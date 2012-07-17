@@ -1,0 +1,9 @@
+# Temporary fixups for new lua stuff.
+
+include "sounds.txt"
+
+all_books = [ i_basic_book, i_book_of_knowledge, i_necronomicon ]
+
+all_wands = [ i_wand_of_destruction, i_wand_of_undeath, i_wand_of_open_ways, i_wand_of_securing ]
+
+ts = 140

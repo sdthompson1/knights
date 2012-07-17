@@ -81,50 +81,6 @@ Action * A_AddTile::Maker::make(ActionPars &pars) const
 }
 
 
-//
-// A_After
-//
-
-namespace {
-    class RunAfterAction : public Task {
-    public:
-        RunAfterAction(const Action *a, const ActionData &d) : action(a), data(d) { }
-        virtual void execute(TaskManager &) {
-            action->execute(data);
-        }
-    private:
-        const Action *action;
-        ActionData data;
-    };
-}
-
-void A_After::execute(const ActionData &ad) const
-{
-    // We copy the ActionData and keep it around until after the time delay runs out.
-    // This does mean that After() should be used with care. E.g. the actor is "locked"
-    // for the duration of the time delay, and if he dies he won't be able to respawn
-    // until the time delay runs out. This means that After should not generally be used
-    // with long time delays.
-    shared_ptr<Task> t(new RunAfterAction(action, ad));
-
-    TaskManager &tm(Mediator::instance().getTaskManager());
-    tm.addTask(t, TP_NORMAL, tm.getGVT() + delay);
-
-    // We will also set up After to stun the actor until the after-action
-    // runs. This is the semantics required by potion drinking, after all.
-    // (A possible future extension is to provide a flag saying whether to
-    // stun or not... or could just provide a separate A_Stun.)
-    if (ad.getActor()) ad.getActor()->stunUntil(tm.getGVT() + delay);
-}
-
-A_After::Maker A_After::Maker::register_me;
-
-Action * A_After::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_After(pars.getInt(0), pars.getAction(1));
-}
-
 
 //
 // A_ChangeItem
@@ -247,9 +203,8 @@ void A_Damage::execute(const ActionData &ad) const
     // This damages the *actor* (used eg for bear traps)
     shared_ptr<Creature> cr = ad.getActor();
     if (cr) {
-        const int amt = amount? amount->get() : 0;
-        const int stun = stun_time? stun_time->get() : 0;
-        cr->damage(amt, ad.getOriginator(), Mediator::instance().getGVT() + stun, inhibit_squelch);
+        const int stun = stun_time > 0 ? stun_time : 0;
+        cr->damage(amount, ad.getOriginator(), Mediator::instance().getGVT() + stun, inhibit_squelch);
     }
 }
 
@@ -259,7 +214,7 @@ Action * A_Damage::Maker::make(ActionPars &pars) const
 {
     pars.require(2, 3);
     bool inhibit_squelch = (pars.getSize() == 3 && pars.getInt(2));
-    return new A_Damage(pars.getRandomInt(0), pars.getRandomInt(1), inhibit_squelch);
+    return new A_Damage(pars.getInt(0), pars.getInt(1), inhibit_squelch);
 }
 
 
@@ -350,26 +305,6 @@ Action * A_FullZombieActivity::Maker::make(ActionPars &pars) const
 }
 
 
-//
-// A_IfKnight
-//
-
-void A_IfKnight::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> knight = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (knight && action) {
-        action->execute(ad);
-    }
-}
-
-A_IfKnight::Maker A_IfKnight::Maker::register_me;
-
-Action * A_IfKnight::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_IfKnight(pars.getAction(0));
-}
-
 
 //
 // A_Necromancy
@@ -440,29 +375,6 @@ Action * A_NormalZombieActivity::Maker::make(ActionPars &pars) const
 
 
 //
-// A_OnSuccess
-//
-
-void A_OnSuccess::execute(const ActionData &ad) const
-{
-    if (ad.getSuccess()) {
-        if (success_action) success_action->execute(ad);
-    } else {
-        if (fail_action) fail_action->execute(ad);
-    }
-}
-
-A_OnSuccess::Maker A_OnSuccess::Maker::register_me;
-
-Action * A_OnSuccess::Maker::make(ActionPars &pars) const
-{
-    pars.require(1,2);
-    return new A_OnSuccess(pars.getAction(0),
-                           pars.getSize()==2 ? pars.getAction(1) : 0);
-}
-
-
-//
 // A_PitKill
 // Kill the given creature (w/o blood/gore effects -- just directly remove them from the map).
 // Only creatures at height H_WALKING are affected!
@@ -500,7 +412,7 @@ void A_PlaySound::execute(const ActionData &ad) const
     ad.getGenericPos(dmap, mc);
 
     if (dmap) {
-        Mediator::instance().playSound(*dmap, mc, *sound, frequency->get(), all);
+        Mediator::instance().playSound(*dmap, mc, *sound, frequency, all);
     }
 }
 
@@ -510,9 +422,9 @@ Action * A_PlaySound::Maker::make(ActionPars &pars) const
 {
     pars.require(2, 3);
     if (pars.getSize() == 2) {
-        return new A_PlaySound(pars.getSound(0), pars.getRandomInt(1), false);
+        return new A_PlaySound(pars.getSound(0), pars.getInt(1), false);
     } else {
-        return new A_PlaySound(pars.getSound(0), pars.getRandomInt(1), pars.getInt(2) != 0);
+        return new A_PlaySound(pars.getSound(0), pars.getInt(1), pars.getInt(2) != 0);
     }
 }
 

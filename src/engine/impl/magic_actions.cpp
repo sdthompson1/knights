@@ -52,11 +52,11 @@ using namespace KConfig;
 //
 
 namespace {
-    void SetPotion(int gvt, shared_ptr<Knight> kt, PotionMagic pm, const RandomInt *dur)
+    void SetPotion(int gvt, shared_ptr<Knight> kt, PotionMagic pm, int dur)
     {
         if (!kt) return;
         int stop_time = gvt;
-        if (dur) stop_time += dur->get();
+        if (dur > 0) stop_time += dur;
         kt->setPotionMagic(pm, stop_time);
     }
 
@@ -157,7 +157,7 @@ A_Invisibility::Maker A_Invisibility::Maker::register_me;
 Action * A_Invisibility::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    return new A_Invisibility(pars.getRandomInt(0), pars.getString(1));
+    return new A_Invisibility(pars.getInt(0), pars.getString(1));
 }
 
 //
@@ -170,7 +170,7 @@ void A_Invulnerability::execute(const ActionData &ad) const
     if (kt) {
         FlashMessage(kt, msg);
         int stop_time = Mediator::instance().getGVT();
-        if (dur) stop_time += dur->get();
+        if (dur > 0) stop_time += dur;
         kt->setInvulnerability(true, stop_time);
     }
 }
@@ -180,7 +180,7 @@ A_Invulnerability::Maker A_Invulnerability::Maker::register_me;
 Action * A_Invulnerability::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    return new A_Invulnerability(pars.getRandomInt(0), pars.getString(1));
+    return new A_Invulnerability(pars.getInt(0), pars.getString(1));
 }
 
 
@@ -255,7 +255,7 @@ A_Paralyzation::Maker A_Paralyzation::Maker::register_me;
 Action * A_Paralyzation::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
-    return new A_Paralyzation(pars.getRandomInt(0));
+    return new A_Paralyzation(pars.getInt(0));
 }
 
 
@@ -289,7 +289,7 @@ void A_PoisonImmunity::execute(const ActionData &ad) const
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
     if (kt) {
         FlashMessage(kt, msg);
-        const int stop_time = Mediator::instance().getGVT() + (dur ? dur->get() : 0);
+        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
         kt->setPoisonImmunity(true, stop_time);
     }
 }
@@ -299,7 +299,7 @@ A_PoisonImmunity::Maker A_PoisonImmunity::Maker::register_me;
 Action * A_PoisonImmunity::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    return new A_PoisonImmunity(pars.getRandomInt(0), pars.getString(1));
+    return new A_PoisonImmunity(pars.getInt(0), pars.getString(1));
 }
 
 
@@ -319,7 +319,7 @@ A_Quickness::Maker A_Quickness::Maker::register_me;
 Action * A_Quickness::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    return new A_Quickness(pars.getRandomInt(0), pars.getString(1));
+    return new A_Quickness(pars.getInt(0), pars.getString(1));
 }
 
 
@@ -339,7 +339,7 @@ A_Regeneration::Maker A_Regeneration::Maker::register_me;
 Action * A_Regeneration::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    return new A_Regeneration(pars.getRandomInt(0), pars.getString(1));
+    return new A_Regeneration(pars.getInt(0), pars.getString(1));
 }
 
 
@@ -351,7 +351,7 @@ void A_RevealLocation::execute(const ActionData &ad) const
 {
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
     if (kt) {
-        const int stop_time = Mediator::instance().getGVT() + (dur ? dur->get() : 0);
+        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
         kt->setRevealLocation(true, stop_time);
     }
 }
@@ -361,7 +361,7 @@ A_RevealLocation::Maker A_RevealLocation::Maker::register_me;
 Action * A_RevealLocation::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
-    return new A_RevealLocation(pars.getRandomInt(0));
+    return new A_RevealLocation(pars.getInt(0));
 }
 
 
@@ -373,7 +373,7 @@ void A_SenseItems::execute(const ActionData &ad) const
 {
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
     if (kt) {
-        const int stop_time = Mediator::instance().getGVT() + (dur ? dur->get() : 0);
+        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
         SenseItems(kt, stop_time);
     }
 }
@@ -383,7 +383,7 @@ A_SenseItems::Maker A_SenseItems::Maker::register_me;
 Action * A_SenseItems::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
-    return new A_SenseItems(pars.getRandomInt(0));
+    return new A_SenseItems(pars.getInt(0));
 }
 
 
@@ -395,7 +395,7 @@ void A_SenseKnight::execute(const ActionData &ad) const
 {
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
     if (kt) {
-        const int stop_time = Mediator::instance().getGVT() + (dur ? dur->get() : 0);
+        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
         kt->setSenseKnight(true, stop_time);
     }
 }
@@ -405,7 +405,7 @@ A_SenseKnight::Maker A_SenseKnight::Maker::register_me;
 Action * A_SenseKnight::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
-    return new A_SenseKnight(pars.getRandomInt(0));
+    return new A_SenseKnight(pars.getInt(0));
 }
 
 
@@ -425,7 +425,7 @@ A_Strength::Maker A_Strength::Maker::register_me;
 Action * A_Strength::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    return new A_Strength(pars.getRandomInt(0), pars.getString(1));
+    return new A_Strength(pars.getInt(0), pars.getString(1));
 }
 
 
@@ -445,7 +445,7 @@ A_Super::Maker A_Super::Maker::register_me;
 Action * A_Super::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
-    return new A_Super(pars.getRandomInt(0), pars.getString(1));
+    return new A_Super(pars.getInt(0), pars.getString(1));
 }
 
 

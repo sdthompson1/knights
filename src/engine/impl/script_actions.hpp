@@ -43,17 +43,6 @@ private:
     ACTION_MAKER("AddTile");
 };
 
-class A_After : public Action {
-public:
-    A_After(int t, const Action *ac)
-        : delay(t), action(ac) { }
-    virtual void execute(const ActionData &) const;
-private:
-    int delay;
-    const Action *action;
-    ACTION_MAKER("After");
-};
-
 class A_ChangeItem : public Action {
 public:
     explicit A_ChangeItem(const ItemType *itype) : item_type(itype) { }
@@ -96,11 +85,11 @@ private:
 
 class A_Damage : public Action {
 public:
-    A_Damage(const RandomInt *amt, const RandomInt *st, bool is) : amount(amt), stun_time(st), inhibit_squelch(is) { }
+    A_Damage(int amt, int st, bool is) : amount(amt), stun_time(st), inhibit_squelch(is) { }
     virtual void execute(const ActionData &) const;
 private:
-    const RandomInt *amount;
-    const RandomInt *stun_time;
+    int amount;
+    int stun_time;
     bool inhibit_squelch;  // special hack used only for bear traps (at the moment)
     ACTION_MAKER("Damage");
 };
@@ -192,12 +181,12 @@ private:
 
 class A_PlaySound : public Action {
 public:
-    A_PlaySound(const Sound *s, const RandomInt *freq, bool a) : sound(s), frequency(freq), all(a) { }
+    A_PlaySound(const Sound *s, int freq, bool a) : sound(s), frequency(freq), all(a) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("PlaySound");
     const Sound *sound;
-    const RandomInt *frequency;
+    int frequency;
     bool all;
 };
 

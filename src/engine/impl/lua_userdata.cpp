@@ -217,7 +217,7 @@ void NewLuaPtr_Impl(lua_State *lua, void *ptr, LuaTag tag)
         mem->tag = tag;
         mem->ptr_type = PTR_RAW;
         mem->ptr = ptr;
-        // Note: no need to set a metatable because no garbage collection is needed.
+        SetUserdataMetatable(lua, -1);
     } else {
         lua_pushnil(lua);
     }

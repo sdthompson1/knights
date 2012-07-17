@@ -20,6 +20,7 @@
 # along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+include "fixup.txt"
 
 # Dungeon Environment Customization Menu
 

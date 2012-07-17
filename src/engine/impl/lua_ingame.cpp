@@ -36,6 +36,7 @@
 #include "mediator.hpp"
 #include "missile.hpp"
 #include "my_exceptions.hpp"
+#include "rng.hpp"
 #include "teleport.hpp"
 
 #include "lua.hpp"
@@ -50,6 +51,7 @@ namespace {
 
 
     // This is an implementation of ActionPars that reads its parameters from the Lua stack.
+    // NOTE: 'index' parameter is zero-based, so have to add one when passing to Lua API.
     class LuaActionPars : public ActionPars {
     public:
         explicit LuaActionPars(lua_State *lua_) : lua(lua_) { }
@@ -58,12 +60,10 @@ namespace {
 
         int getSize();
 
-        const Action * getAction(int index);
         int getInt(int index);
         const ItemType * getItemType(int index);
         MapDirection getMapDirection(int index);
         float getProbability(int index);
-        const KConfig::RandomInt * getRandomInt(int index);
         const Sound * getSound(int index);
         std::string getString(int index);
         shared_ptr<Tile> getTile(int index);
@@ -99,86 +99,74 @@ namespace {
         return lua_gettop(lua);
     }
 
-    const Action * LuaActionPars::getAction(int index)
+    int LuaActionPars::getInt(int c_index)
     {
-        // TODO: this function will be removed from ActionPars base class eventually.
-        throw LuaError("LuaActionPars::getAction: Not Implemented");
+        return luaL_checkinteger(lua, c_index+1);
     }
 
-    int LuaActionPars::getInt(int index)
+    void ErrMsg(lua_State *lua, int lua_index, const char *expected)
     {
-        return luaL_checkinteger(lua, index);
-    }
-
-    void ErrMsg(lua_State *lua, int index, const char *expected)
-    {
-        luaL_error(lua, "bad type for argument #%d: expected %s", index, expected);
+        luaL_error(lua, "bad type for argument #%d: expected %s", lua_index, expected);
     }
     
-    template<class T> T* CheckLuaPtr(lua_State *lua, int index, const char *expected)
+    template<class T> T* CheckLuaPtr(lua_State *lua, int lua_index, const char *expected)
     {
-        T* result = ReadLuaPtr<T>(lua, index);
+        T* result = ReadLuaPtr<T>(lua, lua_index);
         if (!result) {
-            ErrMsg(lua, index, expected);
+            ErrMsg(lua, lua_index, expected);
         }
         return result;
     }
 
-    template<class T> boost::shared_ptr<T> CheckLuaSharedPtr(lua_State *lua, int index, const char *expected)
+    template<class T> boost::shared_ptr<T> CheckLuaSharedPtr(lua_State *lua, int lua_index, const char *expected)
     {
-        boost::shared_ptr<T> result = ReadLuaSharedPtr<T>(lua, index);
+        boost::shared_ptr<T> result = ReadLuaSharedPtr<T>(lua, lua_index);
         if (!result) {
-            ErrMsg(lua, index, expected);
+            ErrMsg(lua, lua_index, expected);
         }
         return result;
     }
     
-    const ItemType * LuaActionPars::getItemType(int index)
+    const ItemType * LuaActionPars::getItemType(int c_index)
     {
-        return CheckLuaPtr<const ItemType>(lua, index, "item type");
+        return CheckLuaPtr<const ItemType>(lua, c_index+1, "item type");
     }
     
-    MapDirection LuaActionPars::getMapDirection(int index)
+    MapDirection LuaActionPars::getMapDirection(int c_index)
     {
-        return GetMapDirection(lua, index);
+        return GetMapDirection(lua, c_index+1);
     }
     
-    float LuaActionPars::getProbability(int index)
+    float LuaActionPars::getProbability(int c_index)
     {
-        return float(luaL_checknumber(lua, index));
+        return float(luaL_checknumber(lua, c_index+1));
     }
 
-    const KConfig::RandomInt * LuaActionPars::getRandomInt(int index)
+    const Sound * LuaActionPars::getSound(int c_index)
     {
-        // TODO: probably just a conversion from userdata.
-        throw LuaError("LuaActionPars::getRandomInt: not implemented");
+        return CheckLuaPtr<Sound>(lua, c_index+1, "sound");
     }
 
-    const Sound * LuaActionPars::getSound(int index)
+    std::string LuaActionPars::getString(int c_index)
     {
-        return CheckLuaPtr<Sound>(lua, index, "sound");
-    }
-
-    std::string LuaActionPars::getString(int index)
-    {
-        const char * s = luaL_checkstring(lua, index);
+        const char * s = luaL_checkstring(lua, c_index+1);
         return s;
     }
 
-    boost::shared_ptr<Tile> LuaActionPars::getTile(int index)
+    boost::shared_ptr<Tile> LuaActionPars::getTile(int c_index)
     {
-        return CheckLuaSharedPtr<Tile>(lua, index, "tile");
+        return CheckLuaSharedPtr<Tile>(lua, c_index+1, "tile");
     }
 
-    const MonsterType * LuaActionPars::getMonsterType(int index)
+    const MonsterType * LuaActionPars::getMonsterType(int c_index)
     {
         throw LuaError("LuaActionPars::getMonsterType: not implemented");
-        //return CheckLuaPtr<MonsterType>(lua, index);
+        //return CheckLuaPtr<MonsterType>(lua, c_index+1);
     }
 
     void LuaActionPars::error()
     {
-        luaL_error(lua, "Action failed to execute");
+        luaL_error(lua, "Failed to create LuaAction");
     }
     
 
@@ -506,6 +494,39 @@ namespace {
         return 1;
     }
 
+    // Input: time in ms
+    // Cxt: actor
+    // Output: yields; does not return anything.
+    int Delay(lua_State *lua)
+    {
+        const int time = luaL_checkinteger(lua, 1);
+
+        if (time <= 0) return 0;   // Nothing to do
+        
+        // Read cxt table.
+        lua_getglobal(lua, "cxt");  // [arg cxt]
+        lua_pushstring(lua, "actor");  // [arg cxt "actor"]
+        lua_gettable(lua, -2);         // [arg cxt cr]
+        boost::shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+
+        if (actor) {
+            const int gvt = Mediator::instance().getGVT();
+            actor->stunUntil(gvt + time);
+        }
+
+        lua_pushinteger(lua, time);
+        return lua_yield(lua, 1);
+    }
+
+    // Input: none
+    // Cxt: none
+    // Output: time in ms
+    int GameTime(lua_State *lua)
+    {
+        lua_pushinteger(lua, Mediator::instance().getGVT());
+        return 1;
+    }
+    
     // Input: various
     // Cxt: all ActionData fields
     // Output: none
@@ -530,6 +551,30 @@ namespace {
 
         // Done.
         return 0;
+    }
+
+    // Input: two integers (low and high of range; inclusive)
+    // Cxt: none
+    // Output: one integer
+    int RandomRange(lua_State *lua)
+    {
+        int low = luaL_checkint(lua, 1);
+        int high = luaL_checkint(lua, 2);
+
+        int result = g_rng.getInt(low, high + 1);  // g_rng uses exclusive upper bound; we use inclusive; so add one.
+
+        lua_pushinteger(lua, result);
+        return 1;
+    }
+
+    int RandomChance(lua_State *lua)
+    {
+        double chance = luaL_checknumber(lua, 1);
+        if (chance < 0) chance = 0;
+        if (chance > 1) chance = 1;
+
+        lua_pushboolean(lua, g_rng.getBool(float(chance)) ? 1 : 0);
+        return 1;
     }
 }
 
@@ -601,6 +646,21 @@ void AddLuaIngameFunctions(lua_State *lua)
         }
     }
 
+    // Function to stun a knight and also yield for that length of time.
+    PushCFunction(lua, &Delay);
+    lua_setfield(lua, -2, "Delay");
+
+    // Function to return total elapsed time of this game, in ms.
+    PushCFunction(lua, &GameTime);
+    lua_setfield(lua, -2, "GameTime");
+    
+    // Random number generation functions.
+    PushCFunction(lua, &RandomRange);
+    lua_setfield(lua, -2, "RandomRange");
+
+    PushCFunction(lua, &RandomChance);
+    lua_setfield(lua, -2, "RandomChance");
+    
     // pop the "kts" and environment tables.
     lua_pop(lua, 2);
 }

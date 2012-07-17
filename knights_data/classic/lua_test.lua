@@ -294,18 +294,6 @@ g_zom4w = kts.Graphic("zom4w.bmp", 0,0,0)
 --g_ogre_walk_1w   = kts.Graphic("ogre_walk_1w.bmp",   255,255,255, 0,0, 3,1)
 
 
--- SOUNDS
-
-s_click = kts.Sound("click.wav")
-s_door = kts.Sound("door.wav")
-s_drink = kts.Sound("drink.wav")
-s_parry = kts.Sound("parry.wav")
-s_screech = kts.Sound("screech.wav")
-s_squelch = kts.Sound("squelch.wav")
-s_ugh = kts.Sound("ugh.wav")
-s_zombie2 = kts.Sound("zombie2.wav")
-s_zombie3 = kts.Sound("zombie3.wav")
-
 
 
 -- MISC SERVER CONFIG
@@ -391,9 +379,6 @@ function teleport_sound(pos)  kts.play_sound(pos, s_squelch, 4000) end
 
 
 -- USED BY KNIGHTS_ROOMS.TXT
-
--- item type used for crossbow bolts
-i_bolt_trap = kts.kconfig_itemtype("i_bolt_trap")
 
 -- fires a crossbow bolt
 -- (usually attached to a tile, e.g. a switch; cxt.pos is the position of that tile.)

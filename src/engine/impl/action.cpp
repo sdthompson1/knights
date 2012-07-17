@@ -94,9 +94,7 @@ ActionData::ActionData(lua_State *lua)
 
     flag = false;
 
-    success = false;  // TODO success should be removed.
-
-    lua_pushstring(lua, "item");
+    lua_pushstring(lua, "item_type");
     lua_gettable(lua, -2);
     item = ReadLuaPtr<const ItemType>(lua, -1);
     lua_pop(lua, 1);
@@ -260,11 +258,7 @@ void ListAction::execute(const ActionData &a) const
 {
     ActionData ad(a);
     for (int i=0; i<data.size(); ++i) {
-        // Note: we update the "success" flag after each action in the sequence.
-        // This is done based on the possible() flag.
-        const bool successful = data[i]->possible(ad);
         data[i]->execute(ad);
-        ad.setSuccess(successful);
     }
 }
 
@@ -275,6 +269,8 @@ void ListAction::execute(const ActionData &a) const
 
 MapDirection ActionPars::getMapDirection(int index)
 {
+    // This is the default if getMapDirection is not separately implemented
+    // (It should probably be removed now, and made pure virtual in the base class)
     string d = getString(index);
     for (string::iterator it = d.begin(); it != d.end(); ++it) { 
         *it = toupper(*it);
@@ -323,9 +319,16 @@ Action * ActionMaker::createAction(const string &name, ActionPars &pars)
     else return 0;
 }
 
+//
+// LuaAction
+//
+
 LuaAction::LuaAction(boost::shared_ptr<lua_State> lua)
     : lua_state(lua)
 {
+    if (!lua_isfunction(lua.get(), -1)) {
+        throw LuaError("Value is not a Lua function");
+    }
     lua_rawsetp(lua.get(), LUA_REGISTRYINDEX, this);   // pops function from the stack.
 }
 

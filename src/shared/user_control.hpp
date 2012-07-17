@@ -35,15 +35,16 @@ class Graphic;
 
 class UserControl {
 public:
-    UserControl(int id_, const Graphic *menu_gfx, MapDirection menu_dir,
+    UserControl(const Graphic *menu_gfx, MapDirection menu_dir,
                 int tap_pri, int action_slot, int action_pri, bool suicide,
                 bool cts, unsigned int special, const std::string &name_)
-        : id(id_), menu_graphic(menu_gfx), menu_direction(menu_dir),
+        : id(-1), menu_graphic(menu_gfx), menu_direction(menu_dir),
           tap_priority(tap_pri), action_bar_slot(action_slot), action_bar_priority(action_pri),
           suicide_key(suicide),
           continuous(cts), menu_special(special), name(name_)
     { }
 
+    void setID(int id_) { id = id_; } // called by KnightsConfigImpl
     int getID() const { return id; }
 
     // If menu_graphic == 0 then this control won't appear on the

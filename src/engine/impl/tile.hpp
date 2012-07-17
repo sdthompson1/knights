@@ -150,7 +150,7 @@ public:
     // 'success' defaults to true, but is set false by things like locked doors (where
     // the player doesn't have the key).
     virtual void onActivate(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor,
-                            const Originator &originator, ActivateType act_type, bool success = true);
+                            const Originator &originator, ActivateType act_type);
 
     // onWalkOver -- runs on_walk_over
     // (NB Does nothing if actor->getHeight() != H_WALKING.)

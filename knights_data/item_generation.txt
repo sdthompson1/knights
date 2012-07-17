@@ -19,8 +19,6 @@
 #
 
 
-include "items.txt"
-
 # Floors
 ig_big = Random(
        i_axe : 30,

@@ -27,11 +27,13 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
+class Anim;
 class Control;
 class Creature;
 class Graphic;
 class Sound;
 class ItemType;
+class Overlay;
 class Player;
 class Tile;
 
@@ -79,6 +81,16 @@ struct LuaTraits<Creature> {
 template<>
 struct LuaTraits<Control> {
     enum { tag = 7 };
+};
+
+template<>
+struct LuaTraits<Overlay> {
+    enum { tag = 8 };
+};
+
+template<>
+struct LuaTraits<Anim> {
+    enum { tag = 9 };
 };
 
 #endif

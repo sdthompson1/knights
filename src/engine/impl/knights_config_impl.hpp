@@ -149,15 +149,20 @@ public:
     // NOTE: These can only be called when doingConfig() is true.
     //
 
+    Action * addLuaAction(auto_ptr<Action> p);
+    Anim * addLuaAnim(auto_ptr<Anim> p);
+    Control * addLuaControl(auto_ptr<Control> p);
     void addLuaGraphic(auto_ptr<Graphic> p);
+    ItemType * addLuaItemType(auto_ptr<ItemType> p);
+    Overlay * addLuaOverlay(auto_ptr<Overlay> p);
     Sound * addLuaSound(const char *name);  // creates the sound and adds it.
-    void addLuaItemType(auto_ptr<ItemType> p);
 
     
     //
     // KConfig references -- each function pushes a userdata to the Lua stack.
     //
 
+    void kconfigAnim(const char *name);
     void kconfigItemType(const char *name);
     void kconfigTile(const char *name);
     void kconfigControl(const char *name);
@@ -294,15 +299,18 @@ private:
     std::map<const Value *, MonsterType *> monster_types;
     std::map<const Value *, Overlay *> overlays;
     std::map<const Value *, RandomDungeonLayout *> random_dungeon_layouts;
-    KConfig::RandomIntContainer random_ints;
     std::map<const Value *, Segment *> segments;
     std::map<const Value *, boost::shared_ptr<Tile> > tiles;
     SegmentSet segment_set;
 
     // Storage for lua-created game objects. Will be deleted by ~KnightsConfigImpl.
+    std::vector<Action *> lua_actions;
+    std::vector<Anim *> lua_anims;
+    std::vector<Control *> lua_controls;
     std::vector<Graphic *> lua_graphics;
-    std::vector<Sound *> lua_sounds;
     std::vector<ItemType *> lua_item_types;
+    std::vector<Overlay *> lua_overlays;
+    std::vector<Sound *> lua_sounds;
     
     // Menu
     Menu menu;
@@ -372,6 +380,10 @@ private:
 
     // The lua state. This stays alive between games (it is only destroyed when ~KnightsConfigImpl is called).
     boost::shared_ptr<lua_State> lua_state;
+
+    // Note: RandomIntContainer must be destroyed BEFORE the lua_state, therefore it must appear
+    // AFTER the lua_state in the class declaration
+    KConfig::RandomIntContainer random_ints;
     
 
     // extra graphics for the dead knight tiles. added 30-May-2009

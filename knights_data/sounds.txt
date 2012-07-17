@@ -39,9 +39,9 @@ snd_tile_bash    = PlaySound(s_click, 2000)      # Tile was hit
 snd_tile_clunk   = PlaySound(s_click, 1000)      # "Heavy" tile was hit
 snd_tile_destroy = PlaySound(s_door, 6000)       # Wooden tile destroyed
 snd_ugh          = PlaySound(s_ugh, 9000)        # Knight takes damage, is poisoned, or suicides
-snd_zombie       = Random(PlaySound(s_ugh,     4000+d2000),        # Sounds made by zombies.
-                          PlaySound(s_zombie2, 8000+d3000),
-                          PlaySound(s_zombie3, 8000+d3000))
+snd_zombie       = Random(PlaySound(s_ugh,     5000),        # Sounds made by zombies.
+                          PlaySound(s_zombie2, 9500),
+                          PlaySound(s_zombie3, 9500))
 
 snd_dart = [snd_click snd_crossbow]  # used for skull traps.
 

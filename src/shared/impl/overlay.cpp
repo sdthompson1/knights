@@ -28,8 +28,8 @@
 #include "overlay.hpp"
 #include "protocol.hpp"
 
-Overlay::Overlay(int id_)
-    : id(id_)
+Overlay::Overlay()
+    : id(-1)
 {
     for (int i = 0; i < 4; ++i) raw_graphic[i] = 0;
     for (int i = 0; i < N_OVERLAY_FRAME*4; ++i) {

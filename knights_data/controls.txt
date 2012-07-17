@@ -18,6 +18,8 @@
 # along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+include "fixup.txt"
+
 CONTROLS = [
     {
         action         = [Drop(i_gem), snd_click]

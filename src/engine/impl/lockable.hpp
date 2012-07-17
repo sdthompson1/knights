@@ -56,7 +56,7 @@ public:
     // Override canActivateHere, onActivate to deal with opening and closing.
     virtual bool canActivateHere() const { return false; }
     virtual void onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>, const Originator &,
-                            ActivateType, bool success = true);
+                            ActivateType);
 
     // Methods for opening and closing Lockable tiles. Called by the Lua "open" and "close" commands.
     void close(DungeonMap &, const MapCoord &, const Originator &);

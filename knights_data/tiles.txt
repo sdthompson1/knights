@@ -20,9 +20,9 @@
 # along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+include "fixup.txt"
 
 include "graphics.txt"
-include "items.txt"     # definition of pentagram_effect is for some reason in items.txt, not here...
 
 # Depths:
 # -4 = open pits, treasure chests, doors.   (We don't want blood etc appearing on top of these)
@@ -130,9 +130,9 @@ chest_control_lua_func = "if kts.is_door_open(...) then return chest_control_low
 door_base = {
     type     = "door"
     access   = door_acc
-    on_activate  = [OnSuccess([],
-                              [locked_msg, snd_lock] 
-                             )]
+#    on_activate  = [OnSuccess([],
+#                              [locked_msg, snd_lock] 
+#                             )]
     on_open_or_close  = snd_door
     control = door_control_lua_func
 }
@@ -275,9 +275,9 @@ chest = {
     hit_points  = tile_hit_points
     on_destroy  = [AddTile(t_broken_wood_3), snd_tile_destroy]
     control = chest_control_lua_func
-    on_activate = [OnSuccess([],
-                             [locked_msg, snd_lock] 
-                            )]
+#    on_activate = [OnSuccess([],
+#                             [locked_msg, snd_lock] 
+#                            )]
     on_open_or_close = snd_door
     on_hit      = snd_tile_bash
     depth       = -4
@@ -421,7 +421,8 @@ t_dead_pentagram = floor & {   # 76
 }
 t_live_pentagram = floor & {   # 1 in my room tables. (76 in Knights.)
     graphic      = g_pentagram
-    on_walk_over = IfKnight([zap, pentagram_effect])  # zombies can walk over pentagrams with impunity, but knights get zapped.
+##    on_walk_over = IfKnight([zap, pentagram_effect])  # zombies can walk over pentagrams with impunity, but knights get zapped.
+## TODO need to re-enable pentagram. (move effect from items.lua to here!!)
     editor_label = "P"
     tutorial = TUT_PENTAGRAM
     user_table = 1

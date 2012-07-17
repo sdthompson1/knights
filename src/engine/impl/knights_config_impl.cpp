@@ -103,12 +103,9 @@ namespace {
             if (lst.getSize() != n1 && (n2<0 || lst.getSize() != n2)) error();
         }
         virtual int getSize() { return lst.getSize(); }
-        virtual const Action * getAction(int i) { lst.push(i); return kc.popAction(); }
         virtual int getInt(int i) { lst.push(i); return kc.getKFile()->popInt(); }
         virtual const ItemType *getItemType(int i) { lst.push(i); return kc.popItemType(); }
         virtual float getProbability(int i) { lst.push(i); return kc.popProbability(); }
-        virtual const RandomInt * getRandomInt(int i)
-            { lst.push(i); return kc.getKFile()->popRandomInt(kc.getRandomIntContainer(), 0); }
         virtual const MonsterType * getMonsterType(int i)
             { lst.push(i); return kc.popMonsterType(); }
         virtual const Sound * getSound(int i) { lst.push(i); return kc.popSound(); }
@@ -317,9 +314,13 @@ KnightsConfigImpl::~KnightsConfigImpl()
     for_each(segments.begin(), segments.end(), Delete<Segment>());
     for (size_t i=0; i<knight_anims.size(); ++i) delete knight_anims[i];
 
+    for_each(lua_actions.begin(), lua_actions.end(), Delete<Action>());
+    for_each(lua_anims.begin(), lua_anims.end(), Delete<Anim>());
+    for_each(lua_controls.begin(), lua_controls.end(), Delete<Control>());
     for_each(lua_graphics.begin(), lua_graphics.end(), Delete<Graphic>());
-    for_each(lua_sounds.begin(), lua_sounds.end(), Delete<Sound>());
     for_each(lua_item_types.begin(), lua_item_types.end(), Delete<ItemType>());
+    for_each(lua_overlays.begin(), lua_overlays.end(), Delete<Overlay>());
+    for_each(lua_sounds.begin(), lua_sounds.end(), Delete<Sound>());
 }
 
 KnightsConfigImpl::Sentry::~Sentry()
@@ -587,9 +588,12 @@ Control * KnightsConfigImpl::popControl()
 
         if (abp == std::numeric_limits<int>::min()) abp = tp;
         
-        const int id = controls.size() + NUM_STANDARD_CONTROLS + 1;
+        const int id = controls.size() + lua_controls.size() + NUM_STANDARD_CONTROLS + 1;
 
-        it = controls.insert(make_pair(p, new Control(id, g, mdir, tp, abs, abp, suicide, cts, ms, name, ac))).first;
+        Control * new_ctrl = new Control(g, mdir, tp, abs, abp, suicide, cts, ms, name, ac);
+        new_ctrl->setID(id);
+        
+        it = controls.insert(make_pair(p, new_ctrl)).first;
     } else {
         kf->pop();
     }
@@ -853,7 +857,7 @@ ItemGenerator * KnightsConfigImpl::popItemGenerator()
     if (itor == item_generators.end()) {
         ItemGenerator *ig = new ItemGenerator;
         itor = item_generators.insert(make_pair(p, ig)).first;
-        if (kf->isTable()) {
+        if (kf->isTable() || kf->isLua()) {
             ig->setFixedItemType(popItemType(), 0);
         } else if (kf->isList()) {
             KFile::List lst(*kf, "ItemAndQuantity", 2);
@@ -918,6 +922,7 @@ const ItemType * KnightsConfigImpl::popItemType()
 
         kf->popLua();  // pop from kfile stack, push to lua stack
         result = ReadLuaPtr<const ItemType>(lua_state.get(), -1);
+        lua_pop(lua_state.get(), 1);
         if (!result) kf->errExpected("item type");
         
     } else {
@@ -1319,8 +1324,9 @@ Overlay* KnightsConfigImpl::popOverlay()
         KFile::List lst(*kf, "Overlay", 4);
 
         if (lst.getSize()==4) {
-            const int id = overlays.size() + 1;
-            it = overlays.insert(make_pair(p, new Overlay(id))).first;
+            const int id = overlays.size() + lua_overlays.size() + 1;
+            it = overlays.insert(make_pair(p, new Overlay)).first;
+            it->second->setID(id);
             for (int i=0; i<4; ++i) {
                 lst.push(i);
                 it->second->setRawGraphic(MapDirection(i), popGraphic(0));
@@ -1485,6 +1491,7 @@ Sound * KnightsConfigImpl::popSound()
     if (kf->isLua()) {
         kf->popLua();
         result = ReadLuaPtr<Sound>(lua_state.get(), -1);
+        lua_pop(lua_state.get(), 1);
     }
     if (!result) kf->errExpected("sound");
     return result;
@@ -2101,9 +2108,12 @@ void KnightsConfigImpl::getGraphics(std::vector<const Graphic*> &out) const
 void KnightsConfigImpl::getOverlays(std::vector<const Overlay*> &out) const
 {
     out.clear();
-    out.reserve(overlays.size());
+    out.reserve(overlays.size() + lua_overlays.size());
     for (std::map<const Value *, Overlay*>::const_iterator it = overlays.begin(); it != overlays.end(); ++it) {
         out.push_back(it->second);
+    }
+    for (std::vector<Overlay*>::const_iterator it = lua_overlays.begin(); it != lua_overlays.end(); ++it) {
+        out.push_back(*it);
     }
     std::sort(out.begin(), out.end(), CompareID<Overlay>());
 }
@@ -2130,9 +2140,12 @@ void KnightsConfigImpl::getStandardControls(std::vector<const UserControl*> &out
 void KnightsConfigImpl::getOtherControls(std::vector<const UserControl*> &out) const
 {
     out.clear();
-    out.reserve(controls.size());
+    out.reserve(controls.size() + lua_controls.size());
     for (std::map<const Value *, Control*>::const_iterator it = controls.begin(); it != controls.end(); ++it) {
         out.push_back(it->second);
+    }
+    for (std::vector<Control*>::const_iterator it = lua_controls.begin(); it != lua_controls.end(); ++it) {
+        out.push_back(*it);
     }
     std::sort(out.begin(), out.end(), CompareID<UserControl>());
 }
@@ -2414,6 +2427,30 @@ void KnightsConfigImpl::readMenu(const Menu &menu, const MenuSelections &msel, D
 // Lua related functions
 //
 
+Action * KnightsConfigImpl::addLuaAction(auto_ptr<Action> p)
+{
+    Action *q = p.release();
+    lua_actions.push_back(q);
+    return q;
+}
+
+Anim * KnightsConfigImpl::addLuaAnim(auto_ptr<Anim> p)
+{
+    Anim *q = p.release();
+    lua_anims.push_back(q);
+    return q;
+}
+
+Control * KnightsConfigImpl::addLuaControl(auto_ptr<Control> p)
+{
+    const int new_id = controls.size() + lua_controls.size() + NUM_STANDARD_CONTROLS + 1;
+    p->setID(new_id);
+    
+    Control *q = p.release();
+    lua_controls.push_back(q);
+    return q;
+}
+
 void KnightsConfigImpl::addLuaGraphic(auto_ptr<Graphic> p)
 {
     ASSERT(dead_knight_graphics.empty());
@@ -2424,15 +2461,7 @@ void KnightsConfigImpl::addLuaGraphic(auto_ptr<Graphic> p)
     lua_graphics.push_back(p.release());
 }
 
-Sound * KnightsConfigImpl::addLuaSound(const char *name)
-{
-    const int new_id = lua_sounds.size() + 1;
-    Sound * p = new Sound(new_id, name);
-    lua_sounds.push_back(p);
-    return p;
-}
-
-void KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)
+ItemType * KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)
 {
     // If a crossbow, then also set up a second itemtype for the loaded version.
     if (p->canLoad()) {
@@ -2443,9 +2472,50 @@ void KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)
     }
 
     lua_item_types.push_back(p.release());
+    return lua_item_types.back();
 }
 
+Overlay * KnightsConfigImpl::addLuaOverlay(auto_ptr<Overlay> p)
+{
+    const int id = overlays.size() + lua_overlays.size() + 1;
+    p->setID(id);
+
+    // setup overlay offsets
+    for (int fr = 0; fr < Overlay::N_OVERLAY_FRAME; ++fr) {
+        for (int fac = 0; fac < 4; ++fac) {
+            p->setOffset(MapDirection(fac), fr,
+                         overlay_offsets[fr][fac].dir,
+                         overlay_offsets[fr][fac].ofsx,
+                         overlay_offsets[fr][fac].ofsy);
+        }
+    }
+    
+    Overlay *q = p.release();
+    lua_overlays.push_back(q);
+    return q;
+}
+
+Sound * KnightsConfigImpl::addLuaSound(const char *name)
+{
+    const int new_id = lua_sounds.size() + 1;
+    Sound * p = new Sound(new_id, name);
+    lua_sounds.push_back(p);
+    return p;
+}
+
+
 // KConfig references
+
+void KnightsConfigImpl::kconfigAnim(const char *name)
+{
+    if (!kf) {
+        lua_pushnil(lua_state.get());
+    } else {
+        kf->pushSymbol(name);
+        Anim * anim = popAnim();
+        NewLuaPtr<Anim>(lua_state.get(), anim);
+    }
+}
 
 void KnightsConfigImpl::kconfigItemType(const char *name)
 {

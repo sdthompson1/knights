@@ -219,7 +219,7 @@ bool Tile::targettable() const
 }
 
 void Tile::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor,
-                      const Originator &originator, ActivateType act_type, bool success)
+                      const Originator &originator, ActivateType act_type)
 {
     // NB act_type isn't used here, but it is used in subclasses (in particular Lockable).
     if (on_activate) {
@@ -228,7 +228,6 @@ void Tile::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        ad.setSuccess(success);
         on_activate->execute(ad);
     }
 }

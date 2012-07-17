@@ -65,21 +65,21 @@ private:
 
 class A_Invisibility : public Action {
 public:
-    explicit A_Invisibility(const KConfig::RandomInt * ri, const string &m) : dur(ri), msg(m) { }
+    explicit A_Invisibility(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Invisibility");
-    const KConfig::RandomInt *dur;
+    int dur;
     string msg;
 };
 
 class A_Invulnerability : public Action {
 public:
-    explicit A_Invulnerability(const KConfig::RandomInt *ri, const string &m) : dur(ri), msg(m) { }
+    explicit A_Invulnerability(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Invulnerability");
-    const KConfig::RandomInt *dur;
+    int dur;
     string msg;
 };
 
@@ -99,11 +99,11 @@ private:
 
 class A_Paralyzation : public Action {
 public:
-    explicit A_Paralyzation(const KConfig::RandomInt *ri) : dur(ri) { }
+    explicit A_Paralyzation(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Paralyzation");
-    const KConfig::RandomInt *dur;
+    int dur;
 };
 
 class A_Poison : public Action {
@@ -117,78 +117,78 @@ private:
 
 class A_PoisonImmunity : public Action {
 public:
-    explicit A_PoisonImmunity(const KConfig::RandomInt *ri, const string &m) : dur(ri), msg(m) { }
+    explicit A_PoisonImmunity(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("PoisonImmunity");
-    const KConfig::RandomInt *dur;
+    int dur;
     string msg;
 };
 
 class A_Quickness : public Action {
 public:
-    explicit A_Quickness(const KConfig::RandomInt * ri, const string &m) : dur(ri), msg(m) { }    
+    explicit A_Quickness(int i, const string &m) : dur(i), msg(m) { }    
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Quickness");
-    const KConfig::RandomInt *dur;
+    int dur;
     string msg;
 };
 
 class A_Regeneration : public Action {
 public:
-    explicit A_Regeneration(const KConfig::RandomInt *ri, const string &m) : dur(ri), msg(m) { }
+    explicit A_Regeneration(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Regeneration");
-    const KConfig::RandomInt *dur;
+    int dur;
     string msg;
 };
 
 class A_RevealLocation : public Action {
 public:
-    explicit A_RevealLocation(const KConfig::RandomInt * ri) : dur(ri) { }
+    explicit A_RevealLocation(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("RevealLocation");
-    const KConfig::RandomInt *dur;
+    int dur;
 };
 
 class A_SenseItems : public Action {
 public:
-    explicit A_SenseItems(const KConfig::RandomInt * ri) : dur(ri) { }
+    explicit A_SenseItems(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("SenseItems");
-    const KConfig::RandomInt *dur;
+    int dur;
 };    
 
 class A_SenseKnight : public Action {
 public:
-    explicit A_SenseKnight(const KConfig::RandomInt * ri) : dur(ri) { }
+    explicit A_SenseKnight(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("SenseKnight");
-    const KConfig::RandomInt *dur;
+    int dur;
 };
 
 class A_Strength : public Action {
 public:
-    explicit A_Strength(const KConfig::RandomInt * ri, const string &m) : dur(ri), msg(m) { }
+    explicit A_Strength(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Strength");
-    const KConfig::RandomInt *dur;
+    int dur;
     string msg;
 };
 
 class A_Super : public Action {
 public:
-    explicit A_Super(const KConfig::RandomInt * ri, const string &m) : dur(ri), msg(m) { }
+    explicit A_Super(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Super");
-    const KConfig::RandomInt *dur;
+    int dur;
     string msg;
 };
 
