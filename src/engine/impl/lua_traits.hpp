@@ -44,43 +44,53 @@ class Tile;
 // SEE ALSO: lua_userdata.cpp which maps tags to "table getting functions"
 // (and equality).
 
+enum {
+    TAG_GRAPHIC = 1,
+    TAG_SOUND,
+    TAG_ITEM_TYPE,
+    TAG_TILE,
+    TAG_PLAYER,
+    TAG_CREATURE,
+    TAG_CONTROL
+};
+
 template<class T>
 struct LuaTraits { };
 
 template<>
 struct LuaTraits<Graphic> {
-    enum { tag = 1 };
+    enum { tag = TAG_GRAPHIC };
 };
 
 template<>
 struct LuaTraits<Sound> {
-    enum { tag = 2 };
+    enum { tag = TAG_SOUND };
 };
 
 template<>
 struct LuaTraits<const ItemType> {
-    enum { tag = 3 };
+    enum { tag = TAG_ITEM_TYPE };
 };
 
 template<>
 struct LuaTraits<Tile> {
-    enum { tag = 4 };
+    enum { tag = TAG_TILE };
 };
 
 template<>
 struct LuaTraits<Player> {
-    enum { tag = 5 };
+    enum { tag = TAG_PLAYER };
 };
 
 // TODO: If we want Entities in Lua as well, then need to figure out how to deal with inheritance: Creature -> Entity.
 template<>
 struct LuaTraits<Creature> {
-    enum { tag = 6 };
+    enum { tag = TAG_CREATURE };
 };
 
 template<>
 struct LuaTraits<Control> {
-    enum { tag = 7 };
+    enum { tag = TAG_CONTROL };
 };
 
 template<>

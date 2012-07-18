@@ -314,7 +314,7 @@ namespace {
 
         ItemSize item_size = LuaGetItemSize(lua, "type", IS_NOPICKUP);
 
-        auto_ptr<ItemType> it(new ItemType);
+        auto_ptr<ItemType> it(new ItemType(lua, -1));
         it->construct(graphic, stack_graphic, backpack_graphic, backpack_overdraw, overlay, item_size, max_stack,
                       backpack_slot, fragile,
                       melee_backswing_time, melee_downswing_time, melee_damage,

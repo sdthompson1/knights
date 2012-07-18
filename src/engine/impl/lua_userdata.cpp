@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "lua_func_wrapper.hpp"
+#include "lua_table_base.hpp"
 #include "lua_userdata.hpp"
 #include "map_support.hpp"
 
@@ -90,9 +91,13 @@ namespace {
         const void *ptr = GetPtr(*ud);
         
         switch (ud->tag) {
-            // TODO: Tags that have an associated table should insert
-            // code to push a Lua table onto the stack, and return
-            // true.
+        case TAG_ITEM_TYPE:
+            {
+                const LuaTableBase *tab = static_cast<const LuaTableBase*>(ptr);
+                tab->pushTable(lua);
+                ASSERT(lua_istable(lua, -1));
+                return true;
+            }
         default:
             return false;
         }
@@ -106,7 +111,7 @@ namespace {
             // [ud key table]
 
             const bool requesting_table =
-                lua_isstring(lua, 2) && std::strcmp(lua_tostring(lua, 2), "table");
+                lua_isstring(lua, 2) && std::strcmp(lua_tostring(lua, 2), "table") == 0;
             
             if (!requesting_table) {
                 lua_insert(lua, 2);   // [ud table key]

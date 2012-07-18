@@ -36,8 +36,9 @@
 // ctors
 //
 
-ItemType::ItemType()
- : graphic(0), stack_graphic(0), backpack_graphic(0), backpack_overdraw(0), overlay(0), is(IS_BIG),
+ItemType::ItemType(lua_State *lua, int idx)
+ : LuaTableBase(lua, idx),
+   graphic(0), stack_graphic(0), backpack_graphic(0), backpack_overdraw(0), overlay(0), is(IS_BIG),
    max_stack(1), backpack_slot(0), fragile(false), allow_strength(true),
    melee_backswing_time(0), melee_damage(0), 
    melee_stun_time(0), melee_tile_damage(0), melee_action(0), parry_chance(0), 

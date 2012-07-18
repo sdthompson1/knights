@@ -932,7 +932,7 @@ const ItemType * KnightsConfigImpl::popItemType()
         if (itor == item_types.end()) {
 
             // Haven't seen this KValue before. Make a new itemtype from it.
-            ItemType *result2 = new ItemType;
+            ItemType *result2 = new ItemType(0, 0);
             result = result2;
             item_types.insert(std::make_pair(p, result));
             PopKFileItemType(this, kf.get(), result2);  // pop from kfile stack

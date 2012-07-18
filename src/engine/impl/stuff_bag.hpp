@@ -97,6 +97,8 @@ public:
 
 class StuffManager {
 public:
+    StuffManager() : stuff_bag_item_type(0, 0) { } // stuff bag does not have a lua table.
+
     // initialization -- These should be set before calling the other StuffManager functions.
     void setStuffBagGraphic(const Graphic *gfx);
     void setDungeonMap(DungeonMap *dmap_) { dmap = dmap_; }

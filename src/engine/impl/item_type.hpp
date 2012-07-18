@@ -37,6 +37,8 @@
 #ifndef ITEM_TYPE_HPP
 #define ITEM_TYPE_HPP
 
+#include "lua_table_base.hpp"
+
 #include "random_int.hpp"
 using namespace KConfig;
 
@@ -65,9 +67,9 @@ enum ItemSize {
     NUM_ITEM_SIZES
 };
 
-class ItemType {
+class ItemType : public LuaTableBase {
 public:
-    ItemType();
+    ItemType(lua_State *lua, int idx);
     void construct(const Graphic *gfx, const Graphic *stack_gfx,
                    const Graphic *backpack_gfx, const Graphic *backpack_overdraw,
                    const Overlay *ovrly, ItemSize is, int max_stack, int backpack_slot,

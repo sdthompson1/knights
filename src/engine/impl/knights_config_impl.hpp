@@ -284,6 +284,11 @@ private:
 
     
 private:
+    // The lua state. This stays alive between games (it is only destroyed when ~KnightsConfigImpl is called).
+    // This should be the last thing destroyed, so is listed first in the class.
+    boost::shared_ptr<lua_State> lua_state;
+
+
     // Storage for all 'basic' game objects, i.e. stuff loaded directly from the config file.
     // (Deleted by ~KnightsConfigImpl.)
 
@@ -302,6 +307,7 @@ private:
     std::map<const Value *, Segment *> segments;
     std::map<const Value *, boost::shared_ptr<Tile> > tiles;
     SegmentSet segment_set;
+    KConfig::RandomIntContainer random_ints;
 
     // Storage for lua-created game objects. Will be deleted by ~KnightsConfigImpl.
     std::vector<Action *> lua_actions;
@@ -377,13 +383,6 @@ private:
     
     // kf is non-null only during the constructor.
     boost::shared_ptr<KConfig::KFile> kf;
-
-    // The lua state. This stays alive between games (it is only destroyed when ~KnightsConfigImpl is called).
-    boost::shared_ptr<lua_State> lua_state;
-
-    // Note: RandomIntContainer must be destroyed BEFORE the lua_state, therefore it must appear
-    // AFTER the lua_state in the class declaration
-    KConfig::RandomIntContainer random_ints;
     
 
     // extra graphics for the dead knight tiles. added 30-May-2009
