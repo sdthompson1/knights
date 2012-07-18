@@ -47,9 +47,14 @@ namespace {
     }
 }
 
+bool LuaIsCallable(lua_State *lua, int idx)
+{
+    return lua_isfunction(lua, idx) || HasMetamethod(lua, idx, "__call");
+}
+
 void LuaCheckCallable(lua_State *lua, int arg, const char *msg)
 {
-    if (!lua_isfunction(lua, arg) && !HasMetamethod(lua, arg, "__call")) {
+    if (!LuaIsCallable(lua, arg)) {
         luaL_error(lua, "%s: Argument #%d is not a function or callable object", msg, arg);
     }
 }

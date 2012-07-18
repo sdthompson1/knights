@@ -23,7 +23,6 @@ include "graphics.txt"
 include "controls.txt"
 include "tiles.txt"
 include "tutorial.txt"
-include "item_generation.txt"
 include "monsters.txt"
 
 DEFAULT_ITEM = i_sword

@@ -31,34 +31,23 @@ using namespace KConfig;
 using namespace std;
 
 class ItemType;
+struct lua_State;
 
 //
-// ItemGenerator generates an ItemType at random from a predetermined list.
-// (It's very similar to RandomAction. Perhaps there should be some sort of template 
-// class RandomList<T>.)
+// ItemGenerator represents a Lua procedure which, when called, will
+// return an itemtype and (optionally) a number of items to generate.
 //
 class ItemGenerator {
 public:
-    ItemGenerator() : total_weight(0), fixed_item_type(0), amount(0) { }
-
-    // add "fixed item"
-    // amount==NULL is treated as amount==RIConstant(1).
-    void setFixedItemType(const ItemType *i, const RandomInt * n)
-        { fixed_item_type = i; amount = n; }
-
-    // add "child generators"
-    void reserve(int n) { data.reserve(n); }
-    void add(const ItemGenerator *ig, int wt);
-
-    // If a fixed item type is set, then get() will return that.
-    // Otherwise, one of the child item generators will be invoked.    
-    pair<const ItemType *, int> get() const;
+    // Ctor reads a callable object from argument position 1. Lua stack left unchanged.
+    explicit ItemGenerator(lua_State *lua_);
+    ~ItemGenerator();
     
+    std::pair<const ItemType *, int> get() const;
+
 private:
-    vector<pair<const ItemGenerator *, int> > data;
-    int total_weight;
-    const ItemType *fixed_item_type;
-    const RandomInt * amount;
+    // Uses 'this' as a registry key, to store the function
+    lua_State *lua;
 };
 
 #endif

@@ -24,34 +24,36 @@
 #include "misc.hpp"
 
 #include "item_generator.hpp"
-#include "rng.hpp"
+#include "lua_exec.hpp"
+#include "lua_check.hpp"
+#include "lua_userdata.hpp"
 
-#include "random_int.hpp"
-using namespace KConfig;
+#include "lua.hpp"
 
-void ItemGenerator::add(const ItemGenerator *ig, int wt)
+ItemGenerator::ItemGenerator(lua_State *lua_)
+    : lua(lua_)
 {
-    if (ig && wt > 0) {
-        data.push_back(make_pair(ig, wt));
-        total_weight += wt;
-    }
+    LuaCheckCallable(lua, 1, "ItemGenerator");
+    lua_pushvalue(lua, 1);
+    lua_rawsetp(lua, LUA_REGISTRYINDEX, this);
 }
 
-pair<const ItemType *, int> ItemGenerator::get() const
+ItemGenerator::~ItemGenerator()
 {
-    if (fixed_item_type) {
-        int n = 1;
-        if (amount) n = amount->get();
-        return make_pair(fixed_item_type,n);
-    } else if (total_weight > 0) {
-        int r = g_rng.getInt(0, total_weight);
-        for (int i=0; i<data.size(); ++i) {
-            r -= data[i].second;
-            if (r < 0) return data[i].first->get();
-        }
-        ASSERT(0);
-    }
-    return pair<const ItemType *, int>(0,0);
+    lua_pushnil(lua);
+    lua_rawsetp(lua, LUA_REGISTRYINDEX, this);
 }
 
+std::pair<const ItemType *, int> ItemGenerator::get() const
+{
+    // Call the function -- pass no args, get upto 2 results.
+    lua_rawgetp(lua, LUA_REGISTRYINDEX, this);
+    LuaExec(lua, 0, 2);
 
+    const ItemType * itype = ReadLuaPtr<const ItemType>(lua, -2);
+
+    int num = lua_tointeger(lua, -1);
+    if (num < 1) num = 1;
+
+    return std::make_pair(itype, num);
+}

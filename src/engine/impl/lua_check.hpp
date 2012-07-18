@@ -29,6 +29,9 @@ struct lua_State;
 // Various lua checking functions
 // (Currently only contains LuaCheckCallable.)
 
+// Determine if object at given index is callable
+bool LuaIsCallable(lua_State *lua, int index);
+
 // Raises lua error if arg #n is not callable
 // The error message is of form "msg: Argument #n is not a function or callable object"
 void LuaCheckCallable(lua_State *lua, int arg, const char *msg);

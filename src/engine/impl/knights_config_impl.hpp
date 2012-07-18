@@ -149,6 +149,7 @@ public:
     Control * addLuaControl(auto_ptr<Control> p);
     RandomDungeonLayout * addLuaDungeonLayout(lua_State *lua); // reads from args 1 and 2.
     void addLuaGraphic(auto_ptr<Graphic> p);
+    ItemGenerator * addLuaItemGenerator(lua_State *lua);
     ItemType * addLuaItemType(auto_ptr<ItemType> p);
     Overlay * addLuaOverlay(auto_ptr<Overlay> p);
     Sound * addLuaSound(const char *name);  // creates the sound and adds it.
@@ -287,7 +288,6 @@ private:
     std::map<const Value *, Action *> actions;
     std::map<const Value *, Control *> controls;
     std::map<const Value *, DungeonDirective *> dungeon_directives;
-    std::map<const Value *, ItemGenerator *> item_generators;
     std::map<const Value *, const ItemType *> item_types;
     std::vector<ItemType *> special_item_types;
     std::map<const Value *, MenuInt *> menu_ints;
@@ -304,6 +304,7 @@ private:
     std::vector<Control *> lua_controls;
     std::vector<RandomDungeonLayout *> lua_dungeon_layouts;
     std::vector<Graphic *> lua_graphics;
+    std::vector<ItemGenerator *> lua_item_generators;
     std::vector<ItemType *> lua_item_types;
     std::vector<Overlay *> lua_overlays;
     std::vector<Sound *> lua_sounds;

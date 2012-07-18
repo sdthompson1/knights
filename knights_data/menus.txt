@@ -39,7 +39,7 @@ MAIN_MENU = [
     # First some Dungeon directives that apply to all quests :-
 
     DungeonStuff("chest", 80, ig_pot, 3)
-    DungeonStuff("small_table", 75, Random(ig_pot:2, ig_table:1), 1)
+    DungeonStuff("small_table", 75, ig_small_table, 1)
     DungeonStuff("table",  67, ig_table, 1)
 
     # item respawning

@@ -301,7 +301,6 @@ KnightsConfigImpl::~KnightsConfigImpl()
     for_each(actions.begin(), actions.end(), Delete<Action>());
     for_each(controls.begin(), controls.end(), Delete<Control>());
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
-    for_each(item_generators.begin(), item_generators.end(), Delete<ItemGenerator>());
     for_each(item_types.begin(), item_types.end(), Delete<const ItemType>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
@@ -315,6 +314,7 @@ KnightsConfigImpl::~KnightsConfigImpl()
     for_each(lua_controls.begin(), lua_controls.end(), Delete<Control>());
     for_each(lua_dungeon_layouts.begin(), lua_dungeon_layouts.end(), Delete<RandomDungeonLayout>());
     for_each(lua_graphics.begin(), lua_graphics.end(), Delete<Graphic>());
+    for_each(lua_item_generators.begin(), lua_item_generators.end(), Delete<ItemGenerator>());
     for_each(lua_item_types.begin(), lua_item_types.end(), Delete<ItemType>());
     for_each(lua_overlays.begin(), lua_overlays.end(), Delete<Overlay>());
     for_each(lua_sounds.begin(), lua_sounds.end(), Delete<Sound>());
@@ -747,39 +747,16 @@ ItemGenerator * KnightsConfigImpl::popItemGenerator()
 {
     if (!kf) return 0;
 
-    const Value * p = kf->getTop();
-    map<const Value *, ItemGenerator*>::iterator itor = item_generators.find(p);
+    ItemGenerator * result = 0;
 
-    if (itor == item_generators.end()) {
-        ItemGenerator *ig = new ItemGenerator;
-        itor = item_generators.insert(make_pair(p, ig)).first;
-        if (kf->isTable() || kf->isLua()) {
-            ig->setFixedItemType(popItemType(), 0);
-        } else if (kf->isList()) {
-            KFile::List lst(*kf, "ItemAndQuantity", 2);
-            lst.push(0);
-            const ItemType *it = popItemType();
-            lst.push(1);
-            const RandomInt * qty = kf->popRandomInt(random_ints, 0);
-            ig->setFixedItemType(it, qty);
-        } else {
-            KFile::Random ran(*kf, "ItemGenerator");
-            ig->reserve(ran.getSize());
-            for (int i=0; i<ran.getSize(); ++i) {
-                int wt = ran.push(i);
-                ItemGenerator *subig = popItemGenerator();
-                ig->add(subig, wt);
-            }
-        }
-
-    } else {
-        kf->pop();
-        if (itor->second == 0) {
-            kf->error("error: possible recursion in ItemGenerator");
-        }
+    if (kf->isLua()) {
+        kf->popLua();
+        result = ReadLuaPtr<ItemGenerator>(lua_state.get(), -1);
+        lua_pop(lua_state.get(), 1);
     }
 
-    return itor->second;
+    if (!result) kf->errExpected("item generator");
+    return result;
 }
 
 ItemSize KnightsConfigImpl::popItemSize()
@@ -2347,6 +2324,13 @@ void KnightsConfigImpl::addLuaGraphic(auto_ptr<Graphic> p)
     p->setID(new_id);
 
     lua_graphics.push_back(p.release());
+}
+
+ItemGenerator * KnightsConfigImpl::addLuaItemGenerator(lua_State *lua)
+{
+    ItemGenerator *ig = new ItemGenerator(lua);
+    lua_item_generators.push_back(ig);
+    return ig;
 }
 
 ItemType * KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)

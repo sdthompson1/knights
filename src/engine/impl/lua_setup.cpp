@@ -161,7 +161,17 @@ namespace {
         return 1;
     }
     
-
+    // Upvalue: KnightsConfigImpl*
+    // Input: one function or callable object
+    // Output: userdata representing the ItemGenerator
+    int MakeItemGenerator(lua_State *lua)
+    {
+        KnightsConfigImpl *kc = GetKC(lua, "ItemGenerators");
+        ItemGenerator *ig = kc->addLuaItemGenerator(lua);  // reads from arg position 1
+        NewLuaPtr<ItemGenerator>(lua, ig);  // pushes it to lua stack
+        return 1;
+    }
+    
     // Upvalue: KnightsConfigImpl* (light userdata)
     // Input arguments: Table representing a new ItemType
     // Return values: ItemType* (full userdata, raw ptr)
@@ -363,6 +373,10 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     PushCClosure(lua, &MakeGraphic, 1);
     lua_setfield(lua, -2, "Graphic");
 
+    lua_pushlightuserdata(lua, kc);
+    PushCClosure(lua, &MakeItemGenerator, 1);
+    lua_setfield(lua, -2, "ItemGenerator");
+    
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeItemType, 1);
     lua_setfield(lua, -2, "ItemType");

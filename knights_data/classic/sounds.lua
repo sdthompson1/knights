@@ -106,11 +106,11 @@ function snd_zombie()
    -- Sounds made by zombies
    local choice = kts.RandomRange(1, 3)
    if choice == 1 then
-      kts.PlaySound(s_ugh, RandomRange(4000, 6000))
+      kts.PlaySound(s_ugh, kts.RandomRange(4000, 6000))
    elseif choice == 2 then
-      kts.PlaySound(s_zombie2, RandomRange(8000, 11000))
+      kts.PlaySound(s_zombie2, kts.RandomRange(8000, 11000))
    else
-      kts.PlaySound(s_zombie3, RandomRange(8000, 11000))
+      kts.PlaySound(s_zombie3, kts.RandomRange(8000, 11000))
    end
 end
 
