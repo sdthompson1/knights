@@ -26,7 +26,6 @@
 
 #include "colour_change.hpp"
 #include "config_map.hpp"
-#include "dungeon_layout.hpp"
 #include "item_type.hpp"
 #include "map_support.hpp"
 #include "menu.hpp"
@@ -65,6 +64,7 @@ class MonsterManager;
 class MonsterType;
 class Player;
 class Quest;
+class RandomDungeonLayout;
 class Segment;
 class Sound;
 class StuffManager;
@@ -87,11 +87,6 @@ public:
     //
     // types used below
     //
-
-    struct DungeonBlock {
-        BlockType bt;
-        std::string exits;
-    };
 
     struct SegmentTileData {
         std::vector<boost::shared_ptr<Tile> > tiles;
@@ -152,6 +147,7 @@ public:
     Action * addLuaAction(auto_ptr<Action> p);
     Anim * addLuaAnim(lua_State *lua, int idx);
     Control * addLuaControl(auto_ptr<Control> p);
+    RandomDungeonLayout * addLuaDungeonLayout(lua_State *lua); // reads from args 1 and 2.
     void addLuaGraphic(auto_ptr<Graphic> p);
     ItemType * addLuaItemType(auto_ptr<ItemType> p);
     Overlay * addLuaOverlay(auto_ptr<Overlay> p);
@@ -180,15 +176,12 @@ public:
     Action * popAction(Action *dflt);
     Anim * popAnim();
     Anim * popAnim(Anim *dflt);
-    BlockType popBlockType();
     bool popBool();
     bool popBool(bool dflt);
     Control * popControl();
     Control * popControl(Control *dflt);
     void popControlSet(std::vector<const Control*> &which_control_set);
-    DungeonBlock popDungeonBlock();
     DungeonDirective * popDungeonDirective();
-    DungeonLayout * popDungeonLayout(std::string &name);
     Graphic * popGraphic();
     Graphic * popGraphic(Graphic *dflt);
     void popHouseColours(const ConfigMap &config_map);
@@ -251,7 +244,6 @@ private:
     // helper functions
     //
 
-    DungeonLayout * doPopDungeonLayout(int w, int h);
     void defineSegmentCategory(int sc) { doUse(sc, segment_categories.size(), segment_categories_defined); }
     void defineTileCategory(int tc) { doUse(tc, tile_categories.size(), tile_categories_defined); }
     void doUse(int item, int sz, std::vector<bool> &container);
@@ -295,14 +287,12 @@ private:
     std::map<const Value *, Action *> actions;
     std::map<const Value *, Control *> controls;
     std::map<const Value *, DungeonDirective *> dungeon_directives;
-    std::map<const Value *, DungeonLayout *> dungeon_layouts;
     std::map<const Value *, ItemGenerator *> item_generators;
     std::map<const Value *, const ItemType *> item_types;
     std::vector<ItemType *> special_item_types;
     std::map<const Value *, MenuInt *> menu_ints;
     std::map<const Value *, MonsterType *> monster_types;
     std::map<const Value *, Overlay *> overlays;
-    std::map<const Value *, RandomDungeonLayout *> random_dungeon_layouts;
     std::map<const Value *, Segment *> segments;
     std::map<const Value *, boost::shared_ptr<Tile> > tiles;
     SegmentSet segment_set;
@@ -312,6 +302,7 @@ private:
     std::vector<Action *> lua_actions;
     std::vector<Anim *> lua_anims;
     std::vector<Control *> lua_controls;
+    std::vector<RandomDungeonLayout *> lua_dungeon_layouts;
     std::vector<Graphic *> lua_graphics;
     std::vector<ItemType *> lua_item_types;
     std::vector<Overlay *> lua_overlays;

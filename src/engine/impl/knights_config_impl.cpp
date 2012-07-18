@@ -30,6 +30,7 @@
 #include "coord_transform.hpp"
 #include "create_quest.hpp"
 #include "dungeon_generator.hpp"
+#include "dungeon_layout.hpp"
 #include "dungeon_map.hpp"
 #include "event_manager.hpp"
 #include "gore_manager.hpp"
@@ -300,21 +301,19 @@ KnightsConfigImpl::~KnightsConfigImpl()
     for_each(actions.begin(), actions.end(), Delete<Action>());
     for_each(controls.begin(), controls.end(), Delete<Control>());
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
-    for_each(dungeon_layouts.begin(), dungeon_layouts.end(), Delete<DungeonLayout>());
     for_each(item_generators.begin(), item_generators.end(), Delete<ItemGenerator>());
     for_each(item_types.begin(), item_types.end(), Delete<const ItemType>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
     for_each(monster_types.begin(), monster_types.end(), Delete<MonsterType>());
     for_each(overlays.begin(), overlays.end(), Delete<Overlay>());
-    for_each(random_dungeon_layouts.begin(), random_dungeon_layouts.end(),
-             Delete<RandomDungeonLayout>());
     for_each(segments.begin(), segments.end(), Delete<Segment>());
     for (size_t i=0; i<knight_anims.size(); ++i) delete knight_anims[i];
 
     for_each(lua_actions.begin(), lua_actions.end(), Delete<Action>());
     for_each(lua_anims.begin(), lua_anims.end(), Delete<Anim>());
     for_each(lua_controls.begin(), lua_controls.end(), Delete<Control>());
+    for_each(lua_dungeon_layouts.begin(), lua_dungeon_layouts.end(), Delete<RandomDungeonLayout>());
     for_each(lua_graphics.begin(), lua_graphics.end(), Delete<Graphic>());
     for_each(lua_item_types.begin(), lua_item_types.end(), Delete<ItemType>());
     for_each(lua_overlays.begin(), lua_overlays.end(), Delete<Overlay>());
@@ -513,22 +512,6 @@ Anim * KnightsConfigImpl::popAnim(Anim *dflt)
     }
 }
 
-BlockType KnightsConfigImpl::popBlockType()
-{
-    if (!kf) return BT_BLOCK;
-    
-    Popper p(*kf);
-    string s = kf->getString("");
-
-    MakeLowerCase(s);
-    if (s == "block") return BT_BLOCK;
-    else if (s == "edge") return BT_EDGE;
-    else if (s == "special") return BT_SPECIAL;
-    else if (s == "none") return BT_NONE;
-    kf->errExpected("'block', 'edge', 'special' or 'none'");
-    return BT_BLOCK;
-}
-
 bool KnightsConfigImpl::popBool()
 {
     if (!kf) return false;
@@ -620,63 +603,6 @@ void KnightsConfigImpl::popControlSet(vector<const Control*> &which_control_set)
     }
 }
 
-KnightsConfigImpl::DungeonBlock KnightsConfigImpl::popDungeonBlock()
-{
-    if (!kf) return DungeonBlock();
-    DungeonBlock result;
-    KFile::Table tbl(*kf, "DungeonBlock");
-    tbl.push("exits");
-    result.exits = kf->popString("nesw");
-    tbl.push("type");
-    result.bt = popBlockType();
-    return result;
-}
-
-DungeonLayout * KnightsConfigImpl::doPopDungeonLayout(int w, int h)
-{
-    if (!kf) return 0;
-    KFile::List lst(*kf, "DungeonLayoutData", w*h);  // final arg gives expected number of list entries.
-
-    DungeonLayout *dlay = new DungeonLayout(w, h);
-    try {
-        vector<DungeonBlock> db(w*h);
-        for (int x=0; x<w; ++x) {
-            for (int y=0; y<h; ++y) {
-                lst.push(y*w+x);
-                db[y*w+x] = popDungeonBlock();
-                dlay->setBlockType(x, y, db[y*w+x].bt);
-            }
-        }
-        
-        for (int x=0; x<w; ++x) {
-            for (int y=0; y<h-1; ++y) {
-                if (db[y*w+x].bt == BT_NONE || db[(y+1)*w+x].bt == BT_NONE) continue;
-                bool dn = db[y    *w+x].exits.find_first_of("sS") != string::npos;
-                bool up = db[(y+1)*w+x].exits.find_first_of("nN") != string::npos;
-                if (up != dn) kf->error("exits do not match");
-                dlay->setVertExit(x, y, dn);
-            }
-        }
-        
-        for (int x=0; x<w-1; ++x) {
-            for (int y=0; y<h; ++y) {
-                if (db[y*w+x].bt == BT_NONE || db[y*w+(x+1)].bt == BT_NONE) continue;
-                bool rt = db[y*w+x    ].exits.find_first_of("eE") != string::npos;
-                bool lf = db[y*w+(x+1)].exits.find_first_of("wW") != string::npos;
-                if (lf != rt) kf->error("exits do not match");
-                dlay->setHorizExit(x, y, lf);
-            }
-        }
-
-        return dlay;
-        
-    } catch (...) {
-        delete dlay;
-        throw;
-    }
-
-}
-
 DungeonDirective * KnightsConfigImpl::popDungeonDirective()
 {
     if (!kf) return 0;
@@ -691,33 +617,6 @@ DungeonDirective * KnightsConfigImpl::popDungeonDirective()
     } else {
         kf->pop();
     }
-    return it->second;
-}
-
-DungeonLayout * KnightsConfigImpl::popDungeonLayout(std::string &name)
-{
-    if (!kf) return 0;
-    const Value * p = kf->getTop();
-    map<const Value *, DungeonLayout*>::iterator it = dungeon_layouts.find(p);
-    if (it == dungeon_layouts.end()) {
-        KFile::Table tab(*kf, "DungeonLayout");
-        tab.push("height",false);
-        int h = kf->popInt();
-        tab.push("width",false);
-        int w = kf->popInt();
-
-        tab.reset();        
-        tab.push("data");
-        DungeonLayout *dlay = doPopDungeonLayout(w, h);
-        tab.push("height"); kf->pop();
-        tab.push("name"); name = kf->popString("");
-        tab.push("width"); kf->pop();
-
-        it = dungeon_layouts.insert(make_pair(p, dlay)).first;
-    } else {
-        kf->pop();
-    }
-
     return it->second;
 }
 
@@ -1417,32 +1316,15 @@ RandomDungeonLayout * KnightsConfigImpl::popRandomDungeonLayout()
 {
     if (!kf) return 0;
 
-    const Value * p = kf->getTop();
-    map<const Value *, RandomDungeonLayout*>::iterator it = random_dungeon_layouts.find(p);
-    if (it == random_dungeon_layouts.end()) {
-        RandomDungeonLayout *r = new RandomDungeonLayout;
-        it = random_dungeon_layouts.insert(make_pair(p, r)).first;
-        if (kf->isTable()) {
-            std::string name;
-            DungeonLayout *d = popDungeonLayout(name);
-            r->add(d);
-            r->setName(name);
-        } else if (kf->isRandom()) {
-            KFile::Random ran(*kf, "DungeonLayout");
-            std::string name;
-            for (int i=0; i<ran.getSize(); ++i) {
-                int weight = ran.push(i);
-                DungeonLayout *d = popDungeonLayout(name);
-                for (int j=0; j<weight; ++j) r->add(d);
-                if (i==0) r->setName(name);
-            }
-        }
-        
-    } else {
-        kf->pop();
+    RandomDungeonLayout *result = 0;
+    if (kf->isLua()) {
+        kf->popLua();
+        result = ReadLuaPtr<RandomDungeonLayout>(lua_state.get(), -1);
+        lua_pop(lua_state.get(), 1);
     }
-
-    return it->second;
+    if (!result) kf->errExpected("lua dungeon layout");
+    
+    return result;
 }   
 
 Colour KnightsConfigImpl::popRGB()
@@ -2165,7 +2047,8 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
                                               TutorialManager *tutorial_manager,
                                               int &final_gvt) const
 {
-    boost::scoped_ptr<DungeonGenerator> dg(new DungeonGenerator(segment_set,
+    boost::scoped_ptr<DungeonGenerator> dg(new DungeonGenerator(lua_state.get(),
+                                                                segment_set,
                                                                 wall_tile,
                                                                 horiz_door_tile[0],
                                                                 horiz_door_tile[1],
@@ -2449,6 +2332,13 @@ Control * KnightsConfigImpl::addLuaControl(auto_ptr<Control> p)
     return q;
 }
 
+RandomDungeonLayout * KnightsConfigImpl::addLuaDungeonLayout(lua_State *lua)
+{
+    RandomDungeonLayout *p = new RandomDungeonLayout(lua);
+    lua_dungeon_layouts.push_back(p);
+    return p;
+}
+    
 void KnightsConfigImpl::addLuaGraphic(auto_ptr<Graphic> p)
 {
     ASSERT(dead_knight_graphics.empty());

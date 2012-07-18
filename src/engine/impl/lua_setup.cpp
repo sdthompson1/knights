@@ -136,7 +136,18 @@ namespace {
         NewLuaPtr<Control>(lua, c);
         return 1;
     }
-    
+
+
+    // Upvalue: KnightsConfigImpl*
+    // Input: Table representing a dungeon layout (Name+Function)
+    // Return value: RandomDungeonLayout* (as full userdata)
+    int MakeDungeonLayout(lua_State *lua)
+    {
+        KnightsConfigImpl *kc = GetKC(lua, "DungeonLayouts");
+        RandomDungeonLayout *dlay = kc->addLuaDungeonLayout(lua);
+        NewLuaPtr<RandomDungeonLayout>(lua, dlay);
+        return 1;
+    }
 
     // Upvalue: KnightsConfigImpl*
     // Input: n args representing a new graphic (stack posns 1 to lua_gettop)
@@ -343,6 +354,10 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeControl, 1);
     lua_setfield(lua, -2, "Control");
+
+    lua_pushlightuserdata(lua, kc);
+    PushCClosure(lua, &MakeDungeonLayout, 1);
+    lua_setfield(lua, -2, "DungeonLayout");
     
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeGraphic, 1);

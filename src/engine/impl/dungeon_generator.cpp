@@ -25,6 +25,7 @@
 
 #include "coord_transform.hpp"
 #include "dungeon_generator.hpp"
+#include "dungeon_layout.hpp"
 #include "dungeon_map.hpp"
 #include "item.hpp"
 #include "item_generator.hpp"
@@ -671,7 +672,7 @@ void DungeonGenerator::doLayout(int nplayers)
     const int homes_required = (home_type == H_RANDOM_RESPAWN ? 0 : nplayers) + (exit_type == E_RANDOM ? 1 : 0);
     
     // randomize the layout first:
-    const DungeonLayout * layout = rlayout->choose();
+    auto_ptr<DungeonLayout> layout = rlayout->choose(lua);
     
     // get width and height
     lwidth = layout->getWidth();

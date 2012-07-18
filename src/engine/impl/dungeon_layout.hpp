@@ -29,9 +29,13 @@
 #ifndef DUNGEON_LAYOUT_HPP
 #define DUNGEON_LAYOUT_HPP
 
+#include "boost/noncopyable.hpp"
+
 #include <string>
 #include <vector>
 using namespace std;
+
+struct lua_State;
 
 enum BlockType {
     BT_NONE, BT_BLOCK, BT_EDGE, BT_SPECIAL, NUM_BLOCK_TYPES
@@ -39,16 +43,14 @@ enum BlockType {
 
 class DungeonLayout {
 public:
-    DungeonLayout(int w, int h);
-    void setBlockType(int x, int y, BlockType bt);
+    // Pops a Lua table containing "width", "height", "data" and
+    // constructs DungeonLayout from it. Throws LuaError if there is a
+    // problem (w/ stack unchanged).
+    explicit DungeonLayout(lua_State *lua);
 
-    // specify whether exits can be created between adjacent blocks.
+    // accessors
     // for vert exits,  x ranges from 0 to w-1, y ranges from 0 to h-2.
     // for horiz exits, x ranges from 0 to w-2, y ranges from 0 to h-1.
-    void setHorizExit(int x, int y, bool have_exit);
-    void setVertExit(int x, int y, bool have_exit);
-    
-    // accessors
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     BlockType getBlockType(int x, int y) const;
@@ -62,15 +64,21 @@ private:
     vector<bool> vert_exits;
 };
 
-class RandomDungeonLayout {
+class RandomDungeonLayout : boost::noncopyable {
 public:
-    void add(const DungeonLayout * d) { if (d) data.push_back(d); }
-    const DungeonLayout * choose() const;  // picks one of the layouts at random.
-    void setName(const std::string &n) { name = n; }
+    // Sets up a random dungeon layout from Lua args 1 and 2
+    explicit RandomDungeonLayout(lua_State *lua_);
+    ~RandomDungeonLayout();
+
+    // Picks one of the dungeon layouts at random
+    std::auto_ptr<DungeonLayout> choose(lua_State *lua) const;
+
+    // Get name
     const std::string & getName() const { return name; }
+
 private:
-    vector<const DungeonLayout *> data;
     std::string name;
+    lua_State *lua;
 };
 
 #endif

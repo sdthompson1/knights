@@ -18,6 +18,7 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
+dofile("dungeon_layouts.lua")
 dofile("sounds.lua")
 dofile("lua_test.lua")
 dofile("anims.lua")

@@ -120,6 +120,7 @@ public:
     boost::thread update_thread;
     volatile bool update_thread_wants_to_exit;
     volatile bool emergency_exit;  // lua_State is unusable; close the game asap.
+    std::string emergency_err_msg;
 
     KnightsLog *knights_log;
     std::string game_name;
@@ -823,6 +824,7 @@ namespace {
             } catch (LuaPanic &e) {
                 // If this happens we need to exit game asap
                 kg.emergency_exit = true;
+                kg.emergency_err_msg = e.what();
                 std::string msg = std::string("Fatal Lua error: ") + e.what();
                 sendError(msg.c_str());
                 
@@ -1323,6 +1325,7 @@ namespace {
             // Start the update thread.
             kg.update_thread_wants_to_exit = false;
             kg.emergency_exit = false;
+            kg.emergency_err_msg.clear();
             kg.startup_signal = false;
             kg.startup_err_msg.clear();
             UpdateThread thr(kg, kg.timer);
@@ -1338,10 +1341,11 @@ namespace {
 
                 if (kg.update_thread_wants_to_exit) {
                     // The sub-thread has exited. This usually signals an error of some sort.
+                    kg.update_thread.join();
 
                     if (kg.emergency_exit) {
                         // very serious error -- escalate to our caller.
-                        throw LuaError("Fatal Lua error during game startup");
+                        throw LuaError("Fatal Lua error during startup: " + kg.emergency_err_msg);
                     }
                     
                     if (kg.startup_err_msg.empty()) kg.startup_err_msg = "Update thread failed to start.";
@@ -2153,7 +2157,7 @@ void KnightsGame::getOutputData(GameConnection &conn, std::vector<unsigned char>
             // Currently (16-Jul-2012) this results in the entire server being shut down.
             // It would be better if only this one game could be closed, but I can't work 
             // out a clean way of doing that at the moment.
-            throw LuaPanic("Fatal Lua error in update thread.");
+            throw LuaPanic("Fatal Lua error in update thread: " + pimpl->emergency_err_msg);
         }
     }
 }

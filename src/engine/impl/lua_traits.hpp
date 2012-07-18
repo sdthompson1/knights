@@ -35,6 +35,7 @@ class Sound;
 class ItemType;
 class Overlay;
 class Player;
+class RandomDungeonLayout;
 class Tile;
 
 // Define LuaTraits template which contains:
@@ -53,7 +54,8 @@ enum {
     TAG_CREATURE,
     TAG_CONTROL,
     TAG_OVERLAY,
-    TAG_ANIM
+    TAG_ANIM,
+    TAG_RANDOM_DUNGEON_LAYOUT
 };
 
 template<class T>
@@ -103,6 +105,11 @@ struct LuaTraits<Overlay> {
 template<>
 struct LuaTraits<Anim> {
     enum { tag = TAG_ANIM };
+};
+
+template<>
+struct LuaTraits<RandomDungeonLayout> {
+    enum { tag = TAG_RANDOM_DUNGEON_LAYOUT };
 };
 
 #endif

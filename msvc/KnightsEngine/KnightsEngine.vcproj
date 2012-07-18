@@ -270,6 +270,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\lua_check.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\lua_exec_coroutine.cpp"
 				>
 			</File>
@@ -513,6 +517,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\lockable.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\lua_check.hpp"
 				>
 			</File>
 			<File

@@ -49,6 +49,8 @@ class Segment;
 class SegmentSet;
 class Tile;
 
+struct lua_State;
+
 //
 // Usage: create a DungeonGenerator, apply your DungeonDirectives to it, then call "generate".
 // NB The present algorithm assumes that all Segments are the same size.
@@ -60,10 +62,12 @@ enum ExitType { E_NONE, E_SELF, E_OTHER, E_RANDOM, E_SPECIAL };
 class DungeonGenerator {
 public:
     // hdoor and vdoor are wooden doors (used to knock through between adjacent segments).
-    DungeonGenerator(const SegmentSet &rs, shared_ptr<Tile> wall_,
+    DungeonGenerator(lua_State *lua_,
+                     const SegmentSet &rs, shared_ptr<Tile> wall_,
                      shared_ptr<Tile> hdoor1, shared_ptr<Tile> hdoor2,
                      shared_ptr<Tile> vdoor1, shared_ptr<Tile> vdoor2) 
-        : segment_set(rs), wall(wall_), horiz_door_1(hdoor1), horiz_door_2(hdoor2),
+        : lua(lua_),
+          segment_set(rs), wall(wall_), horiz_door_1(hdoor1), horiz_door_2(hdoor2),
           vert_door_1(vdoor1), vert_door_2(vdoor2), rlayout(0), exit_type(E_NONE),
           exit_category(-1),
           home_type(H_NONE), premapped(false), pretrapped(false), nkeys(0),
@@ -168,6 +172,8 @@ private:
     void checkConnectivity(DungeonMap &dmap, const MapCoord &from_where, int num_keys);
     
 private:
+    lua_State *lua;
+
     // "fixed" data
     const SegmentSet &segment_set;
     shared_ptr<Tile> wall, horiz_door_1, horiz_door_2, vert_door_1, vert_door_2;
