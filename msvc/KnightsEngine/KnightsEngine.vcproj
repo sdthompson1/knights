@@ -278,10 +278,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\engine\impl\lua_table_base.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\engine\impl\lua_userdata.cpp"
 				>
 			</File>
@@ -525,10 +521,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\lua_setup.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\engine\impl\lua_table_base.hpp"
 				>
 			</File>
 			<File

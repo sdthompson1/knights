@@ -24,6 +24,7 @@
 #ifndef CONTROL_HPP
 #define CONTROL_HPP
 
+#include "lua_table_base.hpp"
 #include "user_control.hpp"
 
 #include <vector>
@@ -36,19 +37,24 @@ class Action;
 // (eg move, activate, pick up item).
 //
 
-class Control : public UserControl {
+class Control : public UserControl, public LuaTableBase {
 public:
-    Control(const Graphic *menu_gfx, MapDirection menu_dir,
+    Control(lua_State *lua, int idx,
+            const Graphic *menu_gfx, MapDirection menu_dir,
             int tap_pri, int action_slot, int action_pri, bool suicide,
             bool cts, unsigned int special, const std::string &name,
             const Action *action_)
         : UserControl(menu_gfx, menu_dir, tap_pri, action_slot, action_pri, suicide, cts, special, name),
+          LuaTableBase(lua, idx),
           action(action_)
     { }
 
     // 'cut down' constructor for the standard controls.
     Control(int id, bool cts, const Action *ac)
-        : UserControl(0, D_NORTH, 0, 0, 0, false, cts, 0, ""), action(ac) { setID(id); }
+        : UserControl(0, D_NORTH, 0, 0, 0, false, cts, 0, ""),
+          LuaTableBase(0, 0),
+          action(ac)
+    { setID(id); }
 
     // action to run when the control is selected.
     const Action * getAction() const { return action; }

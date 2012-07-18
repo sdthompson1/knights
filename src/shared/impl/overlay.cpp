@@ -28,8 +28,9 @@
 #include "overlay.hpp"
 #include "protocol.hpp"
 
-Overlay::Overlay()
-    : id(-1)
+Overlay::Overlay(lua_State *lua, int idx)
+    : LuaTableBase(lua, idx),
+      id(-1)
 {
     for (int i = 0; i < 4; ++i) raw_graphic[i] = 0;
     for (int i = 0; i < N_OVERLAY_FRAME*4; ++i) {
@@ -70,6 +71,7 @@ void Overlay::setOffset(MapDirection facing, int frame, MapDirection new_dir, in
 }
 
 Overlay::Overlay(int id_, Coercri::InputByteBuf &buf, const std::vector<const Graphic *> &graphics)
+: LuaTableBase(0, 0)
 {
     id = id_;
     for (int i = 0; i < 4; ++i) {

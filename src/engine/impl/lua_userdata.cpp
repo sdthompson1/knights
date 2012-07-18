@@ -91,7 +91,9 @@ namespace {
         const void *ptr = GetPtr(*ud);
         
         switch (ud->tag) {
+        case TAG_CONTROL:
         case TAG_ITEM_TYPE:
+        case TAG_OVERLAY:
             {
                 const LuaTableBase *tab = static_cast<const LuaTableBase*>(ptr);
                 tab->pushTable(lua);

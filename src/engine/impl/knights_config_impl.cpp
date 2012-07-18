@@ -590,7 +590,8 @@ Control * KnightsConfigImpl::popControl()
         
         const int id = controls.size() + lua_controls.size() + NUM_STANDARD_CONTROLS + 1;
 
-        Control * new_ctrl = new Control(g, mdir, tp, abs, abp, suicide, cts, ms, name, ac);
+        Control * new_ctrl = new Control(0, 0, 
+                                         g, mdir, tp, abs, abp, suicide, cts, ms, name, ac);
         new_ctrl->setID(id);
         
         it = controls.insert(make_pair(p, new_ctrl)).first;
@@ -1325,7 +1326,7 @@ Overlay* KnightsConfigImpl::popOverlay()
 
         if (lst.getSize()==4) {
             const int id = overlays.size() + lua_overlays.size() + 1;
-            it = overlays.insert(make_pair(p, new Overlay)).first;
+            it = overlays.insert(make_pair(p, new Overlay(0,0))).first;
             it->second->setID(id);
             for (int i=0; i<4; ++i) {
                 lst.push(i);

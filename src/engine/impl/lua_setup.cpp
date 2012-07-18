@@ -223,7 +223,8 @@ namespace {
         std::string name = LuaGetString(lua, "name");
         bool suicide_key = LuaGetBool(lua, "suicide_key", false);
 
-        auto_ptr<Control> ctrl(new Control(menu_icon, menu_direction, tap_priority, action_bar_slot,
+        auto_ptr<Control> ctrl(new Control(lua, -1,
+                                           menu_icon, menu_direction, tap_priority, action_bar_slot,
                                            action_bar_priority, suicide_key, continuous, menu_special,
                                            name, action));
 
@@ -338,9 +339,9 @@ namespace {
     {
         KnightsConfigImpl *kc = GetKC(lua, "Overlays");
 
-        auto_ptr<Overlay> result(new Overlay);
+        auto_ptr<Overlay> result(new Overlay(lua, 1));
         
-        // expects a table of four entries to be in stack position 1.
+        // expects a table of four entries to be in stack position 1 (top of stack).
         for (int i = 0; i < 4; ++i) {
             lua_pushinteger(lua, i+1);
             lua_gettable(lua, 1);

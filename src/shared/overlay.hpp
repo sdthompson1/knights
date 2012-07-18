@@ -30,13 +30,14 @@
 #ifndef OVERLAY_HPP
 #define OVERLAY_HPP
 
+#include "lua_table_base.hpp"
 #include "map_support.hpp"
 
 class Graphic;
 
-class Overlay {
+class Overlay : public LuaTableBase {
 public:
-    Overlay();
+    Overlay(lua_State *lua, int idx);
     void setID(int id_) { id = id_; }  // called by KnightsConfigImpl
     
     int getID() const { return id; }

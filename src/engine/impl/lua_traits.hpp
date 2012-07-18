@@ -51,7 +51,9 @@ enum {
     TAG_TILE,
     TAG_PLAYER,
     TAG_CREATURE,
-    TAG_CONTROL
+    TAG_CONTROL,
+    TAG_OVERLAY,
+    TAG_ANIM
 };
 
 template<class T>
@@ -95,12 +97,12 @@ struct LuaTraits<Control> {
 
 template<>
 struct LuaTraits<Overlay> {
-    enum { tag = 8 };
+    enum { tag = TAG_OVERLAY };
 };
 
 template<>
 struct LuaTraits<Anim> {
-    enum { tag = 9 };
+    enum { tag = TAG_ANIM };
 };
 
 #endif
