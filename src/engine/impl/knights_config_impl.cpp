@@ -165,12 +165,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     MyFileLoader my_file_loader;
     kf.reset(new KFile(config_file_name, my_file_loader, random_ints, lua_state.get()));
 
-    // Get overlay offsets
-    // Note: Needs to be done before Lua code is loaded, because one of the Lua callbacks ends up
-    // creating the wand of undeath which needs to create the zombie monster type which... (etc)
-    kf->pushSymbol("OVERLAY_OFFSETS");
-    popOverlayOffsets();
-
     // Load some lua code into the context
     // TODO: The lua file name should probably be an input to the ctor, like the kconfig name is ?
     LuaExecRStream(lua_state.get(), "main.lua", 0, 0, 
@@ -1231,19 +1225,17 @@ Overlay * KnightsConfigImpl::popOverlay(Overlay *dflt)
     }
 }
 
-void KnightsConfigImpl::popOverlayOffsets()
+void KnightsConfigImpl::setOverlayOffsets(lua_State *lua)
 {
-    if (!kf) return;
-    KFile::List lst(*kf, "OverlayOffsetList", Overlay::N_OVERLAY_FRAME*4*3);
+    // expects to find arguments at positions 1,2,3,etc on the lua stack.
+    // does not modify the lua stack.
+    
     for (int fr = 0; fr < Overlay::N_OVERLAY_FRAME; ++fr) {
         for (int fac = 0; fac < 4; ++fac) {
             const int i = (fr*4 + fac)*3;
-            lst.push(i);
-            overlay_offsets[fr][fac].dir = popMapDirection();
-            lst.push(i+1);
-            overlay_offsets[fr][fac].ofsx = kf->popInt();
-            lst.push(i+2);
-            overlay_offsets[fr][fac].ofsy = kf->popInt();
+            overlay_offsets[fr][fac].dir = GetMapDirection(lua, i+1);
+            overlay_offsets[fr][fac].ofsx = luaL_checkinteger(lua, i+2);
+            overlay_offsets[fr][fac].ofsy = luaL_checkinteger(lua, i+3);
         }
     }
 }

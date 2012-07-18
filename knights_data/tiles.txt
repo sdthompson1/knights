@@ -22,7 +22,6 @@
 
 include "fixup.txt"
 
-include "graphics.txt"
 
 # Depths:
 # -4 = open pits, treasure chests, doors.   (We don't want blood etc appearing on top of these)

@@ -295,6 +295,17 @@ namespace {
 
 
     // Upvalue: KnightsConfigImpl*
+    // Input: 60 arguments for the overlay offsets
+    // Output: nothing
+    int SetOverlayOffsets(lua_State *lua)
+    {
+        KnightsConfigImpl *kc = GetKC(lua, "overlay offsets");
+        kc->setOverlayOffsets(lua);
+        return 0;
+    }
+
+
+    // Upvalue: KnightsConfigImpl*
     // Input: one string (kconfig variable name)
     // Output: userdata representing the anim
     int MakeKConfigAnim(lua_State *lua)
@@ -389,6 +400,11 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     PushCClosure(lua, &MakeSound, 1);
     lua_setfield(lua, -2, "Sound");
 
+
+    lua_pushlightuserdata(lua, kc);
+    PushCClosure(lua, &SetOverlayOffsets, 1);
+    lua_setfield(lua, -2, "SetOverlayOffsets");
+    
     
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeKconfigItemType, 1);

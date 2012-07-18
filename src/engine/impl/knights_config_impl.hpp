@@ -154,6 +154,8 @@ public:
     Overlay * addLuaOverlay(auto_ptr<Overlay> p);
     Sound * addLuaSound(const char *name);  // creates the sound and adds it.
 
+    void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
+    
     
     //
     // KConfig references -- each function pushes a userdata to the Lua stack.
@@ -205,7 +207,6 @@ public:
     MonsterType * popMonsterType();
     Overlay * popOverlay();
     Overlay * popOverlay(Overlay *dflt);
-    void popOverlayOffsets();
     void popPotionRenderer();
     float popProbability();  // Read as integer, then divided by 100. Error if result <0 or >1.
     float popProbability(int dflt);  // The 'dflt' is out of 100.
