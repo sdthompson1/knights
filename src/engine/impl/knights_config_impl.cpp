@@ -246,13 +246,12 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         "HOOK_SHOOT",
         "HOOK_MISSILE_MISS"
     };
-        
+    
+    // Hooks are read from the global "kts" table, which should still be on top of lua stack
     for (int i=0; i<sizeof(hook_names)/sizeof(hook_names[0]); ++i) {
-        const string hook_name(hook_names[i]);
-        kf->pushSymbolOptional(hook_name);
-        const Action *ac = popAction(0);
+        const Action *ac = LuaGetAction(lua_state.get(), -1, hook_names[i], this);
         if (ac) {
-            hooks.insert(make_pair(hook_name, ac));
+            hooks.insert(std::make_pair(hook_names[i], ac));
         }
     }
 
@@ -387,7 +386,21 @@ Action * KnightsConfigImpl::popAction()
     map<const Value *,Action*>::const_iterator it = actions.find(p);
     if (it == actions.end()) {
 
-        if (kf->isList()) {
+        if (kf->isLua()) {
+            kf->popLua();  // pushes to lua stack
+            
+            // TEMPORARY code copied/pasted from lua_setup.cpp. This
+            // should disappear once KConfig files are eliminated.
+            Action *a = 0;
+            if (lua_isnil(getLuaState().get(), -1)) {
+                lua_pop(getLuaState().get(), 1);
+            } else {
+                a = new LuaAction(getLuaState()); // pops the lua stack
+            }
+
+            it = actions.insert(make_pair(p, a)).first;
+        
+        } else if (kf->isList()) {
             // ListAction
 
             ListAction *action = new ListAction;
