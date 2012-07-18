@@ -20,4 +20,5 @@
 
 dofile("sounds.lua")
 dofile("lua_test.lua")
+dofile("anims.lua")
 dofile("items.lua")

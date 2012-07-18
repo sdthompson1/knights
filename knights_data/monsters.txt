@@ -18,8 +18,6 @@
 # along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-include "anims.txt"
-
 
 m_vampire_bat = {
 

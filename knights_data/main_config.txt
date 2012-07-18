@@ -20,7 +20,6 @@
 
 
 include "graphics.txt"
-include "anims.txt"
 include "controls.txt"
 include "tiles.txt"
 include "tutorial.txt"

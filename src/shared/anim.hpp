@@ -34,18 +34,28 @@
 #define ANIM_HPP
 
 #include "colour_change.hpp"
+#include "lua_table_base.hpp"
 #include "map_support.hpp"
 
 #include "network/byte_buf.hpp" // coercri
 
 class Graphic;
 
-class Anim {
+class Anim : public LuaTableBase {
 public:
-    explicit Anim(int id_) : id(id_), vbat_mode(false)
-        { for (int i=0; i<4; ++i) for (int j=0; j<NFRAMES; ++j) g[i][j] = 0; }
-    void setBatMode() { vbat_mode = true; }
+    // Construct from lua
+    Anim(int id_, lua_State *lua, int idx);
 
+    // Overwrite id (useful if copying another Anim and then modifying it)
+    void setID(int id_) { id = id_; }
+    
+    // Set the colour changes (which can't be initialized from the lua table currently).
+    void setColourChangeNormal(const ColourChange &cc)
+        { cc_normal = cc; }
+    void setColourChangeInvulnerable(const ColourChange &cc)
+        { cc_invulnerable = cc; }
+
+    // Accessors
     const Graphic * getGraphic(MapDirection facing, int frame) const
         { return g[facing][frame]; }
     const ColourChange & getColourChange(bool invuln) const
@@ -55,16 +65,7 @@ public:
     int getID() const
         { return id; }
     
-    void setGraphic(MapDirection d, int frm, const Graphic *g_) 
-        { g[d][frm] = g_; }
-    void setColourChangeNormal(const ColourChange &cc)
-        { cc_normal = cc; }
-    void setColourChangeInvulnerable(const ColourChange &cc)
-        { cc_invulnerable = cc; }
-    void setID(int i)  // called by KnightsConfig
-        { id = i; }
-
-    // serialization
+    // Serialization
     explicit Anim(int id_, Coercri::InputByteBuf &buf, const std::vector<const Graphic *> &graphics);
     void serialize(Coercri::OutputByteBuf &buf) const;
     

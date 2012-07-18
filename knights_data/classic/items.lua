@@ -97,7 +97,7 @@ i_axe = kts.ItemType {
     parry_chance         = 0.8,
 
     can_throw         = true,
-    missile_anim      = kts.kconfig_anim("a_axe"),
+    missile_anim      = a_axe,
     missile_range     = 5,
     missile_speed     = 250,
     missile_hit_multiplier = 5,
@@ -131,7 +131,7 @@ i_dagger = kts.ItemType {
     max_stack = 10,
 
     can_throw         = true,
-    missile_anim      = kts.kconfig_anim("a_dagger"),
+    missile_anim      = a_dagger,
     missile_range     = 10,
     missile_speed     = 350,
     missile_hit_multiplier = 1,
@@ -163,7 +163,7 @@ i_bolts = kts.ItemType {
     backpack_slot = 14,
     max_stack = 10,
 
-    missile_anim = kts.kconfig_anim("a_bolt"),
+    missile_anim = a_bolt,
     missile_range = 50,
     missile_speed = 440,
     missile_hit_multiplier = 1,

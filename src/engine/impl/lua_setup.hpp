@@ -24,11 +24,47 @@
 #ifndef LUA_SETUP_HPP
 #define LUA_SETUP_HPP
 
+#include "item_type.hpp"    // for ItemSize enum
+#include "lua_userdata.hpp"
+#include "map_support.hpp"  // for MapDirection enum
+
+#include "kconfig_fwd.hpp"
+
+#include "lua.hpp"
+
+class Action;
 class KnightsConfigImpl;
-struct lua_State;
 
 // Sets up Lua functions for creating ItemTypes, etc, and adding them
 // to the KnightsConfigImpl.
 void AddLuaConfigFunctions(lua_State *, KnightsConfigImpl *);
+
+
+// These functions are used by constructors (e.g. ItemType ctor) to
+// get values from the Lua state.
+
+// Read values from a lua table (at tbl_idx)
+bool LuaGetBool(lua_State *lua, int tbl_idx, const char *key, bool dflt = false);
+int LuaGetInt(lua_State *lua, int tbl_idx, const char *key, int dflt = 0);
+float LuaGetFloat(lua_State *lua, int tbl_idx, const char *key, float dflt = 0.0f);
+std::string LuaGetString(lua_State *lua, int tbl_idx, const char *key, const char *dflt = "");
+ItemSize LuaGetItemSize(lua_State *lua, int tbl_idx, const char *key, ItemSize dflt = IS_NOPICKUP);
+MapDirection LuaGetMapDirection(lua_State *lua, int tbl_idx, const char *key, MapDirection dflt = D_NORTH);
+const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, int tbl_idx, const char *key, KnightsConfigImpl *kc);
+Action * LuaGetAction(lua_State *lua, int tbl_idx, const char *key, KnightsConfigImpl *kc);
+
+template<class T> T * LuaGetPtr(lua_State *lua, int tbl_idx, const char *key)
+{
+    lua_pushstring(lua, key);
+    if (tbl_idx < 0) --tbl_idx;
+    lua_gettable(lua, tbl_idx);
+    T * result = ReadLuaPtr<T>(lua, -1);
+    lua_pop(lua, 1);
+    return result;
+}
+
+// Get the KnightsConfigImpl* from the lua state.
+// If not available, raises lua error "Cannot create new " + msg + " during the game".
+KnightsConfigImpl * GetKC(lua_State *lua, const char *msg);
 
 #endif

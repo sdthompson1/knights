@@ -289,7 +289,7 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     // Fill knight_anims
     for (int i = 0; i < house_colours_normal.size(); ++i) {
         knight_anims.push_back(new Anim(*knight_anim));
-        knight_anims.back()->setID(knight_anims.size() + anims.size());
+        knight_anims.back()->setID(knight_anims.size() + lua_anims.size());
         knight_anims.back()->setColourChangeNormal(house_colours_normal[i]);
         knight_anims.back()->setColourChangeInvulnerable(house_colours_invulnerable[i]);
     }
@@ -299,7 +299,6 @@ KnightsConfigImpl::~KnightsConfigImpl()
 {
     using std::for_each;
     for_each(actions.begin(), actions.end(), Delete<Action>());
-    for_each(anims.begin(), anims.end(), Delete<Anim>());
     for_each(controls.begin(), controls.end(), Delete<Control>());
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
     for_each(dungeon_layouts.begin(), dungeon_layouts.end(), Delete<DungeonLayout>());
@@ -476,34 +475,18 @@ Action * KnightsConfigImpl::popAction(Action *dflt)
 Anim * KnightsConfigImpl::popAnim()
 {
     if (!kf) return 0;
-    const Value * p = kf->getTop();
-    map<const Value *,Anim*>::const_iterator it = anims.find(p);
-    if (it == anims.end()) {
-        it = anims.insert(make_pair(p, new Anim(anims.size()+1))).first;
-        KFile::List lst(*kf, "Anim", 4, 5, 12, 16, 32);
 
-        int sz = lst.getSize();
-        int first_entry = 0;
-        if (sz == 5) {
-            // This is really a 4-element Anim with the string "bat" identifying "bat mode"
-            it->second->setBatMode();
-            --sz;
-            first_entry = 1;
-        }
-        
-        for (int f=0; f<8; ++f) {
-            if (sz >= (f+1)*4) {
-                for (int d=0; d<4; ++d) {
-                    lst.push(f*4+d + first_entry);
-                    Graphic *g = popGraphic();
-                    it->second->setGraphic(MapDirection(d), f, g);
-                }
-            }
-        }
-    } else {
-        kf->pop();
+    Anim *result = 0;
+
+    if (kf->isLua()) {
+        kf->popLua();
+        result = ReadLuaPtr<Anim>(lua_state.get(), -1);
+        lua_pop(lua_state.get(), 1);
     }
-    return it->second;
+
+    if (!result) kf->errExpected("anim");
+
+    return result;
 }
 
 Anim * KnightsConfigImpl::popAnim(Anim *dflt)
@@ -2085,9 +2068,9 @@ namespace {
 void KnightsConfigImpl::getAnims(std::vector<const Anim*> &out) const
 {
     out.clear();
-    out.reserve(anims.size() + knight_anims.size());
-    for (std::map<const Value *, Anim*>::const_iterator it = anims.begin(); it != anims.end(); ++it) {
-        out.push_back(it->second);
+    out.reserve(knight_anims.size() + lua_anims.size());
+    for (std::vector<Anim*>::const_iterator it = lua_anims.begin(); it != lua_anims.end(); ++it) {
+        out.push_back(*it);
     }
     std::copy(knight_anims.begin(), knight_anims.end(), std::back_inserter(out));
     std::sort(out.begin(), out.end(), CompareID<Anim>());
@@ -2435,9 +2418,10 @@ Action * KnightsConfigImpl::addLuaAction(auto_ptr<Action> p)
     return q;
 }
 
-Anim * KnightsConfigImpl::addLuaAnim(auto_ptr<Anim> p)
+Anim * KnightsConfigImpl::addLuaAnim(lua_State *lua, int idx)
 {
-    Anim *q = p.release();
+    const int new_id = lua_anims.size() + 1;
+    Anim *q = new Anim(new_id, lua, idx);
     lua_anims.push_back(q);
     return q;
 }

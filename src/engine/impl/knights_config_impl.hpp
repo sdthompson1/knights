@@ -150,7 +150,7 @@ public:
     //
 
     Action * addLuaAction(auto_ptr<Action> p);
-    Anim * addLuaAnim(auto_ptr<Anim> p);
+    Anim * addLuaAnim(lua_State *lua, int idx);
     Control * addLuaControl(auto_ptr<Control> p);
     void addLuaGraphic(auto_ptr<Graphic> p);
     ItemType * addLuaItemType(auto_ptr<ItemType> p);
@@ -293,7 +293,6 @@ private:
     // (Deleted by ~KnightsConfigImpl.)
 
     std::map<const Value *, Action *> actions;
-    std::map<const Value *, Anim *> anims;
     std::map<const Value *, Control *> controls;
     std::map<const Value *, DungeonDirective *> dungeon_directives;
     std::map<const Value *, DungeonLayout *> dungeon_layouts;

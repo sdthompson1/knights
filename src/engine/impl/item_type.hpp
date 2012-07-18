@@ -69,6 +69,9 @@ enum ItemSize {
 
 class ItemType : public LuaTableBase {
 public:
+    // TODO: Split this into a "construct from lua" ctor, and a
+    // "default" ctor used for C++-constructed itemtypes. Get rid of
+    // long construct() method(s).
     ItemType(lua_State *lua, int idx);
     void construct(const Graphic *gfx, const Graphic *stack_gfx,
                    const Graphic *backpack_gfx, const Graphic *backpack_overdraw,

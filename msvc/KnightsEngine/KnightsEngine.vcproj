@@ -158,6 +158,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\anim_lua_ctor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\concrete_quests.cpp"
 				>
 			</File>

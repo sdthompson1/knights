@@ -79,13 +79,13 @@ namespace {
         return result;
     }
     
+
+    // Macro used by some LuaGetXXX functions
     
-    // Helper functions for accessing values from a lua table
-    // (assumed to be at top of stack).
-    
-#define LUA_GET(lua, key, dflt, T, GET)  \
+#define LUA_GET(lua, idx, key, dflt, T, GET)     \
     lua_pushstring(lua, key);            \
-    lua_gettable(lua, -2);               \
+    if (idx < 0) --idx;                  \
+    lua_gettable(lua, idx);              \
     T result;                            \
     if (lua_isnil(lua, -1)) {            \
         result = dflt;                   \
@@ -94,116 +94,20 @@ namespace {
     }                                    \
     lua_pop(lua, 1);                     \
     return result                       
+
     
-    bool LuaGetBool(lua_State *lua, const char * key, bool dflt = false)
-    {
-        LUA_GET(lua, key, dflt, bool, lua_toboolean);
-    }
-
-    int LuaGetInt(lua_State *lua, const char * key, int dflt = 0)
-    {
-        LUA_GET(lua, key, dflt, int, lua_tointeger);
-    }
-
-    float LuaGetFloat(lua_State *lua, const char *key, float dflt = 0.0f)
-    {
-        LUA_GET(lua, key, dflt, float, lua_tonumber);
-    }
-
-    std::string LuaGetString(lua_State *lua, const char *key, const char * dflt = "")
-    {
-        LUA_GET(lua, key, dflt, std::string, lua_tostring);
-    }
-
-    template<class T>
-    T * LuaGetPtr(lua_State *lua, KnightsConfigImpl *kc, const char *key)
-    {
-        lua_pushstring(lua, key);
-        lua_gettable(lua, -2);
-        T * result = ReadLuaPtr<T>(lua, -1);
-        lua_pop(lua, 1);
-        return result;
-    }
-
-    ItemSize LuaGetItemSize(lua_State *lua, const char *key, ItemSize dflt = IS_NOPICKUP)
-    {
-        std::string s = LuaGetString(lua, key);
-        if (s == "held") return IS_BIG;
-        else if (s == "backpack") return IS_SMALL;
-        else if (s == "magic") return IS_MAGIC;
-        else if (s == "nopickup") return IS_NOPICKUP;
-        else return dflt;
-    }
-
-    MapDirection LuaGetMapDirection(lua_State *lua, const char *key, MapDirection dflt = D_NORTH)
-    {
-        lua_pushstring(lua, key);
-        lua_gettable(lua, -2);
-        MapDirection result = dflt;
-        if (lua_isstring(lua, -1)) {
-            result = GetMapDirection(lua, -1);
-        }
-        lua_pop(lua, 1);
-        return result;
-    }
-
-    const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, KnightsConfigImpl *kc, const char *key)
-    {
-        // Pops Lua nil, function or number; returns a RandomInt* (can be null).
-
-        lua_pushstring(lua, key);    // [.. tbl key]
-        lua_gettable(lua, -2);       // [.. tbl function/number]
-
-        LuaRandomInt *result = 0;
-
-        if (lua_isnil(lua, -1)) {
-            lua_pop(lua, 1);
-        } else if (!lua_isfunction(lua, -1) && !lua_isnumber(lua, -1)) {
-            luaL_error(lua, "'%s': expected function or number, got %s", key,
-                       lua_typename(lua, lua_type(lua, -1)));
-        } else {
-            result = new LuaRandomInt(lua);   // pops function/number
-            kc->getRandomIntContainer().add(result);  // transfers ownership
-        }
-
-        return result;
-    }
-
-    KnightsConfigImpl * GetKC(lua_State *lua, const char * msg)
-    {
-        KnightsConfigImpl * kc = static_cast<KnightsConfigImpl*>(lua_touserdata(lua, lua_upvalueindex(2)));
-        if (!kc->doingConfig()) {
-            luaL_error(lua, (std::string("Cannot create new ") + msg + " during the game").c_str());
-        }
-        return kc;
-    }
-
-    Action * LuaGetAction(lua_State *lua, KnightsConfigImpl *kc, const char *key)
-    {
-        // This builds a new LuaAction object from the function on the top of the stack,
-        // and returns it. (The object will be added to KnightsConfigImpl for deletion
-        // when ~KnightsConfigImpl is called.)
-        
-        lua_pushstring(lua, key);
-        lua_gettable(lua, -2);   // function is now at top of stack
-
-        Action *ac = 0;
-        if (lua_isnil(lua, -1)) {
-            lua_pop(lua, 1);
-        } else if (!lua_isfunction(lua, -1)) {
-            luaL_error(lua, "'%s': expected function, got %s", key,
-                       lua_typename(lua, lua_type(lua, -1)));
-        } else {
-            auto_ptr<Action> action(new LuaAction(kc->getLuaState()));  // pops stack
-            ac = kc->addLuaAction(action);  // transfers ownership
-        }
-        return ac;
-    }
-        
-
     //
     // Lua Config Functions.
     //
+
+    int MakeAnim(lua_State *lua)
+    {
+        KnightsConfigImpl * kc = GetKC(lua, "Anims");
+        Anim * anim = kc->addLuaAnim(lua, 1);
+        NewLuaPtr<Anim>(lua, anim);
+        return 1;
+    }
+    
 
     // Upvalue: KnightsConfigImpl*
     // Input: Table representing a new Control
@@ -212,16 +116,16 @@ namespace {
     {
         KnightsConfigImpl * kc = GetKC(lua, "Controls");
 
-        const Action * action = LuaGetAction(lua, kc, "action");
-        int action_bar_slot = LuaGetInt(lua, "action_bar_slot", -1);
-        int tap_priority = LuaGetInt(lua, "tap_priority", 0);
-        int action_bar_priority = LuaGetInt(lua, "action_bar_priority", tap_priority);
-        bool continuous = LuaGetBool(lua, "continuous", false);
-        MapDirection menu_direction = LuaGetMapDirection(lua, "menu_direction", D_NORTH);
-        const Graphic * menu_icon = LuaGetPtr<Graphic>(lua, kc, "menu_icon");
-        unsigned int menu_special = static_cast<unsigned int>(LuaGetInt(lua, "menu_special", 0));
-        std::string name = LuaGetString(lua, "name");
-        bool suicide_key = LuaGetBool(lua, "suicide_key", false);
+        const Action * action = LuaGetAction(lua, 1, "action", kc);
+        int action_bar_slot = LuaGetInt(lua, 1, "action_bar_slot", -1);
+        int tap_priority = LuaGetInt(lua, 1, "tap_priority", 0);
+        int action_bar_priority = LuaGetInt(lua, 1, "action_bar_priority", tap_priority);
+        bool continuous = LuaGetBool(lua, 1, "continuous", false);
+        MapDirection menu_direction = LuaGetMapDirection(lua, 1, "menu_direction", D_NORTH);
+        const Graphic * menu_icon = LuaGetPtr<Graphic>(lua, 1, "menu_icon");
+        unsigned int menu_special = static_cast<unsigned int>(LuaGetInt(lua, 1, "menu_special", 0));
+        std::string name = LuaGetString(lua, 1, "name");
+        bool suicide_key = LuaGetBool(lua, 1, "suicide_key", false);
 
         auto_ptr<Control> ctrl(new Control(lua, -1,
                                            menu_icon, menu_direction, tap_priority, action_bar_slot,
@@ -254,66 +158,66 @@ namespace {
     {
         KnightsConfigImpl * kc = GetKC(lua, "ItemTypes");
         
-        const bool allow_strength = LuaGetBool(lua, "allow_strength", true);
+        const bool allow_strength = LuaGetBool(lua, 1, "allow_strength", true);
 
-        const ItemType * ammo = LuaGetPtr<const ItemType>(lua, kc, "ammo");
+        const ItemType * ammo = LuaGetPtr<const ItemType>(lua, 1, "ammo");
 
-        Graphic * backpack_graphic = LuaGetPtr<Graphic>(lua, kc, "backpack_graphic");
-        Graphic * backpack_overdraw = LuaGetPtr<Graphic>(lua, kc, "backpack_overdraw");
-        int backpack_slot = LuaGetInt(lua, "backpack_slot");
+        Graphic * backpack_graphic = LuaGetPtr<Graphic>(lua, 1, "backpack_graphic");
+        Graphic * backpack_overdraw = LuaGetPtr<Graphic>(lua, 1, "backpack_overdraw");
+        int backpack_slot = LuaGetInt(lua, 1, "backpack_slot");
 
-        bool can_throw = LuaGetBool(lua, "can_throw");
+        bool can_throw = LuaGetBool(lua, 1, "can_throw");
 
-        Control * control = LuaGetPtr<Control>(lua, kc, "control");
+        Control * control = LuaGetPtr<Control>(lua, 1, "control");
 
-        bool fragile = LuaGetBool(lua, "fragile");
+        bool fragile = LuaGetBool(lua, 1, "fragile");
 
-        Graphic * graphic = LuaGetPtr<Graphic>(lua, kc, "graphic");
+        Graphic * graphic = LuaGetPtr<Graphic>(lua, 1, "graphic");
 
-        int key = LuaGetInt(lua, "key");
+        int key = LuaGetInt(lua, 1, "key");
 
-        int max_stack = LuaGetInt(lua, "max_stack", 1);
+        int max_stack = LuaGetInt(lua, 1, "max_stack", 1);
 
-        const Action * melee_action = LuaGetAction(lua, kc, "melee_action");
-        int melee_backswing_time = LuaGetInt(lua, "melee_backswing_time");
-        const RandomInt * melee_damage = LuaGetRandomInt(lua, kc, "melee_damage");
-        int melee_downswing_time = LuaGetInt(lua, "melee_downswing_time");
-        const RandomInt * melee_stun_time = LuaGetRandomInt(lua, kc, "melee_stun_time");
-        const RandomInt * melee_tile_damage = LuaGetRandomInt(lua, kc, "melee_tile_damage");
+        const Action * melee_action = LuaGetAction(lua, 1, "melee_action", kc);
+        int melee_backswing_time = LuaGetInt(lua, 1, "melee_backswing_time");
+        const RandomInt * melee_damage = LuaGetRandomInt(lua, 1, "melee_damage", kc);
+        int melee_downswing_time = LuaGetInt(lua, 1, "melee_downswing_time");
+        const RandomInt * melee_stun_time = LuaGetRandomInt(lua, 1, "melee_stun_time", kc);
+        const RandomInt * melee_tile_damage = LuaGetRandomInt(lua, 1, "melee_tile_damage", kc);
 
-        float missile_access_chance = LuaGetFloat(lua, "missile_access_chance");
-        const Anim * missile_anim = LuaGetPtr<Anim>(lua, kc, "missile_anim");
-        int missile_backswing_time = LuaGetInt(lua, "missile_backswing_time");
-        const RandomInt * missile_damage = LuaGetRandomInt(lua, kc, "missile_damage");
-        int missile_downswing_time = LuaGetInt(lua, "missile_downswing_time");
-        int missile_hit_multiplier = LuaGetInt(lua, "missile_hit_multiplier", 1);
-        int missile_range = LuaGetInt(lua, "missile_range");
-        int missile_speed = LuaGetInt(lua, "missile_speed");
-        const RandomInt * missile_stun_time = LuaGetRandomInt(lua, kc, "missile_stun_time");
+        float missile_access_chance = LuaGetFloat(lua, 1, "missile_access_chance");
+        const Anim * missile_anim = LuaGetPtr<Anim>(lua, 1, "missile_anim");
+        int missile_backswing_time = LuaGetInt(lua, 1, "missile_backswing_time");
+        const RandomInt * missile_damage = LuaGetRandomInt(lua, 1, "missile_damage", kc);
+        int missile_downswing_time = LuaGetInt(lua, 1, "missile_downswing_time");
+        int missile_hit_multiplier = LuaGetInt(lua, 1, "missile_hit_multiplier", 1);
+        int missile_range = LuaGetInt(lua, 1, "missile_range");
+        int missile_speed = LuaGetInt(lua, 1, "missile_speed");
+        const RandomInt * missile_stun_time = LuaGetRandomInt(lua, 1, "missile_stun_time", kc);
 
-        std::string name = LuaGetString(lua, "name");
+        std::string name = LuaGetString(lua, 1, "name");
 
-        Action *on_drop = LuaGetAction(lua, kc, "on_drop");
-        Action *on_hit = LuaGetAction(lua, kc, "on_hit");
-        Action *on_pick_up = LuaGetAction(lua, kc, "on_pick_up");
-        Action *on_walk_over = LuaGetAction(lua, kc, "on_walk_over");
+        Action *on_drop = LuaGetAction(lua, 1, "on_drop", kc);
+        Action *on_hit = LuaGetAction(lua, 1, "on_hit", kc);
+        Action *on_pick_up = LuaGetAction(lua, 1, "on_pick_up", kc);
+        Action *on_walk_over = LuaGetAction(lua, 1, "on_walk_over", kc);
 
-        bool open_traps = LuaGetBool(lua, "open_traps");
+        bool open_traps = LuaGetBool(lua, 1, "open_traps");
 
-        Overlay * overlay = LuaGetPtr<Overlay>(lua, kc, "overlay");
+        Overlay * overlay = LuaGetPtr<Overlay>(lua, 1, "overlay");
 
-        float parry_chance = LuaGetFloat(lua, "parry_chance");
+        float parry_chance = LuaGetFloat(lua, 1, "parry_chance");
 
-        const Action * reload_action = LuaGetAction(lua, kc, "reload_action");
-        int reload_action_time = LuaGetInt(lua, "reload_action_time", 250);
-        int reload_time = LuaGetInt(lua, "reload_time");
+        const Action * reload_action = LuaGetAction(lua, 1, "reload_action", kc);
+        int reload_action_time = LuaGetInt(lua, 1, "reload_action_time", 250);
+        int reload_time = LuaGetInt(lua, 1, "reload_time");
 
-        Graphic * stack_graphic = LuaGetPtr<Graphic>(lua, kc, "stack_graphic");
+        Graphic * stack_graphic = LuaGetPtr<Graphic>(lua, 1, "stack_graphic");
         if (!stack_graphic) stack_graphic = graphic;
         
-        int tutorial_key = LuaGetInt(lua, "tutorial");
+        int tutorial_key = LuaGetInt(lua, 1, "tutorial");
 
-        ItemSize item_size = LuaGetItemSize(lua, "type", IS_NOPICKUP);
+        ItemSize item_size = LuaGetItemSize(lua, 1, "type", IS_NOPICKUP);
 
         auto_ptr<ItemType> it(new ItemType(lua, -1));
         it->construct(graphic, stack_graphic, backpack_graphic, backpack_overdraw, overlay, item_size, max_stack,
@@ -433,6 +337,10 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
 
     
     lua_pushlightuserdata(lua, kc);
+    PushCClosure(lua, &MakeAnim, 1);
+    lua_setfield(lua, -2, "Anim");
+
+    lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeControl, 1);
     lua_setfield(lua, -2, "Control");
     
@@ -471,4 +379,106 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
 
     
     lua_pop(lua, 2); // []
+}
+
+
+// Helper functions for accessing values from a lua table
+// (assumed to be at top of stack).
+    
+bool LuaGetBool(lua_State *lua, int idx, const char * key, bool dflt)
+{
+    LUA_GET(lua, idx, key, dflt, bool, lua_toboolean);
+}
+
+int LuaGetInt(lua_State *lua, int idx, const char * key, int dflt)
+{
+    LUA_GET(lua, idx, key, dflt, int, lua_tointeger);
+}
+
+float LuaGetFloat(lua_State *lua, int idx, const char *key, float dflt)
+{
+    LUA_GET(lua, idx, key, dflt, float, lua_tonumber);
+}
+
+std::string LuaGetString(lua_State *lua, int idx, const char *key, const char * dflt)
+{
+    LUA_GET(lua, idx, key, dflt, std::string, lua_tostring);
+}
+
+ItemSize LuaGetItemSize(lua_State *lua, int idx, const char *key, ItemSize dflt)
+{
+    std::string s = LuaGetString(lua, idx, key);
+    if (s == "held") return IS_BIG;
+    else if (s == "backpack") return IS_SMALL;
+    else if (s == "magic") return IS_MAGIC;
+    else if (s == "nopickup") return IS_NOPICKUP;
+    else return dflt;
+}
+
+MapDirection LuaGetMapDirection(lua_State *lua, int idx, const char *key, MapDirection dflt)
+{
+    lua_pushstring(lua, key);
+    if (idx < 0) --idx;
+    lua_gettable(lua, idx);
+    MapDirection result = dflt;
+    if (lua_isstring(lua, -1)) {
+        result = GetMapDirection(lua, -1);
+    }
+    lua_pop(lua, 1);
+    return result;
+}
+
+const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, int idx, const char *key, KnightsConfigImpl *kc)
+{
+    // Pops Lua nil, function or number; returns a RandomInt* (can be null).
+
+    lua_pushstring(lua, key);    // [.. key]
+    if (idx < 0) --idx;
+    lua_gettable(lua, idx);       // [.. function/number]
+
+    LuaRandomInt *result = 0;
+
+    if (lua_isnil(lua, -1)) {
+        lua_pop(lua, 1);
+    } else if (!lua_isfunction(lua, -1) && !lua_isnumber(lua, -1)) {
+        luaL_error(lua, "'%s': expected function or number, got %s", key,
+                   lua_typename(lua, lua_type(lua, -1)));
+    } else {
+        result = new LuaRandomInt(lua);   // pops function/number
+        kc->getRandomIntContainer().add(result);  // transfers ownership
+    }
+
+    return result;
+}
+
+KnightsConfigImpl * GetKC(lua_State *lua, const char * msg)
+{
+    KnightsConfigImpl * kc = static_cast<KnightsConfigImpl*>(lua_touserdata(lua, lua_upvalueindex(2)));
+    if (!kc->doingConfig()) {
+        luaL_error(lua, (std::string("Cannot create new ") + msg + " during the game").c_str());
+    }
+    return kc;
+}
+
+Action * LuaGetAction(lua_State *lua, int idx, const char *key, KnightsConfigImpl *kc)
+{
+    // This builds a new LuaAction object from the function on the top of the stack,
+    // and returns it. (The object will be added to KnightsConfigImpl for deletion
+    // when ~KnightsConfigImpl is called.)
+        
+    lua_pushstring(lua, key);
+    if (idx < 0) --idx;
+    lua_gettable(lua, idx);   // function is now at top of stack
+
+    Action *ac = 0;
+    if (lua_isnil(lua, -1)) {
+        lua_pop(lua, 1);
+    } else if (!lua_isfunction(lua, -1)) {
+        luaL_error(lua, "'%s': expected function, got %s", key,
+                   lua_typename(lua, lua_type(lua, -1)));
+    } else {
+        auto_ptr<Action> action(new LuaAction(kc->getLuaState()));  // pops stack
+        ac = kc->addLuaAction(action);  // transfers ownership
+    }
+    return ac;
 }
