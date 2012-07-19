@@ -30,9 +30,35 @@
 #include "item_type.hpp"
 #include "knight.hpp"
 #include "lockable.hpp"
+#include "lua_setup.hpp"
 #include "mediator.hpp"
 #include "rng.hpp"
 #include "trap.hpp"
+
+//
+// constructor
+//
+
+Lockable::Lockable(lua_State *lua, KnightsConfigImpl *kc)
+    : Tile(lua, kc),
+      trap_owner(OT_None())
+{
+    // [t]
+    closed = !LuaGetBool(lua, -1, "open");   // default closed (i.e. open=false)
+
+    lock = -1;  // -1 ==> Lock has not been generated yet
+    if (LuaGetBool(lua, -1, "special_lock")) {  // default false
+        // Always generate the same lock num for this lock
+        lock = SPECIAL_LOCK_NUM;
+    }
+
+    lock_chance = LuaGetProbability(lua, -1, "lock_chance");  // default 0
+    pick_only_chance = LuaGetProbability(lua, -1, "lock_pick_only_chance");  // default 0
+    keymax = LuaGetInt(lua, -1, "keymax", 1);   // default 1
+
+    on_open_or_close = LuaGetAction(lua, -1, "on_open_or_close", kc);  // default null
+}
+
 
 //
 // opening/closing: private functions

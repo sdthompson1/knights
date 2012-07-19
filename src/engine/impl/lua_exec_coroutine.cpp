@@ -25,6 +25,7 @@
 
 #include "knights_callbacks.hpp"
 #include "lua_exec_coroutine.hpp"
+#include "lua_ref.hpp"
 #include "lua_traceback.hpp"
 #include "mediator.hpp"
 #include "task.hpp"
@@ -103,6 +104,10 @@ void CoroutineTask::execute(TaskManager &tm)
     const int init_stack = lua_gettop(thread);
     const int nargs = init_stack == 0 ? 0 : init_stack - 1;
 
+    // Save the current value of "cxt" in the registry
+    lua_getglobal(lua, "cxt");  // pushes oldcxt
+    LuaRef cxt_save(lua);       // pops it again.
+
     // restore the context
     lua_rawgetp(thread, LUA_REGISTRYINDEX, ((char*)this)+1);
     lua_setglobal(thread, "cxt");
@@ -114,6 +119,10 @@ void CoroutineTask::execute(TaskManager &tm)
     // save the context again
     lua_getglobal(thread, "cxt");
     lua_rawsetp(thread, LUA_REGISTRYINDEX, ((char*)this)+1);
+
+    // and restore the previous value of cxt
+    cxt_save.push(lua);
+    lua_setglobal(lua, "cxt");
 
     switch (status) {
     case LUA_OK:
@@ -149,8 +158,9 @@ void CoroutineTask::execute(TaskManager &tm)
     default:
         // Coroutine raised an error. The error message is on top of stack
         {
-            std::string err = 
-                std::string(lua_tostring(thread, -1)) + "\nTraceback: " + LuaTraceback(thread);
+            const char *p = lua_tostring(thread, -1);
+            std::string err(p ? p : "<No err msg>");
+            err += "\nTraceback: " + LuaTraceback(thread);
             lua_pop(thread, lua_gettop(thread));  // clear its stack
             mediator.getCallbacks().gameMsg(-1, err);  // display the error message
             return;

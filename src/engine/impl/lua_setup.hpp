@@ -47,18 +47,26 @@ void AddLuaConfigFunctions(lua_State *, KnightsConfigImpl *);
 bool LuaGetBool(lua_State *lua, int tbl_idx, const char *key, bool dflt = false);
 int LuaGetInt(lua_State *lua, int tbl_idx, const char *key, int dflt = 0);
 float LuaGetFloat(lua_State *lua, int tbl_idx, const char *key, float dflt = 0.0f);
+float LuaGetProbability(lua_State *lua, int tbl_idx, const char *key, float dflt = 0.0f);
 std::string LuaGetString(lua_State *lua, int tbl_idx, const char *key, const char *dflt = "");
 ItemSize LuaGetItemSize(lua_State *lua, int tbl_idx, const char *key, ItemSize dflt = IS_NOPICKUP);
 MapDirection LuaGetMapDirection(lua_State *lua, int tbl_idx, const char *key, MapDirection dflt = D_NORTH);
 const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, int tbl_idx, const char *key, KnightsConfigImpl *kc);
 Action * LuaGetAction(lua_State *lua, int tbl_idx, const char *key, KnightsConfigImpl *kc);
+Action * LuaGetAction(lua_State *lua, int idx, KnightsConfigImpl *kc);
 
 template<class T> T * LuaGetPtr(lua_State *lua, int tbl_idx, const char *key)
 {
-    lua_pushstring(lua, key);
-    if (tbl_idx < 0) --tbl_idx;
-    lua_gettable(lua, tbl_idx);
+    lua_getfield(lua, tbl_idx, key);
     T * result = ReadLuaPtr<T>(lua, -1);
+    lua_pop(lua, 1);
+    return result;
+}
+
+template<class T> boost::shared_ptr<T> LuaGetSharedPtr(lua_State *lua, int tbl_idx, const char *key)
+{
+    lua_getfield(lua, tbl_idx, key);
+    boost::shared_ptr<T> result = ReadLuaSharedPtr<T>(lua, -1);
     lua_pop(lua, 1);
     return result;
 }

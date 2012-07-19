@@ -38,19 +38,31 @@ void NewLuaWeakPtr_Impl(lua_State *lua, boost::weak_ptr<void> ptr, LuaTag tag);
 void * ReadLuaPtr_Impl(lua_State *lua, int index, LuaTag expected_tag);
 boost::shared_ptr<void> ReadLuaSharedPtr_Impl(lua_State *lua, int index, LuaTag expected_tag);
 boost::weak_ptr<void> ReadLuaWeakPtr_Impl(lua_State *lua, int index, LuaTag expected_tag);
+bool IsLuaPtr_Impl(lua_State *lua, int index, LuaTag expected_tag);
 
+
+//
 // Create a new Lua userdata object and push it onto the stack
+// 
 // NOTE: These might raise a Lua error. They do not throw any C++ exceptions though.
+//
 template<class T> inline void NewLuaPtr(lua_State *lua, T *ptr) { NewLuaPtr_Impl(lua, (void*)ptr, LuaTraits<T>::tag); }
 template<class T> inline void NewLuaSharedPtr(lua_State *lua, boost::shared_ptr<T> ptr) { NewLuaSharedPtr_Impl(lua, ptr, LuaTraits<T>::tag); }
 template<class T> inline void NewLuaWeakPtr(lua_State *lua, boost::weak_ptr<T> ptr) { NewLuaWeakPtr_Impl(lua, ptr, LuaTraits<T>::tag); }
 
+
 // Read a Lua userdata object from a given stack index
-// NOTE: These can throw an exception, but do not raise a Lua error.
+// 
+// Throws exception if the object is not a userdata, is a userdata with the wrong tag,
+// or cannot be converted to the requested pointer type (raw/weak/shared).
+// 
+// If the object is nil, a null pointer is returned (no exception is thrown).
+// 
 // Conversions:
 // ReadLuaPtr can be used on a raw or shared ptr (but NOT a weak ptr).
 // ReadLuaSharedPtr can be used on a shared or weak ptr.
 // ReadLuaWeakPtr can only be used on a weak ptr.
+//
 template<class T> inline T * ReadLuaPtr(lua_State *lua, int index) {
     return static_cast<T*>(ReadLuaPtr_Impl(lua, index, LuaTraits<T>::tag));
 }
@@ -60,6 +72,15 @@ template<class T> inline boost::shared_ptr<T> ReadLuaSharedPtr(lua_State *lua, i
 template<class T> inline boost::weak_ptr<T> ReadLuaWeakPtr(lua_State *lua, int index) {
     return boost::static_pointer_cast<T>(ReadLuaWeakPtr_Impl(lua, index, LuaTraits<T>::tag));
 }
+
+
+// Determine if the value is a userdata of the correct tag, or nil (returns true)
+// or something else (returns false).
+// (Pointer type -- raw/weak/shared -- is NOT checked.)
+template<class T> inline bool IsLuaPtr(lua_State *lua, int index) {
+    return IsLuaPtr_Impl(lua, index, LuaTraits<T>::tag);
+}
+
 
 // Function to push a MapCoord onto the stack (as a table with "x" and "y" values,
 // or "nil" if the MapCoord is null.)

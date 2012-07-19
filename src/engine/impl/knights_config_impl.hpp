@@ -223,15 +223,8 @@ public:
     void popSegmentTile(SegmentTileData &seg_tile, bool &items_yet, bool &monsters_yet);
     void popSkullRenderer();
     Sound * popSound();
-    struct StairInfo {
-        bool is_stair;
-        bool special;
-        MapDirection down_direction;
-    };
-    StairInfo popStairsDown();
     boost::shared_ptr<Tile> popTile();
     boost::shared_ptr<Tile> popTile(boost::shared_ptr<Tile> dflt);
-    int popTileItems(const MapAccess acc[]);  // acc is just there to provide a default answer.
     void popTileList(std::vector<boost::shared_ptr<Tile> > &output);
     void popTutorial();
     void popZombieActivityTable();
@@ -246,9 +239,6 @@ private:
     // helper functions
     //
 
-    void defineSegmentCategory(int sc) { doUse(sc, segment_categories.size(), segment_categories_defined); }
-    void defineTileCategory(int tc) { doUse(tc, tile_categories.size(), tile_categories_defined); }
-    void doUse(int item, int sz, std::vector<bool> &container);
     void processTile(const std::vector<SegmentTileData> &tmap, Segment &seg, int x, int y);
     void readMenu(const Menu &menu, const MenuSelections &msel, DungeonGenerator &dgen,
                   std::vector<boost::shared_ptr<Quest> > &quests) const;
@@ -360,8 +350,6 @@ private:
     std::map<std::string, int> menu_item_names;
     std::map<std::string, int> segment_categories;
     std::map<std::string, int> tile_categories;
-    std::vector<bool> segment_categories_defined;
-    std::vector<bool> tile_categories_defined;
     
     // Config Map.
     boost::shared_ptr<ConfigMap> config_map;

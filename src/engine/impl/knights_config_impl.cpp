@@ -60,7 +60,6 @@
 #include "rstream.hpp"
 #include "segment.hpp"
 #include "sound.hpp"
-#include "special_tiles.hpp"
 #include "stuff_bag.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
@@ -116,19 +115,6 @@ namespace {
     private:
         KnightsConfigImpl &kc;
         KFile::List lst;
-    };
-
-    struct CheckUsage {
-        CheckUsage(const std::vector<bool> &vb_, KFile &kf_, const char *msg1_, const char *msg2_)
-            : vb(vb_), kf(kf_), msg1(msg1_), msg2(msg2_) { }
-        void operator()(const std::pair<std::string,int> &p) { 
-            if (vb.at(p.second) == false) {
-                kf.error(msg1 + " '" + p.first + "' " + msg2);
-            }
-        }
-        std::vector<bool> vb;
-        KFile &kf;
-        std::string msg1, msg2;
     };
 
     // Implementation of KConfigSource to use RStreams
@@ -272,14 +258,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         kf->error("internal error: stack non-empty");
     }
     
-    // Check that all segment & tile categories were used
-    segment_categories_defined.resize(segment_categories.size());  // make sure our bool vectors are big enough 
-    tile_categories_defined.resize(tile_categories.size());
-    for_each(segment_categories.begin(), segment_categories.end(), CheckUsage(segment_categories_defined, *kf,
-                                                                              "segment category", "is undefined"));
-    for_each(tile_categories.begin(), tile_categories.end(), CheckUsage(tile_categories_defined, *kf,
-                                                                        "tile category", "is undefined"));
-
     // Fill knight_anims
     for (int i = 0; i < house_colours_normal.size(); ++i) {
         knight_anims.push_back(new Anim(*knight_anim));
@@ -320,9 +298,6 @@ KnightsConfigImpl::Sentry::~Sentry()
     cfg.menu_item_names.clear();
     cfg.segment_categories.clear();
     cfg.tile_categories.clear();
-    std::vector<bool> tmp2, tmp4;
-    cfg.segment_categories_defined.swap(tmp2);
-    cfg.tile_categories_defined.swap(tmp4);
 
     // Close the file
     cfg.kf = boost::shared_ptr<KFile>();
@@ -385,10 +360,10 @@ Action * KnightsConfigImpl::popAction()
             // TEMPORARY code copied/pasted from lua_setup.cpp. This
             // should disappear once KConfig files are eliminated.
             Action *a = 0;
-            if (lua_isnil(getLuaState().get(), -1)) {
-                lua_pop(getLuaState().get(), 1);
+            if (lua_isnil(lua_state.get(), -1)) {
+                lua_pop(lua_state.get(), 1);
             } else {
-                a = new LuaAction(getLuaState()); // pops the lua stack
+                a = new LuaAction(lua_state.get()); // pops the lua stack
             }
 
             it = actions.insert(make_pair(p, a)).first;
@@ -448,7 +423,7 @@ Action * KnightsConfigImpl::popAction()
             // Lua Action
             string s = kf->getString();
             LuaLoadFromString(lua_state.get(), s.c_str());    // pushes function onto lua stack
-            Action * lua_action = new LuaAction(lua_state);   // pops function from lua stack
+            Action * lua_action = new LuaAction(lua_state.get());   // pops function from lua stack
             it = actions.insert(make_pair(p, lua_action)).first;
             
         } else {
@@ -1317,7 +1292,6 @@ Segment * KnightsConfigImpl::popSegment(const vector<SegmentTileData> &tile_map,
     tab.push("category");
     string catname = kf->popString("");
     category = getSegmentCategory(catname);
-    defineSegmentCategory(category);  // this segment category exists.
     tab.push("data");
     Segment *segment = popSegmentData(tile_map, w, h);
     if (!segment) return 0;
@@ -1471,9 +1445,10 @@ void KnightsConfigImpl::popSegmentSwitches(Segment &r)
         const int y = kf->popInt();
         sw.push(2);
         Action *ac = popAction();
-        shared_ptr<Tile> t(new Tile); // dummy tile for the switch-action.
+
+        // create dummy tile for the switch-action.
         const bool activate = r.isApproachable(x,y);
-        t->construct(lua_state, activate?0:ac, activate?ac:0);
+        shared_ptr<Tile> t(new Tile(activate?0:ac, activate?ac:0));
         r.addTile(x,y,t);
     }
 }
@@ -1525,262 +1500,16 @@ void KnightsConfigImpl::popSegmentTile(SegmentTileData &seg_tile, bool &items_ye
     }
 }
 
-
-KnightsConfigImpl::StairInfo KnightsConfigImpl::popStairsDown()
-{
-    StairInfo result;
-    result.is_stair = result.special = false;
-    result.down_direction = D_NORTH;
-    if (kf) {
-        if (kf->isNone()) {
-            kf->pop();
-        } else if (kf->isString() && kf->getString()=="special") {
-            kf->pop();
-            result.special = true;
-        } else {
-            result.is_stair = true;
-            result.down_direction = popMapDirection();
-        }
-    }
-    return result;
-}
-
 shared_ptr<Tile> KnightsConfigImpl::popTile()
 {
-    if (!kf) return shared_ptr<Tile>();
-
-    const Value * p = kf->getTop();
-    map<const Value *, shared_ptr<Tile> >::iterator it = tiles.find(p);
-
-    if (it == tiles.end()) {
-        KFile::Table tab(*kf, "Tile");
-
-        shared_ptr<Tile> tile;
-        shared_ptr<Home> home;
-        shared_ptr<Door> door;
-        shared_ptr<Chest> chest;
-        tab.push("type", false);
-        string ttype = kf->popString("");
-        tab.reset();
-        if (ttype == "") {
-            tile.reset(new Tile);
-        } else if (ttype == "home") {
-            home.reset(new Home);
-            tile = home;
-        } else if (ttype == "door") {
-            door.reset(new Door);
-            tile = door;
-        } else if (ttype == "chest") {
-            chest.reset(new Chest);
-            tile = chest;
-        } else if (ttype == "barrel") {
-            tile.reset(new Barrel);
-        } else {
-            kf->error("unknown tile type: " + ttype);
-        }
-
-        it = tiles.insert(make_pair(p, tile)).first;
-        if (!tile) return tile; // unk tile type -- don't try to go any further.
-
-        MapAccess acc[H_MISSILES+1];
-        tab.push("access");
-        popAccessTable(acc, A_BLOCKED);
-
-        tab.push("connectivity_check");
-        int connectivity_check = kf->popInt(0);
-
-        tab.push("control");
-        string control_func_string;
-        Control * control = 0;
-        if (kf->isString()) {
-            control_func_string = kf->popString();
-        } else {
-            control = popControl(0);
-        }
-        
-        tab.push("depth");
-        int depth = kf->popInt(0);
-
-        tab.push("editor_label"); kf->pop();
-
-        MapDirection facing = D_NORTH;
-        if (chest || home) {
-            tab.push("facing");
-            facing = popMapDirection(facing);
-        }
-        
-        tab.push("graphic");
-        Graphic *graphic = popGraphic(0);
-
-        tab.push("hit_points");
-        const RandomInt *initial_hit_points = kf->popRandomInt(random_ints, 0);
-        
-        tab.push("items");
-        int item_category = popTileItems(acc);
-        bool items_allowed = (item_category > -2); // -2 means "no items allowed", -3 means "destroy items"
-        bool destroy_items = (item_category == -3);
-
-        float lock_chance = 0, lock_pick_only_chance = 0;
-        int keymax = 0;
-        if (door || chest) {
-            tab.push("keymax");
-            keymax = kf->popInt(1);
-            tab.push("lock_chance");
-            lock_chance = popProbability(0);
-            tab.push("lock_pick_only_chance");
-            lock_pick_only_chance = popProbability(0);
-        }
-
-        tab.push("on_activate");
-        const Action *on_activate = popAction(0);
-        tab.push("on_approach");
-        const Action *on_approach = popAction(0);
-        tab.push("on_destroy");
-        const Action *on_destroy = popAction(0);
-        tab.push("on_hit");
-        const Action *on_hit = popAction(0);
-
-        const Action * on_open_or_close = 0;
-        if (door || chest) {
-            tab.push("on_open_or_close");
-            on_open_or_close = popAction(0);
-        }
-        
-        tab.push("on_walk_over");
-        const Action *on_walk_over = popAction(0);
-        tab.push("on_withdraw");
-        const Action *on_withdraw = popAction(0);
-        
-        bool open = false;
-        Graphic *open_graphic = 0;
-        if (door) {
-            // Chests are always closed initially. (This is assumed here, as well as
-            // in the Chest class probably.)
-            tab.push("open");
-            open = popBool(false);
-        }
-        if (door || chest) {
-            tab.push("open_graphic");
-            open_graphic = popGraphic(0);
-        }
-
-        tab.push("reflect");
-        shared_ptr<Tile> reflect = popTile(shared_ptr<Tile>());
-        tab.push("rotate");
-        shared_ptr<Tile> rotate = popTile(shared_ptr<Tile>());
-
-        // #20
-        bool special_exit = false;
-        if (home) {
-            tab.push("special_exit");
-            special_exit = popBool(false);
-        }
-        
-        // doors/chests can have "special_lock" property
-        bool special_locked = false;
-        if (door || chest) {
-            tab.push("special_lock");
-            special_locked = popBool(false);
-        }
-            
-        tab.push("stairs_down");
-        StairInfo stair_info = popStairsDown();
-
-        // chests can have traps
-        float trap_chance = 0;
-        vector<Chest::TrapInfo> traps;
-        if (chest) {
-            tab.push("trap_chance");
-            trap_chance = popProbability();
-            tab.push("traps");
-            KFile::List lst(*kf, "TrapsList");
-            for (int i=0; i<lst.getSize(); ++i) {
-                lst.push(i);
-                KFile::List lst2(*kf, "TrapDefList", 2);
-                lst2.push(0);
-                const ItemType *itype = popItemType();
-                lst2.push(1);
-                const Action *ac = popAction();
-                traps.push_back(Chest::TrapInfo(itype, ac));
-            }
-        }
-
-        tab.push("tutorial");
-        const int t_key = kf->popInt(0);
-        
-        tab.push("type"); kf->pop();
-
-        Colour uns_col;
-        if (home) {
-            tab.push("unsecured_colour");
-            uns_col = popRGB();
-        }
-
-        tab.push("user_table");
-        const int has_user_table = kf->popInt(0);
-        
-        // For open doors, we need to override the access codes and set them all to A_CLEAR
-        // (backup orig. access codes first, for doorConstruct)
-        MapAccess acc2[H_MISSILES+1];
-        for (int i=0; i<=H_MISSILES; ++i) acc2[i] = acc[i];
-        if (open) {
-            for (int i=0; i<=H_MISSILES; ++i) {
-                acc[i] = A_CLEAR;
-            }
-        }
-
-        tile->construct(lua_state,
-                        open ? open_graphic : graphic, depth,
-                        open ? true : items_allowed, open ? false : destroy_items,
-                        item_category, acc,
-                        stair_info.is_stair, stair_info.special,
-                        stair_info.down_direction,
-                        initial_hit_points,
-                        connectivity_check,
-                        on_destroy, on_activate,
-                        on_walk_over, on_approach, on_withdraw, on_hit, t_key,
-                        reflect, rotate);
-
-        if (control) {
-            tile->setControl(control);
-        } else if (!control_func_string.empty()) {
-            LuaLoadFromString(lua_state.get(), control_func_string.c_str()); // pushes function to lua stack
-            tile->setControlFunc();  // pops from lua stack
-        }
-
-        if (open) {
-            ASSERT(door);
-            door->setOpenInitially();
-        }
-        
-        if (chest) {
-            chest->chestConstruct(open_graphic, graphic, facing, trap_chance, traps);
-            chest->setLockChance(lock_chance, lock_pick_only_chance, keymax);
-            if (special_locked) chest->setSpecialLock();
-            chest->setOnOpenOrClose(on_open_or_close);
-        } else if (door) {
-            door->doorConstruct(open_graphic, graphic, acc2);
-            door->setLockChance(lock_chance, lock_pick_only_chance, keymax);
-            if (special_locked) door->setSpecialLock();
-            door->setOnOpenOrClose(on_open_or_close);
-        } else if (home) {
-            shared_ptr<ColourChange> cc(new ColourChange);
-            cc->add(Colour(255,0,0), uns_col);
-            home->homeConstruct(facing, cc, special_exit);
-        }
-
-        if (has_user_table) {
-            // give this tile an empty "user table"
-            lua_State *lua = lua_state.get();
-            lua_newtable(lua);   // [emptytbl]
-            lua_rawsetp(lua, LUA_REGISTRYINDEX, tile.get());  // []
-        }
-
-    } else {
-        kf->pop();
+    shared_ptr<Tile> result;
+    if (kf && kf->isLua()) {
+        kf->popLua();
+        result = ReadLuaSharedPtr<Tile>(lua_state.get(), -1);
+        lua_pop(lua_state.get(), 1);
     }
-
-    return it->second;
+    if (!result) kf->errExpected("tile");
+    return result;
 }
 
 shared_ptr<Tile> KnightsConfigImpl::popTile(shared_ptr<Tile> dflt)
@@ -1791,40 +1520,6 @@ shared_ptr<Tile> KnightsConfigImpl::popTile(shared_ptr<Tile> dflt)
         return dflt;
     } else {
         return popTile();
-    }
-}
-
-// returns:
-// -3 if items are to be destroyed (pits)
-// -2 if items not allowed here
-// -1 if items allowed, but none are to be generated
-// 0 or higher: items to be generated, the number gives the index of the tile-category to use.
-int KnightsConfigImpl::popTileItems(const MapAccess acc[])
-{
-    if (!kf) return -2;
-    if (kf->isInt()) {
-        bool b = popBool();
-        return b ? -1 : -2;
-    } else if (kf->isNone()) {
-        // default (allow items for A_CLEAR, else block)
-        kf->pop();
-        if (acc[H_WALKING] == A_CLEAR) return -1;
-        else return -2;
-    } else if (kf->isString()) {
-        // string, naming a tile category
-        // return the number corresponding to that category.
-        string s = kf->popString();
-        if (s == "destroy") {
-            return -3;
-        } else {
-            int tc = getTileCategory(s);
-            defineTileCategory(tc);  // this category is used in some tile (not just referenced by someone).
-            return tc;
-        }
-    } else {
-        kf->errExpected("'0', '1', item-category or 'destroy'");
-        kf->pop();
-        return 0;
     }
 }
 
@@ -1905,14 +1600,6 @@ int KnightsConfigImpl::getTileCategory(const string &cname)
     return tile_categories.insert(make_pair(cname, tile_categories.size())).first->second;
 }
 
-void KnightsConfigImpl::doUse(int item, int sz, vector<bool> &container)
-{
-    if (item < 0 || item >= sz) return;
-    if (container.size() < sz) {
-        container.resize(sz);
-    }
-    container[item] = true;
-}
 
 
 //

@@ -129,15 +129,6 @@ private:
     ACTION_MAKER("FullZombieActivity");
 };
 
-class A_IfKnight : public Action {
-public:
-    A_IfKnight(const Action *a) : action(a) { }
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("IfKnight");
-    const Action *action;
-};
-
 class A_Necromancy : public Action {
 public:
     A_Necromancy(int nzom, int rang) : nzoms(nzom), range(rang) { }

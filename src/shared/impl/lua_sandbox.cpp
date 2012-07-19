@@ -37,7 +37,7 @@ namespace {
 
     int OnPanic(lua_State *lua)
     {
-        throw LuaPanic(lua_tostring(lua, -1));
+        throw LuaPanic(lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "<No err msg>");
     }
     
     struct LuaDeleter {

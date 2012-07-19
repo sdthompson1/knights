@@ -72,7 +72,7 @@ namespace {
         // Returns CWD, or empty path if CWD not set.
         boost::filesystem::path result;
         lua_getglobal(lua, "_CWD");
-        const char *p = lua_tostring(lua, -1);
+        const char *p = lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "";
         if (p) {
             result = p;
         }
@@ -133,7 +133,8 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
         const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str(), "t");  // pushes 1 lua function
         if (result != 0) {
             // Pick up the Lua message and convert it to a C++ exception.
-            const std::string err_msg = lua_tostring(lua, -1);
+            const std::string err_msg = lua_isstring(lua, -1) 
+                ? lua_tostring(lua, -1) : "<No err msg>";
             lua_pop(lua, 1);
             throw LuaError(err_msg);
         }
@@ -174,7 +175,8 @@ void LuaLoadFromString(lua_State *lua, const char *str)
     const int result = luaL_loadstring(lua, str);
     if (result != 0) {
         // throw a C++ exception on errors.
-        const std::string err_msg = lua_tostring(lua, -1);
+        const std::string err_msg = lua_isstring(lua, -1)
+            ? lua_tostring(lua, -1) : "<No err msg>";
         lua_pop(lua, 1);
         throw LuaError(err_msg);
     }

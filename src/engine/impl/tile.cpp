@@ -29,7 +29,9 @@
 #include "item.hpp"
 #include "item_type.hpp"
 #include "knights_callbacks.hpp"
+#include "knights_config_impl.hpp"  // for getTileCategory
 #include "lua_exec.hpp"
+#include "lua_setup.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
 #include "my_exceptions.hpp"
@@ -38,127 +40,160 @@
 
 #include "lua.hpp"
 
+namespace {
+    MapAccess PopAccess(lua_State *lua)
+    {
+        MapAccess result = A_BLOCKED;  // default
+        
+        if (!lua_isnil(lua, -1)) {
+            const char *p = lua_tostring(lua, -1);
+            
+            // convert to uppercase
+            std::string s(p ? p : "");
+            for (std::string::iterator it = s.begin(); it != s.end(); ++it) *it = std::toupper(*it);
 
+            if (s == "APPROACH" || s == "PARTIAL") result = A_APPROACH;
+            else if (s == "BLOCKED") result = A_BLOCKED;
+            else if (s == "CLEAR") result = A_CLEAR;
+            else {
+                luaL_error(lua,
+                           "'%s' is not a valid access type; must be 'approach', 'partial', 'blocked' or 'clear'",
+                           p);
+            }
+        }
+
+        lua_pop(lua, 1);
+        return result;
+    }
+}
+            
+            
 //
 // public functions
 //
 
-Tile::Tile()
-    : graphic(0), depth(0), item_category(-1), is_stair(false), stair_top(false), items_mode(BLOCKED), 
-      stair_direction(D_NORTH), hit_points(0), initial_hit_points(0), connectivity_check(0), on_activate(0), 
-      on_walk_over(0), on_approach(0), on_withdraw(0), on_hit(0), on_destroy(0),
-      control(0), tutorial_key(0)
+// constructs a Tile from a lua table, assumed to be at top of stack.
+// note this ignores "type" and just constructs a plain Tile.
+Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
 {
-    for (int i=0; i<=H_MISSILES; ++i) access[i] = A_CLEAR;
-}
+    // [t]
 
-void Tile::construct(shared_ptr<lua_State> lua,
-                     const Graphic *g, int d,
-                     bool ita, bool dstry, int item_category_, 
-                     const MapAccess acc[],
-                     bool is, bool stop, MapDirection sdir, const RandomInt * ihp,
-                     int cchk,
-                     const Action *dto,
-                     const Action *ac, 
-                     const Action *wo, const Action *ap, const Action *wi, const Action *hit,
-                     int t_key,
-                     boost::shared_ptr<Tile> reflect_, boost::shared_ptr<Tile> rotate_)
-{
-    lua_state = lua;
+    // set default access
+    for (int i = 0; i <= H_MISSILES; ++i) access[i] = A_CLEAR;
+
+    // read the "access" field
+    lua_getfield(lua, -1, "access");   // [t access-table]
     
-    graphic = g; depth=d; item_category = item_category_;
-    is_stair=is; stair_top=stop; stair_direction=sdir; 
-    initial_hit_points=ihp;
-    connectivity_check = cchk;
-    on_destroy = dto;
-    on_activate = ac; 
-    on_walk_over = wo; on_approach = ap; on_withdraw = wi;
-    on_hit = hit;
-    for (int i=0; i<=H_MISSILES; ++i) { access[i] = acc[i]; }
+    if (!lua_isnil(lua, -1)) {
+        lua_getfield(lua, -1, "flying");   // [t at access]
+        access[H_FLYING] = PopAccess(lua); // [t at]
 
-    items_mode = BLOCKED;
-    if (ita) items_mode = ALLOWED;
-    if (dstry) items_mode = DESTROY;
+        lua_getfield(lua, -1, "missiles");
+        access[H_MISSILES] = PopAccess(lua);
 
-    tutorial_key = t_key;
-
-    reflect = reflect_ ? reflect_ : shared_from_this();
-    rotate = rotate_ ? rotate_ : shared_from_this();
-    original_tile = shared_from_this();
-}
-
-void Tile::construct(shared_ptr<lua_State> lua, const Graphic *g, int dpth)
-{
-    lua_state = lua;
-    graphic = g; depth=dpth;
-    items_mode = ALLOWED;
-    // the rest take default values as set in the ctor.
-
-    reflect = rotate = original_tile = shared_from_this();
-}
-
-void Tile::construct(shared_ptr<lua_State> lua, const Action *walkover, const Action *activate)
-{
-    lua_state = lua;
-    on_walk_over = walkover;
-    on_activate = activate;
-    items_mode = ALLOWED;
-
-    reflect = rotate = original_tile = shared_from_this();
-}
-
-Tile::~Tile()
-{
-    // dtors should not raise lua errors (as a general principle)
-    // In this dtor we assume that lua_pushnil and lua_rawsetp does not raise errors.
-    // According to the Lua docs, this is true for lua_pushnil but not lua_rawsetp.
-    // However, as far as I can tell, the only time lua_rawsetp can raise an error is if 
-    // there is an out-of-memory condition; and I choose to ignore that here.
-
-    shared_ptr<lua_State> lua_lock(lua_state.lock());
-    if (lua_lock) {
-        // note: registry keys used are:
-        //  this -- "user table" for the tile
-        //  this+1 -- control func.
-        lua_State * lua = lua_lock.get();
-        lua_pushnil(lua);          // [nil]
-        lua_rawsetp(lua, LUA_REGISTRYINDEX, this);  // []
-        lua_pushnil(lua);  // [nil]
-        lua_rawsetp(lua, LUA_REGISTRYINDEX, ((char*)(this))+1);  // []
+        lua_getfield(lua, -1, "walking");
+        access[H_WALKING] = PopAccess(lua);
     }
+
+    lua_pop(lua, 1);  // [t]
+    
+    // read other fields
+    connectivity_check = LuaGetInt(lua, -1, "connectivity_check"); // default 0
+
+    lua_getfield(lua, -1, "control");   // [t control]
+    if (IsLuaPtr<Control>(lua, -1)) {
+        control = ReadLuaPtr<Control>(lua, -1);
+        lua_pop(lua, 1);
+    } else {
+        // set it in the lua registry
+        control = 0;
+        control_func_ref.reset(lua);   // pops lua stack
+    }
+
+    depth = LuaGetInt(lua, -1, "depth");  // default 0
+    graphic = LuaGetPtr<Graphic>(lua, -1, "graphic");  // default 0
+    initial_hit_points = LuaGetRandomInt(lua, -1, "hit_points", kc);  // default 0
+
+    lua_getfield(lua, -1, "items");  // [t items]
+    if (lua_isnumber(lua, -1)) {
+        if (lua_tointeger(lua, -1) == 0) {
+            item_category = -2;   // blocked
+        } else {
+            item_category = -1;   // allowed
+        }
+    } else if (lua_isnil(lua, -1)) {
+        // default (allow items for A_CLEAR, else block)
+        if (access[H_WALKING] == A_CLEAR) item_category = -1;  // allowed
+        else item_category = -2;  // blocked
+    } else if (lua_isstring(lua, -1)) {
+        const char *s = lua_tostring(lua, -1);
+        if (std::strcmp(s, "destroy") == 0) {
+            item_category = -3;  // destroy
+        } else {
+            item_category = kc->getTileCategory(s);
+        }
+    } else {
+        luaL_error(lua, "tile 'items' field is invalid");
+    }
+    lua_pop(lua, 1);  // [t]
+
+    if (item_category > -2) {
+        items_mode = ALLOWED;
+    } else if (item_category == -3) {
+        items_mode = DESTROY;
+    } else {
+        items_mode = BLOCKED;
+    }
+
+    on_activate  = LuaGetAction(lua, -1, "on_activate",  kc);  // all "on_" actions default to 0
+    on_approach  = LuaGetAction(lua, -1, "on_approach",  kc);
+    on_destroy   = LuaGetAction(lua, -1, "on_destroy",   kc);
+    on_hit       = LuaGetAction(lua, -1, "on_hit",       kc);
+    on_walk_over = LuaGetAction(lua, -1, "on_walk_over", kc);
+    on_withdraw  = LuaGetAction(lua, -1, "on_withdraw",  kc);
+
+    lua_getfield(lua, -1, "stairs_down");
+    if (lua_isnil(lua, -1)) {
+        is_stair = stair_top = false;
+    } else {
+        const char *s = lua_tostring(lua, -1);
+        if (s && std::strcmp(s, "special") == 0) {
+            is_stair = false;
+            stair_top = true;
+        } else {
+            is_stair = true;
+            stair_top = false;
+            stair_direction = GetMapDirection(lua, -1);
+        }
+    }
+    lua_pop(lua, 1);
+
+    tutorial_key = LuaGetInt(lua, -1, "tutorial");  // default 0
+}
+
+Tile::Tile(const Action *walk_over, const Action *activate)
+{
+    for (int i = 0; i <= H_MISSILES; ++i) access[i] = A_CLEAR;
+    connectivity_check = 0;
+    control = 0;
+    depth = 0;
+    graphic = 0;
+    initial_hit_points = 0;
+    item_category = -1;  // items allowed
+    items_mode = ALLOWED;
+    on_activate = activate;
+    on_walk_over = walk_over;
+    on_approach = on_destroy = on_hit = on_withdraw = 0;
+    is_stair = stair_top = false;
+    tutorial_key = 0;
 }
 
 shared_ptr<Tile> Tile::clone(bool force_copy)
 {
-    shared_ptr<lua_State> lua_lock(lua_state);
-    lua_State *lua = lua_lock.get();
-    
-    lua_rawgetp(lua, LUA_REGISTRYINDEX, this);  // [oldtable]
-    const bool has_lua_table = !lua_isnil(lua, -1);
-    
-    // if there is a lua user table for this tile then we must force a copy
-    shared_ptr<Tile> new_tile = doClone(force_copy || has_lua_table);
+    shared_ptr<Tile> new_tile = doClone(force_copy);
     new_tile->setHitPoints();
 
-    if (has_lua_table) {
-        // clone the lua 'user table' for the tile
-        lua_newtable(lua);      // [oldtable newtable]
-        lua_pushnil(lua);       // [oldtable newtable nil]
-        while (lua_next(lua, -3) != 0) {    // [oldtable newtable key value]
-            lua_pushvalue(lua, -2);     // [oldtable newtable key value key]
-            lua_pushvalue(lua, -2);     // [oldtable newtable key value key value]
-            lua_settable(lua, -5);      // [oldtable newtable key value]
-            lua_pop(lua, 1);            // [oldtable newtable key]
-        }
-        // [oldtable newtable]
-        lua_rawsetp(lua, LUA_REGISTRYINDEX, new_tile.get());     // [oldtable]
-    }
-    lua_pop(lua, 1);  // []
-
-    // copy the reference to the control func
-    lua_rawgetp(lua, LUA_REGISTRYINDEX, ((char*)(this))+1);   // [func]
-    lua_rawsetp(lua, LUA_REGISTRYINDEX, ((char*)new_tile.get())+1);   // []
-
+    // set 'original_tile'
     new_tile->original_tile = shared_from_this();
     
     return new_tile;
@@ -290,45 +325,40 @@ const Control * Tile::getControl(const MapCoord &pos) const
     if (control) {
         return control;
     } else {
-        shared_ptr<lua_State> lua = lua_state.lock();
-        if (!lua) return 0;
+        lua_State *lua = control_func_ref.getLuaState();
+        if (!lua) {
+            return 0;
+        }
 
-        lua_rawgetp(lua.get(), LUA_REGISTRYINDEX, ((char*)this)+1);   // [func]
-        if (lua_isnil(lua.get(), -1)) {
-            lua_pop(lua.get(), 1);  // []
+        control_func_ref.push(lua);   // [func]
+
+        if (lua_isnil(lua, -1)) {
+            lua_pop(lua, 1);  // []
             return 0;
         } else {
         
-            PushMapCoord(lua.get(), pos);   // [func pos]
+            PushMapCoord(lua, pos);   // [func pos]
 
             try {
-                LuaExec(lua.get(), 1, 1);  // resets stack to [] on exception
+                LuaExec(lua, 1, 1);  // resets stack to [] on exception
             } catch (const LuaError &e) {
                 Mediator::instance().getCallbacks().gameMsg(-1, e.what());
                 return 0;
             }
 
             // on successful execution stack is [return_val]
+            if (!IsLuaPtr<Control>(lua, -1)) {
+                Mediator::instance().getCallbacks().gameMsg(-1, "Tile 'control' function did not return a control!");
+                return 0;
+            }
 
-            const Control * ctrl = ReadLuaPtr<Control>(lua.get(), -1);
-            lua_pop(lua.get(), 1);   // []
+            const Control * ctrl = ReadLuaPtr<Control>(lua, -1);
+            lua_pop(lua, 1);   // []
             return ctrl;
         }
     }
 }
 
-void Tile::setControl(const Control *ctrl)
-{
-    control = ctrl;
-}
-
-void Tile::setControlFunc()
-{
-    shared_ptr<lua_State> lua = lua_state.lock();
-    if (!lua) return;
-
-    lua_rawsetp(lua.get(), LUA_REGISTRYINDEX, ((char*)this)+1);  // pops func from stack
-}
 
 
 //
@@ -361,9 +391,7 @@ void Tile::setGraphic(DungeonMap *dmap, const MapCoord &mc, const Graphic *g,
 
 void Tile::setItemsAllowed(DungeonMap *dmap, const MapCoord &mc, bool allow, bool destroy) 
 {
-    if (destroy) items_mode = DESTROY;
-    else if (allow) items_mode = ALLOWED;
-    else items_mode = BLOCKED;
+    setItemsAllowedNoSweep(allow, destroy);
     if (dmap && items_mode != ALLOWED) {
         // We don't need to tell Mediator about items-allowed changes.
         // However we do need to call SweepItems if items-allowed is now BLOCKED, or destroy
@@ -376,12 +404,20 @@ void Tile::setItemsAllowed(DungeonMap *dmap, const MapCoord &mc, bool allow, boo
     }
 }
 
+void Tile::setItemsAllowedNoSweep(bool allow, bool destroy)
+{
+    if (destroy) items_mode = DESTROY;
+    else if (allow) items_mode = ALLOWED;
+    else items_mode = BLOCKED;
+}
+
 void Tile::setAccess(DungeonMap *dmap, const MapCoord &mc, MapHeight height, MapAccess acc, const Originator &originator)
 {
     access[height] = acc;
     if (dmap) {
         // We don't need to tell Mediator about access changes, but we do need 
         // to call SweepCreatures.
+        // (See also: Tile::setAccessNoSweep in the header)
         SweepCreatures(*dmap, mc, true, height, originator);
     }
 }
@@ -393,7 +429,6 @@ void Tile::setAccess(DungeonMap *dmap, const MapCoord &mc, MapAccess acc, const 
     }
     SweepCreatures(*dmap, mc, false, H_MISSILES, originator);
 }
-
 
 MiniMapColour Tile::getColour() const
 {

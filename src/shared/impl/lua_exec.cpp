@@ -40,8 +40,8 @@ namespace {
         // Called with one error message: [msg]
         // Should return one error message.
 
-        std::string result = 
-            std::string(lua_tostring(lua, 1)) + "\nTraceback:" + LuaTraceback(lua);
+        std::string result = lua_isstring(lua, 1) ? lua_tostring(lua, 1) : "<No err msg>";
+        result += "\nTraceback:" + LuaTraceback(lua);
         lua_pop(lua, 1);
         lua_pushstring(lua, result.c_str());
         return 1;
@@ -88,7 +88,8 @@ void LuaExec(lua_State *lua, int nargs, int nresults)
             lua_error(lua);
         } else {
             // get the error msg & throw exception
-            const std::string err_msg = lua_tostring(lua, -1);
+            const std::string err_msg = lua_isstring(lua, -1)
+                ? lua_tostring(lua, -1) : "<No err msg>";
             lua_pop(lua, 2);
             throw LuaError(err_msg);
         }

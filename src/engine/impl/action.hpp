@@ -25,12 +25,12 @@
 #define ACTION_HPP
 
 #include "kconfig_fwd.hpp"
+#include "lua_ref.hpp"
 #include "map_support.hpp"
 #include "originator.hpp"
 
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
-#include "boost/weak_ptr.hpp"
 using namespace boost;
 
 #include <map>
@@ -285,21 +285,14 @@ public:
     // Mediator at construction time, but does by the time execute()
     // is called.)
     //
-    explicit LuaAction(boost::shared_ptr<lua_State> lua);
-
-    // dtor removes the function from the Lua registry
-    ~LuaAction();
+    explicit LuaAction(lua_State * lua_);
 
     // execute calls the stored lua function with one "cxt" argument
     // (representing the ActionData).
     virtual void execute(const ActionData &) const;
 
 private:
-    // prevent copying.
-    LuaAction(const LuaAction &);
-    void operator=(const LuaAction &) const;
-
-    boost::weak_ptr<lua_State> lua_state;
+    LuaRef function_ref;
 };
 
 #endif

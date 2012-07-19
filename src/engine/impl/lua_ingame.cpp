@@ -363,20 +363,6 @@ namespace {
         return 0;
     }
 
-    // Input: tile
-    // Cxt: none
-    // Output: user-table associated with the given tile
-    int UserTable(lua_State *lua)
-    {
-        Tile * tile = ReadLuaPtr<Tile>(lua, 1);
-        if (tile) {
-            lua_rawgetp(lua, LUA_REGISTRYINDEX, tile); // [usertable]
-        } else {
-            lua_pushnil(lua);   // [nil]
-        }
-        return 1;
-    }
-            
     // Input: position (can be null), sound, frequency
     // Cxt: none
     // Output: none
@@ -421,25 +407,28 @@ namespace {
         KnightsCallbacks& cb = med.getCallbacks();
 
         // find out if there is a 'player' argument, if so, convert it to a player number
-        const Player * player = ReadLuaPtr<Player>(lua, 1);
         int player_num = -1;
-        if (player) {
-            for (int i = 0; i < med.getPlayers().size(); ++i) {
-                if (med.getPlayers()[i] == player) {
-                    player_num = i;
-                    break;
+        int start = 1;
+        if (!lua_isnil(lua, 1) && IsLuaPtr<Player>(lua, 1)) {
+            const Player * player = ReadLuaPtr<Player>(lua, 1);
+            ++start;
+            if (player) {
+                for (int i = 0; i < med.getPlayers().size(); ++i) {
+                    if (med.getPlayers()[i] == player) {
+                        player_num = i;
+                        break;
+                    }
                 }
+                if (player_num < 0) return 0;  // that player doesn't seem to exist (shouldn't happen)
             }
-            if (player_num < 0) return 0;  // that player doesn't seem to exist (shouldn't happen)
         }
 
         // build the message
         std::string msg;
-        const int start = player ? 2 : 1;
         const int top = lua_gettop(lua);
         for (int i = start; i <= top; ++i) {
             const char *x = lua_tostring(lua, i);
-            if (!x) return luaL_error(lua, "'tostring' must return a value to 'print'");
+            if (!x) return luaL_error(lua, "'tostring' must return a string to 'print'");
             if (i > start) msg += " ";
             msg += x;
         }
@@ -610,9 +599,6 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &AddTile);
     lua_setfield(lua, -2, "add_tile");
-
-    PushCFunction(lua, &UserTable);
-    lua_setfield(lua, -2, "user_table");
 
     PushCFunction(lua, &PlaySound);
     lua_setfield(lua, -2, "play_sound");

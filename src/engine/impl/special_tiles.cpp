@@ -24,31 +24,44 @@
 #include "misc.hpp"
 
 #include "action.hpp"
+#include "colour_change.hpp"
 #include "dungeon_map.hpp"
 #include "dungeon_view.hpp"
 #include "item.hpp"
 #include "item_type.hpp"
 #include "knight.hpp"
+#include "lua_setup.hpp"
 #include "mediator.hpp"
 #include "player.hpp"
 #include "rng.hpp"
 #include "special_tiles.hpp"
+
+#include "lua.hpp"
 
 
 //
 // Door
 //
 
-Door::Door()
-    : open_graphic(0), closed_graphic(0)
+Door::Door(lua_State *lua, KnightsConfigImpl *kc)
+    : Lockable(lua, kc)
 {
-    for (int i=0; i<=H_MISSILES; ++i) closed_access[i] = A_BLOCKED;
-}
+    open_graphic = LuaGetPtr<Graphic>(lua, -1, "open_graphic");   // default null
+    closed_graphic = getGraphic();
+    
+    // Save the access state when the tile is closed
+    for (int i = 0; i <= H_MISSILES; ++i) {
+        closed_access[i] = getAccess(MapHeight(i));
+    }
 
-void Door::doorConstruct(const Graphic *og, const Graphic *cg, const MapAccess acc[])
-{
-    open_graphic = og; closed_graphic = cg;
-    for (int i=0; i<=H_MISSILES; ++i) closed_access[i] = acc[i];
+    // If the door is open initially then set all accesses to A_CLEAR,
+    // and set the graphic to the open graphic
+    if (!isClosed()) {
+        for (int i = 0; i <= H_MISSILES; ++i) {
+            setAccessNoSweep(MapHeight(i), A_CLEAR);
+        }
+        setGraphicNoNotify(open_graphic);
+    }
 }
 
 shared_ptr<Tile> Door::doClone(bool)
@@ -100,17 +113,54 @@ bool Door::targettable() const
 // Chest
 //
 
+Chest::TrapInfo Chest::popTrapInfo(lua_State *lua, KnightsConfigImpl *kc)
+{
+    // [traps]
+
+    Chest::TrapInfo result;
+    
+    lua_pushinteger(lua, 1);   // [traps 1]
+    lua_gettable(lua, -2);     // [traps itemtype]
+    result.itype = ReadLuaPtr<const ItemType>(lua, -1);
+    lua_pop(lua, 1);    // [traps]
+
+    lua_pushinteger(lua, 2);  // [traps 2]
+    lua_gettable(lua, -2);    // [traps action]
+    result.action = LuaGetAction(lua, -1, kc);
+    lua_pop(lua, 2);   // []
+
+    return result;
+}
+
+Chest::Chest(lua_State *lua, KnightsConfigImpl *kc)
+    : Lockable(lua, kc)
+{
+    open_graphic = LuaGetPtr<Graphic>(lua, -1, "open_graphic");  // default null
+    closed_graphic = getGraphic();    
+    facing = LuaGetMapDirection(lua, -1, "facing");  // default = north
+    trap_chance = LuaGetProbability(lua, -1, "trap_chance");  // default = 0
+
+    lua_getfield(lua, -1, "traps");  // [t traps]
+    lua_len(lua, -1);   // [t traps len]
+    const int sz = lua_tointeger(lua, -1);
+    lua_pop(lua, 1);    // [t traps]
+    for (int i = 0; i < sz; ++i) {
+        lua_pushinteger(lua, i+1);  // [t traps idx]
+        lua_gettable(lua, -2);      // [t traps trap]
+        traps.push_back(popTrapInfo(lua, kc));  // [t traps]
+    }
+    lua_pop(lua, 1);  // [t]
+
+    if (isClosed()) {
+        setItemsAllowedNoSweep(false, false);
+    } else {
+        setItemsAllowedNoSweep(true, false);
+        setGraphicNoNotify(open_graphic);
+    }
+}
+
 shared_ptr<Tile> Chest::doClone(bool)
 {
-    // Make sure that the tile has items_allowed == false. This is a slight hack since there
-    // is no way at present to configure a tile with items_allowed == false but
-    // item_category >= 0...
-
-    // (Note we can't do this during the ctor because Tile::construct gets called after that,
-    // and it would set the items_allowed back to true in this case.)
-
-    setItemsAllowed(0, MapCoord(), false, false);
-    
     shared_ptr<Tile> new_tile(new Chest(*this));
     return new_tile;
 }
@@ -193,11 +243,19 @@ bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
 // Home
 //
 
-void Home::homeConstruct(MapDirection fcg, shared_ptr<const ColourChange> cc_unsec, bool se)
+Home::Home(lua_State *lua, KnightsConfigImpl *kc)
+    : Tile(lua, kc)
 {
-    facing = fcg;
-    special_exit = se;
-    setGraphic(0, MapCoord(), getGraphic(), cc_unsec); // "default" colour change for home.
+    facing = LuaGetMapDirection(lua, -1, "facing");  // default = north
+    special_exit = LuaGetBool(lua, -1, "special_exit");  // #20. default = false
+
+    unsigned int col = static_cast<unsigned int>(LuaGetInt(lua, -1, "unsecured_colour"));   // default black
+    shared_ptr<ColourChange> cc_unsec(new ColourChange);
+    cc_unsec->add(Colour(255,0,0),
+                  Colour((col & 0xff0000) >> 16,
+                         (col & 0x00ff00) >> 8,
+                         col & 0xff));
+    setCCNoNotify(cc_unsec);
 }
 
 shared_ptr<Tile> Home::doClone(bool)
@@ -257,8 +315,8 @@ void Home::secure(DungeonMap &dmap, const MapCoord &mc, shared_ptr<const ColourC
 
 shared_ptr<Tile> Barrel::doClone(bool)
 {
-    // set items_allowed to false (see also Chest::doClone above)
-    setItemsAllowed(0, MapCoord(), false, false);
+    // set items_allowed to false (see also Chest above)
+    setItemsAllowedNoSweep(false, false);
     
     // Barrels need to be copied (because they may contain a stored item).
     shared_ptr<Tile> new_tile(new Barrel(*this));

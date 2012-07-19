@@ -44,14 +44,7 @@ class Lockable : public Tile {
     enum { PICK_ONLY_LOCK_NUM=99998, SPECIAL_LOCK_NUM = 99999 };
     
 public:
-    Lockable() : closed(true), lock(-1), lock_chance(0), pick_only_chance(0), keymax(1), trap_owner(OT_None()),
-                 on_open_or_close(0) { }
-
-    void setOpenInitially() { closed = false; }
-    void setLockChance(float lock_chance_, float pick_only_chance_, int kmax)
-        { lock_chance = lock_chance_; pick_only_chance = pick_only_chance_; keymax = kmax; }
-    void setSpecialLock() { lock = SPECIAL_LOCK_NUM; }
-    void setOnOpenOrClose(const Action *action) { on_open_or_close = action; }
+    Lockable(lua_State *lua, KnightsConfigImpl *kc);
 
     // Override canActivateHere, onActivate to deal with opening and closing.
     virtual bool canActivateHere() const { return false; }
@@ -110,7 +103,7 @@ private:
     bool closed;
     int lock; // key number, or zero for unlocked
     // NOTE: a negative value for lock means that lock has not been generated yet.
-    // See lock_chance and pick_only_chance for generation parameters.
+    // See lock_chance, pick_only_chance, keymax for generation parameters.
     // ALSO: if lock is set to SPECIAL_LOCK_NUM then the door cannot be unlocked by keys
     // or lock picks; only switches will work.
 

@@ -51,9 +51,10 @@ std::pair<const ItemType *, int> ItemGenerator::get() const
     LuaExec(lua, 0, 2);
 
     const ItemType * itype = ReadLuaPtr<const ItemType>(lua, -2);
-
     int num = lua_tointeger(lua, -1);
     if (num < 1) num = 1;
+
+    lua_pop(lua, 2);  // Remove the results from the stack
 
     return std::make_pair(itype, num);
 }

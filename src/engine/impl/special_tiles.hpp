@@ -34,10 +34,11 @@
 #include <vector>
 using namespace std;
 
+class ItemType;
+
 class Door : public Lockable {
 public:
-    Door();
-    void doorConstruct(const Graphic *og, const Graphic *cg, const MapAccess acc[]);
+    Door(lua_State *lua, KnightsConfigImpl *kc);
 
     virtual void damage(DungeonMap &, const MapCoord &, int amt, shared_ptr<Creature> actor);
     virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &);
@@ -57,18 +58,7 @@ private:
 
 class Chest : public Lockable {
 public:
-    struct TrapInfo {
-        TrapInfo(const ItemType *it, const Action *ac)
-            : itype(it), action(ac) { }
-        const ItemType *itype;
-        const Action *action;  // action to place the trap ...
-    };
-
-    Chest() : open_graphic(0), closed_graphic(0), facing(D_NORTH), trap_chance(0) { }
-    void chestConstruct(const Graphic *og, const Graphic *cg,
-                        MapDirection f, float trap_chance_,
-                        const vector<TrapInfo> &t)
-    { open_graphic = og; closed_graphic = cg; facing = f; trap_chance = trap_chance_; traps = t; }
+    Chest(lua_State *lua, KnightsConfigImpl *kc);
 
     virtual bool cannotActivateFrom(MapDirection &dir) const;
     
@@ -85,6 +75,13 @@ protected:
     virtual void closeImpl(DungeonMap &, const MapCoord &, const Originator &);
 
 private:
+    struct TrapInfo {
+        const ItemType *itype;
+        const Action *action;  // action to place the trap ...
+    };
+    static TrapInfo popTrapInfo(lua_State *lua, KnightsConfigImpl *kc);
+    
+private:
     const Graphic *open_graphic;
     const Graphic *closed_graphic;
     shared_ptr<Item> stored_item;
@@ -97,6 +94,9 @@ private:
 
 class Barrel : public Tile {
 public:
+    Barrel(lua_State *lua, KnightsConfigImpl *kc)
+        : Tile(lua, kc) { }
+    
     virtual bool canPlaceItem() const;
     virtual shared_ptr<Item> getPlacedItem() const;
     virtual void placeItem(shared_ptr<Item>);
@@ -112,7 +112,7 @@ private:
     
 class Home : public Tile {
 public:
-    void homeConstruct(MapDirection fcg, shared_ptr<const ColourChange> cc_unsecured, bool se);
+    Home(lua_State *lua, KnightsConfigImpl *kc);
     
     // onApproach/onWithdraw are overridden to handle healing and quest-checking.
     virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);

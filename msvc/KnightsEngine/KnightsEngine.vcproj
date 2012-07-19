@@ -182,6 +182,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\create_tile.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\creature.cpp"
 				>
 			</File>
@@ -279,6 +283,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\lua_ingame.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\lua_ref.cpp"
 				>
 			</File>
 			<File
@@ -424,6 +432,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\create_tile.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\creature.hpp"
 				>
 			</File>
@@ -529,6 +541,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\lua_ingame.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\lua_ref.hpp"
 				>
 			</File>
 			<File

@@ -4,4 +4,6 @@ all_books = [ i_basic_book, i_book_of_knowledge, i_necronomicon ]
 
 all_wands = [ i_wand_of_destruction, i_wand_of_undeath, i_wand_of_open_ways, i_wand_of_securing ]
 
+all_open_pit_tiles = [ t_open_pit_horiz, t_open_pit_vert, t_open_pit_wooden, t_open_pit_normal ]
+
 ts = 140

@@ -139,7 +139,10 @@ namespace {
             // [ud key value table]
             lua_insert(lua, 2);  // [ud table key value]
             lua_settable(lua, 2);  // [ud table]
+        } else {
+            luaL_error(lua, "This userdata does not have an underlying table");
         }
+
         return 0;
     }
 
@@ -258,8 +261,12 @@ void NewLuaWeakPtr_Impl(lua_State *lua, boost::weak_ptr<void> ptr, LuaTag tag)
 
 void * ReadLuaPtr_Impl(lua_State *lua, int index, LuaTag expected_tag)
 {
+    if (lua_isnil(lua, index)) {
+        return 0;
+    }
     UserData * mem = static_cast<UserData*>(lua_touserdata(lua, index));
     if (!mem || mem->tag != expected_tag) {
+        luaL_error(lua, "Bad userdata");  // TODO: more descriptive error message?
         return 0;
     } else if (mem->ptr_type == PTR_RAW) {
         RawUserData *ud = static_cast<RawUserData*>(mem);
@@ -276,8 +283,12 @@ void * ReadLuaPtr_Impl(lua_State *lua, int index, LuaTag expected_tag)
 
 boost::shared_ptr<void> ReadLuaSharedPtr_Impl(lua_State *lua, int index, LuaTag expected_tag)
 {
+    if (lua_isnil(lua, index)) {
+        return boost::shared_ptr<void>();
+    }
     UserData *mem = static_cast<UserData*>(lua_touserdata(lua, index));
     if (!mem || mem->tag != expected_tag) {
+        luaL_error(lua, "Bad userdata");
         return boost::shared_ptr<void>();
     } else if (mem->ptr_type == PTR_SHARED) {
         SharedUserData *ud = static_cast<SharedUserData*>(mem);
@@ -294,8 +305,12 @@ boost::shared_ptr<void> ReadLuaSharedPtr_Impl(lua_State *lua, int index, LuaTag 
 
 boost::weak_ptr<void> ReadLuaWeakPtr_Impl(lua_State *lua, int index, LuaTag expected_tag)
 {
+    if (lua_isnil(lua, index)) {
+        return boost::weak_ptr<void>();
+    }
     UserData *mem = static_cast<UserData*>(lua_touserdata(lua, index));
     if (!mem || mem->tag != expected_tag) {
+        luaL_error(lua, "Bad userdata");
         return boost::weak_ptr<void>();
     } else if (mem->ptr_type == PTR_WEAK) {
         WeakUserData *ud = static_cast<WeakUserData*>(mem);
@@ -304,6 +319,16 @@ boost::weak_ptr<void> ReadLuaWeakPtr_Impl(lua_State *lua, int index, LuaTag expe
         // This probably indicates a bug in Knights
         luaL_error(lua, "Can't convert shared or raw pointer to weak pointer");
         return boost::weak_ptr<void>();
+    }
+}
+
+bool IsLuaPtr_Impl(lua_State *lua, int index, LuaTag expected_tag)
+{
+    if (lua_isnil(lua, index)) {
+        return true;
+    } else {
+        const UserData *mem = static_cast<UserData*>(lua_touserdata(lua, index));
+        return mem && mem->tag == expected_tag;
     }
 }
 

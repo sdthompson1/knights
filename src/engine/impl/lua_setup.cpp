@@ -25,12 +25,15 @@
 
 #include "action.hpp"
 #include "control.hpp"
+#include "create_tile.hpp"
 #include "graphic.hpp"
 #include "knights_config_impl.hpp"
+#include "lua_check.hpp"
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
+#include "tile.hpp"
 
 #include "lua.hpp"
 
@@ -83,9 +86,7 @@ namespace {
     // Macro used by some LuaGetXXX functions
     
 #define LUA_GET(lua, idx, key, dflt, T, GET)     \
-    lua_pushstring(lua, key);            \
-    if (idx < 0) --idx;                  \
-    lua_gettable(lua, idx);              \
+    lua_getfield(lua, idx, key);                 \
     T result;                            \
     if (lua_isnil(lua, -1)) {            \
         result = dflt;                   \
@@ -293,6 +294,20 @@ namespace {
         return 1;
     }
 
+    
+    // Upvalue: KnightsConfigImpl*
+    // Input: table representing a tile
+    // Output: userdata representing the tile
+    int MakeTile(lua_State *lua)
+    {
+        // note: no need to store Tiles in the KnightsConfigImpl.
+        // They are shared_ptrs and will be automatically released when the lua state is closed down.
+        KnightsConfigImpl *kc = GetKC(lua, "tiles");
+        boost::shared_ptr<Tile> tile = CreateTile(lua, kc);
+        NewLuaSharedPtr<Tile>(lua, tile);
+        return 1;
+    }
+    
 
     // Upvalue: KnightsConfigImpl*
     // Input: 60 arguments for the overlay offsets
@@ -305,16 +320,36 @@ namespace {
     }
 
 
-    // Upvalue: KnightsConfigImpl*
-    // Input: one string (kconfig variable name)
-    // Output: userdata representing the anim
-    int MakeKConfigAnim(lua_State *lua)
+    // Upvalue: none
+    // Input: zero or more Tiles
+    // Output: nothing
+    int SetRotate(lua_State *lua)
     {
-        KnightsConfigImpl *kc = GetKC(lua, "Anims");
-        const char *name = luaL_checkstring(lua, 1);
-        kc->kconfigAnim(name);
-        return 1;
-    }    
+        boost::shared_ptr<Tile> first = ReadLuaSharedPtr<Tile>(lua, 1);
+        boost::shared_ptr<Tile> prev = first;
+        for (int i = 2; i <= lua_gettop(lua); ++i) {
+            boost::shared_ptr<Tile> here = ReadLuaSharedPtr<Tile>(lua, i);
+            if (prev && here) prev->setRotate(here);
+            prev = here;
+        }
+        if (prev && first) prev->setRotate(first);
+        return 0;
+    }
+
+    // Upvalue: none
+    // Input: two Tiles
+    // Output: nothing
+    int SetReflect(lua_State *lua)
+    {
+        boost::shared_ptr<Tile> t1 = ReadLuaSharedPtr<Tile>(lua, 1);
+        boost::shared_ptr<Tile> t2 = ReadLuaSharedPtr<Tile>(lua, 2);
+        if (t1 && t2) {
+            t1->setReflect(t2);
+            t2->setReflect(t1);
+        }
+        return 0;
+    }
+    
     
     // Upvalue: KnightsConfigImpl*
     // Input: one string (kconfig variable name)
@@ -329,34 +364,12 @@ namespace {
 
     // Upvalue: KnightsConfigImpl*
     // Input: one string (kconfig variable name)
-    // Output: userdata representing the tiletype
-    int MakeKconfigTile(lua_State *lua)
-    {
-        KnightsConfigImpl *kc = GetKC(lua, "TileTypes");
-        const char * name = luaL_checkstring(lua, 1);
-        kc->kconfigTile(name);
-        return 1;
-    }    
-
-    // Upvalue: KnightsConfigImpl*
-    // Input: one string (kconfig variable name)
     // Output: userdata representing a control
     int MakeKconfigControl(lua_State *lua)
     {
         KnightsConfigImpl *kc = GetKC(lua, "Controls");
         const char * name = luaL_checkstring(lua, 1);
         kc->kconfigControl(name);
-        return 1;
-    }
-
-    // Upvalue: KnightsConfigImpl*
-    // Input: one string (kconfig variable name)
-    // Output: userdata representing an anim
-    int MakeKconfigAnim(lua_State *lua)
-    {
-        KnightsConfigImpl *kc = GetKC(lua, "Anims");
-        const char * name = luaL_checkstring(lua, 1);
-        kc->kconfigAnim(name);
         return 1;
     }
 }
@@ -400,10 +413,21 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     PushCClosure(lua, &MakeSound, 1);
     lua_setfield(lua, -2, "Sound");
 
+    lua_pushlightuserdata(lua, kc);
+    PushCClosure(lua, &MakeTile, 1);
+    lua_setfield(lua, -2, "Tile");
+    
 
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &SetOverlayOffsets, 1);
     lua_setfield(lua, -2, "SetOverlayOffsets");
+
+
+    PushCFunction(lua, &SetRotate);
+    lua_setfield(lua, -2, "SetRotate");
+
+    PushCFunction(lua, &SetReflect);
+    lua_setfield(lua, -2, "SetReflect");
     
     
     lua_pushlightuserdata(lua, kc);
@@ -411,16 +435,8 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     lua_setfield(lua, -2, "kconfig_itemtype");
 
     lua_pushlightuserdata(lua, kc);
-    PushCClosure(lua, &MakeKconfigTile, 1);
-    lua_setfield(lua, -2, "kconfig_tile");
-
-    lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeKconfigControl, 1);
     lua_setfield(lua, -2, "kconfig_control");
-
-    lua_pushlightuserdata(lua, kc);
-    PushCClosure(lua, &MakeKconfigAnim, 1);
-    lua_setfield(lua, -2, "kconfig_anim");
 
     
     lua_pop(lua, 2); // []
@@ -445,9 +461,28 @@ float LuaGetFloat(lua_State *lua, int idx, const char *key, float dflt)
     LUA_GET(lua, idx, key, dflt, float, lua_tonumber);
 }
 
+float LuaGetProbability(lua_State *lua, int idx, const char *key, float dflt)
+{
+    float p = LuaGetFloat(lua, idx, key, dflt);
+    if (p < 0.0f || p > 1.0f) {
+        luaL_error(lua, "'%s' must be between 0 and 1", key);
+    }
+    return p;
+}
+
 std::string LuaGetString(lua_State *lua, int idx, const char *key, const char * dflt)
 {
-    LUA_GET(lua, idx, key, dflt, std::string, lua_tostring);
+    lua_getfield(lua, idx, key);
+    std::string result;
+    if (lua_isnil(lua, -1)) {
+        result = dflt;
+    } else if (!lua_isstring(lua, -1)) {
+        luaL_error(lua, "'%s' must be a string", key);
+    } else {
+        result = lua_tostring(lua, -1);
+    }
+    lua_pop(lua, 1);
+    return result;
 }
 
 ItemSize LuaGetItemSize(lua_State *lua, int idx, const char *key, ItemSize dflt)
@@ -462,9 +497,7 @@ ItemSize LuaGetItemSize(lua_State *lua, int idx, const char *key, ItemSize dflt)
 
 MapDirection LuaGetMapDirection(lua_State *lua, int idx, const char *key, MapDirection dflt)
 {
-    lua_pushstring(lua, key);
-    if (idx < 0) --idx;
-    lua_gettable(lua, idx);
+    lua_getfield(lua, idx, key);
     MapDirection result = dflt;
     if (lua_isstring(lua, -1)) {
         result = GetMapDirection(lua, -1);
@@ -477,9 +510,7 @@ const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, int idx, const char *
 {
     // Pops Lua nil, function or number; returns a RandomInt* (can be null).
 
-    lua_pushstring(lua, key);    // [.. key]
-    if (idx < 0) --idx;
-    lua_gettable(lua, idx);       // [.. function/number]
+    lua_getfield(lua, idx, key);  // [.. function/number]
 
     LuaRandomInt *result = 0;
 
@@ -507,23 +538,37 @@ KnightsConfigImpl * GetKC(lua_State *lua, const char * msg)
 
 Action * LuaGetAction(lua_State *lua, int idx, const char *key, KnightsConfigImpl *kc)
 {
-    // This builds a new LuaAction object from the function on the top of the stack,
-    // and returns it. (The object will be added to KnightsConfigImpl for deletion
-    // when ~KnightsConfigImpl is called.)
-        
-    lua_pushstring(lua, key);
-    if (idx < 0) --idx;
-    lua_gettable(lua, idx);   // function is now at top of stack
+    // This builds a new LuaAction object from the function at given
+    // key in table at top of stack, and returns it. (The object will
+    // be added to KnightsConfigImpl for deletion when
+    // ~KnightsConfigImpl is called.)
+
+    lua_getfield(lua, idx, key); // function is now at top of stack
 
     Action *ac = 0;
     if (lua_isnil(lua, -1)) {
         lua_pop(lua, 1);
-    } else if (!lua_isfunction(lua, -1)) {
-        luaL_error(lua, "'%s': expected function, got %s", key,
+    } else if (!LuaIsCallable(lua, -1)) {
+        luaL_error(lua, "'%s': expected function or callable object, got %s", key,
                    lua_typename(lua, lua_type(lua, -1)));
     } else {
-        auto_ptr<Action> action(new LuaAction(kc->getLuaState()));  // pops stack
+        auto_ptr<Action> action(new LuaAction(lua));  // pops stack
         ac = kc->addLuaAction(action);  // transfers ownership
     }
     return ac;
+}
+
+Action * LuaGetAction(lua_State *lua, int idx, KnightsConfigImpl *kc)
+{
+    // Same but reads from given stack idx instead
+    if (lua_isnil(lua, idx)) {
+        return 0;
+    } else if (!LuaIsCallable(lua, idx)) {
+        luaL_error(lua, "expected function or callable object");
+        return 0;  // prevent compiler warning
+    } else {
+        lua_pushvalue(lua, idx);
+        auto_ptr<Action> action(new LuaAction(lua));  // pops stack
+        return kc->addLuaAction(action);  // transfers ownership
+    }
 }

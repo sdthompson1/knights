@@ -30,6 +30,7 @@
 #ifndef TILE_HPP
 #define TILE_HPP
 
+#include "lua_ref.hpp"
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
 
@@ -46,8 +47,7 @@ class Creature;
 class DungeonMap;
 class Graphic;
 class Item;
-
-struct lua_State;
+class KnightsConfigImpl;
 
 enum ActivateType {
     ACT_NORMAL,
@@ -57,33 +57,17 @@ enum ActivateType {
 
 class Tile : public enable_shared_from_this<Tile> {
 public:
-    Tile();
+    // NOTE: Constructors do not set the current hitpoints, only the initial hitpoints.
+    // Current hitpoints are set by "setHitPoints", which is called by clone().
+
+    // Construct from lua table at top of stack. Leaves the table on the stack.
+    Tile(lua_State *lua, KnightsConfigImpl *kc);
+
+    // Construct a "dummy" tile for switch-actions.
+    Tile(const Action *walk_over, const Action *activate);
     
-    // Note -- construct does not set "hit_points".
-    // That is left for "setHitPoints" (which in turn is called by clone()).
-    void construct(shared_ptr<lua_State> lua,
-                   const Graphic *graphic, int depth,
-                   bool items_allowed, bool destroy_items, int item_category,
-                   const MapAccess acc[], bool is_stair, bool stair_top,
-                   MapDirection stair_dir, 
-                   const RandomInt * init_hitpoints,
-                   int connectivity_check,
-                   const Action *on_destroy,
-                   const Action *activate,
-                   const Action *walk_over, const Action *approach, 
-                   const Action *withdraw, const Action *hit,
-                   int t_key,
-                   shared_ptr<Tile> reflect,
-                   shared_ptr<Tile> rotate);
-    void construct(shared_ptr<lua_State> lua, const Graphic *g, int dpth);
-    void construct(shared_ptr<lua_State> lua, const Action *wlkovr, const Action *actvt); // construct a "dummy" tile (for switches)
-
-    // dtor
-    // Will remove the "user table" from the lua registry if it exists
-    virtual ~Tile();
-
     // clone
-    // Clones the tile, also copies the lua "user table" if it exists
+    // Clones the tile.
     // WARNING: some tiles are copied and some are shared, so "clone" could either return a new copy
     // of *this or it could just return shared_from_this(), as appropriate.
     // If "force_copy" is set then ALWAYS make a true clone (i.e. a new copy).
@@ -168,8 +152,6 @@ public:
 
     // Custom control
     const Control * getControl(const MapCoord &pos) const;
-    void setControl(const Control *ctrl);
-    void setControlFunc();  // pops a function from the Lua stack
     
 
     // placeItem: This is overridden by chests, barrels to place items
@@ -192,8 +174,14 @@ public:
     int getTutorialKey() const { return tutorial_key; }
 
     // Reflection/Rotation
-    shared_ptr<Tile> getReflect() const { return reflect; }   // X reflection of this tile
-    shared_ptr<Tile> getRotate() const { return rotate; }     // 90 degree clockwise rotation of this tile
+    shared_ptr<Tile> getReflect() {   // X reflection of this tile
+        return reflect ? reflect : shared_from_this();
+    }
+    shared_ptr<Tile> getRotate() {    // 90 degree clockwise rotation of this tile
+        return rotate ? rotate : shared_from_this();
+    }
+    void setRotate(shared_ptr<Tile> t) { rotate = t; }
+    void setReflect(shared_ptr<Tile> t) { reflect = t; }
     
 protected:
     // Clone this tile (or return shared_from_this() if the same tile can be shared)
@@ -207,15 +195,23 @@ protected:
     void setItemsAllowed(DungeonMap *, const MapCoord &, bool allow, bool destroy);
     void setAccess(DungeonMap *, const MapCoord &, MapHeight height, MapAccess access, const Originator &originator);
     void setAccess(DungeonMap *, const MapCoord &, MapAccess access, const Originator &originator);  // set all heights at once
+    void setAccessNoSweep(MapHeight height, MapAccess acc) { access[height] = acc; }
 
+    void setItemsAllowedNoSweep(bool allow, bool destroy);
+    void setGraphicNoNotify(const Graphic *g) { graphic = g; } // called by subclass ctors
+    void setCCNoNotify(shared_ptr<ColourChange> cc_) { cc = cc_; }
+    
 private:
     // SetHitPoints -- this sets hit_points, using initial_hit_points.
     // This is called automatically by "clone", so new copies of tiles will automatically
     // be given an appropriate (possibly randomized) number of hit points.
     void setHitPoints();
 
+    // assignment is not implemented currently
+    void operator=(const Tile &);
+    
 private:
-    boost::weak_ptr<lua_State> lua_state;
+    LuaRef control_func_ref;
     
     const Graphic * graphic;
     shared_ptr<const ColourChange> cc;

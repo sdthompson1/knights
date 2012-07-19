@@ -26,6 +26,7 @@
 #include "action.hpp"
 #include "creature.hpp"
 #include "knights_callbacks.hpp"
+#include "lua_check.hpp"
 #include "lua_exec_coroutine.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
@@ -323,36 +324,26 @@ Action * ActionMaker::createAction(const string &name, ActionPars &pars)
 // LuaAction
 //
 
-LuaAction::LuaAction(boost::shared_ptr<lua_State> lua)
-    : lua_state(lua)
+LuaAction::LuaAction(lua_State *lua)
 {
-    if (!lua_isfunction(lua.get(), -1)) {
+    if (!LuaIsCallable(lua, -1)) {
         throw LuaError("Value is not a Lua function");
     }
-    lua_rawsetp(lua.get(), LUA_REGISTRYINDEX, this);   // pops function from the stack.
-}
-
-LuaAction::~LuaAction()
-{
-    shared_ptr<lua_State> lua_lock(lua_state.lock());
-    if (lua_lock) {
-        lua_State * lua = lua_lock.get();
-        lua_pushnil(lua);                  // does not raise Lua errors
-        lua_rawsetp(lua, LUA_REGISTRYINDEX, this);  // should not raise lua error (except if out of memory, perhaps, but we ignore this possibility.)
-    }
+    function_ref.reset(lua);  // Pops function from the stack.
 }
 
 void LuaAction::execute(const ActionData &ad) const
 {
-    shared_ptr<lua_State> lua_lock(lua_state);
-    lua_State * lua = lua_lock.get();
-    
-    // Set up "cxt" table
-    ad.pushCxtTable(lua);  // [cxt]
+    lua_State *lua = function_ref.getLuaState();
+    if (lua) {
+        
+        // Set up "cxt" table
+        ad.pushCxtTable(lua);  // [cxt]
 
-    // Get the function from the registry
-    lua_rawgetp(lua, LUA_REGISTRYINDEX, const_cast<LuaAction*>(this));  // [cxt func]
+        // Get the function from the registry
+        function_ref.push(lua); // [cxt func]
 
-    // Call it (with 0 arguments)
-    LuaExecCoroutine(lua, 0);
+        // Call it (with 0 arguments)
+        LuaExecCoroutine(lua, 0);  // []
+    }
 }
