@@ -31,6 +31,7 @@
 #include "lua_check.hpp"
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
+#include "lua_ref.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
 #include "tile.hpp"
@@ -44,36 +45,29 @@ namespace {
     // Class that calls Lua to generate a random integer.
     class LuaRandomInt : public KConfig::RandomInt {
     public:
-        // Note: We store a raw pointer to the lua state, so clients
-        // must destroy the LuaRandomInt BEFORE they destroy the LuaState.
-        
-        explicit LuaRandomInt(lua_State *lua_);  // pops a lua function.
-        ~LuaRandomInt();
+        explicit LuaRandomInt(lua_State *lua);  // pops a lua function.
         virtual int get() const;  // overridden from base class
 
     private:
-        lua_State *lua;
+        LuaRef lua_func_ref;
     };
 
-    LuaRandomInt::LuaRandomInt(lua_State *lua_)
-        : lua(lua_)
+    LuaRandomInt::LuaRandomInt(lua_State *lua)
     {
-        if (!lua_isfunction(lua, -1) && !lua_isnumber(lua, -1)) {
+        if (!LuaIsCallable(lua, -1) && !lua_isnumber(lua, -1)) {
             throw LuaError("Value is not a random int");
         }
-        lua_rawsetp(lua, LUA_REGISTRYINDEX, this); // pops function/number.
-    }
-
-    LuaRandomInt::~LuaRandomInt()
-    {
-        lua_pushnil(lua);
-        lua_rawsetp(lua, LUA_REGISTRYINDEX, this);  // clear registry entry.
+        lua_func_ref.reset(lua); // pops function/number.
     }
 
     int LuaRandomInt::get() const
     {
-        lua_rawgetp(lua, LUA_REGISTRYINDEX, this);
-        if (lua_isfunction(lua, -1)) {
+        lua_State *lua = lua_func_ref.getLuaState();
+        ASSERT(lua);  // should have been set in the ctor
+
+        lua_func_ref.push(lua);  // pushes function (or number)
+
+        if (LuaIsCallable(lua, -1)) {
             LuaExec(lua, 0, 1);  // pops function and pushes number
         }
         // else: there should be a number on top of stack already.

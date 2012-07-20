@@ -33,8 +33,10 @@
 
 #include "lua.hpp"
 
+#include "boost/noncopyable.hpp"
+
 namespace {
-    class CoroutineTask : public Task {
+    class CoroutineTask : public Task, boost::noncopyable {
     public:
         // Protocol: Push cxt, fn and args onto lua stack, then call ctor
         // which will pop them and push them onto the thread stack.
