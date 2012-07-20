@@ -24,6 +24,8 @@
 #ifndef ITEM_GENERATOR_HPP
 #define ITEM_GENERATOR_HPP
 
+#include "lua_ref.hpp"
+
 #include "kconfig_fwd.hpp"
 using namespace KConfig;
 
@@ -31,7 +33,6 @@ using namespace KConfig;
 using namespace std;
 
 class ItemType;
-struct lua_State;
 
 //
 // ItemGenerator represents a Lua procedure which, when called, will
@@ -40,14 +41,12 @@ struct lua_State;
 class ItemGenerator {
 public:
     // Ctor reads a callable object from argument position 1. Lua stack left unchanged.
-    explicit ItemGenerator(lua_State *lua_);
-    ~ItemGenerator();
+    explicit ItemGenerator(lua_State *lua);
     
     std::pair<const ItemType *, int> get() const;
 
 private:
-    // Uses 'this' as a registry key, to store the function
-    lua_State *lua;
+    LuaRef item_gen_func;
 };
 
 #endif

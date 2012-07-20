@@ -30,31 +30,27 @@
 
 #include "lua.hpp"
 
-ItemGenerator::ItemGenerator(lua_State *lua_)
-    : lua(lua_)
+ItemGenerator::ItemGenerator(lua_State *lua)
 {
     LuaCheckCallable(lua, 1, "ItemGenerator");
-    lua_pushvalue(lua, 1);
-    lua_rawsetp(lua, LUA_REGISTRYINDEX, this);
-}
-
-ItemGenerator::~ItemGenerator()
-{
-    lua_pushnil(lua);
-    lua_rawsetp(lua, LUA_REGISTRYINDEX, this);
+    lua_pushvalue(lua, 1);     // [... func]
+    item_gen_func.reset(lua);  // [...]
 }
 
 std::pair<const ItemType *, int> ItemGenerator::get() const
 {
     // Call the function -- pass no args, get upto 2 results.
-    lua_rawgetp(lua, LUA_REGISTRYINDEX, this);
-    LuaExec(lua, 0, 2);
+    lua_State *lua = item_gen_func.getLuaState();
+    ASSERT(lua);  // should have been set in ctor
+
+    item_gen_func.push(lua);   // [... func]
+    LuaExec(lua, 0, 2);    // [... r1 r2]
 
     const ItemType * itype = ReadLuaPtr<const ItemType>(lua, -2);
     int num = lua_tointeger(lua, -1);
     if (num < 1) num = 1;
 
-    lua_pop(lua, 2);  // Remove the results from the stack
+    lua_pop(lua, 2);  // [...]
 
     return std::make_pair(itype, num);
 }
