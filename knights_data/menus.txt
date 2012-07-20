@@ -419,7 +419,7 @@ MAIN_MENU = [
             [MenuIcon("I") 
 
              # DungeonMonsterGeneration sets the generation rates of monsters which spawn
-             # from a particular tile type. (See "generator_tiles" in monsters.txt.)
+             # from a particular tile type. (See "generator_tiles" in monsters.lua.)
              # Currently there is no way to set this on a per monster type basis, instead 
              # there is one global setting for all monster types (from 0 to 5).
              DungeonMonsterGeneration(GetMenu("bats"))

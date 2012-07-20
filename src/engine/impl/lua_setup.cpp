@@ -25,6 +25,7 @@
 
 #include "action.hpp"
 #include "control.hpp"
+#include "create_monster_type.hpp"
 #include "create_tile.hpp"
 #include "graphic.hpp"
 #include "knights_config_impl.hpp"
@@ -75,22 +76,8 @@ namespace {
         lua_pop(lua, 1);  // pop the result
         return result;
     }
-    
 
-    // Macro used by some LuaGetXXX functions
-    
-#define LUA_GET(lua, idx, key, dflt, T, GET)     \
-    lua_getfield(lua, idx, key);                 \
-    T result;                            \
-    if (lua_isnil(lua, -1)) {            \
-        result = dflt;                   \
-    } else {                             \
-        result = GET(lua, -1);           \
-    }                                    \
-    lua_pop(lua, 1);                     \
-    return result                       
 
-    
     //
     // Lua Config Functions.
     //
@@ -201,7 +188,17 @@ namespace {
         NewLuaPtr<Overlay>(lua, r);
         return 1;
     }
-    
+
+    // Upvalue: KnightsConfigImpl*
+    // Input: table representing a monstertype
+    // Output: userdata representing a monstertype
+    int MakeMonsterType(lua_State *lua)
+    {
+        KnightsConfigImpl *kc = GetKC(lua, "MonsterTypes");
+        MonsterType *m = CreateMonsterType(lua, kc);
+        NewLuaPtr<MonsterType>(lua, m);
+        return 1;
+    }
 
     // Upvalue: KnightsConfigImpl*
     // Input: filename
@@ -319,6 +316,10 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     lua_setfield(lua, -2, "Overlay");
 
     lua_pushlightuserdata(lua, kc);
+    PushCClosure(lua, &MakeMonsterType, 1);
+    lua_setfield(lua, -2, "MonsterType");
+    
+    lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeSound, 1);
     lua_setfield(lua, -2, "Sound");
 
@@ -343,7 +344,7 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     PushCClosure(lua, &MakeKconfigControl, 1);
     lua_setfield(lua, -2, "kconfig_control");
 
-    
+
     lua_pop(lua, 2); // []
 }
 
@@ -353,17 +354,41 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     
 bool LuaGetBool(lua_State *lua, int idx, const char * key, bool dflt)
 {
-    LUA_GET(lua, idx, key, dflt, bool, lua_toboolean);
+    lua_getfield(lua, idx, key);
+    bool result;
+    if (lua_isnil(lua, -1)) {
+        result = dflt;
+    } else {
+        result = lua_toboolean(lua, -1) != 0;
+    }
+    lua_pop(lua, 1);
+    return result;
 }
 
 int LuaGetInt(lua_State *lua, int idx, const char * key, int dflt)
 {
-    LUA_GET(lua, idx, key, dflt, int, lua_tointeger);
+    lua_getfield(lua, idx, key);
+    int result;
+    if (lua_isnil(lua, -1)) {
+        result = dflt;
+    } else {
+        result = lua_tointeger(lua, -1);
+    }
+    lua_pop(lua, 1);
+    return result;
 }
 
 float LuaGetFloat(lua_State *lua, int idx, const char *key, float dflt)
 {
-    LUA_GET(lua, idx, key, dflt, float, lua_tonumber);
+    lua_getfield(lua, idx, key);
+    float result;
+    if (lua_isnil(lua, -1)) {
+        result = dflt;
+    } else {
+        result = static_cast<float>(lua_tonumber(lua, -1));
+    }
+    lua_pop(lua, 1);
+    return result;
 }
 
 float LuaGetProbability(lua_State *lua, int idx, const char *key, float dflt)
@@ -476,4 +501,26 @@ Action * LuaGetAction(lua_State *lua, int idx, KnightsConfigImpl *kc)
         auto_ptr<Action> action(new LuaAction(lua));  // pops stack
         return kc->addLuaAction(action);  // transfers ownership
     }
+}
+
+void LuaGetTileList(lua_State *lua, int tbl_idx, const char *key, std::vector<boost::shared_ptr<Tile> > &tiles)
+{
+    tiles.clear();
+    lua_getfield(lua, tbl_idx, key);  // [... tbl]
+
+    if (!lua_isnil(lua, -1)) {
+        lua_len(lua, -1); // [... tbl len]
+        const int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);   // [... tbl]
+        tiles.clear();
+        tiles.reserve(sz);
+        for (int i = 1; i <= sz; ++i) {
+            lua_pushinteger(lua, i);   // [... tbl i]
+            lua_gettable(lua, -2);     // [... tbl tile]
+            tiles.push_back(ReadLuaSharedPtr<Tile>(lua, -1));
+            lua_pop(lua, 1);  // [... tbl]
+        }
+    }
+
+    lua_pop(lua, 1);  // [...]
 }

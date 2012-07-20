@@ -42,8 +42,13 @@
 #include "kconfig_fwd.hpp"
 using namespace KConfig;
 
+#include "boost/shared_ptr.hpp"
+
+#include <vector>
+
 class Anim;
 class ItemType;
+class Tile;
 
 //
 // Flying Monsters (vampire bats)
@@ -54,10 +59,8 @@ class FlyingMonster;
 class FlyingMonsterType : public MonsterType {
     friend class FlyingMonster;
 public:
-    FlyingMonsterType() : health(0), speed(0), anim(0), dmg(0), stun(0) { }
-    void construct(const RandomInt *health_, int speed_, const Anim *anim_,
-                   int dmg_, const RandomInt *stun_)
-        { health = health_; speed = speed_; anim = anim_; dmg = dmg_; stun = stun_; }
+    // reads table from top of stack (does not pop stack)
+    FlyingMonsterType(lua_State *lua, KnightsConfigImpl *kc);
 
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_FLYING; }
@@ -105,17 +108,10 @@ private:
 
 class WalkingMonsterType : public MonsterType {
 public:
-    WalkingMonsterType() : health(0), speed(0), weapon(0), anim(0), fear_item(0), hit_item(0) { }
-    void construct(const RandomInt *health_, int speed_, const ItemType *weapon_,
-                   const Anim *anim_,
-                   const std::vector<shared_ptr<Tile> > & avoid_tiles_,
-                   const ItemType * fear_item_,
-                   const ItemType * hit_item_)
-        { health = health_; speed = speed_; weapon = weapon_; anim = anim_;
-          avoid_tiles = avoid_tiles_; fear_item = fear_item_; hit_item = hit_item_; }
-
+    WalkingMonsterType(lua_State *lua, KnightsConfigImpl *kc);  // reads table from top of lua stack; doesn't pop
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_WALKING; }
+    
 private:
     const RandomInt *health;
     int speed;

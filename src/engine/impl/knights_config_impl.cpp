@@ -49,9 +49,9 @@
 #include "menu_int.hpp"
 #include "menu_item.hpp"
 #include "menu_selections.hpp"
-#include "monster_definitions.hpp"
 #include "monster_manager.hpp"
 #include "monster_task.hpp"
+#include "monster_type.hpp"
 #include "overlay.hpp"
 #include "player.hpp"
 #include "round.hpp"
@@ -208,9 +208,9 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         kf->pushSymbol("DEAD_KNIGHT_TILES");
         popTileList(dead_knight_tiles);
 
-        // Zombie activity table
-        kf->pushSymbol("ZOMBIE_ACTIVITY");
-        popZombieActivityTable();
+        // Zombie activity table (kts.ZOMBIE_ACTIVITY)
+        luaL_getsubtable(lua_state.get(), -1, "ZOMBIE_ACTIVITY");  // [env kts zombie_table]
+        popZombieActivityTable(lua_state.get());                   // [env kts]
 
         // misc other stuff
         kf->pushSymbol("STUFF_BAG_GRAPHIC");
@@ -282,7 +282,6 @@ void KnightsConfigImpl::freeMemory()
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
-    for_each(monster_types.begin(), monster_types.end(), Delete<MonsterType>());
     for_each(overlays.begin(), overlays.end(), Delete<Overlay>());
     for_each(segments.begin(), segments.end(), Delete<Segment>());
     for (size_t i=0; i<knight_anims.size(); ++i) delete knight_anims[i];
@@ -294,6 +293,7 @@ void KnightsConfigImpl::freeMemory()
     for_each(lua_graphics.begin(), lua_graphics.end(), Delete<Graphic>());
     for_each(lua_item_generators.begin(), lua_item_generators.end(), Delete<ItemGenerator>());
     for_each(lua_item_types.begin(), lua_item_types.end(), Delete<ItemType>());
+    for_each(lua_monster_types.begin(), lua_monster_types.end(), Delete<MonsterType>());
     for_each(lua_overlays.begin(), lua_overlays.end(), Delete<Overlay>());
     for_each(lua_sounds.begin(), lua_sounds.end(), Delete<Sound>());
 }
@@ -1015,129 +1015,20 @@ string KnightsConfigImpl::popMenuValueName(int val)
     return "error";
 }
 
-bool KnightsConfigImpl::isMonsterType()
-{
-    // This tries to identify whether the top entry is a table representing a MonsterType.
-    // Currently it is not too intelligent, it just looks at the "type" to see if it is a recognized monster type.
-    if (!kf) return false;
-    if (!kf->isTable()) return false;
-    const Value * val = kf->getTop()->getTableOptional("type");
-    if (!val) return false;
-    if (!val->isString()) return false;
-    std::string type = val->getString();
-    return type == "flying" || type == "walking";
-}
-
 MonsterType * KnightsConfigImpl::popMonsterType()
 {
     if (!kf) return 0;
+    MonsterType *result = 0;
 
-    const Value * p = kf->getTop();
-    map<const Value *, MonsterType *>::iterator it = monster_types.find(p);
-
-    if (it == monster_types.end()) {
-        
-        KFile::Table tab(*kf, "MonsterType");
-
-        tab.push("type", false);
-        const string type = kf->popString();
-
-        // NOTE: If new monster types are added then isMonsterType must be updated also
-        
-        FlyingMonsterType * flying = 0;
-        WalkingMonsterType * walking = 0;
-        MonsterType * mon = 0;
-        
-        if (type == "flying") {
-            flying = new FlyingMonsterType;
-            mon = flying;
-        } else if (type == "walking") {
-            walking = new WalkingMonsterType;
-            mon = walking;
-        } else {
-            kf->error("invalid monster type");
-            return 0;
-        }            
-        
-        it = monster_types.insert(std::make_pair(p, mon)).first;
-
-        tab.reset();
-
-        std::vector<shared_ptr<Tile> > ai_avoid;
-        const ItemType * ai_hit = 0;
-        const ItemType * ai_fear = 0;
-        if (walking) {
-            tab.push("ai_avoid");
-            if (kf->isNone()) kf->pop(); else popTileList(ai_avoid);
-
-            tab.push("ai_fear");
-            ai_fear = popItemType(0);
-        
-            tab.push("ai_hit");
-            ai_hit = popItemType(0);
-        }
-
-        tab.push("anim");
-        Anim * anim = popAnim();
-
-        int attack_damage = 0;
-        const RandomInt * attack_stun_time = 0;
-        if (flying) {
-            tab.push("attack_damage");
-            attack_damage = kf->popInt();
-
-            tab.push("attack_stun_time");
-            attack_stun_time = kf->popRandomInt(random_ints);
-        }
-
-        tab.push("corpse_tiles");
-        std::vector<shared_ptr<Tile> > corpse_tiles;
-        if (kf->isNone()) {
-            kf->pop();  // corpse_tiles is optional
-        } else {
-            popTileList(corpse_tiles); // but if present it must be a tile list
-        }
-
-        tab.push("generator_tiles");
-        std::vector<shared_ptr<Tile> > generator_tiles;
-        if (kf->isNone()) {
-            kf->pop();
-        } else {
-            popTileList(generator_tiles);
-        }
-        
-        tab.push("health");
-        const RandomInt * health = kf->popRandomInt(random_ints);
-
-        tab.push("speed");
-        int speed = kf->popInt();
-
-        tab.push("type");
-        kf->pop();
-
-        const ItemType * weapon = 0;
-        if (walking) {
-            tab.push("weapon");
-            weapon = popItemType();
-        }
-
-        if (walking) {
-            walking->construct(health, speed, weapon, anim, ai_avoid, ai_fear, ai_hit);
-        } else {
-            ASSERT(flying);
-            flying->construct(health, speed, anim, attack_damage, attack_stun_time);
-        }
-
-        monster_corpse_tiles.insert(std::make_pair(it->second, corpse_tiles));
-        monster_generator_tiles.insert(std::make_pair(it->second, generator_tiles));
-        
-    } else {
-        kf->pop();
+    if (kf->isLua()) {
+        kf->popLua();
+        result = ReadLuaPtr<MonsterType>(lua_state.get(), -1);
+        lua_pop(lua_state.get(), 1);
     }
 
-    return it->second;
+    if (!result) kf->errExpected("monster type");
+    return result;
 }
-
 
 Overlay* KnightsConfigImpl::popOverlay()
 {
@@ -1552,30 +1443,42 @@ void KnightsConfigImpl::popTutorial(lua_State *lua)
     lua_pop(lua, 1);  // []
 }
 
-void KnightsConfigImpl::popZombieActivityTable()
+void KnightsConfigImpl::popZombieActivityTable(lua_State *lua)
 {
-    KConfig::KFile::List lst(*kf, "ZombieActivityTable");
-    for (int i = 0; i < lst.getSize(); ++i) {
-        lst.push(i);
-        KConfig::KFile::List lst2(*kf, "ZombieActivityEntry", 2);
+    // [zomtable]
+    lua_len(lua, -1);  // [zt len]
+    const int sz = lua_tointeger(lua, -1);
+    lua_pop(lua, 1);  // [zt]
+
+    for (int i = 0; i < sz; ++i) {
+        lua_pushinteger(lua, i+1);  // [zt i]
+        lua_gettable(lua, -2);      // [zt entry]
+
+        // entry is a table of two things: tilefrom, and tileto/monsterto.
 
         ZombieActivityEntry ent;
         
-        lst2.push(0);
-        ent.from = popTile();
+        lua_pushinteger(lua, 1);  // [zt entry 1]
+        lua_gettable(lua, -2);    // [zt entry from]
+        ent.from = ReadLuaSharedPtr<Tile>(lua, -1);
+        lua_pop(lua, 1);          // [zt entry]
 
-        lst2.push(1);
-        const bool is_monster = isMonsterType();
+        lua_pushinteger(lua, 2);  // [zt entry 2]
+        lua_gettable(lua, -2);    // [zt entry to]
 
-        if (is_monster) {
-            ent.to_monster_type = popMonsterType();
+        if (IsLuaPtr<MonsterType>(lua, -1)) {
+            ent.to_monster_type = ReadLuaPtr<MonsterType>(lua, -1);
         } else {
             ent.to_monster_type = 0;
-            ent.to_tile = popTile();
+            ent.to_tile = ReadLuaSharedPtr<Tile>(lua, -1);
         }
 
         zombie_activity.push_back(ent);
+        
+        lua_pop(lua, 2);  // [zt]
     }
+
+    lua_pop(lua, 1);  // []
 }
 
 void KnightsConfigImpl::addZombieActivity(MonsterManager &mm, shared_ptr<Tile> from, const ZombieActivityEntry &ze)
@@ -2023,6 +1926,18 @@ ItemType * KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)
 
     lua_item_types.push_back(p.release());
     return lua_item_types.back();
+}
+
+MonsterType * KnightsConfigImpl::addLuaMonsterType(auto_ptr<MonsterType> p,
+                                                   std::vector<boost::shared_ptr<Tile> > &generator_tiles,
+                                                   std::vector<boost::shared_ptr<Tile> > &corpse_tiles)
+{
+    monster_corpse_tiles.insert(std::make_pair(p.get(), corpse_tiles));
+    monster_generator_tiles.insert(std::make_pair(p.get(), generator_tiles));
+
+    MonsterType * q = p.release();
+    lua_monster_types.push_back(q);
+    return q;
 }
 
 Overlay * KnightsConfigImpl::addLuaOverlay(auto_ptr<Overlay> p)

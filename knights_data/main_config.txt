@@ -20,7 +20,6 @@
 
 
 include "controls.txt"
-include "monsters.txt"
 
 DEFAULT_ITEM = i_sword
 

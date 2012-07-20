@@ -34,6 +34,7 @@
 
 class Action;
 class KnightsConfigImpl;
+class Tile;
 
 // Sets up Lua functions for creating ItemTypes, etc, and adding them
 // to the KnightsConfigImpl.
@@ -70,6 +71,10 @@ template<class T> boost::shared_ptr<T> LuaGetSharedPtr(lua_State *lua, int tbl_i
     lua_pop(lua, 1);
     return result;
 }
+
+// nil is treated as an empty list
+void LuaGetTileList(lua_State *lua, int tbl_idx, const char *key, std::vector<boost::shared_ptr<Tile> > &tiles);
+
 
 // Get the KnightsConfigImpl* from the lua state.
 // If not available, raises lua error "Cannot create new " + msg + " during the game".

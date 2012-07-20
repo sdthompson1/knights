@@ -131,6 +131,8 @@ ActionData::ActionData(lua_State *lua)
         item_dmap = item_coord.isNull() ? 0 : dmap;
         tile_dmap = tile_coord.isNull() ? 0 : dmap;
         generic_dmap = generic_coord.isNull() ? 0 : dmap;
+    } else {
+        item_dmap = tile_dmap = generic_dmap = 0;
     }
 }
 

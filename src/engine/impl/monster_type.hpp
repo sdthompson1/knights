@@ -30,6 +30,9 @@
 #ifndef MONSTER_TYPE_HPP
 #define MONSTER_TYPE_HPP
 
+#include "lua_ref.hpp"
+#include "map_support.hpp"
+
 class Monster;
 class MonsterManager;
 class TaskManager;
@@ -39,13 +42,20 @@ using namespace boost;
 
 class MonsterType {
 public:
+    // reads table from top of stack (does not pop it)
+    explicit MonsterType(lua_State *lua);
     virtual ~MonsterType() { }
 
+    void pushTable(lua_State *lua) const { table_ref.push(lua); }
+    
     // makeMonster should both return a new monster object, and start off an AI task.
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const = 0;
 
     // at which height will this monster be generated?
     virtual MapHeight getHeight() const = 0;
+
+private:
+    LuaRef table_ref;
 };
 
 

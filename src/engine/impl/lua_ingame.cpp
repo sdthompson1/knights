@@ -162,8 +162,7 @@ namespace {
 
     const MonsterType * LuaActionPars::getMonsterType(int c_index)
     {
-        throw LuaError("LuaActionPars::getMonsterType: not implemented");
-        //return CheckLuaPtr<MonsterType>(lua, c_index+1);
+        return CheckLuaPtr<MonsterType>(lua, c_index+1, "monster");
     }
 
     void LuaActionPars::error()

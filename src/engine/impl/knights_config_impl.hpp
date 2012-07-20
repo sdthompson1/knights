@@ -151,6 +151,9 @@ public:
     void addLuaGraphic(auto_ptr<Graphic> p);
     ItemGenerator * addLuaItemGenerator(lua_State *lua);
     ItemType * addLuaItemType(auto_ptr<ItemType> p);
+    MonsterType * addLuaMonsterType(auto_ptr<MonsterType> p,
+                                    std::vector<boost::shared_ptr<Tile> > &generator_tiles,
+                                    std::vector<boost::shared_ptr<Tile> > &corpse_tiles);
     Overlay * addLuaOverlay(auto_ptr<Overlay> p);
     Sound * addLuaSound(const char *name);  // creates the sound and adds it.
 
@@ -200,7 +203,6 @@ public:
     void popMenuValue(int val, MenuItem &menu_item);
     string popMenuValueName(int val);
     void popMenuValueDirective(const string &key, int value);
-    bool isMonsterType();
     MonsterType * popMonsterType();
     Overlay * popOverlay();
     Overlay * popOverlay(Overlay *dflt);
@@ -224,7 +226,7 @@ public:
     boost::shared_ptr<Tile> popTile(boost::shared_ptr<Tile> dflt);
     void popTileList(std::vector<boost::shared_ptr<Tile> > &output);
     void popTutorial(lua_State *lua);
-    void popZombieActivityTable();
+    void popZombieActivityTable(lua_State *lua);
 
     int getSegmentCategory(const std::string &); // returns -1 if empty string given
     int getTileCategory(const std::string &);    // ditto
@@ -294,6 +296,7 @@ private:
     std::vector<Graphic *> lua_graphics;
     std::vector<ItemGenerator *> lua_item_generators;
     std::vector<ItemType *> lua_item_types;
+    std::vector<MonsterType *> lua_monster_types;
     std::vector<Overlay *> lua_overlays;
     std::vector<Sound *> lua_sounds;
     
@@ -336,8 +339,6 @@ private:
     const Graphic *blood_icon;
     std::vector<boost::shared_ptr<Tile> > blood_tiles, dead_knight_tiles;
     
-    MonsterType *vampire_bat_type; // Will eventually get rid of these (hopefully...)
-
 
     // The generic hook system
     std::map<std::string, const Action *> hooks;

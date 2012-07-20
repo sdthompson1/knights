@@ -26,6 +26,7 @@
 #include "anim.hpp"
 #include "dungeon_map.hpp"
 #include "item.hpp"
+#include "lua_setup.hpp"
 #include "mediator.hpp"
 #include "monster_definitions.hpp"
 #include "monster_support.hpp"
@@ -209,6 +210,17 @@ void FlyingMonsterAI::execute(TaskManager &tm)
 
     // Now replace the task
     ReplaceTask(tm, shared_from_this(), *bat, allow_bite_halfway);
+}
+
+FlyingMonsterType::FlyingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
+    : MonsterType(lua)
+{
+    health = LuaGetRandomInt(lua, -1, "health", kc);
+    speed = LuaGetInt(lua, -1, "speed");
+    anim = LuaGetPtr<Anim>(lua, -1, "anim");
+
+    dmg = LuaGetInt(lua, -1, "attack_damage");
+    stun = LuaGetRandomInt(lua, -1, "attack_stun_time", kc);
 }
 
 shared_ptr<Monster> FlyingMonsterType::makeMonster(TaskManager &tm) const
@@ -441,6 +453,23 @@ void WalkingMonsterAI::execute(TaskManager &tm)
     // Now wait for an appropriate time before making the next move. 
     ReplaceTask(tm, shared_from_this(), *mon, false);
 }
+
+WalkingMonsterType::WalkingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
+    : MonsterType(lua)
+{
+    // [... t]
+    
+    health = LuaGetRandomInt(lua, -1, "health", kc);
+    speed = LuaGetInt(lua, -1, "speed");
+    anim = LuaGetPtr<Anim>(lua, -1, "anim");
+
+    weapon = LuaGetPtr<const ItemType>(lua, -1, "weapon");
+    fear_item = LuaGetPtr<const ItemType>(lua, -1, "ai_fear");
+    hit_item = LuaGetPtr<const ItemType>(lua, -1, "ai_hit");
+
+    LuaGetTileList(lua, -1, "ai_avoid", avoid_tiles);
+}
+
 
 shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
 {
