@@ -49,6 +49,11 @@ void RNG::initialize()
     pimpl.reset(new RNGImpl);
 }
 
+bool RNG::isInitialized() const
+{
+    return pimpl.get() != 0;
+}
+
 void RNG::setSeed(unsigned int seed)
 {
     pimpl->gen.seed(seed);

@@ -583,6 +583,10 @@ namespace {
     // Output: one integer
     int RandomRange(lua_State *lua)
     {
+        if (!g_rng.isInitialized()) {
+            luaL_error(lua, "Can't generate random numbers during init phase");
+        }
+
         int low = luaL_checkint(lua, 1);
         int high = luaL_checkint(lua, 2);
 
@@ -594,6 +598,10 @@ namespace {
 
     int RandomChance(lua_State *lua)
     {
+        if (!g_rng.isInitialized()) {
+            luaL_error(lua, "Can't generate random numbers during init phase");
+        }
+
         double chance = luaL_checknumber(lua, 1);
         if (chance < 0) chance = 0;
         if (chance > 1) chance = 1;

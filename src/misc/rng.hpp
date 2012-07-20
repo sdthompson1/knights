@@ -56,6 +56,7 @@ class RNGImpl;
 class RNG {
 public:
     void initialize();
+    bool isInitialized() const;
     void setSeed(unsigned int seed);
     float getU01();
     bool getBool(float p = 0.5f) { return getU01() <= p; }
