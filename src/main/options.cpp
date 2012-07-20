@@ -62,8 +62,8 @@ Options::Options()
     fullscreen = false;  // Default to windowed mode (#169)
 
     allow_non_integer_scaling = false;
-    window_width = 950;
-    window_height = 710;
+    window_width = 1000;
+    window_height = 780;
 
     global_chat_key = Coercri::RK_TAB;
     team_chat_key = Coercri::RK_BACKQUOTE;
