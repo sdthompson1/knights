@@ -571,6 +571,8 @@ t_floor8  = kts.Tile(floor & { graphic=g_floor8 })  -- 74
 t_floor9  = kts.Tile(floor & { graphic=g_floor9 })  -- 75
 t_floor10 = kts.Tile(floor & { graphic=g_floor10 })  -- 77
 
+t_floor1_def = kts.Tile(t_floor1.table & { editor_label="-" }) -- this is just to make it the default RMB tile in the map editor
+
 pentagram_base = floor & {
     graphic      = g_pentagram,
     on_walk_over = function()
