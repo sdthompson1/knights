@@ -30,12 +30,12 @@
 #ifndef OVERLAY_HPP
 #define OVERLAY_HPP
 
-#include "lua_table_base.hpp"
+#include "lua_ref.hpp"
 #include "map_support.hpp"
 
 class Graphic;
 
-class Overlay : public LuaTableBase {
+class Overlay {
 public:
     Overlay(lua_State *lua, int idx);
     void setID(int id_) { id = id_; }  // called by KnightsConfigImpl
@@ -58,6 +58,8 @@ public:
     explicit Overlay(int id_, Coercri::InputByteBuf &buf, const std::vector<const Graphic *> &graphics);
     void serialize(Coercri::OutputByteBuf &buf) const;
     
+    void pushTable(lua_State *lua) const { table_ref.push(lua); }
+
 private:
     int id;
     const Graphic *raw_graphic[4];
@@ -68,6 +70,8 @@ private:
         MapDirection dir;
     };
     OffsetData offset_data[N_OVERLAY_FRAME*4];
+
+    LuaRef table_ref;
 };
 
 #endif

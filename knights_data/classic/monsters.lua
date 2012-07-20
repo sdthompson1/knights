@@ -18,14 +18,13 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
-dofile("graphics.lua")
-dofile("sounds.lua")
-dofile("dungeon_layouts.lua")
-dofile("lua_test.lua")
-dofile("anims.lua")
-dofile("magic.lua")
-dofile("items.lua")
-dofile("tile_funcs.lua")
-dofile("tiles.lua")
-dofile("item_generation.lua")
-dofile("monsters.lua")
+Zombie_Weapon = kts.ItemType {
+   -- Like an axe, but it takes slightly longer to do the backswing; also there is a slightly
+   -- lower tile damage. (don't want zombies smashing up the dungeon too quickly.)
+   type = "held",
+   melee_backswing_time = 3*ts,
+   melee_downswing_time = 3*ts,
+   melee_damage         = rng_range(1,3),
+   melee_stun_time      = rng_time_range(2,5),
+   melee_tile_damage    = 3
+}

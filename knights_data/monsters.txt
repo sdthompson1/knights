@@ -49,16 +49,7 @@ m_zombie = {
     corpse_tiles = [t_dead_zombie]
 
     # Properties specific to walking monsters:
-    weapon = {
-        # Like an axe, but it takes slightly longer to do the backswing; also there is a slightly
-        # lower tile damage. (don't want zombies smashing up the dungeon too quickly.)
-        type = "held"
-        melee_backswing_time = 3*ts
-        melee_downswing_time = 3*ts
-        melee_damage         = d3
-        melee_stun_time      = ts*(d4+1)
-        melee_tile_damage    = 3
-    }
+    weapon = Zombie_Weapon 
 
     # List of tiles that zombies don't want to walk onto
     ai_avoid = all_open_pit_tiles

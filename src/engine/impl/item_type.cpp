@@ -28,6 +28,7 @@
 #include "dungeon_map.hpp"
 #include "item.hpp"
 #include "item_type.hpp"
+#include "lua_setup.hpp"
 #include "rng.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
@@ -36,59 +37,103 @@
 // ctors
 //
 
-ItemType::ItemType(lua_State *lua, int idx)
- : LuaTableBase(lua, idx),
-   graphic(0), stack_graphic(0), backpack_graphic(0), backpack_overdraw(0), overlay(0), is(IS_BIG),
-   max_stack(1), backpack_slot(0), fragile(false), allow_strength(true),
-   melee_backswing_time(0), melee_damage(0), 
-   melee_stun_time(0), melee_tile_damage(0), melee_action(0), parry_chance(0), 
-   can_throw(false), missile_range(0), missile_speed(0), missile_access_chance(0),
-   missile_hit_multiplier(1),
-   missile_backswing_time(0), missile_downswing_time(0), missile_damage(0),
-   missile_stun_time(0), missile_anim(0), 
-   reload_time(0), ammo(0), loaded(0), reload_action(0),
-   key(0), open_traps(false), 
-   control(0), on_pick_up(0), on_drop(0), on_walk_over(0), on_hit(0), tutorial_key(0)
-{ }
-
-void ItemType::construct(const Graphic *g, const Graphic *sg,
-    const Graphic *bg, const Graphic *bod,
-    const Overlay *ov,
-    ItemSize is_, int mxstk, int bslot, bool frag,
-    int mbt, int mdt, const RandomInt *mdmg, const RandomInt *mst, const RandomInt *mtdmg,
-    const Action *mac, float pch,
-    bool cthrow, int mi_rng, int mi_spd, float mi_acc_ch, int mi_h_mul, int mi_bksw_time, int mi_dnsw_time,
-    const RandomInt *mi_dmg, const RandomInt *mi_st,
-    const Anim *mi_anm,
-    int rt, const ItemType *amm, const Action *rld_ac, int rat,
-    int k, bool ot, const Control *ctrl,
-    const Action *puac, const Action *dac, const Action *woac, const Action *hac,
-    bool astr, int t_key, const std::string &name_)
+ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
 {
-    graphic = g; stack_graphic = sg; backpack_graphic = bg; backpack_overdraw = bod;
-    overlay = ov; is = is_; max_stack = mxstk;
-    backpack_slot = bslot;
-    fragile = frag; allow_strength = astr;
-    melee_backswing_time = mbt; melee_downswing_time = mdt; melee_damage = mdmg;
-    melee_stun_time = mst; melee_tile_damage = mtdmg; melee_action = mac; parry_chance = pch;
-    can_throw = cthrow; missile_range = mi_rng; missile_speed = mi_spd;
-    missile_access_chance = mi_acc_ch; missile_hit_multiplier = mi_h_mul;
-    missile_backswing_time = mi_bksw_time; missile_downswing_time = mi_dnsw_time;
-    missile_damage = mi_dmg;
-    missile_stun_time = mi_st; missile_anim = mi_anm;
-    reload_time = rt; ammo = amm; reload_action = rld_ac; reload_action_time = rat; 
-    key = k; open_traps = ot; control = ctrl;
-    on_pick_up = puac; on_drop = dac; on_walk_over = woac; on_hit = hac;
-    tutorial_key = t_key;
-    name = name_;
+    ASSERT(lua);
+
+    allow_strength = LuaGetBool(lua, idx, "allow_strength", true);
+    ammo = LuaGetPtr<const ItemType>(lua, idx, "ammo");
+    backpack_graphic = LuaGetPtr<Graphic>(lua, idx, "backpack_graphic");
+    backpack_overdraw = LuaGetPtr<Graphic>(lua, idx, "backpack_overdraw");
+    backpack_slot = LuaGetInt(lua, idx, "backpack_slot");
+    can_throw = LuaGetBool(lua, idx, "can_throw");
+    control = LuaGetPtr<Control>(lua, idx, "control");
+    fragile = LuaGetBool(lua, idx, "fragile");
+    graphic = LuaGetPtr<Graphic>(lua, idx, "graphic");
+    key = LuaGetInt(lua, idx, "key");
+    max_stack = LuaGetInt(lua, idx, "max_stack", 1);
+    melee_action = LuaGetAction(lua, idx, "melee_action", kc);
+    melee_backswing_time = LuaGetInt(lua, idx, "melee_backswing_time");
+    melee_damage = LuaGetRandomInt(lua, idx, "melee_damage", kc);
+    melee_downswing_time = LuaGetInt(lua, idx, "melee_downswing_time");
+    melee_stun_time = LuaGetRandomInt(lua, idx, "melee_stun_time", kc);
+    melee_tile_damage = LuaGetRandomInt(lua, idx, "melee_tile_damage", kc);
+    missile_access_chance = LuaGetFloat(lua, idx, "missile_access_chance");
+    missile_anim = LuaGetPtr<Anim>(lua, idx, "missile_anim");
+    missile_backswing_time = LuaGetInt(lua, idx, "missile_backswing_time");
+    missile_damage = LuaGetRandomInt(lua, idx, "missile_damage", kc);
+    missile_downswing_time = LuaGetInt(lua, idx, "missile_downswing_time");
+    missile_hit_multiplier = LuaGetInt(lua, idx, "missile_hit_multiplier", 1);
+    missile_range = LuaGetInt(lua, idx, "missile_range");
+    missile_speed = LuaGetInt(lua, idx, "missile_speed");
+    missile_stun_time = LuaGetRandomInt(lua, idx, "missile_stun_time", kc);
+    name = LuaGetString(lua, idx, "name");
+    on_drop = LuaGetAction(lua, idx, "on_drop", kc);
+    on_hit = LuaGetAction(lua, idx, "on_hit", kc);
+    on_pick_up = LuaGetAction(lua, idx, "on_pick_up", kc);
+    on_walk_over = LuaGetAction(lua, idx, "on_walk_over", kc);
+    open_traps = LuaGetBool(lua, idx, "open_traps");
+    overlay = LuaGetPtr<Overlay>(lua, idx, "overlay");
+    parry_chance = LuaGetFloat(lua, idx, "parry_chance");
+    reload_action = LuaGetAction(lua, idx, "reload_action", kc);
+    reload_action_time = LuaGetInt(lua, idx, "reload_action_time", 250);
+    reload_time = LuaGetInt(lua, idx, "reload_time");
+    stack_graphic = LuaGetPtr<Graphic>(lua, idx, "stack_graphic");
+    if (!stack_graphic) stack_graphic = graphic;
+    tutorial_key = LuaGetInt(lua, idx, "tutorial");
+    is = LuaGetItemSize(lua, idx, "type", IS_NOPICKUP);
+
+    loaded = 0;  // set separately via 'setLoaded', see also KnightsConfigImpl::addLuaItemType
+
+    lua_pushvalue(lua, idx);
+    table_ref.reset(lua);
 }
 
-void ItemType::construct(const Graphic *g, ItemSize sz)
+ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
+                   const Action *pickup_action, const Action *drop_action)
 {
-    graphic = g;
-    is = sz;
-    // (the rest are as set from the ctor.)
+    allow_strength = false;
+    ammo = 0;
+    backpack_graphic = 0;
+    backpack_overdraw = 0;
+    backpack_slot = 0;
+    can_throw = false;
+    control = 0;
+    fragile = false;
+    graphic = gfx;
+    key = 0;
+    max_stack = 1;
+    melee_action = 0;
+    melee_backswing_time = 0;
+    melee_damage = 0;
+    melee_downswing_time = 0;
+    melee_stun_time = 0;
+    melee_tile_damage = 0;
+    missile_access_chance = 0;
+    missile_anim = 0;
+    missile_backswing_time = 0;
+    missile_damage = 0;
+    missile_downswing_time = 0;
+    missile_hit_multiplier = 0;
+    missile_range = 0;
+    missile_speed = 0;
+    missile_stun_time = 0;
+    on_drop = drop_action;
+    on_hit = 0;
+    on_pick_up = pickup_action;
+    on_walk_over = 0;
+    open_traps = false;
+    overlay = 0;
+    parry_chance = 0;
+    reload_action = 0;
+    reload_action_time = 0;
+    reload_time = 0;
+    stack_graphic = graphic;
+    tutorial_key = 0;
+    is = item_size;
+    loaded = 0;
 }
+    
 
 //
 // combat stuff

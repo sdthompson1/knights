@@ -182,11 +182,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\impl\lua_sandbox.cpp"
+				RelativePath="..\..\src\shared\impl\lua_ref.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\impl\lua_table_base.cpp"
+				RelativePath="..\..\src\shared\impl\lua_sandbox.cpp"
 				>
 			</File>
 			<File
@@ -268,11 +268,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\lua_sandbox.hpp"
+				RelativePath="..\..\src\shared\lua_ref.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\lua_table_base.hpp"
+				RelativePath="..\..\src\shared\lua_sandbox.hpp"
 				>
 			</File>
 			<File

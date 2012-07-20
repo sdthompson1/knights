@@ -34,17 +34,20 @@
 #define ANIM_HPP
 
 #include "colour_change.hpp"
-#include "lua_table_base.hpp"
+#include "lua_ref.hpp"
 #include "map_support.hpp"
 
 #include "network/byte_buf.hpp" // coercri
 
 class Graphic;
 
-class Anim : public LuaTableBase {
+class Anim {
 public:
     // Construct from lua
     Anim(int id_, lua_State *lua, int idx);
+
+    // push the stored table
+    void pushTable(lua_State *lua) { table_ref.push(lua); }
 
     // Overwrite id (useful if copying another Anim and then modifying it)
     void setID(int id_) { id = id_; }
@@ -75,6 +78,7 @@ private:
     ColourChange cc_normal, cc_invulnerable;
     int id;
     bool vbat_mode;
+    LuaRef table_ref;
 };
 
 // some standard frame numbers

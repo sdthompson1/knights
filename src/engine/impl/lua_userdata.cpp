@@ -96,9 +96,6 @@ namespace {
         switch (ud->tag) {
         case TAG_CONTROL:
             {
-                // Unfortunately, have to include headers for Control, ItemType etc
-                // because some of them use multiple inheritance so it is unsafe to cast
-                // directly to LuaTableBase
                 const Control *ctrl = static_cast<const Control*>(ptr);
                 ctrl->pushTable(lua);
                 return true;

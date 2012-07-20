@@ -30,12 +30,14 @@
 #include "lua.hpp"
 
 Anim::Anim(int id_, lua_State *lua, int idx)
-    : LuaTableBase(lua, idx), id(id_)
+    : id(id_)
 {
-    const int idxm1 = idx < 0 ? idx-1 : idx;
+    ASSERT(lua);
 
-    lua_pushstring(lua, "bat");   // [... "bat"]
-    lua_gettable(lua, idxm1);      // [... bat]
+    lua_pushvalue(lua, idx);  // push
+    table_ref.reset(lua);     // pop
+
+    lua_getfield(lua, idx, "bat");   // [... bat]
     vbat_mode = lua_toboolean(lua, -1) != 0;
     lua_pop(lua, 1);   // [...]
     
@@ -46,6 +48,8 @@ Anim::Anim(int id_, lua_State *lua, int idx)
     if (sz != 4 && sz != 12 && sz != 16 && sz != 32) {
         luaL_error(lua, "Anim table must have 4, 12, 16 or 32 elements");
     }
+
+    const int idxm1 = idx < 0 ? idx-1 : idx;
 
     for (int f = 0; f < 8; ++f) {
         if (sz >= (f+1)*4) {

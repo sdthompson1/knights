@@ -39,7 +39,6 @@
 #include "item_check_task.hpp"
 #include "item_generator.hpp"
 #include "item_respawn_task.hpp"
-#include "knights_config_functions.hpp"
 #include "knights_config_impl.hpp"
 #include "lua_ingame.hpp"
 #include "lua_exec.hpp"
@@ -786,19 +785,7 @@ const ItemType * KnightsConfigImpl::popItemType()
         const map<const Value *, const ItemType*>::const_iterator itor = item_types.find(p);
         if (itor == item_types.end()) {
 
-            // Haven't seen this KValue before. Make a new itemtype from it.
-            ItemType *result2 = new ItemType(0, 0);
-            result = result2;
-            item_types.insert(std::make_pair(p, result));
-            PopKFileItemType(this, kf.get(), result2);  // pop from kfile stack
-
-            // If a crossbow, then also set up a second itemtype for the loaded version.
-            if (result->canLoad()) {
-                ItemType *it2 = new ItemType(*result);   // make a copy of the old itemtype
-                special_item_types.push_back(it2);
-                result2->setLoaded(it2);
-                it2->setUnloaded(result);
-            }
+            kf->errExpected ("KConfig Itemtypes Not Supported");
 
         } else {
             result = itor->second;

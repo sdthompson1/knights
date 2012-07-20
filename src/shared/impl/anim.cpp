@@ -30,7 +30,6 @@
 // NOTE: lua ctor is not used by client, so is in engine/impl/anim_lua_ctor.cpp instead of here.
 
 Anim::Anim(int id_, Coercri::InputByteBuf &buf, const std::vector<const Graphic*> &graphics)
-: LuaTableBase(0, 0)
 {
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < NFRAMES; ++j) {

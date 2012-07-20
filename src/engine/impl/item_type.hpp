@@ -37,7 +37,7 @@
 #ifndef ITEM_TYPE_HPP
 #define ITEM_TYPE_HPP
 
-#include "lua_table_base.hpp"
+#include "lua_ref.hpp"
 
 #include "random_int.hpp"
 using namespace KConfig;
@@ -54,6 +54,7 @@ class Creature;
 class DungeonMap;
 class Graphic;
 class Item;
+class KnightsConfigImpl;
 class MapCoord;
 class Originator;
 class Overlay;
@@ -67,33 +68,14 @@ enum ItemSize {
     NUM_ITEM_SIZES
 };
 
-class ItemType : public LuaTableBase {
+class ItemType {
 public:
-    // TODO: Split this into a "construct from lua" ctor, and a
-    // "default" ctor used for C++-constructed itemtypes. Get rid of
-    // long construct() method(s).
-    ItemType(lua_State *lua, int idx);
-    void construct(const Graphic *gfx, const Graphic *stack_gfx,
-                   const Graphic *backpack_gfx, const Graphic *backpack_overdraw,
-                   const Overlay *ovrly, ItemSize is, int max_stack, int backpack_slot,
-                   bool fragile,
-                   int melee_back_time, int melee_down_time, const RandomInt *melee_dmg, 
-                   const RandomInt *melee_stun_time, const RandomInt *melee_tile_damage,
-                   const Action *melee_action, float parry_chance,
-                   bool can_throw, int mssl_rng, int mssl_spd, float mssl_acc_chance,
-                   int mssl_hit_mult,
-                   int mssl_bksw_time, int mssl_dswg_time, const RandomInt *mssl_dmg,
-                   const RandomInt *mssl_stun_time, const Anim * mssl_anim,
-                   int reload_time, const ItemType *ammo,
-                   const Action *reload_action, int reload_action_time,
-                   int key, bool opens_traps, 
-                   const Control *ctrl, const Action *pickup, const Action *drop, 
-                   const Action *walk_over, const Action *on_hit, bool allw_str,
-                   int t_key,
-                   const std::string &name_);
-    void construct(const Graphic *g, ItemSize is);
+    ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc);
 
-    void setAmmoType(ItemType *a) { ammo = a; }
+    // cut down ctor for stuff bags
+    ItemType(const Graphic *gfx, ItemSize item_size, const Action *pickup_action, const Action *drop_action);
+    
+    void pushTable(lua_State *lua) const { table_ref.push(lua); }
 
     // Name
     // Currently this is either empty, or of the form "A gem" or "The book".
@@ -240,6 +222,8 @@ private:
     int tutorial_key;
 
     std::string name;
+
+    LuaRef table_ref;
 };
 
 #endif

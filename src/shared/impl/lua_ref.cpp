@@ -83,7 +83,9 @@ void LuaRef::push(lua_State *L) const
     // Note: L is different to lua as we might want to push in a
     // different Lua thread to the original
 
-    ASSERT(L);  // Caller is responsible for ensuring L != 0.
+    // Caller is responsible for passing a non-null lua state.
+    // (However, the reference itself can have a null state; that is ok; Lua will just push nil.)
+    ASSERT(L);  
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
 }

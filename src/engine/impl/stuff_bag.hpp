@@ -97,14 +97,12 @@ public:
 
 class StuffManager {
 public:
-    StuffManager() : stuff_bag_item_type(0, 0) { } // stuff bag does not have a lua table.
-
     // initialization -- These should be set before calling the other StuffManager functions.
     void setStuffBagGraphic(const Graphic *gfx);
     void setDungeonMap(DungeonMap *dmap_) { dmap = dmap_; }
     
     // Get the ItemType for a stuff bag: (this is unique)
-    const ItemType & getStuffBagItemType() const { return stuff_bag_item_type; }
+    const ItemType & getStuffBagItemType() const { return *stuff_bag_item_type; }
     
     // Assign a StuffContents to a given MapCoord
     // (it's assumed that a stuff bag item will be put down at that position)
@@ -139,7 +137,7 @@ private:
     // These should be treated as bogus, and ignored.
     map<MapCoord, StuffContents> stuff_map;
     
-    ItemType stuff_bag_item_type;
+    auto_ptr<ItemType> stuff_bag_item_type;
     static StuffPickup pickup_action;
     static StuffDrop drop_action;
 };

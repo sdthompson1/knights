@@ -31,7 +31,6 @@
 #define TILE_HPP
 
 #include "lua_ref.hpp"
-#include "lua_table_base.hpp"
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
 #include "originator.hpp"
@@ -57,7 +56,7 @@ enum ActivateType {
     ACT_UNLOCK_ALL     // e.g. Wand of open ways
 };
 
-class Tile : public LuaTableBase, public enable_shared_from_this<Tile> {
+class Tile : public enable_shared_from_this<Tile> {
 public:
     // NOTE: Constructors do not set the current hitpoints, only the initial hitpoints.
     // Current hitpoints are set by "setHitPoints", which is called by clone().
@@ -68,6 +67,8 @@ public:
     // Construct a "dummy" tile for switch-actions.
     Tile(const Action *walk_over, const Action *activate);
     
+    void pushTable(lua_State *lua) const { table_ref.push(lua); }
+
     // clone
     // Clones the tile.
     // WARNING: some tiles are copied and some are shared, so "clone" could either return a new copy
@@ -237,6 +238,8 @@ private:
 
     boost::weak_ptr<Tile> reflect, rotate;
     boost::weak_ptr<Tile> original_tile;
+
+    LuaRef table_ref;
 };
 
 

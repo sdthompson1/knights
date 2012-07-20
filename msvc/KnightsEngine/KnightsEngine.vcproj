@@ -172,6 +172,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\control.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\control_actions.cpp"
 				>
 			</File>
@@ -257,10 +261,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\knights_config.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\engine\impl\knights_config_functions.cpp"
 				>
 			</File>
 			<File
@@ -515,10 +515,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\knights_config.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\engine\impl\knights_config_functions.hpp"
 				>
 			</File>
 			<File

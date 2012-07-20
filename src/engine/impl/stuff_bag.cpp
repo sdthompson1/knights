@@ -126,23 +126,7 @@ StuffDrop StuffManager::drop_action;
 
 void StuffManager::setStuffBagGraphic(const Graphic *gfx)
 {
-    stuff_bag_item_type.construct(gfx, 0, 0, 0, 0,  // gfx/overlay
-                                  IS_MAGIC, 1, 0,        // size, maxstack, backpack slot
-                                  false,               // fragile
-                                  0, 0, 0, 0, 0, 0, 0, // melee properties
-                                  false, 0, 0, 0,
-                                  0,
-                                  0, 0, 0,
-                                  0, 0,
-                                  0, 0, 0, 0, // missile properties
-                                  0, false, // keys / traps
-                                  0,    // control
-                                  &pickup_action,
-                                  &drop_action,
-                                  0, 0,     // other actions
-                                  false,  // allow_str
-                                  0,   // tutorial_key
-                                  "");  // name
+    stuff_bag_item_type.reset(new ItemType(gfx, IS_MAGIC, &pickup_action, &drop_action));
 }
 
 void StuffManager::setStuffContents(const MapCoord &mc, const StuffContents &stuff)

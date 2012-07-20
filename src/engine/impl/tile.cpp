@@ -75,9 +75,12 @@ namespace {
 // constructs a Tile from a lua table, assumed to be at top of stack.
 // note this ignores "type" and just constructs a plain Tile.
 Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
-    : LuaTableBase(lua, -1), hit_points(0)
+    : hit_points(0)
 {
-    // [t]
+    ASSERT(lua);   // [t]
+
+    lua_pushvalue(lua, -1);  // [t t]
+    table_ref.reset(lua);    // [t]
 
     // set default access
     for (int i = 0; i <= H_MISSILES; ++i) access[i] = A_CLEAR;
@@ -173,8 +176,7 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
 }
 
 Tile::Tile(const Action *walk_over, const Action *activate)
-    : LuaTableBase(0, 0),  // no table exists in this case
-      hit_points(0)
+    : hit_points(0)
 {
     for (int i = 0; i <= H_MISSILES; ++i) access[i] = A_CLEAR;
     connectivity_check = 0;

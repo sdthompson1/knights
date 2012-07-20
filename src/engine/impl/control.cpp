@@ -1,5 +1,5 @@
 /*
- * knights_config_functions.hpp
+ * control.cpp
  *
  * This file is part of Knights.
  *
@@ -21,17 +21,22 @@
  *
  */
 
-#ifndef KNIGHTS_CONFIG_FUNCTIONS_HPP
-#define KNIGHTS_CONFIG_FUNCTIONS_HPP
+#include "misc.hpp"
 
-#include "kconfig_fwd.hpp"
+#include "control.hpp"
 
-class ItemType;
-class KnightsConfigImpl;
+#include "lua.hpp"
 
-
-// Pop an ItemType definition from the KFile and use it to initialize *it (calls it->construct)
-void PopKFileItemType(KnightsConfigImpl *kcfg, KConfig::KFile *kf, ItemType *it);
-
-
-#endif
+Control::Control(lua_State *lua, int idx,
+                 const Graphic *menu_gfx, MapDirection menu_dir,
+                 int tap_pri, int action_slot, int action_pri, bool suicide,
+                 bool cts, unsigned int special, const std::string &name,
+                 const Action *action_)
+  : UserControl(menu_gfx, menu_dir, tap_pri, action_slot, action_pri, suicide, cts, special, name),
+    action(action_)
+{
+    if (lua) {
+        lua_pushvalue(lua, idx);
+        table_ref.reset(lua);
+    }
+}
