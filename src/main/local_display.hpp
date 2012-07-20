@@ -188,7 +188,7 @@ public:
     
     void flashScreen(int plyr, int delay);
 
-    void gameMsg(int plyr, const std::string &msg);
+    void gameMsg(int plyr, const std::string &msg, bool is_err);
 
     void popUpWindow(const std::vector<TutorialWindow> &windows);
     void onElimination(int) { }

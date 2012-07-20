@@ -79,7 +79,7 @@ public:
     virtual void setAvailableControls(int, const std::vector<std::pair<const UserControl*,bool> >&) { }
     virtual void setMenuHighlight(int, const UserControl*) { }
     virtual void flashScreen(int,int) { }
-    virtual void gameMsg(int,const std::string&) { }
+    virtual void gameMsg(int,const std::string&,bool) { }
     virtual void popUpWindow(const std::vector<TutorialWindow> &) { }
     virtual void onElimination(int) { }
     virtual void goIntoObserverMode(int, const std::vector<std::string>&) { }

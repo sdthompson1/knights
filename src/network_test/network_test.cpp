@@ -272,7 +272,7 @@ public:
         Log("Set menu highlight, player = %d", player_num);
     }
     void flashScreen(int player_num, int delay) { Log("Flash screen"); }
-    void gameMsg(int player_num, const std::string &msg) { Log("Game msg. Player = %d, msg = %s", player_num, msg.c_str()); }
+    void gameMsg(int player_num, const std::string &msg, bool is_err) { Log("Game msg. Player = %d, msg = %s", player_num, msg.c_str()); }
     void popUpWindow(const std::vector<TutorialWindow> &windows) { Log("Pop up window"); }
     void onElimination(int player_num) { Log("On elimination, player = %d", player_num); }
     void goIntoObserverMode(int nplayers, const std::vector<std::string> &names) { Log("Go into observer mode"); }

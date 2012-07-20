@@ -77,8 +77,7 @@ public:
 
     virtual void flashScreen(int plyr, int delay);
 
-    // 'private_msg', if true, means don't broadcast to observers.
-    virtual void gameMsg(int plyr_num, const std::string &msg);
+    virtual void gameMsg(int plyr_num, const std::string &msg, bool is_err);
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows);
 
     virtual void onElimination(int player_num);
@@ -105,6 +104,8 @@ private:
     int next_observer_num;
 
     std::vector<int> players_to_put_into_obs_mode;
+
+    int no_err_msgs;
 };
 
 #endif

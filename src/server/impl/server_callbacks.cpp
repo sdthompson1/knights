@@ -35,7 +35,7 @@
 #include <limits>
 
 ServerCallbacks::ServerCallbacks(int nplayers)
-    : game_over(false), next_observer_num(1)
+    : game_over(false), next_observer_num(1), no_err_msgs(0)
 {
     pub.resize(nplayers);
     prv.resize(nplayers);
@@ -198,8 +198,15 @@ void ServerCallbacks::flashScreen(int plyr, int delay)
     buf.writeVarInt(delay);
 }
 
-void ServerCallbacks::gameMsg(int plyr, const std::string &msg)
+void ServerCallbacks::gameMsg(int plyr, const std::string &msg, bool is_err)
 {
+    const int MAX_ERRORS = 50;
+
+    if (is_err) {
+        ++no_err_msgs;
+        if (no_err_msgs > MAX_ERRORS) return;
+    }
+    
     // convert to an ANNOUNCEMENT
     for (int p = 0; p < int(pub.size()); ++p) {
         if (p == plyr || plyr < 0) {   // plyr < 0 means "send to all players"
@@ -215,6 +222,10 @@ void ServerCallbacks::gameMsg(int plyr, const std::string &msg)
             buf.writeUbyte(SERVER_ANNOUNCEMENT);
             buf.writeString(msg);
         }
+    }
+
+    if (is_err && no_err_msgs == MAX_ERRORS) {
+        gameMsg(-1, "<Too many error messages, disabling error output for the rest of this game.>", false);
     }
 }
 

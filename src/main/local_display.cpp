@@ -1839,7 +1839,7 @@ void LocalDisplay::flashScreen(int plyr, int delay)
     }
 }
 
-void LocalDisplay::gameMsg(int plyr, const std::string &msg)
+void LocalDisplay::gameMsg(int plyr, const std::string &msg, bool is_err)
 {
     chat_list.add(msg);
 }
