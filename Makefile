@@ -30,9 +30,9 @@ INSTALL = install
 ########################################################################
 
 
-OFILES_MAIN = src/coercri/gfx/bitmap_font.o src/coercri/network/byte_buf.o src/coercri/gcn/cg_font.o src/coercri/gcn/cg_graphics.o src/coercri/gcn/cg_image.o src/coercri/gcn/cg_input.o src/coercri/gcn/cg_listener.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_udp_socket.o src/coercri/gfx/freetype_ttf_loader.o src/coercri/timer/generic_timer.o src/coercri/gfx/gfx_context.o src/coercri/sdl/core/istream_rwops.o src/coercri/gfx/key_name.o src/coercri/gfx/load_bmp.o src/coercri/gfx/load_system_ttf.o src/coercri/gfx/region.o src/coercri/sdl/core/sdl_error.o src/coercri/sdl/gfx/sdl_gfx_context.o src/coercri/sdl/gfx/sdl_gfx_driver.o src/coercri/sdl/gfx/sdl_graphic.o src/coercri/sdl/sound/sdl_sound_driver.o src/coercri/sdl/core/sdl_subsystem_handle.o src/coercri/sdl/timer/sdl_timer.o src/coercri/sdl/gfx/SDL_ttf.o src/coercri/sdl/gfx/sdl_ttf_font.o src/coercri/sdl/gfx/sdl_ttf_loader.o src/coercri/sdl/gfx/sdl_window.o src/coercri/gfx/window.o src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/external/guichan/src/actionevent.o src/external/guichan/src/basiccontainer.o src/external/guichan/src/widgets/button.o src/external/guichan/src/widgets/checkbox.o src/external/guichan/src/cliprectangle.o src/external/guichan/src/color.o src/external/guichan/src/widgets/container.o src/external/guichan/src/defaultfont.o src/external/guichan/src/widgets/dropdown.o src/external/guichan/src/event.o src/external/guichan/src/exception.o src/external/guichan/src/focushandler.o src/external/guichan/src/font.o src/external/guichan/src/genericinput.o src/external/guichan/src/graphics.o src/external/guichan/src/gui.o src/external/guichan/src/guichan.o src/external/guichan/src/widgets/icon.o src/external/guichan/src/image.o src/external/guichan/src/widgets/imagebutton.o src/external/guichan/src/imagefont.o src/external/guichan/src/inputevent.o src/external/guichan/src/key.o src/external/guichan/src/keyevent.o src/external/guichan/src/keyinput.o src/external/guichan/src/widgets/label.o src/external/guichan/src/widgets/listbox.o src/external/guichan/src/mouseevent.o src/external/guichan/src/mouseinput.o src/external/guichan/src/widgets/radiobutton.o src/external/guichan/src/rectangle.o src/external/guichan/src/widgets/scrollarea.o src/external/guichan/src/selectionevent.o src/external/guichan/src/widgets/slider.o src/external/guichan/src/widgets/tab.o src/external/guichan/src/widgets/tabbedarea.o src/external/guichan/src/widgets/textbox.o src/external/guichan/src/widgets/textfield.o src/external/guichan/src/widget.o src/external/guichan/src/widgets/window.o src/kconfig/gold_parser.o src/kconfig/kconfig_loader.o src/kconfig/kfile.o src/kconfig/random_int.o src/client/client_config.o src/client/knights_client.o src/engine/impl/action.o src/engine/impl/concrete_quests.o src/engine/impl/concrete_traps.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_quest.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_functions.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/lockable.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_constraints.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/main/action_bar.o src/main/adjust_list_box_size.o src/main/connecting_screen.o src/main/credits_screen.o src/main/draw.o src/main/entity_map.o src/main/error_screen.o src/main/find_server_screen.o src/main/game_manager.o src/main/gfx_manager.o src/main/gfx_resizer_compose.o src/main/gfx_resizer_nearest_nbr.o src/main/gfx_resizer_scale2x.o src/main/graphic_transform.o src/main/gui_button.o src/main/gui_centre.o src/main/gui_draw_box.o src/main/gui_numeric_field.o src/main/gui_panel.o src/main/gui_simple_container.o src/main/gui_text_wrap.o src/main/host_lan_screen.o src/main/house_colour_font.o src/main/in_game_screen.o src/main/keyboard_controller.o src/main/knights_app.o src/main/load_font.o src/main/loading_screen.o src/main/lobby_screen.o src/main/local_display.o src/main/local_dungeon_view.o src/main/local_mini_map.o src/main/local_status_display.o src/main/main.o src/main/make_scroll_area.o src/main/menu_screen.o src/main/options.o src/main/options_screen.o src/main/password_screen.o src/main/potion_renderer.o src/main/skull_renderer.o src/main/sound_manager.o src/main/start_game_screen.o src/main/tab_font.o src/main/text_formatter.o src/main/title_block.o src/main/title_screen.o src/main/x_centre.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/menu_selections.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/user_control.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lua.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/krandom.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_rwops.o
+OFILES_MAIN = src/coercri/gfx/bitmap_font.o src/coercri/network/byte_buf.o src/coercri/gcn/cg_font.o src/coercri/gcn/cg_graphics.o src/coercri/gcn/cg_image.o src/coercri/gcn/cg_input.o src/coercri/gcn/cg_listener.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_udp_socket.o src/coercri/gfx/freetype_ttf_loader.o src/coercri/timer/generic_timer.o src/coercri/gfx/gfx_context.o src/coercri/sdl/core/istream_rwops.o src/coercri/gfx/key_name.o src/coercri/gfx/load_bmp.o src/coercri/gfx/load_system_ttf.o src/coercri/gfx/region.o src/coercri/sdl/core/sdl_error.o src/coercri/sdl/gfx/sdl_gfx_context.o src/coercri/sdl/gfx/sdl_gfx_driver.o src/coercri/sdl/gfx/sdl_graphic.o src/coercri/sdl/sound/sdl_sound_driver.o src/coercri/sdl/core/sdl_subsystem_handle.o src/coercri/sdl/timer/sdl_timer.o src/coercri/sdl/gfx/SDL_ttf.o src/coercri/sdl/gfx/sdl_ttf_font.o src/coercri/sdl/gfx/sdl_ttf_loader.o src/coercri/sdl/gfx/sdl_window.o src/coercri/gfx/window.o src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/external/guichan/src/actionevent.o src/external/guichan/src/basiccontainer.o src/external/guichan/src/widgets/button.o src/external/guichan/src/widgets/checkbox.o src/external/guichan/src/cliprectangle.o src/external/guichan/src/color.o src/external/guichan/src/widgets/container.o src/external/guichan/src/defaultfont.o src/external/guichan/src/widgets/dropdown.o src/external/guichan/src/event.o src/external/guichan/src/exception.o src/external/guichan/src/focushandler.o src/external/guichan/src/font.o src/external/guichan/src/genericinput.o src/external/guichan/src/graphics.o src/external/guichan/src/gui.o src/external/guichan/src/guichan.o src/external/guichan/src/widgets/icon.o src/external/guichan/src/image.o src/external/guichan/src/widgets/imagebutton.o src/external/guichan/src/imagefont.o src/external/guichan/src/inputevent.o src/external/guichan/src/key.o src/external/guichan/src/keyevent.o src/external/guichan/src/keyinput.o src/external/guichan/src/widgets/label.o src/external/guichan/src/widgets/listbox.o src/external/guichan/src/mouseevent.o src/external/guichan/src/mouseinput.o src/external/guichan/src/widgets/radiobutton.o src/external/guichan/src/rectangle.o src/external/guichan/src/widgets/scrollarea.o src/external/guichan/src/selectionevent.o src/external/guichan/src/widgets/slider.o src/external/guichan/src/widgets/tab.o src/external/guichan/src/widgets/tabbedarea.o src/external/guichan/src/widgets/textbox.o src/external/guichan/src/widgets/textfield.o src/external/guichan/src/widget.o src/external/guichan/src/widgets/window.o src/kconfig/gold_parser.o src/kconfig/kconfig_loader.o src/kconfig/kfile.o src/kconfig/random_int.o src/client/client_config.o src/client/knights_client.o src/engine/impl/action.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_quests.o src/engine/impl/concrete_traps.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_quest.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_functions.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_ingame.o src/engine/impl/lua_ref.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_constraints.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/main/action_bar.o src/main/adjust_list_box_size.o src/main/connecting_screen.o src/main/credits_screen.o src/main/draw.o src/main/entity_map.o src/main/error_screen.o src/main/find_server_screen.o src/main/game_manager.o src/main/gfx_manager.o src/main/gfx_resizer_compose.o src/main/gfx_resizer_nearest_nbr.o src/main/gfx_resizer_scale2x.o src/main/graphic_transform.o src/main/gui_button.o src/main/gui_centre.o src/main/gui_draw_box.o src/main/gui_numeric_field.o src/main/gui_panel.o src/main/gui_simple_container.o src/main/gui_text_wrap.o src/main/host_lan_screen.o src/main/house_colour_font.o src/main/in_game_screen.o src/main/keyboard_controller.o src/main/knights_app.o src/main/load_font.o src/main/loading_screen.o src/main/lobby_screen.o src/main/local_display.o src/main/local_dungeon_view.o src/main/local_mini_map.o src/main/local_status_display.o src/main/main.o src/main/make_scroll_area.o src/main/menu_screen.o src/main/options.o src/main/options_screen.o src/main/password_screen.o src/main/potion_renderer.o src/main/skull_renderer.o src/main/sound_manager.o src/main/start_game_screen.o src/main/tab_font.o src/main/text_formatter.o src/main/title_block.o src/main/title_screen.o src/main/x_centre.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_table_base.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/menu_selections.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/user_control.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lua.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/krandom.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_rwops.o
 
-OFILES_SERVER = src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/kconfig/gold_parser.o src/kconfig/kconfig_loader.o src/kconfig/kfile.o src/kconfig/random_int.o src/engine/impl/action.o src/engine/impl/concrete_quests.o src/engine/impl/concrete_traps.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_quest.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_functions.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/lockable.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_constraints.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/menu_selections.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/user_control.o src/svr_main/config.o src/svr_main/replay_file.o src/svr_main/server_main.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lua.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/krandom.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_rwops.o src/coercri/network/byte_buf.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_udp_socket.o src/coercri/timer/generic_timer.o
+OFILES_SERVER = src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/kconfig/gold_parser.o src/kconfig/kconfig_loader.o src/kconfig/kfile.o src/kconfig/random_int.o src/engine/impl/action.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_quests.o src/engine/impl/concrete_traps.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_quest.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_functions.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_ingame.o src/engine/impl/lua_ref.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_constraints.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_table_base.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/menu_selections.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/user_control.o src/svr_main/config.o src/svr_main/replay_file.o src/svr_main/server_main.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lua.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/krandom.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_rwops.o src/coercri/network/byte_buf.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_udp_socket.o src/coercri/timer/generic_timer.o
 
 
 
@@ -190,6 +190,12 @@ src/shared/impl/lua_module.o: src/shared/impl/lua_module.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_sandbox.o: src/shared/impl/lua_sandbox.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/shared/impl/lua_table_base.o: src/shared/impl/lua_table_base.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -519,6 +525,12 @@ src/engine/impl/action.o: src/engine/impl/action.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
+src/engine/impl/anim_lua_ctor.o: src/engine/impl/anim_lua_ctor.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
 src/engine/impl/concrete_quests.o: src/engine/impl/concrete_quests.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
@@ -544,6 +556,12 @@ src/engine/impl/coord_transform.o: src/engine/impl/coord_transform.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/create_quest.o: src/engine/impl/create_quest.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/engine/impl/create_tile.o: src/engine/impl/create_tile.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -681,6 +699,12 @@ src/engine/impl/lockable.o: src/engine/impl/lockable.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
+src/engine/impl/lua_check.o: src/engine/impl/lua_check.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
 src/engine/impl/lua_exec_coroutine.o: src/engine/impl/lua_exec_coroutine.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
@@ -688,6 +712,12 @@ src/engine/impl/lua_exec_coroutine.o: src/engine/impl/lua_exec_coroutine.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_ingame.o: src/engine/impl/lua_ingame.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/engine/impl/lua_ref.o: src/engine/impl/lua_ref.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -868,199 +898,199 @@ src/client/knights_client.o: src/client/knights_client.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lapi.o: src/external/lua/lapi.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lauxlib.o: src/external/lua/lauxlib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lbaselib.o: src/external/lua/lbaselib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lbitlib.o: src/external/lua/lbitlib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lcode.o: src/external/lua/lcode.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lcorolib.o: src/external/lua/lcorolib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lctype.o: src/external/lua/lctype.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/ldblib.o: src/external/lua/ldblib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/ldebug.o: src/external/lua/ldebug.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/ldo.o: src/external/lua/ldo.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/ldump.o: src/external/lua/ldump.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lfunc.o: src/external/lua/lfunc.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lgc.o: src/external/lua/lgc.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/linit.o: src/external/lua/linit.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/liolib.o: src/external/lua/liolib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/llex.o: src/external/lua/llex.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lmathlib.o: src/external/lua/lmathlib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lmem.o: src/external/lua/lmem.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/loadlib.o: src/external/lua/loadlib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lobject.o: src/external/lua/lobject.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lopcodes.o: src/external/lua/lopcodes.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/loslib.o: src/external/lua/loslib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lparser.o: src/external/lua/lparser.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lstate.o: src/external/lua/lstate.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lstring.o: src/external/lua/lstring.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lstrlib.o: src/external/lua/lstrlib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/ltable.o: src/external/lua/ltable.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/ltablib.o: src/external/lua/ltablib.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/ltm.o: src/external/lua/ltm.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lua.o: src/external/lua/lua.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lundump.o: src/external/lua/lundump.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lvm.o: src/external/lua/lvm.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/external/lua/lzio.o: src/external/lua/lzio.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -1597,9 +1627,7 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 755 -d $(BIN_DIR)
 	$(INSTALL) -m 755 $(KNIGHTS_BINARY_NAME) $(BIN_DIR)
 	$(INSTALL) -m 755 -d $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/anims.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/API.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/API.txt~ $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/axe.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/axe_east.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/axe_north.bmp $(DATA_DIR)
@@ -1672,7 +1700,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/door_vwc.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/door_vwo.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/drink.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dungeon_layouts.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/editor.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/first_time_message.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/fixup.txt $(DATA_DIR)
@@ -1688,7 +1715,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/floor9.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/fonts.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/gem.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/graphics.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/hammer.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/hammer_east.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/hammer_north.bmp $(DATA_DIR)
@@ -1712,9 +1738,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/inv_key3.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/inv_lockpicks.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/inv_overdraw.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/items.txt~ $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/item_generation.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/item_generation.txt~ $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/key.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/knights_rooms.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/knights_sfont.bmp $(DATA_DIR)
@@ -1754,11 +1777,8 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/large_table_vert.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/loser.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/main.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/main.lua~ $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/main_config.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/main_config.txt~ $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/menus.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menus.txt~ $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/menu_axe.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/menu_beartrap.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/menu_blade_trap.bmp $(DATA_DIR)
@@ -1823,7 +1843,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/skull_right.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/skull_up.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/small_skull.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/sounds.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/speech_bubble.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/squelch.wav $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/staff.bmp $(DATA_DIR)
@@ -1850,9 +1869,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/table_south.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/table_vert.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/table_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/tiles.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/tiles.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/tiles.txt~ $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/tutorial.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/ugh.wav $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/vbat1.bmp $(DATA_DIR)
@@ -1887,31 +1903,30 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/zom4w.bmp $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/zombie2.wav $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/zombie3.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/anims.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/dungeon_layouts.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/graphics.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/init.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/init.lua~ $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/items.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/items.lua~ $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/item_generation.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/lua_test.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/lua_test.lua~ $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/magic.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/sounds.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/sounds.lua~ $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/tiles.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/tile_funcs.lua $(DATA_DIR)
 
 install_server: $(SERVER_BINARY_NAME)
 	$(INSTALL) -m 755 -d $(BIN_DIR)
 	$(INSTALL) -m 755 $(SERVER_BINARY_NAME) $(BIN_DIR)
 	$(INSTALL) -m 755 -d $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/anims.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/API.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/client_config.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/controls.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/credits.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dungeon_layouts.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/editor.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/first_time_message.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/fixup.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/fonts.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/graphics.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/item_generation.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/knights_rooms.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/main.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/main_config.txt $(DATA_DIR)
@@ -1919,14 +1934,18 @@ install_server: $(SERVER_BINARY_NAME)
 	$(INSTALL) -m 644 knights_data/monsters.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/quests.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/server_config.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/sounds.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/tiles.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/tiles.txt $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/tutorial.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/anims.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/dungeon_layouts.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/graphics.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/init.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/items.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/item_generation.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/lua_test.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/magic.lua $(DATA_DIR)
 	$(INSTALL) -m 644 knights_data/classic/sounds.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/tiles.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/classic/tile_funcs.lua $(DATA_DIR)
 
 install_docs:
 	$(INSTALL) -m 755 -d $(DOC_DIR)
@@ -1944,7 +1963,6 @@ install_docs:
 	$(INSTALL) -m 644 docs/GPL.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/README.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/style_new.css $(DOC_DIR)
-	$(INSTALL) -m 644 docs/svn-commit.tmp~ $(DOC_DIR)
 	$(INSTALL) -m 644 docs/manual/building.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/controls.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/copyright.html $(DOC_DIR)/manual
@@ -2015,9 +2033,7 @@ install_docs:
 uninstall:
 	rm -f $(BIN_DIR)/$(KNIGHTS_BINARY_NAME)
 	rm -f $(BIN_DIR)/$(SERVER_BINARY_NAME)
-	rm -f $(DATA_DIR)/anims.txt
 	rm -f $(DATA_DIR)/API.txt
-	rm -f $(DATA_DIR)/API.txt~
 	rm -f $(DATA_DIR)/axe.bmp
 	rm -f $(DATA_DIR)/axe_east.bmp
 	rm -f $(DATA_DIR)/axe_north.bmp
@@ -2090,7 +2106,6 @@ uninstall:
 	rm -f $(DATA_DIR)/door_vwc.bmp
 	rm -f $(DATA_DIR)/door_vwo.bmp
 	rm -f $(DATA_DIR)/drink.wav
-	rm -f $(DATA_DIR)/dungeon_layouts.txt
 	rm -f $(DATA_DIR)/editor.lua
 	rm -f $(DATA_DIR)/first_time_message.txt
 	rm -f $(DATA_DIR)/fixup.txt
@@ -2106,7 +2121,6 @@ uninstall:
 	rm -f $(DATA_DIR)/floor9.bmp
 	rm -f $(DATA_DIR)/fonts.txt
 	rm -f $(DATA_DIR)/gem.bmp
-	rm -f $(DATA_DIR)/graphics.txt
 	rm -f $(DATA_DIR)/hammer.bmp
 	rm -f $(DATA_DIR)/hammer_east.bmp
 	rm -f $(DATA_DIR)/hammer_north.bmp
@@ -2130,9 +2144,6 @@ uninstall:
 	rm -f $(DATA_DIR)/inv_key3.bmp
 	rm -f $(DATA_DIR)/inv_lockpicks.bmp
 	rm -f $(DATA_DIR)/inv_overdraw.bmp
-	rm -f $(DATA_DIR)/items.txt~
-	rm -f $(DATA_DIR)/item_generation.txt
-	rm -f $(DATA_DIR)/item_generation.txt~
 	rm -f $(DATA_DIR)/key.bmp
 	rm -f $(DATA_DIR)/knights_rooms.txt
 	rm -f $(DATA_DIR)/knights_sfont.bmp
@@ -2172,11 +2183,8 @@ uninstall:
 	rm -f $(DATA_DIR)/large_table_vert.bmp
 	rm -f $(DATA_DIR)/loser.bmp
 	rm -f $(DATA_DIR)/main.lua
-	rm -f $(DATA_DIR)/main.lua~
 	rm -f $(DATA_DIR)/main_config.txt
-	rm -f $(DATA_DIR)/main_config.txt~
 	rm -f $(DATA_DIR)/menus.txt
-	rm -f $(DATA_DIR)/menus.txt~
 	rm -f $(DATA_DIR)/menu_axe.bmp
 	rm -f $(DATA_DIR)/menu_beartrap.bmp
 	rm -f $(DATA_DIR)/menu_blade_trap.bmp
@@ -2241,7 +2249,6 @@ uninstall:
 	rm -f $(DATA_DIR)/skull_right.bmp
 	rm -f $(DATA_DIR)/skull_up.bmp
 	rm -f $(DATA_DIR)/small_skull.bmp
-	rm -f $(DATA_DIR)/sounds.txt
 	rm -f $(DATA_DIR)/speech_bubble.bmp
 	rm -f $(DATA_DIR)/squelch.wav
 	rm -f $(DATA_DIR)/staff.bmp
@@ -2268,9 +2275,6 @@ uninstall:
 	rm -f $(DATA_DIR)/table_south.bmp
 	rm -f $(DATA_DIR)/table_vert.bmp
 	rm -f $(DATA_DIR)/table_west.bmp
-	rm -f $(DATA_DIR)/tiles.lua
-	rm -f $(DATA_DIR)/tiles.txt
-	rm -f $(DATA_DIR)/tiles.txt~
 	rm -f $(DATA_DIR)/tutorial.txt
 	rm -f $(DATA_DIR)/ugh.wav
 	rm -f $(DATA_DIR)/vbat1.bmp
@@ -2305,21 +2309,23 @@ uninstall:
 	rm -f $(DATA_DIR)/zom4w.bmp
 	rm -f $(DATA_DIR)/zombie2.wav
 	rm -f $(DATA_DIR)/zombie3.wav
+	rm -f $(DATA_DIR)/anims.lua
+	rm -f $(DATA_DIR)/dungeon_layouts.lua
+	rm -f $(DATA_DIR)/graphics.lua
 	rm -f $(DATA_DIR)/init.lua
-	rm -f $(DATA_DIR)/init.lua~
 	rm -f $(DATA_DIR)/items.lua
-	rm -f $(DATA_DIR)/items.lua~
+	rm -f $(DATA_DIR)/item_generation.lua
 	rm -f $(DATA_DIR)/lua_test.lua
-	rm -f $(DATA_DIR)/lua_test.lua~
+	rm -f $(DATA_DIR)/magic.lua
 	rm -f $(DATA_DIR)/sounds.lua
-	rm -f $(DATA_DIR)/sounds.lua~
+	rm -f $(DATA_DIR)/tiles.lua
+	rm -f $(DATA_DIR)/tile_funcs.lua
 	rm -f $(DOC_DIR)/ACKNOWLEDGMENTS.txt
 	rm -f $(DOC_DIR)/CHANGELOG.txt
 	rm -f $(DOC_DIR)/COPYRIGHT.txt
 	rm -f $(DOC_DIR)/GPL.txt
 	rm -f $(DOC_DIR)/README.txt
 	rm -f $(DOC_DIR)/style_new.css
-	rm -f $(DOC_DIR)/svn-commit.tmp~
 	rm -f $(DOC_DIR)/manual/building.html
 	rm -f $(DOC_DIR)/manual/controls.html
 	rm -f $(DOC_DIR)/manual/copyright.html
