@@ -580,7 +580,7 @@ pentagram_base = floor & {
     on_walk_over = function()
        -- zombies can walk over pentagrams with impunity, 
        -- but knights get zapped.
-       if kts.IsKnight() then
+       if kts.ActorIsKnight() then
           zap()
           pentagram_effect()
        end

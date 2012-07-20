@@ -405,11 +405,26 @@ namespace {
     // Output: boolean
     int IsKnight(lua_State *lua)
     {
+        if (lua_gettop(lua) == 0) {
+            luaL_error(lua, "IsKnight: requires 1 parameter");
+        }
         shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
         lua_pushboolean(lua, cr && dynamic_pointer_cast<Knight>(cr));
         return 1;
     }
     
+    // Input: none
+    // Cxt: actor
+    // Output: boolean
+    int ActorIsKnight(lua_State *lua)
+    {
+        lua_getglobal(lua, "cxt");        // [arg cxt]
+        lua_getfield(lua, -1, "actor");   // [arg cxt cr]
+        boost::shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pushboolean(lua, actor && dynamic_pointer_cast<Knight>(actor));
+        return 1;
+    }
+
     // Input: (optional) player, followed by any number of args.
     // Cxt: none
     // Output: none
@@ -629,6 +644,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &IsKnight);
     lua_setfield(lua, -2, "IsKnight");
+
+    PushCFunction(lua, &ActorIsKnight);
+    lua_setfield(lua, -2, "ActorIsKnight");
     
     // "print" is set both in kts, and globally.
     PushCFunction(lua, &Print);       // [env kts Print]
