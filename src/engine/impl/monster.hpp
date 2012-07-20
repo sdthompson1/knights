@@ -50,6 +50,8 @@ public:
 
     const MonsterType & getMonsterType() const { return type; }
 
+    void runSoundAction();
+    
 private:
     const MonsterType &type;
 };

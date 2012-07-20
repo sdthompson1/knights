@@ -135,7 +135,8 @@ public:
         : Monster(type, health, H_WALKING, weapon, anim, speed) { }
     virtual int bloodLevel() const { return 0; }
     virtual void damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch);
-    virtual const char * getWeaponDownswingHook() const { return "HOOK_ZOMBIE"; } // zombies moo on downswing. (TODO shouldn't hard code this as zombie!)
+
+    virtual void onDownswing();
 };
 
 #endif

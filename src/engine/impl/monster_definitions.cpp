@@ -213,7 +213,7 @@ void FlyingMonsterAI::execute(TaskManager &tm)
 }
 
 FlyingMonsterType::FlyingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
-    : MonsterType(lua)
+    : MonsterType(lua, kc)
 {
     health = LuaGetRandomInt(lua, -1, "health", kc);
     speed = LuaGetInt(lua, -1, "speed");
@@ -239,7 +239,7 @@ void FlyingMonster::damage(int amount, const Originator &attacker, int su, bool 
     // -- Only want this if the bat was not killed.
     shared_ptr<FlyingMonster> self(static_pointer_cast<FlyingMonster>(shared_from_this()));
     if (amount < getHealth()) {
-        Mediator::instance().runHook("HOOK_BAT", self);  // TODO should be monster type dependent, not hard coded to BAT
+        runSoundAction();
     } else if (!inhibit_squelch) {
         Mediator::instance().runHook("HOOK_CREATURE_SQUELCH", self);
     }
@@ -434,9 +434,8 @@ void WalkingMonsterAI::execute(TaskManager &tm)
             } else if (zcw(*mon->getMap(), sq_ahead)) {
                 mon->move(MT_MOVE);
                 // Play a moo sound 1 in every 20 zombie moves
-                // TODO this should not be hard coded to HOOK_ZOMBIE ...
                 if (g_rng.getBool(0.05f)) {
-                    mediator.runHook("HOOK_ZOMBIE", mon);
+                    mon->runSoundAction();
                 }
             }
         } else {
@@ -455,7 +454,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
 }
 
 WalkingMonsterType::WalkingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
-    : MonsterType(lua)
+    : MonsterType(lua, kc)
 {
     // [... t]
     
@@ -483,13 +482,13 @@ shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
 
 //
 // This routine makes walking monsters 'recoil' when they're hit.
-// Also it runs the hooks (usually sound effects).
+// Also it runs the hook / sound action.
 
 void WalkingMonster::damage(int amount, const Originator &attacker, int stun_until, bool inhibit_squelch)
 {
     Mediator &mediator = Mediator::instance();
     shared_ptr<WalkingMonster> self(static_pointer_cast<WalkingMonster>(shared_from_this()));
-    mediator.runHook("HOOK_ZOMBIE", self); // TODO don't hard code to ZOMBIE hook
+    runSoundAction();
     if (amount >= getHealth() && !inhibit_squelch) {
         mediator.runHook("HOOK_CREATURE_SQUELCH", self);
     }
@@ -497,4 +496,10 @@ void WalkingMonster::damage(int amount, const Originator &attacker, int stun_unt
     setAnimFrame(AF_PARRY,
                  stun_until != -1 ? stun_until
                                   : (mediator.getGVT() + mediator.cfgInt("walking_monster_damage_delay")));
+}
+
+void WalkingMonster::onDownswing()
+{
+    // zombies play "moo" sound when swinging weapon
+    runSoundAction();
 }

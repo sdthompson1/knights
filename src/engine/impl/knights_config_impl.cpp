@@ -223,8 +223,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
             "HOOK_WEAPON_PARRY",
             "HOOK_KNIGHT_DAMAGE",
             "HOOK_CREATURE_SQUELCH",
-            "HOOK_BAT",
-            "HOOK_ZOMBIE",
             "HOOK_SHOOT",
             "HOOK_MISSILE_MISS"
         };

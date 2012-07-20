@@ -23,8 +23,10 @@
 
 #include "misc.hpp"
 
+#include "action.hpp"
 #include "mediator.hpp"
 #include "monster.hpp"
+#include "monster_type.hpp"
 
 Monster::~Monster()
 {
@@ -41,5 +43,18 @@ void Monster::onDeath(DeathMode dmode, const Originator &)
     if (!getMap()) return;
     if (dmode != PIT_MODE && dmode != ZOMBIE_MODE) {
         Mediator::instance().placeMonsterCorpse(*getMap(), getNearestPos(), type);
+    }
+}
+
+void Monster::runSoundAction()
+{
+    Action *ac = type.getSoundAction();
+    if (ac) {
+        ActionData ad;
+        ad.setActor(static_pointer_cast<Creature>(shared_from_this()));
+        ad.setGenericPos(getMap(), getPos());
+        ad.setOriginator(Originator(OT_Monster()));
+        
+        ac->execute(ad);
     }
 }

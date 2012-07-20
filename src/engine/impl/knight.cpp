@@ -321,6 +321,12 @@ bool Knight::isVisibleToPlayer(const Player &p) const
     return isVisible() || (this->player.getTeamNum() == p.getTeamNum());
 }
 
+void Knight::onDownswing()
+{
+    Mediator::instance().runHook("HOOK_WEAPON_DOWNSWING",
+        static_pointer_cast<Creature>(shared_from_this()));
+}
+
 //
 // inventory
 //

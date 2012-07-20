@@ -21,12 +21,15 @@
  *
  */
 
+#include "lua_setup.hpp"
 #include "monster_type.hpp"
 
 #include "lua.hpp"
 
-MonsterType::MonsterType(lua_State *lua)
+MonsterType::MonsterType(lua_State *lua, KnightsConfigImpl *kc)
 {
     lua_pushvalue(lua, -1);
     table_ref.reset(lua);
+
+    sound_action = LuaGetAction(lua, -1, "sound", kc);
 }

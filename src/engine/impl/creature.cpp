@@ -147,11 +147,7 @@ void ImpactTask::execute(TaskManager &tm)
     if (!dmap) return;
 
     // Run the downswing hook.
-    Mediator &mediator = Mediator::instance();
-    const char *hook = me->getWeaponDownswingHook();
-    if (hook) {
-        mediator.runHook(hook, me);
-    }
+    me->onDownswing();
     
     // Check impacts against creatures -- first in the tile ahead, then in my current tile
     // (the latter makes it possible to hit vampire bats while they are flying over you,
@@ -166,6 +162,7 @@ void ImpactTask::execute(TaskManager &tm)
 
     // Clean up attacker's anim state and stun time (assuming impact was not vetoed).
     if (result != VETO) {
+        Mediator & mediator(Mediator::instance());
         const int qf = me->hasQuickness() ? mediator.cfgInt("quickness_factor") : 100;
         const int ds_time = me->item_in_hand->getMeleeDownswingTime();
         const int wt_time = ds_time + mediator.cfgInt("melee_delay_time");
@@ -239,17 +236,14 @@ void ThrowingTask::execute(TaskManager &tm)
     if (!dmap) return;
 
     // run the throwing hook (actually, same as downswing hook for now :)
-    Mediator &mediator = Mediator::instance();
-    const char *hook = me->getWeaponDownswingHook();
-    if (hook) {
-        Mediator::instance().runHook(hook, me);
-    }
+    me->onDownswing();
     
     // create the missile
     bool success = CreateMissile(*dmap, me->getPos(), me->getFacing(),
                                  itype, true, me->hasStrength(), me->getOriginator(), false);
 
     // reset anim / stun time
+    Mediator &mediator(Mediator::instance());
     const int qf = me->hasQuickness() ? mediator.cfgInt("quickness_factor") : 100;
     const int ds_time = itype.getMissileDownswingTime();
     const int wt_time = ds_time + mediator.cfgInt("melee_delay_time");

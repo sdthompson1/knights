@@ -100,7 +100,7 @@ public:
     // overridden from Entity:
     virtual bool isVisibleToPlayer(const Player &p) const;
 
-    virtual const char * getWeaponDownswingHook() const { return "HOOK_WEAPON_DOWNSWING"; }
+    virtual void onDownswing();
 
     //
     // Inventory 

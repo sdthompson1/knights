@@ -162,10 +162,10 @@ public:
     virtual bool hasStrength() const { return false; }
     virtual bool hasQuickness() const { return false; }
 
-    // this controls which hook should be played when this creature downswings
+    // this gets called when this creature downswings
     // (which in practice, means what sound the creature makes when attacking)
     // Note: same hook is used for axe-throwing
-    virtual const char * getWeaponDownswingHook() const { return 0; }
+    virtual void onDownswing() { }
     
     int getBaseSpeed() const { return speed; }
 

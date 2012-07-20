@@ -132,13 +132,6 @@ kts.HOOK_WEAPON_PARRY = snd_parry
 kts.HOOK_KNIGHT_DAMAGE = snd_ugh
 kts.HOOK_CREATURE_SQUELCH = snd_squelch
 
--- Zombie was hit by weapon or killed; zombie took bear trap damage; 
--- zombie attacks; randomly on some zombie moves.
-kts.HOOK_ZOMBIE = snd_zombie
-
--- Bat took damage but did not die
-kts.HOOK_BAT = snd_bat_screech
-
 -- Crossbow bolt was fired.
 kts.HOOK_SHOOT = snd_crossbow
 
