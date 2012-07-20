@@ -280,7 +280,6 @@ void KnightsConfigImpl::freeMemory()
     for_each(actions.begin(), actions.end(), Delete<Action>());
     for_each(controls.begin(), controls.end(), Delete<Control>());
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
-    for_each(item_types.begin(), item_types.end(), Delete<const ItemType>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
     for_each(monster_types.begin(), monster_types.end(), Delete<MonsterType>());
@@ -769,30 +768,15 @@ ItemSize KnightsConfigImpl::popItemSize(ItemSize dflt)
 const ItemType * KnightsConfigImpl::popItemType()
 {
     if (!kf) return 0;
-
     const ItemType * result = 0;
     
     if (kf->isLua()) {
-
         kf->popLua();  // pop from kfile stack, push to lua stack
         result = ReadLuaPtr<const ItemType>(lua_state.get(), -1);
         lua_pop(lua_state.get(), 1);
-        if (!result) kf->errExpected("item type");
-        
-    } else {
-            
-        const Value * p = kf->getTop();
-        const map<const Value *, const ItemType*>::const_iterator itor = item_types.find(p);
-        if (itor == item_types.end()) {
-
-            kf->errExpected ("KConfig Itemtypes Not Supported");
-
-        } else {
-            result = itor->second;
-            kf->pop();
-        }
     }
-
+    
+    if (!result) kf->errExpected("item type");
     return result;
 }
 
@@ -2071,39 +2055,6 @@ Sound * KnightsConfigImpl::addLuaSound(const char *name)
 
 
 // KConfig references
-
-void KnightsConfigImpl::kconfigAnim(const char *name)
-{
-    if (!kf) {
-        lua_pushnil(lua_state.get());
-    } else {
-        kf->pushSymbol(name);
-        Anim * anim = popAnim();
-        NewLuaPtr<Anim>(lua_state.get(), anim);
-    }
-}
-
-void KnightsConfigImpl::kconfigItemType(const char *name)
-{
-    if (!kf) {
-        lua_pushnil(lua_state.get());
-    } else {
-        kf->pushSymbol(name);
-        const ItemType * itype = popItemType();
-        NewLuaPtr<const ItemType>(lua_state.get(), itype);
-    }
-}
-
-void KnightsConfigImpl::kconfigTile(const char *name)
-{
-    if (!kf) {
-        lua_pushnil(lua_state.get());
-    } else {
-        kf->pushSymbol(name);
-        shared_ptr<Tile> tile = popTile();
-        NewLuaSharedPtr<Tile>(lua_state.get(), tile);
-    }
-}
 
 void KnightsConfigImpl::kconfigControl(const char *name)
 {

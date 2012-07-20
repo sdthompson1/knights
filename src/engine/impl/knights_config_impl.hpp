@@ -161,9 +161,6 @@ public:
     // KConfig references -- each function pushes a userdata to the Lua stack.
     //
 
-    void kconfigAnim(const char *name);
-    void kconfigItemType(const char *name);
-    void kconfigTile(const char *name);
     void kconfigControl(const char *name);
 
     
@@ -280,7 +277,6 @@ private:
     std::map<const Value *, Action *> actions;
     std::map<const Value *, Control *> controls;
     std::map<const Value *, DungeonDirective *> dungeon_directives;
-    std::map<const Value *, const ItemType *> item_types;
     std::vector<ItemType *> special_item_types;
     std::map<const Value *, MenuInt *> menu_ints;
     std::map<const Value *, MonsterType *> monster_types;

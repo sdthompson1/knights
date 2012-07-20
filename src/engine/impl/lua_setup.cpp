@@ -271,18 +271,6 @@ namespace {
         return 0;
     }
     
-    
-    // Upvalue: KnightsConfigImpl*
-    // Input: one string (kconfig variable name)
-    // Output: userdata representing the itemtype
-    int MakeKconfigItemType(lua_State *lua)
-    {
-        KnightsConfigImpl *kc = GetKC(lua, "ItemTypes");
-        const char * name = luaL_checkstring(lua, 1);
-        kc->kconfigItemType(name);
-        return 1;
-    }
-
     // Upvalue: KnightsConfigImpl*
     // Input: one string (kconfig variable name)
     // Output: userdata representing a control
@@ -350,10 +338,6 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     PushCFunction(lua, &SetReflect);
     lua_setfield(lua, -2, "SetReflect");
     
-    
-    lua_pushlightuserdata(lua, kc);
-    PushCClosure(lua, &MakeKconfigItemType, 1);
-    lua_setfield(lua, -2, "kconfig_itemtype");
 
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeKconfigControl, 1);
