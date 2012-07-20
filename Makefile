@@ -17,10 +17,10 @@ SERVER_BINARY_NAME = knights_server
 
 CC = gcc
 CXX = g++
-STRIP = echo
+STRIP = strip
 
 CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG
-CFLAGS = -g
+CFLAGS = -O3 -ffast-math
 CXXFLAGS = $(CFLAGS)
 BOOST_LIBS = -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt
 
