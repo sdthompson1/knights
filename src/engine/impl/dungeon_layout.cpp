@@ -244,8 +244,7 @@ bool DungeonLayout::hasHorizExit(int x, int y) const
 }
 
 
-RandomDungeonLayout::RandomDungeonLayout(lua_State *lua_)
-    : lua(lua_)
+RandomDungeonLayout::RandomDungeonLayout(lua_State *lua)
 {
     name = luaL_checkstring(lua, 1);
     LuaCheckCallable(lua, 2, "kts.DungeonLayout");
@@ -253,19 +252,13 @@ RandomDungeonLayout::RandomDungeonLayout(lua_State *lua_)
     // unfortunately we can't check that the function returns a valid DungeonLayout 
     // table, but never mind...
 
-    lua_pushvalue(lua, 2);
-    lua_rawsetp(lua, LUA_REGISTRYINDEX, this);
-}
-
-RandomDungeonLayout::~RandomDungeonLayout()
-{
-    lua_pushnil(lua);
-    lua_rawsetp(lua, LUA_REGISTRYINDEX, this);
+    lua_pushvalue(lua, 2);  // pushes arg 2
+    layout_func.reset(lua); // pops it again
 }
 
 std::auto_ptr<DungeonLayout> RandomDungeonLayout::choose(lua_State *lua) const
 {
-    lua_rawgetp(lua, LUA_REGISTRYINDEX, this);  // [func]
+    layout_func.push(lua);  // [func]
     LuaExec(lua, 0, 1); // [result]
     std::auto_ptr<DungeonLayout> result(new DungeonLayout(lua));  // []
     return result;

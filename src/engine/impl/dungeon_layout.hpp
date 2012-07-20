@@ -29,7 +29,7 @@
 #ifndef DUNGEON_LAYOUT_HPP
 #define DUNGEON_LAYOUT_HPP
 
-#include "boost/noncopyable.hpp"
+#include "lua_ref.hpp"
 
 #include <memory>
 #include <string>
@@ -65,11 +65,10 @@ private:
     vector<bool> vert_exits;
 };
 
-class RandomDungeonLayout : boost::noncopyable {
+class RandomDungeonLayout {
 public:
     // Sets up a random dungeon layout from Lua args 1 and 2
     explicit RandomDungeonLayout(lua_State *lua_);
-    ~RandomDungeonLayout();
 
     // Picks one of the dungeon layouts at random
     std::auto_ptr<DungeonLayout> choose(lua_State *lua) const;
@@ -79,7 +78,7 @@ public:
 
 private:
     std::string name;
-    lua_State *lua;
+    LuaRef layout_func;
 };
 
 #endif
