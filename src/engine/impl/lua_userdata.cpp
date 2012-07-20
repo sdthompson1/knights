@@ -23,10 +23,13 @@
 
 #include "misc.hpp"
 
+#include "control.hpp"
+#include "item_type.hpp"
 #include "lua_func_wrapper.hpp"
-#include "lua_table_base.hpp"
 #include "lua_userdata.hpp"
 #include "map_support.hpp"
+#include "overlay.hpp"
+#include "tile.hpp"
 
 #include <cstring>
 
@@ -92,12 +95,30 @@ namespace {
         
         switch (ud->tag) {
         case TAG_CONTROL:
+            {
+                // Unfortunately, have to include headers for Control, ItemType etc
+                // because some of them use multiple inheritance so it is unsafe to cast
+                // directly to LuaTableBase
+                const Control *ctrl = static_cast<const Control*>(ptr);
+                ctrl->pushTable(lua);
+                return true;
+            }
         case TAG_ITEM_TYPE:
+            {
+                const ItemType *itype = static_cast<const ItemType*>(ptr);
+                itype->pushTable(lua);
+                return true;
+            }
         case TAG_OVERLAY:
             {
-                const LuaTableBase *tab = static_cast<const LuaTableBase*>(ptr);
-                tab->pushTable(lua);
-                ASSERT(lua_istable(lua, -1));
+                const Overlay *ovl = static_cast<const Overlay*>(ptr);
+                ovl->pushTable(lua);
+                return true;
+            }
+        case TAG_TILE:
+            {
+                const Tile *tile = static_cast<const Tile*>(ptr);
+                tile->pushTable(lua);
                 return true;
             }
         default:
@@ -121,8 +142,7 @@ namespace {
             }
             
         } else {
-            // [ud key]
-            lua_pushnil(lua);  // [ud key nil]
+            luaL_error(lua, "This userdata does not have an underlying table");
         }
         return 1;
     }

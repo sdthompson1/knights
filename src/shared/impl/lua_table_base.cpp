@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "lua_table_base.hpp"
+#include "my_exceptions.hpp"
 
 #include "lua.hpp"
 
@@ -31,14 +32,6 @@ LuaTableBase::LuaTableBase(lua_State *lua_, int idx)
     : lua(lua_)
 {
     if (lua) {
-
-        ////
-        lua_len(lua, idx);
-        const int test = lua_tointeger(lua, -1);
-        lua_pop(lua, 1);
-        bool test2 = lua_istable(lua, -1);
-        ////
-
         lua_pushvalue(lua, idx);
         table_ref = luaL_ref(lua, LUA_REGISTRYINDEX);
     }
@@ -70,7 +63,7 @@ void LuaTableBase::pushTable(lua_State *L) const
         // different Lua thread.
         lua_rawgeti(L, LUA_REGISTRYINDEX, table_ref);
     } else {
-        // It doesn't have a stored table; we just push an empty table in this case
-        lua_newtable(L);
+        // It doesn't have a stored table
+        throw LuaError("This object does not have an underlying table");
     }
 }

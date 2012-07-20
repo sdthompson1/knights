@@ -30,8 +30,11 @@ struct lua_State;
 // that can be accessed via __index or __newindex metamethods in
 // Knights code.
 
-// Stores a reference to the lua_State, so should be destroyed BEFORE
-// destroying the lua_State.
+// NOTE: If you add this to a class, you also have to update
+// PushObjectTable in lua_userdata.cpp.
+
+// NOTE: This class stores a reference to the lua_State, so should be
+// destroyed BEFORE destroying the lua_State.
 
 class LuaTableBase {
 public:
@@ -42,6 +45,7 @@ public:
     ~LuaTableBase();
 
     // Push the stored table onto the lua stack.
+    // Throws LuaError if the object does not have a table.
     void pushTable(lua_State *L) const;
 
 private:

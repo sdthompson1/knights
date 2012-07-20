@@ -31,8 +31,10 @@
 #define TILE_HPP
 
 #include "lua_ref.hpp"
+#include "lua_table_base.hpp"
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
+#include "originator.hpp"
 
 #include "random_int.hpp"
 using namespace KConfig;
@@ -55,7 +57,7 @@ enum ActivateType {
     ACT_UNLOCK_ALL     // e.g. Wand of open ways
 };
 
-class Tile : public enable_shared_from_this<Tile> {
+class Tile : public LuaTableBase, public enable_shared_from_this<Tile> {
 public:
     // NOTE: Constructors do not set the current hitpoints, only the initial hitpoints.
     // Current hitpoints are set by "setHitPoints", which is called by clone().
