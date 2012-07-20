@@ -113,6 +113,7 @@ private:
     Originator trap_owner;
 
     const Action *on_open_or_close;
+    const Action *on_unlock_fail;
 };
 
 #endif

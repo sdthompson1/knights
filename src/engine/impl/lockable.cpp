@@ -57,6 +57,7 @@ Lockable::Lockable(lua_State *lua, KnightsConfigImpl *kc)
     keymax = LuaGetInt(lua, -1, "keymax", 1);   // default 1
 
     on_open_or_close = LuaGetAction(lua, -1, "on_open_or_close", kc);  // default null
+    on_unlock_fail = LuaGetAction(lua, -1, "on_unlock_fail", kc);      // default null
 }
 
 
@@ -70,7 +71,18 @@ bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 {
     if (isLocked() && act_type != ACT_UNLOCK_ALL) {
         bool ok = checkUnlock(cr);
-        if (!ok) return false;
+        if (!ok) {
+            // Failed to unlock
+            if (on_unlock_fail) {
+                ActionData ad;
+                ad.setActor(cr);
+                ad.setOriginator(originator);
+                ad.setTile(&dmap, mc, shared_from_this());
+                ad.setGenericPos(&dmap, mc);
+                on_unlock_fail->execute(ad);
+            }
+            return false;
+        }
     }
     openImpl(dmap, mc, originator);
     if (lock != SPECIAL_LOCK_NUM) lock = 0;  // special lock is always left; but other locks always unlock when opened.

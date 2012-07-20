@@ -191,10 +191,8 @@ end
 door_base = {
     type     = "door",
     access   = door_acc,
---    on_activate  = [OnSuccess([],
---                              [locked_msg, snd_lock] 
---                             )]
     on_open_or_close  = snd_door,
+    on_unlock_fail    = function() locked_msg(); snd_lock() end,
     control = door_control_lua_func
 }
 wood_door = door_base & {
@@ -415,10 +413,8 @@ chest = {
     hit_points  = tile_hit_points,
     on_destroy  = destroy3,
     control = chest_control_lua_func,
---    on_activate = [OnSuccess([],
---                             [locked_msg, snd_lock] 
---                            )]
     on_open_or_close = snd_door,
+    on_unlock_fail   = function() locked_msg(); snd_lock() end,
     on_hit      = snd_tile_bash,
     depth       = -4,
     tutorial = TUT_CHEST
