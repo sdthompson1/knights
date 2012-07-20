@@ -59,6 +59,20 @@ namespace Coercri {
         struct DeleteFcFontSet {
             void operator()(FcFontSet *f) { FcFontSetDestroy(f); }
         };
+
+        struct FCInitializer {
+            FCInitializer()
+            {
+                if (!FcInit()) {
+                    throw CoercriError("Fontconfig initialization failed");
+                }
+            }
+
+            ~FCInitializer()
+            {
+                FcFini();
+            }
+        };
     }
 #endif    
     
@@ -69,8 +83,8 @@ namespace Coercri {
         
 #ifdef USE_FONTCONFIG
 
-        FcInit();
-
+        static FCInitializer init;  // will initialize Fontconfig the first time we enter this function.
+        
         boost::shared_ptr<FcPattern> pattern(FcPatternCreate(), DeleteFcPattern());
         FcPatternAddInteger(pattern.get(), FC_SLANT, FC_SLANT_ROMAN);
         FcPatternAddInteger(pattern.get(), FC_WEIGHT, FC_WEIGHT_NORMAL);
@@ -128,4 +142,4 @@ namespace Coercri {
         // Oh dear, it seems we couldn't load the font
         throw CoercriError("Could not load font");        
     }
-}        
+}
