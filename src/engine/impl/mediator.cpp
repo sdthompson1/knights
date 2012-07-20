@@ -44,6 +44,7 @@
 #include "boost/thread/tss.hpp"
 
 #include <sstream>
+#include <stdexcept>
 
 namespace {
     // Thread-local storage for the mediator.

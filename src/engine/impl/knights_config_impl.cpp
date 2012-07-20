@@ -472,7 +472,7 @@ Anim * KnightsConfigImpl::popAnim()
 
 Anim * KnightsConfigImpl::popAnim(Anim *dflt)
 {
-    if (!kf) return false;
+    if (!kf) return 0;
     if (kf->isNone()) {
         kf->pop();
         return dflt;

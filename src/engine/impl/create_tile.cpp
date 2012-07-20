@@ -58,7 +58,7 @@ boost::shared_ptr<Tile> CreateTile(lua_State *lua, KnightsConfigImpl *kc)
     } else if (s == "barrel") {
         tile.reset(new Barrel(lua, kc));
     } else {
-        luaL_error(lua, "Unknown tile type '%s'", s);
+        luaL_error(lua, "Unknown tile type '%s'", s.c_str());
     }
 
     return tile;

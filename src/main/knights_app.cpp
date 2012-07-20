@@ -352,7 +352,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
 #else
     // options stored in home directory (assume getenv("HOME") will work)
     pimpl->options_filename = std::getenv("HOME");
-    pimpl->options_filename += "/.knights_config";
+    pimpl->options_filename /= ".knights_config";
 #endif
     if (!pimpl->options_filename.empty()) {
         boost::filesystem::ifstream str(pimpl->options_filename);

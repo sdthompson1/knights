@@ -28,7 +28,12 @@
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/locks.hpp"
 
-struct lua_longjmp;  // defined in ldo.c
+// definition copied from ldo.c
+struct lua_longjmp {
+  struct lua_longjmp *previous;
+  int b;
+  volatile int status;  /* error code */
+};
 
 namespace {
 
