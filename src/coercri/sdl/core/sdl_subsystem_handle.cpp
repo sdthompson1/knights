@@ -60,8 +60,9 @@ namespace Coercri {
             if (err == -1) {
                 throw SDLError("SDL_Init failed");
             }
-            ++g_sdl_count;
         }
+
+        ++g_sdl_count;
 
         // If no subsystem was requested then we are done
         if (s == 0) return;
@@ -93,6 +94,7 @@ namespace Coercri {
         : subsys(0), ref_count(0)
     {
         ++g_sdl_count;
+
         if (rhs.subsys != 0) {
             subsys = rhs.subsys;
             ref_count = rhs.ref_count;
@@ -104,29 +106,42 @@ namespace Coercri {
     {
         if (this == &rhs) return *this;
 
+        // The old subsys loses a reference
         if (subsys != 0) {
             --(*ref_count);
-            if (*ref_count == 0) SDL_QuitSubSystem(subsys);
         }
 
+        // The incoming subsys gains a reference
+        if (rhs.subsys != 0) {
+            ++(*rhs.ref_count);
+        }
+
+        // If the old subsys has no references, quit it
+        if (*ref_count == 0) {
+            SDL_QuitSubSystem(subsys);
+        }
+
+        // Now update
         subsys = rhs.subsys;
-
-        if (subsys != 0) {
-            ref_count = rhs.ref_count;
-            ++(*ref_count);
-        }
+        ref_count = rhs.ref_count;
 
         return *this;
     }
 
     SDLSubSystemHandle::~SDLSubSystemHandle()
     {
+        // The subsys loses a reference
         if (subsys != 0) {
             --(*ref_count);
-            if (*ref_count == 0) SDL_QuitSubSystem(subsys);
+            // If no references left, quit it
+            if (*ref_count == 0) {
+                SDL_QuitSubSystem(subsys);
+            }
         }
 
         --g_sdl_count;
-        if (g_sdl_count == 0) SDL_Quit();
+        if (g_sdl_count == 0) {
+            SDL_Quit();
+        }
     }
 }
