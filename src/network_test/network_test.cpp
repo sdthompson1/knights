@@ -173,7 +173,7 @@ public:
     {
         Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.c_str(), observer ? 1 : 0, team ? 1 : 0, msg.c_str());
     }
-    void announcement(const std::string &msg)
+    void announcement(const std::string &msg, bool is_err)
     {
         Log("Announcement: %s", msg.c_str());
     }

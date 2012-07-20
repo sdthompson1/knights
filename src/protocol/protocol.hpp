@@ -164,7 +164,8 @@ enum ServerMessageCode {
 };
 
 enum ServerExtendedCode {
-    SERVER_EXT_SET_QUEST_ICONS = 1
+    SERVER_EXT_SET_QUEST_ICONS = 1,
+    SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR = 2
 };
 
 

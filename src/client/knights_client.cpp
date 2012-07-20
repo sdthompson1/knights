@@ -61,7 +61,8 @@ class KnightsClientImpl {
 public:
     // ctor
     KnightsClientImpl() : ndisplays(0), player(0), 
-                          knights_callbacks(0), client_callbacks(0)
+                          knights_callbacks(0), client_callbacks(0),
+                          next_announcement_is_error(false)
     { 
         for (int i = 0; i < 2; ++i) last_cts_ctrl[i] = 0;
     }
@@ -74,6 +75,7 @@ public:
     KnightsCallbacks *knights_callbacks;
     ClientCallbacks *client_callbacks;
     const UserControl *last_cts_ctrl[2];
+    bool next_announcement_is_error;
     
     // helper functions
     void receiveConfiguration(Coercri::InputByteBuf &buf);
@@ -268,7 +270,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     player_names.push_back(buf.readString());
                 }
                 if (knights_cb) knights_cb->goIntoObserverMode(pimpl->ndisplays, player_names);
-                if (client_cb) client_cb->announcement("** You have been eliminated from this game. You are now in observer mode. Use left/right arrow keys to switch between players.");
+                if (client_cb) client_cb->announcement("** You have been eliminated from this game. You are now in observer mode. Use left/right arrow keys to switch between players.", false);
             }
             break;
 
@@ -350,7 +352,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_ANNOUNCEMENT:
             {
                 const std::string msg = buf.readString();
-                if (client_cb) client_cb->announcement(msg);
+                if (client_cb) client_cb->announcement(msg, pimpl->next_announcement_is_error);
+                pimpl->next_announcement_is_error = false;
             }
             break;
 
@@ -763,6 +766,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                         }
                         if (status_display) status_display->setQuestIcons(icons);
                     }
+                    break;
+                case SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR:
+                    pimpl->next_announcement_is_error = true;
                     break;
                 }
 

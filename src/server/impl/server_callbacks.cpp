@@ -219,6 +219,12 @@ void ServerCallbacks::gameMsg(int plyr, const std::string &msg, bool is_err)
                 (plyr < 0 && p > 0) ? prv[p] : pub[p]
             );
 
+            if (is_err) {
+                buf.writeUbyte(SERVER_EXTENDED_MESSAGE);
+                buf.writeVarInt(SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR);
+                buf.writeUshort(0);
+            }
+
             buf.writeUbyte(SERVER_ANNOUNCEMENT);
             buf.writeString(msg);
         }

@@ -52,6 +52,7 @@
 #include <ctime>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 
 // annoyingly, since we have 2 types of fonts in the system, need to create
 // a small font wrapper class here.
@@ -369,7 +370,8 @@ public:
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
           quest_rqmts_list(9999, false, false),    // ditto
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
-          my_player_name(plyr_nm), doing_menu_widget_update(false), deathmatch_mode(false)
+          my_player_name(plyr_nm), doing_menu_widget_update(false), deathmatch_mode(false),
+          game_in_progress(false)
     { }
     
     KnightsApp &knights_app;
@@ -421,6 +423,8 @@ public:
 
     bool doing_menu_widget_update;
     bool deathmatch_mode;
+
+    bool game_in_progress;
 };
 
 void GameManager::setServerName(const std::string &sname)
@@ -1070,6 +1074,8 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     pimpl->quest_rqmts_list.clear();
     
     pimpl->gui_invalid = true;
+
+    pimpl->game_in_progress = true;
 }
 
 void GameManager::gotoMenu()
@@ -1092,6 +1098,8 @@ void GameManager::gotoMenu()
 
         pimpl->gui_invalid = true;
     }
+
+    pimpl->game_in_progress = false;
 }
 
 void GameManager::playerJoinedThisGame(const std::string &name, bool obs_flag, int house_col)
@@ -1155,10 +1163,16 @@ void GameManager::chat(const std::string &whofrom, bool observer, bool team, con
     pimpl->gui_invalid = true;
 }
 
-void GameManager::announcement(const std::string &msg)
+void GameManager::announcement(const std::string &msg, bool err)
 {
     pimpl->chat_list.add(msg);
     pimpl->gui_invalid = true;
+
+    if (err && pimpl->single_player && !pimpl->game_in_progress) {
+        // This is needed because there is no way to display error messages on the 
+        // quest selection screen in single player mode
+        throw std::runtime_error(msg);
+    }
 }
 
 

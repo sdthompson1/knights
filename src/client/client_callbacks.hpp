@@ -128,7 +128,7 @@ public:
     
     // chat, and "announcements".
     virtual void chat(const std::string &whofrom, bool observer, bool team, const std::string &msg) = 0;
-    virtual void announcement(const std::string &msg) = 0;
+    virtual void announcement(const std::string &msg, bool is_err) = 0;
 };
 
 #endif

@@ -190,10 +190,17 @@ namespace {
         }
     }
     
-    void Announcement(KnightsGameImpl &kg, const std::string &msg)
+    void Announcement(KnightsGameImpl &kg, const std::string &msg, bool is_err = false)
     {
         for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
+
+            if (is_err) {
+                buf.writeUbyte(SERVER_EXTENDED_MESSAGE);
+                buf.writeVarInt(SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR);
+                buf.writeUshort(0);
+            }
+
             buf.writeUbyte(SERVER_ANNOUNCEMENT);
             buf.writeString(msg);
         }
@@ -1273,7 +1280,7 @@ namespace {
         if (ready_to_start && nplayers < min_players_required) {
             std::ostringstream str;
             str << "ERROR: This quest requires at least " << min_players_required << " players.";
-            Announcement(kg, str.str());
+            Announcement(kg, str.str(), true);
             ready_to_start = false;
         }
 
@@ -1299,7 +1306,7 @@ namespace {
             if (int(teams.size()) < min_teams_required) {
                 std::ostringstream str;
                 str << "ERROR: This quest requires at least " << min_teams_required << " teams. (Choose your team by changing your Knight House Colour.)";
-                Announcement(kg, str.str());
+                Announcement(kg, str.str(), true);
                 ready_to_start = false;
             }
         }
@@ -1363,7 +1370,7 @@ namespace {
             // Otherwise, send startup message to all players.
             const std::string err_msg = kg.startup_err_msg;
             if (!err_msg.empty()) {
-                Announcement(kg, std::string("Couldn't start game! ") + err_msg);
+                Announcement(kg, std::string("Couldn't start game! ") + err_msg, true);
 
                 // log the error as well
                 if (kg.knights_log) {
