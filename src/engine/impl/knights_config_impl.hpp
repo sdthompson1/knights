@@ -226,7 +226,7 @@ public:
     boost::shared_ptr<Tile> popTile();
     boost::shared_ptr<Tile> popTile(boost::shared_ptr<Tile> dflt);
     void popTileList(std::vector<boost::shared_ptr<Tile> > &output);
-    void popTutorial();
+    void popTutorial(lua_State *lua);
     void popZombieActivityTable();
 
     int getSegmentCategory(const std::string &); // returns -1 if empty string given
