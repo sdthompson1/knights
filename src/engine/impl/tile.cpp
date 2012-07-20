@@ -217,6 +217,8 @@ void Tile::setHitPoints()
 {
     if (initial_hit_points) {
         hit_points = initial_hit_points->get();
+    } else {
+        hit_points = 0;  // tile is indestructible
     }
 }
 
