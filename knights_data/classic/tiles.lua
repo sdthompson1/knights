@@ -609,7 +609,7 @@ t_stairs_west  = kts.Tile(floor & { graphic=g_stairs_west,  stairs_down="west"  
 t_stairs_north = kts.Tile(floor & { graphic=g_stairs_north, stairs_down="north" })  -- 84
 t_stairs_east  = kts.Tile(floor & { graphic=g_stairs_east,  stairs_down="east"  })  -- 85
 
-kts.SetRotate(t_stairs_north, t_stairs_east, t_stairs_south, t_stairs_east)
+kts.SetRotate(t_stairs_north, t_stairs_east, t_stairs_south, t_stairs_west)
 kts.SetReflect(t_stairs_west, t_stairs_east)
 
 
