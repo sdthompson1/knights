@@ -27,6 +27,7 @@
 #include "coord_transform.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
+#include "knight.hpp"
 #include "knights_callbacks.hpp"
 #include "lockable.hpp"
 #include "lua_func_wrapper.hpp"
@@ -44,6 +45,7 @@
 #include "boost/scoped_ptr.hpp"
 
 #include <cstring>
+#include <iostream>
 
 class Player;
 
@@ -398,43 +400,62 @@ namespace {
         return 1;
     }
 
+    // Input: creature
+    // Cxt: none
+    // Output: boolean
+    int IsKnight(lua_State *lua)
+    {
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
+        lua_pushboolean(lua, cr && dynamic_pointer_cast<Knight>(cr));
+        return 1;
+    }
+    
     // Input: (optional) player, followed by any number of args.
     // Cxt: none
     // Output: none
     int Print(lua_State *lua)
     {
-        Mediator &med = Mediator::instance();
-        KnightsCallbacks& cb = med.getCallbacks();
-
-        // find out if there is a 'player' argument, if so, convert it to a player number
-        int player_num = -1;
-        int start = 1;
-        if (!lua_isnil(lua, 1) && IsLuaPtr<Player>(lua, 1)) {
-            const Player * player = ReadLuaPtr<Player>(lua, 1);
-            ++start;
-            if (player) {
-                for (int i = 0; i < med.getPlayers().size(); ++i) {
-                    if (med.getPlayers()[i] == player) {
-                        player_num = i;
-                        break;
+        try {
+            Mediator &med = Mediator::instance();
+            KnightsCallbacks& cb = med.getCallbacks();
+            
+            // find out if there is a 'player' argument, if so, convert it to a player number
+            int player_num = -1;
+            int start = 1;
+            if (!lua_isnil(lua, 1) && IsLuaPtr<Player>(lua, 1)) {
+                const Player * player = ReadLuaPtr<Player>(lua, 1);
+                ++start;
+                if (player) {
+                    for (int i = 0; i < med.getPlayers().size(); ++i) {
+                        if (med.getPlayers()[i] == player) {
+                            player_num = i;
+                            break;
+                        }
                     }
+                    if (player_num < 0) return 0;  // that player doesn't seem to exist (shouldn't happen)
                 }
-                if (player_num < 0) return 0;  // that player doesn't seem to exist (shouldn't happen)
+            }
+
+            // build the message
+            std::string msg;
+            const int top = lua_gettop(lua);
+            for (int i = start; i <= top; ++i) {
+                const char *x = lua_tostring(lua, i);
+                if (!x) return luaL_error(lua, "'tostring' must return a string to 'print'");
+                if (i > start) msg += " ";
+                msg += x;
+            }
+            
+            // print the message
+            cb.gameMsg(player_num, msg);
+
+        } catch (MediatorUnavailable&) {
+            // print it to stdout instead
+            // (Assumes only one arg)
+            if (lua_isstring(lua, 1)) {
+                std::cout << lua_tostring(lua, 1) << std::endl;
             }
         }
-
-        // build the message
-        std::string msg;
-        const int top = lua_gettop(lua);
-        for (int i = start; i <= top; ++i) {
-            const char *x = lua_tostring(lua, i);
-            if (!x) return luaL_error(lua, "'tostring' must return a string to 'print'");
-            if (i > start) msg += " ";
-            msg += x;
-        }
-
-        // print the message
-        cb.gameMsg(player_num, msg);
         return 0;
     }
 
@@ -606,6 +627,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &GetPos);
     lua_setfield(lua, -2, "get_pos");
 
+    PushCFunction(lua, &IsKnight);
+    lua_setfield(lua, -2, "IsKnight");
+    
     // "print" is set both in kts, and globally.
     PushCFunction(lua, &Print);       // [env kts Print]
     lua_pushvalue(lua, -1);           // [env kts Print Print]

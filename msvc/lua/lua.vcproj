@@ -40,11 +40,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/TP"
+				AdditionalOptions="/TP /MP4"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\src\external\lua"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;LUA_USE_APICHECK"
-				MinimalRebuild="true"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
@@ -104,7 +104,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/TP"
+				AdditionalOptions="/TP /MP4"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"

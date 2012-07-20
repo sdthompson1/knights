@@ -40,10 +40,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP4"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\kconfig;..\..\src\misc;..\..\src\rstream;..\..\src\server;..\..\src\shared;..\..;..\..\SDL\include;..\..\curl\include;..\..\src\external\lua"
 				PreprocessorDefinitions="WIN32;_DEBUG;WIN32_LEAN_AND_MEAN;CURL_STATICLIB"
-				MinimalRebuild="true"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
@@ -115,6 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP4"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
