@@ -270,10 +270,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\external\lua\lua.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\external\lua\lundump.c"
 				>
 			</File>
