@@ -81,7 +81,7 @@ public:
     // Otherwise it returns this.
     // Used for things like monster_ai_avoid tiles, monster generator tiles etc.
     // See also #139
-    shared_ptr<Tile> getOriginalTile() const { return original_tile; }
+    shared_ptr<Tile> getOriginalTile() const;
     
     // Graphic, visibility, etc
     const Graphic * getGraphic() const { return graphic; }
@@ -174,12 +174,8 @@ public:
     int getTutorialKey() const { return tutorial_key; }
 
     // Reflection/Rotation
-    shared_ptr<Tile> getReflect() {   // X reflection of this tile
-        return reflect ? reflect : shared_from_this();
-    }
-    shared_ptr<Tile> getRotate() {    // 90 degree clockwise rotation of this tile
-        return rotate ? rotate : shared_from_this();
-    }
+    shared_ptr<Tile> getReflect();   // X reflection of this tile
+    shared_ptr<Tile> getRotate();    // 90 degree clockwise rotation of this tile
     void setRotate(shared_ptr<Tile> t) { rotate = t; }
     void setReflect(shared_ptr<Tile> t) { reflect = t; }
     
@@ -237,8 +233,8 @@ private:
     
     int tutorial_key;
 
-    boost::shared_ptr<Tile> reflect, rotate;
-    boost::shared_ptr<Tile> original_tile;
+    boost::weak_ptr<Tile> reflect, rotate;
+    boost::weak_ptr<Tile> original_tile;
 };
 
 

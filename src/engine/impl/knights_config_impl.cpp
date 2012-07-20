@@ -140,134 +140,142 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
 {
     Sentry s(*this);
 
-    // Create the lua context
-    lua_state = MakeLuaSandbox();
+    try {
 
-    // Add our config functions to it
-    AddLuaConfigFunctions(lua_state.get(), this);
-    AddLuaIngameFunctions(lua_state.get());
+        // Create the lua context
+        lua_state = MakeLuaSandbox();
 
-    // Open the file
-    MyFileLoader my_file_loader;
-    kf.reset(new KFile(config_file_name, my_file_loader, random_ints, lua_state.get()));
+        // Add our config functions to it
+        AddLuaConfigFunctions(lua_state.get(), this);
+        AddLuaIngameFunctions(lua_state.get());
 
-    // Load some lua code into the context
-    // TODO: The lua file name should probably be an input to the ctor, like the kconfig name is ?
-    LuaExecRStream(lua_state.get(), "main.lua", 0, 0, 
-        false);   // look in top level rsrc directory only
+        // Open the file
+        MyFileLoader my_file_loader;
+        kf.reset(new KFile(config_file_name, my_file_loader, random_ints, lua_state.get()));
 
-    // Get the "kts" table
-    lua_rawgeti(lua_state.get(), LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);  // [env]
-    luaL_getsubtable(lua_state.get(), -1, "kts");                       // [env kts]
+        // Load some lua code into the context
+        // TODO: The lua file name should probably be an input to the ctor, like the kconfig name is ?
+        LuaExecRStream(lua_state.get(), "main.lua", 0, 0, 
+                       false);   // look in top level rsrc directory only
 
-    // Load the Config Map
-    lua_getfield(lua_state.get(), -1, "MISC_CONFIG");
-    config_map.reset(new ConfigMap);
-    PopConfigMap(lua_state.get(), *config_map);
+        // Get the "kts" table
+        lua_rawgeti(lua_state.get(), LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);  // [env]
+        luaL_getsubtable(lua_state.get(), -1, "kts");                       // [env kts]
 
-    // Load the Dungeon Environment Customization Menu
-    kf->pushSymbol("MAIN_MENU");
-    popMenu();
-    kf->pushSymbol("MAIN_MENU_SPACE");
-    popMenuSpace();
+        // Load the Config Map
+        lua_getfield(lua_state.get(), -1, "MISC_CONFIG");
+        config_map.reset(new ConfigMap);
+        PopConfigMap(lua_state.get(), *config_map);
 
-    // Load the segment set
-    kf->pushSymbol("DUNGEON_SEGMENTS");
-    popSegmentSet();
+        // Load the Dungeon Environment Customization Menu
+        kf->pushSymbol("MAIN_MENU");
+        popMenu();
+        kf->pushSymbol("MAIN_MENU_SPACE");
+        popMenuSpace();
 
-    // Load misc other stuff.
-    kf->pushSymbol("WALL");
-    wall_tile = popTile();
-    kf->pushSymbol("HORIZ_DOOR_1");
-    horiz_door_tile[0] = popTile();
-    kf->pushSymbol("HORIZ_DOOR_2");
-    horiz_door_tile[1] = popTile();
-    kf->pushSymbol("VERT_DOOR_1");
-    vert_door_tile[0] = popTile();
-    kf->pushSymbol("VERT_DOOR_2");
-    vert_door_tile[1] = popTile();
-    kf->pushSymbol("KNIGHT_ANIM");
-    knight_anim = popAnim();
-    kf->pushSymbol("KNIGHT_HOUSE_COLOURS");
-    popHouseColours(*config_map);
-    kf->pushSymbol("KNIGHT_HOUSE_COLOURS_MENU");
-    popHouseColoursMenu();
-    kf->pushSymbol("DEFAULT_ITEM");
-    default_item = popItemType(0);
-    kf->pushSymbol("CONTROLS");
-    popControlSet(control_set);
-    kf->pushSymbol("QUEST_DESCRIPTIONS");
-    popQuestDescriptions();
+        // Load the segment set
+        kf->pushSymbol("DUNGEON_SEGMENTS");
+        popSegmentSet();
 
-    // monsters, gore
-    kf->pushSymbol("BLOOD_ICON");
-    blood_icon = popGraphic();
-    kf->pushSymbol("BLOOD_TILES");
-    popTileList(blood_tiles);
-    kf->pushSymbol("DEAD_KNIGHT_TILES");
-    popTileList(dead_knight_tiles);
+        // Load misc other stuff.
+        kf->pushSymbol("WALL");
+        wall_tile = popTile();
+        kf->pushSymbol("HORIZ_DOOR_1");
+        horiz_door_tile[0] = popTile();
+        kf->pushSymbol("HORIZ_DOOR_2");
+        horiz_door_tile[1] = popTile();
+        kf->pushSymbol("VERT_DOOR_1");
+        vert_door_tile[0] = popTile();
+        kf->pushSymbol("VERT_DOOR_2");
+        vert_door_tile[1] = popTile();
+        kf->pushSymbol("KNIGHT_ANIM");
+        knight_anim = popAnim();
+        kf->pushSymbol("KNIGHT_HOUSE_COLOURS");
+        popHouseColours(*config_map);
+        kf->pushSymbol("KNIGHT_HOUSE_COLOURS_MENU");
+        popHouseColoursMenu();
+        kf->pushSymbol("DEFAULT_ITEM");
+        default_item = popItemType(0);
+        kf->pushSymbol("CONTROLS");
+        popControlSet(control_set);
+        kf->pushSymbol("QUEST_DESCRIPTIONS");
+        popQuestDescriptions();
 
-    // Zombie activity table
-    kf->pushSymbol("ZOMBIE_ACTIVITY");
-    popZombieActivityTable();
+        // monsters, gore
+        kf->pushSymbol("BLOOD_ICON");
+        blood_icon = popGraphic();
+        kf->pushSymbol("BLOOD_TILES");
+        popTileList(blood_tiles);
+        kf->pushSymbol("DEAD_KNIGHT_TILES");
+        popTileList(dead_knight_tiles);
 
-    // misc other stuff
-    kf->pushSymbol("STUFF_BAG_GRAPHIC");
-    stuff_bag_graphic = popGraphic();
+        // Zombie activity table
+        kf->pushSymbol("ZOMBIE_ACTIVITY");
+        popZombieActivityTable();
 
-    // Hooks -- These are used for various sound effects that can't
-    // be fitted in more directly.
-    const char * hook_names[] = {
-        "HOOK_WEAPON_DOWNSWING",
-        "HOOK_WEAPON_PARRY",
-        "HOOK_KNIGHT_DAMAGE",
-        "HOOK_CREATURE_SQUELCH",
-        "HOOK_BAT",
-        "HOOK_ZOMBIE",
-        "HOOK_SHOOT",
-        "HOOK_MISSILE_MISS"
-    };
+        // misc other stuff
+        kf->pushSymbol("STUFF_BAG_GRAPHIC");
+        stuff_bag_graphic = popGraphic();
+
+        // Hooks -- These are used for various sound effects that can't
+        // be fitted in more directly.
+        const char * hook_names[] = {
+            "HOOK_WEAPON_DOWNSWING",
+            "HOOK_WEAPON_PARRY",
+            "HOOK_KNIGHT_DAMAGE",
+            "HOOK_CREATURE_SQUELCH",
+            "HOOK_BAT",
+            "HOOK_ZOMBIE",
+            "HOOK_SHOOT",
+            "HOOK_MISSILE_MISS"
+        };
     
-    // Hooks are read from the global "kts" table, which should still be on top of lua stack
-    for (int i=0; i<sizeof(hook_names)/sizeof(hook_names[0]); ++i) {
-        const Action *ac = LuaGetAction(lua_state.get(), -1, hook_names[i], this);
-        if (ac) {
-            hooks.insert(std::make_pair(hook_names[i], ac));
+        // Hooks are read from the global "kts" table, which should still be on top of lua stack
+        for (int i=0; i<sizeof(hook_names)/sizeof(hook_names[0]); ++i) {
+            const Action *ac = LuaGetAction(lua_state.get(), -1, hook_names[i], this);
+            if (ac) {
+                hooks.insert(std::make_pair(hook_names[i], ac));
+            }
         }
-    }
 
-    // Tutorial
-    kf->pushSymbol("TUTORIAL");
-    popTutorial();
+        // Tutorial
+        kf->pushSymbol("TUTORIAL");
+        popTutorial();
 
-    // now pop env and "kts" table from lua stack
-    lua_pop(lua_state.get(), 2);
+        // now pop env and "kts" table from lua stack
+        lua_pop(lua_state.get(), 2);
 
-    // make colour-changed versions of the dead knight tiles
-    // (this has to be done last)
-    const int dead_kt_size = dead_knight_tiles.size();
-    for (int i = 1; i < house_colours_normal.size(); ++i) {
-        for (int j = 0; j < dead_kt_size; ++j) {
-            dead_knight_tiles.push_back(makeDeadKnightTile(dead_knight_tiles[j], house_colours_normal[i]));
+        // make colour-changed versions of the dead knight tiles
+        // (this has to be done last)
+        const int dead_kt_size = dead_knight_tiles.size();
+        for (int i = 1; i < house_colours_normal.size(); ++i) {
+            for (int j = 0; j < dead_kt_size; ++j) {
+                dead_knight_tiles.push_back(makeDeadKnightTile(dead_knight_tiles[j], house_colours_normal[i]));
+            }
         }
-    }
 
     
-    // Check that the stack is properly empty
-    if (!kf->isStackEmpty()) {
-        kf->error("internal error: stack non-empty");
-    }
+        // Check that the stack is properly empty
+        if (!kf->isStackEmpty()) {
+            kf->error("internal error: stack non-empty");
+        }
     
-    // Fill knight_anims
-    for (int i = 0; i < house_colours_normal.size(); ++i) {
-        knight_anims.push_back(new Anim(*knight_anim));
-        knight_anims.back()->setID(knight_anims.size() + lua_anims.size());
-        knight_anims.back()->setColourChangeNormal(house_colours_normal[i]);
-        knight_anims.back()->setColourChangeInvulnerable(house_colours_invulnerable[i]);
+        // Fill knight_anims
+        for (int i = 0; i < house_colours_normal.size(); ++i) {
+            knight_anims.push_back(new Anim(*knight_anim));
+            knight_anims.back()->setID(knight_anims.size() + lua_anims.size());
+            knight_anims.back()->setColourChangeNormal(house_colours_normal[i]);
+            knight_anims.back()->setColourChangeInvulnerable(house_colours_invulnerable[i]);
+        }
+        
+    } catch (...) {
+        // ensure memory gets freed if there is an exception during construction.
+        freeMemory();
+        throw;
     }
 }
 
-KnightsConfigImpl::~KnightsConfigImpl()
+void KnightsConfigImpl::freeMemory()
 {
     using std::for_each;
     for_each(actions.begin(), actions.end(), Delete<Action>());
@@ -290,6 +298,11 @@ KnightsConfigImpl::~KnightsConfigImpl()
     for_each(lua_item_types.begin(), lua_item_types.end(), Delete<ItemType>());
     for_each(lua_overlays.begin(), lua_overlays.end(), Delete<Overlay>());
     for_each(lua_sounds.begin(), lua_sounds.end(), Delete<Sound>());
+}
+
+KnightsConfigImpl::~KnightsConfigImpl()
+{
+    freeMemory();
 }
 
 KnightsConfigImpl::Sentry::~Sentry()

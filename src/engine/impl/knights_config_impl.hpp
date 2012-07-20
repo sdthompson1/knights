@@ -239,6 +239,7 @@ private:
     // helper functions
     //
 
+    void freeMemory();
     void processTile(const std::vector<SegmentTileData> &tmap, Segment &seg, int x, int y);
     void readMenu(const Menu &menu, const MenuSelections &msel, DungeonGenerator &dgen,
                   std::vector<boost::shared_ptr<Quest> > &quests) const;

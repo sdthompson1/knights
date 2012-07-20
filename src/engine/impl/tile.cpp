@@ -194,7 +194,7 @@ shared_ptr<Tile> Tile::clone(bool force_copy)
     new_tile->setHitPoints();
 
     // set 'original_tile'
-    new_tile->original_tile = shared_from_this();
+    new_tile->original_tile = shared_from_this();  // creates weak_ptr to this.
     
     return new_tile;
 }
@@ -204,6 +204,11 @@ shared_ptr<Tile> Tile::cloneWithNewGraphic(const Graphic *new_graphic)
     shared_ptr<Tile> new_tile = clone(true);  // we must force a copy because this is the only way we can sensibly change the graphic.
     new_tile->graphic = new_graphic;
     return new_tile;
+}
+
+shared_ptr<Tile> Tile::getOriginalTile() const
+{
+    return shared_ptr<Tile>(original_tile);
 }
 
 void Tile::setHitPoints()
@@ -359,6 +364,23 @@ const Control * Tile::getControl(const MapCoord &pos) const
     }
 }
 
+//
+// reflect/rotate
+//
+
+shared_ptr<Tile> Tile::getReflect()
+{
+    shared_ptr<Tile> t(reflect);
+    if (t) return t;
+    else return shared_from_this();
+}
+
+shared_ptr<Tile> Tile::getRotate()
+{
+    shared_ptr<Tile> t(rotate);
+    if (t) return t;
+    else return shared_from_this();
+}
 
 
 //
