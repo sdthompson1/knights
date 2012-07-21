@@ -1,14 +1,4 @@
 
--- "LIBRARY" FUNCTIONS:
-
-function add_pos(pos, dx, dy)
-  return { x = pos.x + dx,
-           y = pos.y + dy  }
-end
-
-
-
-
 -- MISC SERVER CONFIG
 
 
@@ -79,16 +69,3 @@ required_msg = "Required";
 -- daggers (because you don't have to wait half a second while opening the menu).
 dagger_time_delay = 500
 }
-
-
-
--- SOUNDS
-
-function click_sound(pos)     kts.play_sound(pos, s_click, 20000)  end
-function crossbow_sound(pos)  kts.play_sound(pos, s_door, 35000)   end
-function door_sound(pos)      kts.play_sound(pos, s_door, 20000)   end
-function pentagram_sound(pos) kts.play_sound(pos, s_door, 30000)   end
-function teleport_sound(pos)  kts.play_sound(pos, s_squelch, 4000) end
-
-
-

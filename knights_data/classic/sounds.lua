@@ -121,7 +121,16 @@ function snd_dart()
 end
 
 
--- Attach some of the sounds to the special event hooks 
+-- FUNCTIONS TO PLAY A SOUND AT A GIVEN POSITION
+
+function click_sound(pos)     kts.play_sound(pos, s_click, 20000)  end
+function crossbow_sound(pos)  kts.play_sound(pos, s_door, 35000)   end
+function door_sound(pos)      kts.play_sound(pos, s_door, 20000)   end
+function pentagram_sound(pos) kts.play_sound(pos, s_door, 30000)   end
+function teleport_sound(pos)  kts.play_sound(pos, s_squelch, 4000) end
+
+
+-- HOOKS
 
 -- (a) Knight swings weapon. (b) Knight parries a weapon blow.
 kts.HOOK_WEAPON_DOWNSWING = snd_downswing
@@ -137,3 +146,5 @@ kts.HOOK_SHOOT = snd_crossbow
 
 -- Dagger or crossbow bolt hits a wall (or other obstacle) and drops to floor.
 kts.HOOK_MISSILE_MISS = snd_daggerfall
+
+

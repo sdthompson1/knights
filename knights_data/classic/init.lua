@@ -18,11 +18,11 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
+dofile("misc_config.lua")
 dofile("tutorial.lua")
 dofile("graphics.lua")
 dofile("sounds.lua")
 dofile("dungeon_layouts.lua")
-dofile("lua_test.lua")
 dofile("anims.lua")
 dofile("magic.lua")
 dofile("items.lua")
