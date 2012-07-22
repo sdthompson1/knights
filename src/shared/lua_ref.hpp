@@ -41,6 +41,9 @@ public:
 
     void reset(lua_State *L);    // Pops lua stack, releases old ref and creates a new one.
     
+    // hasValue() returns true if lua != 0 and stored value != nil
+    bool hasValue() const;
+
 private:
     lua_State *lua;
     int ref;

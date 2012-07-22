@@ -30,6 +30,7 @@
 #ifndef MONSTER_TYPE_HPP
 #define MONSTER_TYPE_HPP
 
+#include "lua_func.hpp"
 #include "lua_ref.hpp"
 #include "map_support.hpp"
 
@@ -45,7 +46,7 @@ using namespace boost;
 class MonsterType {
 public:
     // reads table from top of stack (does not pop it)
-    explicit MonsterType(lua_State *lua, KnightsConfigImpl *kc);
+    explicit MonsterType(lua_State *lua);
     virtual ~MonsterType() { }
 
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
@@ -56,11 +57,11 @@ public:
     // at which height will this monster be generated?
     virtual MapHeight getHeight() const = 0;
 
-    Action * getSoundAction() const { return sound_action; }
+    const LuaFunc & getSoundAction() const { return sound_action; }
 
 private:
     LuaRef table_ref;
-    Action *sound_action;
+    LuaFunc sound_action;
 };
 
 

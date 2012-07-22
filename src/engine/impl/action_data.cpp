@@ -1,5 +1,5 @@
 /*
- * action.cpp
+ * action_data.cpp
  *
  * This file is part of Knights.
  *
@@ -23,19 +23,12 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "creature.hpp"
-#include "knights_callbacks.hpp"
-#include "lua_check.hpp"
-#include "lua_exec_coroutine.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
-#include "my_exceptions.hpp"
-#include "rng.hpp"
 
 #include "lua.hpp"
-
-#include "boost/thread/mutex.hpp"
 
 namespace {
     void PushOriginator(lua_State *lua, const Originator &originator)
@@ -221,131 +214,5 @@ void ActionData::setGenericPos(DungeonMap *dmap, const MapCoord &mc)
     } else {
         generic_dmap = 0;
         generic_coord = MapCoord();
-    }
-}
-
-void RandomAction::add(const Action *ac, int wt)
-{
-    if (wt > 0) {
-        data.push_back(make_pair(ac, wt));
-        total_weight += wt;
-    }
-}
-
-void RandomAction::execute(const ActionData &ad) const
-{
-    if (total_weight > 0) {
-        int r = g_rng.getInt(0, total_weight);
-        for (int i=0; i<data.size(); ++i) {
-            r -= data[i].second;
-            if (r < 0) {
-                if (data[i].first) {
-                    data[i].first->execute(ad);
-                }
-                return;
-            }
-        }
-        ASSERT(0);
-    }
-}
-
-bool ListAction::possible(const ActionData &ad) const
-{
-    for (int i=0; i<data.size(); ++i) {
-        if (!data[i]->possible(ad)) return false;
-    }
-    return true;
-}
-
-void ListAction::execute(const ActionData &a) const
-{
-    ActionData ad(a);
-    for (int i=0; i<data.size(); ++i) {
-        data[i]->execute(ad);
-    }
-}
-
-
-//
-// ActionPars
-//
-
-MapDirection ActionPars::getMapDirection(int index)
-{
-    // This is the default if getMapDirection is not separately implemented
-    // (It should probably be removed now, and made pure virtual in the base class)
-    string d = getString(index);
-    for (string::iterator it = d.begin(); it != d.end(); ++it) { 
-        *it = toupper(*it);
-    }
-    if (d == "NORTH") return D_NORTH;
-    else if (d == "EAST") return D_EAST;
-    else if (d == "SOUTH") return D_SOUTH;
-    else if (d == "WEST") return D_WEST;
-    error();
-    return D_NORTH;
-}
-
-
-//
-// ActionMaker
-//
-
-boost::mutex g_makers_mutex;
-
-map<string, const ActionMaker*> & MakersMap()
-{
-    static boost::shared_ptr<map<string, const ActionMaker*> > p(new map<string, const ActionMaker*>);
-    return *p;
-}
-
-ActionMaker::ActionMaker(const string &name)
-{
-    // this is called before main() starts (in a single threaded way)
-    // so don't need to lock the mutex. Indeed 'g_makers_mutex' may not
-    // have been constructed yet so it would not be safe to do so.
-    MakersMap()[name] = this;
-}
-
-Action * ActionMaker::createAction(const string &name, ActionPars &pars)
-{
-    const ActionMaker * maker = 0;
-    {
-        // We lock 'g_makers_mutex' in case std::map does not support
-        // multiple concurrent readers.
-        boost::lock_guard<boost::mutex> lock(g_makers_mutex);
-        map<string, const ActionMaker *> & makers = MakersMap();
-        map<string, const ActionMaker *>::iterator it = makers.find(name);
-        if (it != makers.end()) maker = it->second;
-    }
-    if (maker) return maker->make(pars);
-    else return 0;
-}
-
-//
-// LuaAction
-//
-
-LuaAction::LuaAction(lua_State *lua)
-{
-    if (!LuaIsCallable(lua, -1)) {
-        throw LuaError("Value is not a Lua function");
-    }
-    function_ref.reset(lua);  // Pops function from the stack.
-}
-
-void LuaAction::execute(const ActionData &ad) const
-{
-    lua_State *lua = function_ref.getLuaState();
-    if (lua) {
-        
-        // Set up "cxt" table
-        ad.pushCxtTable(lua);  // [cxt]
-
-        // Get the function from the registry
-        function_ref.push(lua); // [cxt func]
-
-        // Call it (with 0 arguments)
-        LuaExecCoroutine(lua, 0);  // []
     }
 }

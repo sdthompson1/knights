@@ -53,8 +53,6 @@ std::string LuaGetString(lua_State *lua, int tbl_idx, const char *key, const cha
 ItemSize LuaGetItemSize(lua_State *lua, int tbl_idx, const char *key, ItemSize dflt = IS_NOPICKUP);
 MapDirection LuaGetMapDirection(lua_State *lua, int tbl_idx, const char *key, MapDirection dflt = D_NORTH);
 const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, int tbl_idx, const char *key, KnightsConfigImpl *kc);
-Action * LuaGetAction(lua_State *lua, int tbl_idx, const char *key, KnightsConfigImpl *kc);
-Action * LuaGetAction(lua_State *lua, int idx, KnightsConfigImpl *kc);
 
 template<class T> T * LuaGetPtr(lua_State *lua, int tbl_idx, const char *key)
 {

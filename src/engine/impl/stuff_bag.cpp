@@ -23,9 +23,11 @@
 
 #include "misc.hpp"
 
+#include "action_data.hpp"
 #include "dungeon_map.hpp"
 #include "mediator.hpp"
 #include "knight.hpp"
+#include "lua_func_wrapper.hpp"
 #include "stuff_bag.hpp"
 
 void StuffContents::addItem(shared_ptr<Item> i)
@@ -92,28 +94,35 @@ shared_ptr<Item> StuffContents::getSingleItem() const
 //
 
 namespace {
-    void DoAction(const ActionData &ad, void (StuffManager::*pfn)(const MapCoord &, shared_ptr<Knight>))
+    void DoAction(lua_State *lua, void (StuffManager::*pfn)(const MapCoord &, shared_ptr<Knight>))
     {
+        ActionData ad(lua);
         StuffManager &stuff_mgr(Mediator::instance().getStuffManager());
+
+        // The knight comes from the "actor" field of ActionData
         shared_ptr<Knight> kt(dynamic_pointer_cast<Knight>( ad.getActor() ));
-        // We get map and pos from the "Item" field of the ActionData
+        
+        // Map and pos come from the "Item" field of ActionData
         DungeonMap *dmap;
         MapCoord mc;
         const ItemType *dummy;
         ad.getItem(dmap, mc, dummy);
         if (!dmap || mc.isNull()) return;
+
         (stuff_mgr.*pfn)(mc, kt);
     }
-}
 
-void StuffPickup::execute(const ActionData &ad) const
-{
-    DoAction(ad, &StuffManager::doPickUp);
-}
+    int StuffPickup(lua_State *lua)
+    {
+        DoAction(lua, &StuffManager::doPickUp);
+        return 0;
+    }
 
-void StuffDrop::execute(const ActionData &ad) const
-{
-    DoAction(ad, &StuffManager::doDrop);
+    int StuffDrop(lua_State *lua)
+    {
+        DoAction(lua, &StuffManager::doDrop);
+        return 0;
+    }
 }
 
 
@@ -121,12 +130,15 @@ void StuffDrop::execute(const ActionData &ad) const
 // StuffManager
 //
 
-StuffPickup StuffManager::pickup_action;
-StuffDrop StuffManager::drop_action;
-
-void StuffManager::setStuffBagGraphic(const Graphic *gfx)
+void StuffManager::setStuffBagGraphic(lua_State *lua, const Graphic *gfx)
 {
-    stuff_bag_item_type.reset(new ItemType(gfx, IS_MAGIC, &pickup_action, &drop_action));
+    PushCFunction(lua, &StuffPickup);
+    LuaFunc pickup_action(lua);
+
+    PushCFunction(lua, &StuffDrop);
+    LuaFunc drop_action(lua);
+
+    stuff_bag_item_type.reset(new ItemType(gfx, IS_MAGIC, pickup_action, drop_action));
 }
 
 void StuffManager::setStuffContents(const MapCoord &mc, const StuffContents &stuff)

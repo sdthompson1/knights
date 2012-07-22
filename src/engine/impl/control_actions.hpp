@@ -21,29 +21,29 @@
  *
  */
 
-/*
- * Actions that make a knight do something. These are typically used
- * for Controls.
- *
- */
-
 #ifndef CONTROL_ACTIONS_HPP
 #define CONTROL_ACTIONS_HPP
 
-#include "action.hpp"
+class KnightsConfigImpl;
+
+#include "legacy_action.hpp"
+
+#include <vector>
+
+class Control;
+
 
 //
-// Append pointers to standard controls to the given vector.
-// Creates the standard controls if necessary.
+// Adds the standard controls to a KnightsConfigImpl
 //
-void GetStandardControls(std::vector<const Control*> &ctrls);
+void AddStandardControls(lua_State *lua, KnightsConfigImpl *kc);
 
 
 //
-// Actions used by the standard controls (including Activate)
+// LegacyActions used by the standard controls (including Activate)
 //
 
-class A_Activate : public Action {
+class A_Activate : public LegacyAction {
 public:
     A_Activate(int dx_, int dy_) : dx(dx_), dy(dy_) { }
     virtual bool possible(const ActionData &) const;
@@ -53,7 +53,7 @@ private:
     int dx, dy;
 };
 
-class A_Attack : public Action {
+class A_Attack : public LegacyAction {
 public:
     explicit A_Attack(MapDirection d) : dir(d) { }
     virtual bool canExecuteWhileMoving() const { return true; }
@@ -62,13 +62,13 @@ private:
     MapDirection dir;
 };
 
-class A_AttackNoDir : public Action {
+class A_AttackNoDir : public LegacyAction {
 public:
     virtual bool canExecuteWhileMoving() const { return true; }
     virtual void execute(const ActionData &) const;
 };
 
-class A_Move : public Action {
+class A_Move : public LegacyAction {
 public:
     explicit A_Move(MapDirection d) : dir(d) { }
     virtual bool canExecuteWhileMoving() const { return true; }
@@ -77,7 +77,7 @@ private:
     MapDirection dir;
 };
 
-class A_Withdraw : public Action {
+class A_Withdraw : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 };
@@ -87,7 +87,7 @@ public:
 // Other control-related actions.
 //
 
-class A_Drop : public Action {
+class A_Drop : public LegacyAction {
 public:
     explicit A_Drop(const ItemType &it_) : it(it_) { }
     virtual bool possible(const ActionData &) const;
@@ -97,7 +97,7 @@ private:
     ACTION_MAKER("Drop");
 };
 
-class A_DropHeld : public Action {
+class A_DropHeld : public LegacyAction {
 public:
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
@@ -105,7 +105,7 @@ private:
     ACTION_MAKER("DropHeld");
 };
 
-class A_PickLock : public Action {
+class A_PickLock : public LegacyAction {
 public:
     A_PickLock(float p, int wt) : prob(p), waiting_time(wt) { }
     virtual bool possible(const ActionData &) const;
@@ -116,7 +116,7 @@ private:
     ACTION_MAKER("PickLock");
 };
 
-class A_PickUp : public Action {
+class A_PickUp : public LegacyAction {
 public:
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
@@ -124,7 +124,7 @@ private:
     ACTION_MAKER("PickUp");
 };
 
-class A_SetBearTrap : public Action {
+class A_SetBearTrap : public LegacyAction {
 public:
     explicit A_SetBearTrap(const ItemType &trap_) : trap_itype(trap_) { }
     virtual bool possible(const ActionData &) const;
@@ -134,7 +134,7 @@ private:
     ACTION_MAKER("SetBearTrap");
 };
 
-class A_SetBladeTrap : public Action {
+class A_SetBladeTrap : public LegacyAction {
 public:
     explicit A_SetBladeTrap(const ItemType &missile) : missile_type(missile) { }
     virtual bool possible(const ActionData &) const;
@@ -144,7 +144,7 @@ private:
     ACTION_MAKER("SetBladeTrap");
 };
 
-class A_SetPoisonTrap : public Action {
+class A_SetPoisonTrap : public LegacyAction {
 public:
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
@@ -152,7 +152,7 @@ private:
     ACTION_MAKER("SetPoisonTrap");
 };
 
-class A_Suicide : public Action {
+class A_Suicide : public LegacyAction {
 public:
     virtual bool canExecuteWhileStunned() const { return true; }
     virtual bool canExecuteWhileMoving() const { return true; }
@@ -161,7 +161,7 @@ private:
     ACTION_MAKER("Suicide");
 };
 
-class A_Swing : public Action {
+class A_Swing : public LegacyAction {
 public:
     virtual bool possible(const ActionData &) const;
     virtual bool canExecuteWhileMoving() const { return true; }
@@ -170,7 +170,7 @@ private:
     ACTION_MAKER("Swing");
 };
 
-class A_SwingOrDrop : public Action {
+class A_SwingOrDrop : public LegacyAction {
 public:
     virtual bool possible(const ActionData &) const;
     virtual bool canExecuteWhileMoving() const { return true; }
@@ -181,7 +181,7 @@ private:
 
 // A_Throw is usually used for throwing daggers. It looks at the
 // ActionData Item parameter to determine which item to throw.
-class A_Throw : public Action {
+class A_Throw : public LegacyAction {
 public:
     virtual bool possible(const ActionData &) const;
     virtual bool canExecuteWhileMoving() const { return true; }
@@ -192,7 +192,7 @@ private:
 
 // ThrowOrShoot is used for the "throw weapon" control button. Usually used 
 // for throwing daggers, shooting crossbows or throwing the axe.
-class A_ThrowOrShoot : public Action {
+class A_ThrowOrShoot : public LegacyAction {
 public:
     virtual bool canExecuteWhileMoving() const { return true; }
     virtual bool possible(const ActionData &) const;

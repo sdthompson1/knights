@@ -23,12 +23,13 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "coord_transform.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
+#include "legacy_action.hpp"
 #include "lockable.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_ingame.hpp"
@@ -555,7 +556,7 @@ namespace {
     // Cxt: all ActionData fields
     // Output: none
     // Upvalue: ActionMaker pointer.
-    int LuaActionFunc(lua_State *lua)
+    int LuaLegacyActionFunc(lua_State *lua)
     {
         // Make a LuaActionPars
         LuaActionPars p(lua);
@@ -563,9 +564,9 @@ namespace {
         // Get the upvalue which is the ActionMaker
         const ActionMaker *maker = static_cast<const ActionMaker *>(lua_touserdata(lua, lua_upvalueindex(2)));
 
-        // Call the maker to produce an Action.
+        // Call the maker to produce a LegacyAction.
         // Store in a scoped_ptr
-        boost::scoped_ptr<Action> action( maker->make(p) );
+        boost::scoped_ptr<LegacyAction> action( maker->make(p) );
 
         // Create the ActionData from cxt
         ActionData ad( lua );
@@ -576,6 +577,18 @@ namespace {
         // Done.
         return 0;
     }
+
+    int LuaLegacyPossibleFunc(lua_State *lua)
+    {
+        LuaActionPars p(lua);
+        const ActionMaker *maker = static_cast<const ActionMaker *>(lua_touserdata(lua, lua_upvalueindex(2)));
+        boost::scoped_ptr<LegacyAction> action( maker->make(p) );
+        ActionData ad(lua);
+        bool result = action->possible(ad);
+        lua_pushboolean(lua, result);
+        return 1;
+    }
+    
 
     // Input: two integers (low and high of range; inclusive)
     // Cxt: none
@@ -667,7 +680,7 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &RotateDirection);
     lua_setfield(lua, -2, "rotate_direction");
 
-    // Now we want to add all the in-game Actions as Lua functions.
+    // Now we want to add all the LegacyActions as Lua functions.
     {
         boost::unique_lock<boost::mutex> lock(g_makers_mutex);
         const std::map<std::string, const ActionMaker *> & makers_map = MakersMap();
@@ -676,8 +689,12 @@ void AddLuaIngameFunctions(lua_State *lua)
             // const_cast is ok: we promise to cast it back to const again when 
             // we get it back from Lua...
             lua_pushlightuserdata(lua, const_cast<ActionMaker*>(it->second));
-            PushCClosure(lua, &LuaActionFunc, 1);
+            PushCClosure(lua, &LuaLegacyActionFunc, 1);
             lua_setfield(lua, -2, it->first.c_str());
+
+            lua_pushlightuserdata(lua, const_cast<ActionMaker*>(it->second));
+            PushCClosure(lua, &LuaLegacyPossibleFunc, 1);
+            lua_setfield(lua, -2, ("Can_" + it->first).c_str());
         }
     }
 

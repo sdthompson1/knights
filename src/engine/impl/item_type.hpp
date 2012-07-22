@@ -22,21 +22,22 @@
  */
 
 /*
- * ItemType is a 'class' of items. Think of it as a master copy of a
- * given sort of item (a potion, scroll, key, hammer, or whatever).
+ * ItemType is a 'class' of items. (An Item is an ItemType plus a
+ * number-of-items-in-the-pile.)
  *
- * Really, this class ought to be split up into several different
- * classes representing different capabilities of an item. An item
- * could then have a list of capabilities instead of just a single
- * "type". This would avoid having loads of unrelated stuff all in the
- * one ItemType class (eg the "construct" function below is pretty
- * awful).
+ * Note that there are a lot of member functions/variables in
+ * ItemType, indeed it contains the union of all possible properties
+ * of all possible item types. This is not ideal, but it is what we
+ * have. It could be mitigated by switching to a so-called "game
+ * object component system", but that might introduce another kind of
+ * complexity into the system...
  * 
  */
 
 #ifndef ITEM_TYPE_HPP
 #define ITEM_TYPE_HPP
 
+#include "lua_func.hpp"
 #include "lua_ref.hpp"
 
 #include "random_int.hpp"
@@ -47,7 +48,6 @@ using namespace boost;
 
 #include <string>
 
-class Action;
 class Anim;
 class Control;
 class Creature;
@@ -73,7 +73,10 @@ public:
     ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc);
 
     // cut down ctor for stuff bags
-    ItemType(const Graphic *gfx, ItemSize item_size, const Action *pickup_action, const Action *drop_action);
+    ItemType(const Graphic *gfx,
+             ItemSize item_size,
+             const LuaFunc &pickup_action,
+             const LuaFunc &drop_action);
     
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
 
@@ -127,7 +130,7 @@ public:
     bool canLoad() const { return reload_time > 0; } // used for crossbows
     bool canShoot() const { return reload_time < 0; } // used for crossbows
     int getReloadTime() const { return reload_time; }
-    const Action * getReloadAction() const { return reload_action; }
+    const LuaFunc & getReloadAction() const { return reload_action; }
     int getReloadActionTime() const { return reload_action_time; }
     const ItemType * getAmmo() const { return ammo; }
     const ItemType * getLoaded() const { return canLoad() ? loaded : 0; }
@@ -189,7 +192,7 @@ private:
     const RandomInt * melee_damage;
     const RandomInt * melee_stun_time;    // in ticks
     const RandomInt * melee_tile_damage;
-    const Action * melee_action;
+    LuaFunc melee_action;
     float parry_chance;
 
     bool can_throw;
@@ -206,7 +209,7 @@ private:
     int reload_time;                       // 0 if can't fire, -ve if loaded
     const ItemType * ammo;
     const ItemType * loaded;
-    const Action * reload_action;
+    LuaFunc reload_action;
     int reload_action_time;
     
     int key;
@@ -214,10 +217,10 @@ private:
 
     const Control * control; 
     
-    const Action * on_pick_up;
-    const Action * on_drop;
-    const Action * on_walk_over;
-    const Action * on_hit;
+    LuaFunc on_pick_up;
+    LuaFunc on_drop;
+    LuaFunc on_walk_over;
+    LuaFunc on_hit;
 
     int tutorial_key;
 

@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "action_data.hpp"
 #include "dispel_magic.hpp"
 #include "dungeon_view.hpp"
 #include "knight.hpp"
@@ -93,7 +94,7 @@ void A_Attractor::execute(const ActionData &ad) const
 
 A_Attractor::Maker A_Attractor::Maker::register_me;
 
-Action * A_Attractor::Maker::make(ActionPars &pars) const
+LegacyAction * A_Attractor::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_Attractor;
@@ -112,7 +113,7 @@ void A_DispelMagic::execute(const ActionData &ad) const
 
 A_DispelMagic::Maker A_DispelMagic::Maker::register_me;
 
-Action * A_DispelMagic::Maker::make(ActionPars &pars) const
+LegacyAction * A_DispelMagic::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_DispelMagic(pars.getString(0));
@@ -134,7 +135,7 @@ void A_Healing::execute(const ActionData &ad) const
 
 A_Healing::Maker A_Healing::Maker::register_me;
 
-Action * A_Healing::Maker::make(ActionPars &pars) const
+LegacyAction * A_Healing::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_Healing(pars.getString(0));
@@ -154,7 +155,7 @@ void A_Invisibility::execute(const ActionData &ad) const
 
 A_Invisibility::Maker A_Invisibility::Maker::register_me;
 
-Action * A_Invisibility::Maker::make(ActionPars &pars) const
+LegacyAction * A_Invisibility::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_Invisibility(pars.getInt(0), pars.getString(1));
@@ -177,7 +178,7 @@ void A_Invulnerability::execute(const ActionData &ad) const
 
 A_Invulnerability::Maker A_Invulnerability::Maker::register_me;
 
-Action * A_Invulnerability::Maker::make(ActionPars &pars) const
+LegacyAction * A_Invulnerability::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_Invulnerability(pars.getInt(0), pars.getString(1));
@@ -196,7 +197,7 @@ void A_MagicMapping::execute(const ActionData &ad) const
 
 A_MagicMapping::Maker A_MagicMapping::Maker::register_me;
 
-Action * A_MagicMapping::Maker::make(ActionPars &pars) const
+LegacyAction * A_MagicMapping::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_MagicMapping;
@@ -233,7 +234,7 @@ void A_OpenWays::execute(const ActionData &ad) const
 
 A_OpenWays::Maker A_OpenWays::Maker::register_me;
 
-Action * A_OpenWays::Maker::make(ActionPars &pars) const
+LegacyAction * A_OpenWays::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_OpenWays;
@@ -252,7 +253,7 @@ void A_Paralyzation::execute(const ActionData &ad) const
 
 A_Paralyzation::Maker A_Paralyzation::Maker::register_me;
 
-Action * A_Paralyzation::Maker::make(ActionPars &pars) const
+LegacyAction * A_Paralyzation::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_Paralyzation(pars.getInt(0));
@@ -273,7 +274,7 @@ void A_Poison::execute(const ActionData &ad) const
 
 A_Poison::Maker A_Poison::Maker::register_me;
 
-Action * A_Poison::Maker::make(ActionPars &pars) const
+LegacyAction * A_Poison::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_Poison(pars.getString(0));
@@ -296,7 +297,7 @@ void A_PoisonImmunity::execute(const ActionData &ad) const
 
 A_PoisonImmunity::Maker A_PoisonImmunity::Maker::register_me;
 
-Action * A_PoisonImmunity::Maker::make(ActionPars &pars) const
+LegacyAction * A_PoisonImmunity::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_PoisonImmunity(pars.getInt(0), pars.getString(1));
@@ -316,7 +317,7 @@ void A_Quickness::execute(const ActionData &ad) const
 
 A_Quickness::Maker A_Quickness::Maker::register_me;
 
-Action * A_Quickness::Maker::make(ActionPars &pars) const
+LegacyAction * A_Quickness::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_Quickness(pars.getInt(0), pars.getString(1));
@@ -336,7 +337,7 @@ void A_Regeneration::execute(const ActionData &ad) const
 
 A_Regeneration::Maker A_Regeneration::Maker::register_me;
 
-Action * A_Regeneration::Maker::make(ActionPars &pars) const
+LegacyAction * A_Regeneration::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_Regeneration(pars.getInt(0), pars.getString(1));
@@ -358,7 +359,7 @@ void A_RevealLocation::execute(const ActionData &ad) const
 
 A_RevealLocation::Maker A_RevealLocation::Maker::register_me;
 
-Action * A_RevealLocation::Maker::make(ActionPars &pars) const
+LegacyAction * A_RevealLocation::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_RevealLocation(pars.getInt(0));
@@ -380,7 +381,7 @@ void A_SenseItems::execute(const ActionData &ad) const
 
 A_SenseItems::Maker A_SenseItems::Maker::register_me;
 
-Action * A_SenseItems::Maker::make(ActionPars &pars) const
+LegacyAction * A_SenseItems::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_SenseItems(pars.getInt(0));
@@ -402,7 +403,7 @@ void A_SenseKnight::execute(const ActionData &ad) const
 
 A_SenseKnight::Maker A_SenseKnight::Maker::register_me;
 
-Action * A_SenseKnight::Maker::make(ActionPars &pars) const
+LegacyAction * A_SenseKnight::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_SenseKnight(pars.getInt(0));
@@ -422,7 +423,7 @@ void A_Strength::execute(const ActionData &ad) const
 
 A_Strength::Maker A_Strength::Maker::register_me;
 
-Action * A_Strength::Maker::make(ActionPars &pars) const
+LegacyAction * A_Strength::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_Strength(pars.getInt(0), pars.getString(1));
@@ -442,7 +443,7 @@ void A_Super::execute(const ActionData &ad) const
 
 A_Super::Maker A_Super::Maker::register_me;
 
-Action * A_Super::Maker::make(ActionPars &pars) const
+LegacyAction * A_Super::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_Super(pars.getInt(0), pars.getString(1));
@@ -472,7 +473,7 @@ void A_Teleport::execute(const ActionData &ad) const
 
 A_Teleport::Maker A_Teleport::Maker::register_me;
 
-Action * A_Teleport::Maker::make(ActionPars &pars) const
+LegacyAction * A_Teleport::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_Teleport;
@@ -491,7 +492,7 @@ void A_WipeMap::execute(const ActionData &ad) const
 
 A_WipeMap::Maker A_WipeMap::Maker::register_me;
 
-Action * A_WipeMap::Maker::make(ActionPars &pars) const
+LegacyAction * A_WipeMap::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_WipeMap;
@@ -531,7 +532,7 @@ void A_ZombifyActor::execute(const ActionData &ad) const
 
 A_ZombifyActor::Maker A_ZombifyActor::Maker::register_me;
 
-Action * A_ZombifyActor::Maker::make(ActionPars &pars) const
+LegacyAction * A_ZombifyActor::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     const MonsterType * mtype = pars.getMonsterType(0);
@@ -556,7 +557,7 @@ void A_ZombifyTarget::execute(const ActionData &ad) const
 
 A_ZombifyTarget::Maker A_ZombifyTarget::Maker::register_me;
 
-Action * A_ZombifyTarget::Maker::make(ActionPars &pars) const
+LegacyAction * A_ZombifyTarget::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     const MonsterType * mtype = pars.getMonsterType(0);

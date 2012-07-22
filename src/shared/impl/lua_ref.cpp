@@ -102,3 +102,8 @@ void LuaRef::reset(lua_State *L)
         ref = LUA_NOREF;
     }
 }
+
+bool LuaRef::hasValue() const
+{
+    return lua != 0 && ref != LUA_REFNIL;
+}

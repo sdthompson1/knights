@@ -155,6 +155,7 @@ t_wall_cage  = kts.Tile(wall & { graphic=g_cage })        -- 6
 
 door_control_tbl = {
     action = kts.Activate,
+    possible = kts.Can_Activate,
     menu_icon = g_menu_open_close,
     menu_direction = "up",
     tap_priority = 4,

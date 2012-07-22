@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "mediator.hpp"
 #include "monster.hpp"
 #include "monster_type.hpp"
@@ -48,13 +48,13 @@ void Monster::onDeath(DeathMode dmode, const Originator &)
 
 void Monster::runSoundAction()
 {
-    Action *ac = type.getSoundAction();
-    if (ac) {
+    const LuaFunc &ac = type.getSoundAction();
+    if (ac.hasValue()) {
         ActionData ad;
         ad.setActor(static_pointer_cast<Creature>(shared_from_this()));
         ad.setGenericPos(getMap(), getPos());
         ad.setOriginator(Originator(OT_Monster()));
         
-        ac->execute(ad);
+        ac.execute(ad);
     }
 }

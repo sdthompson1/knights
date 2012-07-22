@@ -19,8 +19,6 @@
 #
 
 
-include "controls.txt"
-
 DEFAULT_ITEM = i_sword
 
 WALL = t_wall_normal

@@ -213,7 +213,7 @@ void FlyingMonsterAI::execute(TaskManager &tm)
 }
 
 FlyingMonsterType::FlyingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
-    : MonsterType(lua, kc)
+    : MonsterType(lua)
 {
     health = LuaGetRandomInt(lua, -1, "health", kc);
     speed = LuaGetInt(lua, -1, "speed");
@@ -454,7 +454,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
 }
 
 WalkingMonsterType::WalkingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
-    : MonsterType(lua, kc)
+    : MonsterType(lua)
 {
     // [... t]
     

@@ -30,6 +30,7 @@
 #define SPECIAL_TILES_HPP
 
 #include "lockable.hpp"
+#include "lua_func.hpp"
 
 #include <vector>
 using namespace std;
@@ -77,7 +78,7 @@ protected:
 private:
     struct TrapInfo {
         const ItemType *itype;
-        const Action *action;  // action to place the trap ...
+        LuaFunc action;  // action to place the trap ...
     };
     static TrapInfo popTrapInfo(lua_State *lua, KnightsConfigImpl *kc);
     

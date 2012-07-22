@@ -25,11 +25,11 @@
  * Items are things that can be picked up, eg crossbows, hammers,
  * potions, scrolls, traps, daggers, keys.
  *
- * Each item has an ItemType describing what sort of item it is, a
- * graphic, and a number (some items can come in piles of more than
- * one at a time, eg daggers, crossbow bolts). Since items do not
- * carry any state information (eg. all hammers are identical) this is
- * not a problem, and it saves a bit of memory in some cases.
+ * Each item has an ItemType describing what sort of item it is, and a
+ * number (some items can come in piles of more than one at a time, eg
+ * daggers, crossbow bolts). Since items do not carry any state
+ * information (eg. all hammers are identical) this is not a problem,
+ * and it saves a bit of memory in some cases.
  *
  */
 

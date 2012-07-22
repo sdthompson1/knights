@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "colour_change.hpp"
 #include "dungeon_map.hpp"
 #include "dungeon_view.hpp"
@@ -126,8 +126,8 @@ Chest::TrapInfo Chest::popTrapInfo(lua_State *lua, KnightsConfigImpl *kc)
 
     lua_pushinteger(lua, 2);  // [traps 2]
     lua_gettable(lua, -2);    // [traps action]
-    result.action = LuaGetAction(lua, -1, kc);
-    lua_pop(lua, 2);   // []
+    result.action = LuaFunc(lua);  // [traps]
+    lua_pop(lua, 1);   // []
 
     return result;
 }
@@ -229,7 +229,7 @@ bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
         ad.setFlag(true);  // enable hack on the control_actions side...
-        ti.action->execute(ad);
+        ti.action.execute(ad);
         dummy->rmFromMap();
 
         return true;

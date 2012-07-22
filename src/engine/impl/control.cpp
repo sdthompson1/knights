@@ -31,12 +31,19 @@ Control::Control(lua_State *lua, int idx,
                  const Graphic *menu_gfx, MapDirection menu_dir,
                  int tap_pri, int action_slot, int action_pri, bool suicide,
                  bool cts, unsigned int special, const std::string &name,
-                 const Action *action_)
+                 const LuaFunc &exec, const LuaFunc &poss,
+                 bool can_while_moving, bool can_while_stunned)
   : UserControl(menu_gfx, menu_dir, tap_pri, action_slot, action_pri, suicide, cts, special, name),
-    action(action_)
+    execute(exec), possible(poss),
+    can_execute_while_moving(can_while_moving),
+    can_execute_while_stunned(can_while_stunned)
 {
-    if (lua) {
-        lua_pushvalue(lua, idx);
-        table_ref.reset(lua);
-    }
+    ASSERT(lua);
+    lua_pushvalue(lua, idx);   // [t]
+    table_ref.reset(lua);      // []
+}
+
+bool Control::checkPossible(const ActionData &ad) const
+{
+    return !possible.hasValue() || possible.execute(ad);
 }

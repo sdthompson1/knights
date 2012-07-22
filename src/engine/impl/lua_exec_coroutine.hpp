@@ -33,15 +33,18 @@ struct lua_State;
 // and re-execute after that time. (A Task is added to take care of
 // this.) The yield will not return any values back to Lua.
 
-// If the function returns, then the Task terminates (return value(s)
-// from the function are ignored).
+// If the function returns, then the Task terminates.
 
 // If the function yields anything else, or errors, then a message
 // will be displayed to all players, and the task will be terminated.
 
 // "cxt" will be saved and restored across yields.
 
-void LuaExecCoroutine(lua_State *lua, int nargs);
+// Return value: If the function returns first time (w/o yielding) 
+// then we return the function's first result value, converted to
+// bool. Otherwise, we return false.
+
+bool LuaExecCoroutine(lua_State *lua, int nargs);
 
 #endif
 

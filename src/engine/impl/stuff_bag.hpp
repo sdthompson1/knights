@@ -29,8 +29,8 @@
 #ifndef STUFF_BAG_HPP
 #define STUFF_BAG_HPP
 
-#include "action.hpp"
 #include "item.hpp"
+#include "legacy_action.hpp"
 
 #include "boost/shared_ptr.hpp"
 using namespace boost;
@@ -72,19 +72,6 @@ private:
 };
 
 
-// Action classes for StuffManager:
-
-class StuffPickup : public Action {
-public:
-    virtual void execute(const ActionData &) const;
-};
-
-class StuffDrop : public Action {
-public:
-    virtual void execute(const ActionData &) const;
-};
-
-
 // StuffManager:
 // 
 // Because ItemTypes are stateless, we can't directly store the
@@ -98,7 +85,7 @@ public:
 class StuffManager {
 public:
     // initialization -- These should be set before calling the other StuffManager functions.
-    void setStuffBagGraphic(const Graphic *gfx);
+    void setStuffBagGraphic(lua_State *lua, const Graphic *gfx);
     void setDungeonMap(DungeonMap *dmap_) { dmap = dmap_; }
     
     // Get the ItemType for a stuff bag: (this is unique)
@@ -138,8 +125,6 @@ private:
     map<MapCoord, StuffContents> stuff_map;
     
     auto_ptr<ItemType> stuff_bag_item_type;
-    static StuffPickup pickup_action;
-    static StuffDrop drop_action;
 };
 
 #endif

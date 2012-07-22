@@ -29,7 +29,6 @@
 #ifndef LOCKABLE_HPP
 #define LOCKABLE_HPP
 
-#include "originator.hpp"
 #include "tile.hpp"
 
 #include "boost/shared_ptr.hpp"
@@ -112,8 +111,8 @@ private:
     shared_ptr<Trap> trap;
     Originator trap_owner;
 
-    const Action *on_open_or_close;
-    const Action *on_unlock_fail;
+    LuaFunc on_open_or_close;
+    LuaFunc on_unlock_fail;
 };
 
 #endif

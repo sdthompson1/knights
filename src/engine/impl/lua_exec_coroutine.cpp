@@ -47,6 +47,8 @@ namespace {
         ~CoroutineTask();                
         virtual void execute(TaskManager &tm); // overridden from Task
 
+        bool doExec(TaskManager &tm);
+
     private:
         lua_State *getThread(lua_State *);
         void doExec(Mediator &m, TaskManager &tm, int nargs);
@@ -96,6 +98,12 @@ lua_State * CoroutineTask::getThread(lua_State *lua)
 
 void CoroutineTask::execute(TaskManager &tm)
 {
+    // ignore return value from doExec
+    doExec(tm);
+}
+
+bool CoroutineTask::doExec(TaskManager &tm)
+{
     Mediator &mediator(Mediator::instance());
     lua_State *lua = mediator.getLuaState();
     lua_State *thread = getThread(lua);
@@ -132,8 +140,11 @@ void CoroutineTask::execute(TaskManager &tm)
         // rescheduling the task. This will cause *this to be deleted,
         // which in turn will remove the Lua thread from the registry,
         // the Lua GC will then destroy the thread.
-        lua_pop(thread, lua_gettop(thread));
-        return;
+        {
+            const bool result = lua_toboolean(thread, 1) != 0;
+            lua_pop(thread, lua_gettop(thread));
+            return result;
+        }
 
     case LUA_YIELD:
         // Coroutine has yielded a value.
@@ -147,7 +158,7 @@ void CoroutineTask::execute(TaskManager &tm)
                 // remove yielded values from thread stack
                 lua_pop(thread, lua_gettop(thread));
 
-                return;
+                return false;
             }
         }
 
@@ -165,14 +176,14 @@ void CoroutineTask::execute(TaskManager &tm)
             err += "\nTraceback: " + LuaTraceback(thread);
             lua_pop(thread, lua_gettop(thread));  // clear its stack
             mediator.getCallbacks().gameMsg(-1, err, true);  // display the error message
-            return;
+            return false;
         }
     }
 }
             
 
-void LuaExecCoroutine(lua_State *lua, int nargs)
+bool LuaExecCoroutine(lua_State *lua, int nargs)
 {
     shared_ptr<CoroutineTask> task(new CoroutineTask(lua, nargs));  // pops cxt, fn and args from stack.
-    task->execute(Mediator::instance().getTaskManager());
+    return task->doExec(Mediator::instance().getTaskManager());
 }

@@ -23,7 +23,6 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
 #include "anim.hpp"
 #include "control.hpp"
 #include "control_actions.hpp"
@@ -143,28 +142,32 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
 
         // Create the lua context
         lua_state = MakeLuaSandbox();
+        lua_State *lua = lua_state.get();
 
         // Add our config functions to it
-        AddLuaConfigFunctions(lua_state.get(), this);
-        AddLuaIngameFunctions(lua_state.get());
+        AddLuaConfigFunctions(lua, this);
+        AddLuaIngameFunctions(lua);
 
+        // Add the standard controls
+        AddStandardControls(lua, this);
+        
         // Open the file
         MyFileLoader my_file_loader;
-        kf.reset(new KFile(config_file_name, my_file_loader, random_ints, lua_state.get()));
+        kf.reset(new KFile(config_file_name, my_file_loader, random_ints, lua));
 
         // Load some lua code into the context
         // TODO: The lua file name should probably be an input to the ctor, like the kconfig name is ?
-        LuaExecRStream(lua_state.get(), "main.lua", 0, 0, 
+        LuaExecRStream(lua, "main.lua", 0, 0, 
                        false);   // look in top level rsrc directory only
 
         // Get the "kts" table
-        lua_rawgeti(lua_state.get(), LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);  // [env]
-        luaL_getsubtable(lua_state.get(), -1, "kts");                       // [env kts]
+        lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);  // [env]
+        luaL_getsubtable(lua, -1, "kts");                       // [env kts]
 
         // Load the Config Map
-        lua_getfield(lua_state.get(), -1, "MISC_CONFIG");
+        lua_getfield(lua, -1, "MISC_CONFIG");
         config_map.reset(new ConfigMap);
-        PopConfigMap(lua_state.get(), *config_map);
+        PopConfigMap(lua, *config_map);
 
         // Load the Dungeon Environment Customization Menu
         kf->pushSymbol("MAIN_MENU");
@@ -195,11 +198,24 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         popHouseColoursMenu();
         kf->pushSymbol("DEFAULT_ITEM");
         default_item = popItemType(0);
-        kf->pushSymbol("CONTROLS");
-        popControlSet(control_set);
         kf->pushSymbol("QUEST_DESCRIPTIONS");
         popQuestDescriptions();
 
+        // controls (read from kts.CONTROLS)
+        // [env kts]
+        lua_getfield(lua, -1, "CONTROLS");  // [env kts ctrls]
+        lua_len(lua, -1);                   // [env kts ctrls len]
+        const int ctrls_len = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);      // [env kts ctrls]
+        control_set.reserve(ctrls_len);
+        for (int i = 1; i <= ctrls_len; ++i) {
+            lua_pushinteger(lua, i);  // [env kts ctrls i]
+            lua_gettable(lua, -2);    // [env kts ctrls ctrl]
+            control_set.push_back(ReadLuaPtr<Control>(lua, -1));
+            lua_pop(lua, 1);          // [env kts ctrls]
+        }
+        lua_pop(lua, 1);   // [env kts]
+        
         // monsters, gore
         kf->pushSymbol("BLOOD_ICON");
         blood_icon = popGraphic();
@@ -209,8 +225,8 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         popTileList(dead_knight_tiles);
 
         // Zombie activity table (kts.ZOMBIE_ACTIVITY)
-        luaL_getsubtable(lua_state.get(), -1, "ZOMBIE_ACTIVITY");  // [env kts zombie_table]
-        popZombieActivityTable(lua_state.get());                   // [env kts]
+        luaL_getsubtable(lua, -1, "ZOMBIE_ACTIVITY");  // [env kts zombie_table]
+        popZombieActivityTable(lua);                   // [env kts]
 
         // misc other stuff
         kf->pushSymbol("STUFF_BAG_GRAPHIC");
@@ -229,18 +245,18 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
     
         // Hooks are read from the global "kts" table, which should still be on top of lua stack
         for (int i=0; i<sizeof(hook_names)/sizeof(hook_names[0]); ++i) {
-            const Action *ac = LuaGetAction(lua_state.get(), -1, hook_names[i], this);
-            if (ac) {
+            LuaFunc ac(lua, -1, hook_names[i]);
+            if (ac.hasValue()) {
                 hooks.insert(std::make_pair(hook_names[i], ac));
             }
         }
 
         // Tutorial (kts.TUTORIAL)
-        luaL_getsubtable(lua_state.get(), -1, "TUTORIAL");  // [env kts tutorial_table]
-        popTutorial(lua_state.get());                       // [env kts]
+        luaL_getsubtable(lua, -1, "TUTORIAL");  // [env kts tutorial_table]
+        popTutorial(lua);                       // [env kts]
 
         // now pop env and "kts" table from lua stack
-        lua_pop(lua_state.get(), 2);
+        lua_pop(lua, 2);
 
         // make colour-changed versions of the dead knight tiles
         // (this has to be done last)
@@ -275,8 +291,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
 void KnightsConfigImpl::freeMemory()
 {
     using std::for_each;
-    for_each(actions.begin(), actions.end(), Delete<Action>());
-    for_each(controls.begin(), controls.end(), Delete<Control>());
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
@@ -284,7 +298,6 @@ void KnightsConfigImpl::freeMemory()
     for_each(segments.begin(), segments.end(), Delete<Segment>());
     for (size_t i=0; i<knight_anims.size(); ++i) delete knight_anims[i];
 
-    for_each(lua_actions.begin(), lua_actions.end(), Delete<Action>());
     for_each(lua_anims.begin(), lua_anims.end(), Delete<Anim>());
     for_each(lua_controls.begin(), lua_controls.end(), Delete<Control>());
     for_each(lua_dungeon_layouts.begin(), lua_dungeon_layouts.end(), Delete<RandomDungeonLayout>());
@@ -356,109 +369,18 @@ void KnightsConfigImpl::popAccessTable(MapAccess acc[], MapAccess dflt)
     acc[H_WALKING] = popAccessCode(dflt);
 }
 
-Action * KnightsConfigImpl::popAction()
+LuaFunc KnightsConfigImpl::popLuaFuncFromString()
 {
-    if (!kf) return 0;
-    const Value * p = kf->getTop();
-    map<const Value *,Action*>::const_iterator it = actions.find(p);
-    if (it == actions.end()) {
-
-        if (kf->isLua()) {
-            kf->popLua();  // pushes to lua stack
-            
-            // TEMPORARY code copied/pasted from lua_setup.cpp. This
-            // should disappear once KConfig files are eliminated.
-            Action *a = 0;
-            if (lua_isnil(lua_state.get(), -1)) {
-                lua_pop(lua_state.get(), 1);
-            } else {
-                a = new LuaAction(lua_state.get()); // pops the lua stack
-            }
-
-            it = actions.insert(make_pair(p, a)).first;
-        
-        } else if (kf->isList()) {
-            // ListAction
-
-            ListAction *action = new ListAction;
-            it = actions.insert(make_pair(p, action)).first;
-            
-            KFile::List lst(*kf, "Action");
-            action->reserve(lst.getSize());
-            for (int i=0; i<lst.getSize(); ++i) {
-                lst.push(i);
-                action->add(popAction(0));
-            }
-
-        } else if (kf->isRandom()) {
-            // RandomAction
-
-            RandomAction *action = new RandomAction;
-            it = actions.insert(make_pair(p, action)).first;
-
-            KFile::Random ran(*kf, "Action");
-            action->reserve(ran.getSize());
-            for (int i=0; i<ran.getSize(); ++i) {
-                int weight = ran.push(i);
-                action->add(popAction(), weight);
-            }
-            
-        } else if (kf->isDirective()) {
-            // Normal Action
-
-            it = actions.insert(pair<const Value *,Action*>(p, 0)).first;
-            
-            KFile::Directive dir(*kf, "Action");
-            if (!dir.getName().empty()) {
-                dir.pushArgList();
-                MyActionPars pars(*this);
-                actions.erase(p);
-                Action *ac = ActionMaker::createAction(dir.getName(), pars);
-                if (!ac) {
-                    kf->error("unknown action: " + dir.getName());
-                    return 0;
-                }
-                it = actions.insert(make_pair(p, ac)).first;
-            } else {
-                kf->error("directive has no name??");
-            }
-
-        } else if (kf->isNone()) {
-            // Null Action
-            kf->pop();
-            return 0;
-
-        } else if (kf->isString()) {
-            // Lua Action
-            string s = kf->getString();
-            LuaLoadFromString(lua_state.get(), s.c_str());    // pushes function onto lua stack
-            Action * lua_action = new LuaAction(lua_state.get());   // pops function from lua stack
-            it = actions.insert(make_pair(p, lua_action)).first;
-            
-        } else {
-            kf->errExpected("Action");
-            kf->pop();
-            return 0;
-        }
+    if (!kf) return LuaFunc();
+  
+    if (kf->isString()) {
+        std::string s = kf->getString();
+        LuaLoadFromString(lua_state.get(), s.c_str());    // pushes function onto lua stack
+        LuaFunc result(lua_state.get());  // Pops function from stack
+        return result;
     } else {
-        kf->pop();
-    }
-
-    if (it->second == 0) {
-        kf->error("Recursive action. Try enclosing the action in square brackets?");
-    }
-    
-    return it->second;
-}
-
-Action * KnightsConfigImpl::popAction(Action *dflt)
-{
-    if (!kf) return 0;
-    if (kf->isNone()) {
-        kf->pop();
-        return dflt;
-    } else {
-        return popAction();
+        kf->errExpected("Lua action string");
+        return LuaFunc();
     }
 }
 
@@ -511,73 +433,6 @@ bool KnightsConfigImpl::popBool(bool dflt)
         return dflt;
     } else {
         return popBool();
-    }
-}
-
-Control * KnightsConfigImpl::popControl()
-{
-    if (!kf) return 0;
-
-    const Value * p = kf->getTop();
-    map<const Value *,Control*>::iterator it = controls.find(p);
-    if (it == controls.end()) {
-        KFile::Table tab(*kf, "Control");   
-        tab.push("action");
-        Action *ac = popAction();
-        tab.push("action_bar_slot");
-        int abs = kf->popInt(-1);
-        tab.push("action_bar_priority");
-        int abp = kf->popInt(std::numeric_limits<int>::min());  // default = same as tap_priority (for now)
-        tab.push("continuous");
-        bool cts = popBool(false);
-        tab.push("menu_direction");
-        MapDirection mdir = popMapDirection(D_NORTH);
-        tab.push("menu_icon");
-        Graphic *g = popGraphic(0);
-        tab.push("menu_special");
-        unsigned int ms = kf->popInt(0);
-        tab.push("name");
-        std::string name = kf->popString("");
-        tab.push("suicide_key");
-        bool suicide = popBool(false);
-        tab.push("tap_priority");
-        int tp = kf->popInt(0);
-
-        if (abp == std::numeric_limits<int>::min()) abp = tp;
-        
-        const int id = controls.size() + lua_controls.size() + NUM_STANDARD_CONTROLS + 1;
-
-        Control * new_ctrl = new Control(0, 0, 
-                                         g, mdir, tp, abs, abp, suicide, cts, ms, name, ac);
-        new_ctrl->setID(id);
-        
-        it = controls.insert(make_pair(p, new_ctrl)).first;
-    } else {
-        kf->pop();
-    }
-
-    return it->second;
-}
-
-Control * KnightsConfigImpl::popControl(Control *dflt)
-{
-    if (!kf) return 0;
-    if (kf->isNone()) {
-        kf->pop();
-        return dflt;
-    } else {
-        return popControl();
-    }
-}
-
-void KnightsConfigImpl::popControlSet(vector<const Control*> &which_control_set)
-{
-    if (!kf) return;
-    KFile::List lst(*kf, "ControlSet");
-    which_control_set.reserve(lst.getSize());
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        which_control_set.push_back(popControl());
     }
 }
 
@@ -1317,11 +1172,11 @@ void KnightsConfigImpl::popSegmentSwitches(Segment &r)
         sw.push(1);
         const int y = kf->popInt();
         sw.push(2);
-        Action *ac = popAction();
+        LuaFunc ac = popLuaFuncFromString();
 
         // create dummy tile for the switch-action.
         const bool activate = r.isApproachable(x,y);
-        shared_ptr<Tile> t(new Tile(activate?0:ac, activate?ac:0));
+        shared_ptr<Tile> t(new Tile(activate?LuaFunc():ac, activate?ac:LuaFunc()));
         r.addTile(x,y,t);
     }
 }
@@ -1565,23 +1420,16 @@ void KnightsConfigImpl::getSounds(std::vector<const Sound*> &out) const
 
 void KnightsConfigImpl::getStandardControls(std::vector<const UserControl*> &out) const
 {
-    std::vector<const Control*> ctrls;
-    GetStandardControls(ctrls);
     out.clear();
-    out.reserve(ctrls.size());
-    std::copy(ctrls.begin(), ctrls.end(), std::back_inserter(out));
+    out.reserve(NUM_STANDARD_CONTROLS);
+    std::copy(lua_controls.begin(), lua_controls.begin() + NUM_STANDARD_CONTROLS, std::back_inserter(out));
 }
 
 void KnightsConfigImpl::getOtherControls(std::vector<const UserControl*> &out) const
 {
     out.clear();
-    out.reserve(controls.size() + lua_controls.size());
-    for (std::map<const Value *, Control*>::const_iterator it = controls.begin(); it != controls.end(); ++it) {
-        out.push_back(it->second);
-    }
-    for (std::vector<Control*>::const_iterator it = lua_controls.begin(); it != lua_controls.end(); ++it) {
-        out.push_back(*it);
-    }
+    out.reserve(lua_controls.size());
+    std::copy(lua_controls.begin() + NUM_STANDARD_CONTROLS, lua_controls.end(), std::back_inserter(out));
     std::sort(out.begin(), out.end(), CompareID<UserControl>());
 }
 
@@ -1673,7 +1521,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     }
 
     // set up stuff manager
-    stuff_manager.setStuffBagGraphic(stuff_bag_graphic);
+    stuff_manager.setStuffBagGraphic(lua_state.get(), stuff_bag_graphic);
     stuff_manager.setDungeonMap(dungeon_map.get());
 
     // set up gore manager
@@ -1863,13 +1711,6 @@ void KnightsConfigImpl::readMenu(const Menu &menu, const MenuSelections &msel, D
 // Lua related functions
 //
 
-Action * KnightsConfigImpl::addLuaAction(auto_ptr<Action> p)
-{
-    Action *q = p.release();
-    lua_actions.push_back(q);
-    return q;
-}
-
 Anim * KnightsConfigImpl::addLuaAnim(lua_State *lua, int idx)
 {
     const int new_id = lua_anims.size() + 1;
@@ -1880,7 +1721,7 @@ Anim * KnightsConfigImpl::addLuaAnim(lua_State *lua, int idx)
 
 Control * KnightsConfigImpl::addLuaControl(auto_ptr<Control> p)
 {
-    const int new_id = controls.size() + lua_controls.size() + NUM_STANDARD_CONTROLS + 1;
+    const int new_id = lua_controls.size() + 1;
     p->setID(new_id);
     
     Control *q = p.release();
@@ -1964,18 +1805,4 @@ Sound * KnightsConfigImpl::addLuaSound(const char *name)
     Sound * p = new Sound(new_id, name);
     lua_sounds.push_back(p);
     return p;
-}
-
-
-// KConfig references
-
-void KnightsConfigImpl::kconfigControl(const char *name)
-{
-    if (!kf) {
-        lua_pushnil(lua_state.get());
-    } else {
-        kf->pushSymbol(name);
-        Control * ctrl = popControl();
-        NewLuaPtr<Control>(lua_state.get(), ctrl);
-    }
 }

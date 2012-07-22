@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "item.hpp"
@@ -39,6 +39,8 @@
 #include "tile.hpp"
 
 #include "lua.hpp"
+
+#include <cctype>
 
 namespace {
     MapAccess PopAccess(lua_State *lua)
@@ -149,12 +151,12 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
         items_mode = BLOCKED;
     }
 
-    on_activate  = LuaGetAction(lua, -1, "on_activate",  kc);  // all "on_" actions default to 0
-    on_approach  = LuaGetAction(lua, -1, "on_approach",  kc);
-    on_destroy   = LuaGetAction(lua, -1, "on_destroy",   kc);
-    on_hit       = LuaGetAction(lua, -1, "on_hit",       kc);
-    on_walk_over = LuaGetAction(lua, -1, "on_walk_over", kc);
-    on_withdraw  = LuaGetAction(lua, -1, "on_withdraw",  kc);
+    on_activate.reset(lua, -1, "on_activate");
+    on_approach.reset(lua, -1, "on_approach");
+    on_destroy.reset(lua, -1, "on_destroy");
+    on_hit.reset(lua, -1, "on_hit");
+    on_walk_over.reset(lua, -1, "on_walk_over");
+    on_withdraw.reset(lua, -1, "on_withdraw");
 
     lua_getfield(lua, -1, "stairs_down");
     if (lua_isnil(lua, -1)) {
@@ -175,8 +177,8 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
     tutorial_key = LuaGetInt(lua, -1, "tutorial");  // default 0
 }
 
-Tile::Tile(const Action *walk_over, const Action *activate)
-    : hit_points(0)
+Tile::Tile(const LuaFunc &walk_over, const LuaFunc &activate)
+    : hit_points(0), on_walk_over(walk_over), on_activate(activate)
 {
     for (int i = 0; i <= H_MISSILES; ++i) access[i] = A_CLEAR;
     connectivity_check = 0;
@@ -186,9 +188,6 @@ Tile::Tile(const Action *walk_over, const Action *activate)
     initial_hit_points = 0;
     item_category = -1;  // items allowed
     items_mode = ALLOWED;
-    on_activate = activate;
-    on_walk_over = walk_over;
-    on_approach = on_destroy = on_hit = on_withdraw = 0;
     is_stair = stair_top = false;
     tutorial_key = 0;
 }
@@ -242,13 +241,13 @@ void Tile::damage(DungeonMap &dmap, const MapCoord &mc, int amount, shared_ptr<C
 void Tile::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
     // Run on_destroy event
-    if (on_destroy) {
+    if (on_destroy.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_destroy->execute(ad);
+        on_destroy.execute(ad);
     }
     
     // Destroy any fragile items present
@@ -262,68 +261,68 @@ bool Tile::targettable() const
     // *OR* that it has an on_hit action.
     // This rules out "floor" tiles (except the special pentagram which has on_hit),
     // but pretty much everything else is included.
-    return (getAccess(H_WALKING) != A_CLEAR || on_hit);
+    return (getAccess(H_WALKING) != A_CLEAR || on_hit.hasValue());
 }
 
 void Tile::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor,
                       const Originator &originator, ActivateType act_type)
 {
     // NB act_type isn't used here, but it is used in subclasses (in particular Lockable).
-    if (on_activate) {
+    if (on_activate.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_activate->execute(ad);
+        on_activate.execute(ad);
     }
 }
 
 void Tile::onWalkOver(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
-    if (on_walk_over && actor && actor->getHeight() == H_WALKING) {
+    if (on_walk_over.hasValue() && actor && actor->getHeight() == H_WALKING) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_walk_over->execute(ad);
+        on_walk_over.execute(ad);
     }
 }
 
 void Tile::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
-    if (on_approach) {
+    if (on_approach.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_approach->execute(ad);
+        on_approach.execute(ad);
     }
 }
 
 void Tile::onWithdraw(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
-    if (on_withdraw) {
+    if (on_withdraw.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_withdraw->execute(ad);
+        on_withdraw.execute(ad);
     }
 }
 
 void Tile::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor, const Originator &originator)
 {
-    if (on_hit) {
+    if (on_hit.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_hit->execute(ad);
+        on_hit.execute(ad);
     }
 }
 

@@ -104,11 +104,14 @@ i_axe = kts.ItemType {
 
     control = kts.Control {
        action = kts.ThrowOrShoot,
+       possible = kts.Can_ThrowOrShoot,
        menu_icon = g_menu_axe,
        continuous = true,
        action_bar_slot = 4,
        name = "Throw Axe",
-       menu_special = 4 -- Does not appear on Action Menu
+       menu_special = 4, -- Does not appear on Action Menu
+
+       can_do_while_moving = true
     }
 }
 
@@ -136,12 +139,15 @@ i_dagger = kts.ItemType {
 
     control = kts.Control {
         action = kts.Throw,
+        possible = kts.Can_Throw,
         menu_icon = g_menu_dagger,
         menu_direction = "right",
         menu_special = 1,
         continuous = true,
         action_bar_slot = 5,
-        name = "Throw Daggers"
+        name = "Throw Daggers",
+
+        can_do_while_moving = true
     },
 
     tutorial = TUT_DAGGERS
@@ -180,11 +186,13 @@ i_crossbow = kts.ItemType {
 
     control = kts.Control {
        action = kts.ThrowOrShoot,
+       possible = kts.Can_ThrowOrShoot,
        menu_icon = g_menu_crossbow,
        continuous = true,
        action_bar_slot = 4,
        name = "Fire Crossbow",
-       menu_special = 4   -- Does not appear on Action Menu
+       menu_special = 4,   -- Does not appear on Action Menu
+       can_do_while_moving = true
     }
 }
 
@@ -330,6 +338,9 @@ i_bear_trap = kts.ItemType {
            kts.SetBearTrap(i_bear_trap_open)
            snd_click()
         end,
+        possible = function() 
+           return kts.Can_SetBearTrap(i_bear_trap_open)
+        end,
         menu_icon = g_menu_beartrap,
         menu_direction = "left",
         action_bar_slot = 8,
@@ -364,6 +375,7 @@ i_poison_trap = kts.ItemType {
           kts.SetPoisonTrap()
           snd_click()
        end,
+       possible = kts.Can_SetPoisonTrap,
        menu_icon = g_menu_poison_trap,
        menu_direction = "left",
        action_bar_slot = 8,
@@ -382,6 +394,9 @@ i_blade_trap = kts.ItemType {
        action = function()
           kts.SetBladeTrap(i_bolt_trap)
           snd_click()
+       end,
+       possible = function()
+          return kts.Can_SetBladeTrap(i_bolt_trap)
        end,
        menu_icon = g_menu_blade_trap,
        menu_direction = "right",
@@ -433,8 +448,11 @@ i_lockpicks = kts.ItemType(
     key = -1,
     control = kts.Control {
        action = function()
-          kts.PickLock(2, 140)
+          kts.PickLock(0.02, 140)
           snd_lock()
+       end,
+       possible = function()
+          return kts.Can_PickLock(0.02, 140)
        end,
        continuous = true,
        menu_icon = g_menu_lockpicks,

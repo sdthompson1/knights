@@ -23,7 +23,6 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
 #include "control.hpp"
 #include "create_monster_type.hpp"
 #include "create_tile.hpp"
@@ -98,7 +97,11 @@ namespace {
     {
         KnightsConfigImpl * kc = GetKC(lua, "Controls");
 
-        const Action * action = LuaGetAction(lua, 1, "action", kc);
+        LuaFunc action(lua, 1, "action");
+        LuaFunc possible(lua, 1, "possible");
+        bool can_do_while_moving = LuaGetBool(lua, 1, "can_do_while_moving", false);
+        bool can_do_while_stunned = LuaGetBool(lua, 1, "can_do_while_stunned", false);
+        
         int action_bar_slot = LuaGetInt(lua, 1, "action_bar_slot", -1);
         int tap_priority = LuaGetInt(lua, 1, "tap_priority", 0);
         int action_bar_priority = LuaGetInt(lua, 1, "action_bar_priority", tap_priority);
@@ -109,10 +112,11 @@ namespace {
         std::string name = LuaGetString(lua, 1, "name");
         bool suicide_key = LuaGetBool(lua, 1, "suicide_key", false);
 
-        auto_ptr<Control> ctrl(new Control(lua, -1,
+        auto_ptr<Control> ctrl(new Control(lua, 1,
                                            menu_icon, menu_direction, tap_priority, action_bar_slot,
                                            action_bar_priority, suicide_key, continuous, menu_special,
-                                           name, action));
+                                           name,
+                                           action, possible, can_do_while_moving, can_do_while_stunned));
 
         Control *c = kc->addLuaControl(ctrl); // transfers ownership (also sets control's ID)
         NewLuaPtr<Control>(lua, c);
@@ -267,17 +271,6 @@ namespace {
         }
         return 0;
     }
-    
-    // Upvalue: KnightsConfigImpl*
-    // Input: one string (kconfig variable name)
-    // Output: userdata representing a control
-    int MakeKconfigControl(lua_State *lua)
-    {
-        KnightsConfigImpl *kc = GetKC(lua, "Controls");
-        const char * name = luaL_checkstring(lua, 1);
-        kc->kconfigControl(name);
-        return 1;
-    }
 }
 
 void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
@@ -339,11 +332,6 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     PushCFunction(lua, &SetReflect);
     lua_setfield(lua, -2, "SetReflect");
     
-
-    lua_pushlightuserdata(lua, kc);
-    PushCClosure(lua, &MakeKconfigControl, 1);
-    lua_setfield(lua, -2, "kconfig_control");
-
 
     lua_pop(lua, 2); // []
 }
@@ -464,43 +452,6 @@ KnightsConfigImpl * GetKC(lua_State *lua, const char * msg)
         luaL_error(lua, (std::string("Cannot create new ") + msg + " during the game").c_str());
     }
     return kc;
-}
-
-Action * LuaGetAction(lua_State *lua, int idx, const char *key, KnightsConfigImpl *kc)
-{
-    // This builds a new LuaAction object from the function at given
-    // key in table at top of stack, and returns it. (The object will
-    // be added to KnightsConfigImpl for deletion when
-    // ~KnightsConfigImpl is called.)
-
-    lua_getfield(lua, idx, key); // function is now at top of stack
-
-    Action *ac = 0;
-    if (lua_isnil(lua, -1)) {
-        lua_pop(lua, 1);
-    } else if (!LuaIsCallable(lua, -1)) {
-        luaL_error(lua, "'%s': expected function or callable object, got %s", key,
-                   lua_typename(lua, lua_type(lua, -1)));
-    } else {
-        auto_ptr<Action> action(new LuaAction(lua));  // pops stack
-        ac = kc->addLuaAction(action);  // transfers ownership
-    }
-    return ac;
-}
-
-Action * LuaGetAction(lua_State *lua, int idx, KnightsConfigImpl *kc)
-{
-    // Same but reads from given stack idx instead
-    if (lua_isnil(lua, idx)) {
-        return 0;
-    } else if (!LuaIsCallable(lua, idx)) {
-        luaL_error(lua, "expected function or callable object");
-        return 0;  // prevent compiler warning
-    } else {
-        lua_pushvalue(lua, idx);
-        auto_ptr<Action> action(new LuaAction(lua));  // pops stack
-        return kc->addLuaAction(action);  // transfers ownership
-    }
 }
 
 void LuaGetTileList(lua_State *lua, int tbl_idx, const char *key, std::vector<boost::shared_ptr<Tile> > &tiles)

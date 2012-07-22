@@ -22,7 +22,7 @@
  */
 
 /*
- * Actions related to magic (potions and scrolls).
+ * LegacyActions related to magic (potions and scrolls).
  * 
  * Most of these actually do the same thing which is just to call
  * Knight::setPotionMagic (or its variants setInvulnerability and
@@ -33,19 +33,19 @@
 #ifndef MAGIC_ACTIONS_HPP
 #define MAGIC_ACTIONS_HPP
 
-#include "action.hpp"
+#include "legacy_action.hpp"
 
 // kconfig
 #include "kconfig_fwd.hpp"
 
-class A_Attractor : public Action {
+class A_Attractor : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Attractor");
 };
 
-class A_DispelMagic : public Action {
+class A_DispelMagic : public LegacyAction {
 public:
     explicit A_DispelMagic(const string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -54,7 +54,7 @@ private:
     string msg;
 };
 
-class A_Healing : public Action {
+class A_Healing : public LegacyAction {
 public:
     explicit A_Healing(const string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -63,7 +63,7 @@ private:
     string msg;
 };
 
-class A_Invisibility : public Action {
+class A_Invisibility : public LegacyAction {
 public:
     explicit A_Invisibility(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -73,7 +73,7 @@ private:
     string msg;
 };
 
-class A_Invulnerability : public Action {
+class A_Invulnerability : public LegacyAction {
 public:
     explicit A_Invulnerability(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -83,21 +83,21 @@ private:
     string msg;
 };
 
-class A_MagicMapping : public Action {
+class A_MagicMapping : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("MagicMapping");
 };
 
-class A_OpenWays : public Action {
+class A_OpenWays : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("OpenWays");
 };
 
-class A_Paralyzation : public Action {
+class A_Paralyzation : public LegacyAction {
 public:
     explicit A_Paralyzation(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
@@ -106,7 +106,7 @@ private:
     int dur;
 };
 
-class A_Poison : public Action {
+class A_Poison : public LegacyAction {
 public:
     explicit A_Poison(const string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -115,7 +115,7 @@ private:
     string msg;
 };
 
-class A_PoisonImmunity : public Action {
+class A_PoisonImmunity : public LegacyAction {
 public:
     explicit A_PoisonImmunity(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -125,7 +125,7 @@ private:
     string msg;
 };
 
-class A_Quickness : public Action {
+class A_Quickness : public LegacyAction {
 public:
     explicit A_Quickness(int i, const string &m) : dur(i), msg(m) { }    
     virtual void execute(const ActionData &) const;
@@ -135,7 +135,7 @@ private:
     string msg;
 };
 
-class A_Regeneration : public Action {
+class A_Regeneration : public LegacyAction {
 public:
     explicit A_Regeneration(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -145,7 +145,7 @@ private:
     string msg;
 };
 
-class A_RevealLocation : public Action {
+class A_RevealLocation : public LegacyAction {
 public:
     explicit A_RevealLocation(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
@@ -154,7 +154,7 @@ private:
     int dur;
 };
 
-class A_SenseItems : public Action {
+class A_SenseItems : public LegacyAction {
 public:
     explicit A_SenseItems(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
@@ -163,7 +163,7 @@ private:
     int dur;
 };    
 
-class A_SenseKnight : public Action {
+class A_SenseKnight : public LegacyAction {
 public:
     explicit A_SenseKnight(int i) : dur(i) { }
     virtual void execute(const ActionData &) const;
@@ -172,7 +172,7 @@ private:
     int dur;
 };
 
-class A_Strength : public Action {
+class A_Strength : public LegacyAction {
 public:
     explicit A_Strength(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -182,7 +182,7 @@ private:
     string msg;
 };
 
-class A_Super : public Action {
+class A_Super : public LegacyAction {
 public:
     explicit A_Super(int i, const string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -192,21 +192,21 @@ private:
     string msg;
 };
 
-class A_Teleport : public Action {
+class A_Teleport : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Teleport");
 };
 
-class A_WipeMap : public Action {
+class A_WipeMap : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("WipeMap");
 };
 
-class A_ZombifyActor : public Action {
+class A_ZombifyActor : public LegacyAction {
 public:
     explicit A_ZombifyActor(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual void execute(const ActionData &) const;
@@ -215,7 +215,7 @@ private:
     const MonsterType & zom_type;
 };
 
-class A_ZombifyTarget : public Action {
+class A_ZombifyTarget : public LegacyAction {
 public:
     explicit A_ZombifyTarget(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual bool possible(const ActionData &) const;

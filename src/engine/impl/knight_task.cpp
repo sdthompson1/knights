@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "anim.hpp"
 #include "control.hpp"
 #include "item.hpp"
@@ -54,23 +54,23 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
     ActionData ad;
     
     // If we didn't get a valid control, then can't proceed
-    if (!ctrl || !ctrl->getAction()) possible = false;
+    if (!ctrl || !ctrl->getExecuteFunc().hasValue()) possible = false;
 
     if (possible) {
         // If knight is stunned, and the control cannot be executed while stunned, then can't proceed
-        if (knight->isStunned() && !ctrl->getAction()->canExecuteWhileStunned()) possible = false;
+        if (knight->isStunned() && !ctrl->canExecuteWhileStunned()) possible = false;
         
         // If knight is moving, and the control cannot be executed while moving, then can't proceed
         // (but if the control is non-continuous, save it into stored_control, as
         // we may be able to execute it later, when the motion finishes).
-        if (knight->isMoving() && !ctrl->getAction()->canExecuteWhileMoving()) {
+        if (knight->isMoving() && !ctrl->canExecuteWhileMoving()) {
             if (!ctrl->isContinuous()) {
                 stored_control = ctrl;
             }
             possible = false;
         }
         
-        // check possible() on the action itself. Also set up the ActionData.
+        // check Lua possible function. Also set up the ActionData.
         if (possible) {
             const ItemType *item_type = 0;
             weak_ptr<Tile> tile;
@@ -85,9 +85,7 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
             }
             ad.setGenericPos(knight->getMap(), 
                              tile_lock ? tile_mc : knight->getPos());
-            if (!ctrl->getAction()->possible(ad)) {
-                possible = false;
-            }
+            possible = ctrl->checkPossible(ad);
         }
     }
     
@@ -106,7 +104,7 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
         if (knight->getAnimFrame() == AF_XBOW_LOAD) knight->setAnimFrame(AF_XBOW, 0);
 
         // now execute it
-        ctrl->getAction()->execute(ad);
+        ctrl->getExecuteFunc().execute(ad);
     }
 }
 
@@ -163,14 +161,14 @@ void KnightTask::execute(TaskManager &tm)
     held_item = knight->getItemInHand();  // update held_item (item-in-hand may have been changed above)
 
     // Play clicking sound while crossbow is loading (reload_action).
-    if (held_item && xbow_load_time != 0 && held_item->getReloadAction()
+    if (held_item && xbow_load_time != 0 && held_item->getReloadAction().hasValue()
     && gvt >= xbow_action_timer + held_item->getReloadActionTime()) {
         xbow_action_timer = gvt;
         ActionData ad;
         ad.setActor(knight);
         ad.setOriginator(knight->getOriginator());
         ad.setGenericPos(knight->getMap(), knight->getPos());
-        held_item->getReloadAction()->execute(ad);
+        held_item->getReloadAction().execute(ad);
     }   
 
     // Set anim frame for crossbow loading if necessary

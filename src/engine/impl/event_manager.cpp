@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "event_manager.hpp"
@@ -168,8 +168,8 @@ void EventManager::runHook(const string &name, DungeonMap *dmap, const MapCoord 
 
 void EventManager::doHook(const string &name, const ActionData &ad) const 
 {
-    map<string, const Action *>::const_iterator it = hooks.find(name);
-    if (it != hooks.end() && it->second) {
-        it->second->execute(ad);
+    map<string, LuaFunc>::const_iterator it = hooks.find(name);
+    if (it != hooks.end() && it->second.hasValue()) {
+        it->second.execute(ad);
     }
 }

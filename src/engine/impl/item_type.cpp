@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "item.hpp"
@@ -52,7 +52,7 @@ ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
     graphic = LuaGetPtr<Graphic>(lua, idx, "graphic");
     key = LuaGetInt(lua, idx, "key");
     max_stack = LuaGetInt(lua, idx, "max_stack", 1);
-    melee_action = LuaGetAction(lua, idx, "melee_action", kc);
+    melee_action.reset(lua, idx, "melee_action");
     melee_backswing_time = LuaGetInt(lua, idx, "melee_backswing_time");
     melee_damage = LuaGetRandomInt(lua, idx, "melee_damage", kc);
     melee_downswing_time = LuaGetInt(lua, idx, "melee_downswing_time");
@@ -68,14 +68,14 @@ ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
     missile_speed = LuaGetInt(lua, idx, "missile_speed");
     missile_stun_time = LuaGetRandomInt(lua, idx, "missile_stun_time", kc);
     name = LuaGetString(lua, idx, "name");
-    on_drop = LuaGetAction(lua, idx, "on_drop", kc);
-    on_hit = LuaGetAction(lua, idx, "on_hit", kc);
-    on_pick_up = LuaGetAction(lua, idx, "on_pick_up", kc);
-    on_walk_over = LuaGetAction(lua, idx, "on_walk_over", kc);
+    on_drop.reset(lua, idx, "on_drop");
+    on_hit.reset(lua, idx, "on_hit");
+    on_pick_up.reset(lua, idx, "on_pick_up");
+    on_walk_over.reset(lua, idx, "on_walk_over");
     open_traps = LuaGetBool(lua, idx, "open_traps");
     overlay = LuaGetPtr<Overlay>(lua, idx, "overlay");
     parry_chance = LuaGetFloat(lua, idx, "parry_chance");
-    reload_action = LuaGetAction(lua, idx, "reload_action", kc);
+    reload_action.reset(lua, idx, "reload_action");
     reload_action_time = LuaGetInt(lua, idx, "reload_action_time", 250);
     reload_time = LuaGetInt(lua, idx, "reload_time");
     stack_graphic = LuaGetPtr<Graphic>(lua, idx, "stack_graphic");
@@ -90,7 +90,9 @@ ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
 }
 
 ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
-                   const Action *pickup_action, const Action *drop_action)
+                   const LuaFunc &pickup_action, const LuaFunc &drop_action)
+    : on_pick_up(pickup_action),
+      on_drop(drop_action)
 {
     allow_strength = false;
     ammo = 0;
@@ -103,7 +105,6 @@ ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
     graphic = gfx;
     key = 0;
     max_stack = 1;
-    melee_action = 0;
     melee_backswing_time = 0;
     melee_damage = 0;
     melee_downswing_time = 0;
@@ -118,14 +119,9 @@ ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
     missile_range = 0;
     missile_speed = 0;
     missile_stun_time = 0;
-    on_drop = drop_action;
-    on_hit = 0;
-    on_pick_up = pickup_action;
-    on_walk_over = 0;
     open_traps = false;
     overlay = 0;
     parry_chance = 0;
-    reload_action = 0;
     reload_action_time = 0;
     reload_time = 0;
     stack_graphic = graphic;
@@ -191,25 +187,25 @@ void ItemType::doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap,
 void ItemType::onPickUp(DungeonMap &dmap, const MapCoord &mc,
                         shared_ptr<Creature> actor) const
 {
-    if (on_pick_up) {
+    if (on_pick_up.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
         ad.setGenericPos(&dmap, mc);
         ad.setOriginator(actor->getOriginator());
-        on_pick_up->execute(ad);
+        on_pick_up.execute(ad);
     }
 }
 
 void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor) const
 {
-    if (on_drop) {
+    if (on_drop.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
         ad.setGenericPos(&dmap, mc);
         ad.setOriginator(actor->getOriginator());
-        on_drop->execute(ad);
+        on_drop.execute(ad);
     }
         
 }
@@ -218,7 +214,7 @@ void ItemType::onWalkOver(DungeonMap &dmap, const MapCoord &mc,
                           shared_ptr<Creature> actor,
                           const Originator &item_owner) const
 {
-    if (on_walk_over && actor && actor->getHeight() == H_WALKING) {
+    if (on_walk_over.hasValue() && actor && actor->getHeight() == H_WALKING) {
         ActionData ad;
         ad.setActor(actor);
         
@@ -227,25 +223,25 @@ void ItemType::onWalkOver(DungeonMap &dmap, const MapCoord &mc,
         ad.setOriginator(item_owner);
         ad.setItem(&dmap, mc, this);
         ad.setGenericPos(&dmap, mc);
-        on_walk_over->execute(ad);
+        on_walk_over.execute(ad);
     }
 }
 
 void ItemType::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor) const
 {
-    if (on_hit) {
+    if (on_hit.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setItem(&dmap, mc, this);
         ad.setGenericPos(&dmap, mc);
         ad.setOriginator(actor->getOriginator());
-        on_hit->execute(ad);
+        on_hit.execute(ad);
     }
 }
 
 void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> victim) const
 {
-    if (melee_action) {
+    if (melee_action.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
@@ -254,7 +250,7 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> v
         // for generic_pos, use position of the actor rather than null.
         ad.setGenericPos(actor ? actor->getMap() : 0, 
                          actor ? actor->getPos() : MapCoord());
-        melee_action->execute(ad);
+        melee_action.execute(ad);
     }
 }
 
@@ -262,7 +258,7 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor,
                               DungeonMap &dmap, const MapCoord &mc,
                               shared_ptr<Tile> tile) const
 {
-    if (melee_action) {
+    if (melee_action.hasValue()) {
         ActionData ad;
         ad.setActor(actor);
         ad.setOriginator(actor ? actor->getOriginator() : Originator(OT_None()));
@@ -270,6 +266,6 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor,
         ad.setItem(0, MapCoord(), this);
         ad.setGenericPos(actor ? actor->getMap() : 0, 
                          actor ? actor->getPos() : MapCoord());
-        melee_action->execute(ad);
+        melee_action.execute(ad);
     }
 }

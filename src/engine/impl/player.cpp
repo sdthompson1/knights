@@ -28,7 +28,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "control.hpp"
 #include "dungeon_map.hpp"
 #include "dungeon_view.hpp"
@@ -583,7 +583,7 @@ void Player::computeAvailableControls()
                 ad.setActor(kt);
                 ad.setGenericPos(kt->getMap(), kt->getPos());
                 ad.setOriginator(Originator(OT_Player(), this));
-                if ((*it)->getAction() && (*it)->getAction()->possible(ad)
+                if ((*it)->getExecuteFunc().hasValue() && (*it)->checkPossible(ad)
                 && (getApproachBasedControls() || ((*it)->getMenuSpecial() & UserControl::MS_APPR_BASED) == 0 )) {
                     new_controls.insert(make_pair(*it, ControlInfo()));
                 }
@@ -668,7 +668,7 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
                 ad.setOriginator(cr->getOriginator());
                 ad.setTile(dmap, mc, *it);
                 ad.setGenericPos(dmap, mc);
-                if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {
+                if (ctrl->getExecuteFunc().hasValue() && ctrl->checkPossible(ad)) {
                     ControlInfo ci;
                     ci.tile = *it;
                     ci.tile_mc = mc;
@@ -691,7 +691,7 @@ void Player::addItemControls(const ItemType &itype, map<const Control *, Control
         ad.setOriginator(Originator(OT_Player(), this));
         ad.setItem(0, MapCoord(), &itype);
         ad.setGenericPos(cr->getMap(), cr->getPos());
-        if (ctrl->getAction() && ctrl->getAction()->possible(ad)) {
+        if (ctrl->getExecuteFunc().hasValue() && ctrl->checkPossible(ad)) {
             ControlInfo ci;
             ci.item_type = &itype;
             cmap.insert(make_pair(ctrl, ci));

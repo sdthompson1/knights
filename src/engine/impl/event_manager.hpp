@@ -29,6 +29,7 @@
 #ifndef EVENT_MANAGER_HPP
 #define EVENT_MANAGER_HPP
 
+#include "lua_func.hpp"
 #include "map_support.hpp"
 
 #include <map>
@@ -52,7 +53,7 @@ public:
     static void onRmTile(DungeonMap &, const MapCoord &, Tile &, const Originator &);   // on_withdraw
 
     // A generic system for "event hooks"
-    void setupHooks(const map<string, const Action*> &h) { hooks = h; }
+    void setupHooks(const map<string, LuaFunc> &h) { hooks = h; }
     void runHook(const string &h, shared_ptr<Creature> cr) const;
     void runHook(const string &h, DungeonMap *dmap, const MapCoord &mc) const;
     
@@ -62,7 +63,7 @@ private:
 
     void doHook(const string &name, const ActionData &ad) const;
 
-    map<string, const Action*> hooks;
+    map<string, LuaFunc> hooks;
 };
 
 #endif

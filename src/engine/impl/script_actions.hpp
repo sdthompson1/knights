@@ -22,19 +22,19 @@
  */
 
 /*
- * Actions usable from the config system (used for switch effects etc)
+ * LegacyActions usable from the config system (used for switch effects etc)
  *
  */
 
 #ifndef SCRIPT_ACTIONS_HPP
 #define SCRIPT_ACTIONS_HPP
 
-#include "action.hpp"
+#include "legacy_action.hpp"
 
 #include "kconfig_fwd.hpp"
 using namespace KConfig;
 
-class A_AddTile : public Action {
+class A_AddTile : public LegacyAction {
 public:
     explicit A_AddTile(shared_ptr<Tile> t) : tile(t) { }
     virtual void execute(const ActionData &) const;
@@ -43,7 +43,7 @@ private:
     ACTION_MAKER("AddTile");
 };
 
-class A_ChangeItem : public Action {
+class A_ChangeItem : public LegacyAction {
 public:
     explicit A_ChangeItem(const ItemType *itype) : item_type(itype) { }
     virtual void execute(const ActionData &) const;
@@ -52,7 +52,7 @@ private:
     ACTION_MAKER("ChangeItem");
 };
 
-class A_ChangeTile : public Action {
+class A_ChangeTile : public LegacyAction {
 public:
     explicit A_ChangeTile(shared_ptr<Tile> t) : tile(t) { }
     virtual void execute(const ActionData &) const;
@@ -61,7 +61,7 @@ private:
     ACTION_MAKER("ChangeTile");
 };
 
-class A_CheckQuest : public Action {
+class A_CheckQuest : public LegacyAction {
 public:
     A_CheckQuest() { }
     virtual void execute(const ActionData &) const;
@@ -69,21 +69,21 @@ private:
     ACTION_MAKER("CheckQuest");
 };
 
-class A_CrystalStart : public Action {
+class A_CrystalStart : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("CrystalStart");
 };
 
-class A_CrystalStop : public Action {
+class A_CrystalStop : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("CrystalStop");
 };
 
-class A_Damage : public Action {
+class A_Damage : public LegacyAction {
 public:
     A_Damage(int amt, int st, bool is) : amount(amt), stun_time(st), inhibit_squelch(is) { }
     virtual void execute(const ActionData &) const;
@@ -94,7 +94,7 @@ private:
     ACTION_MAKER("Damage");
 };
 
-class A_DebugPrint : public Action {
+class A_DebugPrint : public LegacyAction {
 public:
     explicit A_DebugPrint(const string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
@@ -103,7 +103,7 @@ private:
     string msg;
 };
 
-class A_FlashMessage : public Action {
+class A_FlashMessage : public LegacyAction {
 public:
     explicit A_FlashMessage(const string &m, int nt) : msg(m), num_times(nt) { }
     virtual void execute(const ActionData &) const;
@@ -113,7 +113,7 @@ private:
     int num_times;
 };
 
-class A_FlashScreen : public Action {
+class A_FlashScreen : public LegacyAction {
 public:
     explicit A_FlashScreen(int d) : delay(d) { }
     virtual void execute(const ActionData &) const;
@@ -122,14 +122,14 @@ private:
     int delay;
 };
 
-class A_FullZombieActivity : public Action {
+class A_FullZombieActivity : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("FullZombieActivity");
 };
 
-class A_Necromancy : public Action {
+class A_Necromancy : public LegacyAction {
 public:
     A_Necromancy(int nzom, int rang) : nzoms(nzom), range(rang) { }
     virtual bool possible(const ActionData &) const;
@@ -139,38 +139,28 @@ private:
     int nzoms, range;
 };
 
-class A_Nop : public Action {
+class A_Nop : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Nop");
 };
 
-class A_NormalZombieActivity : public Action {
+class A_NormalZombieActivity : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("NormalZombieActivity");
 };
 
-class A_OnSuccess : public Action {
-public:
-    A_OnSuccess(const Action *s, const Action *f) : success_action(s), fail_action(f) { }
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("OnSuccess");
-    const Action *success_action;
-    const Action *fail_action;
-};
-
-class A_PitKill : public Action {
+class A_PitKill : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("PitKill");
 };
 
-class A_PlaySound : public Action {
+class A_PlaySound : public LegacyAction {
 public:
     A_PlaySound(const Sound *s, int freq, bool a) : sound(s), frequency(freq), all(a) { }
     virtual void execute(const ActionData &) const;
@@ -181,21 +171,21 @@ private:
     bool all;
 };
 
-class A_RevealStart : public Action {
+class A_RevealStart : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("RevealStart");
 };
 
-class A_RevealStop : public Action {
+class A_RevealStop : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("RevealStop");
 };
 
-class A_Secure : public Action {
+class A_Secure : public LegacyAction {
 public:
     explicit A_Secure(shared_ptr<Tile> pwt) : plain_wall_tile(pwt) { }
     virtual bool possible(const ActionData &) const;
@@ -205,7 +195,7 @@ private:
     shared_ptr<Tile> plain_wall_tile;
 };
 
-class A_Shoot : public Action {
+class A_Shoot : public LegacyAction {
 public:
     A_Shoot(int dx_, int dy_, MapDirection dir_, const ItemType &it)
         : dx(dx_), dy(dy_), dir(dir_), itype(it) { }
@@ -217,7 +207,7 @@ private:
     const ItemType &itype;
 };
 
-class A_TeleportTo : public Action {
+class A_TeleportTo : public LegacyAction {
 public:
     A_TeleportTo(int dx_, int dy_) : dx(dx_), dy(dy_) { }
     virtual void execute(const ActionData &) const;
@@ -226,7 +216,7 @@ private:
     int dx, dy;
 };
 
-class A_UpdateQuestStatus : public Action {
+class A_UpdateQuestStatus : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
@@ -235,7 +225,7 @@ private:
 
 // ZombieKill kills a monster of a particular type
 // (it doesn't have to be a zombie; the name is for historical reasons)
-class A_ZombieKill : public Action {
+class A_ZombieKill : public LegacyAction {
 public:
     explicit A_ZombieKill(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual bool possible(const ActionData &) const;

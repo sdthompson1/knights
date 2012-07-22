@@ -27,6 +27,7 @@
 #include "colour_change.hpp"
 #include "config_map.hpp"
 #include "item_type.hpp"
+#include "lua_func.hpp"
 #include "map_support.hpp"
 #include "menu.hpp"
 #include "menu_constraints.hpp"
@@ -44,7 +45,6 @@
 #include <string>
 #include <vector>
 
-class Action;
 class Anim;
 class ColourChange;
 class Control;
@@ -144,9 +144,8 @@ public:
     // NOTE: These can only be called when doingConfig() is true.
     //
 
-    Action * addLuaAction(auto_ptr<Action> p);
     Anim * addLuaAnim(lua_State *lua, int idx);
-    Control * addLuaControl(auto_ptr<Control> p);
+    Control * addLuaControl(auto_ptr<Control> p);  // first NUM_STANDARD_CONTROLS assumed to be the std ctrls
     RandomDungeonLayout * addLuaDungeonLayout(lua_State *lua); // reads from args 1 and 2.
     void addLuaGraphic(auto_ptr<Graphic> p);
     ItemGenerator * addLuaItemGenerator(lua_State *lua);
@@ -159,14 +158,7 @@ public:
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
     
-    
-    //
-    // KConfig references -- each function pushes a userdata to the Lua stack.
-    //
-
-    void kconfigControl(const char *name);
-
-    
+        
     //
     // Interface to KFile
     //
@@ -175,15 +167,10 @@ public:
 
     MapAccess popAccessCode(MapAccess dflt);
     void popAccessTable(MapAccess out[], MapAccess dflt);
-    Action * popAction();
-    Action * popAction(Action *dflt);
     Anim * popAnim();
     Anim * popAnim(Anim *dflt);
     bool popBool();
     bool popBool(bool dflt);
-    Control * popControl();
-    Control * popControl(Control *dflt);
-    void popControlSet(std::vector<const Control*> &which_control_set);
     DungeonDirective * popDungeonDirective();
     Graphic * popGraphic();
     Graphic * popGraphic(Graphic *dflt);
@@ -247,6 +234,7 @@ private:
 
     void * doLuaCast(unsigned int type_tag, void *ud) const;
     
+    LuaFunc popLuaFuncFromString();
 
     //
     // helper classes
@@ -276,8 +264,6 @@ private:
     // Storage for all 'basic' game objects, i.e. stuff loaded directly from the config file.
     // (Deleted by ~KnightsConfigImpl.)
 
-    std::map<const Value *, Action *> actions;
-    std::map<const Value *, Control *> controls;
     std::map<const Value *, DungeonDirective *> dungeon_directives;
     std::vector<ItemType *> special_item_types;
     std::map<const Value *, MenuInt *> menu_ints;
@@ -289,7 +275,6 @@ private:
     KConfig::RandomIntContainer random_ints;
 
     // Storage for lua-created game objects. Will be deleted by ~KnightsConfigImpl.
-    std::vector<Action *> lua_actions;
     std::vector<Anim *> lua_anims;
     std::vector<Control *> lua_controls;
     std::vector<RandomDungeonLayout *> lua_dungeon_layouts;
@@ -341,7 +326,7 @@ private:
     
 
     // The generic hook system
-    std::map<std::string, const Action *> hooks;
+    std::map<std::string, LuaFunc> hooks;
 
     // Some maps from names (in the config system) to integer id codes.
     // These are non-empty only during loading of the config file.

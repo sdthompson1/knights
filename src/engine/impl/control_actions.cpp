@@ -28,6 +28,7 @@
 
 #include "misc.hpp"
 
+#include "action_data.hpp"
 #include "concrete_traps.hpp"
 #include "control.hpp"
 #include "control_actions.hpp"
@@ -35,12 +36,16 @@
 #include "dungeon_map.hpp"
 #include "item.hpp"
 #include "knight.hpp"
+#include "knights_config_impl.hpp"
 #include "lockable.hpp"
+#include "lua_func_wrapper.hpp"
 #include "mediator.hpp"
 #include "missile.hpp"
 #include "player.hpp"
 #include "rng.hpp"
 #include "tile.hpp"
+
+#include "lua.hpp"
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread/mutex.hpp"
@@ -144,50 +149,62 @@ namespace {
 // GetStandardControls
 //
 
-namespace {
-    // The standard controls are created once and shared between different games.
-    boost::mutex g_std_ctrl_mutex;
-    std::vector<boost::shared_ptr<Control> > g_standard_controls;
-    boost::scoped_ptr<Action> g_attack[4], g_move[4], g_withdraw, g_attack_no_dir;
-}
-
-void GetStandardControls(std::vector<const Control*> &controls)
-{
-    boost::lock_guard<boost::mutex> lock(g_std_ctrl_mutex);
+namespace {    
+    A_Attack g_attack[4] = { A_Attack(D_NORTH), A_Attack(D_EAST), A_Attack(D_SOUTH), A_Attack(D_WEST) };
+    A_Move g_move[4] = { A_Move(D_NORTH), A_Move(D_EAST), A_Move(D_SOUTH), A_Move(D_WEST) };
+    A_Withdraw g_withdraw;
+    A_AttackNoDir g_attack_no_dir;
     
-    if (g_standard_controls.empty())
+    int StdActionExec(lua_State *lua)
     {
-        // create the actions for the standard controls
-        for (int i = 0; i < 4; ++i) {
-            g_attack[i].reset(new A_Attack(MapDirection(i)));
-            g_move[i].reset(new A_Move(MapDirection(i)));
-        }
-        g_withdraw.reset(new A_Withdraw);
-        g_attack_no_dir.reset(new A_AttackNoDir);
-        
-        // create the standard controls
-        g_standard_controls.resize(NUM_STANDARD_CONTROLS);
-        boost::shared_ptr<Control> ctrl;
-        for (int i=0; i<4; ++i) {
-            ctrl.reset(new Control(SC_ATTACK+i+1, true, g_attack[i].get()));
-            g_standard_controls[SC_ATTACK+i] = ctrl;
-            ctrl.reset(new Control(SC_MOVE+i+1, true, g_move[i].get()));
-            g_standard_controls[SC_MOVE+i] = ctrl;
-        }
-        
-        ctrl.reset(new Control(SC_WITHDRAW+1, true, g_withdraw.get()));
-        g_standard_controls[SC_WITHDRAW] = ctrl;
-        ctrl.reset(new Control(SC_ATTACK_NO_DIR+1, true, g_attack_no_dir.get()));
-        g_standard_controls[SC_ATTACK_NO_DIR] = ctrl;
+        LegacyAction * ac = static_cast<LegacyAction*>(lua_touserdata(lua, lua_upvalueindex(2)));
+        ActionData ad(lua);
+        ac->execute(ad);
+        return 0;
     }
 
-    controls.clear();
-    for (std::vector<boost::shared_ptr<Control> >::const_iterator it = g_standard_controls.begin();
-         it != g_standard_controls.end(); ++it) {
-        controls.push_back(it->get());
+    int StdActionPossible(lua_State *lua)
+    {
+        LegacyAction * ac = static_cast<LegacyAction*>(lua_touserdata(lua, lua_upvalueindex(2)));
+        ActionData ad(lua);
+        bool result = ac->possible(ad);
+        lua_pushboolean(lua, result);
+        return 1;
+    }
+
+    void MakeControl(lua_State *lua, KnightsConfigImpl *kc,
+                     bool cts, LegacyAction *ac, bool wm, bool ws)
+    {
+        lua_pushlightuserdata(lua, ac);
+        PushCClosure(lua, &StdActionExec, 1);
+        LuaFunc exec_func(lua);
+
+        lua_pushlightuserdata(lua, ac);
+        PushCClosure(lua, &StdActionPossible, 1);
+        LuaFunc poss_func(lua);
+
+        std::auto_ptr<Control> p(new Control(cts, exec_func, poss_func, wm, ws));
+        kc->addLuaControl(p);
     }
 }
-    
+
+void AddStandardControls(lua_State *lua, KnightsConfigImpl *kc)
+{
+    // create the standard controls
+    // NOTE: These must be added in the order of the SC_ identifiers in user_control.hpp.
+
+    for (int i = 0; i < 4; ++i) {
+        MakeControl(lua, kc, true, &g_attack[i], true, false);
+    }
+    for (int i = 0; i < 4; ++i) {
+        MakeControl(lua, kc, true, &g_move[i], true, false);
+    }
+        
+    MakeControl(lua, kc, true, &g_withdraw, false, false);
+    MakeControl(lua, kc, true, &g_attack_no_dir, true, false);
+}
+
+
 
 //
 // A_Activate
@@ -259,7 +276,7 @@ void A_Activate::execute(const ActionData &ad) const
 
 A_Activate::Maker A_Activate::Maker::register_me;
 
-Action * A_Activate::Maker::make(ActionPars &pars) const
+LegacyAction * A_Activate::Maker::make(ActionPars &pars) const
 {
     pars.require(0,2);
     if (pars.getSize()==0) {
@@ -434,7 +451,7 @@ void A_Suicide::execute(const ActionData &ad) const
 
 A_Suicide::Maker A_Suicide::Maker::register_me;
 
-Action * A_Suicide::Maker::make(ActionPars &pars) const
+LegacyAction * A_Suicide::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_Suicide;
@@ -492,7 +509,7 @@ void A_Drop::execute(const ActionData &ad) const
 
 A_Drop::Maker A_Drop::Maker::register_me;
 
-Action * A_Drop::Maker::make(ActionPars &pars) const
+LegacyAction * A_Drop::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     const ItemType *it = pars.getItemType(0);
@@ -551,7 +568,7 @@ void A_DropHeld::execute(const ActionData &ad) const
 
 A_DropHeld::Maker A_DropHeld::Maker::register_me;
 
-Action * A_DropHeld::Maker::make(ActionPars &pars) const
+LegacyAction * A_DropHeld::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_DropHeld;
@@ -608,7 +625,7 @@ void A_PickLock::execute(const ActionData &ad) const
 
 A_PickLock::Maker A_PickLock::Maker::register_me;
 
-Action * A_PickLock::Maker::make(ActionPars &pars) const
+LegacyAction * A_PickLock::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     float p = pars.getProbability(0);
@@ -756,7 +773,7 @@ void A_PickUp::execute(const ActionData &ad) const
 
 A_PickUp::Maker A_PickUp::Maker::register_me;
 
-Action * A_PickUp::Maker::make(ActionPars &pars) const
+LegacyAction * A_PickUp::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_PickUp;
@@ -814,7 +831,7 @@ void A_SetBearTrap::execute(const ActionData &ad) const
 
 A_SetBearTrap::Maker A_SetBearTrap::Maker::register_me;
 
-Action * A_SetBearTrap::Maker::make(ActionPars &pars) const
+LegacyAction * A_SetBearTrap::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     const ItemType *it = pars.getItemType(0);
@@ -886,7 +903,7 @@ void A_SetBladeTrap::execute(const ActionData &ad) const
 
 A_SetBladeTrap::Maker A_SetBladeTrap::Maker::register_me;
 
-Action * A_SetBladeTrap::Maker::make(ActionPars &pars) const
+LegacyAction * A_SetBladeTrap::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     const ItemType *it = pars.getItemType(0);
@@ -916,7 +933,7 @@ void A_SetPoisonTrap::execute(const ActionData &ad) const
 
 A_SetPoisonTrap::Maker A_SetPoisonTrap::Maker::register_me;
 
-Action * A_SetPoisonTrap::Maker::make(ActionPars &pars) const
+LegacyAction * A_SetPoisonTrap::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_SetPoisonTrap;
@@ -946,7 +963,7 @@ void A_Swing::execute(const ActionData &ad) const
 
 A_Swing::Maker A_Swing::Maker::register_me;
 
-Action * A_Swing::Maker::make(ActionPars &pars) const
+LegacyAction * A_Swing::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_Swing;
@@ -978,7 +995,7 @@ void A_SwingOrDrop::execute(const ActionData &ad) const
 
 A_SwingOrDrop::Maker A_SwingOrDrop::Maker::register_me;
 
-Action * A_SwingOrDrop::Maker::make(ActionPars &pars) const
+LegacyAction * A_SwingOrDrop::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_SwingOrDrop;
@@ -1032,7 +1049,7 @@ void A_Throw::execute(const ActionData &ad) const
 
 A_Throw::Maker A_Throw::Maker::register_me;
 
-Action * A_Throw::Maker::make(ActionPars &pars) const
+LegacyAction * A_Throw::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_Throw;
@@ -1071,7 +1088,7 @@ void A_ThrowOrShoot::execute(const ActionData &ad) const
 
 A_ThrowOrShoot::Maker A_ThrowOrShoot::Maker::register_me;
 
-Action * A_ThrowOrShoot::Maker::make(ActionPars &pars) const
+LegacyAction * A_ThrowOrShoot::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_ThrowOrShoot;

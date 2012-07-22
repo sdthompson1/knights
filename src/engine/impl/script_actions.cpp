@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "action_data.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "dungeon_view.hpp"
@@ -74,7 +75,7 @@ void A_AddTile::execute(const ActionData &ad) const
 
 A_AddTile::Maker A_AddTile::Maker::register_me;
 
-Action * A_AddTile::Maker::make(ActionPars &pars) const
+LegacyAction * A_AddTile::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_AddTile(pars.getTile(0));
@@ -100,7 +101,7 @@ void A_ChangeItem::execute(const ActionData &ad) const
 
 A_ChangeItem::Maker A_ChangeItem::Maker::register_me;
 
-Action * A_ChangeItem::Maker::make(ActionPars &pars) const
+LegacyAction * A_ChangeItem::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_ChangeItem(pars.getItemType(0));
@@ -125,7 +126,7 @@ void A_ChangeTile::execute(const ActionData &ad) const
 
 A_ChangeTile::Maker A_ChangeTile::Maker::register_me;
 
-Action * A_ChangeTile::Maker::make(ActionPars &pars) const
+LegacyAction * A_ChangeTile::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_ChangeTile(pars.getTile(0));
@@ -151,7 +152,7 @@ void A_CheckQuest::execute(const ActionData &ad) const
 
 A_CheckQuest::Maker A_CheckQuest::Maker::register_me;
 
-Action * A_CheckQuest::Maker::make(ActionPars &pars) const
+LegacyAction * A_CheckQuest::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_CheckQuest;
@@ -170,7 +171,7 @@ void A_CrystalStart::execute(const ActionData &ad) const
 
 A_CrystalStart::Maker A_CrystalStart::Maker::register_me;
 
-Action * A_CrystalStart::Maker::make(ActionPars &pars) const
+LegacyAction * A_CrystalStart::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_CrystalStart;
@@ -188,7 +189,7 @@ void A_CrystalStop::execute(const ActionData &ad) const
 
 A_CrystalStop::Maker A_CrystalStop::Maker::register_me;
 
-Action * A_CrystalStop::Maker::make(ActionPars &pars) const
+LegacyAction * A_CrystalStop::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_CrystalStop;
@@ -210,7 +211,7 @@ void A_Damage::execute(const ActionData &ad) const
 
 A_Damage::Maker A_Damage::Maker::register_me;
 
-Action * A_Damage::Maker::make(ActionPars &pars) const
+LegacyAction * A_Damage::Maker::make(ActionPars &pars) const
 {
     pars.require(2, 3);
     bool inhibit_squelch = (pars.getSize() == 3 && pars.getInt(2));
@@ -231,7 +232,7 @@ void A_DebugPrint::execute(const ActionData &ad) const
 
 A_DebugPrint::Maker A_DebugPrint::Maker::register_me;
 
-Action * A_DebugPrint::Maker::make(ActionPars &pars) const
+LegacyAction * A_DebugPrint::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     return new A_DebugPrint(pars.getString(0));
@@ -252,7 +253,7 @@ void A_FlashMessage::execute(const ActionData &ad) const
 
 A_FlashMessage::Maker A_FlashMessage::Maker::register_me;
 
-Action * A_FlashMessage::Maker::make(ActionPars &pars) const
+LegacyAction * A_FlashMessage::Maker::make(ActionPars &pars) const
 {
     pars.require(1,2);
     return new A_FlashMessage(pars.getString(0), pars.getSize()==1 ? 4 : pars.getInt(1));
@@ -276,7 +277,7 @@ void A_FlashScreen::execute(const ActionData &ad) const
 
 A_FlashScreen::Maker A_FlashScreen::Maker::register_me;
 
-Action * A_FlashScreen::Maker::make(ActionPars &pars) const
+LegacyAction * A_FlashScreen::Maker::make(ActionPars &pars) const
 {
     pars.require(0,1);
     int delay = 0;
@@ -298,7 +299,7 @@ void A_FullZombieActivity::execute(const ActionData &ad) const
 
 A_FullZombieActivity::Maker A_FullZombieActivity::Maker::register_me;
 
-Action * A_FullZombieActivity::Maker::make(ActionPars &pars) const
+LegacyAction * A_FullZombieActivity::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_FullZombieActivity;
@@ -333,7 +334,7 @@ void A_Necromancy::execute(const ActionData &ad) const
 
 A_Necromancy::Maker A_Necromancy::Maker::register_me;
 
-Action * A_Necromancy::Maker::make(ActionPars &pars) const
+LegacyAction * A_Necromancy::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_Necromancy(pars.getInt(0), pars.getInt(1));
@@ -350,7 +351,7 @@ void A_Nop::execute(const ActionData &) const
 
 A_Nop::Maker A_Nop::Maker::register_me;
 
-Action * A_Nop::Maker::make(ActionPars &) const
+LegacyAction * A_Nop::Maker::make(ActionPars &) const
 {
     return new A_Nop;
 }
@@ -367,7 +368,7 @@ void A_NormalZombieActivity::execute(const ActionData &ad) const
 
 A_NormalZombieActivity::Maker A_NormalZombieActivity::Maker::register_me;
 
-Action * A_NormalZombieActivity::Maker::make(ActionPars &pars) const
+LegacyAction * A_NormalZombieActivity::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_NormalZombieActivity;
@@ -391,7 +392,7 @@ void A_PitKill::execute(const ActionData &ad) const
 
 A_PitKill::Maker A_PitKill::Maker::register_me;
 
-Action * A_PitKill::Maker::make(ActionPars &pars) const
+LegacyAction * A_PitKill::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_PitKill;
@@ -418,7 +419,7 @@ void A_PlaySound::execute(const ActionData &ad) const
 
 A_PlaySound::Maker A_PlaySound::Maker::register_me;
 
-Action * A_PlaySound::Maker::make(ActionPars &pars) const
+LegacyAction * A_PlaySound::Maker::make(ActionPars &pars) const
 {
     pars.require(2, 3);
     if (pars.getSize() == 2) {
@@ -441,7 +442,7 @@ void A_RevealStart::execute(const ActionData &ad) const
 
 A_RevealStart::Maker A_RevealStart::Maker::register_me;
 
-Action * A_RevealStart::Maker::make(ActionPars &pars) const
+LegacyAction * A_RevealStart::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_RevealStart;
@@ -459,7 +460,7 @@ void A_RevealStop::execute(const ActionData &ad) const
 
 A_RevealStop::Maker A_RevealStop::Maker::register_me;
 
-Action * A_RevealStop::Maker::make(ActionPars &pars) const
+LegacyAction * A_RevealStop::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_RevealStop;
@@ -493,7 +494,7 @@ void A_Secure::execute(const ActionData &ad) const
 
 A_Secure::Maker A_Secure::Maker::register_me;
 
-Action * A_Secure::Maker::make(ActionPars &pars) const
+LegacyAction * A_Secure::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     shared_ptr<Tile> wall = pars.getTile(0);
@@ -521,7 +522,7 @@ void A_Shoot::execute(const ActionData &ad) const
 
 A_Shoot::Maker A_Shoot::Maker::register_me;
 
-Action * A_Shoot::Maker::make(ActionPars &pars) const
+LegacyAction * A_Shoot::Maker::make(ActionPars &pars) const
 {
     pars.require(4);
     int dx = pars.getInt(0);
@@ -551,7 +552,7 @@ void A_TeleportTo::execute(const ActionData &ad) const
 
 A_TeleportTo::Maker A_TeleportTo::Maker::register_me;
 
-Action * A_TeleportTo::Maker::make(ActionPars &pars) const
+LegacyAction * A_TeleportTo::Maker::make(ActionPars &pars) const
 {
     pars.require(2);
     return new A_TeleportTo(pars.getInt(0), pars.getInt(1));
@@ -573,7 +574,7 @@ void A_UpdateQuestStatus::execute(const ActionData &ad) const
 
 A_UpdateQuestStatus::Maker A_UpdateQuestStatus::Maker::register_me;
 
-Action * A_UpdateQuestStatus::Maker::make(ActionPars &pars) const
+LegacyAction * A_UpdateQuestStatus::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
     return new A_UpdateQuestStatus;
@@ -610,7 +611,7 @@ void A_ZombieKill::execute(const ActionData &ad) const
 
 A_ZombieKill::Maker A_ZombieKill::Maker::register_me;
 
-Action * A_ZombieKill::Maker::make(ActionPars &pars) const
+LegacyAction * A_ZombieKill::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     const MonsterType * mtype = pars.getMonsterType(0);

@@ -24,13 +24,13 @@
 #ifndef CONTROL_HPP
 #define CONTROL_HPP
 
+#include "lua_func.hpp"
 #include "lua_ref.hpp"
 #include "user_control.hpp"
 
 #include <vector>
 using namespace std;
 
-class Action;
 
 //
 // 'Controls' represent something a knight can do.
@@ -39,25 +39,37 @@ class Action;
 
 class Control : public UserControl {
 public:
-    Control(lua_State *lua, int idx,
+    Control(lua_State *lua, int idx,   // reads from lua; doesn't pop.
             const Graphic *menu_gfx, MapDirection menu_dir,
             int tap_pri, int action_slot, int action_pri, bool suicide,
             bool cts, unsigned int special, const std::string &name,
-            const Action *action_);
-
-    void pushTable(lua_State *lua) const { table_ref.push(lua); }
+            const LuaFunc &exec, const LuaFunc &poss,
+            bool can_while_moving, bool can_while_stunned);
 
     // 'cut down' constructor for the standard controls.
-    Control(int id, bool cts, const Action *ac)
+    Control(bool cts, const LuaFunc &ac, const LuaFunc &poss, bool wm, bool ws)
         : UserControl(0, D_NORTH, 0, 0, 0, false, cts, 0, ""),
-          action(ac)
-    { setID(id); }
+          execute(ac), possible(poss),
+          can_execute_while_moving(wm),
+          can_execute_while_stunned(ws)
+    { }
 
-    // action to run when the control is selected.
-    const Action * getAction() const { return action; }
+    // get the underlying lua table (if there is one).
+    void pushTable(lua_State *lua) const { table_ref.push(lua); }
+    
+    // accessor methods.
+    const LuaFunc & getExecuteFunc() const { return execute; }
+    const LuaFunc & getPossibleFunc() const { return possible; }
+    bool canExecuteWhileMoving() const { return can_execute_while_moving; }
+    bool canExecuteWhileStunned() const { return can_execute_while_stunned; }
+
+    bool checkPossible(const ActionData &ad) const;
 
 private:
-    const Action *action;
+    LuaFunc execute;
+    LuaFunc possible;
+    bool can_execute_while_moving;
+    bool can_execute_while_stunned;
     LuaRef table_ref;
 };
 

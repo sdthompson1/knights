@@ -30,6 +30,7 @@
 #ifndef TILE_HPP
 #define TILE_HPP
 
+#include "lua_func.hpp"
 #include "lua_ref.hpp"
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
@@ -41,7 +42,6 @@ using namespace KConfig;
 #include "boost/enable_shared_from_this.hpp"
 using namespace boost;
 
-class Action;
 class ColourChange;
 class Control;
 class Creature;
@@ -65,7 +65,7 @@ public:
     Tile(lua_State *lua, KnightsConfigImpl *kc);
 
     // Construct a "dummy" tile for switch-actions.
-    Tile(const Action *walk_over, const Action *activate);
+    Tile(const LuaFunc &walk_over, const LuaFunc &activate);
     
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
 
@@ -225,12 +225,12 @@ private:
     const RandomInt * initial_hit_points;
     int connectivity_check;
     
-    const Action * on_activate;
-    const Action * on_walk_over;
-    const Action * on_approach;
-    const Action * on_withdraw;
-    const Action * on_hit;
-    const Action * on_destroy;
+    LuaFunc on_activate;
+    LuaFunc on_walk_over;
+    LuaFunc on_approach;
+    LuaFunc on_withdraw;
+    LuaFunc on_hit;
+    LuaFunc on_destroy;
 
     const Control * control;
     

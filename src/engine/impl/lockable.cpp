@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "action.hpp"
+#include "action_data.hpp"
 #include "dungeon_map.hpp"
 #include "dungeon_view.hpp"
 #include "item.hpp"
@@ -56,8 +56,8 @@ Lockable::Lockable(lua_State *lua, KnightsConfigImpl *kc)
     pick_only_chance = LuaGetProbability(lua, -1, "lock_pick_only_chance");  // default 0
     keymax = LuaGetInt(lua, -1, "keymax", 1);   // default 1
 
-    on_open_or_close = LuaGetAction(lua, -1, "on_open_or_close", kc);  // default null
-    on_unlock_fail = LuaGetAction(lua, -1, "on_unlock_fail", kc);      // default null
+    on_open_or_close.reset(lua, -1, "on_open_or_close");  // default null
+    on_unlock_fail.reset(lua, -1, "on_unlock_fail");      // default null
 }
 
 
@@ -73,13 +73,13 @@ bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
         bool ok = checkUnlock(cr);
         if (!ok) {
             // Failed to unlock
-            if (on_unlock_fail) {
+            if (on_unlock_fail.hasValue()) {
                 ActionData ad;
                 ad.setActor(cr);
                 ad.setOriginator(originator);
                 ad.setTile(&dmap, mc, shared_from_this());
                 ad.setGenericPos(&dmap, mc);
-                on_unlock_fail->execute(ad);
+                on_unlock_fail.execute(ad);
             }
             return false;
         }
@@ -89,13 +89,13 @@ bool Lockable::doOpen(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
     closed = false;
     if (act_type == ACT_NORMAL) activateTraps(dmap, mc, cr);
     else disarmTraps(dmap, mc);
-    if (on_open_or_close) {
+    if (on_open_or_close.hasValue()) {
         ActionData ad;
         ad.setActor(cr);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_open_or_close->execute(ad);
+        on_open_or_close.execute(ad);
     }
     return true;
 }
@@ -112,13 +112,13 @@ bool Lockable::doClose(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature
     closeImpl(dmap, mc, originator);
     closed = true;
 
-    if (on_open_or_close) {
+    if (on_open_or_close.hasValue()) {
         ActionData ad;
         ad.setActor(cr);
         ad.setOriginator(originator);
         ad.setTile(&dmap, mc, shared_from_this());
         ad.setGenericPos(&dmap, mc);
-        on_open_or_close->execute(ad);
+        on_open_or_close.execute(ad);
     }
 
     return true;
