@@ -27,6 +27,7 @@
 #include "lua_load_from_rstream.hpp"
 #include "my_exceptions.hpp"
 #include "rstream.hpp"
+#include "rstream_find.hpp"
 
 #include "lua.hpp"
 
@@ -50,21 +51,6 @@ namespace {
         
         *size = rc->str->gcount();
         return &rc->buf[0];
-    }
-
-    boost::filesystem::path RemoveDotDot(const boost::filesystem::path &p)
-    {
-        // This is like a cut-down canonical(), that does not chase symlinks.
-        boost::filesystem::path result;
-        for (boost::filesystem::path::iterator it = p.begin(); it != p.end(); ++it) {
-            if (*it == ".") continue;
-            if (*it == "..") {
-                result.remove_filename();
-                continue;
-            }
-            result /= *it;
-        }
-        return result;
     }
 
     boost::filesystem::path GetCWD(lua_State *lua)
@@ -95,21 +81,15 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
     // Catch exceptions and convert them to lua errors if required.
     try {
 
-        boost::filesystem::path to_load;
         boost::filesystem::path old_cwd = GetCWD(lua);
+        boost::filesystem::path to_load;
         
-        bool ready = false;
-
-        if (look_in_cwd && !filename.has_root_path()) {
-            // look for it in CWD
-            to_load = RemoveDotDot(old_cwd / filename);
-            ready = RStream::Exists(to_load);
-        }
-        if (!ready) {
-            // look for it in the root
+        if (look_in_cwd) {
+            to_load = RStreamFind(filename, old_cwd);
+        } else {
             to_load = filename;
         }
-
+        
         // open stream
         // (may throw)
         RStream str(to_load);
