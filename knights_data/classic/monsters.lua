@@ -43,9 +43,6 @@ m_vampire_bat = kts.MonsterType {
    -- properties specific to flying monsters:
    attack_damage = 1,
    attack_stun_time = rng_time_range(2, 3),
-
-   -- where bats can be generated from:
-   generator_tiles = all_open_pit_tiles
 }
 
 m_zombie = kts.MonsterType {
@@ -74,7 +71,7 @@ m_zombie = kts.MonsterType {
 
 -- Zombie Activity
 
-kts.ZOMBIE_ACTIVITY = { 
+zombie_activity_table = { 
 
    -- tiles that decay into other tiles (e.g. dead knights turn into dead zombie tiles):
 

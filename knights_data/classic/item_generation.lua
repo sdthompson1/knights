@@ -20,7 +20,7 @@
 
 
 -- Floors
-function igf_big()
+function ig_big()
    local choice = kts.RandomRange(1, 140)
 
    if choice <= 30 then return i_axe
@@ -44,22 +44,20 @@ function igf_big()
    elseif choice <= 140 then return i_scroll
    end
 end
-ig_big = kts.ItemGenerator (igf_big)
 
 -- Chests
-function igf_pot()
+function ig_pot()
    local choice = kts.RandomRange(1,16)
    if choice == 1 then return i_poison_trap
    elseif choice == 2 then return i_blade_trap
-   elseif choice <= 7 then return igf_trap()   -- delegate to "barrels" generator (5 chances in 16)
+   elseif choice <= 7 then return ig_trap()   -- delegate to "barrels" generator (5 chances in 16)
    elseif choice <= 12 then return i_potion
    elseif choice <= 16 then return i_scroll
    end
 end
-ig_pot = kts.ItemGenerator(igf_pot)
 
 -- Barrels
-function igf_trap()
+function ig_trap()
    local choice = kts.RandomRange(1,25)
    if choice <= 6 then return i_poison_trap
    elseif choice <= 12 then return i_blade_trap
@@ -73,24 +71,30 @@ function igf_trap()
       end
    end
 end
-ig_trap = kts.ItemGenerator(igf_trap)
 
 -- (Large) Tables
-function igf_table()
+function ig_table()
    local choice = kts.RandomRange(1,4)
-   if choice == 1 then return igf_big()
-   elseif choice <= 3 then return igf_pot()
-   elseif choice == 4 then return igf_trap()
+   if choice == 1 then return ig_big()
+   elseif choice <= 3 then return ig_pot()
+   elseif choice == 4 then return ig_trap()
    end
 end
-ig_table = kts.ItemGenerator(igf_table)
 
 -- Small Skulls / Small Tables
-function igf_small_table()
+function ig_small_table()
    if kts.RandomChance(2/3) then
-      return igf_pot()
+      return ig_pot()
    else
-      return igf_table()
+      return ig_table()
    end
 end
-ig_small_table = kts.ItemGenerator(igf_small_table)
+
+
+-- This controls where "required items" get placed
+item_weights = {
+   "chest",       3,
+   "small_table", 1,
+   "table",       1,
+   "floor",       0
+}

@@ -203,7 +203,7 @@ MAIN_MENU = [
         title="Mission Type"
         values=[
             ["Duel to the Death",        Constrain("exit",0)
-                                         Constrain("num_gems",0)  Constrain("gems_needed", 0)
+                                         Constrain("num_gems",0)  
                                          ConstrainMin("num_wands",1)  Constrain("wand", 3)
                                          Constrain("book",0) 
                                          ConstrainMinPlayers("",2) ConstrainMinTeams("",2) ]
@@ -317,10 +317,8 @@ MAIN_MENU = [
         values=[
             ["Total Random" DungeonHome("total_random")]
             ["Close to Other" DungeonHome("close_to_other") 
-                      ConstrainMinPlayers("",2)     # Doesn't make sense in single player mode
                       ConstrainMaxPlayers("",4) ]   # Dungeon generator only allows 4 "close to other" homes currently
             ["Away from Other" DungeonHome("away_from_other")
-                      ConstrainMinPlayers("",2)     # Doesn't make sense in single player mode
                       ConstrainMaxPlayers("",4) ]   # Dungeon generator only allows 4 "away from other" homes currently
             ["Different every time" 
                       DungeonHome("different_every_time")
