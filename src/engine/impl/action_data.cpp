@@ -30,6 +30,8 @@
 
 #include "lua.hpp"
 
+#include <cstring>
+
 namespace {
     void PushOriginator(lua_State *lua, const Originator &originator)
     {
@@ -47,7 +49,7 @@ namespace {
         Originator orig = Originator(OT_None());
     
         if (lua_isstring(lua, idx)) {
-            if (strcmp("monster", lua_tostring(lua, idx)) == 0) {
+            if (std::strcmp("monster", lua_tostring(lua, idx)) == 0) {
                 orig = Originator(OT_Monster());
             }
         } else {

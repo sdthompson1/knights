@@ -41,6 +41,7 @@
 #include "lua.hpp"
 
 #include <cctype>
+#include <cstring>
 
 namespace {
     MapAccess PopAccess(lua_State *lua)
