@@ -1167,8 +1167,7 @@ void DungeonGenerator::knockThroughDoors(DungeonMap & dmap)
 
 void DungeonGenerator::generateExits()
 {
-    // This generates exit points for SPECIAL and RANDOM exits
-    // (Exit via own entry, or other's entry, are handled when homes are allocated.)
+    // This generates the "standard" player exit points (not the special exit points).
     switch (exit_type) {
     case E_SPECIAL:
         {
