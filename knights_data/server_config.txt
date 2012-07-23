@@ -19,5 +19,4 @@
 #
 
 include "main_config.txt"
-include "knights_rooms.txt"
 include "menus.txt"

@@ -28,12 +28,14 @@
 #include "create_tile.hpp"
 #include "graphic.hpp"
 #include "knights_config_impl.hpp"
+#include "load_segments.hpp"
 #include "lua_check.hpp"
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_ref.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
+#include "segment.hpp"
 #include "tile.hpp"
 
 #include "lua.hpp"
@@ -205,6 +207,30 @@ namespace {
     }
 
     // Upvalue: KnightsConfigImpl*
+    // Input: table of tiles, and segments-filename (relative to _CWD), and category string (temporary)
+    // Output: table (sequence) of segment-userdatas.
+    int MakeSegments(lua_State *lua)
+    {
+        KnightsConfigImpl *kc = GetKC(lua, "Segments");        
+        const char *filename = luaL_checkstring(lua, 2);
+        const char *category = luaL_checkstring(lua, 3);
+
+        boost::filesystem::path cwd;
+        lua_getglobal(lua, "_CWD");  // [.. cwd]
+        const char *p = lua_tostring(lua, -1);
+        if (p) {
+            cwd = p;
+        }
+        lua_pop(lua, 1); // [..]
+
+        lua_pushvalue(lua, 1);  // [.. tiletable]
+
+        LoadSegments(lua, kc, filename, cwd, category);  // [.. segments]
+        
+        return 1;
+    }        
+
+    // Upvalue: KnightsConfigImpl*
     // Input: filename
     // Output: userdata representing the sound
     int MakeSound(lua_State *lua)
@@ -216,7 +242,6 @@ namespace {
         return 1;
     }
 
-    
     // Upvalue: KnightsConfigImpl*
     // Input: table representing a tile
     // Output: userdata representing the tile
@@ -229,8 +254,8 @@ namespace {
         NewLuaSharedPtr<Tile>(lua, tile);
         return 1;
     }
-    
 
+    
     // Upvalue: KnightsConfigImpl*
     // Input: 60 arguments for the overlay offsets
     // Output: nothing
@@ -319,6 +344,11 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeTile, 1);
     lua_setfield(lua, -2, "Tile");
+
+
+    lua_pushlightuserdata(lua, kc);
+    PushCClosure(lua, &MakeSegments, 1);
+    lua_setfield(lua, -2, "LoadSegments");
     
 
     lua_pushlightuserdata(lua, kc);

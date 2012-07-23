@@ -1,5 +1,5 @@
 /*
- * segment_set.hpp
+ * trim.hpp
  *
  * This file is part of Knights.
  *
@@ -21,31 +21,11 @@
  *
  */
 
-/*
- * SegmentSet: collection of Segments.
- *
- */
+#ifndef TRIM_HPP
+#define TRIM_HPP
 
-#ifndef SEGMENT_SET_HPP
-#define SEGMENT_SET_HPP
+#include <string>
 
-class Segment;
-
-#include "boost/noncopyable.hpp"
-
-#include <vector>
-using namespace std;
-
-class SegmentSet : boost::noncopyable {
-public:
-    void addSegment(const Segment *, int nhomes, int category = -1);
-    
-    const Segment * getHomeSegment(int minhomes) const;
-    const Segment * getSpecialSegment(int category) const;
-    
-private:
-    vector<vector<const Segment *> > segments;    // segments[nhomes][segmentno].
-    vector<vector<const Segment *> > special_segments;  // special_segments[category][segmentno].
-};
+std::string Trim(const std::string &x);
 
 #endif

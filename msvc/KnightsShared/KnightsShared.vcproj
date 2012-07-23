@@ -218,6 +218,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\impl\trim.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\impl\user_control.cpp"
 				>
 			</File>
@@ -325,6 +329,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\status_display.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\trim.hpp"
 				>
 			</File>
 			<File

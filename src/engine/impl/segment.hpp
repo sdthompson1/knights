@@ -103,6 +103,7 @@ public:
 
 private:
     void readTable(lua_State *lua, int x, int y);
+    void readTile(lua_State *lua, int x, int y);
     void readSquare(lua_State *lua, int x, int y, int n);
     void loadData(std::istream &str, lua_State *lua);
     void loadRooms(std::istream &str, lua_State *lua);

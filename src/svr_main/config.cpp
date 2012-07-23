@@ -22,6 +22,7 @@
  */
 
 #include "config.hpp"
+#include "trim.hpp"
 
 #include <cctype>
 #include <fstream>
@@ -34,22 +35,6 @@ namespace {
         size_t i = x.find('#');
         if (i == std::string::npos) return x;
         else return x.substr(0, i);
-    }
-
-    std::string Trim(const std::string &x)
-    {
-        // Left trim
-        size_t i;
-        for (i = 0; i < x.length(); ++i) {
-            if (!std::isspace(x[i])) break;
-        }
-        if (i == x.length()) return "";  // entire string was spaces
-
-        // Right trim
-        size_t j = x.length() - 1;
-        while (std::isspace(x[j])) --j;
-
-        return x.substr(i, j - i + 1);
     }
 
     std::string LowerCase(const std::string &x)

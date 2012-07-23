@@ -1,5 +1,5 @@
 /*
- * segment_set.hpp
+ * trim.cpp
  *
  * This file is part of Knights.
  *
@@ -21,31 +21,29 @@
  *
  */
 
-/*
- * SegmentSet: collection of Segments.
- *
- */
+#include "misc.hpp"
 
-#ifndef SEGMENT_SET_HPP
-#define SEGMENT_SET_HPP
+#include "trim.hpp"
 
-class Segment;
+#include <cctype>
 
-#include "boost/noncopyable.hpp"
-
-#include <vector>
-using namespace std;
-
-class SegmentSet : boost::noncopyable {
-public:
-    void addSegment(const Segment *, int nhomes, int category = -1);
+std::string Trim(const std::string &s)
+{
+    size_t beg = 0;
+    while (beg < s.size()) {
+        if (!std::isspace(s[beg])) break;
+        ++beg;
+    }
+    // 'beg' is now the first non-space character
+    // (or size() if none such exists)
     
-    const Segment * getHomeSegment(int minhomes) const;
-    const Segment * getSpecialSegment(int category) const;
+    size_t end = s.size();
+    while (end != beg) {
+        if (!std::isspace(s[end-1])) break;
+        --end;
+    }
+    // 'end' is now one plus the last non-space character,
+    // or equal to beg, whichever is greater
     
-private:
-    vector<vector<const Segment *> > segments;    // segments[nhomes][segmentno].
-    vector<vector<const Segment *> > special_segments;  // special_segments[category][segmentno].
-};
-
-#endif
+    return s.substr(beg, end - beg);
+}        

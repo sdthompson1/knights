@@ -85,17 +85,6 @@ public:
 
 
     //
-    // types used below
-    //
-
-    struct SegmentTileData {
-        std::vector<boost::shared_ptr<Tile> > tiles;
-        std::vector<const ItemType*> items;
-        std::vector<const MonsterType*> monsters;
-    };
-
-
-    //
     // stuff forwarded from KnightsConfig
     //
 
@@ -154,6 +143,7 @@ public:
                                     std::vector<boost::shared_ptr<Tile> > &generator_tiles,
                                     std::vector<boost::shared_ptr<Tile> > &corpse_tiles);
     Overlay * addLuaOverlay(auto_ptr<Overlay> p);
+    Segment * addLuaSegment(auto_ptr<Segment> p, const char *category);
     Sound * addLuaSound(const char *name);  // creates the sound and adds it.
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
@@ -199,14 +189,6 @@ public:
     void popQuestDescriptions();
     RandomDungeonLayout * popRandomDungeonLayout();
     Colour popRGB();
-    Segment * popSegment(const std::vector<SegmentTileData> &tile_map, int &category);
-    Segment * popSegmentData(const std::vector<SegmentTileData> &tile_map, int w, int h);
-    void popSegmentList(const std::vector<SegmentTileData> &tile_map);
-    void popSegmentRooms(Segment &);
-    void popSegmentSet();
-    void popSegmentSwitches(Segment &);
-    void popSegmentTiles(std::vector<SegmentTileData> &tile_map);
-    void popSegmentTile(SegmentTileData &seg_tile, bool &items_yet, bool &monsters_yet);
     void popSkullRenderer();
     Sound * popSound();
     boost::shared_ptr<Tile> popTile();
@@ -226,10 +208,8 @@ private:
     //
 
     void freeMemory();
-    void processTile(const std::vector<SegmentTileData> &tmap, Segment &seg, int x, int y);
     void readMenu(const Menu &menu, const MenuSelections &msel, DungeonGenerator &dgen,
                   std::vector<boost::shared_ptr<Quest> > &quests) const;
-    const SegmentTileData & tileFromInt(const std::vector<SegmentTileData> &tile_map, int t);
     shared_ptr<Tile> makeDeadKnightTile(boost::shared_ptr<Tile>, const ColourChange &);
 
     void * doLuaCast(unsigned int type_tag, void *ud) const;
@@ -269,7 +249,6 @@ private:
     std::map<const Value *, MenuInt *> menu_ints;
     std::map<const Value *, MonsterType *> monster_types;
     std::map<const Value *, Overlay *> overlays;
-    std::map<const Value *, Segment *> segments;
     std::map<const Value *, boost::shared_ptr<Tile> > tiles;
     SegmentSet segment_set;
     KConfig::RandomIntContainer random_ints;
@@ -283,6 +262,7 @@ private:
     std::vector<ItemType *> lua_item_types;
     std::vector<MonsterType *> lua_monster_types;
     std::vector<Overlay *> lua_overlays;
+    std::vector<Segment *> lua_segments;
     std::vector<Sound *> lua_sounds;
     
     // Menu

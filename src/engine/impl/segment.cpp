@@ -31,34 +31,13 @@
 #include "segment.hpp"
 #include "special_tiles.hpp"  // for Home
 #include "tile.hpp"
+#include "trim.hpp"
 
 #include "lua.hpp"
 
-#include <cctype>
 #include <iostream>
 
 namespace {
-    std::string Trim(const std::string &s)
-    {
-        size_t beg = 0;
-        while (beg < s.size()) {
-            if (!std::isspace(s[beg])) break;
-            ++beg;
-        }
-        // 'beg' is now the first non-space character
-        // (or size() if none such exists)
-
-        size_t end = s.size();
-        while (end != beg) {
-            if (!std::isspace(s[end-1])) break;
-            --end;
-        }
-        // 'end' is now one plus the last non-space character,
-        // or equal to beg, whichever is greater
-
-        return s.substr(beg, end - beg);
-    }        
-    
     MapCoord TransformMapCoord(int size, bool x_reflect, int nrot, const MapCoord &top_left, int x, int y)
     {
         // apply reflection
@@ -80,50 +59,64 @@ namespace {
 
 void Segment::readTable(lua_State *lua, int x, int y)
 {
+    // Top of stack contains a table (list of tiles, items, monsters).
+    // Read each element one by one, and add it to the segment at (x,y).
+    // (If any subtables are encountered, descend into them recursively.)
+
+    luaL_checkstack(lua, 1, 0);
+
     // [tbl]
+
     lua_len(lua, -1);  // [tbl len]
-    const int sz = lua_tointeger(lua, -1);  // [tbl]
+    const int sz = lua_tointeger(lua, -1);  // [tbl len]
     lua_pop(lua, 1);  // [tbl]
 
     for (int i = 1; i <= sz; ++i) {
         lua_pushinteger(lua, i);  // [tbl i]
         lua_gettable(lua, -2);    // [tbl value]
 
-        if (!lua_isnil(lua, -1)) {
-
-            if (IsLuaPtr<Tile>(lua, -1)) {
-                addTile(x, y, ReadLuaSharedPtr<Tile>(lua, -1));
-
-            } else if (IsLuaPtr<const ItemType>(lua, -1)) {
-                addItem(x, y, ReadLuaPtr<const ItemType>(lua, -1));
-
-            } else if (IsLuaPtr<MonsterType>(lua, -1)) {
-                addMonster(x, y, ReadLuaPtr<MonsterType>(lua, -1));
-
-            } else {
-                // try reading it as a table
-                readTable(lua, x, y);
-            }
-        }
+        readTile(lua, x, y);   // [tbl value]
 
         lua_pop(lua, 1);  // [tbl]
     }
 }
 
-void Segment::readSquare(lua_State *lua, int x, int y, int n)
+void Segment::readTile(lua_State *lua, int x, int y)
 {
-    // [t]
-    lua_pushinteger(lua, n);  // [t n]
-    lua_gettable(lua, -2);    // [t value]
+    // [value]  (where value is a tile, itemtype, monster or table, or perhaps nil)
 
-    if (lua_isnil(lua, -1)) {
-        luaL_error(lua, "Error in segment file, tile %d does not exist", n);
-    } else {
-        readTable(lua, x, y);
-        lua_pop(lua, 1);  // [t]
+    if (!lua_isnil(lua, -1)) {
+        if (IsLuaPtr<Tile>(lua, -1)) {
+            addTile(x, y, ReadLuaSharedPtr<Tile>(lua, -1));
+
+        } else if (IsLuaPtr<const ItemType>(lua, -1)) {
+            addItem(x, y, ReadLuaPtr<const ItemType>(lua, -1));
+
+        } else if (IsLuaPtr<MonsterType>(lua, -1)) {
+            addMonster(x, y, ReadLuaPtr<MonsterType>(lua, -1));
+
+        } else {
+            // try reading it as a table
+            readTable(lua, x, y);
+        }
     }
 }
-        
+
+void Segment::readSquare(lua_State *lua, int x, int y, int n)
+{
+    // This function looks up n in the tiletable (assumed at top of stack)
+    // and adds what it finds to the segment, at (x,y).
+
+    // [tiletbl]
+
+    lua_pushinteger(lua, n);   // [tiletbl n]
+    lua_gettable(lua, -2);     // [tiletbl value]
+
+    readTile(lua, x, y);
+
+    lua_pop(lua, 1);  // [tiletbl]
+}
+
 void Segment::loadData(std::istream &str, lua_State *lua)
 {
     if (width <= 0 || height <= 0) {
@@ -153,6 +146,8 @@ void Segment::loadRooms(std::istream &str, lua_State *lua)
     for (int i = 0; i < num; ++i) {
         int tlx, tly, w, h;
         str >> tlx >> tly >> w >> h;
+        --tlx;
+        --tly;
         if (!str) luaL_error(lua, "Error while loading segment: 'rooms' invalid");
         addRoom(tlx, tly, w, h);
     }
@@ -161,9 +156,12 @@ void Segment::loadRooms(std::istream &str, lua_State *lua)
 bool Segment::readLine(std::istream &str, lua_State *lua, std::string &key, std::string &value)
 {
     std::string s;
-    std::getline(str, s);
+    do {
+        s.clear();
+        std::getline(str, s);
+        s = Trim(s);
+    } while (s.empty());  // skip blank lines
 
-    s = Trim(s);
     if (s == "end") return true;
 
     size_t pos = s.find(':');
@@ -179,6 +177,7 @@ bool Segment::readLine(std::istream &str, lua_State *lua, std::string &key, std:
 Segment::Segment(std::istream &str, lua_State *lua)
         : width(0), height(0)
 {
+    // [tiletbl]
     while (1) {
         std::string key, value;
         if (readLine(str, lua, key, value)) {
@@ -199,6 +198,9 @@ Segment::Segment(std::istream &str, lua_State *lua)
             } else if (key == "rooms") {
                 loadRooms(str, lua);
 
+            } else if (key == "name") {
+                // (Ignored)
+                
             } else {
                 luaL_error(lua, "Error while loading segment: '%s' unrecognized", key.c_str());
             }

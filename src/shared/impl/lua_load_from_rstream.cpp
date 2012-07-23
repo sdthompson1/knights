@@ -58,7 +58,7 @@ namespace {
         // Returns CWD, or empty path if CWD not set.
         boost::filesystem::path result;
         lua_getglobal(lua, "_CWD");
-        const char *p = lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "";
+        const char *p = lua_tostring(lua, -1);
         if (p) {
             result = p;
         }

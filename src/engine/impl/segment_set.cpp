@@ -27,21 +27,6 @@
 #include "segment.hpp"
 #include "segment_set.hpp"
 
-SegmentSet::~SegmentSet()
-{
-    // delete all contained segments
-    for (vector<vector<const Segment *> >::iterator it1 = segments.begin(); it1 != segments.end(); ++it1) {
-        for (vector<const Segment *>::iterator it2 = it1->begin(); it2 != it1->end(); ++it2) {
-            delete *it2;
-        }
-    }
-    for (vector<vector<const Segment *> >::iterator it1 = special_segments.begin(); it1 != special_segments.end(); ++it1) {
-        for (vector<const Segment *>::iterator it2 = it1->begin(); it2 != it1->end(); ++it2) {
-            delete *it2;
-        }
-    }
-}
-
 void SegmentSet::addSegment(const Segment *r, int nhomes, int category)
 {
     if (nhomes < 0) return;

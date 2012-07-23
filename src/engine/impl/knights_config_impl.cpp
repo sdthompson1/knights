@@ -175,10 +175,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         kf->pushSymbol("MAIN_MENU_SPACE");
         popMenuSpace();
 
-        // Load the segment set
-        kf->pushSymbol("DUNGEON_SEGMENTS");
-        popSegmentSet();
-
         // Load misc other stuff.
         kf->pushSymbol("WALL");
         wall_tile = popTile();
@@ -295,7 +291,6 @@ void KnightsConfigImpl::freeMemory()
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
     for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
     for_each(overlays.begin(), overlays.end(), Delete<Overlay>());
-    for_each(segments.begin(), segments.end(), Delete<Segment>());
     for (size_t i=0; i<knight_anims.size(); ++i) delete knight_anims[i];
 
     for_each(lua_anims.begin(), lua_anims.end(), Delete<Anim>());
@@ -306,6 +301,7 @@ void KnightsConfigImpl::freeMemory()
     for_each(lua_item_types.begin(), lua_item_types.end(), Delete<ItemType>());
     for_each(lua_monster_types.begin(), lua_monster_types.end(), Delete<MonsterType>());
     for_each(lua_overlays.begin(), lua_overlays.end(), Delete<Overlay>());
+    for_each(lua_segments.begin(), lua_segments.end(), Delete<Segment>());
     for_each(lua_sounds.begin(), lua_sounds.end(), Delete<Sound>());
 }
 
@@ -1006,34 +1002,6 @@ Colour KnightsConfigImpl::popRGB()
     return Colour((x >> 16) & 255,  (x >> 8) & 255, x & 255);
 }
 
-Segment * KnightsConfigImpl::popSegment(const vector<SegmentTileData> &tile_map, int &category)
-{
-    if (!kf) return 0;
-    KFile::Table tab(*kf, "Segment");
-
-    tab.push("height",false);
-    int h = kf->popInt();
-    tab.push("width",false);
-    int w = kf->popInt();
-    tab.reset();
-
-    tab.push("category");
-    string catname = kf->popString("");
-    category = getSegmentCategory(catname);
-    tab.push("data");
-    Segment *segment = popSegmentData(tile_map, w, h);
-    if (!segment) return 0;
-    tab.push("height"); kf->pop();
-    tab.push("name"); kf->pop();  // used only by the map editor
-    tab.push("rooms");
-    popSegmentRooms(*segment);
-    tab.push("switches"); 
-    if (kf->isNone()) kf->pop();
-    else popSegmentSwitches(*segment);
-    tab.push("width"); kf->pop();
-    return segment;
-}
-
 Sound * KnightsConfigImpl::popSound()
 {
     if (!kf) return 0;
@@ -1047,17 +1015,6 @@ Sound * KnightsConfigImpl::popSound()
     return result;
 }
 
-const KnightsConfigImpl::SegmentTileData & KnightsConfigImpl::tileFromInt(const vector<SegmentTileData> &tile_map, int t)
-{
-    if (t < 1 || t > tile_map.size()) {
-        static SegmentTileData err;
-        kf->error("tile number out of range!");
-        return err;
-    } else {
-        return tile_map[t-1];
-    }
-}
-
 boost::shared_ptr<Tile> KnightsConfigImpl::makeDeadKnightTile(boost::shared_ptr<Tile> orig_tile, const ColourChange &cc)
 {
     boost::shared_ptr<Graphic> new_graphic(new Graphic(*orig_tile->getGraphic()));
@@ -1067,99 +1024,7 @@ boost::shared_ptr<Tile> KnightsConfigImpl::makeDeadKnightTile(boost::shared_ptr<
     return orig_tile->cloneWithNewGraphic(new_graphic.get());
 }
     
-void KnightsConfigImpl::processTile(const vector<SegmentTileData> &tile_map, Segment &segment,
-                                    int x, int y)
-{
-    const int tile = kf->popInt();
-    const SegmentTileData & seg_tile(tileFromInt(tile_map, tile));
-    for (int i=0; i<seg_tile.tiles.size(); ++i) {
-        segment.addTile(x, y, seg_tile.tiles[i]);
-    }
-    for (int i=0; i<seg_tile.items.size(); ++i) {
-        segment.addItem(x, y, seg_tile.items[i]);
-    }
-    for (int i=0; i<seg_tile.monsters.size(); ++i) {
-        segment.addMonster(x, y, seg_tile.monsters[i]);
-    }
-}
-
-Segment * KnightsConfigImpl::popSegmentData(const vector<SegmentTileData> &tile_map,
-                                            int w, int h)
-{
-    if (!kf) return 0;
-    if (w<=0 || h<=0) {
-        kf->error("bad width/height");
-        kf->pop();
-        return 0;
-    } else {
-        KFile::List lst(*kf, "SegmentData", w*h);
-        Segment *segment = new Segment(w, h);
-        try {
-            for (int y=0; y<h; ++y) {
-                for (int x=0; x<w; ++x) {
-                    lst.push(y*w+x);
-                    processTile(tile_map, *segment, x, y);  // pops
-                }
-            }
-            return segment;
-        } catch (...) {
-            delete segment;
-            throw;
-        }
-    }
-}
-
-void KnightsConfigImpl::popSegmentList(const vector<SegmentTileData> &tile_map)
-{
-    if (!kf) return;
-    
-    KFile::List lst(*kf, "SegmentList");
-
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        int rcat;
-        Segment *rm = popSegment(tile_map, rcat);
-        if (rm) segment_set.addSegment(rm, rm->getNumHomes(), rcat);
-    }
-}
-
-void KnightsConfigImpl::popSegmentRooms(Segment &s)
-{
-    if (!kf) return;
-    KFile::List lst(*kf, "RoomList");
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        KFile::List rum(*kf, "RoomData", 4);
-        rum.push(0);
-        const int tlx = kf->popInt()-1;
-        rum.push(1);
-        const int tly = kf->popInt()-1;
-        rum.push(2);
-        const int w = kf->popInt();
-        rum.push(3);
-        const int h = kf->popInt();
-        if (tlx < -1 || tly < -1 || w <= 0 || h <= 0 || tlx+w-1 > s.getWidth() || tly+h-1 > s.getHeight()) kf->error("bad room data");
-        s.addRoom(tlx, tly, w, h);
-    }
-}
-
-void KnightsConfigImpl::popSegmentSet()
-{
-    if (!kf) return;
-
-    KFile::Table tbl(*kf,"SegmentSet");
-
-    vector<SegmentTileData> tile_map;
-    tbl.push("tiles",false);
-    popSegmentTiles(tile_map);
-
-    tbl.reset();
-    tbl.push("segments");
-    popSegmentList(tile_map);
-    tbl.push("tiles");
-    kf->pop();
-}
-
+/*
 void KnightsConfigImpl::popSegmentSwitches(Segment &r)
 {
     if (!kf) return;
@@ -1180,53 +1045,7 @@ void KnightsConfigImpl::popSegmentSwitches(Segment &r)
         r.addTile(x,y,t);
     }
 }
-
-void KnightsConfigImpl::popSegmentTiles(vector<SegmentTileData> &tile_map)
-{
-    if (!kf) return;
-    KFile::List lst(*kf, "TileTable");
-    
-    for (int i=0; i<lst.getSize(); ++i) {
-        SegmentTileData seg_tile;
-        bool items_yet = false;
-        bool monsters_yet = false;
-        lst.push(i);
-
-        if (kf->isList()) {
-            KFile::List lst2(*kf, "SegmentTile");
-            for (int j=0; j<lst2.getSize(); ++j) {
-                lst2.push(j);
-                popSegmentTile(seg_tile, items_yet, monsters_yet);
-            }
-        } else {
-            popSegmentTile(seg_tile, items_yet, monsters_yet);
-        }
-        tile_map.push_back(seg_tile);
-    }
-}
-
-void KnightsConfigImpl::popSegmentTile(SegmentTileData &seg_tile, bool &items_yet, bool &monsters_yet)
-{
-    if (kf->isInt()) {
-        // This is a slight hack: You put an integer (usually '0') to signify
-        // the end of tiles and the beginning of items. (& likewise for monsters: #144)
-        if (items_yet) {
-            monsters_yet = true;
-        } else {
-            items_yet = true;
-        }
-        kf->pop();
-    } else if (monsters_yet) {
-        const MonsterType * mtype = popMonsterType();
-        seg_tile.monsters.push_back(mtype);
-    } else if (items_yet) {
-        const ItemType *itype = popItemType();
-        seg_tile.items.push_back(itype);
-    } else {
-        shared_ptr<Tile> t = popTile();
-        if (t) seg_tile.tiles.push_back(t);
-    }
-}
+*/
 
 shared_ptr<Tile> KnightsConfigImpl::popTile()
 {
@@ -1796,6 +1615,14 @@ Overlay * KnightsConfigImpl::addLuaOverlay(auto_ptr<Overlay> p)
     
     Overlay *q = p.release();
     lua_overlays.push_back(q);
+    return q;
+}
+
+Segment * KnightsConfigImpl::addLuaSegment(auto_ptr<Segment> p, const char *category)
+{
+    Segment *q = p.release();
+    lua_segments.push_back(q);
+    segment_set.addSegment(q, q->getNumHomes(), getSegmentCategory(category));
     return q;
 }
 

@@ -1,5 +1,5 @@
 /*
- * segment_set.hpp
+ * load_segments.hpp
  *
  * This file is part of Knights.
  *
@@ -21,31 +21,25 @@
  *
  */
 
-/*
- * SegmentSet: collection of Segments.
- *
- */
+#ifndef LOAD_SEGMENTS_HPP
+#define LOAD_SEGMENTS_HPP
 
-#ifndef SEGMENT_SET_HPP
-#define SEGMENT_SET_HPP
+#include "boost/filesystem.hpp"
 
-class Segment;
+class KnightsConfigImpl;
 
-#include "boost/noncopyable.hpp"
+struct lua_State;
 
-#include <vector>
-using namespace std;
+//
+// Function to load a list of segments from a text file
+// On entry: there is a tiletable on top of lua stack
+// On exit: tiletable is popped, and a table of segments is pushed.
+// Note: This can raise lua errors.
+//
 
-class SegmentSet : boost::noncopyable {
-public:
-    void addSegment(const Segment *, int nhomes, int category = -1);
-    
-    const Segment * getHomeSegment(int minhomes) const;
-    const Segment * getSpecialSegment(int category) const;
-    
-private:
-    vector<vector<const Segment *> > segments;    // segments[nhomes][segmentno].
-    vector<vector<const Segment *> > special_segments;  // special_segments[category][segmentno].
-};
+void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
+                  const char *filename,
+                  const boost::filesystem::path &cwd,
+                  const char *category);
 
 #endif

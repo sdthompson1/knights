@@ -38,6 +38,7 @@ class MonsterType;
 class Overlay;
 class Player;
 class RandomDungeonLayout;
+class Segment;
 class Tile;
 
 // Define LuaTraits template which contains:
@@ -59,7 +60,8 @@ enum {
     TAG_ANIM,
     TAG_RANDOM_DUNGEON_LAYOUT,
     TAG_ITEM_GENERATOR,
-    TAG_MONSTER_TYPE
+    TAG_MONSTER_TYPE,
+    TAG_SEGMENT
 };
 
 template<class T>
@@ -124,6 +126,11 @@ struct LuaTraits<ItemGenerator> {
 template<>
 struct LuaTraits<MonsterType> {
     enum { tag = TAG_MONSTER_TYPE };
+};
+
+template<>
+struct LuaTraits<Segment> {
+    enum { tag = TAG_SEGMENT };
 };
 
 #endif
