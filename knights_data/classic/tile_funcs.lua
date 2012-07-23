@@ -20,20 +20,24 @@
 
 
 -- Lua functions for working with tiles.
--- Some of these are used by knights_rooms.txt.
+-- Some of these are used by the dungeon room files.
+
 
 -- fires a crossbow bolt
 -- (usually attached to a tile, e.g. a switch; cxt.pos is the position of that tile.)
-function shoot(x, y, direction, itemtype)
+-- NOTE: this is hardwired to use i_bolt_trap
+function shoot(x, y, dir_as_num)
+   
+   local direction = select(dir_as_num, "north", "east", "south", "west")
 
-  -- account for map rotation/reflection
-  local from = kts.rotate_add_pos(cxt.pos, x, y)
-  local dt = kts.rotate_direction(cxt.pos, direction)
+   -- account for map rotation/reflection
+   local from = kts.rotate_add_pos(cxt.pos, x, y)
+   local dt = kts.rotate_direction(cxt.pos, direction)
 
-  -- add the missile
-  kts.add_missile(from, dt, itemtype, false)
-  click_sound(cxt.pos)
-  crossbow_sound(from)
+   -- add the missile
+   kts.add_missile(from, dt, i_bolt_trap, false)
+   click_sound(cxt.pos)
+   crossbow_sound(from)
 end
 
 -- teleports a knight

@@ -19,7 +19,7 @@ def readbyte(f):
 
 def gtrap(x, y, mjr, mnr):
     if mjr>=201 and mjr<=204:
-        return ('shoot', x, y, facing[mjr-201] + ',i_bolt_trap')
+        return ('shoot', x, y, mjr - 200)
     elif mjr == 220:
         return ('teleport_actor', x, y)
     else:
@@ -58,10 +58,9 @@ def gtrap(x, y, mjr, mnr):
             sys.exit(1)
 
 def dowrite(f, t, xb, yb):
-    f.write(t[0] + '(' + str(t[1]-xb) + ',' + str(t[2]-yb))
+    f.write('%s %d %d %d' % (t[0], len(t)-1, t[1]-xb, t[2]-yb))
     if len(t)>3:
-        f.write(','+t[3])
-    f.write(')')
+        f.write(' %d' % t[3])
 
 def writetrap(f, tdat, xb, yb):
     t2 = []
@@ -71,15 +70,11 @@ def writetrap(f, tdat, xb, yb):
 
     if len(t2)==0: raise "Trap with no effect?"
 
-    f.write('"')
-    if len(t2)==1:
-        dowrite(f, t2[0], xb, yb)
-    else:
-        for i in range(len(t2)):
-            dowrite(f, t2[i], xb, yb)
-            if i != len(t2)-1:
-                f.write(' ')
-    f.write('"')
+    f.write('%d ' % len(t2))
+    for i in range(len(t2)):
+        dowrite(f, t2[i], xb, yb)
+        if i != len(t2)-1:
+            f.write(' ')
 
 def matchtrap(tdat,x,y):
     for t in tdat:
@@ -91,15 +86,23 @@ def matchtrap(tdat,x,y):
 # Main program.
 
 # Check arguments
-if len(sys.argv) != 4:
-    print "usage:", sys.argv[0], "<infile> <outfile> <category>"
+if len(sys.argv) != 3:
+    print "usage:", sys.argv[0], "<infile> <outdir>"
     sys.exit(1)
 
 # Open files
 f = file(sys.argv[1], 'rb')
-outfile = file(sys.argv[2], 'w')
-outfile.write(PRE+"\n")
-wanted_category = sys.argv[3]
+
+outdir = sys.argv[2] + '/'
+outfiles = { 'standard_room':     file(outdir + 'standard_rooms.txt', 'w'),
+             'gnome_room':        file(outdir + 'gnome_rooms.txt', 'w'),
+             'guarded_exit':      file(outdir + 'guarded_exits.txt', 'w'),
+             'liche_tomb':        file(outdir + 'liche_tombs.txt', 'w'),
+             'special_pentagram': file(outdir + 'special_pentagrams.txt', 'w') }
+
+for k in outfiles:
+    outfiles[k].write(PRE+"\n")
+
 
 # Skip AMOS header
 # (we assume there is only one bank in the file)
@@ -135,8 +138,6 @@ for a in range(nrooms):
     else:
         letter='Z'
         nroom=a+1-na-nb-nc-nx
-
-    print letter+str(nroom)
 
     # Read layout information
     f.seek(mpp + 14*14*5)
@@ -222,13 +223,14 @@ for a in range(nrooms):
         else:
             raise "Unknown room type"
 
-        if roomtype == wanted_category:
-            # Write room header
-            outfile.write("segment\n")
-            outfile.write('name: %s%02d.%d\n' % (letter, nroom, nrot+1))
-            outfile.write('width: 12\n')
-            outfile.write('height: 12\n')
-            outfile.write('data:\n')
+        outfile = outfiles[roomtype]
+
+        # Write room header
+        outfile.write("segment\n")
+        outfile.write('name: %s%02d.%d\n' % (letter, nroom, nrot+1))
+        outfile.write('width: 12\n')
+        outfile.write('height: 12\n')
+        outfile.write('data:\n')
             
         # Read the map itself
         sx = []
@@ -321,48 +323,48 @@ for a in range(nrooms):
                 if result: r[y*14+x] = 2
 
         # Now write the output
-        if roomtype == wanted_category:
-            for y in range(1,13):
-                for x in range(1,13):
-                    tile = r[y*14 + x]
+        for y in range(1,13):
+            for x in range(1,13):
+                tile = r[y*14 + x]
 
-                    if tile >= 7 and tile <= 10:
-                        # Wood or iron door.
-                        # These become "traplocked" if any switch targets this tile.
-                        for i in range(len(sx)):
-                            if matchtrap(tdata[sn[i]-1], x, y):
-                                tile = tile + 80
-                                break
-                
-                    outfile.write("%2d " % tile)
-                outfile.write("\n")
+                if tile >= 7 and tile <= 10:
+                    # Wood or iron door.
+                    # These become "traplocked" if any switch targets this tile.
+                    for i in range(len(sx)):
+                        if matchtrap(tdata[sn[i]-1], x, y):
+                            tile = tile + 80
+                            break
 
-            # Do switches
-            #if (len(sx)>0):
-            #    outfile.write(' switches = [\n')
-            #    for i in range(len(sx)):
-            #        x=sx[i]
-            #        y=sy[i]
-            #        tr=sn[i]
-            #        tile = r[y*14+x]
-            #        outfile.write('   ['+str(x-1)+' '+str(y-1)+' ')
-            #        writetrap(outfile, tdata[tr-1], x, y)
-            #        outfile.write(']\n')
-            #    outfile.write(' ]\n')
+                outfile.write("%2d " % tile)
+            outfile.write("\n")
 
-            # Rooms data
-            outfile.write('rooms:\n')
-            outfile.write(str(len(rumdata)) + '\n')
-            for rum in rumdata:
-                for i in rum:
-                    outfile.write(str(i) + ' ')
+        # Do switches
+        if (len(sx)>0):
+            outfile.write('switches:\n')
+            outfile.write(str(len(sx)))
+            outfile.write('\n')
+            for i in range(len(sx)):
+                x=sx[i]
+                y=sy[i]
+                tr=sn[i]
+                tile = r[y*14+x]
+                outfile.write('%d %d ' % (x-1,y-1))
+                writetrap(outfile, tdata[tr-1], x, y)
                 outfile.write('\n')
 
-            # The end of the room
-            outfile.write('end\n\n')
+        # Rooms data
+        outfile.write('rooms:\n')
+        outfile.write(str(len(rumdata)) + '\n')
+        for rum in rumdata:
+            for i in rum:
+                outfile.write(str(i) + ' ')
+            outfile.write('\n')
 
-outfile.write(POST+"\n")
-outfile.close()
-print 'processed', nrooms, '* 4 rooms'
+        # The end of the room
+        outfile.write('end\n\n')
+
+for k in outfiles:
+    outfiles[k].write(POST+"\n")
+    outfiles[k].close()
+print 'wrote', nrooms, '* 4 rooms'
 print na,nb,nc,nx,nz
-

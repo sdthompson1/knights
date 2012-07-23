@@ -1023,29 +1023,6 @@ boost::shared_ptr<Tile> KnightsConfigImpl::makeDeadKnightTile(boost::shared_ptr<
     dead_knight_graphics.push_back(new_graphic);
     return orig_tile->cloneWithNewGraphic(new_graphic.get());
 }
-    
-/*
-void KnightsConfigImpl::popSegmentSwitches(Segment &r)
-{
-    if (!kf) return;
-    KFile::List lst(*kf, "SwitchList");
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        KFile::List sw(*kf, "SwitchData", 3);
-        sw.push(0);
-        const int x = kf->popInt();
-        sw.push(1);
-        const int y = kf->popInt();
-        sw.push(2);
-        LuaFunc ac = popLuaFuncFromString();
-
-        // create dummy tile for the switch-action.
-        const bool activate = r.isApproachable(x,y);
-        shared_ptr<Tile> t(new Tile(activate?LuaFunc():ac, activate?ac:LuaFunc()));
-        r.addTile(x,y,t);
-    }
-}
-*/
 
 shared_ptr<Tile> KnightsConfigImpl::popTile()
 {

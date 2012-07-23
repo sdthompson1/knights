@@ -107,6 +107,7 @@ private:
     void readSquare(lua_State *lua, int x, int y, int n);
     void loadData(std::istream &str, lua_State *lua);
     void loadRooms(std::istream &str, lua_State *lua);
+    void loadSwitches(std::istream &str, lua_State *lua);
     bool readLine(std::istream &str, lua_State *lua, std::string &key, std::string &value);
     
 private:

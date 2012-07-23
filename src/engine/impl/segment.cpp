@@ -35,7 +35,8 @@
 
 #include "lua.hpp"
 
-#include <iostream>
+#include <istream>
+#include <sstream>
 
 namespace {
     MapCoord TransformMapCoord(int size, bool x_reflect, int nrot, const MapCoord &top_left, int x, int y)
@@ -54,7 +55,7 @@ namespace {
 
         // return final coordinates
         return MapCoord(x + top_left.getX(), y + top_left.getY());
-    }    
+    }
 }
 
 void Segment::readTable(lua_State *lua, int x, int y)
@@ -151,6 +152,63 @@ void Segment::loadRooms(std::istream &str, lua_State *lua)
         if (!str) luaL_error(lua, "Error while loading segment: 'rooms' invalid");
         addRoom(tlx, tly, w, h);
     }
+}
+
+void Segment::loadSwitches(std::istream &str, lua_State *lua)
+{
+    if (data.empty()) {
+        luaL_error(lua, "Error loading segment: 'data' must come before 'switches'");
+    }
+    
+    int num = -1;
+    str >> num;
+    if (!str || num < 0) luaL_error(lua, "Error loading segment: 'switches' invalid");
+
+    for (int i = 0; i < num; ++i) {
+        // x y nfuncs name nargs arg1 arg2 ... argn
+        // name nargs arg1 ... argn
+        // etc
+        int x = 0, y = 0, nfuncs = 0;
+        str >> x >> y >> nfuncs;
+
+        if (!str || x < 0 || y < 0 || x >= width || y >= height) {
+            luaL_error(lua, "Error loading segment: invalid switch position");
+        }
+
+        std::ostringstream lua_code;
+        
+        for (int j = 0; j < nfuncs; ++j) {
+            std::string name;
+            str >> name;
+            lua_code << name << '(';
+
+            int nargs = 0;
+            str >> nargs;
+            for (int k = 0; k < nargs; ++k) {
+                int arg = 0;
+                str >> arg;
+                if (k > 0) lua_code << ',';
+                lua_code << arg;
+            }
+            lua_code << ");";
+        }
+
+        if (luaL_loadstring(lua, lua_code.str().c_str()) != LUA_OK) {
+            luaL_error(lua, "Error in luaL_loadstring while building switch code");
+        }
+
+        // switch code is now on top of stack
+        LuaFunc action(lua);   // pops the code off the stack.
+
+        // Create dummy tile for the switch-action
+        boost::shared_ptr<Tile> tile;
+        if (isApproachable(x, y)) {
+            tile.reset(new Tile(LuaFunc(), action));
+        } else {
+            tile.reset(new Tile(action, LuaFunc()));
+        }
+        addTile(x, y, tile);
+    }
 }    
 
 bool Segment::readLine(std::istream &str, lua_State *lua, std::string &key, std::string &value)
@@ -197,6 +255,9 @@ Segment::Segment(std::istream &str, lua_State *lua)
 
             } else if (key == "rooms") {
                 loadRooms(str, lua);
+
+            } else if (key == "switches") {
+                loadSwitches(str, lua);
 
             } else if (key == "name") {
                 // (Ignored)

@@ -48,9 +48,10 @@ public:
     // hasValue(): returns true if lua != 0 && stored value != nil
     bool hasValue() const { return function_ref.hasValue(); }
 
-    // This runs the stored function, as a coroutine, with the global
-    // variable "cxt" set to the contents of the ActionData. ("cxt"
-    // will be saved and restored across the call.)
+    // This runs the stored function, as a coroutine, with no
+    // arguments, and with the global variable "cxt" set to the
+    // contents of the ActionData. ("cxt" will be saved and restored
+    // across the call.)
     //
     // If stored func is nil, execute() does nothing (and returns false).
     //
