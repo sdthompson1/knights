@@ -34,6 +34,7 @@
 
 #include "lua.hpp"
 
+#include <cctype>
 #include <iostream>
 
 namespace {
