@@ -33,11 +33,11 @@
 #include "map_support.hpp"
 
 #include "boost/shared_ptr.hpp"
-using namespace boost;
 
+#include <iosfwd>
 #include <list>
+#include <string>
 #include <vector>
-using namespace std;
 
 class DungeonMap;
 class ItemType;
@@ -46,6 +46,7 @@ class MonsterType;
 class Tile;
 
 struct lua_State;
+
 
 struct HomeInfo {
     int x;
@@ -57,15 +58,21 @@ struct HomeInfo {
 
 class Segment {
 public:
+    // This creates an empty segment of a given size.
     Segment(int w, int h) : data(w*h), width(w), height(h) { }
 
+    // This loads segment data from a text file.
+    // The lua state should have a "tile table" on top of stack. (The stack is unchanged on exit.)
+    // NOTE: It's assumed this is called inside a lua pcall, so it may raise lua errors.
+    Segment(std::istream &str, lua_State *lua);
+    
     // get width and height
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
     // add tile or item (can be called more than once per square)
     // x,y range from 0 to w-1, h-1, and increase rightwards and upwards as usual.
-    void addTile(int x, int y, shared_ptr<Tile> t);
+    void addTile(int x, int y, boost::shared_ptr<Tile> t);
     void addItem(int x, int y, const ItemType * i);
     void addMonster(int x, int y, const MonsterType * m);
         
@@ -87,40 +94,48 @@ public:
                    bool x_reflect, int nrot) const;
 
     // access to homes
-    vector<HomeInfo> getHomes(bool xreflect, int nrot) const;
+    std::vector<HomeInfo> getHomes(bool xreflect, int nrot) const;
     int getNumHomes() const { return int(homes.size()); }
     
 
     // see if a given square is approachable. (based on the addTile calls so far.)
     bool isApproachable(int x, int y) const;
+
+private:
+    void readTable(lua_State *lua, int x, int y);
+    void readSquare(lua_State *lua, int x, int y, int n);
+    void loadData(std::istream &str, lua_State *lua);
+    void loadRooms(std::istream &str, lua_State *lua);
+    bool readLine(std::istream &str, lua_State *lua, std::string &key, std::string &value);
     
 private:
-    // (TODO) might be better for segments to store tile data in a standard pointer -- would
-    // halve memory requirements. (ServerConfig could look after the pointers.) However there
-    // might be complications with switch tiles?
-    vector<list<shared_ptr<Tile> > > data;
-    vector<HomeInfo> homes;
+    // (TODO) might be better for segments to store tile data in a
+    // standard pointer -- would halve memory requirements.
+    // (KnightsConfigImpl could look after the pointers.) However
+    // there might be complications with switch tiles?
+    std::vector<std::list<boost::shared_ptr<Tile> > > data;
+    std::vector<HomeInfo> homes;
     int width;
     int height;
 
     struct RoomInfo {
         int tlx, tly, w, h;
     };
-    vector<RoomInfo> rooms;
+    std::vector<RoomInfo> rooms;
 
     struct ItemInfo {
         int x;
         int y;
         const ItemType * itype;
     };
-    vector<ItemInfo> items;
+    std::vector<ItemInfo> items;
 
     struct MonsterInfo {
         int x;
         int y;
         const MonsterType *mtype;
     };
-    vector<MonsterInfo> monsters;
+    std::vector<MonsterInfo> monsters;
 };
 
 #endif

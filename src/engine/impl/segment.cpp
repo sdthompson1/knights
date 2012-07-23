@@ -25,13 +25,39 @@
 
 #include "dungeon_map.hpp"
 #include "item.hpp"
+#include "lua_userdata.hpp"
 #include "monster_manager.hpp"
 #include "room_map.hpp"
 #include "segment.hpp"
 #include "special_tiles.hpp"  // for Home
 #include "tile.hpp"
 
+#include "lua.hpp"
+
+#include <iostream>
+
 namespace {
+    std::string Trim(const std::string &s)
+    {
+        size_t beg = 0;
+        while (beg < s.size()) {
+            if (!std::isspace(s[beg])) break;
+            ++beg;
+        }
+        // 'beg' is now the first non-space character
+        // (or size() if none such exists)
+
+        size_t end = s.size();
+        while (end != beg) {
+            if (!std::isspace(s[end-1])) break;
+            --end;
+        }
+        // 'end' is now one plus the last non-space character,
+        // or equal to beg, whichever is greater
+
+        return s.substr(beg, end - beg);
+    }        
+    
     MapCoord TransformMapCoord(int size, bool x_reflect, int nrot, const MapCoord &top_left, int x, int y)
     {
         // apply reflection
@@ -48,6 +74,139 @@ namespace {
 
         // return final coordinates
         return MapCoord(x + top_left.getX(), y + top_left.getY());
+    }    
+}
+
+void Segment::readTable(lua_State *lua, int x, int y)
+{
+    // [tbl]
+    lua_len(lua, -1);  // [tbl len]
+    const int sz = lua_tointeger(lua, -1);  // [tbl]
+    lua_pop(lua, 1);  // [tbl]
+
+    for (int i = 1; i <= sz; ++i) {
+        lua_pushinteger(lua, i);  // [tbl i]
+        lua_gettable(lua, -2);    // [tbl value]
+
+        if (!lua_isnil(lua, -1)) {
+
+            if (IsLuaPtr<Tile>(lua, -1)) {
+                addTile(x, y, ReadLuaSharedPtr<Tile>(lua, -1));
+
+            } else if (IsLuaPtr<const ItemType>(lua, -1)) {
+                addItem(x, y, ReadLuaPtr<const ItemType>(lua, -1));
+
+            } else if (IsLuaPtr<MonsterType>(lua, -1)) {
+                addMonster(x, y, ReadLuaPtr<MonsterType>(lua, -1));
+
+            } else {
+                // try reading it as a table
+                readTable(lua, x, y);
+            }
+        }
+
+        lua_pop(lua, 1);  // [tbl]
+    }
+}
+
+void Segment::readSquare(lua_State *lua, int x, int y, int n)
+{
+    // [t]
+    lua_pushinteger(lua, n);  // [t n]
+    lua_gettable(lua, -2);    // [t value]
+
+    if (lua_isnil(lua, -1)) {
+        luaL_error(lua, "Error in segment file, tile %d does not exist", n);
+    } else {
+        readTable(lua, x, y);
+        lua_pop(lua, 1);  // [t]
+    }
+}
+        
+void Segment::loadData(std::istream &str, lua_State *lua)
+{
+    if (width <= 0 || height <= 0) {
+        luaL_error(lua, "Error in segment file, 'width' and 'height' must come before 'data'");
+    }
+
+    data.resize(width * height);
+    
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int n = -1;
+            str >> n;
+            if (!str || n<0) luaL_error(lua, "Error in segment file, bad 'data'");
+            readSquare(lua, x, y, n);
+        }
+    }
+}
+
+void Segment::loadRooms(std::istream &str, lua_State *lua)
+{
+    int num = -1;
+    str >> num;
+    if (!str || num < 0) luaL_error(lua, "Error while loading segment: 'rooms' invalid");
+
+    rooms.reserve(num);
+    
+    for (int i = 0; i < num; ++i) {
+        int tlx, tly, w, h;
+        str >> tlx >> tly >> w >> h;
+        if (!str) luaL_error(lua, "Error while loading segment: 'rooms' invalid");
+        addRoom(tlx, tly, w, h);
+    }
+}    
+
+bool Segment::readLine(std::istream &str, lua_State *lua, std::string &key, std::string &value)
+{
+    std::string s;
+    std::getline(str, s);
+
+    s = Trim(s);
+    if (s == "end") return true;
+
+    size_t pos = s.find(':');
+    if (pos == string::npos) luaL_error(lua, "Error while loading segment: ':' expected");
+    key = s.substr(0,pos);
+    value = s.substr(pos+1);
+
+    key = Trim(key);
+    value = Trim(value);
+    return false;
+}
+    
+Segment::Segment(std::istream &str, lua_State *lua)
+        : width(0), height(0)
+{
+    while (1) {
+        std::string key, value;
+        if (readLine(str, lua, key, value)) {
+            break;
+        } else {
+
+            if (key == "data") {
+                loadData(str, lua);
+
+            } else if (key == "width") {
+                width = std::atoi(value.c_str());
+                if (width <= 0) luaL_error(lua, "Invalid segment width: %d", width);
+
+            } else if (key == "height") {
+                height = std::atoi(value.c_str());
+                if (height <= 0) luaL_error(lua, "Invalid segment height: %d", height);
+
+            } else if (key == "rooms") {
+                loadRooms(str, lua);
+
+            } else {
+                luaL_error(lua, "Error while loading segment: '%s' unrecognized", key.c_str());
+            }
+            
+        }
+    }
+
+    if (width <= 0 || height <= 0 || rooms.empty() || data.empty()) {
+        luaL_error(lua, "Invalid segment, not all values have been set");
     }
 }
 
@@ -100,6 +259,9 @@ void Segment::copyToMap(DungeonMap &dmap, MonsterManager &monster_manager,
                         const MapCoord &top_left,
                         bool x_reflect, int nrot) const
 {
+    using boost::shared_ptr;
+    using std::vector;
+    
     // If transformations are applied then the segment must be square
     ASSERT(width == height || (!x_reflect && nrot == 0));
 
@@ -155,6 +317,9 @@ void Segment::copyToMap(DungeonMap &dmap, MonsterManager &monster_manager,
 
 bool Segment::isApproachable(int x, int y) const
 {
+    using boost::shared_ptr;
+    using std::list;
+    
     const list<shared_ptr<Tile> > & tiles = data[y*width+x];
     MapAccess acc = A_CLEAR;
     for (list<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
@@ -164,8 +329,10 @@ bool Segment::isApproachable(int x, int y) const
     return (acc == A_APPROACH);
 }
 
-vector<HomeInfo> Segment::getHomes(bool x_reflect, int nrot) const
+std::vector<HomeInfo> Segment::getHomes(bool x_reflect, int nrot) const
 {
+    using std::vector;
+    
     vector<HomeInfo> result = homes;
     for (vector<HomeInfo>::iterator it = result.begin(); it != result.end(); ++it) {
 
