@@ -117,7 +117,7 @@ bool quit_flag = false;
 
 boost::shared_ptr<KnightsConfig> LoadKnightsConfig()
 {
-    return boost::shared_ptr<KnightsConfig>(new KnightsConfig("server_config.txt"));
+    return boost::shared_ptr<KnightsConfig>(new KnightsConfig("server_config.txt", false));
 }
 
 
@@ -428,14 +428,13 @@ bool ProcessReplayFile(ReplayFile & file, std::list<UpdateStruct> & update_struc
 
         // now loop through settings
         while (pos < extra_bytes.size()) {
-            size_t pos1 = pos;
-            while (extra_bytes[pos] != '\0') ++pos;
-            std::string key = extra_bytes.substr(pos1, pos - pos1);
-            ++pos;
-            int value = std::atoi(&extra_bytes[pos]);
+            int item = std::atoi(&extra_bytes[pos]);
             while (extra_bytes[pos] != '\0') ++pos;
             ++pos;
-            g_knights_server->setMenuSelection(game_name, key, value);
+            int choice = std::atoi(&extra_bytes[pos]);
+            while (extra_bytes[pos] != '\0') ++pos;
+            ++pos;
+            g_knights_server->setMenuSelection(game_name, item, choice);
         }
         
     } else if (msg != "RNG" && msg != "UPD") {

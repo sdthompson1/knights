@@ -129,7 +129,7 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
         
     } else if (event.getSource() == tutorial.get()) {
         // Go to LoadingScreen in tutorial mode
-        new_screen.reset(new LoadingScreen(-1, "", true, true, true));
+        new_screen.reset(new LoadingScreen(-1, "", true, true, true, true));
 
     } else if (event.getSource() == options.get()) {
         new_screen.reset(new OptionsScreen);

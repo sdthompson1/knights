@@ -92,7 +92,6 @@ public:
 
 
 KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
-                             const MenuSelections &msel,
                              const std::vector<int> &hse_cols,
                              const std::vector<std::string> &player_names,
                              bool tutorial_mode,
@@ -117,8 +116,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         std::vector<boost::shared_ptr<Quest> > quests;
         bool premapped = false;
         warning_msg =
-            config->initializeGame(msel,
-                                   pimpl->dungeon_map,
+            config->initializeGame(pimpl->dungeon_map,
                                    pimpl->coord_transform,
                                    quests,
                                    pimpl->home_manager,

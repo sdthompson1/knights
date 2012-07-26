@@ -26,9 +26,10 @@
 #include "anim.hpp"
 #include "graphic.hpp"
 #include "overlay.hpp"
-#include "protocol.hpp"
 
 #include "lua.hpp"
+
+#include <stdexcept>
 
 Overlay::Overlay(lua_State *lua, int idx)
     : id(-1)
@@ -88,7 +89,7 @@ Overlay::Overlay(int id_, Coercri::InputByteBuf &buf, const std::vector<const Gr
         offset_data[i].ofsx = buf.readVarInt();
         offset_data[i].ofsy = buf.readVarInt();
         int d = buf.readUbyte();
-        if (d > 3) throw ProtocolError("error reading Overlay");
+        if (d > 3) throw std::runtime_error("error reading Overlay");
         offset_data[i].dir = MapDirection(d);
     }
 }

@@ -31,10 +31,10 @@
 #include "item_generator.hpp"
 #include "knights_config_impl.hpp"
 #include "lockable.hpp"
-#include "menu_int.hpp"
 #include "menu_selections.hpp"
 #include "monster_manager.hpp"
 #include "monster_type.hpp"
+#include "my_exceptions.hpp"
 #include "rng.hpp"
 #include "room_map.hpp"
 #include "segment.hpp"
@@ -46,6 +46,12 @@ using namespace KConfig;
 #ifdef lst2
 #undef lst2
 #endif
+
+// Dummy MenuInt class.
+struct MenuInt{
+    int getValue(const MenuSelections&) const { return 0; }
+};
+MenuInt dummy_menu_int;
 
 namespace {
     void GenerateRandomTransform(bool &x_reflect, int &nrot)
@@ -281,7 +287,7 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
     if (n == "Zombies") {
         KFile::List lst(*kc.getKFile(), "", 1);
         lst.push(0);
-        const MenuInt *number = kc.popMenuInt();
+        const MenuInt *number = &dummy_menu_int;
         if (!number) kc.getKFile()->errExpected("integer or GetMenu directive");
         return new DungeonZombies(*number);
 
@@ -336,13 +342,13 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
         lst.push(0);
         const MonsterType * mtype = kc.popMonsterType();
         lst.push(1);
-        const MenuInt *number = kc.popMenuInt();
+        const MenuInt *number = &dummy_menu_int;
         return new DungeonInitialMonsters(mtype, *number);
         
     } else if (n == "Item") {
         KFile::List lst(*kc.getKFile(), "", 2);
         lst.push(0);
-        const MenuInt *number = kc.popMenuInt();
+        const MenuInt *number = &dummy_menu_int;
         if (!number) kc.getKFile()->errExpected("integer or GetMenu directive");
         lst.push(1);
         const ItemType *const itype = kc.popItemType();
@@ -373,7 +379,7 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
     } else if (n == "MonsterGeneration") {
         KFile::List lst(*kc.getKFile(), "", 1);
         lst.push(0);
-        const MenuInt *number = kc.popMenuInt();
+        const MenuInt *number = &dummy_menu_int;
         return new DungeonMonsterGeneration(*number);
         
     } else if (n == "MonsterLimit") {
@@ -381,7 +387,7 @@ DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImp
         lst.push(0);
         const MonsterType * mtype = kc.popMonsterType();
         lst.push(1);
-        const MenuInt *number = kc.popMenuInt();
+        const MenuInt *number = &dummy_menu_int;
         return new DungeonMonsterLimit(mtype, *number);
         
     } else if (n == "Premapped") {

@@ -87,7 +87,8 @@ public:
     void readyToEnd(GameConnection &);
     bool requestQuit(GameConnection &);
     void setPauseMode(bool p); 
-    void setMenuSelection(GameConnection &, const std::string &key, int value);
+    void setMenuSelection(GameConnection &, int item_num, int new_choice_num);
+    void setMenuSelectionWork(GameConnection *, int item_num, int new_choice_num);  // not usu. called directly (replays are the exception).
     void randomQuest(GameConnection &);
     void sendControl(GameConnection &, int plyr, unsigned char control_num);  // plyr is usually 0; can be 1 in split screen mode
     void requestSpeechBubble(GameConnection &, bool show);
@@ -108,8 +109,6 @@ public:
 
     // This is used for replays
     void setMsgCountUpdateFlag(bool on);
-
-    void internalSetMenuSelection(const std::string &key, int value);
     
 private:
     boost::shared_ptr<KnightsGameImpl> pimpl;

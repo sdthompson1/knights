@@ -26,6 +26,8 @@
 
 #include "lua_ref.hpp"
 
+#include <string>
+
 class ActionData;
 
 struct lua_State;
@@ -61,6 +63,19 @@ public:
     //
     bool execute(const ActionData &) const;
 
+    // Run with int parameter and return string result. Stack is not changed.
+    // (Caller MUST check that hasValue() is true before calling this)
+    std::string runIntToString(int param) const;
+
+    // Pop lua value from top of stack and return string result.
+    // (Caller MUST check that hasValue() is true before calling this)
+    std::string runOneArgToString() const;
+    
+    // Run with a simple LuaExec. Reads N args from top of stack, but
+    // does not modify the stack. Returns nothing. (If the ref is none
+    // or nil, this function does nothing.)
+    void runNArgsNoPop(lua_State *lua, int n) const;
+    
 private:
     LuaRef function_ref;
 };

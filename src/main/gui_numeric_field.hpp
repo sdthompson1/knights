@@ -34,18 +34,17 @@ using namespace std;
 //
 // 1) only numeric characters may be entered
 //
-// 2) the contents can be no longer than 2 characters
+// 2) the contents can be no longer than N characters (N is set in ctor)
 //
 // 3) fires an ActionEvent whenever the field contents are changed,
 //    not just when RETURN is pressed.
-//
-// TODO: Could make it more customizable e.g. allow the client to
-// specify the max number of characters. But for now it's only used in
-// one place so this is not needed.
 
 class GuiNumericField : public gcn::TextField {
 public:
+    explicit GuiNumericField(int max_digits_) : max_digits(max_digits_) { }
     virtual void keyPressed(gcn::KeyEvent &event);
+private:
+    int max_digits;
 };
 
 #endif

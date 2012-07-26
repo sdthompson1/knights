@@ -117,7 +117,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     const int gutter = 15;
     
     // Create title (don't add it yet)
-    title.reset(new gcn::Label("QUEST SELECTION"));
+    title.reset(new gcn::Label(app.getGameManager().getMenuTitle()));
 
     // Add menu widgets
     const int menu_y = vpad_pretitle + title->getHeight() + vpad_posttitle;
@@ -132,6 +132,9 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     container->add(random_quest_button.get(), pad, y_after_menu);
     y_after_menu += random_quest_button->getHeight();
 
+    // ensure there is at least enough width to show the Random Quest button.
+    menu_width = std::max(menu_width, random_quest_button->getWidth());
+    
     // quest description box
     quest_description_box.reset(new GuiTextWrap);
     quest_description_box->setForegroundColor(gcn::Color(0,0,0));
@@ -243,7 +246,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     } else {
         start_button.reset(new GuiButton("Start"));
         start_button->addActionListener(this);
-        container->add(start_button.get(), pad, y);
+        container->add(start_button.get(), pad, y + button_yofs);
     }
     y += exit_button->getHeight();
     y += vpad_bot;
@@ -318,11 +321,11 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
     }
 
     // Must have been one of the menu widgets
-    std::string key;
-    int val;
-    const bool found = knights_app.getGameManager().getMenuWidgetInfo(event.getSource(), key, val);
+    int item_num;
+    int choice_num;
+    const bool found = knights_app.getGameManager().getMenuWidgetInfo(event.getSource(), item_num, choice_num);
     if (found) {
-        knights_client->setMenuSelection(key, val);
+        knights_client->setMenuSelection(item_num, choice_num);
     }
 }
 
@@ -330,11 +333,11 @@ void MenuScreenImpl::valueChanged(const gcn::SelectionEvent &event)
 {
     if (knights_app.getGameManager().doingMenuWidgetUpdate()) return;  // prevent infinite loops -- Trac #72.
     
-    std::string key;
-    int val;
-    const bool found = knights_app.getGameManager().getMenuWidgetInfo(event.getSource(), key, val);
+    int item_num;
+    int choice_num;
+    const bool found = knights_app.getGameManager().getMenuWidgetInfo(event.getSource(), item_num, choice_num);
     if (found) {
-        knights_client->setMenuSelection(key, val);
+        knights_client->setMenuSelection(item_num, choice_num);
     }
 }
 

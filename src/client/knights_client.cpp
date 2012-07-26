@@ -211,15 +211,15 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             
         case SERVER_SET_MENU_SELECTION:
             {
-                const std::string key = buf.readString();
-                const int val = buf.readVarInt();
+                const int item_num = buf.readVarInt();
+                const int choice_num = buf.readVarInt();
                 std::vector<int> allowed_vals;
                 const int num_allowed_vals = buf.readVarInt();
                 allowed_vals.resize(num_allowed_vals);
                 for (int i = 0; i < num_allowed_vals; ++i) {
                     allowed_vals[i] = buf.readVarInt();
                 }
-                if (client_cb) client_cb->setMenuSelection(key, val, allowed_vals);
+                if (client_cb) client_cb->setMenuSelection(item_num, choice_num, allowed_vals);
             }
             break;
 
@@ -868,12 +868,12 @@ void KnightsClient::setObsFlag(bool x)
     buf.writeUbyte(x ? 1 : 0);
 }
 
-void KnightsClient::setMenuSelection(const std::string &key, int value)
+void KnightsClient::setMenuSelection(int item_num, int choice_num)
 {
     Coercri::OutputByteBuf buf(pimpl->out);
     buf.writeUbyte(CLIENT_SET_MENU_SELECTION);
-    buf.writeString(key);
-    buf.writeVarInt(value);
+    buf.writeVarInt(item_num);
+    buf.writeVarInt(choice_num);
 }
 
 void KnightsClient::randomQuest()

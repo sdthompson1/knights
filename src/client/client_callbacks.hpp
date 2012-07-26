@@ -108,7 +108,7 @@ public:
     virtual void leaveGame() = 0;
     
     // menu
-    virtual void setMenuSelection(const std::string &key, int val, const std::vector<int> &allowed_values) = 0;
+    virtual void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values) = 0;
     virtual void setQuestDescription(const std::string &quest_descr) = 0;
 
     // switching between menu and in-game states

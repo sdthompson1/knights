@@ -38,7 +38,6 @@
 #include "menu.hpp"
 #include "menu_item.hpp"
 #include "menu_screen.hpp"
-#include "menu_selections.hpp"
 #include "my_exceptions.hpp"
 #include "password_screen.hpp"
 #include "sound_manager.hpp"
@@ -295,16 +294,17 @@ namespace {
     class MenuWidgets {
     public:
         MenuWidgets(const MenuItem &mi, gcn::ActionListener *listener, gcn::SelectionListener *listener2)
-            : menu_item(mi)
+            : menu_item(&mi)
         {
-            label.reset(new gcn::Label(menu_item.getTitleString()));
+            label.reset(new gcn::Label(menu_item->getTitleString()));
             label->adjustSize();
-            if (mi.getKey() == "#time") {
+            if (menu_item->isNumeric()) {
                 // time entry (no of minutes) -- used for time limit
-                textfield.reset(new GuiNumericField);
+                textfield.reset(new GuiNumericField(menu_item->getNumDigits()));
                 textfield->adjustSize();
-                textfield->setWidth(textfield->getFont()->getWidth("999"));
-                label2.reset(new gcn::Label("mins"));
+                textfield->setWidth(textfield->getFont()->getWidth("9") * 
+                                    (menu_item->getNumDigits() + 1));
+                label2.reset(new gcn::Label(menu_item->getSuffix()));
                 textfield->addActionListener(listener);
             } else {
                 list_model.reset(new MenuListModel);
@@ -315,7 +315,7 @@ namespace {
         }
 
         // The menu item
-        const MenuItem &menu_item;
+        const MenuItem *menu_item;
 
         // The label
         // NOTE: these have to be shared_ptrs since the MenuWidgets object gets copied.
@@ -330,14 +330,20 @@ namespace {
         boost::shared_ptr<gcn::Label> label2;
     };
 
+    struct MenuChoices {
+        // current menu settings
+        int choice;
+        std::vector<int> allowed_choices;  // for dropdowns
+    };
+
     int GetMenuWidgetWidth(const gcn::Font &font, const MenuWidgets &widgets)
     {
-        const MenuItem & item = widgets.menu_item;
+        const MenuItem & item = *widgets.menu_item;
 
         if (widgets.dropdown) {
             int widest_text = 0;
-            for (int i = item.getMinValue(); i < item.getMinValue() + item.getNumValues(); ++i) {
-                const std::string & text = item.getValueString(i);
+            for (int i = 0; i < item.getNumChoices(); ++i) {
+                const std::string & text = item.getChoiceString(i);
                 const int text_width = font.getWidth(text);
                 if (text_width > widest_text) widest_text = text_width;
             }
@@ -379,8 +385,8 @@ public:
     boost::shared_ptr<const ClientConfig> client_config;
     
     const Menu *menu;
-    MenuSelections menu_selections;
-    std::map<std::string, MenuWidgets> menu_widgets_map;
+    std::vector<MenuWidgets> menu_widgets_map;  // item_num -> MenuWidgets
+    std::vector<MenuChoices> menu_choices;      // item_num -> MenuChoices
     std::string quest_description;
     bool gui_invalid;
     bool are_menu_widgets_enabled;
@@ -481,6 +487,12 @@ void GameManager::tryJoinGameSplitScreen(const std::string &game_name)
     pimpl->current_game_name = game_name;
 }
 
+const std::string & GameManager::getMenuTitle() const
+{
+    if (!pimpl->menu) throw UnexpectedError("no menu exists");
+    return pimpl->menu->getTitle();
+}
+
 void GameManager::createMenuWidgets(gcn::ActionListener *listener,
                                     gcn::SelectionListener *listener2,
                                     int initial_x,
@@ -500,7 +512,7 @@ void GameManager::createMenuWidgets(gcn::ActionListener *listener,
     for (int i = 0; i < menu->getNumItems(); ++i) {
         const MenuItem &item = menu->getItem(i);
         MenuWidgets menu_widgets(item, listener, listener2);
-        pimpl->menu_widgets_map.insert(std::make_pair(item.getKey(), menu_widgets));
+        pimpl->menu_widgets_map.push_back(menu_widgets);
         max_label_w = std::max(max_label_w, menu_widgets.label->getWidth());
         max_widget_w = std::max(max_widget_w, GetMenuWidgetWidth(*menu_widgets.label->getFont(), menu_widgets));
     }
@@ -509,27 +521,27 @@ void GameManager::createMenuWidgets(gcn::ActionListener *listener,
     int y = initial_y;
     for (int i = 0; i < menu->getNumItems(); ++i) {
         const MenuItem &item(menu->getItem(i));
-        std::map<std::string,MenuWidgets>::const_iterator mw = pimpl->menu_widgets_map.find(item.getKey());
+        MenuWidgets &mw = pimpl->menu_widgets_map[i];
 
-        container.add(mw->second.label.get(), initial_x, y+1);
+        container.add(mw.label.get(), initial_x, y+1);
 
-        if (mw->second.dropdown) {
-            mw->second.dropdown->setWidth(max_widget_w);
-            container.add(mw->second.dropdown.get(), initial_x + max_label_w + pad, y);
+        if (mw.dropdown) {
+            mw.dropdown->setWidth(max_widget_w);
+            container.add(mw.dropdown.get(), initial_x + max_label_w + pad, y);
         } else {
-            container.add(mw->second.textfield.get(), initial_x + max_label_w + pad, y);
-            container.add(mw->second.label2.get(), mw->second.textfield->getX() + mw->second.textfield->getWidth() + pad, y+1);
+            container.add(mw.textfield.get(), initial_x + max_label_w + pad, y);
+            container.add(mw.label2.get(), mw.textfield->getX() + mw.textfield->getWidth() + pad, y+1);
         }
     
-        y += std::max(mw->second.label->getHeight(), GetMenuWidgetHeight(mw->second)) + vspace;
+        y += std::max(mw.label->getHeight(), GetMenuWidgetHeight(mw)) + vspace;
         if (item.getSpaceAfter()) y += extra_vspace;
     }
 
-    // make sure the list models are updated
+    // make sure the list models get updated
     for (int i = 0; i < menu->getNumItems(); ++i) {
-        updateMenuWidget(menu->getItem(i).getKey());
+        updateMenuWidget(i);
     }
-    
+
     y_after_menu = y;
     menu_width = max_label_w + pad + max_widget_w;
 }
@@ -546,8 +558,8 @@ void GameManager::setMenuWidgetsEnabled(bool enabled)
     if (pimpl->are_menu_widgets_enabled == enabled) return;
     pimpl->are_menu_widgets_enabled = enabled;
     
-    for (std::map<std::string, MenuWidgets>::iterator it = pimpl->menu_widgets_map.begin(); it != pimpl->menu_widgets_map.end(); ++it) {
-        updateMenuWidget(it->second.menu_item.getKey());
+    for (int i = 0; i < int(pimpl->menu_widgets_map.size()); ++i) {
+        updateMenuWidget(i);
     }
 }
 
@@ -560,7 +572,13 @@ void GameManager::getMenuStrings(std::vector<std::pair<std::string, std::string>
         std::pair<std::string, std::string> p;
         const MenuItem &item = menu->getItem(i);
         p.first = item.getTitleString();
-        p.second = item.getValueString(pimpl->menu_selections.getValue(item.getKey()));
+        if (item.isNumeric()) {
+            std::ostringstream str;
+            str << pimpl->menu_choices[i].choice;
+            p.second = str.str();
+        } else {
+            p.second = item.getChoiceString(pimpl->menu_choices[i].choice);
+        }
         
         menu_strings.push_back(p);
         if (item.getSpaceAfter()) {
@@ -569,16 +587,14 @@ void GameManager::getMenuStrings(std::vector<std::pair<std::string, std::string>
     }
 }
 
-bool GameManager::getMenuWidgetInfo(gcn::Widget *source, std::string &out_key, int &out_val) const
+bool GameManager::getMenuWidgetInfo(gcn::Widget *source, int &out_item, int &out_choice) const
 {
     const Menu *menu = pimpl->menu;
     if (!menu) return false;
 
     for (int i = 0; i < menu->getNumItems(); ++i) {
         const MenuItem &item = menu->getItem(i);
-        const std::string &key = item.getKey();
-
-        const MenuWidgets &mw = pimpl->menu_widgets_map.find(key)->second;
+        const MenuWidgets &mw = pimpl->menu_widgets_map[i];
         
         const gcn::DropDown *dropdown = mw.dropdown.get();
         const GuiNumericField *textfield = mw.textfield.get();
@@ -586,23 +602,23 @@ bool GameManager::getMenuWidgetInfo(gcn::Widget *source, std::string &out_key, i
             // Find out what was selected
             const int selected = dropdown->getSelected();
             if (selected >= 0 && selected < mw.list_model->vals.size()) {
-                out_key = key;
-                out_val = mw.list_model->vals[selected];
+                out_item = i;
+                out_choice = mw.list_model->vals[selected];
                 return true;
             }
         } else if (textfield == source) {
             const std::string & text = textfield->getText();
             if (text.empty()) {
-                out_key = key;
-                out_val = 0;
+                out_item = i;
+                out_choice = 0;
                 return true;
             } else {
                 std::istringstream str(text);
                 int result = 0;
                 str >> result;
                 if (str) {
-                    out_key = key;
-                    out_val = result;
+                    out_item = i;
+                    out_choice = result;
                     return true;
                 }
             }
@@ -625,46 +641,50 @@ namespace {
     };
 }
 
-void GameManager::updateMenuWidget(const std::string &key)
+void GameManager::updateMenuWidget(int item_num)
 {
     Sentinel sentinel(pimpl->doing_menu_widget_update);
     
-    std::map<std::string, MenuWidgets>::iterator mw_iter = pimpl->menu_widgets_map.find(key);
-    if (mw_iter != pimpl->menu_widgets_map.end()) {
-        MenuWidgets &mw = mw_iter->second;
-        
+    if (item_num >= 0 && item_num < pimpl->menu_widgets_map.size()) {
+        MenuWidgets & mw = pimpl->menu_widgets_map[item_num];
+        MenuChoices & mc = pimpl->menu_choices[item_num];
+
+        // this works for both dropdowns and numeric fields
+        const bool is_enabled = (mc.allowed_choices.size() != 1 || mc.allowed_choices[0] != 0)
+            && pimpl->are_menu_widgets_enabled;
+        const gcn::Color fg_col = is_enabled ? gcn::Color(0,0,0) : gcn::Color(170,170,170);
+
         if (mw.dropdown) {
-        
+            
             mw.list_model->elts.clear();
             mw.list_model->vals.clear();
-            
-            const std::vector<int> &allowed_vals = pimpl->menu_selections.getAllowedValues(key);
-            for (std::vector<int>::const_iterator it = allowed_vals.begin(); it != allowed_vals.end(); ++it) {
-                mw.list_model->elts.push_back(mw.menu_item.getValueString(*it));
+                
+            for (std::vector<int>::const_iterator it = mc.allowed_choices.begin(); it != mc.allowed_choices.end(); ++it) {
+                mw.list_model->elts.push_back(mw.menu_item->getChoiceString(*it));
                 mw.list_model->vals.push_back(*it);
             }
-            
-            const int val_selected = pimpl->menu_selections.getValue(key);
+                
             for (int idx = 0; idx < mw.list_model->vals.size(); ++idx) {
                 const int val_at_idx = mw.list_model->vals[idx];
-                if (val_selected == val_at_idx) {
+                if (val_at_idx == mc.choice) {
                     mw.dropdown->setSelected(idx);
                     break;
                 }
             }
 
-            const bool is_enabled = (allowed_vals.size() != 1 || allowed_vals[0] != 0) && pimpl->are_menu_widgets_enabled;
-            mw.dropdown->setForegroundColor(is_enabled ? gcn::Color(0,0,0) : gcn::Color(170,170,170));
+            mw.dropdown->setForegroundColor(fg_col);
             mw.dropdown->setEnabled(is_enabled);
 
         } else {
 
             std::ostringstream str;
-            const int val = pimpl->menu_selections.getValue(key);
-            if (val > 0) str << val;
+            if (mc.choice > 0) str << mc.choice;
             mw.textfield->setText(str.str());
+
+            mw.textfield->setEnabled(is_enabled);
+            mw.textfield->setForegroundColor(fg_col);
         }
-        
+            
         pimpl->gui_invalid = true;
     }
 }
@@ -797,6 +817,9 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     // Store a pointer to the config, and the menu
     pimpl->client_config = conf;
     pimpl->menu = conf->menu.get();
+
+    // Resize the MenuChoices to the proper size
+    pimpl->menu_choices.resize(pimpl->menu->getNumItems());
 
     // Load the graphics and sounds
     for (std::vector<const Graphic *>::const_iterator it = conf->graphics.begin(); it != conf->graphics.end(); ++it) {
@@ -992,18 +1015,21 @@ void GameManager::leaveGame()
     pimpl->gui_invalid = true;
 }
 
-void GameManager::setMenuSelection(const std::string &key, int val, const std::vector<int> &allowed_vals)
+void GameManager::setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals)
 {
     // Update menu selections
-    pimpl->menu_selections.setAllowedValues(key, allowed_vals);
-    pimpl->menu_selections.setValue(key, val);
-
+    if (item_num >= 0) {
+        MenuChoices &mc = pimpl->menu_choices.at(item_num); // will throw if bad item_num given by server
+        mc.allowed_choices = allowed_vals;
+        mc.choice = choice_num;
+    }
+    
     // All players are no longer ready to start
     pimpl->game_namelist.clearReady();
     pimpl->my_ready_flag = false;
     
     // Update GUI
-    updateMenuWidget(key);
+    updateMenuWidget(item_num);
 
     pimpl->gui_invalid = true;
 }

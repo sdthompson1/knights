@@ -1,5 +1,5 @@
 /*
- * menu_int.hpp
+ * menu_listener.hpp
  *
  * This file is part of Knights.
  *
@@ -21,31 +21,21 @@
  *
  */
 
-#ifndef MENU_INT_HPP
-#define MENU_INT_HPP
+/*
+ * This class interfaces to the Lua menu system.
+ *
+ */
 
-#include "menu_selections.hpp"
+#ifndef MENU_LISTENER_HPP
+#define MENU_LISTENER_HPP
 
-class MenuInt {
+class MenuListener {
 public:
-    virtual ~MenuInt() { }
-    virtual int getValue(const MenuSelections &msel) const = 0;
-};
-
-class MenuIntConst : public MenuInt {
-public:
-    explicit MenuIntConst(int xx) : x(xx) { }
-    virtual int getValue(const MenuSelections &) const { return x; }
-private:
-    int x;
-};
-
-class MenuIntVar : public MenuInt {
-public:
-    explicit MenuIntVar(const std::string &key_) : key(key_) { }
-    virtual int getValue(const MenuSelections &msel) const { return msel.getValue(key); }
-private:
-    std::string key;
+    virtual void settingChanged(int item_num,
+                                const char *item_key,
+                                int choice_num,
+                                const char *choice_string,
+                                const std::vector<int> &allowed_choices) = 0;
 };
 
 #endif

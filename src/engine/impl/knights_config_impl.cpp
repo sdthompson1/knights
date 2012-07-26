@@ -24,8 +24,9 @@
 #include "misc.hpp"
 
 #include "anim.hpp"
+#include "config_map.hpp"
 #include "control.hpp"
-#include "control_actions.hpp"
+#include "control_actions.hpp"     // for AddStandardControls
 #include "coord_transform.hpp"
 #include "create_quest.hpp"
 #include "dungeon_generator.hpp"
@@ -45,12 +46,11 @@
 #include "lua_sandbox.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
-#include "menu_int.hpp"
-#include "menu_item.hpp"
-#include "menu_selections.hpp"
+#include "menu_wrapper.hpp"
 #include "monster_manager.hpp"
 #include "monster_task.hpp"
 #include "monster_type.hpp"
+#include "my_exceptions.hpp"
 #include "overlay.hpp"
 #include "player.hpp"
 #include "round.hpp"
@@ -131,7 +131,7 @@ KnightsConfigImpl::Popper::~Popper()
     if (!kf.isStackEmpty()) kf.pop();
 }
 
-KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
+KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool menu_strict)
     : knight_anim(0), default_item(0),
       stuff_bag_graphic(0),
       blood_icon(0)
@@ -170,10 +170,8 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         PopConfigMap(lua, *config_map);
 
         // Load the Dungeon Environment Customization Menu
-        kf->pushSymbol("MAIN_MENU");
-        popMenu();
-        kf->pushSymbol("MAIN_MENU_SPACE");
-        popMenuSpace();
+        lua_getfield(lua, -1, "MENU");  // [env kts menu]
+        menu_wrapper.reset(new MenuWrapper(lua, menu_strict)); // [env kts]
 
         // Load misc other stuff.
         kf->pushSymbol("WALL");
@@ -194,8 +192,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name)
         popHouseColoursMenu();
         kf->pushSymbol("DEFAULT_ITEM");
         default_item = popItemType(0);
-        kf->pushSymbol("QUEST_DESCRIPTIONS");
-        popQuestDescriptions();
 
         // controls (read from kts.CONTROLS)
         // [env kts]
@@ -289,7 +285,6 @@ void KnightsConfigImpl::freeMemory()
     using std::for_each;
     for_each(dungeon_directives.begin(), dungeon_directives.end(), Delete<DungeonDirective>());
     for (size_t i=0; i<special_item_types.size(); ++i) delete special_item_types[i];
-    for_each(menu_ints.begin(), menu_ints.end(), Delete<MenuInt>());
     for_each(overlays.begin(), overlays.end(), Delete<Overlay>());
     for (size_t i=0; i<knight_anims.size(); ++i) delete knight_anims[i];
 
@@ -313,7 +308,6 @@ KnightsConfigImpl::~KnightsConfigImpl()
 KnightsConfigImpl::Sentry::~Sentry()
 {
     // Free up memory
-    cfg.menu_item_names.clear();
     cfg.segment_categories.clear();
     cfg.tile_categories.clear();
 
@@ -667,203 +661,6 @@ MapDirection KnightsConfigImpl::popMapDirection(MapDirection dflt)
     }
 }
 
-void KnightsConfigImpl::popMenu()
-{
-    if (!kf) return;
-
-    KFile::List lst(*kf, "Menu");
-
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        if (kf->isDirective()) {
-            DungeonDirective *d = popDungeonDirective();
-            global_dungeon_directives.push_back(d);
-        } else if (kf->isTable()) {
-            menu.addItem(popMenuItem());
-        } else {
-            kf->errExpected("MenuItem");
-            kf->pop();
-        }
-    }
-}
-
-void KnightsConfigImpl::popMenuSpace()
-{
-    if (!kf) return;
-
-    KFile::List lst(*kf, "MenuSpace");
-
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        const string key = kf->popString();
-        // crappy linear search for key
-        for (int j = 0; j < menu.getNumItems(); ++j) {
-            MenuItem &item = menu.getItem(j);
-            if (item.getKey() == key) {
-                item.setSpaceAfter();
-                break;
-            }
-        }
-    }
-}
-
-MenuItem KnightsConfigImpl::popMenuItem()
-{
-    if (!kf) return MenuItem("error", 0, 0, "error");  // should never happen.
-    
-    KFile::Table tab(*kf, "MenuItem");
-    
-    tab.push("id");
-    const string id = kf->popString();
-
-    // check we haven't already got this id
-    for (int i = 0; i < menu.getNumItems(); ++i) {
-        if (menu.getItem(i).getKey() == id) {
-            kf->error(string("duplicate menu item: ") + id);
-            break;
-        }
-    }
-
-    tab.push("min_value");
-    const int min_value = kf->popInt(0);
-
-    tab.push("title");
-    const string title = kf->popString();
-
-    tab.push("values");
-    KFile::List lst(*kf, "MenuValues");
-
-    MenuItem result(id, min_value, lst.getSize(), title);
-    
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        popMenuValue(i + min_value, result);
-    }
-
-    return result;
-}
-
-MenuInt * KnightsConfigImpl::popMenuInt()
-{
-    if (!kf) return 0;
-    const Value * p = kf->getTop();
-    map<const Value *, MenuInt*>::iterator it = menu_ints.find(p);
-
-    if (it == menu_ints.end()) {
-        it = menu_ints.insert(make_pair(p, static_cast<MenuInt*>(0))).first;
-        if (kf->isInt()) {
-            int val = kf->popInt();
-            it->second = new MenuIntConst(val);
-        } else if (kf->isDirective()) {
-            KFile::Directive dir(*kf, "GetMenuDirective");
-            if (dir.getName() != "GetMenu") {
-                kf->errExpected("integer or GetMenu directive");
-            } else {
-                dir.pushArgList();
-                KFile::List lst(*kf, "string", 1);
-                if (lst.getSize()==1) {
-                    lst.push(0);
-                    string menu_item_name = kf->popString();
-                    it->second = new MenuIntVar(menu_item_name);
-                }
-            }
-        } else {
-            kf->errExpected("integer or GetMenu directive");
-            kf->pop();
-        }
-
-    } else {
-        kf->pop();
-    }
-
-    return it->second;
-}
-
-void KnightsConfigImpl::popMenuValue(int val, MenuItem &menu_item)
-{
-    if (!kf) return;
-    string name;
-    if (kf->isList()) {
-        KFile::List lst(*kf, "MenuValue");
-        lst.push(0);
-        name = popMenuValueName(val);
-        for (int i=1; i<lst.getSize(); ++i) {
-            lst.push(i);
-            popMenuValueDirective(menu_item.getKey(), val);
-        }
-    } else {
-        name = popMenuValueName(val);
-    }
-    menu_item.setValueString(val, name);
-}
-
-void KnightsConfigImpl::popMenuValueDirective(const string &key, int val)
-{
-    if (!kf) return;
-    KFile::Directive dir(*kf, "MenuDirective");
-    string dname = dir.getName();
-    if (dname.substr(0,7) == "Dungeon") {
-        DungeonDirective *d = popDungeonDirective();
-        if (d) menu_dungeon_directives[key][val].push_back(d);
-    } else if (dname.substr(0,5) == "Quest") {
-        dir.pushArgList();
-        CreateQuests(dname, *this, menu_quests[key][val]);
-    } else if (dname.substr(0,9) == "Constrain") {
-        dir.pushArgList();
-        menu_constraints.addConstraintFromKFile(key, val, dname, *this);
-    } else {
-        kf->errExpected("MenuDirective");
-    }
-}
-
-string KnightsConfigImpl::popMenuValueName(int val)
-{
-    if (!kf) return "error";  // should never happen
-    if (kf->isString()) {
-        return kf->popString();
-    } else if (kf->isDirective()) {
-        KFile::Directive dir(*kf, "MenuValueName");
-        if (dir.getName() == "MenuNumber") {
-            std::ostringstream str;
-            str << val;
-            return str.str();
-        } else if (dir.getName() != "MenuIcon") {
-            kf->errExpected("MenuValueName");
-        } else {
-            dir.pushArgList();
-            KFile::List lst(*kf, "string or graphic", 1);
-            if (lst.getSize()==1) {
-                /*
-                lst.push(0);
-                if (kf->isString()) {
-                    string result;
-                    const char c = kf->popString()[0];
-                    for (int x = 0; x < val; ++x) {
-                        result += c;
-                    }
-                    return result;
-                } else {
-                    // graphic icons are ignored currently.
-                    kf->pop();
-                    std::ostringstream str;
-                    str << val;
-                    return str.str();
-                }
-                */
-                // strings / graphics ignored currently
-                // instead we just do the same as MenuNumber()...
-                std::ostringstream str;
-                str << val;
-                return str.str();
-            }
-        }
-    } else {
-        kf->errExpected("MenuValueName");
-        kf->pop();
-    }
-    return "error";
-}
-
 MonsterType * KnightsConfigImpl::popMonsterType()
 {
     if (!kf) return 0;
@@ -962,21 +759,6 @@ float KnightsConfigImpl::popProbability(int dflt)
         return dflt / 100.0f;
     } else {
         return popProbability();
-    }
-}
-
-void KnightsConfigImpl::popQuestDescriptions()
-{
-    if (!kf) return;
-    KFile::List lst(*kf, "QuestDescriptions");
-    standard_quest_descriptions.reserve(lst.getSize());
-    for (int x = 0; x < lst.getSize(); ++x) {
-        lst.push(x);
-        std::string result = kf->popString();
-        for (int j = 0; j < result.size(); ++j) {
-            if (result[j] == '\\') result[j] = '\n';
-        }
-        standard_quest_descriptions.push_back(result);
     }
 }
 
@@ -1229,8 +1011,7 @@ void KnightsConfigImpl::getOtherControls(std::vector<const UserControl*> &out) c
     std::sort(out.begin(), out.end(), CompareID<UserControl>());
 }
 
-std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
-                                              boost::shared_ptr<DungeonMap> &dungeon_map,
+std::string KnightsConfigImpl::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
                                               boost::shared_ptr<CoordTransform> &coord_transform,
                                               std::vector<boost::shared_ptr<Quest> > &quests,
                                               HomeManager &home_manager,
@@ -1247,6 +1028,8 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
                                               TutorialManager *tutorial_manager,
                                               int &final_gvt) const
 {
+    MenuSelections &msel = *(MenuSelections*)0; // DUMMY.
+
     boost::scoped_ptr<DungeonGenerator> dg(new DungeonGenerator(lua_state.get(),
                                                                 segment_set,
                                                                 wall_tile,
@@ -1255,7 +1038,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
                                                                 vert_door_tile[0],
                                                                 vert_door_tile[1]));
     quests.clear();
-    readMenu(menu, msel, *dg, quests);   // apply DungeonDirectives and get quests
+    readMenu(getMenu(), msel, *dg, quests);   // apply DungeonDirectives and get quests
     dungeon_map.reset(new DungeonMap);
     coord_transform.reset(new CoordTransform);
     const std::string dungeon_generator_msg =
@@ -1414,6 +1197,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     task_manager.addTask(chktsk, TP_NORMAL, task_manager.getGVT() + item_check_interval);
     
     // set up a time limit task if needed
+    /*
     const int time_limit = msel.getValue("#time") * 60 * 1000;  // time limit in milliseconds
     if (time_limit > 0) {
         boost::shared_ptr<TimeLimitTask> ttsk(new TimeLimitTask);
@@ -1422,6 +1206,7 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     } else {
         final_gvt = 0;
     }
+    */
     
     // Set up tutorial manager if needed
     if (tutorial_manager) {
@@ -1434,6 +1219,23 @@ std::string KnightsConfigImpl::initializeGame(const MenuSelections &msel,
     return dungeon_generator_msg;
 }
 
+const Menu & KnightsConfigImpl::getMenu() const
+{
+    return menu_wrapper->getMenu();
+}
+
+void KnightsConfigImpl::resetMenu()
+{
+    lua_State *lua = lua_state.get();
+    ASSERT(lua);
+    
+    lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS); // [env]
+    luaL_getsubtable(lua, -1, "kts");  // [env kts]
+    lua_getfield(lua, -1, "MENU");     // [env kts menu]
+    menu_wrapper.reset(new MenuWrapper(lua, menu_wrapper->getStrict()));  // [env kts]
+    lua_pop(lua, 2); // []
+}
+
 int KnightsConfigImpl::getApproachOffset() const
 {
     return config_map->getInt("approach_offset");
@@ -1444,23 +1246,10 @@ void KnightsConfigImpl::getHouseColours(std::vector<Coercri::Color> &result) con
     result = house_col_vector;
 }
 
-std::string KnightsConfigImpl::getQuestDescription(int quest_num, const std::string &exit_point_string) const
-{
-    if (quest_num < 1 || quest_num > standard_quest_descriptions.size()) return "";
-
-    // return the standard quest description, but replace "%X" with the exit point
-    std::string result = standard_quest_descriptions[quest_num - 1];
-    for (int i = 0; i < result.size(); ++i) {
-        if (result[i] == '%' && i+1 < result.size() && result[i+1] == 'X') {
-            result = result.substr(0,i) + exit_point_string + result.substr(i+2, std::string::npos);
-        }
-    }
-    return result;
-}
-
 void KnightsConfigImpl::readMenu(const Menu &menu, const MenuSelections &msel, DungeonGenerator &dgen,
                                  std::vector<boost::shared_ptr<Quest> > &quests) const
 {
+    /*
     quests.clear();
 
     // Global dungeon directives
@@ -1499,6 +1288,7 @@ void KnightsConfigImpl::readMenu(const Menu &menu, const MenuSelections &msel, D
             }
         }
     }
+    */
 }
 
 

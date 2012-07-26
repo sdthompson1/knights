@@ -87,7 +87,7 @@ namespace Coercri {
         typedef unsigned char ubyte;
 
         // This appends to the given vector.
-        OutputByteBuf(std::vector<ubyte> &buf_) : buf(buf_) { }
+        OutputByteBuf(std::vector<ubyte> &buf_) : buf(&buf_) { }
 
         void writeUbyte(int x);
         void writeUshort(int x);
@@ -101,7 +101,7 @@ namespace Coercri {
                                                 // (excluding the two bytes for the payload-size)        
 
     private:
-        std::vector<ubyte> &buf;
+        std::vector<ubyte> *buf;
     };
 
 }

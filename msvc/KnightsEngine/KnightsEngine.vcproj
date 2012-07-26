@@ -328,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\menu_wrapper.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\missile.cpp"
 				>
 			</File>
@@ -615,6 +619,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\menu_selections.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\menu_wrapper.hpp"
 				>
 			</File>
 			<File

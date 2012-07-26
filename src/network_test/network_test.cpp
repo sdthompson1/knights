@@ -127,9 +127,9 @@ public:
     }
 
     void leaveGame() { Log("Leave game"); }
-    void setMenuSelection(const std::string &key, int val, const std::vector<int> &allowed_values)
+    void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values)
     {
-        Log("Set menu selection. Key = %s, Val = %d", key.c_str(), val);
+        Log("Set menu selection. Item = %d, Choice = %d", item, choice);
     }
     void setQuestDescription(const std::string &quest_descr)
     {

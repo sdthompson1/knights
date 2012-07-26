@@ -132,7 +132,7 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 
     if (event.getSource() == split_screen_mode.get()) {
         // Go to LoadingScreen in split-screen mode
-        new_screen.reset(new LoadingScreen(-1, "", false, false, false));
+        new_screen.reset(new LoadingScreen(-1, "", false, true, false, false));
         
     } else if (event.getSource() == host_lan_game.get()) {
         // Go to HostLanScreen
@@ -148,7 +148,7 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 
     } else if (event.getSource() == single_player_mode.get()) {
         // Go to LoadingScreen in single player mode
-        new_screen.reset(new LoadingScreen(-1, "", true, false, false));
+        new_screen.reset(new LoadingScreen(-1, "", true, true, false, false));
         
     } else if (event.getSource() == exit.get()) {
         // Go back to title screen

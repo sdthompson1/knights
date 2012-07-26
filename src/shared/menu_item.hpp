@@ -22,7 +22,7 @@
  */
 
 /*
- * Represents a single setting in the quest menu (e.g. "Amount of Stuff")
+ * Represents a single option in the quest menu (e.g. "Amount of Stuff")
  *
  */
 
@@ -36,35 +36,59 @@
 
 class MenuItem {
 public:
-    // menu items have a string key, and a numeric value between min_value
-    // and min_value + num_values - 1 (inclusive).
-    const std::string & getKey() const { return key; }
-    int getMinValue() const;
-    int getNumValues() const;
-    bool hasNumValues() const;
-
-    // presentation
-    const std::string & getTitleString() const { return title_str; }
-    std::string getValueString(int i) const;
+    // general properties
+    const std::string & getTitleString() const { return title; }
     bool getSpaceAfter() const { return space_after; }
     
-    // construction
-    MenuItem(const std::string &key_, int min_value_, int nvalues,
-             const std::string &title)
-        : key(key_), min_value(min_value_),
-          title_str(title), value_str(nvalues), space_after(false)  { }
-    void setValueString(int val, const std::string &str) { value_str.at(val - min_value) = str; }
-    void setSpaceAfter() { space_after = true; }
+    // type (numeric or dropdown)
+    bool isNumeric() const { return numeric; }
+
+    // properties for numeric fields
+    int getNumDigits() const { return num_digits; }
+    const std::string &getSuffix() const { return suffix; }
+
+    // properties for dropdown fields
+    int getNumChoices() const { return value_str.size(); }
+    const std::string & getChoiceString(int i) const { return value_str.at(i); }
+
+    
+    // construction - dropdown
+    MenuItem(const std::string &title_,
+             std::vector<std::string> &settings)  // swapped into place
+        : title(title_), numeric(false), space_after(false)
+    {
+        value_str.swap(settings);
+    }
+
+    // construction - numeric
+    MenuItem(const std::string &title_,
+             int num_digits_,
+             const std::string &suffix_)
+        : title(title_), numeric(true),
+          num_digits(num_digits_), suffix(suffix_),
+          space_after(false)
+    { }
+
+    // space_after is set after the fact
+    void addSpaceAfter() { space_after = true; }
     
     // serialization
     explicit MenuItem(Coercri::InputByteBuf &buf);
     void serialize(Coercri::OutputByteBuf &buf) const;
 
 private:
-    std::string key;
-    int min_value;
-    std::string title_str;
+    // general properties
+    std::string title;
+    bool numeric;
+
+    // numeric properties
+    int num_digits;
+    std::string suffix;
+
+    // dropdown properties
     std::vector<std::string> value_str;
+
+    // spacing
     bool space_after;
 };
 

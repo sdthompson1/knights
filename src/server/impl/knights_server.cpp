@@ -528,10 +528,10 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
             case CLIENT_SET_MENU_SELECTION:
                 {
-                    const std::string key = buf.readString();
-                    const int val = buf.readVarInt();
+                    const int item_num = buf.readVarInt();
+                    const int choice_num = buf.readVarInt();
                     if (conn.game) {
-                        conn.game->setMenuSelection(*conn.game_conn, key, val);
+                        conn.game->setMenuSelection(*conn.game_conn, item_num, choice_num);
                     }
                 }
                 break;
@@ -826,11 +826,11 @@ std::vector<GameInfo> KnightsServer::getRunningGames() const
     return result;
 }
 
-void KnightsServer::setMenuSelection(const std::string &game_name, const std::string &key, int value)
+void KnightsServer::setMenuSelection(const std::string &game_name, int item, int choice)
 {
     game_map::iterator it = pimpl->games.find(game_name);
     if (it != pimpl->games.end()) {
-        it->second->internalSetMenuSelection(key, value);
+        it->second->setMenuSelectionWork(0, item, choice);
     }
 }
 

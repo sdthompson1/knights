@@ -25,7 +25,6 @@
 
 #include "anim.hpp"
 #include "graphic.hpp"
-#include "protocol.hpp"
 
 // NOTE: lua ctor is not used by client, so is in engine/impl/anim_lua_ctor.cpp instead of here.
 

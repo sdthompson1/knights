@@ -24,7 +24,6 @@
 #include "misc.hpp"
 
 #include "colour_change.hpp"
-#include "protocol.hpp"
 
 #include <algorithm>
 using namespace std;

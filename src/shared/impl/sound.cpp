@@ -23,7 +23,6 @@
 
 #include "misc.hpp"
 
-#include "protocol.hpp"
 #include "sound.hpp"
 
 Sound::Sound(int id_, Coercri::InputByteBuf &buf)

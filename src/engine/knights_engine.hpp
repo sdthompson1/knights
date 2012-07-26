@@ -61,7 +61,6 @@ public:
     // Start up a new KnightsEngine. Requires KnightsConfig and menu settings.
     // Note that each KnightsGame should have a unique KnightsConfig.
     KnightsEngine(boost::shared_ptr<KnightsConfig> config,
-                  const MenuSelections &msel,
                   const std::vector<int> &hse_cols,
                   const std::vector<std::string> &player_names,
                   bool tutorial_mode,

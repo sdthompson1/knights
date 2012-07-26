@@ -30,7 +30,7 @@ void GuiNumericField::keyPressed(gcn::KeyEvent &key_event)
     if (key_event.getKey().isCharacter() && !key_event.getKey().isNumber()) {
         // reject the key (non-numeric character)
         key_event.consume();
-    } else if (key_event.getKey().isNumber() && old_text.length() == 2) {
+    } else if (key_event.getKey().isNumber() && old_text.length() >= max_digits) {
         // reject the key (will make the text longer than 2 chars)
         key_event.consume();
     } else {

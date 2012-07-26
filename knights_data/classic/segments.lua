@@ -90,7 +90,7 @@ tile_table = {
    nil,              -- 63
    t_open_gate_horiz,   -- 64
    t_open_gate_vert,    -- 65
-   t_floor1_def,        -- 66
+   t_floor1,            -- 66
    t_floorpp,           -- 67
    t_floor2,            -- 68
    t_floor3,            -- 69

@@ -41,7 +41,7 @@ namespace {
         // Should return one error message.
 
         std::string result = lua_isstring(lua, 1) ? lua_tostring(lua, 1) : "<No err msg>";
-        result += "\nTraceback:" + LuaTraceback(lua);
+        result += LuaTraceback(lua);
         lua_pop(lua, 1);
         lua_pushstring(lua, result.c_str());
         return 1;
@@ -73,26 +73,11 @@ void LuaExec(lua_State *lua, int nargs, int nresults)
     const int result = lua_pcall(lua, nargs, nresults, -(2 + nargs));
 
     if (result != 0) {
-
         // stack is now: [<stuff> errfunc msg]
-        
-        // Determine if there is some running lua code higher up the stack. 
-        // This determines whether error should be thrown as a lua_error call, or a 
-        // LuaError exception
-
-        lua_Debug dummy;
-        const bool use_lua_err = lua_getstack(lua, 0, &dummy) != 0;
-
-        if (use_lua_err) {
-            // Lua stack will be reset in this case so don't worry about popping errfunc.
-            lua_error(lua);
-        } else {
-            // get the error msg & throw exception
-            const std::string err_msg = lua_isstring(lua, -1)
-                ? lua_tostring(lua, -1) : "<No err msg>";
-            lua_pop(lua, 2);
-            throw LuaError(err_msg);
-        }
+        const std::string err_msg = lua_isstring(lua, -1)
+            ? lua_tostring(lua, -1) : "<No err msg>";
+        lua_pop(lua, 2);
+        throw LuaError(err_msg);
     }
 
     // stack is now: [<stuff> errfunc result1 .. resultn]

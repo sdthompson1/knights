@@ -24,64 +24,40 @@
 #include "misc.hpp"
 
 #include "menu_item.hpp"
-#include "protocol.hpp"
-
-#include <sstream>
 
 MenuItem::MenuItem(Coercri::InputByteBuf &buf)
 {
-    key = buf.readString();
-    min_value = buf.readVarInt();
-    title_str = buf.readString();
-    const int n_vals = buf.readVarInt();
-    value_str.resize(n_vals);
-    for (int i = 0; i < n_vals; ++i) {
-        value_str[i] = buf.readString();
+    title = buf.readString();
+    numeric = buf.readUbyte() != 0;
+
+    if (numeric) {
+        num_digits = buf.readVarInt();
+        suffix = buf.readString();
+    } else {
+        const int nsettings = buf.readVarInt();
+        value_str.reserve(nsettings);
+        for (int i = 0; i < nsettings; ++i) {
+            value_str.push_back(buf.readString());
+        }
     }
+
     space_after = buf.readUbyte() != 0;
 }
 
 void MenuItem::serialize(Coercri::OutputByteBuf &buf) const
 {
-    buf.writeString(key);
-    buf.writeVarInt(min_value);
-    buf.writeString(title_str);
-    buf.writeVarInt(value_str.size());
-    for (std::vector<std::string>::const_iterator it = value_str.begin(); it != value_str.end(); ++it) {
-        buf.writeString(*it);
-    }
-    buf.writeUbyte(space_after ? 1 : 0);
-}
+    buf.writeString(title);
+    buf.writeUbyte(numeric ? 1 : 0);
 
-int MenuItem::getMinValue() const
-{
-    return min_value;
-}
-
-bool MenuItem::hasNumValues() const
-{
-    return (key != "#time");
-}
-
-int MenuItem::getNumValues() const
-{
-    if (!hasNumValues()) throw UnexpectedError("MenuItem::getNumValues error");
-    else return int(value_str.size());
-}
-
-std::string MenuItem::getValueString(int i) const
-{
-    const int val = i - min_value;
-    if (key == "#time") {
-        if (val == 0) {
-            return "None";
-        } else {
-            std::ostringstream str;
-            str << i << " min";
-            if (i!=1) str << 's';
-            return str.str();
-        }
+    if (numeric) {
+        buf.writeVarInt(num_digits);
+        buf.writeString(suffix);
     } else {
-        return value_str.at(val);
+        buf.writeVarInt(value_str.size());
+        for (std::vector<std::string>::const_iterator it = value_str.begin(); it != value_str.end(); ++it) {
+            buf.writeString(*it);
+        }
     }
+    
+    buf.writeUbyte(space_after ? 1 : 0);
 }

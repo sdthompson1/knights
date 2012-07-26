@@ -214,9 +214,7 @@ basic_wand = {
     melee_tile_damage = 0,
     melee_action = wandzap,
     on_pick_up = kts.UpdateQuestStatus,
-    on_drop = kts.UpdateQuestStatus,
-
-    name = "A wand"
+    on_drop = kts.UpdateQuestStatus
 }
 
 i_wand_of_destruction = kts.ItemType(
@@ -279,10 +277,9 @@ basic_book = {
     type = "held",
     graphic = g_book,
     overlay = kts.Overlay { g_book_north, g_book_east, g_book_south, g_book_west },
-    editor_label = "G",
     on_pick_up = kts.UpdateQuestStatus,
     on_drop = kts.UpdateQuestStatus,
-    name = "The book"
+    on_hit = function() kts.CheckQuest("hit_book") end
 }
 
 i_basic_book = kts.ItemType(basic_book)
@@ -298,8 +295,7 @@ i_book_of_knowledge = kts.ItemType(
     on_drop   =  function()
         kts.RevealStop()
         kts.UpdateQuestStatus()
-    end,
-    editor_label = "K"
+    end
   }
 )
 
@@ -317,8 +313,7 @@ i_necronomicon = kts.ItemType(
     on_drop = function()
         kts.NormalZombieActivity()
         kts.UpdateQuestStatus()
-    end,
-    editor_label = "N"
+    end
   }
 )
 
@@ -476,8 +471,7 @@ i_gem = kts.ItemType {
     backpack_slot = 30,
     on_pick_up = kts.UpdateQuestStatus,
     on_drop = kts.UpdateQuestStatus,
-    tutorial = TUT_GEM,
-    name = "A gem"
+    tutorial = TUT_GEM
 }
 
 --

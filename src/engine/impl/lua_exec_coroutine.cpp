@@ -173,7 +173,7 @@ bool CoroutineTask::doExec(TaskManager &tm)
         {
             const char *p = lua_tostring(thread, -1);
             std::string err(p ? p : "<No err msg>");
-            err += "\nTraceback: " + LuaTraceback(thread);
+            err += LuaTraceback(thread);
             lua_pop(thread, lua_gettop(thread));  // clear its stack
             mediator.getCallbacks().gameMsg(-1, err, true);  // display the error message
             return false;

@@ -61,8 +61,7 @@ class HomeManager;
 class ItemType;
 class KnightsConfigImpl;
 class Menu;
-class MenuConstraints;
-class MenuSelections;
+class MenuListener;
 class MonsterManager;
 class Overlay;
 class Player;
@@ -87,7 +86,7 @@ public:
     // NOTE: The KnightsConfig should live at least as long as the
     // KnightsGame, as it owns certain objects (tiles, graphics etc)
     // that are used during the game.
-    explicit KnightsConfig(const std::string &config_filename);
+    KnightsConfig(const std::string &config_filename, bool menu_strict);
 
     // Get lists of all anims, graphics etc that will be used in the
     // game. This is used in network games to send lists of these
@@ -100,10 +99,17 @@ public:
     void getStandardControls(std::vector<const UserControl*> &standard_controls) const;
     void getOtherControls(std::vector<const UserControl*> &other_controls) const;
     const Menu & getMenu() const;
-    const MenuConstraints & getMenuConstraints() const;
     int getApproachOffset() const;  // clients will need to know this for rendering purposes.
     void getHouseColours(std::vector<Coercri::Color> &cols) const;   // for use on the menu screen.
-    std::string getQuestDescription(int quest_num, const std::string &exit_point_string) const;
+
+    // Menu related functions.
+    //  - getCurrentMenuSettings reports all current settings to the listener
+    //  - The two "change" functions report only the menu-items that have changed as a result of the operation.
+    //  - In changeMenuSetting, if inputs are out of range, the function does nothing.
+    void getCurrentMenuSettings(MenuListener &listener) const;
+    void changeMenuSetting(int item_num, int new_choice_num, MenuListener &listener);
+    void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
+    void resetMenu();  // called when all players have left game.
     
     
     //
@@ -115,8 +121,7 @@ public:
 
     // Return value = a warning message to be displayed to players (or "" if there are no warnings)
     
-    std::string initializeGame(const MenuSelections &msel,
-                               boost::shared_ptr<DungeonMap> &dungeon_map,
+    std::string initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
                                boost::shared_ptr<CoordTransform> &coord_transform,
                                std::vector<boost::shared_ptr<Quest> > &quests,
                                HomeManager &home_manager,

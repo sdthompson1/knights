@@ -37,7 +37,9 @@ class LuaError;
 class LoadingScreen : public Screen {
 public:
     // set port to -1 and player_name to "" for local game.
-    explicit LoadingScreen(int port, const std::string & player_name, bool single_player, bool tutorial,
+    explicit LoadingScreen(int port, const std::string & player_name, bool single_player, 
+                           bool menu_strict,  // set for single player & split screen games, where there is a fixed no of players
+                           bool tutorial,
                            bool autostart);
     virtual ~LoadingScreen();
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window>, gcn::Gui &);
@@ -47,7 +49,7 @@ public:
 
 private:
     struct Loader {
-        explicit Loader(const std::string & config_filename);
+        explicit Loader(const std::string & config_filename, bool menu_strict_);
         void operator()();
         
         std::string error_msg;
@@ -55,6 +57,7 @@ private:
         std::auto_ptr<LuaError> lua_error;
 
         std::string knights_config_filename;
+        bool menu_strict;
         boost::shared_ptr<KnightsConfig> knights_config;
     };
 
@@ -62,6 +65,7 @@ private:
     int server_port;
     std::string player_name;
     bool single_player_mode;
+    bool menu_strict_mode;
     bool tutorial_mode;
     bool autostart_mode;
     boost::shared_ptr<Loader> loader;

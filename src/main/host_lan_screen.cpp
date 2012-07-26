@@ -115,7 +115,7 @@ void HostLanScreenImpl::action(const gcn::ActionEvent &event)
 
         // Go to LoadingScreen in LAN mode
         const int server_port = knights_app.getConfigMap().getInt("port_number");
-        std::auto_ptr<Screen> loading_screen(new LoadingScreen(server_port, name, false, false, false));
+        std::auto_ptr<Screen> loading_screen(new LoadingScreen(server_port, name, false, false, false, false));
         knights_app.requestScreenChange(loading_screen);
     }
 }

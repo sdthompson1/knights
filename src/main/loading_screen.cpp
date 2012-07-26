@@ -44,7 +44,7 @@ void LoadingScreen::Loader::operator()()
         // (which complicates thread safety) so we do it in the main
         // thread.
         
-        knights_config.reset(new KnightsConfig(knights_config_filename));
+        knights_config.reset(new KnightsConfig(knights_config_filename, menu_strict));
 
     } catch (KConfig::KConfigError &kce) {
         kconfig_error.reset(new KConfig::KConfigError(kce));
@@ -58,22 +58,25 @@ void LoadingScreen::Loader::operator()()
     }
 }
 
-LoadingScreen::Loader::Loader(const std::string & config_filename)
-: knights_config_filename(config_filename) 
+LoadingScreen::Loader::Loader(const std::string & config_filename, bool menu_strict_)
+: knights_config_filename(config_filename), menu_strict(menu_strict_)
 { }
 
 bool LoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui &)
 {
     knights_app = &ka;
-    loader.reset(new Loader(ka.getKnightsConfigFilename()));
+    loader.reset(new Loader(ka.getKnightsConfigFilename(), menu_strict_mode));
 
     boost::thread new_thread(boost::ref(*loader));
     loader_thread.swap(new_thread);
     return false;
 }
 
-LoadingScreen::LoadingScreen(int port, const std::string &name, bool single_player, bool tutorial, bool autostart)
-    : knights_app(0), server_port(port), player_name(name), single_player_mode(single_player), tutorial_mode(tutorial),
+LoadingScreen::LoadingScreen(int port, const std::string &name, bool single_player, bool menu_strict,
+                             bool tutorial, bool autostart)
+    : knights_app(0), server_port(port), player_name(name), single_player_mode(single_player), 
+      menu_strict_mode(menu_strict),
+      tutorial_mode(tutorial),
       autostart_mode(autostart)
 { }
 

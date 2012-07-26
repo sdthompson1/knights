@@ -35,6 +35,7 @@
 #include "lua_ref.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
+#include "my_exceptions.hpp"
 #include "segment.hpp"
 #include "tile.hpp"
 

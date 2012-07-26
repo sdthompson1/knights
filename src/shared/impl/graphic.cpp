@@ -24,7 +24,6 @@
 #include "misc.hpp"
 
 #include "graphic.hpp"
-#include "protocol.hpp"
 #include "rstream.hpp"
 
 #include "lua.hpp"

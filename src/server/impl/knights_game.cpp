@@ -30,8 +30,7 @@
 #include "knights_game.hpp"
 #include "knights_log.hpp"
 #include "menu.hpp"
-#include "menu_constraints.hpp"
-#include "menu_selections.hpp"
+#include "menu_listener.hpp"
 #include "overlay.hpp"
 #include "protocol.hpp"
 #include "rng.hpp"
@@ -106,7 +105,6 @@ public:
 
     std::vector<const UserControl*> controls;
     
-    MenuSelections menu_selections;
     std::string quest_description;
     game_conn_vector connections;
 
@@ -205,174 +203,83 @@ namespace {
             buf.writeString(msg);
         }
     }
-    
-    int GetSelection(const MenuSelections &msel, const std::string &key)
-    {
-        std::map<std::string, MenuSelections::Sel>::const_iterator it = msel.selections.find(key);
-        if (it == msel.selections.end()) return -1;
-        else return it->second.value;
-    }
-    
-    bool IsDeathmatch(const MenuSelections &msel)
-    {
-        return GetSelection(msel, "mission") == 5;
-    }
 
-    std::string GenerateQuestDescription(const MenuSelections &msel, const KnightsConfig &knights_config)
-    {
-        const int quest = GetSelection(msel, "quest");
-        const int exit = GetSelection(msel, "exit");
-        std::string exit_string;
-
-        switch (exit) {
-        case 1:
-            exit_string = "your entry point";
-            break;
-        case 2:
-            exit_string = "your opponent's entry point";
-            break;
-        case 4:
-            exit_string = "the guarded exit";
-            break;
-        default:
-            exit_string = "an unknown exit point";
-            break;
+    // Implementation of MenuListener to send out a SERVER_SET_MENU_SELECTION message
+    class MyMenuListener : public MenuListener {
+    public:
+        MyMenuListener(int original_item_, int original_choice_)
+            : original_item(original_item_),
+              original_choice(original_choice_),
+              changed(false),
+              orig_changed(false)
+        { }
+        void addBuf(Coercri::OutputByteBuf buf, bool original) {
+            bufs.push_back(std::make_pair(buf, original));
         }
+        void addBuf(std::vector<unsigned char> &vec, bool original) {
+            bufs.push_back(std::make_pair(Coercri::OutputByteBuf(vec), original));
+        }
+        bool wereThereChanges() const { return changed; }
+        bool wereThereChangesForOrig() const { return orig_changed; }
 
-        std::string result;
+        virtual void settingChanged(int item_num, const char *item_key,
+                                    int choice_num, const char *choice_string,
+                                    const std::vector<int> &allowed_choices);
 
-        const int mission = GetSelection(msel, "mission");
+        
+    private:
+        std::vector<std::pair<Coercri::OutputByteBuf, bool> > bufs;
+        int original_item;
+        int original_choice;
+        bool changed;
+        bool orig_changed;
+    };
 
-        if (IsDeathmatch(msel)) {
-            // Deathmatch
-            result = "Deathmatch\n\n"
-                "Players get 1 point for killing an enemy knight, and -1 for a suicide. (Being killed by a monster doesn't affect your score.) "
-                "The player with the highest score when time runs out is the winner.";
-        } else if (quest > 0) {
-            result = knights_config.getQuestDescription(quest, exit_string);
-        } else if (quest == 0) {
-            // Custom quest
-            std::ostringstream str;
+    void MyMenuListener::settingChanged(int item_num, const char *,
+                                        int choice_num, const char *,
+                                        const std::vector<int> &allowed_choices)
+    {
+        changed = true;
+        for (std::vector<std::pair<Coercri::OutputByteBuf, bool> >::iterator bit = bufs.begin();
+        bit != bufs.end(); ++bit) {
 
-            str << "Custom Quest\n\n";
-
-            const int num_gems = GetSelection(msel, "num_gems");
-            const int gems_needed = GetSelection(msel, "gems_needed");
-            const int book_type = GetSelection(msel, "book");
-            const int wand_type = GetSelection(msel, "wand");
-
-            if (mission == 0) {
-                str << "You must secure all entry points to prevent your opponent entering the dungeon";
-            } else if (mission == 4) {
-                str << "You must strike the book with the wand in the special pentagram";
-            } else {
-                if (mission == 1) {
-                    str << "Your mission is to ";
-                } else {
-                    str << "You must retrieve the ";
-                    if (mission == 2) str << "book ";
-                    else str << "wand ";
-                    str << "and ";
-                }
-                str << "escape via " << exit_string;
-            }
-            if (gems_needed > 0) {
-                str << " with ";
-                str << char('0' + gems_needed);
-                str << " out of ";
-                str << char('0' + num_gems);
-                str << " gems";
-            }
-            str << ".";
-
-            switch (book_type) {
-            case 1:
-                str << "\n\nThe Book of Knowledge reveals knowledge of the dungeon.";
-                break;
-            case 2:
-                str << "\n\nThe Lost Book of Ashur is somewhere in the dungeon.";
-                break;
-            case 3:
-                str << "\n\nThe Necronomicon is sealed behind locked doors. It has powers to raise the undead.";
-                break;
-            case 4:
-                str << "\n\nThe Tome of Gnomes is hidden behind unknown traps and riddles.";
-                break;
+            if (bit->second && item_num == original_item && choice_num == original_choice) {
+                // this client already knows about this setting. skip it.
+                // (this is important to avoid 'lag' when editing numeric fields.)
+                continue;
             }
 
-            switch (wand_type) {
-            case 1:
-                str << "\n\nThe Wand of Destruction terminates targets.";
-                break;
-            case 2:
-                str << "\n\nThe Wand of Open Ways may be used to open any item.";
-                break;
-            case 3:
-                str << "\n\nThe Wand of Securing is used to secure entry points.";
-                break;
-            case 4:
-                str << "\n\nThe Wand of Undeath controls and slays the undead.";
-                break;
-            }
+            if (bit->second) orig_changed = true;
             
-            result = str.str();
-        }
-
-        const int time_limit = GetSelection(msel, "#time"); // in mins, or 0 for none
-        if (time_limit > 0) {
-            std::ostringstream str;
-            str << "\n\n";
-            if (mission == 6) {
-                str << "The game will last for ";
-            } else {
-                str << "You must complete this quest within ";
-            }
-            str << time_limit
-                << " minute"
-                << (time_limit > 1 ? "s" : "")
-                << ".";
-            result += str.str();
-        }
-
-        return result;
-    }
-
-    // returns true if any difference between msel & msel_old was detected
-    // (i.e. if anything was sent).
-    bool SendMenuSelections(Coercri::OutputByteBuf &buf, const MenuSelections &msel_old, const MenuSelections &msel_new)
-    {
-        bool retval = false;
-        for (std::map<std::string, MenuSelections::Sel>::const_iterator it = msel_new.selections.begin(); 
-        it != msel_new.selections.end(); ++it) {
-            std::map<std::string, MenuSelections::Sel>::const_iterator it_old 
-                = msel_old.selections.find(it->first);
-            const bool needs_update = (it_old == msel_old.selections.end() 
-                                     || it_old->second.value != it->second.value
-                                     || it_old->second.allowed_values != it->second.allowed_values);
-            if (needs_update) {
-                retval = true;
-                buf.writeUbyte(SERVER_SET_MENU_SELECTION);
-                buf.writeString(it->first);
-                buf.writeVarInt(it->second.value);
-                buf.writeVarInt(it->second.allowed_values.size());
-                for (std::vector<int>::const_iterator av = it->second.allowed_values.begin(); 
-                av != it->second.allowed_values.end(); ++av) {
-                    buf.writeVarInt(*av);
-                }
+            Coercri::OutputByteBuf &buf = bit->first;
+            buf.writeUbyte(SERVER_SET_MENU_SELECTION);
+            buf.writeVarInt(item_num);
+            buf.writeVarInt(choice_num);
+            buf.writeVarInt(allowed_choices.size());
+            for (std::vector<int>::const_iterator it = allowed_choices.begin(); it != allowed_choices.end(); ++it) {
+                buf.writeVarInt(*it);
             }
         }
-
-        return retval;
     }
 
-    void SendQuestDescription(Coercri::OutputByteBuf &buf, const std::string &descr_old, const std::string &descr_new)
+    // Another implementation of MenuListener to write messages to the knights log
+    class LogMenuListener : public MenuListener {
+    public:
+        explicit LogMenuListener(std::ostream &str_) : str(str_) { }
+        virtual void settingChanged(int item_num, const char *item_key,
+                                    int choice_num, const char *choice_string,
+                                    const std::vector<int> &allowed_choices);
+    private:
+        std::ostream &str;
+    };
+
+    void LogMenuListener::settingChanged(int item_num, const char *item_key,
+                                         int choice_num, const char *choice_string,
+                                         const std::vector<int> &allowed_choices)
     {
-        if (descr_new != descr_old) {
-            buf.writeUbyte(SERVER_SET_QUEST_DESCRIPTION);
-            buf.writeString(descr_new);
-        }
+        str << ", " << item_key << "=" << choice_string << ", ";
     }
-
+    
     int GetNumAvailHouseCols(const KnightsGameImpl &impl)
     {
         std::vector<Coercri::Color> hse_cols;
@@ -497,8 +404,9 @@ namespace {
         }
         
         // Send the current menu selections
-        SendMenuSelections(buf, MenuSelections(), impl.menu_selections);
-        SendQuestDescription(buf, "", impl.quest_description);
+        MyMenuListener listener(0, 0);
+        listener.addBuf(buf, false);
+        impl.knights_config->getCurrentMenuSettings(listener);
 
         // Send the available knight house colours
         SendAvailableHouseColours(impl, buf);
@@ -516,97 +424,33 @@ namespace {
         return nplayers;
     }
 
-    void DoSetHouseColour(KnightsGameImpl &impl, GameConnection &conn, int hse_col)
+    int CountTeams(const KnightsGameImpl &kg)
     {
-        conn.house_colour = hse_col;
-
-        // send notification to players
-        for (game_conn_vector::iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
-            Coercri::OutputByteBuf out((*it)->output_data);
-            out.writeUbyte(SERVER_SET_HOUSE_COLOUR);
-            // note we don't support house colours in split screen mode at the moment. we assume it's the first player
-            // on the connection who is having the house colours set.
-            out.writeString(conn.name);
-            out.writeUbyte(hse_col);
-        }            
+        std::set<int> teams;
+        for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+            if (!(*it)->obs_flag) {
+                // not an observer
+                if (!(*it)->name2.empty()) {
+                    // split screen mode. the house colours are hard coded.
+                    teams.insert(0);
+                    teams.insert(1);
+                } else {
+                    teams.insert((*it)->house_colour);
+                }
+            }
+        }
+        return int(teams.size());
     }
 
-    // validate the menu selections, also send updates to clients.
-    // called by SetMenuSelection and by Random Quests code.
-    // returns true if something was changed.
-    bool ValidateMenuSelections(KnightsGameImpl &impl, 
-                                const MenuSelections &msel_old, 
-                                const std::string &quest_descr_old)
+    void UpdateNumPlayersAndTeams(KnightsGameImpl &kg)
     {
-        // Update the quest description
-        impl.quest_description = GenerateQuestDescription(impl.menu_selections, *impl.knights_config);
-        
-        // Broadcast new menu selections to all clients. (Only if something changed though.)
-        // Also deactivate 'ready' flags if something changed.
-        bool updated = false;
-        for (game_conn_vector::iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
-            Coercri::OutputByteBuf buf((*it)->output_data);
-
-            updated = SendMenuSelections(buf, msel_old, impl.menu_selections);
-            
-            if (!updated) break;
-            SendQuestDescription(buf, quest_descr_old, impl.quest_description);
-            (*it)->is_ready = false;
+        MyMenuListener listener(0,0);
+        for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+            listener.addBuf((*it)->output_data, false);
         }
-        
-        return updated;
+        kg.knights_config->changeNumberOfPlayers(CountPlayers(kg), CountTeams(kg), listener);
     }
     
-    // returns true if something was changed.
-    bool SetMenuSelection(KnightsGameImpl &impl, const std::string &key, int value)
-    {
-        // If it's an invalid key then ignore it
-        bool do_update = true;
-        if (impl.menu_selections.selections.find(key) == impl.menu_selections.selections.end()) do_update = false;
-        
-        // Save the old settings
-        MenuSelections msel_old = impl.menu_selections;
-        std::string quest_descr_old = impl.quest_description;
-
-        if (do_update) {
-            // If they've changed a non-quest item then change the quest to CUSTOM
-            if (key != "quest" && impl.menu_selections.getValue(key) != value) {
-                impl.menu_selections.setValue("quest", 0);
-            }
-            
-            // Set the new setting
-            impl.menu_selections.setValue(key, value);
-        }
-
-        // Count the number of players, this is needed for the constraints
-        const int nplayers = CountPlayers(impl);
-        
-        // Apply menu constraints
-        // NOTE: We allow quests to be set as if (at least) min_players were present,
-        // this is so you can setup a 2-player quest on the server when only the first player has arrived yet.
-        // (If you try to start a 2-player quest with only 1 player present you will get an error msg later on.)
-        const int min_players_for_constraint = impl.allow_split_screen ? 1 : 2;
-        impl.knights_config->getMenuConstraints().apply(impl.knights_config->getMenu(), impl.menu_selections,
-                                                        std::max(min_players_for_constraint, nplayers));
-
-        return ValidateMenuSelections(impl, msel_old, quest_descr_old);
-    }
-
-    void ResetMenuSelections(KnightsGameImpl &impl)
-    {
-        // set all menu selections to zero
-        for (int i = 0; i < impl.knights_config->getMenu().getNumItems(); ++i) {
-            const std::string & key = impl.knights_config->getMenu().getItem(i).getKey();
-            impl.menu_selections.setValue(key, 0);
-        }
-
-        // now explicitly set "quest" to 1, this will also ensure that menu constraints get set correctly.
-        SetMenuSelection(impl, "quest", 1);
-
-        // Update the quest description also
-        impl.quest_description = GenerateQuestDescription(impl.menu_selections, *impl.knights_config);
-    }
-
     void ReturnToMenu(KnightsGameImpl &kg)
     {
         // This routine sends SERVER_GOTO_MENU to all players, and
@@ -713,7 +557,7 @@ namespace {
                 // Create the KnightsEngine. Pass any dungeon generation warnings back to the players
                 std::string warning_msg;
                 try {
-                    engine.reset(new KnightsEngine(kg.knights_config, kg.menu_selections, hse_cols, player_names,
+                    engine.reset(new KnightsEngine(kg.knights_config, hse_cols, player_names,
                                                    kg.tutorial_mode, kg.is_deathmatch, warning_msg));
 
                 } catch (LuaPanic &) {
@@ -1276,34 +1120,23 @@ namespace {
         bool ready_to_start = (nready == nplayers && nplayers >= 1);
 
         // Don't start if there are insufficient players for the current quest
-        const int min_players_required = kg.knights_config->getMenuConstraints().getMinPlayers(kg.menu_selections);
+        /*const int min_players_required = kg.knights_config->getMenuConstraints().getMinPlayers(kg.menu_selections);
         if (ready_to_start && nplayers < min_players_required) {
             std::ostringstream str;
             str << "ERROR: This quest requires at least " << min_players_required << " players.";
             Announcement(kg, str.str(), true);
             ready_to_start = false;
-        }
+        }*/
 
         // Don't start if there are insufficient teams for the current quest
         if (ready_to_start) {
-            const int min_teams_required = kg.knights_config->getMenuConstraints().getMinTeams(kg.menu_selections);
+            //const int min_teams_required = kg.knights_config->getMenuConstraints().getMinTeams(kg.menu_selections);
+            const int min_teams_required = 0;
 
             // we need to count how many teams there are!
-            std::set<int> teams;
-            for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                if (!(*it)->obs_flag) {
-                    // not an observer
-                    if (!(*it)->name2.empty()) {
-                        // split screen mode. the house colours are hard coded.
-                        teams.insert(0);
-                        teams.insert(1);
-                    } else {
-                        teams.insert((*it)->house_colour);
-                    }
-                }
-            }
-
-            if (int(teams.size()) < min_teams_required) {
+            const int num_teams = CountTeams(kg);
+            
+            if (num_teams < min_teams_required) {
                 std::ostringstream str;
                 str << "ERROR: This quest requires at least " << min_teams_required << " teams. (Choose your team by changing your Knight House Colour.)";
                 Announcement(kg, str.str(), true);
@@ -1312,7 +1145,7 @@ namespace {
         }
 
         // Set is_deathmatch flag
-        kg.is_deathmatch = IsDeathmatch(kg.menu_selections);
+        kg.is_deathmatch = false; /// TODO. IsDeathmatch(kg.menu_selections);
         
         // See if we are still ready to start
         if (ready_to_start) {
@@ -1417,12 +1250,9 @@ namespace {
                         if (it != names.begin()) str << ", ";
                         str << *it;
                     }
-                    
-                    for (std::map<std::string, MenuSelections::Sel>::const_iterator it = kg.menu_selections.selections.begin();
-                    it != kg.menu_selections.selections.end(); ++it) {
-                        // TODO: could try to convert this to a summary message rather than dumping all settings?
-                        str << ", " << it->first << "=" << it->second.value;
-                    }
+
+                    LogMenuListener listener(str);
+                    kg.knights_config->getCurrentMenuSettings(listener);
                     
                     kg.knights_log->logMessage(str.str());
                 }
@@ -1474,9 +1304,6 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
     config->getOtherControls(other_ctrls);
     pimpl->controls.insert(pimpl->controls.end(), other_ctrls.begin(), other_ctrls.end());
     
-    // initialize all menu settings to 0
-    ResetMenuSelections(*pimpl);
-
     pimpl->knights_log = knights_log;
     pimpl->game_name = game_name;
 
@@ -1624,7 +1451,7 @@ GameConnection & KnightsGame::newClientConnection(const std::string &client_name
 
     if (!new_obs_flag) {
         // May need to update menu settings, since no of players has changed
-        SetMenuSelection(*pimpl, "", 0);
+        UpdateNumPlayersAndTeams(*pimpl);
     }
     
     return *conn;
@@ -1700,13 +1527,13 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
                 buf.writeUbyte(is_player ? 0 : 1);
             }
         }
-        
+
         if (pimpl->connections.empty()) {
             // If there are no connections left then reset the menu selections.
-            ResetMenuSelections(*pimpl);
+            pimpl->knights_config->resetMenu();
         } else if (is_player) {
             // Number of players has changed, may need to update menu constraints.
-            SetMenuSelection(*pimpl, "", 0);
+            UpdateNumPlayersAndTeams(*pimpl);
         }
     }
     
@@ -1783,7 +1610,19 @@ void KnightsGame::setHouseColour(GameConnection &conn, int hse_col)
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag) {
-        DoSetHouseColour(*pimpl, conn, hse_col);
+        conn.house_colour = hse_col;
+
+        // send notification to players
+        for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
+            Coercri::OutputByteBuf out((*it)->output_data);
+            out.writeUbyte(SERVER_SET_HOUSE_COLOUR);
+            // note we don't support house colours in split screen mode at the moment. we assume it's the first player
+            // on the connection who is having the house colours set.
+            out.writeString(conn.name);
+            out.writeUbyte(hse_col);
+        }
+
+        UpdateNumPlayersAndTeams(*pimpl);
     }
 }
     
@@ -1874,48 +1713,69 @@ void KnightsGame::setPauseMode(bool pm)
     pimpl->pause_mode = pm;
 }
 
-void KnightsGame::setMenuSelection(GameConnection &conn, const std::string &key, int value)
+void KnightsGame::setMenuSelection(GameConnection &conn, int item_num, int choice_num)
 {
     if (pimpl->update_thread.joinable()) return;  // Game is running
 
     WaitForMsgCounter(*pimpl);
-    
-    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+
+    // validate input
+    const int num_items = pimpl->knights_config->getMenu().getNumItems();
+    if (item_num < 0 || item_num >= num_items) return;
+    const MenuItem & item = pimpl->knights_config->getMenu().getItem(item_num);
+    if (!item.isNumeric() && (choice_num < 0 || choice_num >= item.getNumChoices())) return;
+
+    // update msgcounter, also check we are a player
+    // note: we know update thread is not running (see above) so no need to lock
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can adjust the menu.
 
-    const bool changed = SetMenuSelection(*pimpl, key, value);
+    // send out the settings change(s) to all players
+    setMenuSelectionWork(&conn, item_num, choice_num);
+}
 
-    if (changed) {
-        // send announcement to all players.
-        int x = 0;
-        for (; x < pimpl->knights_config->getMenu().getNumItems(); ++x) {
-            if (pimpl->knights_config->getMenu().getItem(x).getKey() == key) break;
-        }
-        std::string str;
-        if (x >= 0 && x < pimpl->knights_config->getMenu().getNumItems()) {
-            const MenuItem &item = pimpl->knights_config->getMenu().getItem(x);
-            str = conn.name + " set \"" + item.getTitleString() + '"';
-            std::map<std::string, MenuSelections::Sel>::const_iterator it = pimpl->menu_selections.selections.find(key);
-            if (it != pimpl->menu_selections.selections.end()) {
-                const std::string val_str = item.getValueString(it->second.value);
-                
-                bool all_digit = true;
-                for (std::string::const_iterator v = val_str.begin(); v != val_str.end(); ++v) {
-                    if (!std::isdigit(*v)) {
-                        all_digit = false;
-                        break;
-                    }
-                }
+void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int choice_num)
+{
+    if (pimpl->update_thread.joinable()) return;  // game is running
 
-                str += " to ";
-                if (!all_digit) str += '"';
-                str += item.getValueString(it->second.value);
-                if (!all_digit) str += '"';
-                str += '.';
-            }
+    // since we now know the update thread is not running, there is no need to lock.
+
+    MyMenuListener listener(item_num, choice_num);
+    for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
+        listener.addBuf((*it)->output_data, it->get() == conn);
+    }
+    pimpl->knights_config->changeMenuSetting(item_num, choice_num, listener);
+
+    if (conn && !listener.wereThereChangesForOrig()) {
+        // He wasn't sent any SET_MENU_SELECTION msg so we have to
+        // send a dummy one, to explicitly tell him that all players
+        // are no longer ready to start
+        Coercri::OutputByteBuf buf(conn->output_data);
+        buf.writeUbyte(SERVER_SET_MENU_SELECTION);
+        buf.writeVarInt(-1);
+        buf.writeVarInt(0);
+        buf.writeVarInt(0);
+    }
+    
+    if (conn && listener.wereThereChanges()) {
+        // send announcement to all players
+        const MenuItem & item = pimpl->knights_config->getMenu().getItem(item_num);
+        std::ostringstream str;
+        str << conn->name << " set \"" << item.getTitleString() << "\" to ";
+        
+        if (item.isNumeric()) {
+            str << choice_num;
+        } else {
+            str << '"' << item.getChoiceString(choice_num) << '"';
         }
-        Announcement(*pimpl, str);
+        str << '.';
+        Announcement(*pimpl, str.str());
+
+        // deactivate all ready flags
+        // (clients will themselves turn off the 'ready' checkbox)
+        for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
+            (*it)->is_ready = false;
+        }
     }
 }
 
@@ -1927,12 +1787,16 @@ namespace {
     };
 }
 
+
 void KnightsGame::randomQuest(GameConnection &conn)
 {
     if (pimpl->update_thread.joinable()) return;  // Game is running
-
+    
     WaitForMsgCounter(*pimpl);
 
+    // TODO.
+
+    /*
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can set quests.
@@ -1999,9 +1863,9 @@ void KnightsGame::randomQuest(GameConnection &conn)
 
                 // set it to that value, updating constraints as required.
                 pimpl->menu_selections.setValue(**key_it, selected_value);
-                pimpl->knights_config->getMenuConstraints().apply(menu,
-                                                                  pimpl->menu_selections,
-                                                                  nplayers);
+                //pimpl->knights_config->getMenuConstraints().apply(menu,
+                //                                                  pimpl->menu_selections,
+                //                                                  nplayers);
             }
         }
     }
@@ -2025,6 +1889,7 @@ void KnightsGame::randomQuest(GameConnection &conn)
 
     // Send announcement to all players
     Announcement(*pimpl, conn.name + " selected a Random Quest.");
+*/
 }
 
 void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control_num)
@@ -2139,7 +2004,7 @@ void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
     }
 
     // May need to re-apply max players constraints
-    SetMenuSelection(*pimpl, "", 0);
+    UpdateNumPlayersAndTeams(*pimpl);
 }
 
 void KnightsGame::getOutputData(GameConnection &conn, std::vector<unsigned char> &data)
@@ -2179,11 +2044,4 @@ void KnightsGame::setMsgCountUpdateFlag(bool on)
 {
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     pimpl->msg_count_update_flag = on;
-}
-
-void KnightsGame::internalSetMenuSelection(const std::string &key, int value)
-{
-    if (pimpl->update_thread.joinable()) return; // Game is running
-    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-    SetMenuSelection(*pimpl, key, value);
 }

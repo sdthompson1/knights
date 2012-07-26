@@ -274,10 +274,10 @@ kts.SetRotate(t_open_gate_horiz, t_open_gate_vert)
 set_open_closed(t_open_gate_horiz, t_gate_horiz)
 set_open_closed(t_open_gate_vert, t_gate_vert)
 
-t_door_horiz_locked      = kts.Tile( door_horiz & { special_lock=1, editor_label="L" })
-t_door_vert_locked       = kts.Tile( door_vert & { special_lock=1, editor_label="L" })
-t_iron_door_horiz_locked = kts.Tile( iron_door_horiz & { special_lock = 1, editor_label="L" })
-t_iron_door_vert_locked  = kts.Tile( iron_door_vert & { special_lock = 1, editor_label="L" })
+t_door_horiz_locked      = kts.Tile( door_horiz & { special_lock=1 })
+t_door_vert_locked       = kts.Tile( door_vert & { special_lock=1 })
+t_iron_door_horiz_locked = kts.Tile( iron_door_horiz & { special_lock = 1 })
+t_iron_door_vert_locked  = kts.Tile( iron_door_vert & { special_lock = 1 })
 
 kts.SetRotate(t_door_horiz_locked, t_door_vert_locked)
 kts.SetRotate(t_iron_door_horiz_locked, t_iron_door_vert_locked)
@@ -320,20 +320,16 @@ t_home_north  = kts.Tile( home_north )   -- 13
 t_home_east   = kts.Tile( home_east )    -- 14
 
 t_home_south_special = kts.Tile(home_south & {   -- 92
-    special_exit = 1, 
-    editor_label = "X"
+    special_exit = true
 })
 t_home_west_special  = kts.Tile(home_west  & {   -- 93
-    special_exit = 1, 
-    editor_label = "X"
+    special_exit = true
 })
 t_home_north_special = kts.Tile(home_north & {   -- 94
-    special_exit = 1, 
-    editor_label = "X"
+    special_exit = true
 })
 t_home_east_special  = kts.Tile(home_east  & {   -- 95
-    special_exit = 1, 
-    editor_label = "X"
+    special_exit = true
 })
 
 kts.SetRotate(t_home_south, t_home_west, t_home_north, t_home_east)
@@ -572,8 +568,6 @@ t_floor8  = kts.Tile(floor & { graphic=g_floor8 })  -- 74
 t_floor9  = kts.Tile(floor & { graphic=g_floor9 })  -- 75
 t_floor10 = kts.Tile(floor & { graphic=g_floor10 })  -- 77
 
-t_floor1_def = kts.Tile(t_floor1.table & { editor_label="-" }) -- this is just to make it the default RMB tile in the map editor
-
 pentagram_base = floor & {
     graphic      = g_pentagram,
     on_walk_over = function()
@@ -584,7 +578,6 @@ pentagram_base = floor & {
           pentagram_effect()
        end
     end,
-    editor_label = "P",
     tutorial = TUT_PENTAGRAM
 }
 
@@ -594,8 +587,7 @@ t_dead_pentagram = kts.Tile(floor & {   -- 76
 })
 t_live_pentagram = kts.Tile(pentagram_base)   -- 1 in my room tables. (76 in Knights.)
 t_special_pentagram = kts.Tile(pentagram_base & {  -- 90
-    on_hit = kts.CheckQuest,
-    editor_label = "S"
+    on_hit = function() end   -- does nothing, but means wand will 'zap' when you hit special pentagram with it.
 })
 
 set_open_closed(t_live_pentagram, t_dead_pentagram)

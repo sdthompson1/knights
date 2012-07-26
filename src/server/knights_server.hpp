@@ -105,7 +105,7 @@ public:
 
     // Set a menu selection
     // Used for replays.
-    void setMenuSelection(const std::string &game_name, const std::string &key, int value);
+    void setMenuSelection(const std::string &game_name, int item, int choice);
 
     
     //

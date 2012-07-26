@@ -865,7 +865,7 @@ void KnightsApp::runKnights()
     auto_ptr<Screen> initial_screen;
 
     if (pimpl->autostart) {
-        initial_screen.reset(new LoadingScreen(-1, "", true, false, true));  // single player on, tutorial off, autostart on
+        initial_screen.reset(new LoadingScreen(-1, "", true, true, false, true));  // single player on, menu-strict on, tutorial off, autostart on
     } else {
         // Go to title screen.
         if (pimpl->options->first_time) {
@@ -1018,7 +1018,6 @@ void KnightsApp::runKnights()
             }
         }
     }
-    // TODO: is there some equivalent to the above on Linux?
 #endif
 
     // If player name has been changed then we need to save options

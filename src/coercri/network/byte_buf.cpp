@@ -136,7 +136,7 @@ namespace Coercri {
     void OutputByteBuf::writeUbyte(int x)
     {
         if (x < 0 || x > 255) throw CoercriError("writeUbyte: out of range");
-        buf.push_back(x);
+        buf->push_back(x);
     }
     
     void OutputByteBuf::writeUshort(int x)
@@ -144,8 +144,8 @@ namespace Coercri {
         if (x < 0 || x > 65535) {
             throw CoercriError("writeUshort: out of range");
         }
-        buf.push_back(x >> 8);
-        buf.push_back(x & 0xff);
+        buf->push_back(x >> 8);
+        buf->push_back(x & 0xff);
     }
 
     void OutputByteBuf::writeShort(int x)
@@ -202,14 +202,14 @@ namespace Coercri {
 
     void OutputByteBuf::writePayloadSize(size_t &pos)
     {
-        pos = buf.size();
+        pos = buf->size();
         writeUshort(0);
     }
 
     void OutputByteBuf::backpatchPayloadSize(size_t pos)
     {
-        size_t payload_size = buf.size() - pos - 2;
-        buf[pos] = payload_size >> 8;
-        buf[pos+1] = payload_size & 0xff;
+        size_t payload_size = buf->size() - pos - 2;
+        (*buf)[pos] = payload_size >> 8;
+        (*buf)[pos+1] = payload_size & 0xff;
     }
 }

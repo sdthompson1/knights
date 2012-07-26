@@ -141,6 +141,7 @@ public:
 
     
     // quest selection menu
+    const std::string & getMenuTitle() const;
     void createMenuWidgets(gcn::ActionListener *listener,
                            gcn::SelectionListener *listener2,
                            int initial_x,
@@ -151,7 +152,7 @@ public:
     void destroyMenuWidgets();
     void setMenuWidgetsEnabled(bool enabled);
     void getMenuStrings(std::vector<std::pair<std::string, std::string> > &menu_strings) const;
-    bool getMenuWidgetInfo(gcn::Widget *source, std::string &key, int &val) const;
+    bool getMenuWidgetInfo(gcn::Widget *source, int &item_num, int &choice_num) const;
     const std::string &getQuestDescription() const;
     
     // player lists etc.
@@ -203,7 +204,7 @@ public:
     virtual void playerIsReadyToEnd(const std::string &player);
     
     virtual void leaveGame();     // goes to lobby
-    virtual void setMenuSelection(const std::string &key, int val, const std::vector<int> &allowed_vals);
+    virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals);
     virtual void setQuestDescription(const std::string &quest_descr);
     virtual void startGame(int ndisplays, bool deathmatch_mode,
                            const std::vector<std::string> &player_names, bool already_started);  // goes to InGameScreen
@@ -222,7 +223,7 @@ public:
 
 
 private:
-    void updateMenuWidget(const std::string &key);
+    void updateMenuWidget(int item_num);
     
 private:
     boost::shared_ptr<GameManagerImpl> pimpl;

@@ -41,11 +41,13 @@ public:
 
     // get
     int getNumItems() const { return int(items.size()); }
-    const MenuItem & getItem(int i) const { return items[i]; }
+    const MenuItem & getItem(int i) const { return items.at(i); }
+    const std::string & getTitle() const { return title; }
 
     // set
     void addItem(const MenuItem &mi) { items.push_back(mi); }
-    MenuItem & getItem(int i) { return items[i]; }
+    MenuItem & getItem(int i) { return items.at(i); }
+    void setTitle(const std::string &t) { title = t; }
     
     // serialization
     explicit Menu(Coercri::InputByteBuf &buf);
@@ -53,6 +55,7 @@ public:
     
 private:
     std::vector<MenuItem> items;
+    std::string title;
 };
 
 #endif

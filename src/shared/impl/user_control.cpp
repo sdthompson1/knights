@@ -24,8 +24,9 @@
 #include "misc.hpp"
 
 #include "graphic.hpp"
-#include "protocol.hpp"
 #include "user_control.hpp"
+
+#include <stdexcept>
 
 UserControl::UserControl(int id_, Coercri::InputByteBuf &buf, const std::vector<const Graphic *> &graphics)
 {
@@ -33,7 +34,7 @@ UserControl::UserControl(int id_, Coercri::InputByteBuf &buf, const std::vector<
     const int gfx_id = buf.readVarInt();
     menu_graphic = gfx_id == 0 ? 0 : graphics.at(gfx_id - 1);
     const int d = buf.readUbyte();
-    if (d > 3) throw ProtocolError("error reading UserControl");
+    if (d > 3) throw std::runtime_error("error reading UserControl");
     menu_direction = MapDirection(d);
     tap_priority = buf.readVarInt();
     action_bar_slot = buf.readVarInt();

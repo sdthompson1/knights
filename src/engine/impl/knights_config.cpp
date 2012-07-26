@@ -25,13 +25,14 @@
 
 #include "knights_config.hpp"
 #include "knights_config_impl.hpp"
+#include "menu_wrapper.hpp"
 
 //
 // constructor
 //
 
-KnightsConfig::KnightsConfig(const std::string &config_filename)
-    : pimpl(new KnightsConfigImpl(config_filename))
+KnightsConfig::KnightsConfig(const std::string &config_filename, bool menu_strict)
+    : pimpl(new KnightsConfigImpl(config_filename, menu_strict))
 { }
 
 void KnightsConfig::getAnims(std::vector<const Anim*> &anims) const
@@ -69,11 +70,6 @@ const Menu & KnightsConfig::getMenu() const
     return pimpl->getMenu();
 }
 
-const MenuConstraints & KnightsConfig::getMenuConstraints() const
-{
-    return pimpl->getMenuConstraints();
-}
-
 int KnightsConfig::getApproachOffset() const
 {
     return pimpl->getApproachOffset();
@@ -84,9 +80,24 @@ void KnightsConfig::getHouseColours(std::vector<Coercri::Color> &result) const
     pimpl->getHouseColours(result);
 }
 
-std::string KnightsConfig::getQuestDescription(int quest_num, const std::string & exit_point_string) const
+void KnightsConfig::getCurrentMenuSettings(MenuListener &listener) const
 {
-    return pimpl->getQuestDescription(quest_num, exit_point_string);
+    pimpl->getMenuWrapper().getCurrentSettings(listener);
+}
+
+void KnightsConfig::changeMenuSetting(int item_num, int new_choice_num, MenuListener &listener)
+{
+    pimpl->getMenuWrapper().changeSetting(item_num, new_choice_num, listener);
+}
+
+void KnightsConfig::changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener)
+{
+    pimpl->getMenuWrapper().changeNumberOfPlayers(nplayers, nteams, listener);
+}
+
+void KnightsConfig::resetMenu()
+{
+    pimpl->resetMenu();
 }
 
 
@@ -94,8 +105,7 @@ std::string KnightsConfig::getQuestDescription(int quest_num, const std::string 
 // interface used by KnightsEngine
 //
 
-std::string KnightsConfig::initializeGame(const MenuSelections &msel,
-                                          boost::shared_ptr<DungeonMap> &dungeon_map,
+std::string KnightsConfig::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
                                           boost::shared_ptr<CoordTransform> &coord_transform,
                                           std::vector<boost::shared_ptr<Quest> > &quests,
                                           HomeManager &home_manager,
@@ -112,8 +122,7 @@ std::string KnightsConfig::initializeGame(const MenuSelections &msel,
                                           TutorialManager *tutorial_manager,
                                           int &final_gvt) const
 {
-    return pimpl->initializeGame(msel,
-                                 dungeon_map,
+    return pimpl->initializeGame(dungeon_map,
                                  coord_transform,
                                  quests,
                                  home_manager,

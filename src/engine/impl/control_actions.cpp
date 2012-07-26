@@ -311,7 +311,7 @@ void A_Attack::execute(const ActionData &ad) const
         if (can_swing && missile_attack) {
             // Both melee and missile attacks are possible.
             // If a creature is on my square or the square ahead,
-            // or an "open" tile is on square ahead,
+            // or a "blocked" tile is on square ahead (e.g. a wall),
             // then do former, else do latter.
             // ("Open" means A_CLEAR at H_WALKING)
 

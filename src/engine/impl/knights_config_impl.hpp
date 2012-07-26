@@ -25,13 +25,10 @@
 #define KNIGHTS_CONFIG_IMPL_HPP
 
 #include "colour_change.hpp"
-#include "config_map.hpp"
-#include "item_type.hpp"
+#include "item_type.hpp"  // needed for ItemSize
 #include "lua_func.hpp"
 #include "map_support.hpp"
-#include "menu.hpp"
-#include "menu_constraints.hpp"
-#include "overlay.hpp"
+#include "overlay.hpp"       // needed for N_OVERLAY_FRAME
 #include "segment_set.hpp"
 
 // kfile
@@ -46,20 +43,20 @@
 #include <vector>
 
 class Anim;
-class ColourChange;
+class ConfigMap;
 class Control;
 class CoordTransform;
 class DungeonDirective;
 class DungeonGenerator;
+class DungeonMap;
 class EventManager;
 class GoreManager;
 class Graphic;
 class HomeManager;
 class ItemGenerator;
 class ItemType;
-class MenuInt;
-class MenuItem;
-class MenuSelections;
+class Menu;
+class MenuWrapper;
 class MonsterManager;
 class MonsterType;
 class Player;
@@ -80,7 +77,7 @@ public:
     // ctor, dtor
     //
 
-    explicit KnightsConfigImpl(const std::string &config_filename);
+    KnightsConfigImpl(const std::string &config_filename, bool menu_strict);
     ~KnightsConfigImpl();
 
 
@@ -94,8 +91,7 @@ public:
     void getSounds(std::vector<const Sound*> &sounds) const;
     void getStandardControls(std::vector<const UserControl*> &controls) const;
     void getOtherControls(std::vector<const UserControl*> &controls) const;
-    std::string initializeGame(const MenuSelections &msel,
-                               boost::shared_ptr<DungeonMap> &dungeon_map,
+    std::string initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
                                boost::shared_ptr<CoordTransform> &coord_transform,
                                std::vector<boost::shared_ptr<Quest> > &quests,
                                HomeManager &home_manager,
@@ -111,11 +107,11 @@ public:
                                const std::vector<std::string> &player_names,
                                TutorialManager *tutorial_manager,
                                int &final_gvt) const;
-    const Menu & getMenu() const { return menu; }
-    const MenuConstraints & getMenuConstraints() const { return menu_constraints; }
+    const Menu & getMenu() const;
+    MenuWrapper & getMenuWrapper() { return *menu_wrapper; }
+    void resetMenu();
     int getApproachOffset() const;
     void getHouseColours(std::vector<Coercri::Color> &result) const;
-    std::string getQuestDescription(int quest_num, const std::string &exit_point_string) const;
     boost::shared_ptr<const ConfigMap> getConfigMap() const { return config_map; }
     boost::shared_ptr<lua_State> getLuaState() { return lua_state; }
 
@@ -173,13 +169,6 @@ public:
     const ItemType * popItemType(const ItemType *dflt);
     MapDirection popMapDirection();
     MapDirection popMapDirection(MapDirection dflt);
-    void popMenu();
-    void popMenuSpace();
-    MenuItem popMenuItem();
-    MenuInt * popMenuInt();
-    void popMenuValue(int val, MenuItem &menu_item);
-    string popMenuValueName(int val);
-    void popMenuValueDirective(const string &key, int value);
     MonsterType * popMonsterType();
     Overlay * popOverlay();
     Overlay * popOverlay(Overlay *dflt);
@@ -208,7 +197,7 @@ private:
     //
 
     void freeMemory();
-    void readMenu(const Menu &menu, const MenuSelections &msel, DungeonGenerator &dgen,
+    void readMenu(const Menu &menu, const class MenuSelections &msel, DungeonGenerator &dgen,
                   std::vector<boost::shared_ptr<Quest> > &quests) const;
     shared_ptr<Tile> makeDeadKnightTile(boost::shared_ptr<Tile>, const ColourChange &);
 
@@ -246,7 +235,6 @@ private:
 
     std::map<const Value *, DungeonDirective *> dungeon_directives;
     std::vector<ItemType *> special_item_types;
-    std::map<const Value *, MenuInt *> menu_ints;
     std::map<const Value *, MonsterType *> monster_types;
     std::map<const Value *, Overlay *> overlays;
     std::map<const Value *, boost::shared_ptr<Tile> > tiles;
@@ -266,15 +254,7 @@ private:
     std::vector<Sound *> lua_sounds;
     
     // Menu
-    Menu menu;
-    MenuConstraints menu_constraints;
-    std::vector<DungeonDirective*> global_dungeon_directives;
-    typedef std::map<int, std::vector<DungeonDirective*> > val_directives_map;
-    typedef std::map<std::string, val_directives_map> key_val_directives_map;
-    key_val_directives_map menu_dungeon_directives;
-    typedef std::map<int, std::vector<boost::shared_ptr<Quest> > > val_quests_map;
-    typedef std::map<std::string, val_quests_map> key_val_quests_map;
-    key_val_quests_map menu_quests;
+    std::auto_ptr<MenuWrapper> menu_wrapper;
 
     // Various things
     boost::shared_ptr<Tile> wall_tile, horiz_door_tile[2], vert_door_tile[2];
@@ -309,8 +289,7 @@ private:
     std::map<std::string, LuaFunc> hooks;
 
     // Some maps from names (in the config system) to integer id codes.
-    // These are non-empty only during loading of the config file.
-    std::map<std::string, int> menu_item_names;
+    // These are non-empty only during loading of the config files.
     std::map<std::string, int> segment_categories;
     std::map<std::string, int> tile_categories;
     

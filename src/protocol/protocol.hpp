@@ -57,7 +57,7 @@ enum ClientMessageCode {
     CLIENT_CHAT = 6,                 // followed by string
     CLIENT_SET_READY = 7,            // followed by ubyte (ready-status)
     CLIENT_SET_HOUSE_COLOUR = 8,     // followed by ubyte (which house col to set).
-    CLIENT_SET_MENU_SELECTION = 9,   // followed by string and varint
+    CLIENT_SET_MENU_SELECTION = 9,   // followed by 2 varints
     CLIENT_FINISHED_LOADING = 10,    // (I have loaded and am ready to start playing) no extra data 
     CLIENT_SEND_CONTROL = 11,        // followed by ubyte (bits 0-6: control num; bit 7: display num)
     CLIENT_READY_TO_END = 12,        // (I have clicked mouse on winner/loser screen and want to go to lobby) no extra data
