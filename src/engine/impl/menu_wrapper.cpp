@@ -75,9 +75,10 @@ struct MenuWrapperImpl {
     bool strict;  // whether no's of players & teams should be checked strictly.
 
     
-    // The Lua event handler functions (constrain, features, on_select),
+    // The Lua event handler functions (constrain, features, on_select, describe_quest),
     // and min/max players/teams information
     Funcs menu_funcs;
+    LuaFunc describe_quest_func;
     std::vector<ItemInfo> item_info;
 
     // The mapping between Lua keys and C++ item numbers (done as STL containers)
@@ -125,7 +126,7 @@ namespace {
             lua_gettable(lua, -2);   // [S C choice_num]
         }
         
-        const int result = lua_tointeger(lua, -1);
+        int result = lua_tointeger(lua, -1);
 
         // validate the result...
         // (Note: we assume item_num is valid because it comes from C++, but Lua may have set a bad
@@ -134,7 +135,7 @@ namespace {
         const MenuItem &menu_item = impl.menu.getItem(item_num);
         if (!menu_item.isNumeric()
         && (result < 0 || result >= menu_item.getNumChoices())) {
-            luaL_error(lua, "The current setting for menu item '%s' is invalid", key);
+            result = 0;  // override with zero.
         }
         
         lua_pop(lua, 3);  // []
@@ -204,7 +205,17 @@ namespace {
             lua_pop(lua, 3);  // []
         }
     }
-    
+
+    std::string GetQuestDescription(lua_State *lua, const MenuWrapperImpl &impl)
+    {
+        impl.s_table.push(lua);    // [S]
+        if (impl.describe_quest_func.hasValue()) {
+            return impl.describe_quest_func.runOneArgToString();   // []
+        } else {
+            lua_pop(lua, 1);  // []
+            return std::string();
+        }
+    }
 
     // ---------------------------------------------------------------------------
     
@@ -403,14 +414,18 @@ namespace {
         ASSERT(item_num >= 0 && item_num < impl.menu.getNumItems());
         
         const std::vector<int> &valid_values = impl.constraints[item_num];
-        const int current_choice = ItemNumToChoiceNum(lua, impl, item_num);
-        
+        const int current_choice = ItemNumToChoiceNum(lua, impl, item_num);  // guaranteed to be valid.
+
         if (!std::binary_search(valid_values.begin(), valid_values.end(), current_choice)) {
             // Not a valid choice
             // Set it to the first valid choice (if there is one).
             if (!valid_values.empty()) {
                 SetItemNumToChoiceNum(lua, impl, item_num, valid_values.front());
                 return true;
+            } else {
+                // Set it to its current value, this will ensure the Lua choice_val is valid
+                // (e.g., non-nil) at least.
+                SetItemNumToChoiceNum(lua, impl, item_num, current_choice);
             }
         }
         
@@ -452,12 +467,14 @@ namespace {
     struct OldSettings {
         std::vector<int> choices;
         std::vector<std::vector<int> > constraints;
+        std::string quest_description;
     };
 
     void SaveOldSettings(lua_State *lua, const MenuWrapperImpl &impl, OldSettings &out)
     {
         ReadAllCurrentChoices(lua, impl, out.choices);
         out.constraints = impl.constraints;
+        out.quest_description = GetQuestDescription(lua, impl);
     }
 
     void ValidateAndReport(lua_State *lua, MenuWrapperImpl &impl, 
@@ -476,6 +493,12 @@ namespace {
                 ReportSetting(lua, impl, i, new_choices[i], listener);
             }
         }
+
+        // describe the new quest, as well
+        std::string new_quest = GetQuestDescription(lua, impl);
+        if (new_quest != old.quest_description) {
+            listener.questDescriptionChanged(new_quest);
+        }
     }
     
     // ------------------------------------------------------------------------------
@@ -485,35 +508,38 @@ namespace {
     void ReadFuncs(lua_State *lua, Funcs &out)
     {
         // Top of stack contains table with 'on_select', 'constrain' and 'features' (all optional).
-        lua_getfield(lua, -1, "on_select");
-        out.on_select = LuaFunc(lua);
-        lua_getfield(lua, -1, "constrain");
-        out.constrain = LuaFunc(lua);
-        lua_getfield(lua, -1, "features");
-        out.features = LuaFunc(lua);
+        out.on_select.reset(lua, -1, "on_select");
+        out.constrain.reset(lua, -1, "constrain");
+        out.features.reset(lua, -1, "features");
     }
     
-    std::string PopChoice(lua_State *lua, int choice_num, const LuaFunc & func, ChoiceInfo &choice_info)
+    std::string PopChoice(lua_State *lua, int choice_num, const LuaFunc & func, ChoiceInfo &choice_info,
+                          const char *key)
     {
-        // [ValToNum NumToVal choicetbl]
+        // [S _ ValToNum NumToVal choicetbl]
 
-        lua_getfield(lua, -1, "id");  // [V N c choiceval]
+        lua_getfield(lua, -1, "id");  // [S _ V N c choiceval]
         if (lua_isnil(lua, -1)) {
             luaL_error(lua, "Menu Choice is missing 'id' field");
         }
-        lua_pushvalue(lua, -1);   // [V N c choiceval choiceval]
-        lua_rawseti(lua, -4, choice_num);  // [V N c choiceval]   (and set num->val mapping)
+        lua_pushvalue(lua, -1);   // [S _ V N c choiceval choiceval]
+        lua_rawseti(lua, -4, choice_num);  // [S _ V N c choiceval]   (and set num->val mapping)
 
         std::string result;
         if (func.hasValue()) {
-            lua_pushvalue(lua, -1);  // [V N c choiceval choiceval]
-            result = func.runOneArgToString();   // [V N c choiceval]
+            lua_pushvalue(lua, -1);  // [S _ V N c choiceval choiceval]
+            result = func.runOneArgToString();   // [S _ V N c choiceval]
         } else {
-            result = LuaGetString(lua, -2, "text");  // [V N c choiceval]
+            result = LuaGetString(lua, -2, "text");  // [S _ V N c choiceval]
+        }
+
+        if (key) {
+            lua_pushvalue(lua, -1);  // [S _ V N c choiceval choiceval]
+            lua_setfield(lua, -7, key);  // [S _ V N c choiceval]
         }
         
-        lua_pushinteger(lua, choice_num);  // [V N c choiceval choicenum]
-        lua_rawset(lua, -5);    // [V N c] and sets val->num mapping        
+        lua_pushinteger(lua, choice_num);  // [S _ V N c choiceval choicenum]
+        lua_rawset(lua, -5);    // [S _ V N c] and sets val->num mapping        
 
         ReadFuncs(lua, choice_info);
         choice_info.min_players = LuaGetInt(lua, -1, "min_players", 0);
@@ -521,7 +547,7 @@ namespace {
         choice_info.min_teams   = LuaGetInt(lua, -1, "min_teams",   0);
         choice_info.max_teams   = LuaGetInt(lua, -1, "max_teams",   9999999);
         
-        lua_pop(lua, 1);  // [V N]
+        lua_pop(lua, 1);  // [S _ V N]
         return result;
     }
 
@@ -571,11 +597,23 @@ namespace {
         impl.item_info.push_back(ItemInfo());
         ReadFuncs(lua, impl.item_info.back());
 
+        // set default in S table
+        impl.s_table.push(lua);  // [item S]
+        lua_getfield(lua, -2, "default");  // [item S default]
+        bool require_default;
+        if (lua_isnil(lua, -1)) {
+            require_default = true;
+            lua_pop(lua, 1);  // [item S]
+        } else {
+            require_default = false;
+            lua_setfield(lua, -2, key.c_str());  // [item S]
+        }
+
         if (numeric) {
             // numeric box.
             
-            const int digits = LuaGetInt(lua, -1, "digits");
-            const std::string suffix = LuaGetString(lua, -1, "suffix");
+            const int digits = LuaGetInt(lua, -2, "digits");  // [item S]
+            const std::string suffix = LuaGetString(lua, -2, "suffix");  // [item S]
 
             // add to the menu
             menu.addItem(MenuItem(title, digits, suffix));
@@ -584,31 +622,36 @@ namespace {
             impl.choice_val_to_choice_num.push_back(LuaRef());
             impl.choice_num_to_choice_val.push_back(LuaRef());
 
+            if (require_default) {
+                lua_pushinteger(lua, 0);  // [item S 0]
+                lua_setfield(lua, -2, key.c_str()); // [item S]
+            }
+
         } else {
             // dropdown -- read choices.
             
             bool cmin_set = false, cmax_set = false, choices_set = false;
             int choice_min, choice_max;
             
-            lua_getfield(lua, -1, "choice_min");  // [item cmin]
+            lua_getfield(lua, -2, "choice_min");  // [item S cmin]
             if (!lua_isnil(lua, -1)) {
                 choice_min = lua_tointeger(lua, -1);
                 cmin_set = true;
             }
-            lua_pop(lua, 1);  // [item]
-            lua_getfield(lua, -1, "choice_max");  // [item cmax]
+            lua_pop(lua, 1);  // [item S]
+            lua_getfield(lua, -2, "choice_max");  // [item S cmax]
             if (!lua_isnil(lua, -1)) {
                 choice_max = lua_tointeger(lua, -1);
                 cmax_set = true;
             }
-            lua_pop(lua, 1);  // [item]
+            lua_pop(lua, 1);  // [item S]
 
             // find out if there is a 'show' func
-            lua_getfield(lua, -1, "show");  // [item showfunc]
-            LuaFunc show_func(lua);  // [item]
+            lua_getfield(lua, -2, "show");  // [item S showfunc]
+            LuaFunc show_func(lua);  // [item S]
 
             // read the 'choices' subtable
-            lua_getfield(lua, -1, "choices");  // [item choices]
+            lua_getfield(lua, -2, "choices");  // [item S choices]
             choices_set = !lua_isnil(lua, -1);
 
             // error checks
@@ -621,10 +664,10 @@ namespace {
             } else if (!choices_set && !cmin_set) {
                 luaL_error(lua, "Menu item must have either 'choices' or 'choice_min' / 'choice_max'");
             }
-
+            
             // create new tables for our choice_val and choice_num maps
-            lua_newtable(lua);   // [item choices val_to_num]
-            lua_newtable(lua);   // [item choices val_to_num num_to_val]
+            lua_newtable(lua);   // [item S choices val_to_num]
+            lua_newtable(lua);   // [item S choices val_to_num num_to_val]
             
             // get the value strings
             std::vector<std::string> values;
@@ -643,37 +686,48 @@ namespace {
                     }
 
                     // Set the entries in the choice_num/choice_val tables
-                    lua_pushinteger(lua, choice_val);  // [i c V N choiceval]
-                    lua_rawseti(lua, -2, choice_num);  // [i c V N]
-                    lua_pushinteger(lua, choice_num);  // [i c V N choicenum]
-                    lua_rawseti(lua, -3, choice_val);  // [i c V N]
+                    lua_pushinteger(lua, choice_val);  // [i S choices V N choiceval]
+                    lua_rawseti(lua, -2, choice_num);  // [i S choices V N]
+                    lua_pushinteger(lua, choice_num);  // [i S choices V N choicenum]
+                    lua_rawseti(lua, -3, choice_val);  // [i S choices V N]
                 }
+
+                if (require_default) {
+                    // set the default in 'S' table
+                    lua_pushinteger(lua, choice_min);   // [i S choices V N default]
+                    lua_setfield(lua, -5, key.c_str()); // [i S choices V N]
+                }
+                
             } else {
-                // read 'choices' table which happens to be at stack position -3
-                lua_len(lua, -3);  // [i c V N len]
+                // [item S choices V N]
+                // read 'choices' table
+                lua_len(lua, -3);  // [i S choices V N len]
                 const int sz = lua_tointeger(lua, -1);
-                lua_pop(lua, 1);  // [i c V N]
+                lua_pop(lua, 1);  // [i S choices V N]
                 for (int i = 1; i <= sz; ++i) {
                     const int choice_num = i - 1;
-                    lua_pushinteger(lua, i);  // [i c V N idx]
-                    lua_gettable(lua, -4);    // [i c V N choice]
+                    lua_pushinteger(lua, i);  // [i S choices V N idx]
+                    lua_gettable(lua, -4);    // [i S choices V N choice]
 
                     impl.item_info.back().choice_info.push_back(ChoiceInfo());
                     
                     // The next line gets the gui text and puts it into 'values'.
                     // It also sets up entries in V and N tables.
                     // It also populates the ChoiceInfo object.
+                    // It also sets the default in S table if required.
                     values.push_back(PopChoice(lua,
                                                choice_num,
                                                show_func,
-                                               impl.item_info.back().choice_info.back()));  // [i c V N]
+                                               impl.item_info.back().choice_info.back(),
+                                               require_default ? key.c_str() : 0));       // [i S c V N]
+                    require_default = false; // only 1st choice should be set as default
                 }
             }
 
-            impl.choice_num_to_choice_val.push_back(LuaRef(lua));  // [i c V]
-            impl.choice_val_to_choice_num.push_back(LuaRef(lua));  // [i c]
+            impl.choice_num_to_choice_val.push_back(LuaRef(lua));  // [i S choices V]
+            impl.choice_val_to_choice_num.push_back(LuaRef(lua));  // [i S choices]
             
-            lua_pop(lua, 1);  // [item]
+            lua_pop(lua, 1);  // [item S]
 
             // Add to the menu
             menu.addItem(MenuItem(title, values));            
@@ -687,7 +741,7 @@ namespace {
         // initially there are no 'allowed values' for any setting (will be corrected below)
         impl.constraints.push_back(std::vector<int>());
         
-        lua_pop(lua, 1);  // []
+        lua_pop(lua, 2);  // []
     }
 
     int ReadMenuWork(lua_State *lua)
@@ -699,8 +753,31 @@ namespace {
         impl.num_players = 0;
         impl.num_teams = 0;
 
-        ReadFuncs(lua, impl.menu_funcs);
+        // create table "S"
+        lua_newtable(lua);  // [m S]
         
+        lua_pushlightuserdata(lua, &impl); // [m S pimpl]
+        PushCClosure(lua, &Is, 1);  // [m S func]
+        lua_setfield(lua, -2, "Is");  // [m S]
+
+        lua_pushlightuserdata(lua, &impl);
+        PushCClosure(lua, &IsNot, 1);
+        lua_setfield(lua, -2, "IsNot");
+
+        lua_pushlightuserdata(lua, &impl);
+        PushCClosure(lua, &IsAtLeast, 1);
+        lua_setfield(lua, -2, "IsAtLeast");
+
+        lua_pushlightuserdata(lua, &impl);
+        PushCClosure(lua, &IsAtMost, 1);
+        lua_setfield(lua, -2, "IsAtMost");  // [m S]
+
+        impl.s_table.reset(lua);  // [m]        
+
+        // read menu-level functions
+        ReadFuncs(lua, impl.menu_funcs);
+
+        // populate the Menu object
         Menu &menu = impl.menu;
 
         menu.setTitle(LuaGetString(lua, -1, "text"));
@@ -720,35 +797,17 @@ namespace {
 
         lua_pop(lua, 1);   // [menu]
 
-        // now create table "S"
-        lua_newtable(lua);  // [m S]
+        // Store a ref to 'describe_quest_func'
+        impl.describe_quest_func.reset(lua, -1, "describe_quest_func");    // [m]
         
-        lua_pushlightuserdata(lua, &impl); // [m S pimpl]
-        PushCClosure(lua, &Is, 1);  // [m S func]
-        lua_setfield(lua, -2, "Is");  // [m S]
-
-        lua_pushlightuserdata(lua, &impl);
-        PushCClosure(lua, &IsNot, 1);
-        lua_setfield(lua, -2, "IsNot");
-
-        lua_pushlightuserdata(lua, &impl);
-        PushCClosure(lua, &IsAtLeast, 1);
-        lua_setfield(lua, -2, "IsAtLeast");
-
-        lua_pushlightuserdata(lua, &impl);
-        PushCClosure(lua, &IsAtMost, 1);
-        lua_setfield(lua, -2, "IsAtMost");  // [m S]
-
-        impl.s_table.reset(lua);  // [m]
-
-        // Now call the initialization function
+        // Now call the initialization function (if present).
 
         lua_getfield(lua, -1, "initialize_func");   // [m initfunc]
-        impl.s_table.push(lua);   // [m func S]
-        if (lua_isnil(lua, -2)) {
-            luaL_error(lua, "Menu 'initialize_func' is unset!");
-        } else {
+        if (!lua_isnil(lua, -1)) {
+            impl.s_table.push(lua);   // [m func S]
             LuaExec(lua, 1, 0);       // [m]
+        } else {
+            lua_pop(lua, 1); // [m]
         }
 
         // Now validate the initial state
@@ -803,6 +862,7 @@ void MenuWrapper::getCurrentSettings(MenuListener &listener) const
         const int choice = ItemNumToChoiceNum(lua, *pimpl, item);
         ReportSetting(lua, *pimpl, item, choice, listener);
     }
+    listener.questDescriptionChanged(GetQuestDescription(lua, *pimpl));
 }
 
 void MenuWrapper::changeSetting(int item_num, int new_choice_num, MenuListener &listener)

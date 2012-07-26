@@ -36,6 +36,8 @@ public:
                                 int choice_num,
                                 const char *choice_string,
                                 const std::vector<int> &allowed_choices) = 0;
+
+    virtual void questDescriptionChanged(const std::string &new_description) { }
 };
 
 #endif

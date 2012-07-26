@@ -19,7 +19,7 @@
 --
 
 function describe_exit_point(S)
-   if S.exit == "self" then
+   if S.exit == "same" then
       return "your entry point"
    elseif S.exit == "other" then
       return "your opponent's entry point"
@@ -75,12 +75,32 @@ function describe_book(S)
    end
 end
 
+function describe_wand(S)
+   if S.wand == "destruction" then
+      return "The Wand of Destruction terminates targets."
+   elseif S.wand == "open_ways" then
+      return "The Wand of Open Ways may be used to open any item."
+   elseif S.wand == "securing" then
+      return "The Wand of Securing is used to secure entry points."
+   elseif S.wand == "undeath" then
+      return "The Wand of Undeath controls and slays the undead."
+   end
+end
+
 function describe_time(S)
    if S.time > 0 then
-      if S.mission == "deathmatch" then
-         return "The game will last for " .. S.time .. " minutes."
+
+      local minutes
+      if S.time == 1 then 
+         minutes = " minute."
       else
-         return "You must complete this quest within " .. S.time .. " minutes."
+         minutes = " minutes." 
+      end
+
+      if S.mission == "deathmatch" then
+         return "The game will last for " .. S.time .. minutes
+      else
+         return "You must complete this quest within " .. S.time .. minutes
       end
    end
 end

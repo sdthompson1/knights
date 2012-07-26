@@ -324,10 +324,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\engine\impl\menu_constraints.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\engine\impl\menu_wrapper.cpp"
 				>
 			</File>

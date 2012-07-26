@@ -225,7 +225,7 @@ namespace {
         virtual void settingChanged(int item_num, const char *item_key,
                                     int choice_num, const char *choice_string,
                                     const std::vector<int> &allowed_choices);
-
+        virtual void questDescriptionChanged(const std::string &desc);
         
     private:
         std::vector<std::pair<Coercri::OutputByteBuf, bool> > bufs;
@@ -262,6 +262,16 @@ namespace {
         }
     }
 
+    void MyMenuListener::questDescriptionChanged(const std::string &s)
+    {
+        for (std::vector<std::pair<Coercri::OutputByteBuf, bool> >::iterator bit = bufs.begin();
+        bit != bufs.end(); ++bit) {
+            Coercri::OutputByteBuf &buf = bit->first;
+            buf.writeUbyte(SERVER_SET_QUEST_DESCRIPTION);
+            buf.writeString(s);
+        }
+    }
+    
     // Another implementation of MenuListener to write messages to the knights log
     class LogMenuListener : public MenuListener {
     public:

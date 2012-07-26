@@ -38,7 +38,8 @@ kts.MENU = {
       predefined_quest_func(S, "quest")  -- Loads the "gems" quest
    end,
 
-   start_game_func = start_game,
+   start_game_func     = start_game,       -- defined in dungeon_setup.lua
+   describe_quest_func = describe_quest,   -- defined in quest_description.lua
 
    default_setup = Dsetup,
 
