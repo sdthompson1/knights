@@ -334,6 +334,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
+        case SERVER_DEACTIVATE_READY_FLAGS:
+            if (client_cb) client_cb->deactivateReadyFlags();
+            break;
+
         case SERVER_CHAT:
             {
                 const std::string whofrom = buf.readString();

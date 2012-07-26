@@ -204,14 +204,21 @@ namespace {
         }
     }
 
+    void DeactivateReadyFlags(KnightsGameImpl &kg)
+    {
+        for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+            (*it)->is_ready = false;
+            (*it)->output_data.push_back(SERVER_DEACTIVATE_READY_FLAGS);
+        }
+    }
+
     // Implementation of MenuListener to send out a SERVER_SET_MENU_SELECTION message
     class MyMenuListener : public MenuListener {
     public:
         MyMenuListener(int original_item_, int original_choice_)
             : original_item(original_item_),
               original_choice(original_choice_),
-              changed(false),
-              orig_changed(false)
+              changed(false)
         { }
         void addBuf(Coercri::OutputByteBuf buf, bool original) {
             bufs.push_back(std::make_pair(buf, original));
@@ -220,7 +227,6 @@ namespace {
             bufs.push_back(std::make_pair(Coercri::OutputByteBuf(vec), original));
         }
         bool wereThereChanges() const { return changed; }
-        bool wereThereChangesForOrig() const { return orig_changed; }
 
         virtual void settingChanged(int item_num, const char *item_key,
                                     int choice_num, const char *choice_string,
@@ -232,7 +238,6 @@ namespace {
         int original_item;
         int original_choice;
         bool changed;
-        bool orig_changed;
     };
 
     void MyMenuListener::settingChanged(int item_num, const char *,
@@ -249,8 +254,6 @@ namespace {
                 continue;
             }
 
-            if (bit->second) orig_changed = true;
-            
             Coercri::OutputByteBuf &buf = bit->first;
             buf.writeUbyte(SERVER_SET_MENU_SELECTION);
             buf.writeVarInt(item_num);
@@ -1755,17 +1758,6 @@ void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int c
         listener.addBuf((*it)->output_data, it->get() == conn);
     }
     pimpl->knights_config->changeMenuSetting(item_num, choice_num, listener);
-
-    if (conn && !listener.wereThereChangesForOrig()) {
-        // He wasn't sent any SET_MENU_SELECTION msg so we have to
-        // send a dummy one, to explicitly tell him that all players
-        // are no longer ready to start
-        Coercri::OutputByteBuf buf(conn->output_data);
-        buf.writeUbyte(SERVER_SET_MENU_SELECTION);
-        buf.writeVarInt(-1);
-        buf.writeVarInt(0);
-        buf.writeVarInt(0);
-    }
     
     if (conn && listener.wereThereChanges()) {
         // send announcement to all players
@@ -1782,10 +1774,7 @@ void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int c
         Announcement(*pimpl, str.str());
 
         // deactivate all ready flags
-        // (clients will themselves turn off the 'ready' checkbox)
-        for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-            (*it)->is_ready = false;
-        }
+        DeactivateReadyFlags(*pimpl);
     }
 }
 
@@ -1804,85 +1793,25 @@ void KnightsGame::randomQuest(GameConnection &conn)
     
     WaitForMsgCounter(*pimpl);
 
-    // TODO.
-
-    /*
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can set quests.
 
-    // Save the old settings
-    MenuSelections msel_old = pimpl->menu_selections;
-    std::string quest_descr_old = pimpl->quest_description;
-
-    // Make sure "quest" is set to "custom"
-    SetMenuSelection(*pimpl, "quest", 0);
-
-    // Calculate number of players for constraint purposes (do this once up front)
-    // NOTE: We generate a quest appropriate for the current number of players;
-    // i.e. if only one player is online, we do not create the two-player quests.
-    const int nplayers = CountPlayers(*pimpl);
-
-    // Build up a list of keys that we are going to randomize.
-    // (Can do this once at the beginning)
-    const Menu & menu = pimpl->knights_config->getMenu();
-    std::vector<const std::string *> keys;
-    keys.reserve(menu.getNumItems());
-    for (int i = 0; i < menu.getNumItems(); ++i) {
-        const std::string & key = menu.getItem(i).getKey();
-        
-        // special case: "quest" should not be randomized because that would
-        // undo all our work randomizing the settings.
-        // also: "#time" is not randomized (currently) since we don't really know what a
-        // reasonable time limit would be for various quests.
-        if (key != "quest" && key != "#time") {
-            keys.push_back(&key);
-        }
+    /*
+    RandomQuestMenuListener listener(0,0);
+    for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
+        listener.addBuf((*it)->output_data, false);
     }
+    */
+    /*
+    pimpl->knights_config->randomQuest(listener);
+
+    TODO; // if no settings happened to change then we need to do the fake SERVER_SET_MENU_SELECTION thing.
+    TODO; // also need to deactivate all REady flags.  [formalize this & prev step in a function?]
+    TODO; // also note RandomQuestMenuListener needs to wrap MyMenuListener, and also do the QST logging, see below.
     
-    RNG_Wrapper myrng(g_rng);
-    std::vector<int> allowed_values;
+    Announcement(*pimpl, conn.name + " selected a Random Quest.");
     
-    // Iterate a number of times, to make sure we get a good randomization
-    for (int iterations = 0; iterations < 3; ++iterations) {
-
-        // Shuffle the menu keys into a random order
-        // Note: we are using the global rng (from the main thread), as opposed to
-        // the rng's from the game threads. This should mean that the replay feature
-        // is not messed up by the extra random numbers being generated here.
-        std::random_shuffle(keys.begin(), keys.end(), myrng);
-
-        // for each key in the random ordering:
-        for (std::vector<const std::string *>::const_iterator key_it = keys.begin(); key_it != keys.end(); ++key_it) {
-
-            // find out the allowed values
-            allowed_values = pimpl->menu_selections.getAllowedValues(**key_it);
-
-            // special case: "num_wands" may not be bigger than the current number of players plus two
-            // This is to prevent silly 8-wand quests when there are only 2 players present (for example)...
-            // NOTE: Don't really want special cases like this here. (Ideally "random quest" would generate exactly
-            // the same set of quests that you can enter manually.)
-            if (**key_it == "num_wands") {
-                allowed_values.erase(std::remove_if(allowed_values.begin(), allowed_values.end(), GtrThan(nplayers+2)),
-                                     allowed_values.end());
-            }
-
-            if (!allowed_values.empty()) {
-                // pick one at random
-                const int selected_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
-
-                // set it to that value, updating constraints as required.
-                pimpl->menu_selections.setValue(**key_it, selected_value);
-                //pimpl->knights_config->getMenuConstraints().apply(menu,
-                //                                                  pimpl->menu_selections,
-                //                                                  nplayers);
-            }
-        }
-    }
-
-    // ensure the results are valid; send updates to clients
-    ValidateMenuSelections(*pimpl, msel_old, quest_descr_old);
-   
     if (pimpl->knights_log) {
         // Save the quest in the binary log (This is so that replays work correctly. It is no good just having 
         // "random quest" in the log, we need to save what the quest was actually set to.)
@@ -1896,10 +1825,7 @@ void KnightsGame::randomQuest(GameConnection &conn)
         const std::string & s = random_quest_str.str();
         pimpl->knights_log->logBinary("QST", 0, s.length(), s.c_str());
     }
-
-    // Send announcement to all players
-    Announcement(*pimpl, conn.name + " selected a Random Quest.");
-*/
+    */
 }
 
 void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control_num)

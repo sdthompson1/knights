@@ -903,3 +903,86 @@ void MenuWrapper::changeNumberOfPlayers(int nplayers, int nteams, MenuListener &
     SaveOldSettings(GetLuaState(*pimpl), *pimpl, old);
     ValidateAndReport(GetLuaState(*pimpl), *pimpl, old, listener);
 }
+
+
+
+/*
+void MenuWrapper::randomQuest(MenuListener &listener)
+{
+
+
+
+        // Save the old settings
+    MenuSelections msel_old = pimpl->menu_selections;
+    std::string quest_descr_old = pimpl->quest_description;
+
+    // Make sure "quest" is set to "custom"
+    SetMenuSelection(*pimpl, "quest", 0);
+
+    // Calculate number of players for constraint purposes (do this once up front)
+    // NOTE: We generate a quest appropriate for the current number of players;
+    // i.e. if only one player is online, we do not create the two-player quests.
+    const int nplayers = CountPlayers(*pimpl);
+
+    // Build up a list of keys that we are going to randomize.
+    // (Can do this once at the beginning)
+    const Menu & menu = pimpl->knights_config->getMenu();
+    std::vector<const std::string *> keys;
+    keys.reserve(menu.getNumItems());
+    for (int i = 0; i < menu.getNumItems(); ++i) {
+        const std::string & key = menu.getItem(i).getKey();
+        
+        // special case: "quest" should not be randomized because that would
+        // undo all our work randomizing the settings.
+        // also: "#time" is not randomized (currently) since we don't really know what a
+        // reasonable time limit would be for various quests.
+        if (key != "quest" && key != "#time") {
+            keys.push_back(&key);
+        }
+    }
+    
+    RNG_Wrapper myrng(g_rng);
+    std::vector<int> allowed_values;
+    
+    // Iterate a number of times, to make sure we get a good randomization
+    for (int iterations = 0; iterations < 3; ++iterations) {
+
+        // Shuffle the menu keys into a random order
+        // Note: we are using the global rng (from the main thread), as opposed to
+        // the rng's from the game threads. This should mean that the replay feature
+        // is not messed up by the extra random numbers being generated here.
+        std::random_shuffle(keys.begin(), keys.end(), myrng);
+
+        // for each key in the random ordering:
+        for (std::vector<const std::string *>::const_iterator key_it = keys.begin(); key_it != keys.end(); ++key_it) {
+
+            // find out the allowed values
+            allowed_values = pimpl->menu_selections.getAllowedValues(**key_it);
+
+            // special case: "num_wands" may not be bigger than the current number of players plus two
+            // This is to prevent silly 8-wand quests when there are only 2 players present (for example)...
+            // NOTE: Don't really want special cases like this here. (Ideally "random quest" would generate exactly
+            // the same set of quests that you can enter manually.)
+            if (**key_it == "num_wands") {
+                allowed_values.erase(std::remove_if(allowed_values.begin(), allowed_values.end(), GtrThan(nplayers+2)),
+                                     allowed_values.end());
+            }
+
+            if (!allowed_values.empty()) {
+                // pick one at random
+                const int selected_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
+
+                // set it to that value, updating constraints as required.
+                pimpl->menu_selections.setValue(**key_it, selected_value);
+                //pimpl->knights_config->getMenuConstraints().apply(menu,
+                //                                                  pimpl->menu_selections,
+                //                                                  nplayers);
+            }
+        }
+    }
+
+
+        // ensure the results are valid; send updates to clients
+    ValidateMenuSelections(*pimpl, msel_old, quest_descr_old);
+   
+*/

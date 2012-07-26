@@ -163,6 +163,10 @@ public:
     {
         Log("Set ready. Name = %s, val = %d", name.c_str(), ready ? 1 : 0);
     }
+    void deactivateReadyFlags()
+    {
+        Log("Deactivate ready flags.");
+    }
 
     void setObsFlag(const std::string &name, bool new_obs_flag)
     {

@@ -1018,15 +1018,9 @@ void GameManager::leaveGame()
 void GameManager::setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals)
 {
     // Update menu selections
-    if (item_num >= 0) {
-        MenuChoices &mc = pimpl->menu_choices.at(item_num); // will throw if bad item_num given by server
-        mc.allowed_choices = allowed_vals;
-        mc.choice = choice_num;
-    }
-    
-    // All players are no longer ready to start
-    pimpl->game_namelist.clearReady();
-    pimpl->my_ready_flag = false;
+    MenuChoices &mc = pimpl->menu_choices.at(item_num); // will throw if bad item_num given by server
+    mc.allowed_choices = allowed_vals;
+    mc.choice = choice_num;
     
     // Update GUI
     updateMenuWidget(item_num);
@@ -1175,6 +1169,13 @@ void GameManager::setReady(const std::string &name, bool ready)
     }
     pimpl->game_namelist.alter(name, 0, &ready, 0);
     if (name == pimpl->my_player_name) pimpl->my_ready_flag = ready;
+    pimpl->gui_invalid = true;
+}
+
+void GameManager::deactivateReadyFlags()
+{
+    pimpl->game_namelist.clearReady();
+    pimpl->my_ready_flag = false;
     pimpl->gui_invalid = true;
 }
 

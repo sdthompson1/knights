@@ -99,6 +99,7 @@ enum ServerMessageCode {
     SERVER_SET_HOUSE_COLOUR = 23,    // followed by string (name), ubyte (which house col to set).
     SERVER_SET_AVAILABLE_HOUSE_COLOURS = 24,    // followed by ubyte (num hse cols) and the cols as (r,g,b) ubyte triples.
     SERVER_SET_OBS_FLAG = 25,        // followed by string (player name), ubyte (1=obs 0=player).
+    SERVER_DEACTIVATE_READY_FLAGS = 26,         // no additional data
     
     SERVER_CHAT = 30,                // followed by string (sender), ubyte (0=lobby 1=player 2=observer 3=team), string (msg)
     SERVER_ANNOUNCEMENT = 31,        // followed by string (msg)

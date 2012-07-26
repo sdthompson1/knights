@@ -122,6 +122,7 @@ public:
     virtual void setPlayerHouseColour(const std::string &name, int house_col) = 0;
     virtual void setAvailableHouseColours(const std::vector<Coercri::Color> &cols) = 0;
     virtual void setReady(const std::string &name, bool ready) = 0;
+    virtual void deactivateReadyFlags() = 0;
 
     // called when a player, in the current game, changes from observer to player or vice versa
     virtual void setObsFlag(const std::string &name, bool new_obs_flag) = 0;

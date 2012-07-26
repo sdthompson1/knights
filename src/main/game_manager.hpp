@@ -215,6 +215,7 @@ public:
     virtual void setPlayerHouseColour(const std::string &name, int house_col);
     virtual void setAvailableHouseColours(const std::vector<Coercri::Color> &cols);
     virtual void setReady(const std::string &name, bool ready);
+    virtual void deactivateReadyFlags();
 
     virtual void setObsFlag(const std::string &name, bool new_obs_flag);
     
