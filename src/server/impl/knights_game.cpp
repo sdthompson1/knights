@@ -30,7 +30,7 @@
 #include "knights_game.hpp"
 #include "knights_log.hpp"
 #include "menu.hpp"
-#include "menu_listener.hpp"
+#include "my_menu_listeners.hpp"
 #include "overlay.hpp"
 #include "protocol.hpp"
 #include "rng.hpp"
@@ -210,87 +210,6 @@ namespace {
             (*it)->is_ready = false;
             (*it)->output_data.push_back(SERVER_DEACTIVATE_READY_FLAGS);
         }
-    }
-
-    // Implementation of MenuListener to send out a SERVER_SET_MENU_SELECTION message
-    class MyMenuListener : public MenuListener {
-    public:
-        MyMenuListener(int original_item_, int original_choice_)
-            : original_item(original_item_),
-              original_choice(original_choice_),
-              changed(false)
-        { }
-        void addBuf(Coercri::OutputByteBuf buf, bool original) {
-            bufs.push_back(std::make_pair(buf, original));
-        }
-        void addBuf(std::vector<unsigned char> &vec, bool original) {
-            bufs.push_back(std::make_pair(Coercri::OutputByteBuf(vec), original));
-        }
-        bool wereThereChanges() const { return changed; }
-
-        virtual void settingChanged(int item_num, const char *item_key,
-                                    int choice_num, const char *choice_string,
-                                    const std::vector<int> &allowed_choices);
-        virtual void questDescriptionChanged(const std::string &desc);
-        
-    private:
-        std::vector<std::pair<Coercri::OutputByteBuf, bool> > bufs;
-        int original_item;
-        int original_choice;
-        bool changed;
-    };
-
-    void MyMenuListener::settingChanged(int item_num, const char *,
-                                        int choice_num, const char *,
-                                        const std::vector<int> &allowed_choices)
-    {
-        changed = true;
-        for (std::vector<std::pair<Coercri::OutputByteBuf, bool> >::iterator bit = bufs.begin();
-        bit != bufs.end(); ++bit) {
-
-            if (bit->second && item_num == original_item && choice_num == original_choice) {
-                // this client already knows about this setting. skip it.
-                // (this is important to avoid 'lag' when editing numeric fields.)
-                continue;
-            }
-
-            Coercri::OutputByteBuf &buf = bit->first;
-            buf.writeUbyte(SERVER_SET_MENU_SELECTION);
-            buf.writeVarInt(item_num);
-            buf.writeVarInt(choice_num);
-            buf.writeVarInt(allowed_choices.size());
-            for (std::vector<int>::const_iterator it = allowed_choices.begin(); it != allowed_choices.end(); ++it) {
-                buf.writeVarInt(*it);
-            }
-        }
-    }
-
-    void MyMenuListener::questDescriptionChanged(const std::string &s)
-    {
-        for (std::vector<std::pair<Coercri::OutputByteBuf, bool> >::iterator bit = bufs.begin();
-        bit != bufs.end(); ++bit) {
-            Coercri::OutputByteBuf &buf = bit->first;
-            buf.writeUbyte(SERVER_SET_QUEST_DESCRIPTION);
-            buf.writeString(s);
-        }
-    }
-    
-    // Another implementation of MenuListener to write messages to the knights log
-    class LogMenuListener : public MenuListener {
-    public:
-        explicit LogMenuListener(std::ostream &str_) : str(str_) { }
-        virtual void settingChanged(int item_num, const char *item_key,
-                                    int choice_num, const char *choice_string,
-                                    const std::vector<int> &allowed_choices);
-    private:
-        std::ostream &str;
-    };
-
-    void LogMenuListener::settingChanged(int item_num, const char *item_key,
-                                         int choice_num, const char *choice_string,
-                                         const std::vector<int> &allowed_choices)
-    {
-        str << ", " << item_key << "=" << choice_string << ", ";
     }
     
     int GetNumAvailHouseCols(const KnightsGameImpl &impl)
@@ -1778,15 +1697,6 @@ void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int c
     }
 }
 
-namespace {
-    struct GtrThan {
-        GtrThan(int x_) : x(x_) {} 
-        bool operator()(int y) const { return y > x; }
-        int x;
-    };
-}
-
-
 void KnightsGame::randomQuest(GameConnection &conn)
 {
     if (pimpl->update_thread.joinable()) return;  // Game is running
@@ -1797,35 +1707,29 @@ void KnightsGame::randomQuest(GameConnection &conn)
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can set quests.
 
-    /*
-    RandomQuestMenuListener listener(0,0);
+    MyMenuListener listener(0,0);
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
         listener.addBuf((*it)->output_data, false);
     }
-    */
-    /*
     pimpl->knights_config->randomQuest(listener);
 
-    TODO; // if no settings happened to change then we need to do the fake SERVER_SET_MENU_SELECTION thing.
-    TODO; // also need to deactivate all REady flags.  [formalize this & prev step in a function?]
-    TODO; // also note RandomQuestMenuListener needs to wrap MyMenuListener, and also do the QST logging, see below.
-    
-    Announcement(*pimpl, conn.name + " selected a Random Quest.");
-    
+    // send announcement to all players
+    Announcement(*pimpl, conn.name + " selected a Random Quest.");    
+
+    // deactivate all ready flags
+    DeactivateReadyFlags(*pimpl);
+
+    // Also have to save the quest in the binary log
+    // (This is so that replays work correctly. It is no good just having 
+    // "random quest" in the log, we need to save what the quest was actually set to.)
     if (pimpl->knights_log) {
-        // Save the quest in the binary log (This is so that replays work correctly. It is no good just having 
-        // "random quest" in the log, we need to save what the quest was actually set to.)
         std::ostringstream random_quest_str;
         random_quest_str << pimpl->game_name << '\0';
-        for (std::map<std::string, MenuSelections::Sel>::const_iterator it = pimpl->menu_selections.selections.begin();
-        it != pimpl->menu_selections.selections.end(); ++it) {
-            random_quest_str << it->first << '\0';
-            random_quest_str << it->second.value << '\0';
-        }
-        const std::string & s = random_quest_str.str();
+        RandomQuestMenuListener random_quest_listener(random_quest_str);
+        pimpl->knights_config->getCurrentMenuSettings(random_quest_listener);
+        const std::string &s = random_quest_str.str();
         pimpl->knights_log->logBinary("QST", 0, s.length(), s.c_str());
     }
-    */
 }
 
 void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control_num)

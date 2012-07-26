@@ -30,6 +30,7 @@
 #include "menu.hpp"
 #include "menu_listener.hpp"
 #include "menu_wrapper.hpp"
+#include "rng.hpp"
 
 #include "lua.hpp"
 
@@ -462,7 +463,7 @@ namespace {
 
     // -------------------------------------------------------------------------------
 
-    // Pair of functions to run 'Validate' and also reports changes to the MenuListener.
+    // Functions to report changes to the MenuListener.
 
     struct OldSettings {
         std::vector<int> choices;
@@ -477,12 +478,10 @@ namespace {
         out.quest_description = GetQuestDescription(lua, impl);
     }
 
-    void ValidateAndReport(lua_State *lua, MenuWrapperImpl &impl, 
-                           const OldSettings &old,
-                           MenuListener &listener)
+    void Report(lua_State *lua, MenuWrapperImpl &impl,
+                const OldSettings &old,
+                MenuListener &listener)
     {
-        Validate(lua, impl);
-
         std::vector<int> new_choices;
         ReadAllCurrentChoices(lua, impl, new_choices);
         const std::vector<std::vector<int> > & new_constraints = impl.constraints;
@@ -499,6 +498,14 @@ namespace {
         if (new_quest != old.quest_description) {
             listener.questDescriptionChanged(new_quest);
         }
+    }
+
+    void ValidateAndReport(lua_State *lua, MenuWrapperImpl &impl, 
+                           const OldSettings &old,
+                           MenuListener &listener)
+    {
+        Validate(lua, impl);
+        Report(lua, impl, old, listener);
     }
     
     // ------------------------------------------------------------------------------
@@ -904,85 +911,53 @@ void MenuWrapper::changeNumberOfPlayers(int nplayers, int nteams, MenuListener &
     ValidateAndReport(GetLuaState(*pimpl), *pimpl, old, listener);
 }
 
-
-
-/*
 void MenuWrapper::randomQuest(MenuListener &listener)
 {
-
-
-
-        // Save the old settings
-    MenuSelections msel_old = pimpl->menu_selections;
-    std::string quest_descr_old = pimpl->quest_description;
-
-    // Make sure "quest" is set to "custom"
-    SetMenuSelection(*pimpl, "quest", 0);
-
-    // Calculate number of players for constraint purposes (do this once up front)
-    // NOTE: We generate a quest appropriate for the current number of players;
-    // i.e. if only one player is online, we do not create the two-player quests.
-    const int nplayers = CountPlayers(*pimpl);
-
-    // Build up a list of keys that we are going to randomize.
-    // (Can do this once at the beginning)
-    const Menu & menu = pimpl->knights_config->getMenu();
-    std::vector<const std::string *> keys;
-    keys.reserve(menu.getNumItems());
-    for (int i = 0; i < menu.getNumItems(); ++i) {
-        const std::string & key = menu.getItem(i).getKey();
-        
-        // special case: "quest" should not be randomized because that would
-        // undo all our work randomizing the settings.
-        // also: "#time" is not randomized (currently) since we don't really know what a
-        // reasonable time limit would be for various quests.
-        if (key != "quest" && key != "#time") {
-            keys.push_back(&key);
-        }
-    }
-    
+    lua_State *lua = GetLuaState(*pimpl);
     RNG_Wrapper myrng(g_rng);
-    std::vector<int> allowed_values;
+
+    // Save the old settings
+    OldSettings old;
+    SaveOldSettings(lua, *pimpl, old);
+
+    // Make a vector of menu item numbers. Can do this once at the beginning.
+    std::vector<int> item_nos;
+    item_nos.reserve(pimpl->menu.getNumItems());
+    for (int i = 0; i < pimpl->menu.getNumItems(); ++i) {
+        item_nos.push_back(i);
+    }
     
     // Iterate a number of times, to make sure we get a good randomization
     for (int iterations = 0; iterations < 3; ++iterations) {
 
-        // Shuffle the menu keys into a random order
+        // Shuffle the menu item numbers into a random order
         // Note: we are using the global rng (from the main thread), as opposed to
         // the rng's from the game threads. This should mean that the replay feature
         // is not messed up by the extra random numbers being generated here.
-        std::random_shuffle(keys.begin(), keys.end(), myrng);
+        std::random_shuffle(item_nos.begin(), item_nos.end(), myrng);
 
-        // for each key in the random ordering:
-        for (std::vector<const std::string *>::const_iterator key_it = keys.begin(); key_it != keys.end(); ++key_it) {
-
+        // For each menu item in the random ordering:
+        for (std::vector<int>::const_iterator item_no = item_nos.begin(); item_no != item_nos.end(); ++item_no) {
+            
             // find out the allowed values
-            allowed_values = pimpl->menu_selections.getAllowedValues(**key_it);
+            std::vector<int> allowed_values = pimpl->constraints[*item_no];
 
-            // special case: "num_wands" may not be bigger than the current number of players plus two
-            // This is to prevent silly 8-wand quests when there are only 2 players present (for example)...
-            // NOTE: Don't really want special cases like this here. (Ideally "random quest" would generate exactly
-            // the same set of quests that you can enter manually.)
-            if (**key_it == "num_wands") {
-                allowed_values.erase(std::remove_if(allowed_values.begin(), allowed_values.end(), GtrThan(nplayers+2)),
-                                     allowed_values.end());
-            }
-
+            // TODO : Remove unacceptable values from allowed_values.
+            // (Remember, allowed_values will be empty for a numeric box.)
+            
             if (!allowed_values.empty()) {
                 // pick one at random
                 const int selected_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
 
-                // set it to that value, updating constraints as required.
-                pimpl->menu_selections.setValue(**key_it, selected_value);
-                //pimpl->knights_config->getMenuConstraints().apply(menu,
-                //                                                  pimpl->menu_selections,
-                //                                                  nplayers);
+                // set it to that value
+                SetItemNumToChoiceNum(lua, *pimpl, *item_no, selected_value);
+
+                // Revalidate settings before continuing
+                Validate(lua, *pimpl);
             }
         }
     }
 
-
-        // ensure the results are valid; send updates to clients
-    ValidateMenuSelections(*pimpl, msel_old, quest_descr_old);
-   
-*/
+    // Report the changed settings to the listener.
+    Report(lua, *pimpl, old, listener);
+}

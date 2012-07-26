@@ -100,6 +100,11 @@ void KnightsConfig::resetMenu()
     pimpl->resetMenu();
 }
 
+void KnightsConfig::randomQuest(MenuListener &listener)
+{
+    pimpl->getMenuWrapper().randomQuest(listener);
+}
+
 
 //
 // interface used by KnightsEngine

@@ -29,6 +29,9 @@
 #ifndef MENU_LISTENER_HPP
 #define MENU_LISTENER_HPP
 
+#include <string>
+#include <vector>
+
 class MenuListener {
 public:
     virtual void settingChanged(int item_num,

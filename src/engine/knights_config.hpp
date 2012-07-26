@@ -101,16 +101,25 @@ public:
     const Menu & getMenu() const;
     int getApproachOffset() const;  // clients will need to know this for rendering purposes.
     void getHouseColours(std::vector<Coercri::Color> &cols) const;   // for use on the menu screen.
-
-    // Menu related functions.
-    //  - getCurrentMenuSettings reports all current settings to the listener
-    //  - The two "change" functions report only the menu-items that have changed as a result of the operation.
-    //  - In changeMenuSetting, if inputs are out of range, the function does nothing.
-    void getCurrentMenuSettings(MenuListener &listener) const;
-    void changeMenuSetting(int item_num, int new_choice_num, MenuListener &listener);
-    void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
-    void resetMenu();  // called when all players have left game.
     
+    // Menu related functions:
+
+    // report all current menu settings to the listener
+    void getCurrentMenuSettings(MenuListener &listener) const;
+
+    // call when a menu option is changed by the user. reports all changed settings back to listener.
+    void changeMenuSetting(int item_num, int new_choice_num, MenuListener &listener);
+
+    // call when the number of players or teams changes. reports changed settings to listener.
+    void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
+
+    // call when all players have left game. resets settings to defaults.
+    void resetMenu();
+
+    // call when a random quest is required. reports changes to listener.
+    void randomQuest(MenuListener &listener);
+
+        
     
     //
     // Interface used by KnightsEngine

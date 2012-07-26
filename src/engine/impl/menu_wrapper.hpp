@@ -57,6 +57,9 @@ public:
     void changeSetting(int item_num, int new_choice_num, MenuListener &listener);
     void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
     
+    // request a random quest. Changed menu items will be reported.
+    void randomQuest(MenuListener &listener);
+    
 private:
     boost::shared_ptr<MenuWrapperImpl> pimpl;
 };

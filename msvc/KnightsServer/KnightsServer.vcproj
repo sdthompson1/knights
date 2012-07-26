@@ -162,6 +162,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\server\impl\my_menu_listeners.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\server\impl\server_callbacks.cpp"
 				>
 			</File>
@@ -193,6 +197,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\server\knights_server.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\impl\my_menu_listeners.hpp"
 				>
 			</File>
 			<File
