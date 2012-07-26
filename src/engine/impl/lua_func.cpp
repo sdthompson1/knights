@@ -115,3 +115,12 @@ void LuaFunc::runNArgsNoPop(lua_State *lua, int n) const
         lua_pop(lua, 1);  // [a1 .. an]
     }
 }
+
+void LuaFunc::run(lua_State *lua, int nargs, int nresults)
+{
+    // [a1..an]
+    ASSERT(hasValue());
+    function_ref.push(lua);     // [a1..an f]
+    lua_insert(lua, -nargs-1);  // [f a1..an]
+    LuaExec(lua, nargs, nresults);  // [r1..rn]
+}

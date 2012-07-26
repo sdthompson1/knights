@@ -56,7 +56,11 @@ kts.MENU = {
          id = "quest",
          text = "Quest",
          on_select = predefined_quest_func,   -- defined in preset_quests.lua
-         choices = make_quest_choices()       -- defined in preset_quests.lua
+         choices = make_quest_choices(),      -- defined in preset_quests.lua
+         randomize = function(S, num_players, num_teams)
+            -- Quest should always be Custom for a random quest.
+            return "custom"
+         end
       },
 
       "spacer",
@@ -233,6 +237,10 @@ kts.MENU = {
             else
                S.IsNot("wand", "none")
             end
+         end,
+         randomize = function(S, num_players, num_teams)
+            -- In a random quest, limit the number of wands to at most num_players+2.
+            return kts.RandomRange(0, num_players + 2)
          end
       },
       {

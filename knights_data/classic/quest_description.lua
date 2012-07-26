@@ -35,8 +35,8 @@ end
 function describe_mission(S)
    local result
 
-   if S.mission == "duel_to_the_death" then
-      result = "You must secure all entry points to prevent your opponents entering the dungeon"
+   if S.mission == "duel_to_death" then
+      result = "You must secure all entry points to prevent your opponents entering the dungeon, and then destroy all enemy knights"
    elseif S.mission == "destroy_book" then
       result = "You must strike the book with the wand in the special pentagram"
    else
@@ -46,8 +46,10 @@ function describe_mission(S)
          result = "You must retrieve the "
          if S.mission == "retrieve_book" then
             result = result .. "book"
-         else
+         elseif S.mission == "retrieve_wand" then
             result = result .. "wand"
+         else
+            result = result .. "(??)"
          end
          result = result .. " and "
       end

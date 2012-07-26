@@ -57,6 +57,7 @@ namespace {
     struct ItemInfo : Funcs {
         // NOTE: choice_info is only non-empty for 'dropdown' fields!
         std::vector<ChoiceInfo> choice_info;
+        LuaFunc randomize;
     };
 }
 
@@ -88,6 +89,8 @@ struct MenuWrapperImpl {
 
     // The mapping between Lua values and C++ choice numbers (done as Lua tables, but indexed under item_num)
     // NOTE: these are only non-nil for Dropdown items.
+    // NOTE: instead of working with these directly, it may be easier to
+    //         use functions PushChoiceVal and PopChoiceVal.
     std::vector<LuaRef> choice_val_to_choice_num;
     std::vector<LuaRef> choice_num_to_choice_val;
 
@@ -107,10 +110,58 @@ namespace {
     
     // ---------------------------------------------------------------------------
 
+    // Functions to convert between choice nums and choice vals
+
+    // Pops a choice val from top of lua stack, and returns corresponding choice num.
+    // If the choice val is invalid (i.e. does not correspond to any of the available choices for this item)
+    // then 0 is returned.
+    int PopChoiceVal(lua_State *lua, const MenuWrapperImpl &impl, int item_num)
+    {
+        // [cval]
+        
+        ASSERT(item_num >= 0 && item_num < impl.menu.getNumItems());
+
+        impl.choice_val_to_choice_num[item_num].push(lua);  // [cval Ctbl]
+        lua_insert(lua, -2);  // [Ctbl cval]
+        
+        if (!lua_isnil(lua, -2)) {
+            // Choice val -> choice num table exists
+            // Must be a dropdown field
+            // NOTE: If cval is not valid this will put 'nil' on the stack top, which will
+            // convert to zero in the lua_tointeger call below.
+            lua_gettable(lua, -2);  // [Ctbl cnum]
+        }
+        // ELSE: It is a numeric field; the available choices are any integer.
+        // Therefore, whatever lua_tointeger below returns, we guarantee that we are not
+        // returning an invalid choice number...
+        
+        const int result = lua_tointeger(lua, -1);
+
+        lua_pop(lua, 2);  // []
+        return result;
+    }
+
+    // Inputs choicenum, pushes corresponding choiceval to the lua stack
+    // (If this is a dropdown item and the choice_num is out of range, then pushes nil.)
+    void PushChoiceVal(lua_State *lua, const MenuWrapperImpl &impl, int item_num, int choice_num)
+    {
+        ASSERT(item_num >= 0 && item_num < impl.menu.getNumItems());
+        impl.choice_num_to_choice_val[item_num].push(lua);  // [Ctbl]
+        lua_pushinteger(lua, choice_num);  // [Ctbl choice_num]
+        if (!lua_isnil(lua, -2)) {
+            // Must be a dropdown
+            lua_gettable(lua, -2);  // [Ctbl choice_val]
+        }
+        lua_remove(lua, -2);   // [choice_val]
+    }        
+        
+    // ---------------------------------------------------------------------------
+
     // Some helper functions for dealing with the S table.
     
-    // Read a setting from the "s_table"
+    // Read a setting from the "s_table".
     // Inputs item_num and returns choice_num (as opposed to inputting Lua key and returning Lua value).
+    // If the setting in "s_table" is invalid, then returns 0.
     int ItemNumToChoiceNum(lua_State *lua, const MenuWrapperImpl &impl, int item_num)
     {
         ASSERT(item_num >= 0 && item_num < impl.menu.getNumItems());
@@ -118,28 +169,11 @@ namespace {
         const char *key = impl.item_num_to_key[item_num].c_str();
         
         impl.s_table.push(lua);   // [S]
-        impl.choice_val_to_choice_num[item_num].push(lua);  // [S C]
-        lua_pushstring(lua, key);  // [S C item_key]
-        lua_gettable(lua, -3);   // [S C choice_val]
-
-        if (!lua_isnil(lua, -2)) {
-            // Dropdown field, so the choice_val must be converted to a choice_num
-            lua_gettable(lua, -2);   // [S C choice_num]
-        }
-        
-        int result = lua_tointeger(lua, -1);
-
-        // validate the result...
-        // (Note: we assume item_num is valid because it comes from C++, but Lua may have set a bad
-        // value into choice_num)
-        // (Note 2: 'numeric' values do not have any range limits.)
-        const MenuItem &menu_item = impl.menu.getItem(item_num);
-        if (!menu_item.isNumeric()
-        && (result < 0 || result >= menu_item.getNumChoices())) {
-            result = 0;  // override with zero.
-        }
-        
-        lua_pop(lua, 3);  // []
+        lua_pushstring(lua, key);  // [S item_key]
+        lua_gettable(lua, -2);   // [S choice_val]
+        int result = PopChoiceVal(lua, impl, item_num);   // [S]
+                
+        lua_pop(lua, 1);  // []
         return result;
     }
 
@@ -163,17 +197,10 @@ namespace {
             || choice_num >= 0 && choice_num < impl.menu.getItem(item_num).getNumChoices());
         
         impl.s_table.push(lua);  // [S]
-        impl.choice_num_to_choice_val[item_num].push(lua);   // [S C]
-
-        lua_pushstring(lua, impl.item_num_to_key[item_num].c_str());   // [S C item_key]
-        lua_pushinteger(lua, choice_num);  // [S C item_key choice_num]
-
-        if (!lua_isnil(lua, -3) && !impl.menu.getItem(item_num).isNumeric()) {
-            lua_gettable(lua, -3);   // [S C item_key choice_val]
-        }
-
-        lua_settable(lua, -4);   // [S C], and sets S[item_key] = choice_val
-        lua_pop(lua, 2);  // []
+        lua_pushstring(lua, impl.item_num_to_key[item_num].c_str());   // [S item_key]
+        PushChoiceVal(lua, impl, item_num, choice_num);  // [S item_key choice_val]
+        lua_settable(lua, -3);   // [S], and sets S[item_key] = choice_val
+        lua_pop(lua, 1);  // []
     }
 
     // Write a setting to the MenuListener
@@ -184,27 +211,14 @@ namespace {
 
         const char * item_key = impl.item_num_to_key[item_num].c_str();
         const char * choice_string = 0;
-        std::ostringstream str;
         
-        const MenuItem &item = impl.menu.getItem(item_num);
-        if (item.isNumeric()) {
-            // For numeric fields the choice_num is the same as the choice_val
-            str << choice_num;
-            choice_string = str.str().c_str();               // []
-        } else {
-            // Otherwise must get from lua
-            ASSERT(choice_num >= 0 && choice_num < item.getNumChoices());
-            impl.choice_num_to_choice_val[item_num].push(lua);    // [C]
-            lua_rawgeti(lua, -1, choice_num);                // [C choiceval]
-            choice_string = luaL_tolstring(lua, -1, 0);      // [C choiceval str]
-        }
-        
+        PushChoiceVal(lua, impl, item_num, choice_num);  // [choiceval]
+        choice_string = luaL_tolstring(lua, -1, 0);  // [choiceval string]
+                
         listener.settingChanged(item_num, item_key, choice_num, choice_string,
                                 impl.constraints[item_num]);
 
-        if (!item.isNumeric()) {
-            lua_pop(lua, 3);  // []
-        }
+        lua_pop(lua, 2);   // []
     }
 
     std::string GetQuestDescription(lua_State *lua, const MenuWrapperImpl &impl)
@@ -281,6 +295,8 @@ namespace {
         std::vector<int> &constraint_vec = impl.constraints[item_num];
         
         // convert the lua value (arg_pos+1) into a choice num
+        // note: do this directly (rather than using PopChoiceVal) because we want to handle the case of
+        // an invalid value being passed to us.
         impl.choice_val_to_choice_num[item_num].push(lua);  // [C]
         if (lua_isnil(lua, -1)) {
             // must be a numeric item.
@@ -389,13 +405,16 @@ namespace {
         // First wipe all existing constraints. Everything is allowed unless someone says otherwise
         // (or unless there is a number-of-players type constraint)
         for (int i = 0; i < impl.menu.getNumItems(); ++i) {
-            const int sz = impl.menu.getItem(i).getNumChoices();
             impl.constraints[i].clear();
-            impl.constraints[i].reserve(sz);
-            for (int j = 0; j < sz; ++j) {
-                // check whether the number of players/teams constraints allows this choice.
-                if (CheckNumPlayers(impl, i, j)) {
-                    impl.constraints[i].push_back(j);
+
+            if (!impl.menu.getItem(i).isNumeric()) {
+                const int sz = impl.menu.getItem(i).getNumChoices();
+                impl.constraints[i].reserve(sz);
+                for (int j = 0; j < sz; ++j) {
+                    // check whether the number of players/teams constraints allows this choice.
+                    if (CheckNumPlayers(impl, i, j)) {
+                        impl.constraints[i].push_back(j);
+                    }
                 }
             }
         }
@@ -413,19 +432,21 @@ namespace {
     bool ValidateItem(lua_State *lua, MenuWrapperImpl &impl, int item_num)
     {
         ASSERT(item_num >= 0 && item_num < impl.menu.getNumItems());
-        
-        const std::vector<int> &valid_values = impl.constraints[item_num];
-        const int current_choice = ItemNumToChoiceNum(lua, impl, item_num);  // guaranteed to be valid.
 
+        const std::vector<int> &valid_values = impl.constraints[item_num];  // empty for numeric values.
+        const int current_choice = ItemNumToChoiceNum(lua, impl, item_num);
+            
         if (!std::binary_search(valid_values.begin(), valid_values.end(), current_choice)) {
-            // Not a valid choice
-            // Set it to the first valid choice (if there is one).
+            // EITHER: Not a valid choice, OR: it is a numeric field
+            // Set it to the first valid choice (if there is one -- only applies for dropdowns).
             if (!valid_values.empty()) {
                 SetItemNumToChoiceNum(lua, impl, item_num, valid_values.front());
                 return true;
             } else {
-                // Set it to its current value, this will ensure the Lua choice_val is valid
-                // (e.g., non-nil) at least.
+                // EITHER: it is a "bad" dropdown (the constraints forbid all the available choices)
+                // OR: it is a numeric field.
+                // Set it to its current value (or zero if it didn't have a current value).
+                // This will ensure the Lua choice_val is valid, at least.
                 SetItemNumToChoiceNum(lua, impl, item_num, current_choice);
             }
         }
@@ -439,7 +460,6 @@ namespace {
 
     void Validate(lua_State *lua, MenuWrapperImpl &impl)
     {
-
         // Max number of iterations to prevent loops.
         for (int iter = 0; iter < 25; ++iter) {
 
@@ -603,6 +623,7 @@ namespace {
 
         impl.item_info.push_back(ItemInfo());
         ReadFuncs(lua, impl.item_info.back());
+        impl.item_info.back().randomize.reset(lua, -1, "randomize");
 
         // set default in S table
         impl.s_table.push(lua);  // [item S]
@@ -926,7 +947,7 @@ void MenuWrapper::randomQuest(MenuListener &listener)
     for (int i = 0; i < pimpl->menu.getNumItems(); ++i) {
         item_nos.push_back(i);
     }
-    
+
     // Iterate a number of times, to make sure we get a good randomization
     for (int iterations = 0; iterations < 3; ++iterations) {
 
@@ -938,19 +959,38 @@ void MenuWrapper::randomQuest(MenuListener &listener)
 
         // For each menu item in the random ordering:
         for (std::vector<int>::const_iterator item_no = item_nos.begin(); item_no != item_nos.end(); ++item_no) {
-            
-            // find out the allowed values
-            std::vector<int> allowed_values = pimpl->constraints[*item_no];
 
-            // TODO : Remove unacceptable values from allowed_values.
-            // (Remember, allowed_values will be empty for a numeric box.)
-            
-            if (!allowed_values.empty()) {
-                // pick one at random
-                const int selected_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
+            int new_value;
+            bool new_value_set = false;
 
+            // If this item has a randomize function, then call it
+            if (pimpl->item_info[*item_no].randomize.hasValue()) {
+                // []
+                pimpl->s_table.push(lua);
+                lua_pushinteger(lua, pimpl->num_players);
+                lua_pushinteger(lua, pimpl->num_teams);  // [S nplayers nteams]
+                pimpl->item_info[*item_no].randomize.run(lua, 3, 1);  // [result]
+                new_value = PopChoiceVal(lua, *pimpl, *item_no);    // []
+                new_value_set = true;
+                
+            } else {
+                // find out the allowed values
+                std::vector<int> allowed_values = pimpl->constraints[*item_no];
+
+                // If allowed_values is empty, this is either a
+                // dropdown where all choices are forbidden, or a
+                // numeric field. In either case, we just leave it
+                // alone.
+                if (!allowed_values.empty()) {
+                    // pick one at random
+                    new_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
+                    new_value_set = true;
+                }
+            }
+
+            if (new_value_set) {
                 // set it to that value
-                SetItemNumToChoiceNum(lua, *pimpl, *item_no, selected_value);
+                SetItemNumToChoiceNum(lua, *pimpl, *item_no, new_value);
 
                 // Revalidate settings before continuing
                 Validate(lua, *pimpl);

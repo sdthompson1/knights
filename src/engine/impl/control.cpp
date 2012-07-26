@@ -45,5 +45,8 @@ Control::Control(lua_State *lua, int idx,
 
 bool Control::checkPossible(const ActionData &ad) const
 {
+    // NOTE: Don't really want to run 'possible' as a coroutine
+    // (which is what execute() does), but this is more convenient, 
+    // because we don't have a function to run it normally!
     return !possible.hasValue() || possible.execute(ad);
 }

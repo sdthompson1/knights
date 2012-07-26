@@ -50,18 +50,10 @@ public:
     // hasValue(): returns true if lua != 0 && stored value != nil
     bool hasValue() const { return function_ref.hasValue(); }
 
-    // This runs the stored function, as a coroutine, with no
-    // arguments, and with the global variable "cxt" set to the
-    // contents of the ActionData. ("cxt" will be saved and restored
-    // across the call.)
-    //
-    // If stored func is nil, execute() does nothing (and returns false).
-    //
-    // If stored func yields, execute() returns false, otherwise it 
-    // returns the first lua return value from the function, converted
-    // to bool.
-    //
-    bool execute(const ActionData &) const;
+    // Run the function with a LuaExec.
+    // nargs args are popped from stack, and nresults results are pushed.
+    // (Caller MUST check that hasValue() is true before calling this)
+    void run(lua_State *lua, int nargs, int nresults);
 
     // Run with int parameter and return string result. Stack is not changed.
     // (Caller MUST check that hasValue() is true before calling this)
@@ -75,6 +67,21 @@ public:
     // does not modify the stack. Returns nothing. (If the ref is none
     // or nil, this function does nothing.)
     void runNArgsNoPop(lua_State *lua, int n) const;
+
+    
+    // This runs the stored function, as a coroutine, with no
+    // arguments, and with the global variable "cxt" set to the
+    // contents of the ActionData. ("cxt" will be saved and restored
+    // across the call.)
+    //
+    // If stored func is nil, execute() does nothing (and returns false).
+    //
+    // If stored func yields, execute() returns false, otherwise it 
+    // returns the first lua return value from the function, converted
+    // to bool.
+    //
+    bool execute(const ActionData &) const;
+
     
 private:
     LuaRef function_ref;
