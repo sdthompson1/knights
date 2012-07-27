@@ -668,10 +668,8 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &ActorIsKnight);
     lua_setfield(lua, -2, "ActorIsKnight");
     
-    // "print" is set both in kts, and globally.
+    // "print" is set globally, NOT in kts table
     PushCFunction(lua, &Print);       // [env kts Print]
-    lua_pushvalue(lua, -1);           // [env kts Print Print]
-    lua_setfield(lua, -3, "print");   // [env kts Print]
     lua_setfield(lua, -3, "print");   // [env kts]
 
     PushCFunction(lua, &RotateAddPos);
