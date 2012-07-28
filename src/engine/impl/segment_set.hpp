@@ -38,14 +38,14 @@ using namespace std;
 
 class SegmentSet : boost::noncopyable {
 public:
-    void addSegment(const Segment *, int nhomes, int category = -1);
-    
-    const Segment * getHomeSegment(int minhomes) const;
-    const Segment * getSpecialSegment(int category) const;
+
+    explicit SegmentSet(const std::vector<const Segment *> &segments);
+
+    // minhomes = Minimum number of *non-special* homes required.
+    const Segment * getSegment(int minhomes) const;
     
 private:
-    vector<vector<const Segment *> > segments;    // segments[nhomes][segmentno].
-    vector<vector<const Segment *> > special_segments;  // special_segments[category][segmentno].
+    std::vector<std::vector<const Segment *> > segments;    // segments[nhomes][segmentno].
 };
 
 #endif

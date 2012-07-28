@@ -25,9 +25,7 @@
 
 #include "dungeon_layout.hpp"
 #include "lua_check.hpp"
-#include "lua_exec.hpp"
 #include "my_exceptions.hpp"
-#include "rng.hpp"
 
 #include "lua.hpp"
 
@@ -241,25 +239,4 @@ bool DungeonLayout::hasHorizExit(int x, int y) const
 {
     if (x < 0 || x >= (width-1) || y < 0 || y >= height) return false;
     return horiz_exits[y*(width-1) + x];
-}
-
-
-RandomDungeonLayout::RandomDungeonLayout(lua_State *lua)
-{
-    name = luaL_checkstring(lua, 1);
-    LuaCheckCallable(lua, 2, "kts.DungeonLayout");
-
-    // unfortunately we can't check that the function returns a valid DungeonLayout 
-    // table, but never mind...
-
-    lua_pushvalue(lua, 2);  // pushes arg 2
-    layout_func.reset(lua); // pops it again
-}
-
-std::auto_ptr<DungeonLayout> RandomDungeonLayout::choose(lua_State *lua) const
-{
-    layout_func.push(lua);  // [func]
-    LuaExec(lua, 0, 1); // [result]
-    std::auto_ptr<DungeonLayout> result(new DungeonLayout(lua));  // []
-    return result;
 }

@@ -1,5 +1,5 @@
 /*
- * create_quest.hpp
+ * lua_game_setup.hpp
  *
  * This file is part of Knights.
  *
@@ -21,24 +21,14 @@
  *
  */
 
-#ifndef CREATE_QUEST_HPP
-#define CREATE_QUEST_HPP
+#ifndef LUA_GAME_SETUP_HPP
+#define LUA_GAME_SETUP_HPP
 
-#include "dungeon_generator.hpp"  // for ExitType
+struct lua_State;
 
-#include "boost/shared_ptr.hpp"
-#include <string>
-
-class Quest;
-class KnightsConfigImpl;
-
-// the following pops an argument list from the kfile.
-// created quest(s) are appended to the vector.
-void CreateQuests(const std::string &name,
-                  KnightsConfigImpl &kc,
-                  std::vector<boost::shared_ptr<Quest> > &output);
-
-void CreateEscapeQuest(ExitType e,
-                       std::vector<boost::shared_ptr<Quest> > &output);
+// Adds Lua functions for game setup (dungeon generation, monster
+// activity setup, stuff like that). Functions are added to the "kts"
+// table.
+void AddLuaConfigFunctions(lua_State *);
 
 #endif

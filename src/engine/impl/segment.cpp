@@ -416,3 +416,16 @@ std::vector<HomeInfo> Segment::getHomes(bool x_reflect, int nrot) const
 
     return result;
 }
+
+int Segment::getNumHomes(bool include_special) const
+{
+    if (include_special) {
+        return int(homes.size());
+    } else {
+        int count = 0;
+        for (std::vector<HomeInfo>::const_iterator it = homes.begin(); it != homes.end(); ++it) {
+            if (!it->special_exit) ++count;
+        }
+        return count;
+    }
+}

@@ -110,39 +110,31 @@ void KnightsConfig::randomQuest(MenuListener &listener)
 // interface used by KnightsEngine
 //
 
-std::string KnightsConfig::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
-                                          boost::shared_ptr<CoordTransform> &coord_transform,
-                                          std::vector<boost::shared_ptr<Quest> > &quests,
-                                          HomeManager &home_manager,
-                                          std::vector<boost::shared_ptr<Player> > &players,
-                                          StuffManager &stuff_manager,
-                                          GoreManager &gore_manager,
-                                          MonsterManager &monster_manager,
-                                          EventManager &event_manager,
-                                          bool &premapped,
-                                          std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
-                                          TaskManager &task_manager,
-                                          const std::vector<int> &hse_cols,
-                                          const std::vector<std::string> &player_names,
-                                          TutorialManager *tutorial_manager,
-                                          int &final_gvt) const
+void KnightsConfig::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
+                                   boost::shared_ptr<CoordTransform> &coord_transform,
+                                   HomeManager &home_manager,
+                                   std::vector<boost::shared_ptr<Player> > &players,
+                                   StuffManager &stuff_manager,
+                                   GoreManager &gore_manager,
+                                   MonsterManager &monster_manager,
+                                   EventManager &event_manager,
+                                   TaskManager &task_manager,
+                                   const std::vector<int> &hse_cols,
+                                   const std::vector<std::string> &player_names,
+                                   TutorialManager *tutorial_manager) const
 {
-    return pimpl->initializeGame(dungeon_map,
-                                 coord_transform,
-                                 quests,
-                                 home_manager,
-                                 players,
-                                 stuff_manager,
-                                 gore_manager,
-                                 monster_manager,
-                                 event_manager,
-                                 premapped,
-                                 starting_gears,
-                                 task_manager,
-                                 hse_cols,
-                                 player_names,
-                                 tutorial_manager,
-                                 final_gvt);
+    pimpl->initializeGame(dungeon_map,
+                          coord_transform,
+                          home_manager,
+                          players,
+                          stuff_manager,
+                          gore_manager,
+                          monster_manager,
+                          event_manager,
+                          task_manager,
+                          hse_cols,
+                          player_names,
+                          tutorial_manager);
 }
 
 boost::shared_ptr<const ConfigMap> KnightsConfig::getConfigMap() const

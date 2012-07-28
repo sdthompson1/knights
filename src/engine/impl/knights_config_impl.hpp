@@ -29,7 +29,6 @@
 #include "lua_func.hpp"
 #include "map_support.hpp"
 #include "overlay.hpp"       // needed for N_OVERLAY_FRAME
-#include "segment_set.hpp"
 
 // kfile
 #include "kfile.hpp"
@@ -46,14 +45,12 @@ class Anim;
 class ConfigMap;
 class Control;
 class CoordTransform;
-class DungeonDirective;
 class DungeonGenerator;
 class DungeonMap;
 class EventManager;
 class GoreManager;
 class Graphic;
 class HomeManager;
-class ItemGenerator;
 class ItemType;
 class Menu;
 class MenuWrapper;
@@ -61,7 +58,6 @@ class MonsterManager;
 class MonsterType;
 class Player;
 class Quest;
-class RandomDungeonLayout;
 class Segment;
 class Sound;
 class StuffManager;
@@ -91,22 +87,18 @@ public:
     void getSounds(std::vector<const Sound*> &sounds) const;
     void getStandardControls(std::vector<const UserControl*> &controls) const;
     void getOtherControls(std::vector<const UserControl*> &controls) const;
-    std::string initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
-                               boost::shared_ptr<CoordTransform> &coord_transform,
-                               std::vector<boost::shared_ptr<Quest> > &quests,
-                               HomeManager &home_manager,
-                               std::vector<boost::shared_ptr<Player> > &players,
-                               StuffManager &stuff_manager,
-                               GoreManager &gore_manager,
-                               MonsterManager &monster_manager,
-                               EventManager &event_manager,
-                               bool &premapped,
-                               std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
-                               TaskManager &task_manager,
-                               const std::vector<int> &hse_cols,
-                               const std::vector<std::string> &player_names,
-                               TutorialManager *tutorial_manager,
-                               int &final_gvt) const;
+    void initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
+                        boost::shared_ptr<CoordTransform> &coord_transform,
+                        HomeManager &home_manager,
+                        std::vector<boost::shared_ptr<Player> > &players,
+                        StuffManager &stuff_manager,
+                        GoreManager &gore_manager,
+                        MonsterManager &monster_manager,
+                        EventManager &event_manager,
+                        TaskManager &task_manager,
+                        const std::vector<int> &hse_cols,
+                        const std::vector<std::string> &player_names,
+                        TutorialManager *tutorial_manager);
     const Menu & getMenu() const;
     MenuWrapper & getMenuWrapper() { return *menu_wrapper; }
     void resetMenu();
@@ -131,9 +123,7 @@ public:
 
     Anim * addLuaAnim(lua_State *lua, int idx);
     Control * addLuaControl(auto_ptr<Control> p);  // first NUM_STANDARD_CONTROLS assumed to be the std ctrls
-    RandomDungeonLayout * addLuaDungeonLayout(lua_State *lua); // reads from args 1 and 2.
     void addLuaGraphic(auto_ptr<Graphic> p);
-    ItemGenerator * addLuaItemGenerator(lua_State *lua);
     ItemType * addLuaItemType(auto_ptr<ItemType> p);
     MonsterType * addLuaMonsterType(auto_ptr<MonsterType> p,
                                     std::vector<boost::shared_ptr<Tile> > &generator_tiles,
@@ -151,35 +141,15 @@ public:
 
     KConfig::KFile * getKFile() { return kf.get(); }  // NULL if file not opened
 
-    MapAccess popAccessCode(MapAccess dflt);
-    void popAccessTable(MapAccess out[], MapAccess dflt);
     Anim * popAnim();
     Anim * popAnim(Anim *dflt);
-    bool popBool();
-    bool popBool(bool dflt);
-    DungeonDirective * popDungeonDirective();
     Graphic * popGraphic();
     Graphic * popGraphic(Graphic *dflt);
     void popHouseColours(const ConfigMap &config_map);
     void popHouseColoursMenu();
-    ItemGenerator * popItemGenerator();
-    ItemSize popItemSize();
-    ItemSize popItemSize(ItemSize dflt);
     const ItemType * popItemType();
     const ItemType * popItemType(const ItemType *dflt);
-    MapDirection popMapDirection();
-    MapDirection popMapDirection(MapDirection dflt);
-    MonsterType * popMonsterType();
-    Overlay * popOverlay();
-    Overlay * popOverlay(Overlay *dflt);
-    void popPotionRenderer();
-    float popProbability();  // Read as integer, then divided by 100. Error if result <0 or >1.
-    float popProbability(int dflt);  // The 'dflt' is out of 100.
-    void popQuestDescriptions();
-    RandomDungeonLayout * popRandomDungeonLayout();
     Colour popRGB();
-    void popSkullRenderer();
-    Sound * popSound();
     boost::shared_ptr<Tile> popTile();
     boost::shared_ptr<Tile> popTile(boost::shared_ptr<Tile> dflt);
     void popTileList(std::vector<boost::shared_ptr<Tile> > &output);
@@ -197,32 +167,7 @@ private:
     //
 
     void freeMemory();
-    void readMenu(const Menu &menu, const class MenuSelections &msel, DungeonGenerator &dgen,
-                  std::vector<boost::shared_ptr<Quest> > &quests) const;
     shared_ptr<Tile> makeDeadKnightTile(boost::shared_ptr<Tile>, const ColourChange &);
-
-    void * doLuaCast(unsigned int type_tag, void *ud) const;
-    
-    LuaFunc popLuaFuncFromString();
-
-    //
-    // helper classes
-    //
-
-    class Sentry {
-    public:
-        Sentry(KnightsConfigImpl &c) : cfg(c) { }
-        ~Sentry();
-        KnightsConfigImpl &cfg;
-    };
-    friend class Sentry;
-
-    struct Popper {
-        Popper(KConfig::KFile &k) : kf(k) { }
-        ~Popper();
-        KConfig::KFile &kf;
-    };
-
     
 private:
     // The lua state. This stays alive between games (it is only destroyed when ~KnightsConfigImpl is called).
@@ -233,20 +178,13 @@ private:
     // Storage for all 'basic' game objects, i.e. stuff loaded directly from the config file.
     // (Deleted by ~KnightsConfigImpl.)
 
-    std::map<const Value *, DungeonDirective *> dungeon_directives;
-    std::vector<ItemType *> special_item_types;
-    std::map<const Value *, MonsterType *> monster_types;
-    std::map<const Value *, Overlay *> overlays;
-    std::map<const Value *, boost::shared_ptr<Tile> > tiles;
-    SegmentSet segment_set;
+    std::vector<ItemType *> special_item_types;  // used for loaded crossbows (at the moment)
     KConfig::RandomIntContainer random_ints;
 
     // Storage for lua-created game objects. Will be deleted by ~KnightsConfigImpl.
     std::vector<Anim *> lua_anims;
     std::vector<Control *> lua_controls;
-    std::vector<RandomDungeonLayout *> lua_dungeon_layouts;
     std::vector<Graphic *> lua_graphics;
-    std::vector<ItemGenerator *> lua_item_generators;
     std::vector<ItemType *> lua_item_types;
     std::vector<MonsterType *> lua_monster_types;
     std::vector<Overlay *> lua_overlays;
@@ -257,7 +195,6 @@ private:
     std::auto_ptr<MenuWrapper> menu_wrapper;
 
     // Various things
-    boost::shared_ptr<Tile> wall_tile, horiz_door_tile[2], vert_door_tile[2];
     std::vector<ColourChange> house_colours_normal, house_colours_invulnerable;  // One entry per House
     std::vector<Coercri::Color> house_col_vector;
     std::vector<boost::shared_ptr<ColourChange> > secured_cc;
@@ -266,7 +203,6 @@ private:
     const ItemType * default_item;
     std::vector<const Control *> control_set;
     const Graphic *stuff_bag_graphic;
-    std::vector<std::string> standard_quest_descriptions;
 
     // Monsters, gore
 

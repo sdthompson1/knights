@@ -80,10 +80,6 @@ public:
     
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
 
-    // Name
-    // Currently this is either empty, or of the form "A gem" or "The book".
-    const std::string & getName() const { return name; }
-        
     // Graphics
     const Graphic * getSingleGraphic() const { return graphic; }
     const Graphic * getStackGraphic() const { return stack_graphic; }
@@ -223,8 +219,6 @@ private:
     LuaFunc on_hit;
 
     int tutorial_key;
-
-    std::string name;
 
     LuaRef table_ref;
 };

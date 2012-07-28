@@ -59,11 +59,10 @@ namespace {
 void Mediator::createInstance(EventManager &em, GoreManager &gm, HomeManager &hm,
                               MonsterManager &mm, StuffManager &sm, TaskManager &tm,
                               ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
-                              boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua,
-                              bool deathmatch_mode)
+                              boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua)
 {
     if (g_mediator_ptr.get()) throw MediatorCreatedTwice();
-    g_mediator_ptr.reset(new Mediator(em, gm, hm, mm, sm, tm, vm, cmap, tut_m, lua, deathmatch_mode));
+    g_mediator_ptr.reset(new Mediator(em, gm, hm, mm, sm, tm, vm, cmap, tut_m, lua));
 }
 
 void Mediator::destroyInstance()
@@ -478,16 +477,15 @@ void Mediator::eliminatePlayer(Player &pl)
     const bool game_over = !two_teams_found;
     
     if (game_over) {
-
-        // all living players have now completed the "destroy enemy
-        // knights" objective, so send out a quest icon update to them
-        // all.
-        for (std::set<const Player*>::const_iterator it = remaining_players.begin(); it != remaining_players.end(); ++it) {
-            updateQuestIcons(**it, WIN_FROM_KILL_KNIGHTS);
+        // end the game
+        if (remaining_players.empty()) {
+            // The only way this can happen is if no entry points have been set at 
+            // the start of the game
+            endGame(std::vector<const Player *>(), "ERROR: Entry point has not been set! ");
+        } else {
+            // All remaining players are on the same team so any one of them can be used in the call to winGame
+            winGame(**remaining_players.begin());
         }
-
-        // and now end the game
-        winGame(**remaining_players.begin());
         
     } else {
         // this puts him into observer mode, but he is still in the game (as an observer).

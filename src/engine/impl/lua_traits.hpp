@@ -37,7 +37,6 @@ class ItemType;
 class MonsterType;
 class Overlay;
 class Player;
-class RandomDungeonLayout;
 class Segment;
 class Tile;
 
@@ -58,8 +57,6 @@ enum {
     TAG_CONTROL,
     TAG_OVERLAY,
     TAG_ANIM,
-    TAG_RANDOM_DUNGEON_LAYOUT,
-    TAG_ITEM_GENERATOR,
     TAG_MONSTER_TYPE,
     TAG_SEGMENT
 };
@@ -111,16 +108,6 @@ struct LuaTraits<Overlay> {
 template<>
 struct LuaTraits<Anim> {
     enum { tag = TAG_ANIM };
-};
-
-template<>
-struct LuaTraits<RandomDungeonLayout> {
-    enum { tag = TAG_RANDOM_DUNGEON_LAYOUT };
-};
-
-template<>
-struct LuaTraits<ItemGenerator> {
-    enum { tag = TAG_ITEM_GENERATOR };
 };
 
 template<>

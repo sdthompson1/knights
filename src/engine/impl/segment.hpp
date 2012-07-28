@@ -49,7 +49,7 @@ struct lua_State;
 
 
 struct HomeInfo {
-    int x;
+    int x;    // The x,y of the home itself
     int y; 
     MapDirection facing; // points inwards, towards the home
     bool special_exit;
@@ -95,7 +95,7 @@ public:
 
     // access to homes
     std::vector<HomeInfo> getHomes(bool xreflect, int nrot) const;
-    int getNumHomes() const { return int(homes.size()); }
+    int getNumHomes(bool include_special) const;
     
 
     // see if a given square is approachable. (based on the addTile calls so far.)

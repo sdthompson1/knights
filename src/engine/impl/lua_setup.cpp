@@ -92,7 +92,6 @@ namespace {
         return 1;
     }
     
-
     // Upvalue: KnightsConfigImpl*
     // Input: Table representing a new Control
     // Return value: Control* (full userdata, raw ptr)
@@ -126,18 +125,6 @@ namespace {
         return 1;
     }
 
-
-    // Upvalue: KnightsConfigImpl*
-    // Input: Table representing a dungeon layout (Name+Function)
-    // Return value: RandomDungeonLayout* (as full userdata)
-    int MakeDungeonLayout(lua_State *lua)
-    {
-        KnightsConfigImpl *kc = GetKC(lua, "DungeonLayouts");
-        RandomDungeonLayout *dlay = kc->addLuaDungeonLayout(lua);
-        NewLuaPtr<RandomDungeonLayout>(lua, dlay);
-        return 1;
-    }
-
     // Upvalue: KnightsConfigImpl*
     // Input: n args representing a new graphic (stack posns 1 to lua_gettop)
     // Output: userdata representing the graphic
@@ -147,17 +134,6 @@ namespace {
         std::auto_ptr<Graphic> gfx(CreateGraphicFromLua(lua));
         NewLuaPtr<Graphic>(lua, gfx.get());
         kc->addLuaGraphic(gfx);
-        return 1;
-    }
-    
-    // Upvalue: KnightsConfigImpl*
-    // Input: one function or callable object
-    // Output: userdata representing the ItemGenerator
-    int MakeItemGenerator(lua_State *lua)
-    {
-        KnightsConfigImpl *kc = GetKC(lua, "ItemGenerators");
-        ItemGenerator *ig = kc->addLuaItemGenerator(lua);  // reads from arg position 1
-        NewLuaPtr<ItemGenerator>(lua, ig);  // pushes it to lua stack
         return 1;
     }
     
@@ -256,7 +232,6 @@ namespace {
         return 1;
     }
 
-    
     // Upvalue: KnightsConfigImpl*
     // Input: 60 arguments for the overlay offsets
     // Output: nothing
@@ -266,7 +241,6 @@ namespace {
         kc->setOverlayOffsets(lua);
         return 0;
     }
-
 
     // Upvalue: none
     // Input: zero or more Tiles
@@ -315,16 +289,8 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     lua_setfield(lua, -2, "Control");
 
     lua_pushlightuserdata(lua, kc);
-    PushCClosure(lua, &MakeDungeonLayout, 1);
-    lua_setfield(lua, -2, "DungeonLayout");
-    
-    lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeGraphic, 1);
     lua_setfield(lua, -2, "Graphic");
-
-    lua_pushlightuserdata(lua, kc);
-    PushCClosure(lua, &MakeItemGenerator, 1);
-    lua_setfield(lua, -2, "ItemGenerator");
     
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeItemType, 1);

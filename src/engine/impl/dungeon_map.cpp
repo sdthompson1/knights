@@ -500,7 +500,7 @@ public:
 private:
     static void printRespawnMessage(const DungeonMap::DisplacedItem &di)
     {
-        const std::string name = di.item->getType().getName();
+        const std::string name = "(??)";  // TODO di.item->getType().getName();
         if (!name.empty()) {
             Mediator::instance().getCallbacks().gameMsg(-1, name + " has been respawned at a random location.");
         }

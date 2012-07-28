@@ -70,11 +70,9 @@ public:
     // fire). (Items and Tiles will be checked for additional controls, and the global
     // controls from control.hpp will also always be available.)
     Player(int plyr_num,
-           DungeonMap &home_map, const MapCoord &home_pos, MapDirection home_facing,
+           DungeonMap &home_map, 
            const Anim * anim, const ItemType * dflt_item, 
-           const map<const ItemType *, int> * backpack_capacities_,
            const vector<const Control*> &control_set_,
-           const vector<shared_ptr<Quest> > &quests_,
            shared_ptr<const ColourChange> secured_home_cc,
            const std::string &name_, int team_num_);
 
@@ -166,6 +164,8 @@ public:
     bool getSpeechBubble() const { return speech_bubble; }
     
     // reset home (called by HomeManager, also called by eliminatePlayer to stop the player respawning)
+    // (mc = pos just outside home; not the home square itself)
+    // (facing = towards the home.)
     void resetHome(const MapCoord &mc, const MapDirection &facing);
     
     // event handling functions

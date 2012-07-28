@@ -29,8 +29,6 @@
 #ifndef DUNGEON_LAYOUT_HPP
 #define DUNGEON_LAYOUT_HPP
 
-#include "lua_ref.hpp"
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -63,22 +61,6 @@ private:
     vector<BlockType> data;
     vector<bool> horiz_exits;
     vector<bool> vert_exits;
-};
-
-class RandomDungeonLayout {
-public:
-    // Sets up a random dungeon layout from Lua args 1 and 2
-    explicit RandomDungeonLayout(lua_State *lua_);
-
-    // Picks one of the dungeon layouts at random
-    std::auto_ptr<DungeonLayout> choose(lua_State *lua) const;
-
-    // Get name
-    const std::string & getName() const { return name; }
-
-private:
-    std::string name;
-    LuaRef layout_func;
 };
 
 #endif

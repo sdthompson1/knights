@@ -24,437 +24,838 @@
 #include "misc.hpp"
 
 #include "coord_transform.hpp"
+#include "dungeon_generation_failed.hpp"
 #include "dungeon_generator.hpp"
 #include "dungeon_layout.hpp"
 #include "dungeon_map.hpp"
-#include "item.hpp"
-#include "item_generator.hpp"
-#include "knights_config_impl.hpp"
-#include "lockable.hpp"
-#include "menu_selections.hpp"
-#include "monster_manager.hpp"
-#include "monster_type.hpp"
+#include "home_manager.hpp"
 #include "my_exceptions.hpp"
+#include "player.hpp"
 #include "rng.hpp"
 #include "room_map.hpp"
 #include "segment.hpp"
+#include "segment_set.hpp"
 #include "tile.hpp"
 
-#include "kfile.hpp"
-using namespace KConfig;
-
-#ifdef lst2
-#undef lst2
-#endif
-
-// Dummy MenuInt class.
-struct MenuInt{
-    int getValue(const MenuSelections&) const { return 0; }
-};
-MenuInt dummy_menu_int;
-
 namespace {
-    void GenerateRandomTransform(bool &x_reflect, int &nrot)
-    {
-        x_reflect = g_rng.getBool();
-        nrot = g_rng.getInt(0, 4);
-    }
 
-    bool FindSpecialExit(const Segment &seg, bool x_reflect, int nrot, HomeInfo &hi)
-    {
-        const std::vector<HomeInfo> & homes = seg.getHomes(x_reflect, nrot);
-        for (std::vector<HomeInfo>::const_iterator it = homes.begin(); it != homes.end(); ++it) {
-            if (it->special_exit) {
-                hi = *it;
-                return true;
-            }
-        }
-        return false;
-    }        
-}
+    // ----------------------------------------------------------------------------------
 
-//
-// DungeonDirectives
-//
-
-class DungeonExit : public DungeonDirective {
-public:
-    explicit DungeonExit(ExitType e, int rc) : et(e), rcat(rc) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setExitType(et, rcat); }
-private:
-    ExitType et;
-    int rcat;
-};
-
-class DungeonGear : public DungeonDirective {
-public:
-    DungeonGear(const ItemType& it, const vector<int> &nos) : itype(it), numbers(nos) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.addStartingGear(itype, numbers); }
-private:
-    const ItemType &itype;
-    vector<int> numbers;
-};
-
-class DungeonHome : public DungeonDirective {
-public:
-    explicit DungeonHome(HomeType h) : ht(h) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setHomeType(ht); }
-private:
-    HomeType ht;
-};
-
-class DungeonInitialMonsters : public DungeonDirective {
-public:
-    DungeonInitialMonsters(const MonsterType *m, const MenuInt &n) : mtype(m), number(n) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
-    {
-        // Initially there are 0 monsters if n == 0, otherwise 2*n + 1 monsters.
-        const int n = number.getValue(ms);
-        dg.setInitialMonsters(mtype, n == 0 ? 0 : 2*n + 1);
-    }
-private:
-    const MonsterType * mtype;
-    const MenuInt & number;
-};
-
-class DungeonItem : public DungeonDirective {
-public:
-    DungeonItem(const MenuInt &no, const ItemType &it) : number(no), itype(it) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
-        { dg.addRequiredItem(number.getValue(ms), itype); }
-private:
-    const MenuInt &number;
-    const ItemType &itype;
-};
-
-class DungeonKeys : public DungeonDirective {
-public:
-    DungeonKeys(KnightsConfigImpl &kc, KFile::List &lst);
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const;
-private:
-    vector<const ItemType *> keys;
-};
-
-DungeonKeys::DungeonKeys(KnightsConfigImpl &kc, KFile::List &lst)
-{
-    if (lst.getSize() < 2) return;
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        keys.push_back(kc.popItemType());
-    }
-}
-
-void DungeonKeys::apply(DungeonGenerator &dg, const MenuSelections &) const
-{
-    if (keys.size()<2) {
-        dg.setNumKeys(0);
-    } else {
-        dg.setNumKeys(keys.size()-1);
-        for (int i=0; i<keys.size(); ++i) {
-            // require one of each key plus one set of lock picks
-            if (keys[i]) dg.addRequiredItem(1, *keys[i]);
-        }
-    }
-
-    if (keys.size() >= 1) dg.setLockpicks(keys[0]);
-}
-
-class DungeonLayoutDir : public DungeonDirective { 
-public:
-    void addLayout(const RandomDungeonLayout *r) { layouts.push_back(r); }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setLayouts(layouts); }
-private:
-    vector<const RandomDungeonLayout *> layouts;
-};
-
-// This controls auto spawning of lockpicks
-// The lockpick item is assumed to be the first item supplied to DungeonKeys.
-class DungeonLockpickSpawn : public DungeonDirective {
-public:
-    DungeonLockpickSpawn(int init_time_, int interval_)
-        : init_time(init_time_), interval(interval_) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setLockpickSpawn(init_time, interval); }
-private:
-    int init_time;  // time before starting to generate lockpicks, in ms
-    int interval;   // interval between generations, in ms
-};
-
-class DungeonMonsterGeneration : public DungeonDirective {
-public:
-    explicit DungeonMonsterGeneration(const MenuInt &m) : monster_level(m) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
-    { dg.setTileGeneratedMonsterLevel(monster_level.getValue(ms)); }
-private:
-    const MenuInt & monster_level;
-};
-
-class DungeonMonsterLimit : public DungeonDirective {
-public:
-    DungeonMonsterLimit(const MonsterType *m, const MenuInt &n) : mtype(m), number(n) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
-    {
-        // Limit to 3*n monsters
-        dg.setMonsterLimit(mtype, 3 * number.getValue(ms));
-    }
-private:
-    const MonsterType *mtype;
-    const MenuInt &number;
-};
-
-class DungeonPremapped : public DungeonDirective {
-public:
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setPremapped(true); }
-};
-
-class DungeonPretrapped : public DungeonDirective {
-public:
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setPretrapped(true); }
-};
-
-class DungeonRespawnItems : public DungeonDirective {
-public:
-    explicit DungeonRespawnItems(std::vector<const ItemType *> &i) : items(i) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setRespawnItems(items); }
-private:
-    std::vector<const ItemType*> items;
-};
-
-class DungeonRespawnTime : public DungeonDirective {
-public:
-    explicit DungeonRespawnTime(int t) : milliseconds(t) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setItemRespawnTime(milliseconds); }
-private:
-    int milliseconds;
-};
-
-class DungeonSegment : public DungeonDirective {
-public:
-    explicit DungeonSegment(int r) : segment_cat(r) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.addRequiredSegment(segment_cat); }
-private:
-    int segment_cat;
-};
-
-class DungeonStuff : public DungeonDirective {
-public:
-    DungeonStuff(int tc, float ch, const ItemGenerator *ig_, int wt)
-        : tile_cat(tc), chance(ch), ig(ig_), weight(wt) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &) const
-        { dg.setStuff(tile_cat, chance, ig, weight); }
-private:
-    int tile_cat;
-    float chance;
-    const ItemGenerator *ig;
-    int weight;
-};
-
-class DungeonZombies : public DungeonDirective { 
-public:
-    // sets the zombie activity level
-    explicit DungeonZombies(const MenuInt &a) : activity(a) { }
-    virtual void apply(DungeonGenerator &dg, const MenuSelections &ms) const
-        { dg.setZombieActivity(activity.getValue(ms)); }
-private:
-    const MenuInt &activity;
-};
-
-
-
-//
-// DungeonDirective::create
-//
-
-DungeonDirective * DungeonDirective::create(const string &name, KnightsConfigImpl &kc)
-{
-    if (!kc.getKFile()) return 0;
-
-    if (name.substr(0,7) != "Dungeon") {
-        kc.getKFile()->errExpected("MenuDirective");
-        return 0;
-    }
-    string n = name.substr(7);
-
-    if (n == "Zombies") {
-        KFile::List lst(*kc.getKFile(), "", 1);
-        lst.push(0);
-        const MenuInt *number = &dummy_menu_int;
-        if (!number) kc.getKFile()->errExpected("integer or GetMenu directive");
-        return new DungeonZombies(*number);
-
-    } else if (n == "Exit") {
-        KFile::List lst(*kc.getKFile(), "", 1);
-        lst.push(0);
-        string x = kc.getKFile()->popString();
-        if (x == "same_as_entry") return new DungeonExit(E_SELF,0);
-        else if (x == "others_entry") return new DungeonExit(E_OTHER,0);
-        else if (x == "total_random") return new DungeonExit(E_RANDOM,0);
-        else {
-            int rcat = kc.getSegmentCategory(x);
-            if (rcat >= 0) {
-                return new DungeonExit(E_SPECIAL, rcat);
-            } else {
-                kc.getKFile()->errExpected("exit type");
-            }
-        }
-
-    } else if (n == "Gear") {
-        KFile::List lst(*kc.getKFile(), "", 2);
-
-        lst.push(0);
-        const ItemType *const itype = kc.popItemType();
-        if (!itype) kc.getKFile()->errExpected("item type");
-
-        lst.push(1);
-        KFile::List lst2(*kc.getKFile(), "item quantities");
-        if (lst2.getSize() < 1) kc.getKFile()->error("empty quantity list for DungeonGear");
-
-        vector<int> nos(lst2.getSize());
-        for (int i=0; i<lst2.getSize(); ++i) {
-            lst2.push(i);
-            nos[i] = kc.getKFile()->popInt();
-        }
-
-        return new DungeonGear(*itype, nos);
-
-    } else if (n == "Home") {
-        KFile::List lst(*kc.getKFile(), "", 1);
-        lst.push(0);
-        string x = kc.getKFile()->popString();
-        if (x == "total_random") return new DungeonHome(H_RANDOM);
-        else if (x == "close_to_other") return new DungeonHome(H_CLOSE);
-        else if (x == "away_from_other") return new DungeonHome(H_AWAY);
-        else if (x == "random_respawn") return new DungeonHome(H_RANDOM_RESPAWN);
-        else if (x == "different_every_time") return new DungeonHome(H_DIFFERENT_EVERY_TIME);
-        else kc.getKFile()->errExpected("entry type");
-
-    } else if (n == "InitialMonsters") {
-        KFile::List lst(*kc.getKFile(), "", 2);
-        lst.push(0);
-        const MonsterType * mtype = kc.popMonsterType();
-        lst.push(1);
-        const MenuInt *number = &dummy_menu_int;
-        return new DungeonInitialMonsters(mtype, *number);
-        
-    } else if (n == "Item") {
-        KFile::List lst(*kc.getKFile(), "", 2);
-        lst.push(0);
-        const MenuInt *number = &dummy_menu_int;
-        if (!number) kc.getKFile()->errExpected("integer or GetMenu directive");
-        lst.push(1);
-        const ItemType *const itype = kc.popItemType();
-        if (!itype) kc.getKFile()->errExpected("item type");
-        return new DungeonItem(*number, *itype);
-
-    } else if (n == "Keys") {
-        KFile::List lst(*kc.getKFile(), "");
-        return new DungeonKeys(kc, lst);
-
-    } else if (n == "Layout") {
-        KFile::List lst(*kc.getKFile(), "");
-        DungeonLayoutDir * dir = new DungeonLayoutDir;
-        for (int i=0; i<lst.getSize(); ++i) {
-            lst.push(i);
-            dir->addLayout( kc.popRandomDungeonLayout() );
-        }
-        return dir;
-
-    } else if (n == "LockpickSpawn") {
-        KFile::List lst(*kc.getKFile(), "", 2);
-        lst.push(0);
-        const int init_time = kc.getKFile()->popInt();
-        lst.push(1);
-        const int interval = kc.getKFile()->popInt();
-        return new DungeonLockpickSpawn(init_time, interval);
-
-    } else if (n == "MonsterGeneration") {
-        KFile::List lst(*kc.getKFile(), "", 1);
-        lst.push(0);
-        const MenuInt *number = &dummy_menu_int;
-        return new DungeonMonsterGeneration(*number);
-        
-    } else if (n == "MonsterLimit") {
-        KFile::List lst(*kc.getKFile(), "", 2);
-        lst.push(0);
-        const MonsterType * mtype = kc.popMonsterType();
-        lst.push(1);
-        const MenuInt *number = &dummy_menu_int;
-        return new DungeonMonsterLimit(mtype, *number);
-        
-    } else if (n == "Premapped") {
-        KFile::List lst(*kc.getKFile(), "", 0);
-        return new DungeonPremapped;
-        
-    } else if (n == "Pretrapped") {
-        KFile::List lst(*kc.getKFile(), "", 0);
-        return new DungeonPretrapped;
-
-    } else if (n == "RespawnItems") {
-        KFile::List lst(*kc.getKFile(), "", 1);
-        lst.push(0);
-        KFile::List lst2(*kc.getKFile(), "items to respawn");
-        std::vector<const ItemType*> items;
-        for (int i = 0; i < lst2.getSize(); ++i) {
-            lst2.push(i);
-            const ItemType *itype = kc.popItemType();
-            if (!itype) kc.getKFile()->errExpected("item type");
-            items.push_back(itype);
-        }
-        return new DungeonRespawnItems(items);
-
-    } else if (n == "RespawnTime") {
-        KFile::List lst(*kc.getKFile(), "", 1);
-        lst.push(0);
-        const int milliseconds = kc.getKFile()->popInt();
-        return new DungeonRespawnTime(milliseconds);
-        
-    } else if (n == "Segment") {
-        KFile::List lst(*kc.getKFile(), "", 1);
-        lst.push(0);
-        string rname = kc.getKFile()->popString();
-        int rcat = kc.getSegmentCategory(rname);
-        if (rcat >= 0) return new DungeonSegment(rcat);
+    // Layout of dungeon blocks.
     
-    } else if (n == "Stuff") {
-        KFile::List lst(*kc.getKFile(), "", 3, 4);
-        lst.push(0);
-        string tname = kc.getKFile()->popString();
-        int tcat = kc.getTileCategory(tname);
-        lst.push(1);
-        float prob = kc.popProbability();
-        lst.push(2);
-        ItemGenerator *ig = kc.popItemGenerator();
-        lst.push(3);
-        int wt = kc.getKFile()->popInt(0);
-        return new DungeonStuff(tcat, prob, ig, wt);
+    struct BlockInfo {
+        int x, y;
+        bool special;
+    };
 
-    } else {
-        kc.getKFile()->errExpected("MenuDirective");
+    struct IsSpecial {
+        bool operator()(const BlockInfo &b) { return b.special; }
+    };
+
+    void FetchBlockFrom(std::vector<BlockInfo> &edges, int &x, int &y)
+    {
+        // This fetches an edge (from back of the list) or fails if there are no edges left.
+        if (edges.empty()) throw DungeonGenerationFailed();
+        x = edges.back().x;
+        y = edges.back().y;
+        edges.pop_back();
+    }
+    
+    void FetchEdgeOrBlock(std::vector<BlockInfo> &edges,
+                          std::vector<BlockInfo> &blocks,
+                          int &x, int &y)
+    {
+        // This fetches an edge (preferably), or else a block.
+        if (!edges.empty()) {
+            x = edges.back().x;
+            y = edges.back().y;
+            edges.pop_back();
+        } else if (!blocks.empty()) {
+            x = blocks.back().x;
+            y = blocks.back().y;
+            blocks.pop_back();
+        } else {
+            throw DungeonGenerationFailed();
+        }
     }
 
-    return 0;
+
+    // Function to lay out the edges and blocks.
+    
+    void DoLayout(int nplayers,                  // in
+                  int homes_required,            // in
+                  const DungeonLayout &layout,   // in
+                  HomeType home_type,            // in
+                  int &lwidth,                   // out
+                  int &lheight,                  // out
+                  std::vector<BlockInfo> &edges,   // out
+                  std::vector<BlockInfo> &blocks,  // out
+                  std::vector<bool> &horiz_exits,  // out
+                  std::vector<bool> &vert_exits)   // out
+    {
+        RNG_Wrapper myrng(g_rng);
+        int x, y;
+
+        // get width and height
+        lwidth = layout.getWidth();
+        lheight = layout.getHeight();
+
+        // work out where the edges and blocks are.
+        // flip and/or rotate the layout if necessary.
+
+        edges.clear();
+        blocks.clear();
+        
+        const bool flipx = g_rng.getBool();
+        const bool flipy = g_rng.getBool();
+        const bool rotate = g_rng.getBool();
+        for (int i=0; i<lwidth; ++i) {
+            for (int j=0; j<lheight; ++j) {
+                x=i;
+                y=j;
+                if (flipx) x = lwidth-1-x;
+                if (flipy) y = lheight-1-y;
+                if (rotate) {
+                    const int tmp = y;
+                    y = x;
+                    x = lheight-1-tmp;
+                }
+                
+                BlockInfo bi;
+                bi.x = x;
+                bi.y = y;
+                bi.special = false;
+                switch (layout.getBlockType(i,j)) {
+                case BT_NONE:
+                    // Don't add anything here :)
+                    break;
+                case BT_BLOCK:
+                    blocks.push_back(bi);
+                    break;
+                case BT_SPECIAL:
+                    bi.special = true;
+                    // fall through
+                case BT_EDGE:
+                    edges.push_back(bi);
+                    break;
+                }
+            }
+        }
+
+        const int new_lwidth = rotate? lheight : lwidth;
+        const int new_lheight = rotate? lwidth : lheight;
+
+        // work out exits information (needs to be flipped/rotated)
+
+        vert_exits.clear();
+        horiz_exits.clear();
+        
+        vert_exits.resize(new_lwidth*(new_lheight-1));
+        horiz_exits.resize((new_lwidth-1)*new_lheight);
+        
+        for (int i=0; i<lwidth-1; ++i) {
+            for (int j=0; j<lheight; ++j) {
+                x=i;
+                y=j;
+                if (flipx) x = lwidth-2-x;
+                if (flipy) y = lheight-1-y;
+                if (rotate) {
+                    // ynew = x
+                    // xnew = lheight-1-y
+                    vert_exits[x*new_lwidth + (lheight-1-y)] = layout.hasHorizExit(i,j);
+                } else {
+                    horiz_exits[y*(new_lwidth-1) + x] = layout.hasHorizExit(i,j);
+                }
+            }
+        }
+        for (int i=0; i<lwidth; ++i) {
+            for (int j=0; j<lheight-1; ++j) {
+                x=i;
+                y=j;
+                if (flipx) x = lwidth-1-x;
+                if (flipy) y = lheight-2-y;
+                if (rotate) {
+                    // ynew = x
+                    // xnew = lheight-2-y
+                    horiz_exits[x*(new_lwidth-1) + (lheight-2-y)] = layout.hasVertExit(i,j);
+                } else {
+                    vert_exits[y*new_lwidth + x] = layout.hasVertExit(i,j);
+                }
+            }
+        }
+
+        // randomize blocks and edges
+        std::random_shuffle(blocks.begin(), blocks.end(), myrng);
+        std::random_shuffle(edges.begin(), edges.end(), myrng);
+
+        // update width & height
+        lwidth = new_lwidth;
+        lheight = new_lheight;
+    }
+    
+    
+    // ----------------------------------------------------------------------------------
+
+    // Placement of segments.
+
+    struct SegmentInfo {
+        SegmentInfo() : segment(0), x_reflect(false), nrot(0) { }
+        
+        const Segment * segment;
+        bool x_reflect;
+        int nrot;
+    };
+
+    
+    // Copies all homes from the given segment (whether special or
+    // not) into 'all_homes'. Returns the number added.
+    int CopyHomes(const SegmentInfo &info,
+                  int rwidth, int rheight,
+                  int x,
+                  int y,
+                  std::vector<HomeInfo> &all_homes)
+    {
+        const int xbase = x*(rwidth+1)+1;    // assuming that all segments are same size
+        const int ybase = y*(rheight+1)+1;
+        
+        const std::vector<HomeInfo> h(info.segment->getHomes(info.x_reflect, info.nrot));
+        int ct = 0;
+        
+        for (std::vector<HomeInfo>::const_iterator it = h.begin(); it != h.end(); ++it) {
+            all_homes.push_back(*it);
+            ++ct;
+            // offset x,y position based on where this segment is within the dungeon.
+            all_homes.back().x += xbase;
+            all_homes.back().y += ybase;
+        }
+
+        return ct;
+    }
+
+    
+    // Place a segment into segment_infos, choosing a random
+    // reflection/rotation. Also appends all homes in the segment
+    // (whether special or not) to 'all_homes'. Returns number of
+    // homes added (whether special or not).
+    int AddSegment(const Segment *segment,
+                   int x,
+                   int y,
+                   int lwidth,
+                   int rwidth, int rheight,
+                   std::vector<SegmentInfo> &segment_infos,
+                   std::vector<HomeInfo> &all_homes)
+    {
+        SegmentInfo &inf = segment_infos[y*lwidth + x];
+        inf.segment = segment;
+        inf.x_reflect = g_rng.getBool();
+        inf.nrot = g_rng.getInt(0, 4);
+        return CopyHomes(inf, rwidth, rheight, x, y, all_homes);
+    }
+
+    
+    // Copies upto N non-special homes, chosen randomly from the last
+    // M elements of "all_homes", into "assigned_homes". (ASSERTs if
+    // not enough non-special homes could be found.) Note: this will
+    // reorder all_homes.
+    void AssignHomes(std::vector<HomeInfo> &all_homes,
+                     int how_many_to_choose_from,
+                     int how_many_to_choose,
+                     std::vector<HomeInfo> &assigned_homes)
+    {
+        ASSERT(how_many_to_choose_from >= int(all_homes.size()));
+        
+        // Shuffle the last M homes
+        RNG_Wrapper myrng(g_rng);
+        std::random_shuffle(all_homes.end() - how_many_to_choose_from, all_homes.end(), myrng);
+
+        // Loop through that list.
+        for (std::vector<HomeInfo>::const_iterator it = all_homes.end() - how_many_to_choose_from;
+        it != all_homes.end() && how_many_to_choose > 0;
+        ++it) {
+            if (!it->special_exit) {
+                assigned_homes.push_back(*it);
+                --how_many_to_choose;
+            }
+        }
+
+        ASSERT(how_many_to_choose == 0); // Caller must ensure there are enough non-special homes available.
+    }        
+    
+
+    // SetHomeSegment: Adds a normal segment into the layout.
+    // 
+    // Only segments with 'minhomes' non-special homes (or more) will
+    // be considered.
+    //
+    // 'assign' is the number of non-special homes to copy into
+    // 'assigned_homes'.
+    //
+    void SetHomeSegment(const SegmentSet &segment_set,
+                        int x,
+                        int y,
+                        int lwidth,
+                        int rwidth, int rheight,
+                        std::vector<SegmentInfo> &segment_infos,
+                        std::vector<HomeInfo> &assigned_homes,
+                        std::vector<HomeInfo> &all_homes,
+                        int minhomes,
+                        int assign)
+    {
+        ASSERT(assign <= minhomes); // can't assign more homes than we have available.
+        
+        // Choose a random segment
+        // (Do not use a segment that is already in the "segments" vector, unless we have no other choice.)
+        const int max_attempts = 50;
+        const Segment *r = 0;
+        for (int i = 0; i < max_attempts; ++i) {
+            r = segment_set.getSegment(minhomes);
+               // ... returns a segment with at least 'minhomes' non-special homes
+               // (returns 0 if impossible)
+            
+            if (!r) break;
+
+            // See if it already exists in segment_infos
+            bool found = false;
+            for (std::vector<SegmentInfo>::const_iterator it = segment_infos.begin();
+            it != segment_infos.end(); ++it) {
+                if (it->segment == r) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+        if (!r) throw DungeonGenerationFailed();
+
+        // Add it to the dungeon
+        const int nhomes_avail = AddSegment(r, x, y, lwidth, rwidth, rheight, segment_infos, all_homes);
+
+        // Assign homes if required
+        if (assign > 0) {
+            AssignHomes(all_homes, nhomes_avail, assign, assigned_homes);
+        }
+    }
+    
+
+    // PlaceSegments: chooses which segment to place into each dungeon
+    // block, and records the home locations. Also, if H_CLOSE or
+    // H_AWAY requested, assigns homes to players.
+    
+    void PlaceSegments(int nplayers,
+                       int homes_required,
+                       HomeType home_type,
+                       int lwidth, int lheight,
+                       int rwidth, int rheight,
+                       const SegmentSet &segment_set,
+                       const std::vector<const Segment *> & required_segments,
+                       std::vector<BlockInfo> &edges,           // in/out
+                       std::vector<BlockInfo> &blocks,          // in/out
+                       std::vector<SegmentInfo> &segment_infos, // out
+                       std::vector<HomeInfo> &assigned_homes,   // out
+                       std::vector<HomeInfo> &all_homes)        // out
+    {
+        RNG_Wrapper myrng(g_rng);
+                    
+        segment_infos.clear();
+        segment_infos.resize(lwidth*lheight);
+
+        // "Away from Other" homes -- generate nplayers different segments
+        // (MUST be on edges) and assign one home from each segment as the player homes.
+        if (home_type == H_AWAY) {
+            for (int i = 0; i < nplayers; ++i) {
+                int x, y;
+                FetchBlockFrom(edges, x, y);
+                ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
+                SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, 
+                               segment_infos, assigned_homes, all_homes, 1, 1);
+            }
+        }
+
+        // Place Required segments -- on Edges if possible, Blocks otherwise.
+        for (std::vector<const Segment*>::const_iterator it = required_segments.begin();
+        it != required_segments.end(); ++it) {
+            int x, y;
+            FetchEdgeOrBlock(edges, blocks, x, y);
+            ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
+            AddSegment(*it, x, y, lwidth, rwidth, rheight, segment_infos, all_homes);
+        }
+        
+        // Eliminate "special" blocks if they have not been assigned.
+        edges.erase(std::remove_if(edges.begin(), edges.end(), IsSpecial()), edges.end());
+
+        // Place "Close To Other" homes -- generate a single segment,
+        // preferably on an edge, and assign all players a home in
+        // that same segment.
+        if (home_type == H_CLOSE) {
+            int x, y;
+            FetchEdgeOrBlock(edges, blocks, x, y);
+            ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
+            SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, segment_infos,
+                           assigned_homes, all_homes,
+                           nplayers, nplayers);
+        }
+
+        // From this point on, there is no distinction between edges and blocks.
+        // Shuffle them together.
+        edges.erase(std::remove_if(edges.begin(), edges.end(), IsSpecial()), edges.end());
+        std::copy(edges.begin(), edges.end(), std::back_inserter(blocks));
+        edges.clear();
+        std::random_shuffle(blocks.begin(), blocks.end(), myrng);        
+        
+        // Place all remaining segments.
+        while (!blocks.empty()) {
+            const int h = homes_required - all_homes.size();  // minimum number of homes still required
+            
+            const int nblocks = int(blocks.size());
+            
+            int n;  // *minimum* number of homes to generate in the new block
+            if (h > 2*nblocks) throw DungeonGenerationFailed();
+            else if (h == 2*nblocks) n = 2;  // need 2 in every block
+            else if (h == 2*nblocks-1) n = 1;  // need at least one here plus two in all others
+            else n = 0;  // can get away with 0 here if we want to
+            
+            int x, y;
+            FetchBlockFrom(blocks, x, y);
+            ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
+            SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, segment_infos, assigned_homes, all_homes, n, 0);
+        }
+
+        // Shuffle the homes lists.
+        std::random_shuffle(assigned_homes.begin(), assigned_homes.end(), myrng);
+        std::random_shuffle(all_homes.begin(), all_homes.end(), myrng);
+
+        // If H_CLOSE or H_AWAY were selected then enough homes should have been assigned by now.
+        // Otherwise, no homes should have been assigned.
+        ASSERT((home_type == H_CLOSE || home_type == H_AWAY) && assigned_homes.size() == nplayers
+               || (home_type != H_CLOSE && home_type != H_AWAY) && assigned_homes.empty());
+    }
+
+    // ------------------------------------------------------------------------------
+
+    // Compressing the dungeon layout.
+
+    void Chop(int &lwidth, int &lheight,
+              std::vector<SegmentInfo> &segment_infos,
+              std::vector<bool> &horiz_exits,
+              std::vector<bool> &vert_exits,
+              int xofs, int yofs, int new_width, int new_height)
+    {
+        std::vector<SegmentInfo> new_segments;
+        new_segments.reserve(new_width * new_height);
+        
+        for (int y = 0; y < new_height; ++y) {
+            for (int x = 0; x < new_width; ++x) {
+                const int old_idx = (y + yofs) * lwidth + (x + xofs);
+                new_segments.push_back(segment_infos[old_idx]);
+            }
+        }
+
+        std::vector<bool> new_horiz_exits;
+        new_horiz_exits.reserve((new_width-1) * new_height);
+        for (int y = 0; y < new_height; ++y) {
+            for (int x = 0; x < new_width - 1; ++x) {
+                const int old_idx = (y + yofs) * (lwidth - 1) + (x + xofs);
+                new_horiz_exits.push_back(horiz_exits[old_idx]);
+            }
+        }
+
+        std::vector<bool> new_vert_exits;
+        new_vert_exits.reserve(new_width * (new_height - 1));
+        for (int y = 0; y < new_height - 1; ++y) {
+            for (int x = 0; x < new_width; ++x) {
+                const int old_idx = (y + yofs) * lwidth + (x + xofs);
+                new_vert_exits.push_back(vert_exits[old_idx]);
+            }
+        }
+
+        lwidth = new_width;
+        lheight = new_height;
+        segment_infos.swap(new_segments);
+        horiz_exits.swap(new_horiz_exits);
+        vert_exits.swap(new_vert_exits);
+    }
+
+    void ShiftHomes(std::vector<HomeInfo> &homes, int dx, int dy)
+    {
+        for (std::vector<HomeInfo>::iterator it = homes.begin(); it != homes.end(); ++it) {
+            it->x += dx;
+            it->y += dy;
+        }
+    }
+    
+    void Compress(int &lwidth,
+                  int &lheight,
+                  int rwidth,
+                  int rheight,
+                  std::vector<SegmentInfo> &segment_infos,
+                  std::vector<bool> &horiz_exits,
+                  std::vector<bool> &vert_exits,
+                  std::vector<HomeInfo> &assigned_homes,
+                  std::vector<HomeInfo> &all_homes)
+    {
+        // crop left side
+        while (1) {
+            if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
+
+            bool empty = true;
+            for (int y = 0; y < lheight; ++y) {
+                if (segment_infos[y*lwidth + 0].segment != 0) {
+                    empty = false;
+                    break;
+                }
+            }
+            if (empty) {
+                Chop(lwidth, lheight, segment_infos, horiz_exits, vert_exits,
+                     1, 0, lwidth-1, lheight);
+                ShiftHomes(assigned_homes, -(rwidth+1), 0);
+                ShiftHomes(all_homes, -(rwidth+1), 0);
+            } else {
+                break;
+            }
+        }
+
+        // crop right side
+        while (1) {
+            if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
+
+            bool empty = true;
+            for (int y = 0; y < lheight; ++y) {
+                if (segment_infos[y*lwidth + (lwidth-1)].segment != 0) {
+                    empty = false;
+                    break;
+                }
+            }
+            if (empty) {
+                Chop(lwidth, lheight, segment_infos, horiz_exits, vert_exits,
+                     0, 0, lwidth-1, lheight);
+            } else {
+                break;
+            }
+        }
+
+        // crop top side
+        while (1) {
+            if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
+
+            bool empty = true;
+            for (int x = 0; x < lwidth; ++x) {
+                if (segment_infos[0*lwidth + x].segment != 0) {
+                    empty = false;
+                    break;
+                }
+            }
+            if (empty) {
+                Chop(lwidth, lheight, segment_infos, horiz_exits, vert_exits,
+                     0, 1, lwidth, lheight-1);
+                ShiftHomes(assigned_homes, 0, -(rheight+1));
+                ShiftHomes(all_homes, 0, -(rheight+1));
+            }
+        }
+
+        // crop bottom side
+        while (1) {
+            if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
+
+            bool empty = true;
+            for (int x = 0; x < lwidth; ++x) {
+                if (segment_infos[(lheight-1)*lwidth + x].segment != 0) {
+                    empty = false;
+                    break;
+                }
+            }
+            if (empty) {
+                Chop(lwidth, lheight, segment_infos, horiz_exits, vert_exits,
+                     0, 0, lwidth, lheight-1);
+            } else {
+                break;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------------
+
+    // Copying segments to map
+
+    void CopyTilesToSquare(DungeonMap &dmap, int x, int y,
+                           const std::vector<boost::shared_ptr<Tile> > &tiles)
+    {
+        const MapCoord mc(x,y);
+        dmap.clearTiles(mc);
+        for (std::vector<boost::shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+            dmap.addTile(mc, (*it)->clone(false), Originator(OT_None()));
+        }
+    }
+    
+    void FillWithTiles(DungeonMap &dmap, int x, int y, int width, int height,
+                       const std::vector<boost::shared_ptr<Tile> > &tiles)
+    {
+        for (int y2 = 0; y2 < height; ++y2) {
+            for (int x2 = 0; x2 < width; ++x2) {
+                CopyTilesToSquare(dmap, x + x2, y + y2, tiles);
+            }
+        }
+    }
+    
+    void CopySegmentsToMap(int lwidth, int lheight,
+                           int rwidth, int rheight,
+                           const std::vector<boost::shared_ptr<Tile> > &wall_tiles,
+                           const std::vector<SegmentInfo> &segment_infos,
+                           DungeonMap &dmap, CoordTransform &ct, MonsterManager &monster_manager)
+    {
+        if (!dmap.getRoomMap()) {
+            dmap.setRoomMap(new RoomMap);
+        }
+
+        // Copy segments to map (this also adds rooms)
+        for (int x = 0; x < lwidth; ++x) {
+            for (int y = 0; y < lheight; ++y) {
+                MapCoord corner( x*(rwidth+1)+1, y*(rheight+1)+1 );
+                const SegmentInfo & info = segment_infos[y*lwidth + x];
+                if (info.segment) {
+                    info.segment->copyToMap(dmap, monster_manager, corner, info.x_reflect, info.nrot);
+                    ct.add(corner, rwidth, rheight, info.x_reflect, info.nrot);
+                } else {
+                    FillWithTiles(dmap, corner.getX(), corner.getY(), rwidth, rheight, wall_tiles);
+                }
+            }
+        }
+
+        // Tell RoomMap that all rooms have been added
+        dmap.getRoomMap()->doneAddingRooms();
+
+        // Fill in walls (around the edge of each segment)
+        for (int xs = 0; xs < lwidth; ++xs) {
+            for (int ys = 0; ys < lheight; ++ys) {
+
+                // horizontal walls
+                for (int x = 0; x < rwidth+2; ++x) {
+                    CopyTilesToSquare(dmap, xs*(rwidth+1)+x,  ys   *(rheight+1), wall_tiles);
+                    CopyTilesToSquare(dmap, xs*(rwidth+1)+x, (ys+1)*(rheight+1), wall_tiles);
+                }
+                
+                // vertical walls
+                for (int y = 0; y < rheight+2; ++y) {
+                    CopyTilesToSquare(dmap,  xs   *(rwidth+1), ys*(rheight+1)+y, wall_tiles);
+                    CopyTilesToSquare(dmap, (xs+1)*(rwidth+1), ys*(rheight+1)+y, wall_tiles);
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------------
+
+    // Knocking through doors
+
+    bool PlaceDoor(DungeonMap &dmap, const MapCoord &mc,
+                   const MapCoord &side1, const MapCoord &side2,
+                   const MapCoord &front, const MapCoord &back,
+                   const std::vector<boost::shared_ptr<Tile> > &door_tiles)
+    {
+        // front and back must have A_CLEAR at H_WALKING
+        if (dmap.getAccess(front, H_WALKING) != A_CLEAR) return false;
+        if (dmap.getAccess(back, H_WALKING) != A_CLEAR) return false;
+
+        // front and back must have at least one tile assigned
+        // also: front and back must not be stair tiles.
+        // also: front and back must allow items (this stops doors being generated in front of
+        // pits).
+        std::vector<boost::shared_ptr<Tile> > tiles;
+        dmap.getTiles(front, tiles);
+        if (tiles.empty()) return false;
+        for (int i=0; i<tiles.size(); ++i) {
+            if (tiles[i]->isStairOrTop() || !tiles[i]->itemsAllowed()) {
+                return false;
+            }
+        }
+        dmap.getTiles(back, tiles);
+        if (tiles.empty()) return false;
+        for (int i=0; i<tiles.size(); ++i) {
+            if (tiles[i]->isStairOrTop() || !tiles[i]->itemsAllowed()) {
+                return false;
+            }
+        }
+
+        // sides must not already have doors on them -- check this using access
+        // (should be A_BLOCKED).
+        if (dmap.getAccess(side1, H_WALKING) != A_BLOCKED) return false;
+        if (dmap.getAccess(side2, H_WALKING) != A_BLOCKED) return false;
+        
+        // The proposed door tile should not be a corner of a room.
+        if (dmap.getRoomMap()->isCorner(mc)) return false;
+
+        // OK. Copy door to the map
+        CopyTilesToSquare(dmap, mc.getX(), mc.getY(), door_tiles);
+        return true;
+    }
+        
+    void KnockThroughDoors(int lwidth, int lheight,
+                           int rwidth, int rheight,
+                           const std::vector<boost::shared_ptr<Tile> > &hdoor_tiles,
+                           const std::vector<boost::shared_ptr<Tile> > &vdoor_tiles,
+                           const std::vector<SegmentInfo> & segment_infos,
+                           const std::vector<bool> &horiz_exits,
+                           const std::vector<bool> &vert_exits,
+                           DungeonMap &dmap)
+    {
+        const int max_attempts = 30;
+
+        // NB there are two copies of the door code in this routine, one
+        // for horiz doors and one for vert doors ....
+    
+        // Horizontal doors (vertical exits)
+        // Doorway between (x,y) and (x,y+1).
+        for (int x = 0; x < lwidth; ++x) {
+            for (int y = 0; y < lheight - 1; ++y) {
+
+                const SegmentInfo &info1 = segment_infos[y*lwidth + x];
+                const SegmentInfo &info2 = segment_infos[(y+1)*lwidth + x];
+
+                if (info1.segment && info2.segment && vert_exits[y*lwidth + x]) {
+                    
+                    // Try to place 3 doors (but only up to max_attempts attempts)
+
+                    // NOTE: some of the doors may actually be "duplicates" i.e. the same 
+                    // square is selected for a door more than once.
+                    // This is OK, it just means that we will get fewer than three doors
+                    // connecting the segments in this case.
+
+                    int ndoors_placed = 0;
+                    for (int i = 0; i < max_attempts; ++i) {
+                        MapCoord mc(g_rng.getInt(0, rwidth) + x*(rwidth+1) + 1,
+                                    (y+1)*(rheight+1));
+                        MapCoord side1 = DisplaceCoord(mc, D_WEST);
+                        MapCoord side2 = DisplaceCoord(mc, D_EAST);
+                        MapCoord front = DisplaceCoord(mc, D_NORTH);
+                        MapCoord back = DisplaceCoord(mc, D_SOUTH);
+                        if (PlaceDoor(dmap, mc, side1, side2, front, back, hdoor_tiles)) {
+                            ++ndoors_placed;
+                            if (ndoors_placed == 3) break;  // success -- all three doors were placed.
+                        }
+                    }
+
+                    // We might not have placed all 3 doors within the
+                    // time limit. If only 1 or 2 doors were placed, we
+                    // can accept that, but we can't accept 0 doors.
+                    if (ndoors_placed == 0) throw DungeonGenerationFailed();
+                }
+            }
+        }
+
+        // Vertical doors (horizontal exits)
+        // Doorway between (x,y) and (x+1,y)
+        // This is similar to the above (but with x and y swapped over basically).
+        for (int x = 0; x < lwidth - 1; ++x) {
+            for (int y = 0; y < lheight; ++y) {
+
+                const SegmentInfo &info1 = segment_infos[y*lwidth + x];
+                const SegmentInfo &info2 = segment_infos[y*lwidth + (x+1)];
+
+                if (info1.segment && info2.segment && horiz_exits[y*(lwidth-1)+x]) {
+                    
+                    int ndoors_placed = 0;
+                    for (int i = 0; i < max_attempts; ++i) {
+                        MapCoord mc((x+1)*(rwidth+1),
+                                    g_rng.getInt(0, rheight) + y*(rheight+1) + 1);
+                        MapCoord side1 = DisplaceCoord(mc, D_NORTH);
+                        MapCoord side2 = DisplaceCoord(mc, D_SOUTH);
+                        MapCoord front = DisplaceCoord(mc, D_WEST);
+                        MapCoord back = DisplaceCoord(mc, D_EAST);
+                        if (PlaceDoor(dmap, mc, side1, side2, front, back, vdoor_tiles)) {
+                            ++ndoors_placed;
+                            if (ndoors_placed == 3) break;
+                        }
+                    }
+                    if (ndoors_placed == 0) throw DungeonGenerationFailed();
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------------
+
+    void FindRsize(const std::vector<const Segment *> &segments, int &rwidth, int &rheight)
+    {
+        // Currently we assume all segments are the same size
+        if (!segments.empty()) {
+            rwidth = segments.front()->getWidth();
+            rheight = segments.front()->getHeight();
+        }
+    }
 }
 
 
-//
-// The dungeon generator itself
-//
+// ------------------------------------------------------------------------------
 
-void DungeonGenerator::addRequiredItem(int number, const ItemType &itype)
+// Top level dungeon generation function
+
+void DungeonGenerator(DungeonMap &dmap,
+                      CoordTransform &ct,
+                      HomeManager &home_manager,
+                      MonsterManager &monster_manager,
+                      std::vector<boost::shared_ptr<Player> > &players,
+                      int nplayers,
+                      const DungeonSettings &settings)
 {
-    for (int i=0; i<number; ++i) {
-        required_items.push_back(&itype);
+    int rwidth = 0, rheight = 0;
+    FindRsize(settings.normal_segments, rwidth, rheight);
+    FindRsize(settings.required_segments, rwidth, rheight);
+
+    // Homes required is equal to number of players (unless H_NONE is set).
+    const int homes_required = (settings.home_type == H_NONE ? 0 : nplayers);
+
+    int lwidth, lheight;
+    std::vector<BlockInfo> edges, blocks;
+    std::vector<bool> horiz_exits, vert_exits;
+    
+    DoLayout(nplayers, homes_required, *settings.layout, settings.home_type,
+             lwidth, lheight, edges, blocks, horiz_exits, vert_exits);
+
+    std::vector<SegmentInfo> segment_infos;
+    std::vector<HomeInfo> assigned_homes, all_homes;
+    
+    PlaceSegments(nplayers, homes_required,
+                  settings.home_type, lwidth, lheight, rwidth, rheight,
+                  SegmentSet(settings.normal_segments),
+                  settings.required_segments,
+                  edges, blocks,
+                  segment_infos, assigned_homes, all_homes);
+
+    Compress(lwidth, lheight, rwidth, rheight,
+             segment_infos, horiz_exits, vert_exits,
+             assigned_homes, all_homes);
+
+    CopySegmentsToMap(lwidth, lheight, rwidth, rheight,
+                      settings.wall_tiles,
+                      segment_infos,
+                      dmap, ct, monster_manager);
+
+    KnockThroughDoors(lwidth, lheight, rwidth, rheight,
+                      settings.hdoor_tiles, settings.vdoor_tiles,
+                      segment_infos, horiz_exits, vert_exits,
+                      dmap);
+
+    // Inform the home manager that we have added homes to the dungeon.
+    for (std::vector<HomeInfo>::const_iterator it = all_homes.begin(); it != all_homes.end(); ++it) {
+        // HomeManager requires the position just outside the home
+        MapCoord pos(it->x, it->y);  // home square itself
+        MapDirection facing = it->facing;  // points towards home
+        pos = DisplaceCoord(pos, Opposite(facing));
+        home_manager.addHome(pos, facing);
+    }
+
+    // Give players their homes
+    for (size_t i = 0; i < assigned_homes.size() && i < players.size(); ++i) {
+        MapCoord pos(assigned_homes[i].x, assigned_homes[i].y);  // home square itself
+        MapDirection facing = assigned_homes[i].facing;  // points towards home
+        pos = DisplaceCoord(pos, Opposite(facing));
+        players[i]->resetHome(pos, facing);
     }
 }
+
+
+/*
+
+///////////////////////////////////////////////
 
 void DungeonGenerator::setStuff(int tile_category, float chance, const ItemGenerator *generator,
                                 int weight)
@@ -481,695 +882,23 @@ void DungeonGenerator::setInitialMonsters(const MonsterType *m, int count)
     initial_monsters[m] = count;
 }
 
-std::string DungeonGenerator::generate(DungeonMap &dmap, MonsterManager &monster_manager,
-                                       CoordTransform &ct, int nplayers, bool tutorial_mode)
-{
-    // If there is an exception of any kind we just re-try the
-    // generation. If it still fails after N attempts (e.g. because
-    // the dungeon size is too small for the quest) then we re-try
-    // with the next possible layout. If we run out of layouts the
-    // exception is re-thrown.
 
-    const int MAX_ATTEMPTS_PER_LAYOUT = 50;
-    
-    for (vector<const RandomDungeonLayout*>::const_iterator i = layouts.begin();
-    i != layouts.end(); ++i) {
-        for (int j = 0; j < MAX_ATTEMPTS_PER_LAYOUT; ++j) {
-            rlayout = *i;
-
-            try {
-                // clear everything...
-                blocks.clear();
-                edges.clear();
-                horiz_exits.clear();
-                vert_exits.clear();
-                segments.clear();
-                segment_categories.clear();
-                segment_x_reflect.clear();
-                segment_nrot.clear();
-                lwidth = lheight = rwidth = rheight = 0;
-                unassigned_homes.clear();
-                assigned_homes.clear();
-                exits.clear();
-                ct.clear();
-
-                // create the layout
-                doLayout(nplayers);    // lays out the segments, and 'assigns' homes and special exit point.
-                compress();            // deletes any unused space around the edges of the map.
-
-                // create the DungeonMap itself
-                dmap.create(lwidth*(rwidth+1)+1, lheight*(rheight+1)+1);
-                copySegmentsToMap(dmap, monster_manager, ct);         // copies the segments into the map.
-                knockThroughDoors(dmap);      // creates doorways between the different segments.
-
-                // fill in exits
-                generateExits();
-    
-                // lock doors and chests
-                generateLocksAndTraps(dmap, nkeys);
-    
-                // generate items
-                generateRequiredItems(dmap);
-                generateStuff(dmap);
-
-                // Generate initial monsters
-                for (map<const MonsterType *, int>::const_iterator it = initial_monsters.begin(); it != initial_monsters.end(); ++it) {
-                    placeInitialMonsters(dmap, monster_manager, *it->first, it->second);
-                }
-                
-                // Set monster limits
-                // Note: we only set the individual monster limits here. The total monsters limit is set in KnightsConfigImpl::initializeGame.
-                for (map<const MonsterType *, int>::const_iterator it = monster_limits.begin(); it != monster_limits.end(); ++it) {
-                    monster_manager.limitMonster(it->first, it->second);
-                }
-                
-                // Check that all keys/lockpicks are accessible.
-                // We do this check separately for each of the player homes.
-                for (vector<pair<MapCoord,MapDirection> >::const_iterator it = assigned_homes.begin(); it != assigned_homes.end(); ++it) {
-                    const MapCoord & home_location = DisplaceCoord(it->first, Opposite(it->second));
-                    checkConnectivity(dmap, home_location, nkeys);
-                }
-
-                if (tutorial_mode) {
-                    // Check that this map is acceptable for a tutorial
-                    checkTutorial(dmap);
-                }
-                
-                // If we get here then we have had a successful dungeon generation.
-                std::string warning_msg;
-                if (i != layouts.begin()) {
-                    warning_msg = "Could not generate a \"" + (*layouts.begin())->getName() + "\" dungeon for this quest."
-                        " Using \"" + (*i)->getName() + "\" instead.";
-                }
-                return warning_msg;
-
-            } catch (const DungeonGenerationFailed &) {
-                vector<const RandomDungeonLayout*>::const_iterator i2 = i;
-                ++i2;
-                if (i2 == layouts.end() && j == MAX_ATTEMPTS_PER_LAYOUT-1) {
-                    // Give up.
-                    throw;
-                }
-                // Otherwise we go on to the next attempt
-            }
-            // (Other exceptions are allowed to propagate upwards)
-        }
-    }
-
-    throw DungeonGenerationFailed();  // Shouldn't get here
-}
-
-
-void DungeonGenerator::fetchEdge(int &x, int &y)
-{
-    if (edges.empty()) throw DungeonGenerationFailed();
-    x = edges.back().x;
-    y = edges.back().y;
-    edges.pop_back();
-}
-
-void DungeonGenerator::fetchEdgeOrBlock(int &x, int &y)
-{
-    // This fetches an edge (preferably), or else a block.
-    if (!edges.empty()) {
-        x = edges.back().x;
-        y = edges.back().y;
-        edges.pop_back();
-    } else if (!blocks.empty()) {
-        x = blocks.back().x;
-        y = blocks.back().y;
-        blocks.pop_back();
-    } else {
-        throw DungeonGenerationFailed();
-    }
-}
-
-void DungeonGenerator::setHomeSegment(int x, int y, int minhomes, int assign)
-{
-    const int max_attempts = 50;
-
-    if (y < 0 || y >= lheight || x < 0 || x >= lwidth) return;
-
-    // generate a segment and store it into the "segments" vector
-    const Segment *r = 0;
-    for (int i=0; i<max_attempts; ++i) {
-        r = segment_set.getHomeSegment(minhomes);
-        if (find(segments.begin(), segments.end(), r) == segments.end()) break;
-    }
-    if (!r) throw DungeonGenerationFailed();
-    segments[y*lwidth+x] = r;
-
-    // Trac #41. Generate random rotation/reflection for the segment
-    bool rand_reflect;
-    GenerateRandomTransform(rand_reflect,
-                            segment_nrot[y*lwidth+x]);
-    segment_x_reflect[y*lwidth+x] = rand_reflect;
-
-    // copy homes to appropriate lists (either assigned or unassigned).
-    if (r) {
-        rwidth = r->getWidth();
-        rheight = r->getHeight();
-        const int xbase = x*(rwidth+1)+1;
-        const int ybase = y*(rheight+1)+1;
-        vector<HomeInfo> h(r->getHomes(segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]));
-        RNG_Wrapper myrng(g_rng);
-        random_shuffle(h.begin(), h.end(), myrng);
-        for (int i=0; i<h.size(); ++i) {
-            MapCoord mc(h[i].x + xbase, h[i].y + ybase);
-            MapDirection facing(h[i].facing);
-            if (i < assign) {
-                assigned_homes.push_back(make_pair(mc,facing));
-            } else {
-                unassigned_homes.push_back(make_pair(mc,facing));
+     bool FindSpecialExit(const Segment &seg, bool x_reflect, int nrot, HomeInfo &hi)
+    {
+        const std::vector<HomeInfo> & homes = seg.getHomes(x_reflect, nrot);
+        for (std::vector<HomeInfo>::const_iterator it = homes.begin(); it != homes.end(); ++it) {
+            if (it->special_exit) {
+                hi = *it;
+                return true;
             }
         }
-    }
-}
-
-void DungeonGenerator::setSpecialSegment(int x, int y, int category)
-{
-    // homes are ignored this time. we just generate the segment.
-    const int max_attempts = 50;
-    if (y < 0 || y >= lheight || x < 0 || x >= lwidth) return;
-    const Segment *r = 0;
-    for (int i=0; i<max_attempts; ++i) {
-        r = segment_set.getSpecialSegment(category);
-        if (find(segments.begin(), segments.end(), r) == segments.end()) break;
-    }
-    if (!r) throw DungeonGenerationFailed();
-    segments[y*lwidth + x] = r;
-    segment_categories[y*lwidth+x] = category;
-
-    // Trac #41. Generate random rotation/reflection for the segment
-    bool rand_reflect;
-    GenerateRandomTransform(rand_reflect,
-                            segment_nrot[y*lwidth + x]);
-    segment_x_reflect[y*lwidth + x] = rand_reflect;
-}
-
-void DungeonGenerator::doLayout(int nplayers)
-{
-    RNG_Wrapper myrng(g_rng);
-
-    int x, y;
-    
-    // Require nplayers homes normally, but 0 for 'random_respawn' mode.
-    // Also require at least 1 more if 'total random exit' selected (Trac #75)
-    const int homes_required = (home_type == H_RANDOM_RESPAWN ? 0 : nplayers) + (exit_type == E_RANDOM ? 1 : 0);
-    
-    // randomize the layout first:
-    auto_ptr<DungeonLayout> layout = rlayout->choose(lua);
-    
-    // get width and height
-    lwidth = layout->getWidth();
-    lheight = layout->getHeight();
-
-    // work out where the edges and blocks are.
-    // flip and/or rotate the layout if necessary.
-    const bool flipx = g_rng.getBool();
-    const bool flipy = g_rng.getBool();
-    const bool rotate = g_rng.getBool();
-    for (int i=0; i<lwidth; ++i) {
-        for (int j=0; j<lheight; ++j) {
-            x=i;
-            y=j;
-            if (flipx) x = lwidth-1-x;
-            if (flipy) y = lheight-1-y;
-            if (rotate) {
-                const int tmp = y;
-                y = x;
-                x = lheight-1-tmp;
-            }
-
-            BlockInfo bi;
-            bi.x = x;
-            bi.y = y;
-            bi.special = false;
-            switch (layout->getBlockType(i,j)) {
-            case BT_NONE:
-                // Don't add anything here :)
-                break;
-            case BT_BLOCK:
-                blocks.push_back(bi);
-                break;
-            case BT_SPECIAL:
-                bi.special = true;
-                // fall through
-            case BT_EDGE:
-                edges.push_back(bi);
-                break;
-            }
-        }
+        return false;
     }
 
-    const int new_lwidth = rotate? lheight : lwidth;
-    const int new_lheight = rotate? lwidth : lheight;
+    */
+     
 
-    // exits information also needs to be flipped and/or rotated
-    vert_exits.resize(new_lwidth*(new_lheight-1));
-    horiz_exits.resize((new_lwidth-1)*new_lheight);
-    for (int i=0; i<lwidth-1; ++i) {
-        for (int j=0; j<lheight; ++j) {
-            x=i;
-            y=j;
-            if (flipx) x = lwidth-2-x;
-            if (flipy) y = lheight-1-y;
-            if (rotate) {
-                // ynew = x
-                // xnew = lheight-1-y
-                vert_exits[x*new_lwidth + (lheight-1-y)] = layout->hasHorizExit(i,j);
-            } else {
-                horiz_exits[y*(new_lwidth-1) + x] = layout->hasHorizExit(i,j);
-            }
-        }
-    }
-    for (int i=0; i<lwidth; ++i) {
-        for (int j=0; j<lheight-1; ++j) {
-            x=i;
-            y=j;
-            if (flipx) x = lwidth-1-x;
-            if (flipy) y = lheight-2-y;
-            if (rotate) {
-                // ynew = x
-                // xnew = lheight-2-y
-                horiz_exits[x*(new_lwidth-1) + (lheight-2-y)] = layout->hasVertExit(i,j);
-            } else {
-                vert_exits[y*new_lwidth + x] = layout->hasVertExit(i,j);
-            }
-        }
-    }
-
-    // randomize blocks and edges
-    // set new width and height
-    // resize segments array.
-    random_shuffle(blocks.begin(), blocks.end(), myrng);
-    random_shuffle(edges.begin(), edges.end(), myrng);
-    lwidth = new_lwidth;
-    lheight = new_lheight;
-    segments.resize(lwidth*lheight);
-    segment_categories.resize(lwidth*lheight);
-    segment_x_reflect.resize(lwidth*lheight);
-    segment_nrot.resize(lwidth*lheight);
-    fill(segment_categories.begin(), segment_categories.end(), -1);
-
-    // "Away From Other" homes, on Edges
-    if (home_type == H_AWAY) {
-        for (int i=0; i<nplayers; ++i) {
-            fetchEdge(x, y);
-            setHomeSegment(x, y, 1, 1);
-        }
-    }
-
-    // "DungeonSegment()" segments -- on Edges if possible, Blocks otherwise.
-    // NOTE that homes in these segments will not be added to the home-lists. This affects
-    // guarded exit points only (at time of writing)... and these are dealt with separately
-    // (see generateExits.)
-    for (vector<int>::const_iterator it = required_segments.begin();
-    it != required_segments.end(); ++it) {
-        fetchEdgeOrBlock(x, y);
-        setSpecialSegment(x, y, *it);
-    }
-
-    // Eliminate "special" tiles if they have not been assigned.
-    // Also no further distinction between Edges and Blocks beyond this point.
-    edges.erase(remove_if(edges.begin(), edges.end(), IsSpecial()), edges.end());
-    copy(edges.begin(), edges.end(), back_inserter(blocks));
-    edges.clear();
-
-    // "Close To Other" homes
-    if (home_type == H_CLOSE) {
-        fetchEdgeOrBlock(x, y);
-        setHomeSegment(x, y, nplayers, nplayers);
-    }
-
-    // Fill in all remaining blocks.
-    while (!blocks.empty()) {
-        const int h = homes_required - assigned_homes.size() - unassigned_homes.size();  // minimum number of homes still required
-        const int nblocks = int(blocks.size());
-        int n;  // *minimum* number of homes to generate in the new block
-        if (h > 2*nblocks) throw DungeonGenerationFailed();
-        else if (h == 2*nblocks) n = 2;  // need 2 in every block
-        else if (h == 2*nblocks-1) n = 1;  // need at least one here plus two in all others
-        else n = 0;  // can get away with 0 here if we want to
-        fetchEdgeOrBlock(x, y);
-        setHomeSegment(x, y, n, 0);
-    }
-
-    // Make sure there are enough homes in the "assigned" list.
-    // (exception: if using H_RANDOM_RESPAWN, homes are irrelevant, so no need for this check)
-    random_shuffle(assigned_homes.begin(), assigned_homes.end(), myrng);
-    random_shuffle(unassigned_homes.begin(), unassigned_homes.end(), myrng);
-    while (assigned_homes.size() < nplayers && home_type != H_RANDOM_RESPAWN) {
-        if (unassigned_homes.empty()) {
-            // this can happen eg if you ask for gnome room on a 1x1 map... there won't be
-            // any space left for the homes!!
-            throw DungeonGenerationFailed();
-        }
-        assigned_homes.push_back(unassigned_homes.back());
-        unassigned_homes.pop_back();
-    }
-}
-
-void DungeonGenerator::shiftHomes(vector<pair<MapCoord,MapDirection> > &homes, int dx, int dy)
-{
-    for (int i=0; i<homes.size(); ++i) {
-        homes[i].first.setX(homes[i].first.getX() + dx);
-        homes[i].first.setY(homes[i].first.getY() + dy);
-    }
-}
-
-void DungeonGenerator::chop(int xofs, int yofs, int new_lwidth, int new_lheight)
-{
-    vector<const Segment *> new_segments(new_lwidth * new_lheight);
-    vector<int> new_cats(new_lwidth * new_lheight);
-    vector<bool> new_x_reflect(new_lwidth * new_lheight);
-    vector<int> new_nrot(new_lwidth * new_lheight);
-
-    for (int x = 0; x < new_lwidth; ++x) {
-        for (int y = 0; y < new_lheight; ++y) {
-
-            const int new_idx = y * new_lwidth + x;
-            const int old_idx = (y + yofs) * lwidth + (x + xofs);
-
-            new_segments[new_idx] = segments[old_idx];
-            new_cats[new_idx] = segment_categories[old_idx];
-            new_x_reflect[new_idx] = segment_x_reflect[old_idx];
-            new_nrot[new_idx] = segment_nrot[old_idx];
-        }
-    }
-
-    segments.swap(new_segments);
-    segment_categories.swap(new_cats);
-    segment_x_reflect.swap(new_x_reflect);
-    segment_nrot.swap(new_nrot);
-
-    vector<bool> new_horiz_exits((new_lwidth - 1) * new_lheight);
-    for (int x = 0; x < new_lwidth - 1; ++x) {
-        for (int y = 0; y < new_lheight; ++y) {
-            const int new_idx = y * (new_lwidth - 1) + x;
-            const int old_idx = (y + yofs) * (lwidth - 1) + (x + xofs);
-            new_horiz_exits[new_idx] = horiz_exits[old_idx];
-        }
-    }
-    horiz_exits.swap(new_horiz_exits);
-
-    vector<bool> new_vert_exits(new_lwidth * (new_lheight - 1));
-    for (int x = 0; x < new_lwidth; ++x) {
-        for (int y = 0; y < new_lheight - 1; ++y) {
-            const int new_idx = y * new_lwidth + x;
-            const int old_idx = (y + yofs) * lwidth + (x + xofs);
-            new_vert_exits[new_idx] = vert_exits[old_idx];
-        }
-    }
-    vert_exits.swap(new_vert_exits);
-
-    lwidth = new_lwidth;
-    lheight = new_lheight;
-}
-
-void DungeonGenerator::chopLeftSide()
-{
-    chop(1, 0, lwidth - 1, lheight);
-}
-
-void DungeonGenerator::chopRightSide()
-{
-    chop(0, 0, lwidth - 1, lheight);
-}
-
-void DungeonGenerator::chopTopSide()
-{
-    chop(0, 1, lwidth, lheight - 1);
-}
-
-void DungeonGenerator::chopBottomSide()
-{
-    chop(0, 0, lwidth, lheight - 1);
-}
-
-void DungeonGenerator::compress()
-{
-    // crop left side
-    while (1) {
-        if (lwidth<=0 || lheight<=0) throw DungeonGenerationFailed();
-        bool empty = true;
-        for (int y=0; y<lheight; ++y) {
-            if (segments[y*lwidth+0] != 0) {
-                empty = false;
-                break;
-            }
-        }
-        if (empty) {
-            chopLeftSide();
-            shiftHomes(assigned_homes, -(rwidth+1), 0);
-            shiftHomes(unassigned_homes, -(rwidth+1), 0);
-        } else {
-            break;
-        }
-    }
-
-    // crop right side
-    while (1) {
-        if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
-        bool empty = true;
-        for (int y=0; y<lheight; ++y) {
-            if (segments[y*lwidth+(lwidth-1)] != 0) {
-                empty = false;
-                break;
-            }
-        }
-        if (empty) {
-            chopRightSide();
-        } else {
-            break;
-        }
-    }
-
-    // crop top side
-    while (1) {
-        if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
-        bool empty = true;
-        for (int x=0; x<lwidth; ++x) {
-            if (segments[0*lwidth+x] != 0) {
-                empty = false;
-                break;
-            }
-        }
-        if (empty) {
-            chopTopSide();
-            shiftHomes(assigned_homes, 0, -(rheight+1));
-            shiftHomes(unassigned_homes, 0, -(rheight+1));
-        } else {
-            break;
-        }
-    }
-
-    // crop bottom side
-    while (1) {
-        if (lwidth <= 0 || lheight <= 0) throw DungeonGenerationFailed();
-        bool empty = true;
-        for (int x=0; x<lwidth; ++x) {
-            if (segments[(lheight-1)*lwidth + x] != 0) {
-                empty = false;
-                break;
-            }
-        }
-        if (empty) {
-            chopBottomSide();
-        } else {
-            break;
-        }
-    }
-}
-
-void DungeonGenerator::copySegmentsToMap(DungeonMap & dmap, MonsterManager &monster_manager, CoordTransform &ct)
-{
-    if (!dmap.getRoomMap()) {
-        dmap.setRoomMap(new RoomMap);
-    }
-
-    // copy segments to map (this also adds rooms)
-    for (int x=0; x<lwidth; ++x) {
-        for (int y=0; y<lheight; ++y) {
-            MapCoord corner( x*(rwidth+1)+1, y*(rheight+1)+1 );
-            if (segments[y*lwidth+x]) {                
-                segments[y*lwidth+x]->copyToMap(dmap, monster_manager, corner, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]);
-                ct.add(corner, rwidth, rheight, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x]);
-            } else {
-                fillWithWalls(dmap, corner, rwidth, rheight);
-            }
-        }
-    }
-
-    // tell RoomMap that all rooms have been added
-    dmap.getRoomMap()->doneAddingRooms();
-    
-    // fill in walls (around the edge of each segment)
-    if (wall) {
-
-        for (int xs=0; xs<lwidth; ++xs) {
-            for (int ys=0; ys<lheight; ++ys) {
-                // horizontal walls
-                for (int x=0; x<rwidth+2; ++x) {
-                    MapCoord mc(xs*(rwidth+1)+x, ys*(rheight+1));
-                    dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
-                    mc.setY((ys+1)*(rheight+1));
-                    dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
-                }
-                
-                // vertical walls
-                for (int y=0; y<rheight+2; ++y) {
-                    MapCoord mc(xs*(rwidth+1), ys*(rheight+1)+y);
-                    dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
-                    mc.setX((xs+1)*(rwidth+1));
-                    dmap.clearTiles(mc);
-                    dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
-                }
-            }
-        }
-    }
-}
-
-void DungeonGenerator::fillWithWalls(DungeonMap & dmap, const MapCoord &corner,
-                                     int width, int height)
-{
-    if (wall) {
-        for (int y=0; y<height; ++y) {
-            for (int x=0; x<width; ++x) {
-                const MapCoord mc(corner.getX() + x, corner.getY() + y);
-                dmap.clearTiles(mc);
-                dmap.addTile(mc, wall->clone(false), Originator(OT_None()));
-            }
-        }
-    }
-}
-
-bool DungeonGenerator::placeDoor(DungeonMap & dmap, const MapCoord &mc,
-                                 const MapCoord &side1, const MapCoord &side2,
-                                 const MapCoord &front, const MapCoord &back,
-                                 shared_ptr<Tile> door_tile_1, shared_ptr<Tile> door_tile_2)
-{
-    if (!door_tile_1) return false;
-    vector<shared_ptr<Tile> > tiles;
-
-    // front and back must have A_CLEAR at H_WALKING
-    if (dmap.getAccess(front, H_WALKING) != A_CLEAR) return false;
-    if (dmap.getAccess(back, H_WALKING) != A_CLEAR) return false;
-
-    // front and back must have at least one tile assigned
-    // also: front and back must not be stair tiles.
-    // also: front and back must allow items (this stops doors being generated in front of
-    // pits).
-    dmap.getTiles(front, tiles);
-    if (tiles.empty()) return false;
-    for (int i=0; i<tiles.size(); ++i) {
-        if (tiles[i]->isStairOrTop() || !tiles[i]->itemsAllowed()) {
-            return false;
-        }
-    }
-    dmap.getTiles(back, tiles);
-    if (tiles.empty()) return false;
-    for (int i=0; i<tiles.size(); ++i) {
-        if (tiles[i]->isStairOrTop() || !tiles[i]->itemsAllowed()) {
-            return false;
-        }
-    }
-
-    // sides must not already have doors on them -- check this using access
-    // (should be A_BLOCKED).
-    if (dmap.getAccess(side1, H_WALKING) != A_BLOCKED) return false;
-    if (dmap.getAccess(side2, H_WALKING) != A_BLOCKED) return false;
-
-    // The proposed door tile should not be a corner of a room.
-    if (dmap.getRoomMap()->isCorner(mc)) return false;
-    
-    // OK.
-    // Remove all existing tiles
-    dmap.getTiles(mc, tiles);
-    for (int i=0; i<tiles.size(); ++i) dmap.rmTile(mc, tiles[i], Originator(OT_None()));
-
-    // Add the new door tile.
-    dmap.addTile(mc, door_tile_1->clone(false), Originator(OT_None()));
-    if (door_tile_2) {
-        dmap.addTile(mc, door_tile_2->clone(false), Originator(OT_None()));
-    }
-
-    return true;
-}
-
-void DungeonGenerator::knockThroughDoors(DungeonMap & dmap)
-{
-    const int max_attempts = 30;
-
-    // NB there are two copies of the door code in this routine, one
-    // for horiz doors and one for vert doors ....
-    
-    // Horizontal doors (vertical exits)
-    // Doorway between (x,y) and (x,y+1).
-    for (int x=0; x<lwidth; ++x) {
-        for (int y=0; y<lheight-1; ++y) {
-            if (segments[y*lwidth+x] && segments[(y+1)*lwidth+x] && vert_exits[y*lwidth+x]) {
-
-                // Try to place 3 doors (but only up to max_attempts attempts)
-
-                // NOTE: some of the doors may actually be "duplicates" i.e. the same 
-                // square is selected for a door more than once.
-                // This is OK, it just means that we will get fewer than three doors
-                // connecting the segments in this case.
-
-                int ndoors_placed = 0;
-                for (int i=0; i<max_attempts; ++i) {
-                    MapCoord mc(g_rng.getInt(0, rwidth) + x*(rwidth+1) + 1,
-                                (y+1)*(rheight+1));
-                    MapCoord side1 = DisplaceCoord(mc, D_WEST);
-                    MapCoord side2 = DisplaceCoord(mc, D_EAST);
-                    MapCoord front = DisplaceCoord(mc, D_NORTH);
-                    MapCoord back = DisplaceCoord(mc, D_SOUTH);
-                    if ( placeDoor(dmap, mc, side1, side2, front, back, horiz_door_1,
-                    horiz_door_2) ) {
-                        ++ndoors_placed;
-                    }
-                    if (ndoors_placed == 3) break;  // success -- all three doors were placed.
-                }
-
-                // We might not have placed all 3 doors within the
-                // time limit. If only 1 or 2 doors were placed, we
-                // can accept that, but we can't accept 0 doors.
-                if (ndoors_placed == 0) throw DungeonGenerationFailed();
-            }
-        }
-    }
-
-    // Vertical doors (horizontal exits)
-    // Doorway between (x,y) and (x+1,y)
-    // This is similar to the above (but with x and y swapped over basically).
-    for (int x=0; x<lwidth-1; ++x) {
-        for (int y=0; y<lheight; ++y) {
-            if (segments[y*lwidth+x] && segments[y*lwidth+(x+1)]
-            && horiz_exits[y*(lwidth-1)+x]) {
-                int ndoors_placed = 0;
-                for (int i=0; i<max_attempts; ++i) {
-                    MapCoord mc((x+1)*(rwidth+1),
-                                g_rng.getInt(0, rheight) + y*(rheight+1) + 1);
-                    MapCoord side1 = DisplaceCoord(mc, D_NORTH);
-                    MapCoord side2 = DisplaceCoord(mc, D_SOUTH);
-                    MapCoord front = DisplaceCoord(mc, D_WEST);
-                    MapCoord back = DisplaceCoord(mc, D_EAST);
-                    if ( placeDoor(dmap, mc, side1, side2, front, back, vert_door_1,
-                    vert_door_2) ) {
-                        ++ndoors_placed;
-                    }
-                    if (ndoors_placed == 3) break;
-                }
-                if (ndoors_placed == 0) throw DungeonGenerationFailed();
-            }
-        }
-    }
-}
-
+/*
 
 void DungeonGenerator::generateExits()
 {
@@ -1704,3 +1433,6 @@ void DungeonGenerator::checkTutorial(DungeonMap &dmap)
         }
     }
 }
+
+
+*/

@@ -67,7 +67,6 @@ ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
     missile_range = LuaGetInt(lua, idx, "missile_range");
     missile_speed = LuaGetInt(lua, idx, "missile_speed");
     missile_stun_time = LuaGetRandomInt(lua, idx, "missile_stun_time", kc);
-    name = LuaGetString(lua, idx, "name");
     on_drop.reset(lua, idx, "on_drop");
     on_hit.reset(lua, idx, "on_hit");
     on_pick_up.reset(lua, idx, "on_pick_up");

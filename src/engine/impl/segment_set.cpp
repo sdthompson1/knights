@@ -27,19 +27,18 @@
 #include "segment.hpp"
 #include "segment_set.hpp"
 
-void SegmentSet::addSegment(const Segment *r, int nhomes, int category)
+SegmentSet::SegmentSet(const std::vector<const Segment *> &input)
 {
-    if (nhomes < 0) return;
-    if (category < 0) {
-        if (segments.size() < nhomes+1) segments.resize(nhomes+1);
-        segments[nhomes].push_back(r);
-    } else {
-        if (special_segments.size() < category+1) special_segments.resize(category+1);
-        special_segments[category].push_back(r);
+    for (std::vector<const Segment *>::const_iterator it = input.begin(); it != input.end(); ++it) {
+        if (*it) {
+            const int nhomes = (*it)->getNumHomes(false);
+            if (segments.size() < nhomes+1) segments.resize(nhomes+1);
+            segments[nhomes].push_back(*it);
+        }
     }
 }
 
-const Segment * SegmentSet::getHomeSegment(int minhomes) const
+const Segment * SegmentSet::getSegment(int minhomes) const
 {
     int nsets = segments.size();
     if (minhomes >= nsets) return 0;
@@ -59,11 +58,4 @@ const Segment * SegmentSet::getHomeSegment(int minhomes) const
     
     ASSERT(0);
     return 0;
-}
-
-const Segment * SegmentSet::getSpecialSegment(int category) const
-{
-    if (category < 0 || category >= special_segments.size()) return 0;
-    int r = g_rng.getInt(0, special_segments[category].size());
-    return special_segments[category][r];
 }
