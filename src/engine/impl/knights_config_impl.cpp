@@ -165,10 +165,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
         kf->pushSymbol("DEAD_KNIGHT_TILES");
         popTileList(dead_knight_tiles);
 
-        // Zombie activity table (kts.ZOMBIE_ACTIVITY)
-        luaL_getsubtable(lua, -1, "ZOMBIE_ACTIVITY");  // [env kts zombie_table]
-        popZombieActivityTable(lua);                   // [env kts]
-
         // misc other stuff
         kf->pushSymbol("STUFF_BAG_GRAPHIC");
         stuff_bag_graphic = popGraphic();
@@ -531,52 +527,6 @@ void KnightsConfigImpl::popTutorial(lua_State *lua)
     lua_pop(lua, 1);  // []
 }
 
-void KnightsConfigImpl::popZombieActivityTable(lua_State *lua)
-{
-    // [zomtable]
-    lua_len(lua, -1);  // [zt len]
-    const int sz = lua_tointeger(lua, -1);
-    lua_pop(lua, 1);  // [zt]
-
-    for (int i = 0; i < sz; ++i) {
-        lua_pushinteger(lua, i+1);  // [zt i]
-        lua_gettable(lua, -2);      // [zt entry]
-
-        // entry is a table of two things: tilefrom, and tileto/monsterto.
-
-        ZombieActivityEntry ent;
-        
-        lua_pushinteger(lua, 1);  // [zt entry 1]
-        lua_gettable(lua, -2);    // [zt entry from]
-        ent.from = ReadLuaSharedPtr<Tile>(lua, -1);
-        lua_pop(lua, 1);          // [zt entry]
-
-        lua_pushinteger(lua, 2);  // [zt entry 2]
-        lua_gettable(lua, -2);    // [zt entry to]
-
-        if (IsLuaPtr<MonsterType>(lua, -1)) {
-            ent.to_monster_type = ReadLuaPtr<MonsterType>(lua, -1);
-        } else {
-            ent.to_monster_type = 0;
-            ent.to_tile = ReadLuaSharedPtr<Tile>(lua, -1);
-        }
-
-        zombie_activity.push_back(ent);
-        
-        lua_pop(lua, 2);  // [zt]
-    }
-
-    lua_pop(lua, 1);  // []
-}
-
-void KnightsConfigImpl::addZombieActivity(MonsterManager &mm, shared_ptr<Tile> from, const ZombieActivityEntry &ze)
-{
-    if (ze.to_tile) {
-        mm.addZombieDecay(from, ze.to_tile);
-    } else {
-        mm.addZombieReanimate(from, ze.to_monster_type);
-    }
-}
 
 int KnightsConfigImpl::getTileCategory(const string &cname)
 {

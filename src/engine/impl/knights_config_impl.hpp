@@ -151,7 +151,6 @@ public:
     boost::shared_ptr<Tile> popTile(boost::shared_ptr<Tile> dflt);
     void popTileList(std::vector<boost::shared_ptr<Tile> > &output);
     void popTutorial(lua_State *lua);
-    void popZombieActivityTable(lua_State *lua);
 
     int getTileCategory(const std::string &);    // returns -1 if "" given
     
@@ -200,18 +199,9 @@ private:
     std::vector<const Control *> control_set;
     const Graphic *stuff_bag_graphic;
 
-    // Monsters, gore
+    // Gore (blood & knight/monster corpses)
 
     std::map<MonsterType *, std::vector<shared_ptr<Tile> > > monster_corpse_tiles;
-
-    struct ZombieActivityEntry {
-        shared_ptr<Tile> from;
-        shared_ptr<Tile> to_tile;
-        const MonsterType * to_monster_type;
-    };
-    std::vector<ZombieActivityEntry> zombie_activity;
-    static void addZombieActivity(MonsterManager &mm, shared_ptr<Tile> from, const ZombieActivityEntry &ze);
-    
     const Graphic *blood_icon;
     std::vector<boost::shared_ptr<Tile> > blood_tiles, dead_knight_tiles;
     

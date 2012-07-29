@@ -455,6 +455,44 @@ namespace {
 
     int SetZombieActivity(lua_State *lua)
     {
+        // arg 1 = probability
+        // arg 2 = zombie activity table
+
+        MonsterManager &monster_manager = Mediator::instance().getMonsterManager();
+
+        const float prob = float(luaL_checknumber(lua, 1));
+        monster_manager.setZombieChance(prob);
+
+        lua_pushvalue(lua, 2);  // [zomtable]
+        lua_len(lua, -1);  // [zt len]
+        const int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);  // [zt]
+
+        for (int i = 0; i < sz; ++i) {
+            lua_pushinteger(lua, i+1);  // [zt i]
+            lua_gettable(lua, -2);      // [zt entry]
+
+            // entry is a table of two things: tilefrom, and tileto/monsterto.
+            
+            lua_pushinteger(lua, 1);  // [zt entry 1]
+            lua_gettable(lua, -2);    // [zt entry from]
+            boost::shared_ptr<Tile> from = ReadLuaSharedPtr<Tile>(lua, -1);
+            lua_pop(lua, 1);          // [zt entry]
+            
+            lua_pushinteger(lua, 2);  // [zt entry 2]
+            lua_gettable(lua, -2);    // [zt entry to]
+            
+            if (IsLuaPtr<MonsterType>(lua, -1)) {
+                monster_manager.addZombieReanimate(from, ReadLuaPtr<MonsterType>(lua, -1));
+            } else {
+                monster_manager.addZombieDecay(from, ReadLuaSharedPtr<Tile>(lua, -1));
+            }
+        
+            lua_pop(lua, 2);  // [zt]
+        }
+
+        lua_pop(lua, 1);  // []
+        
         return 0;
     }
 
