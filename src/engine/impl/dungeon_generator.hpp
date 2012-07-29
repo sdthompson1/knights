@@ -40,6 +40,7 @@ class DungeonMap;
 class HomeManager;
 class ItemType;
 class MonsterManager;
+class MonsterType;
 class Player;
 class Segment;
 class Tile;
@@ -102,5 +103,10 @@ struct StuffInfo {
 
 void GenerateStuff(DungeonMap &dmap,
                    const std::map<int, StuffInfo> &stuff);
+
+void GenerateMonsters(DungeonMap &dmap,
+                      MonsterManager &mmgr,
+                      const MonsterType &montype,
+                      int number_to_place);
 
 #endif

@@ -564,7 +564,7 @@ kts.MENU = {
             if S.bats > 0 then
                num_bats = 2 * S.bats + 1
             end
-            add_initial_monsters(m_vampire_bats, 
+            add_initial_monsters(m_vampire_bat,
                                  num_bats)
 
             -- The total number of bats is limited

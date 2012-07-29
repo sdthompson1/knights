@@ -31,6 +31,8 @@
 #include "home_manager.hpp"
 #include "item.hpp"
 #include "lockable.hpp"
+#include "monster_manager.hpp"
+#include "monster_type.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
 #include "rng.hpp"
@@ -1044,21 +1046,46 @@ void GenerateStuff(DungeonMap &dmap,
     }
 }
 
+// --------------------------------------------------------------------------------------
+
+void GenerateMonsters(DungeonMap &dmap,
+                      MonsterManager &mmgr,
+                      const MonsterType &mtype,
+                      int num_monsters)
+{
+    const MapHeight monster_height = mtype.getHeight();
+    
+    std::vector<boost::shared_ptr<Tile> > tiles;
+    for (int i = 0; i < num_monsters; ++i) {
+        for (int tries = 0; tries < 10; ++tries) {
+            const int x = g_rng.getInt(0, dmap.getWidth());
+            const int y = g_rng.getInt(0, dmap.getHeight());
+            const MapCoord mc(x, y);
+
+            // To place a monster, need a non-stair tile with clear access at the relevant height.
+            if (dmap.getAccess(mc, monster_height) != A_CLEAR) continue;
+            dmap.getTiles(mc, tiles);
+            bool ok = true;
+            for (int i=0; i<tiles.size(); ++i) {
+                if (tiles[i]->isStairOrTop()) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (!ok) continue;
+
+            // Place the monster
+            // (Note: facing is just set to D_NORTH initially; the monster AI will soon turn around if it wants to)
+            mmgr.placeMonster(mtype, dmap, mc, D_NORTH);
+            break;
+        }
+    }
+}
 
         
 /*
 
 ///////////////////////////////////////////////
-
-void DungeonGenerator::setMonsterLimit(const MonsterType *m, int max_monsters)
-{
-    monster_limits[m] = max_monsters;
-}
-
-void DungeonGenerator::setInitialMonsters(const MonsterType *m, int count)
-{
-    initial_monsters[m] = count;
-}
 
 
      bool FindSpecialExit(const Segment &seg, bool x_reflect, int nrot, HomeInfo &hi)
@@ -1143,41 +1170,6 @@ void DungeonGenerator::generateExits()
     }
 }
 
-
-
-
-
-void DungeonGenerator::placeInitialMonsters(DungeonMap &dmap, MonsterManager &mmgr,
-                                            const MonsterType &mtype, int num_monsters)
-{
-    const MapHeight monster_height = mtype.getHeight();
-    
-    vector<shared_ptr<Tile> > tiles;
-    for (int i = 0; i < num_monsters; ++i) {
-        for (int tries = 0; tries < 10; ++tries) {
-            const int x = g_rng.getInt(0, dmap.getWidth());
-            const int y = g_rng.getInt(0, dmap.getHeight());
-            const MapCoord mc(x, y);
-
-            // To place a monster, need a non-stair tile with clear access at the relevant height.
-            if (dmap.getAccess(mc, monster_height) != A_CLEAR) continue;
-            dmap.getTiles(mc, tiles);
-            bool ok = true;
-            for (int i=0; i<tiles.size(); ++i) {
-                if (tiles[i]->isStairOrTop()) {
-                    ok = false;
-                    break;
-                }
-            }
-            if (!ok) continue;
-
-            // Place the monster
-            // (Note: facing is just set to D_NORTH initially; the monster AI will soon turn around if it wants to)
-            mmgr.placeMonster(mtype, dmap, mc, D_NORTH);
-            break;
-        }
-    }
-}
 
 void DungeonGenerator::checkConnectivity(DungeonMap &dmap, const MapCoord &from_where, int num_keys)
 {

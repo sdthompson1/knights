@@ -150,7 +150,20 @@ namespace {
 
     int AddMonsters(lua_State *lua)
     {
-        return 0;  // TODO
+        // arg 1 = monstertype
+        // arg 2 = number to place
+
+        const MonsterType *montype = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!montype) {
+            luaL_error(lua, "Invalid monster type passed to AddMonsters");
+        }
+
+        const int num = luaL_checkinteger(lua, 2);
+
+        Mediator &m = Mediator::instance();
+        GenerateMonsters(*m.getMap(), m.getMonsterManager(), *montype, num);
+        
+        return 0;
     }
 
     int AddStuff(lua_State *lua)
