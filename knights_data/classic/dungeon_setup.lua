@@ -277,7 +277,7 @@ end
 -- Mods could overwrite this number if they want:
 total_monster_limit = 15
 
-function start_game()
+function start_game(S)
    -- Generate the dungeon
    generate_dungeon()
 
