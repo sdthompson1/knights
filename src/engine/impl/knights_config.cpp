@@ -95,6 +95,11 @@ void KnightsConfig::changeNumberOfPlayers(int nplayers, int nteams, MenuListener
     pimpl->getMenuWrapper().changeNumberOfPlayers(nplayers, nteams, listener);
 }
 
+bool KnightsConfig::checkNumPlayersStrict(std::string &err_msg) const
+{
+    return pimpl->getMenuWrapper().checkNumPlayersStrict(err_msg);
+}
+
 void KnightsConfig::resetMenu()
 {
     pimpl->resetMenu();

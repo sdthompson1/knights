@@ -381,7 +381,7 @@ namespace {
     // ----------------------------------------------------------------------
 
     // Check the number of players/teams constraint for a particular menu choice.
-    // Called by UpdateConstraints
+    // Called by UpdateConstraints.
     bool CheckNumPlayers(MenuWrapperImpl &impl, int itemno, int choiceno)
     {
         ASSERT(itemno >= 0 && itemno < impl.menu.getNumItems());
@@ -962,6 +962,43 @@ void MenuWrapper::changeNumberOfPlayers(int nplayers, int nteams, MenuListener &
     OldSettings old;
     SaveOldSettings(GetLuaState(*pimpl), *pimpl, old);
     ValidateAndReport(GetLuaState(*pimpl), *pimpl, old, listener);
+}
+
+bool MenuWrapper::checkNumPlayersStrict(std::string &err_msg) const
+{
+    // NOTE: We assume menu is in an acceptable state.
+    // We simply want to check the min. players/teams constraints.
+
+    lua_State *lua = GetLuaState(*pimpl);
+
+    std::ostringstream str;
+    bool ok = true;
+    
+    for (int item = 0; item < pimpl->menu.getNumItems(); ++item) {
+        if (!pimpl->item_info[item].choice_info.empty()) {
+            const int choice = ItemNumToChoiceNum(lua, *pimpl, item);
+            const ChoiceInfo &info = pimpl->item_info[item].choice_info[choice];
+
+            if (pimpl->num_players < info.min_players) {
+                ok = false;
+                str << info.min_players << " players.";
+            } else if (pimpl->num_teams < info.min_teams) {
+                ok = false;
+                str << info.min_teams << " teams.";
+            }
+
+            if (!ok) {
+                std::ostringstream str2;
+                const MenuItem &it = pimpl->menu.getItem(item);
+                str2 << "ERROR: " << it.getTitleString() << " = " << it.getChoiceString(choice)
+                     << " requires at least " << str.str();
+                err_msg = str2.str();
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void MenuWrapper::randomQuest(MenuListener &listener)

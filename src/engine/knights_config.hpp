@@ -113,6 +113,9 @@ public:
     // call when the number of players or teams changes. reports changed settings to listener.
     void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
 
+    // check whether the game can be started under strict interpretation of no. of players constraints
+    bool checkNumPlayersStrict(std::string &err_msg) const;
+    
     // call when all players have left game. resets settings to defaults.
     void resetMenu();
 

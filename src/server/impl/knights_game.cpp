@@ -1064,28 +1064,10 @@ namespace {
         bool ready_to_start = (nready == nplayers && nplayers >= 1);
 
         // Don't start if there are insufficient players for the current quest
-        /*const int min_players_required = kg.knights_config->getMenuConstraints().getMinPlayers(kg.menu_selections);
-        if (ready_to_start && nplayers < min_players_required) {
-            std::ostringstream str;
-            str << "ERROR: This quest requires at least " << min_players_required << " players.";
-            Announcement(kg, str.str(), true);
+        std::string nplyrs_err_msg;
+        if (ready_to_start && !kg.knights_config->checkNumPlayersStrict(nplyrs_err_msg)) {
+            Announcement(kg, nplyrs_err_msg, true);
             ready_to_start = false;
-        }*/
-
-        // Don't start if there are insufficient teams for the current quest
-        if (ready_to_start) {
-            //const int min_teams_required = kg.knights_config->getMenuConstraints().getMinTeams(kg.menu_selections);
-            const int min_teams_required = 0;
-
-            // we need to count how many teams there are!
-            const int num_teams = CountTeams(kg);
-            
-            if (num_teams < min_teams_required) {
-                std::ostringstream str;
-                str << "ERROR: This quest requires at least " << min_teams_required << " teams. (Choose your team by changing your Knight House Colour.)";
-                Announcement(kg, str.str(), true);
-                ready_to_start = false;
-            }
         }
 
         // See if we are still ready to start

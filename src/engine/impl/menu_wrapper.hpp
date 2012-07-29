@@ -57,6 +57,11 @@ public:
     // will be called once per menu-item that was changed.
     void changeSetting(int item_num, int new_choice_num, MenuListener &listener);
     void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
+
+    // Determine whether the quest is playable with strict constraints on no of players.
+    // If not, return a suitable error message.
+    bool checkNumPlayersStrict(std::string &err_msg) const;
+    
     
     // request a random quest. Changed menu items will be reported.
     void randomQuest(MenuListener &listener);
