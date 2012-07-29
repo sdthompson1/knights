@@ -155,7 +155,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         LuaStartupSentinel s(config->getLuaState().get(), *this);
         pimpl->initial_msgs = &messages;
         std::string err_msg;
-        bool can_start = config->runGameStartup(*this, err_msg);
+        bool can_start = config->runGameStartup(err_msg);
         pimpl->initial_msgs = 0;
         if (!can_start) {
             throw LuaError(err_msg);

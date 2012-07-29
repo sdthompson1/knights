@@ -846,6 +846,35 @@ namespace {
         
         return 0;
     }
+
+    // ----------------------------------------------------
+
+    int DoGameStartup(lua_State *lua)
+    {
+        MenuWrapperImpl *pimpl = static_cast<MenuWrapperImpl*>(lua_touserdata(lua, 1));
+        
+        // Call 'prepare_game_func' (parameter S)
+        pimpl->s_table.push(lua);   // [S]
+        pimpl->prepare_game_func.runNArgsNoPop(lua, 1);  // [S]
+    
+        // Call all the 'features' functions. (pass parameter S)
+        lua_pushnil(lua);           // [S nil]
+        CallAllFuncs(lua, *pimpl, &Funcs::features);  // []
+
+        // Call 'start_game_func' (parameter S)
+        pimpl->s_table.push(lua);  // [S]
+        pimpl->start_game_func.runNArgsNoPop(lua, 1);  // [S]
+        lua_pop(lua, 1); // []
+
+        // See if DUNGEON_ERROR is set.
+        lua_getglobal(lua, "kts");  // [kts]
+        lua_getfield(lua, -1, "DUNGEON_ERROR");  // [kts err]
+        if (!lua_isnil(lua, -1)) {
+            lua_error(lua);   // throw the err msg as an error
+        }
+
+        return 0;
+    }
 }
 
 // ----------------------------------------------------
@@ -1005,32 +1034,19 @@ void MenuWrapper::randomQuest(MenuListener &listener)
     Report(lua, *pimpl, old, listener);
 }
 
-bool MenuWrapper::runGameStartup(KnightsEngine &ke, std::string &err_msg)
+bool MenuWrapper::runGameStartup(std::string &err_msg)
 {
     lua_State *lua = GetLuaState(*pimpl);
 
-    // Call 'prepare_game_func' (parameter S)
-    pimpl->s_table.push(lua);   // [S]
-    pimpl->prepare_game_func.runNArgsNoPop(lua, 1);  // [S]
+    PushCFunction(lua, &DoGameStartup);
+    lua_pushlightuserdata(lua, pimpl.get());
+    const int result = lua_pcall(lua, 1, 0, 0);
     
-    // Call all the 'features' functions. (pass parameter S)
-    lua_pushnil(lua);           // [S nil]
-    CallAllFuncs(lua, *pimpl, &Funcs::features);  // []
-
-    // Call 'start_game_func' (parameter S)
-    pimpl->s_table.push(lua);  // [S]
-    pimpl->start_game_func.runNArgsNoPop(lua, 1);  // [S]
-    lua_pop(lua, 1); // []
-
-    // See if DUNGEON_ERROR is set.
-    lua_getglobal(lua, "kts");  // [kts]
-    lua_getfield(lua, -1, "DUNGEON_ERROR");  // [kts err]
-    bool ok = true;
-    if (!lua_isnil(lua, -1)) {
-        ok = false;
-        err_msg = luaL_tolstring(lua, -1, 0);  // [kts err str]
-        lua_pop(lua, 1);  // [kts err]
+    if (result == LUA_OK) {
+        return true;
+    } else {
+        err_msg = luaL_tolstring(lua, -1, 0);
+        lua_pop(lua, 1);
+        return false;
     }
-    lua_pop(lua, 2);  // []
-    return ok;
 }

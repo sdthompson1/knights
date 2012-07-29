@@ -65,8 +65,8 @@ public:
     // Run all the game startup functions.
     // On success, returns true.
     // On failure, returns false and sets err msg in the given string argument.
-    // (Needs to be given ptr to KnightsEngine, so that kts.WipeMap can call ke.resetMap() if needed.)
-    bool runGameStartup(KnightsEngine &ke, std::string &err_msg);
+    // NOTE: must set up LuaStartupSentinel before calling this... (ugh. never mind.)
+    bool runGameStartup(std::string &err_msg);
 
     
 private:

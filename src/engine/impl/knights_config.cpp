@@ -143,9 +143,9 @@ boost::shared_ptr<lua_State> KnightsConfig::getLuaState()
     return pimpl->getLuaState();
 }
 
-bool KnightsConfig::runGameStartup(KnightsEngine &ke, std::string &err_msg)
+bool KnightsConfig::runGameStartup(std::string &err_msg)
 {
-    return pimpl->getMenuWrapper().runGameStartup(ke, err_msg);
+    return pimpl->getMenuWrapper().runGameStartup(err_msg);
 }
 
 int KnightsConfig::getTileCategory(const std::string &s) const
