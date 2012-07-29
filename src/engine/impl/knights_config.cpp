@@ -147,3 +147,8 @@ bool KnightsConfig::runGameStartup(KnightsEngine &ke, std::string &err_msg)
 {
     return pimpl->getMenuWrapper().runGameStartup(ke, err_msg);
 }
+
+int KnightsConfig::getTileCategory(const std::string &s) const
+{
+    return pimpl->getTileCategory(s);
+}

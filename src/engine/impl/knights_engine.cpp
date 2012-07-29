@@ -139,6 +139,9 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
 
         resetMap();
 
+        // Make sure we save a copy of the config.
+        pimpl->config = config;        
+
         // Run the Lua game startup functions.
         LuaStartupSentinel s(config->getLuaState().get(), *this);
         pimpl->initial_msgs = &messages;
@@ -149,9 +152,6 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
             throw LuaError(err_msg);
         }
         
-        // Make sure we save a copy of the config.
-        pimpl->config = config;
-
     } catch (...) {
 
         pimpl->initial_msgs = 0;
@@ -399,4 +399,9 @@ void KnightsEngine::gameStartupMsg(const std::string &msg)
 void KnightsEngine::addStartingGear(const ItemType *itype, const std::vector<int> &num)
 {
     pimpl->starting_gears.push_back(std::make_pair(itype, num));
+}
+
+int KnightsEngine::getTileCategory(const std::string &name)
+{
+    return pimpl->config->getTileCategory(name);
 }

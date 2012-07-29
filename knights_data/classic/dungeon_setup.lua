@@ -87,7 +87,7 @@ function set_keys(num, lockpicks, keylist, weights)
    Dsetup.num_keys = num
 
    -- Add one set of lockpicks, and one each of the keys
-   add_item(lockpicks, weights)
+   add_item(lockpicks, 1, weights)
    for i = 1,num do
       add_item(keylist[i], 1, weights)
    end
@@ -179,7 +179,7 @@ end
 function setup_items()
    -- Generate required items
    for i,v in ipairs(Dsetup.required_items) do
-      kts.AddItem(v[0], v[1], v[2])
+      kts.AddItem(v[1], v[2], v[3])
    end
 
    -- Generate "stuff" items
@@ -189,7 +189,7 @@ end
 function setup_monsters()
    -- Add initial monsters
    for i,v in ipairs(Dsetup.initial_monsters) do
-      kts.AddMonsters(v[0], v[1])
+      kts.AddMonsters(v[1], v[2])
    end
 end
 
@@ -258,8 +258,21 @@ end
 
 -- Game Startup Code.
 
+function deep_copy(old)
+   if type(old) == "table" then
+      local new = {}
+      for k,v in pairs(old) do
+         new[k] = deep_copy(v)
+      end
+      return new
+   else
+      return old
+   end
+end
+
 function prepare_game(S)
-   Dsetup = dungeon_setup
+   -- Make a deep copy of dungeon_setup table
+   Dsetup = deep_copy(dungeon_setup)
 end
 
 function start_game()

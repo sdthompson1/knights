@@ -104,7 +104,48 @@ namespace {
 
     int AddItem(lua_State *lua)
     {
-        return 0;  // TODO
+        KnightsEngine &ke = GetKnightsEngine(lua);
+        
+        const ItemType *itype = ReadLuaPtr<const ItemType>(lua, 1);
+        if (!itype) luaL_error(lua, "AddItem: no item specified");
+
+        const int qty = luaL_checkinteger(lua, 2);
+
+        std::vector<std::pair<int,int> > weights;
+        lua_len(lua, 3);
+        int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+
+        if ((sz & 1) != 0) luaL_error(lua, "AddItem: weights table must have even number of entries");
+
+        int total_weight = 0;
+        
+        for (int i = 1; i < sz; i += 2) {
+            lua_pushinteger(lua, i);
+            lua_gettable(lua, 3);
+            if (!lua_isstring(lua, -1)) {
+                luaL_error(lua, "Tile category must be a string");
+            }
+            const int cat = ke.getTileCategory(lua_tostring(lua, -1));
+            lua_pop(lua, 1);
+
+            lua_pushinteger(lua, i+1);
+            lua_gettable(lua, 3);
+            const int weight = lua_tointeger(lua, -1);
+            if (weight < 0) luaL_error(lua, "Item weight must be non-negative");
+            lua_pop(lua, 1);
+
+            total_weight += weight;
+            weights.push_back(std::make_pair(cat, weight));
+        }
+
+        if (total_weight == 0) luaL_error(lua, "Must have at least one non-zero weight");
+
+        for (int i = 0; i < qty; ++i) {
+            GenerateItem(*Mediator::instance().getMap(), *itype, weights, total_weight);
+        }
+        
+        return 0;
     }
 
     int AddMonsters(lua_State *lua)
@@ -248,6 +289,7 @@ namespace {
     int AddStartingGear(lua_State *lua)
     {
         const ItemType *itype = ReadLuaPtr<const ItemType>(lua, 1);
+        if (!itype) luaL_error(lua, "AddStartingGear: no item specified");
 
         std::vector<int> num;
         for (int i = 2; i <= lua_gettop(lua); ++i) {

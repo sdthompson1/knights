@@ -29,6 +29,7 @@
 #include "dungeon_layout.hpp"
 #include "dungeon_map.hpp"
 #include "home_manager.hpp"
+#include "item.hpp"
 #include "lockable.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
@@ -792,6 +793,71 @@ namespace {
             rheight = segments.front()->getHeight();
         }
     }
+
+    // ------------------------------------------------------------------------------
+
+    // Item generation helpers
+
+    bool Forbidden(int cat,
+                   const std::vector<std::pair<int,int> > &weights)
+    {
+        for (std::vector<std::pair<int,int> >::const_iterator it = weights.begin(); it != weights.end(); ++it) {
+            if (it->first == cat) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    int FindItemCategory(const DungeonMap &dmap,
+                         const MapCoord &mc,
+                         const std::vector<boost::shared_ptr<Tile> > &tiles)
+    {
+        int chosen_cat = -1;
+
+        for (std::vector<boost::shared_ptr<Tile> >::const_iterator it = tiles.begin();
+        it != tiles.end(); ++it) {
+            int cat = (*it)->getItemCategory();
+            if (cat >=0) {
+                chosen_cat = cat;
+            }
+            if ((*it)->canPlaceItem()) {
+                // Don't generate an item if one has already been 'placed'
+                if ((*it)->itemPlacedAlready()) return -1;
+            } else {
+                // For tiles that aren't explicitly accepting items, we go by the itemsAllowed()
+                // flag, and generate items only where itemsAllowed()==true.
+                // (Note that this doesn't work the same for 'placed' items, e.g. barrels have
+                // itemsAllowed()==false but can still accept a placed item.)
+                if ((*it)->itemsAllowed()==false) {
+                    return -1;
+                }
+            }
+        }
+
+        // Don't generate an item if one is already present
+        if (dmap.getItem(mc)) return -1;
+
+        return chosen_cat;
+    }
+
+    void PlaceItem(DungeonMap &dmap,
+                   const MapCoord &mc,
+                   std::vector<boost::shared_ptr<Tile> > &tiles,
+                   const ItemType &itype,
+                   int no)
+    {
+        shared_ptr<Item> item(new Item(itype, no));
+        bool placed = false;
+        for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
+            if ((*it)->canPlaceItem() && !(*it)->itemPlacedAlready()) {
+                (*it)->placeItem(item);
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) dmap.addItem(mc, item);
+    }
 }
 
 
@@ -891,7 +957,65 @@ void GenerateLocksAndTraps(DungeonMap &dmap,
     }
 }
 
+// --------------------------------------------------------------------------------------
 
+void GenerateItem(DungeonMap &dmap,
+                  const ItemType &itype,
+                  const std::vector<std::pair<int,int> > &weights,
+                  int total_weight)
+{
+    const int maxtries = 5;
+    typedef std::vector<std::pair<int,int> > weight_table;
+    ASSERT(total_weight > 0);
+    
+    const int w = dmap.getWidth(), h = dmap.getHeight();
+    
+    std::vector<boost::shared_ptr<Tile> > tiles;
+    bool found = false;
+
+    for (int tries = 0; tries < maxtries; ++tries) {
+        // Select a tile category
+        int t = g_rng.getInt(0, total_weight);
+        int chosen_cat = -999;
+        for (weight_table::const_iterator it = weights.begin(); it != weights.end(); ++it) {
+            t -= it->second;
+            if (t < 0) {
+                chosen_cat = it->first;
+                break;
+            }
+        }
+        ASSERT(t<0);
+
+        // Now randomly pick squares until we find one of the required
+        // category. (Or, if this is the last try, we accept any
+        // category in the weights table, even if it has weight of
+        // zero.)
+        MapCoord mc;
+        for (int q = 0; q < w*h; ++q) {
+            mc.setX(g_rng.getInt(0, w));
+            mc.setY(g_rng.getInt(0, h));
+
+            // work out the tile category
+            dmap.getTiles(mc, tiles);
+            const int cat = FindItemCategory(dmap, mc, tiles);
+
+            if (cat == chosen_cat || tries == maxtries-1 && cat >= 0 && !Forbidden(cat, weights)) {
+                // OK, put the item here
+                PlaceItem(dmap, mc, tiles, itype, 1);
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
+
+    if (!found) {
+        // Failed to place the item. This is fatal.
+        throw DungeonGenerationFailed();
+    }
+}
+
+        
 /*
 
 ///////////////////////////////////////////////
@@ -1004,110 +1128,7 @@ void DungeonGenerator::generateExits()
     }
 }
 
-void DungeonGenerator::generateRequiredItems(DungeonMap &dmap)
-{
-    const int maxtries = 5;
-    const int w = dmap.getWidth(), h = dmap.getHeight();
 
-    vector<shared_ptr<Tile> > tiles;
-    
-    for (vector<const ItemType *>::iterator it = required_items.begin();
-    it != required_items.end(); ++it) {
-        bool found = false;
-        for (int tries = 0; tries < maxtries; ++tries) {
-            // Select a tile category
-            if (total_stuff_weight == 0) throw DungeonGenerationFailed(); // can't have required items w/o stuff categories!!
-            int t = g_rng.getInt(0, total_stuff_weight);
-            int chosen_cat = -999;
-            for (map<int,StuffInfo>::iterator si = stuff.begin(); si != stuff.end(); ++si) {
-                t -= si->second.weight;
-                if (t < 0) {
-                    chosen_cat = si->first;
-                    break;
-                }
-            }
-            ASSERT(t<0);
-
-            // Now randomly pick squares until we find one of the required category
-            // (Or, if this is the last try, we accept any tile category that doesn't have 'forbid' set.)
-            MapCoord mc;
-            for (int q=0; q<w*h; ++q) {
-                mc.setX(g_rng.getInt(0,w));
-                mc.setY(g_rng.getInt(0,h));
-
-                // work out the tile category
-                dmap.getTiles(mc, tiles);
-                const int cat = findItemCategory(dmap, mc, tiles);
-
-                if (cat == chosen_cat || (tries==maxtries-1 && cat >= 0 && !forbidden(cat))) {
-                    // OK, put the item here
-                    placeItem(dmap, mc, tiles, **it, 1);
-                    found = true;
-                    break;
-                }
-            }
-            if (found) break;
-        }
-        if (!found) {
-            // Failed to place the item. This is fatal.
-            throw DungeonGenerationFailed();
-        }
-    }   
-}
-
-bool DungeonGenerator::forbidden(int cat) const
-{
-    const map<int,StuffInfo>::const_iterator it = stuff.find(cat);
-    if (it == stuff.end()) return false;
-    return it->second.forbid;
-}
-
-int DungeonGenerator::findItemCategory(const DungeonMap &dmap, const MapCoord &mc,
-                                        const vector<shared_ptr<Tile> > &tiles)
-{
-    int chosen_cat = -1;
-
-    for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin();
-    it != tiles.end(); ++it) {
-        int cat = (*it)->getItemCategory();
-        if (cat >=0) {
-            chosen_cat = cat;
-        }
-        if ((*it)->canPlaceItem()) {
-            // Don't generate an item if one has already been 'placed'
-            if ((*it)->itemPlacedAlready()) return -1;
-        } else {
-            // For tiles that aren't explicitly accepting items, we go by the itemsAllowed()
-            // flag, and generate items only where itemsAllowed()==true.
-            // (Note that this doesn't work the same for 'placed' items, e.g. barrels have
-            // itemsAllowed()==false but can still accept a placed item.)
-            if ((*it)->itemsAllowed()==false) {
-                return -1;
-            }
-        }
-    }
-
-    // Don't generate an item if one is already present
-    if (dmap.getItem(mc)) return -1;
-
-    return chosen_cat;
-}
-
-void DungeonGenerator::placeItem(DungeonMap &dmap, const MapCoord &mc,
-                                 vector<shared_ptr<Tile> > &tiles, const ItemType &itype,
-                                 int no)
-{
-    shared_ptr<Item> item(new Item(itype, no));
-    bool placed = false;
-    for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
-        if ((*it)->canPlaceItem() && !(*it)->itemPlacedAlready()) {
-            (*it)->placeItem(item);
-            placed = true;
-            break;
-        }
-    }
-    if (!placed) dmap.addItem(mc, item);
-}
 
 void DungeonGenerator::generateStuff(DungeonMap &dmap) 
 {

@@ -27,7 +27,6 @@
 struct lua_State;
 
 // Various lua checking functions
-// (Currently only contains LuaCheckCallable.)
 
 // Determine if object at given index is callable
 bool LuaIsCallable(lua_State *lua, int index);

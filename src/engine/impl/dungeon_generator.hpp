@@ -35,6 +35,7 @@ class CoordTransform;
 class DungeonLayout;
 class DungeonMap;
 class HomeManager;
+class ItemType;
 class MonsterManager;
 class Player;
 class Segment;
@@ -86,5 +87,9 @@ void DungeonGenerator(DungeonMap &dmap,
 
 void GenerateLocksAndTraps(DungeonMap &dmap, int nkeys, bool pretrapped);
 
+void GenerateItem(DungeonMap &dmap,
+                  const ItemType &itype,
+                  const std::vector<std::pair<int,int> > &weights,
+                  int total_weight);
 
 #endif

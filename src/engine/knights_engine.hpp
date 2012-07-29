@@ -112,6 +112,7 @@ public:
     void setPremapped(bool);
     void gameStartupMsg(const std::string &msg);
     void addStartingGear(const ItemType *, const std::vector<int> &);
+    int getTileCategory(const std::string &name);
     
 private:
     boost::shared_ptr<KnightsEngineImpl> pimpl;
