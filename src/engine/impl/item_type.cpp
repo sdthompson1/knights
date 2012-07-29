@@ -82,6 +82,16 @@ ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
     tutorial_key = LuaGetInt(lua, idx, "tutorial");
     is = LuaGetItemSize(lua, idx, "type", IS_NOPICKUP);
 
+    lua_getfield(lua, idx, "critical");  // [crit]
+    if (lua_toboolean(lua, -1) != 0) {
+        const char *p = lua_tostring(lua, -1);
+        if (p) critical_msg = p;
+        is_critical = true;
+    } else {
+        is_critical = false;
+    }
+    lua_pop(lua, 1); // []
+
     loaded = 0;  // set separately via 'setLoaded', see also KnightsConfigImpl::addLuaItemType
 
     lua_pushvalue(lua, idx);

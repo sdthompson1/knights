@@ -62,10 +62,9 @@ class DungeonMap {
 
 public:
     struct DisplacedItem {
-        DisplacedItem() : tries(0), important(false) { }
+        DisplacedItem() : tries(0) { }
         boost::shared_ptr<Item> item;
         int tries;
-        bool important;  // True if this item is considered quest critical and MUST be placed.
     };
     
 public:

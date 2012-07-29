@@ -54,15 +54,13 @@ public:
     // NOTE: Dungeon map should be fully generated before calling the constructor.
     // Only items present initially in the dungeonmap will actually be checked, i.e. we won't
     // respawn anything that wasn't originally in the dungeonmap.
-    ItemCheckTask(DungeonMap &dmap_,
-                  const std::vector<boost::shared_ptr<Quest> > &quests_,
-                  int interval_);
+    ItemCheckTask(DungeonMap &dmap_, int interval_);
 
     virtual void execute(TaskManager &tm);
 
 private:
-    static bool processItemType(std::map<const ItemType *, int> &missing_items, const ItemType &itype, int no);
-    static bool processItem(std::map<const ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item);
+    static void processItemType(std::map<const ItemType *, int> &missing_items, const ItemType &itype, int no);
+    static void processItem(std::map<const ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item);
     void findMissingItems(std::map<const ItemType *, int> &missing_items) const;
     
 private:

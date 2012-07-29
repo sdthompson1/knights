@@ -214,7 +214,9 @@ basic_wand = {
     melee_tile_damage = 0,
     melee_action = wandzap,
     on_pick_up = kts.UpdateQuestStatus,
-    on_drop = kts.UpdateQuestStatus
+    on_drop = kts.UpdateQuestStatus,
+
+    critical = "A wand"
 }
 
 i_wand_of_destruction = kts.ItemType(
@@ -279,7 +281,8 @@ basic_book = {
     overlay = kts.Overlay { g_book_north, g_book_east, g_book_south, g_book_west },
     on_pick_up = kts.UpdateQuestStatus,
     on_drop = kts.UpdateQuestStatus,
-    on_hit = function() kts.CheckQuest("hit_book") end
+    on_hit = function() kts.CheckQuest("hit_book") end,
+    critical = "The book"
 }
 
 i_basic_book = kts.ItemType(basic_book)
@@ -471,7 +474,8 @@ i_gem = kts.ItemType {
     backpack_slot = 30,
     on_pick_up = kts.UpdateQuestStatus,
     on_drop = kts.UpdateQuestStatus,
-    tutorial = TUT_GEM
+    tutorial = TUT_GEM,
+    critical = "A gem"
 }
 
 --

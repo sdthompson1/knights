@@ -474,10 +474,10 @@ public:
                 break;   // Exit after first successful replacement
             } else {
                 // Drop was unsuccessful.
-                if (di.important && di.tries > 10) {
+                if (di.item->getType().isCritical() && di.tries > 10) {
                     // This is a quest critical item and we have failed several times to drop it.
-                    // In this case we go into "emergency mode" and just destroy the item already present (if there is one) to make
-                    // room for the new item...
+                    // In this case we go into "emergency mode" and just destroy the item already
+                    // present (if there is one) to make room for the new item...
                     boost::shared_ptr<Item> current_item = dmap.getItem(mc);
                     if (current_item) {
                         dmap.rmItem(mc);
@@ -500,12 +500,10 @@ public:
 private:
     static void printRespawnMessage(const DungeonMap::DisplacedItem &di)
     {
-        /*
-        const std::string name = "(??)";  // TODO di.item->getType().getName();
+        const std::string &name = di.item->getType().getCriticalMsg();
         if (!name.empty()) {
             Mediator::instance().getCallbacks().gameMsg(-1, name + " has been respawned at a random location.");
         }
-        */
     }
     
 private:

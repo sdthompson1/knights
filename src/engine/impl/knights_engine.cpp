@@ -31,6 +31,7 @@
 #include "event_manager.hpp"
 #include "gore_manager.hpp"
 #include "home_manager.hpp"
+#include "item_check_task.hpp"
 #include "item_respawn_task.hpp"
 #include "knights_config.hpp"
 #include "knights_engine.hpp"
@@ -177,7 +178,13 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         pimpl->task_manager.addTask(respawn_task,
                                     TP_NORMAL,
                                     pimpl->task_manager.getGVT() + 1);
-        
+
+        // Set up task to check critical items and respawn them if necessary
+        const int item_check_interval = config->getConfigMap()->getInt("item_check_interval");
+        boost::shared_ptr<ItemCheckTask> chktsk(
+            new ItemCheckTask(*pimpl->dungeon_map, item_check_interval));
+        pimpl->task_manager.addTask(chktsk, TP_NORMAL, pimpl->task_manager.getGVT() + item_check_interval);
+    
     } catch (...) {
 
         pimpl->initial_msgs = 0;

@@ -147,6 +147,11 @@ public:
     // Custom control (used for eg lockpicks, trap setting)
     const Control * getControl() const { return control; }
 
+    // Critical items
+    // (A critical item will automatically be respawned if it is destroyed for any reason. See ItemCheckTask.)
+    bool isCritical() const { return is_critical; }
+    const std::string & getCriticalMsg() const { return critical_msg; }
+
     
     // Actions
 
@@ -210,6 +215,9 @@ private:
     
     int key;
     bool open_traps;
+
+    bool is_critical;
+    std::string critical_msg;
 
     const Control * control; 
     

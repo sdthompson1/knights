@@ -31,7 +31,6 @@
 #include "gore_manager.hpp"
 #include "graphic.hpp"
 #include "home_manager.hpp"
-#include "item_check_task.hpp"
 #include "knights_config_impl.hpp"
 #include "lua_ingame.hpp"
 #include "lua_exec.hpp"
@@ -663,7 +662,7 @@ void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
     // Set up a task to run the monster manager every so often
     shared_ptr<MonsterTask> mtsk (new MonsterTask);
     task_manager.addTask(mtsk, TP_LOW, task_manager.getGVT()+1);
-    
+
     // Set up event manager
     event_manager.setupHooks(hooks);
 

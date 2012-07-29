@@ -29,27 +29,20 @@
 #include "knight.hpp"
 #include "mediator.hpp"
 #include "player.hpp"
-#include "quest.hpp"
 #include "stuff_bag.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
 
-ItemCheckTask::ItemCheckTask(DungeonMap &dmap_,
-                             const std::vector<boost::shared_ptr<Quest> > &quests,
-                             int interval_)
+ItemCheckTask::ItemCheckTask(DungeonMap &dmap_, int interval_)
     : dmap(dmap_), interval(interval_)
 {
-    for (std::vector<boost::shared_ptr<Quest> >::const_iterator it = quests.begin(); it != quests.end(); ++it) {
-        (*it)->getRequiredItems(required_items);
-    }
+    // scan the dungeon for any critical items.
+    // (this is the "inverse" of findMissingItems.)
+    
+    findMissingItems(required_items);
 
-    std::map<const ItemType *, int> missing_items;
-    findMissingItems(missing_items);
-
-    // Initially missing item types should be removed from the required list.
-    // This is to prevent e.g. respawning a Necronomicon in a Tome of Gnomes quest.
-    for (std::map<const ItemType *, int>::const_iterator it = missing_items.begin(); it != missing_items.end(); ++it) {
-        required_items.erase(it->first);
+    for (std::map<const ItemType *, int>::iterator it = required_items.begin(); it != required_items.end(); ++it) {
+        it->second = -(it->second);
     }
 }
 
@@ -58,36 +51,33 @@ void ItemCheckTask::execute(TaskManager &tm)
     std::map<const ItemType *, int> missing_items;
     findMissingItems(missing_items);
     for (std::map<const ItemType *, int>::const_iterator it = missing_items.begin(); it != missing_items.end(); ++it) {
-        boost::shared_ptr<Item> item(new Item(*it->first, it->second));
-
-        // Add to displaced items list
-        // NOTE: The item will be flagged 'unimportant' when it's first added, but this is not an issue
-        // because the next run of ItemCheckTask will find this, and mark it as 'important'.
-        dmap.addDisplacedItem(item);
+        if (it->second > 0) {
+            // Add to displaced items list
+            boost::shared_ptr<Item> item(new Item(*it->first, it->second));
+            dmap.addDisplacedItem(item);
+        }
     }
     tm.addTask(shared_from_this(), TP_NORMAL, tm.getGVT() + interval);
 }
 
-bool ItemCheckTask::processItemType(std::map<const ItemType *, int> &missing_items, const ItemType &itype, int no)
+void ItemCheckTask::processItemType(std::map<const ItemType *, int> &missing_items, const ItemType &itype, int no)
 {
-    // Returns true if this is one of the quest-critical items, false otherwise
+    // we are only interested in critical items.
+    if (!itype.isCritical()) return;
+    
     std::map<const ItemType *, int>::iterator it = missing_items.find(&itype);
     if (it != missing_items.end()) {
         it->second -= no;
-        if (it->second <= 0) {
-            missing_items.erase(it);
-        }
-        return true;
     } else {
-        return false;
+        missing_items.insert(std::make_pair(&itype, -no));
     }
 }    
 
-bool ItemCheckTask::processItem(std::map<const ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item)
+void ItemCheckTask::processItem(std::map<const ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item)
 {
-    // Returns true if this is one of the quest-critical items, false otherwise
-    if (!item) return false;
-    return processItemType(missing_items, item->getType(), item->getNumber());
+    // Wrapper around processItemType.
+    if (!item) return;
+    processItemType(missing_items, item->getType(), item->getNumber());
 }
 
 void ItemCheckTask::findMissingItems(std::map<const ItemType *, int> &missing_items) const
@@ -97,7 +87,7 @@ void ItemCheckTask::findMissingItems(std::map<const ItemType *, int> &missing_it
     const ItemType & stuff_item_type = stuff_manager.getStuffBagItemType();
     
     std::vector<boost::shared_ptr<Tile> > tiles;
-        
+    
     missing_items = required_items;
     
     for (int x = 0; x < dmap.getWidth(); ++x) {
@@ -139,9 +129,9 @@ void ItemCheckTask::findMissingItems(std::map<const ItemType *, int> &missing_it
     }
 
     // check for displaced items.
-    // call processItem on each, and also set their 'important' flags correctly.
+    // call processItem on each.
     std::vector<DungeonMap::DisplacedItem> & displaced_items = dmap.getDisplacedItems();
     for (std::vector<DungeonMap::DisplacedItem>::iterator it = displaced_items.begin(); it != displaced_items.end(); ++it) {
-        it->important = processItem(missing_items, it->item);
+        processItem(missing_items, it->item);
     }
 }
