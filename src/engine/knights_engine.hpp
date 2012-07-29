@@ -101,6 +101,13 @@ public:
 
     // Find out how much time is left (in milliseconds), or -1 if there is no time limit.
     int getTimeRemaining() const;
+
+
+    //
+    // Interface used by lua game setup functions.
+    //
+
+    void setPremapped(bool);
     
 private:
     boost::shared_ptr<KnightsEngineImpl> pimpl;

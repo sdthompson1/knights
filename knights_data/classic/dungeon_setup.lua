@@ -127,9 +127,7 @@ end
 -- Knight Starting Parameters
 
 function set_premapped()
-   -- Premapped has to be done after the dungeon has been generated,
-   -- therefore just set a flag and do the actual kts call later.
-   Dsetup.premapped = true
+   kts.SetPremapped()
 end
 
 function add_gear(gear)
@@ -267,9 +265,4 @@ end
 function start_game()
    -- Generate the dungeon
    generate_dungeon()
-
-   -- Premap it if required.
-   if Dsetup.premapped then
-      kts.MagicMappingAll() 
-   end
 end

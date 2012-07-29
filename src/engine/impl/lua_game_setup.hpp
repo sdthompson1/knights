@@ -24,11 +24,24 @@
 #ifndef LUA_GAME_SETUP_HPP
 #define LUA_GAME_SETUP_HPP
 
+class KnightsEngine;
+
 struct lua_State;
 
 // Adds Lua functions for game setup (dungeon generation, monster
 // activity setup, stuff like that). Functions are added to the "kts"
 // table.
 void AddLuaGameSetupFunctions(lua_State *);
+
+
+// this (temporarily) stores a ptr to the KnightsEngine into the lua
+// registry, for use by the game startup functions
+class LuaStartupSentinel {
+public:
+    explicit LuaStartupSentinel(lua_State *lua_, KnightsEngine &ke);
+    ~LuaStartupSentinel();
+private:
+    lua_State *lua;
+};
 
 #endif

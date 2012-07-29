@@ -32,6 +32,7 @@
 #include "home_manager.hpp"
 #include "knights_config.hpp"
 #include "knights_engine.hpp"
+#include "lua_game_setup.hpp"
 #include "magic_map.hpp"
 #include "mediator.hpp"
 #include "mini_map.hpp"
@@ -136,6 +137,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         resetMap();
 
         // Run the Lua game startup functions.
+        LuaStartupSentinel s(config->getLuaState().get(), *this);
         std::string err_msg;
         bool can_start = config->runGameStartup(*this, err_msg);
         if (!can_start) {
@@ -365,4 +367,14 @@ int KnightsEngine::getTimeRemaining() const
 {
     if (pimpl->final_gvt == 0) return -1;
     else return std::max(0, pimpl->final_gvt - pimpl->task_manager.getGVT());
+}
+
+
+//
+// Functions called by Lua.
+//
+
+void KnightsEngine::setPremapped(bool pm)
+{
+    pimpl->premapped = pm;
 }

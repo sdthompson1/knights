@@ -36,11 +36,16 @@
 #include "task_manager.hpp"
 #include "tile.hpp"
 
-void MagicMapping(shared_ptr<Knight> kt)
+void MagicMapping(boost::shared_ptr<Knight> kt)
 {
-    if (!kt || !kt->getMap()) return;
+    if (!kt || !kt->getMap() || !kt->getPlayer()) return;
     const DungeonMap &dmap(*kt->getMap());
 
+    MagicMapping(*kt->getPlayer(), *kt->getMap());
+}
+
+void MagicMapping(Player &player, const DungeonMap &dmap)
+{
     vector<shared_ptr<Tile> > tiles;
     vector<char> is_wall;
     is_wall.reserve(dmap.getWidth() * dmap.getHeight());
@@ -81,7 +86,7 @@ void MagicMapping(shared_ptr<Knight> kt)
                 }
             }
             if (wall_here && wallcount < 9) {
-                kt->getPlayer()->setMiniMapColour(mc.getX(), mc.getY(), COL_WALL);
+                player.setMiniMapColour(mc.getX(), mc.getY(), COL_WALL);
             }
         }
     }           

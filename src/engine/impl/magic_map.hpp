@@ -30,13 +30,16 @@
 #define MAGIC_MAP_HPP
 
 #include "boost/shared_ptr.hpp"
-using namespace boost;
 
+class DungeonMap;
 class Knight;
+class Player;
 
-void MagicMapping(shared_ptr<Knight> kt);
-void WipeMap(shared_ptr<Knight> kt);
+void MagicMapping(boost::shared_ptr<Knight> kt);
+void MagicMapping(Player &player, const DungeonMap &dmap);
 
-void SenseItems(shared_ptr<Knight> kt, int stop_time);
+void WipeMap(boost::shared_ptr<Knight> kt);
+
+void SenseItems(boost::shared_ptr<Knight> kt, int stop_time);
 
 #endif

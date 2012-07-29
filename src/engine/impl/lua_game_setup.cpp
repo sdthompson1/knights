@@ -26,10 +26,12 @@
 #include "dungeon_generation_failed.hpp"
 #include "dungeon_generator.hpp"
 #include "dungeon_layout.hpp"
+#include "knights_engine.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_game_setup.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
+#include "my_exceptions.hpp"
 
 #include "lua.hpp"
 
@@ -41,12 +43,26 @@ namespace {
     // utility functions.
     //
 
-    Mediator & GetMediator()
+    int g_dummy_reg_key;
+    
+    void SetKnightsEngine(lua_State *lua, KnightsEngine *ke)
     {
-        // TODO: Throw lua error if we are not in game startup phase
-        return Mediator::instance();
+        lua_pushlightuserdata(lua, ke);
+        lua_rawsetp(lua, LUA_REGISTRYINDEX, &g_dummy_reg_key);
     }
-
+    
+    KnightsEngine & GetKnightsEngine(lua_State *lua)
+    {
+        lua_rawgetp(lua, LUA_REGISTRYINDEX, &g_dummy_reg_key);
+        void * ud = lua_touserdata(lua, -1);
+        lua_pop(lua, 1);
+        if (ud) {
+            return *static_cast<KnightsEngine*>(ud);
+        } else {
+            throw LuaError("This function can only be called during game startup");
+        }
+    }        
+    
     void PopTileList(lua_State *lua, std::vector<boost::shared_ptr<Tile> > &tiles)
     {
         // [t]
@@ -159,7 +175,7 @@ namespace {
             luaL_error(lua, "'home_type' is invalid, must be 'none', 'close', 'away' or 'random'");
         }
 
-        Mediator &m = GetMediator();
+        Mediator &m = Mediator::instance();
 
         try {
             DungeonGenerator(*m.getMap(),
@@ -168,6 +184,7 @@ namespace {
                              m.getMonsterManager(),
                              m.getPlayers(),
                              settings);
+            
         } catch (DungeonGenerationFailed &f) {
             lua_pushstring(lua, f.what());   // [msg]
             lua_setglobal(lua, "DUNGEON_ERROR"); // []
@@ -245,6 +262,13 @@ namespace {
     {
         return 0;
     }
+
+    int SetPremapped(lua_State *lua)
+    {
+        KnightsEngine &ke = GetKnightsEngine(lua);
+        ke.setPremapped(true);
+        return 0;
+    }
 }
 
 // Setup function.
@@ -316,4 +340,19 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
     PushCFunction(lua, &SetZombieActivity);
     lua_setfield(lua, -2, "SetZombieActivity");
+
+    PushCFunction(lua, &SetPremapped);
+    lua_setfield(lua, -2, "SetPremapped");
+}
+
+
+LuaStartupSentinel::LuaStartupSentinel(lua_State *lua_, KnightsEngine &ke)
+    : lua(lua_)
+{
+    SetKnightsEngine(lua, &ke);
+}
+
+LuaStartupSentinel::~LuaStartupSentinel()
+{
+    SetKnightsEngine(lua, 0);
 }
