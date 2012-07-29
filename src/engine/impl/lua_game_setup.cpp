@@ -527,6 +527,13 @@ namespace {
 
         return 0;
     }
+
+    int SetTimeLimit(lua_State *lua)
+    {
+        int seconds = luaL_checkinteger(lua, 1);
+        GetKnightsEngine(lua).setTimeLimit(seconds * 1000);
+        return 0;
+    }
 }
 
 // Setup function.
@@ -604,6 +611,9 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
     PushCFunction(lua, &SetRespawnType);
     lua_setfield(lua, -2, "SetRespawnType");
+
+    PushCFunction(lua, &SetTimeLimit);
+    lua_setfield(lua, -2, "SetTimeLimit");
 }
 
 

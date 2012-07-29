@@ -115,7 +115,8 @@ public:
     int getTileCategory(const std::string &name);
     void setItemRespawn(const std::vector<const ItemType*> &items_to_respawn, int respawn_delay);
     void setLockpickSpawn(const ItemType *lockpicks, int init_time, int interval);
-    
+    void setTimeLimit(int ms);
+        
 private:
     boost::shared_ptr<KnightsEngineImpl> pimpl;
 };

@@ -45,6 +45,7 @@
 #include "round.hpp"
 #include "stuff_bag.hpp"
 #include "task_manager.hpp"
+#include "time_limit_task.hpp"
 #include "tutorial_manager.hpp"
 #include "view_manager.hpp"
 
@@ -56,7 +57,8 @@ public:
           initial_msgs(0),
           premapped(false),
           respawn_delay(-1),
-          lockpick_itemtype(0), lockpick_init_time(-1), lockpick_interval(-1)
+          lockpick_itemtype(0), lockpick_init_time(-1), lockpick_interval(-1),
+          final_gvt(0)
     { } 
 
     // Keep a reference on the configuration
@@ -184,7 +186,13 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         boost::shared_ptr<ItemCheckTask> chktsk(
             new ItemCheckTask(*pimpl->dungeon_map, item_check_interval));
         pimpl->task_manager.addTask(chktsk, TP_NORMAL, pimpl->task_manager.getGVT() + item_check_interval);
-    
+
+        // Set up time limit task
+        if (pimpl->final_gvt > 0) {
+            boost::shared_ptr<TimeLimitTask> ttsk(new TimeLimitTask);
+            pimpl->task_manager.addTask(ttsk, TP_NORMAL, pimpl->final_gvt);
+        }
+        
     } catch (...) {
 
         pimpl->initial_msgs = 0;
@@ -450,4 +458,9 @@ void KnightsEngine::setLockpickSpawn(const ItemType *lockpicks, int init_time, i
     pimpl->lockpick_itemtype = lockpicks;
     pimpl->lockpick_init_time = init_time;
     pimpl->lockpick_interval = interval;
+}
+
+void KnightsEngine::setTimeLimit(int ms)
+{
+    pimpl->final_gvt = pimpl->task_manager.getGVT() + ms;
 }

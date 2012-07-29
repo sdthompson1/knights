@@ -141,7 +141,7 @@ end
 -- Time Limit
 
 function set_time_limit(secs)
-   -- TODO
+   kts.SetTimeLimit(secs)
 end
 
 
