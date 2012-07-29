@@ -208,9 +208,15 @@ namespace {
         return 0;
     }
 
-    int ConnectivityCheck(lua_State *lua)
+    int ConnectivityCheck_Lua(lua_State *lua)
     {
-        return 0;  // TODO
+        const int num_keys = luaL_checkinteger(lua, 1);
+        const ItemType *lockpicks = ReadLuaPtr<const ItemType>(lua, 2);
+        if (!lockpicks) {
+            luaL_error(lua, "Invalid Lockpicks itemtype passed to ConnectivityCheck");
+        }
+        ConnectivityCheck(Mediator::instance().getPlayers(), num_keys, *lockpicks);
+        return 0;
     }
 
     int GenerateLocksAndTraps_Lua(lua_State *lua)
@@ -408,7 +414,7 @@ void AddLuaGameSetupFunctions(lua_State *lua)
     PushCFunction(lua, &AddStuff);
     lua_setfield(lua, -2, "AddStuff");
 
-    PushCFunction(lua, &ConnectivityCheck);
+    PushCFunction(lua, &ConnectivityCheck_Lua);
     lua_setfield(lua, -2, "ConnectivityCheck");
     
     PushCFunction(lua, &GenerateLocksAndTraps_Lua);

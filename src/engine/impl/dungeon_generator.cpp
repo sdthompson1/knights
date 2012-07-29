@@ -860,6 +860,195 @@ namespace {
         }
         if (!placed) dmap.addItem(mc, item);
     }
+
+    // -----------------------------------------------------------------------------
+
+    // Connectivity check implementation
+
+    void ConnectivityCheckImpl(DungeonMap &dmap, const MapCoord &from_where, int num_keys, const ItemType &lockpicks)
+    {
+        // This checks to see whether it is possible to obtain all keys
+        // (or the lock picks) starting from "from_where".
+        
+        // If not, it tries to correct the situation by dropping a random
+        // lockpick somewhere in the dungeon. If that fails for any reason
+        // then we give up and throw DungeonGenerationFailed.
+        
+        
+        // "open" = squares yet to be checked.
+        // "visited" = have reached this square from the starting point, and the knight can access it.
+        // "blocked" = knight can't access this square.
+        // "locked" = knight can get to this locked door but doesn't have the key to open it.
+        
+        std::set<MapCoord> open, visited, blocked, locked;
+        std::set<int> keys_found;
+        open.insert(from_where);
+
+        while (!open.empty()) {
+
+            // Get the first square from the open list
+            MapCoord mc = *open.begin();
+            open.erase(open.begin());
+
+            // Ignore squares that are outside the map
+            if (!dmap.valid(mc)) continue;
+
+            // Ignore squares that have already been visited
+            if (visited.find(mc) != visited.end()
+                || blocked.find(mc) != blocked.end()
+                || locked.find(mc) != locked.end()) continue;
+
+            // Let's get a list of tiles on this square
+            vector<shared_ptr<Tile> > tiles;
+            dmap.getTiles(mc, tiles);
+            
+            // Find out whether there is a key (or lock picks) on this square.
+            // (This is complicated slightly because there could be an item hidden inside a chest.)
+            shared_ptr<Item> item = dmap.getItem(mc);
+            if (!item) {
+                for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
+                    item = (*it)->getPlacedItem();
+                    if (item) {
+                        break;
+                    }
+                }
+            }
+        
+            const ItemType * item_type = item ? &item->getType() : 0;
+    
+            // As soon as we find lock picks, we are done (as they can then open any door).
+            if (item_type && item_type->getKey() == -1) return;
+
+            // Check whether we have found one of the keys.
+            const int key_num = item_type ? item_type->getKey() : 0;
+            if (key_num > 0) {
+                // Add this key to our list of keys found.
+                keys_found.insert(key_num);
+            
+                // Check whether we have found all keys. If so we are done.
+                if (keys_found.size() >= num_keys) return;
+
+                // This key might open one of the existing "locked" tiles
+                // so we force them to be re-checked, by adding them back
+                // into "open".
+                open.insert(locked.begin(), locked.end());
+                locked.clear();
+            }
+
+            // We now want to detect whether the square is passable. If so
+            // we can add its neighbours to "open". If it's impassable
+            // currently, but might become passable if we find the right
+            // key, then add it to "locked".
+            
+            bool can_get_through = true;
+            bool is_locked = false;
+            
+            for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
+                // Check whether the tile has explicit connectivity info set
+                if ((*it)->getConnectivityCheck() == -1) {
+                    can_get_through = false;
+                    break;
+                } else if ((*it)->getConnectivityCheck() == 1) {
+                    continue;
+                }
+                
+                // Check whether access is clear at H_WALKING
+                const MapAccess access = (*it)->getAccess(H_WALKING);
+                if (access == A_CLEAR) continue;
+                
+                // This tile might block access, unless:
+                // (i) It is destructible
+                // (ii) It is locked, but can be opened by one of our keys.
+                if ((*it)->destructible()) continue;
+
+                const Lockable * lockable = dynamic_cast<Lockable*>(it->get());
+                if (lockable) {
+                    const int lock_num = lockable->getLockNum();
+                    if (lock_num > 0 && keys_found.find(lock_num) == keys_found.end()) {
+                        can_get_through = false;
+                        is_locked = true;
+                        break;
+                    } else {
+                        // Either lock_num == 0 (i.e. its an unlocked or "special-locked" iron door)
+                        // or lock_num != 0 but we have the key for it. In this case the door is
+                        // passable.
+                        // NOTE: We assume that the levers/pressure pads that open "special-locked" doors are
+                        // always accessible. 
+                        can_get_through = true;
+                        break;
+                    }
+                }
+
+                // If we get to here then it must be impassable.
+                can_get_through = false;
+                break;
+            }
+            
+            if (can_get_through) {
+                // We can reach this tile
+                // Add its neighbours to "open".
+                open.insert(DisplaceCoord(mc, D_NORTH));
+                open.insert(DisplaceCoord(mc, D_EAST));
+                open.insert(DisplaceCoord(mc, D_SOUTH));
+                open.insert(DisplaceCoord(mc, D_WEST));
+            }
+            
+            // Mark it as visited so that we don't visit it again.
+            if (is_locked) {
+                locked.insert(mc);
+            } else if (can_get_through) {
+                visited.insert(mc);
+            } else {
+                blocked.insert(mc);
+            }
+        }
+
+        // We explored the whole map without finding all keys, or lockpicks.
+
+        // Try to drop a random lockpick somewhere. Pick a square from "visited",
+        // so that we know the square will be accessible to our knight.
+
+        bool lockpicks_placed = false;
+        if (!visited.empty()) {
+            std::vector<MapCoord> squares(visited.begin(), visited.end());
+            
+            // Up to 10 attempts.
+            for (int i = 0; i < 10 && !lockpicks_placed; ++i) {
+                const int r = g_rng.getInt(0, squares.size());
+                const MapCoord mc = squares[r];
+                
+                // Work out whether we can place items here.
+                vector<shared_ptr<Tile> > tiles;
+                dmap.getTiles(mc, tiles);
+                const int cat = FindItemCategory(dmap, mc, tiles);
+                
+                if (cat >= 0) {
+                    
+                    // We avoid putting lockpicks in any tile with "canPlaceItem" set.
+                    // (We don't want the lockpicks appearing in barrels as players might never
+                    // find them. "canPlaceItem" is the simplest way to prevent this.)
+                    bool ok = true;
+                    for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+                        if ((*it)->canPlaceItem()) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    
+                    if (ok) {
+                        // Place the lockpicks.
+                        PlaceItem(dmap, mc, tiles, lockpicks, 1);
+                        lockpicks_placed = true;
+                    }
+                }
+            }
+        }
+        
+        if (!lockpicks_placed) {
+            // Give up.
+            throw DungeonGenerationFailed();
+        }
+    }
 }
 
 
@@ -1082,6 +1271,23 @@ void GenerateMonsters(DungeonMap &dmap,
     }
 }
 
+// --------------------------------------------------------------------------------------
+
+void ConnectivityCheck(const std::vector<Player*> &players,
+                       int num_keys,
+                       const ItemType &lockpicks)
+{
+    // Run the connectivity check from every player's starting square, in turn.
+    for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
+        DungeonMap *dmap = (*it)->getHomeMap();
+        const MapCoord &mc = (*it)->getHomeLocation();
+
+        if (dmap && !mc.isNull()) {
+            ConnectivityCheckImpl(*dmap, mc, num_keys, lockpicks);
+        }
+    }
+}
+
         
 /*
 
@@ -1171,188 +1377,6 @@ void DungeonGenerator::generateExits()
 }
 
 
-void DungeonGenerator::checkConnectivity(DungeonMap &dmap, const MapCoord &from_where, int num_keys)
-{
-    // This checks to see whether it is possible to obtain all keys
-    // (or the lock picks) starting from "from_where".
-
-    // If not, it tries to correct the situation by dropping a random
-    // lockpick somewhere in the dungeon. If that fails for any reason
-    // then we give up and throw DungeonGenerationFailed.
-
-
-    // "open" = squares yet to be checked.
-    // "visited" = have reached this square from the starting point, and the knight can access it.
-    // "blocked" = knight can't access this square.
-    // "locked" = knight can get to this locked door but doesn't have the key to open it.
-    
-    std::set<MapCoord> open, visited, blocked, locked;
-    std::set<int> keys_found;
-    open.insert(from_where);
-
-    while (!open.empty()) {
-
-        // Get the first square from the open list
-        MapCoord mc = *open.begin();
-        open.erase(open.begin());
-
-        // Ignore squares that are outside the map
-        if (!dmap.valid(mc)) continue;
-
-        // Ignore squares that have already been visited
-        if (visited.find(mc) != visited.end() || blocked.find(mc) != blocked.end() || locked.find(mc) != locked.end()) continue;
-
-        // Let's get a list of tiles on this square
-        vector<shared_ptr<Tile> > tiles;
-        dmap.getTiles(mc, tiles);
-    
-        // Find out whether there is a key (or lock picks) on this square.
-        // (This is complicated slightly because there could be an item hidden inside a chest.)
-        shared_ptr<Item> item = dmap.getItem(mc);
-        if (!item) {
-            for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
-                item = (*it)->getPlacedItem();
-                if (item) {
-                    break;
-                }
-            }
-        }
-        
-        const ItemType * item_type = item ? &item->getType() : 0;
-    
-        // As soon as we find lock picks, we are done (as they can then open any door).
-        if (item_type && item_type->getKey() == -1) return;
-
-        // Check whether we have found one of the keys.
-        const int key_num = item_type ? item_type->getKey() : 0;
-        if (key_num > 0) {
-            // Add this key to our list of keys found.
-            keys_found.insert(key_num);
-            
-            // Check whether we have found all keys. If so we are done.
-            if (keys_found.size() >= num_keys) return;
-
-            // This key might open one of the existing "locked" tiles
-            // so we force them to be re-checked, by adding them back
-            // into "open".
-            open.insert(locked.begin(), locked.end());
-            locked.clear();
-        }
-
-        // We now want to detect whether the square is passable. If so
-        // we can add its neighbours to "open". If it's impassable
-        // currently, but might become passable if we find the right
-        // key, then add it to "locked".
-
-        bool can_get_through = true;
-        bool is_locked = false;
-
-        for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
-            // Check whether the tile has explicit connectivity info set
-            if ((*it)->getConnectivityCheck() == -1) {
-                can_get_through = false;
-                break;
-            } else if ((*it)->getConnectivityCheck() == 1) {
-                continue;
-            }
-
-            // Check whether access is clear at H_WALKING
-            const MapAccess access = (*it)->getAccess(H_WALKING);
-            if (access == A_CLEAR) continue;
-            
-            // This tile might block access, unless:
-            // (i) It is destructible
-            // (ii) It is locked, but can be opened by one of our keys.
-            if ((*it)->destructible()) continue;
-
-            const Lockable * lockable = dynamic_cast<Lockable*>(it->get());
-            if (lockable) {
-                const int lock_num = lockable->getLockNum();
-                if (lock_num > 0 && keys_found.find(lock_num) == keys_found.end()) {
-                    can_get_through = false;
-                    is_locked = true;
-                    break;
-                } else {
-                    // Either lock_num == 0 (i.e. its an unlocked or "special-locked" iron door)
-                    // or lock_num != 0 but we have the key for it. In this case the door is
-                    // passable.
-                    // NOTE: We assume that the levers/pressure pads that open "special-locked" doors are
-                    // always accessible. 
-                    can_get_through = true;
-                    break;
-                }
-            }
-
-            // If we get to here then it must be impassable.
-            can_get_through = false;
-            break;
-        }
-        
-        if (can_get_through) {
-            // We can reach this tile
-            // Add its neighbours to "open".
-            open.insert(DisplaceCoord(mc, D_NORTH));
-            open.insert(DisplaceCoord(mc, D_EAST));
-            open.insert(DisplaceCoord(mc, D_SOUTH));
-            open.insert(DisplaceCoord(mc, D_WEST));
-        }
-
-        // Mark it as visited so that we don't visit it again.
-        if (is_locked) {
-            locked.insert(mc);
-        } else if (can_get_through) {
-            visited.insert(mc);
-        } else {
-            blocked.insert(mc);
-        }
-    }
-
-    // We explored the whole map without finding all keys, or lockpicks.
-
-    // Try to drop a random lockpick somewhere. Pick a square from "visited",
-    // so that we know the square will be accessible to our knight.
-
-    bool lockpicks_placed = false;
-    if (lockpicks && !visited.empty()) {
-        std::vector<MapCoord> squares(visited.begin(), visited.end());
-
-        // Up to 10 attempts.
-        for (int i = 0; i < 10 && !lockpicks_placed; ++i) {
-            const int r = g_rng.getInt(0, squares.size());
-            const MapCoord mc = squares[r];
-
-            // Work out whether we can place items here.
-            vector<shared_ptr<Tile> > tiles;
-            dmap.getTiles(mc, tiles);
-            const int cat = findItemCategory(dmap, mc, tiles);
-            
-            if (cat >= 0 && !forbidden(cat)) {
-
-                // We avoid putting lockpicks in any tile with "canPlaceItem" set.
-                // (We don't want the lockpicks appearing in barrels as players might never
-                // find them. "canPlaceItem" is the simplest way to prevent this.)
-                bool ok = true;
-                for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
-                    if ((*it)->canPlaceItem()) {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (ok) {
-                    // Place the lockpicks.
-                    placeItem(dmap, mc, tiles, *lockpicks, 1);
-                    lockpicks_placed = true;
-                }
-            }
-        }
-    }
-    
-    if (!lockpicks_placed) {
-        // Give up.
-        throw DungeonGenerationFailed();
-    }
-}
 
 
 void DungeonGenerator::checkTutorial(DungeonMap &dmap)

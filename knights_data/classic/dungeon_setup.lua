@@ -85,6 +85,7 @@ end
 
 function set_keys(num, lockpicks, keylist, weights)
    Dsetup.num_keys = num
+   Dsetup.lockpicks = lockpicks
 
    -- Add one set of lockpicks, and one each of the keys
    add_item(lockpicks, 1, weights)
@@ -194,7 +195,7 @@ function setup_monsters()
 end
 
 function final_checks()
-   kts.ConnectivityCheck(Dsetup.num_keys)
+   kts.ConnectivityCheck(Dsetup.num_keys, Dsetup.lockpicks)
 end
 
 function try_to_generate_dungeon()

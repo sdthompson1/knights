@@ -109,4 +109,6 @@ void GenerateMonsters(DungeonMap &dmap,
                       const MonsterType &montype,
                       int number_to_place);
 
+void ConnectivityCheck(const std::vector<Player*> &players, int num_keys, const ItemType &lockpicks);
+
 #endif
