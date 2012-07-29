@@ -64,7 +64,13 @@ function add_segment(segment_list)
 end
 
 function set_entry(entrytype)
-   Dsetup.entry_type = entrytype
+   if entrytype == "different" then
+      Dsetup.entry_type = "random"
+      kts.SetRespawnType("different")
+   else
+      Dsetup.entry_type = entrytype
+      kts.SetRespawnType("normal")
+   end
 end
 
 function set_exit(exittype)

@@ -33,6 +33,7 @@
 #include "mediator.hpp"
 #include "monster_manager.hpp"
 #include "my_exceptions.hpp"
+#include "player.hpp"
 
 #include "lua.hpp"
 
@@ -502,6 +503,30 @@ namespace {
         ke.setPremapped(true);
         return 0;
     }
+
+    int SetRespawnType(lua_State *lua)
+    {
+        const char *p = luaL_checkstring(lua, 1);
+
+        Player::RespawnType rt;
+        
+        if (std::strcmp(p, "normal") == 0) {
+            rt = Player::R_NORMAL;
+        } else if (std::strcmp(p, "anywhere") == 0) {
+            rt = Player::R_RANDOM_SQUARE;
+        } else if (std::strcmp(p, "different") == 0) {
+            rt = Player::R_DIFFERENT_EVERY_TIME;
+        } else {
+            luaL_error(lua, "'%s' is not a valid respawn type, must be 'normal', 'different' or 'anywhere'", p);
+        }
+
+        const std::vector<Player*> & players = Mediator::instance().getPlayers();
+        for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {
+            (*it)->setRespawnType(rt);
+        }
+
+        return 0;
+    }
 }
 
 // Setup function.
@@ -576,6 +601,9 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
     PushCFunction(lua, &SetPremapped);
     lua_setfield(lua, -2, "SetPremapped");
+
+    PushCFunction(lua, &SetRespawnType);
+    lua_setfield(lua, -2, "SetRespawnType");
 }
 
 
