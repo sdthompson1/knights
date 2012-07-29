@@ -57,9 +57,8 @@ MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
         luaL_error(lua, "Unknown monster type '%s'", s.c_str());
     }
 
-    std::vector<boost::shared_ptr<Tile> > generator_tiles, corpse_tiles;
-    LuaGetTileList(lua, -1, "generator_tiles", generator_tiles);
+    std::vector<boost::shared_ptr<Tile> > corpse_tiles;
     LuaGetTileList(lua, -1, "corpse_tiles", corpse_tiles);
         
-    return kc->addLuaMonsterType(result, generator_tiles, corpse_tiles);
+    return kc->addLuaMonsterType(result, corpse_tiles);
 }

@@ -802,11 +802,9 @@ ItemType * KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)
 }
 
 MonsterType * KnightsConfigImpl::addLuaMonsterType(auto_ptr<MonsterType> p,
-                                                   std::vector<boost::shared_ptr<Tile> > &generator_tiles,
                                                    std::vector<boost::shared_ptr<Tile> > &corpse_tiles)
 {
     monster_corpse_tiles.insert(std::make_pair(p.get(), corpse_tiles));
-    monster_generator_tiles.insert(std::make_pair(p.get(), generator_tiles));
 
     MonsterType * q = p.release();
     lua_monster_types.push_back(q);

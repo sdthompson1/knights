@@ -124,7 +124,6 @@ public:
     void addLuaGraphic(auto_ptr<Graphic> p);
     ItemType * addLuaItemType(auto_ptr<ItemType> p);
     MonsterType * addLuaMonsterType(auto_ptr<MonsterType> p,
-                                    std::vector<boost::shared_ptr<Tile> > &generator_tiles,
                                     std::vector<boost::shared_ptr<Tile> > &corpse_tiles);
     Overlay * addLuaOverlay(auto_ptr<Overlay> p);
     Segment * addLuaSegment(auto_ptr<Segment> p, const char *category);
@@ -204,7 +203,6 @@ private:
     // Monsters, gore
 
     std::map<MonsterType *, std::vector<shared_ptr<Tile> > > monster_corpse_tiles;
-    std::map<MonsterType *, std::vector<shared_ptr<Tile> > > monster_generator_tiles;
 
     struct ZombieActivityEntry {
         shared_ptr<Tile> from;

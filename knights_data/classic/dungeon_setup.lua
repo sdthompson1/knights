@@ -116,10 +116,6 @@ function add_monster_limit(montype, number)
    kts.LimitMonster(montype, number)
 end
 
-function set_total_monster_limit(n)
-   kts.LimitTotalMonsters(n)
-end
-
 function set_zombie_activity(probability, activity_table)
    kts.SetZombieActivity(probability, activity_table)
 end
@@ -276,7 +272,15 @@ function prepare_game(S)
    Dsetup = deep_copy(dungeon_setup)
 end
 
+-- In the original Knights the total number of monsters in the dungeon
+-- was limited to 15.
+-- Mods could overwrite this number if they want:
+total_monster_limit = 15
+
 function start_game()
    -- Generate the dungeon
    generate_dungeon()
+
+   -- Total monster limit. (reads variable 'total_monster_limit' from above)
+   kts.LimitTotalMonsters(total_monster_limit)
 end

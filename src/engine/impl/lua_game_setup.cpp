@@ -433,11 +433,23 @@ namespace {
 
     int LimitMonster(lua_State *lua)
     {
+        // arg 1 = mon type
+        // arg 2 = number
+
+        MonsterType *montype = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!montype) luaL_error(lua, "Argument #1 is not a valid monster type");
+
+        Mediator::instance().getMonsterManager().limitMonster(montype, luaL_checkinteger(lua, 2));
+        
         return 0;
     }
 
     int LimitTotalMonsters(lua_State *lua)
     {
+        // arg 1 = total number
+
+        Mediator::instance().getMonsterManager().limitTotalMonsters(luaL_checkinteger(lua, 1));
+        
         return 0;
     }
 
