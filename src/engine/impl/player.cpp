@@ -77,14 +77,8 @@ namespace {
 
     MapCoord FindRespawnPoint(DungeonMap *dmap, MapCoord home_point)
     {
-        if (!dmap) {
+        if (!dmap || home_point.isNull()) {
             return MapCoord();
-        }
-        
-        if (home_point.isNull()) {
-            // knight doesn't have a home, so pick a random point to respawn
-            home_point = MapCoord(g_rng.getInt(1, dmap->getWidth()-1),
-                                  g_rng.getInt(1, dmap->getHeight()-1));
         }
         
         // Trac #24. Try to find an alternative nearby respawn point
@@ -472,7 +466,7 @@ bool Player::respawn()
     if (knight.lock()) return false;
 
     // If we do not have a home, then it's game over
-    if (getHomeLocation().isNull() && getRespawnType() != R_RANDOM_SQUARE) {
+    if ((!home_dmap || home_location.isNull()) && getRespawnType() != R_RANDOM_SQUARE) {
 
         const bool already_eliminated = getElimFlag();
         
@@ -498,9 +492,16 @@ bool Player::respawn()
         }
         return true;  // this counts as a "success" -- we do not want the respawn task to keep retrying.
     }
+
+    // If respawn type is R_RANDOM_SQUARE then reset the home to somewhere completely random.
+    if (respawn_type == R_RANDOM_SQUARE) {
+        home_dmap = Mediator::instance().getMap().get();
+        home_location = MapCoord(g_rng.getInt(1, home_dmap->getWidth()-1),
+                                 g_rng.getInt(1, home_dmap->getHeight()-1));
+    }
     
     // Find an empty square (at the home, or nearby) to respawn on.
-    MapCoord respawn_point = FindRespawnPoint(home_dmap, getHomeLocation());
+    MapCoord respawn_point = FindRespawnPoint(home_dmap, home_location);
     if (respawn_point.isNull()) return false;
 
     // Respawn successful -- Create a new knight.
