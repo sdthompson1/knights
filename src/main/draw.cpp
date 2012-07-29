@@ -73,7 +73,7 @@ void DrawUI::drawBackpackEntry(Coercri::GfxContext &gc,
     const float scale_factor = float(width_of_each) / float(gfx_width);
     const int rescaled_height = Round(float(gfx_height) * scale_factor);
     const int rescaled_overdraw_height = Round(float(overdraw_height) * scale_factor);
-    const int rescaled_spacing = Round(float(spacing) * scale_factor);
+    const int rescaled_spacing = std::max(1, Round(float(spacing) * scale_factor));
     const int rescaled_gem_height = Round(float(gem_height) * scale_factor);
     
     // Slots: 11, 12, ... 19 are Normal Items

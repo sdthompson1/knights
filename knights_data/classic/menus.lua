@@ -332,16 +332,16 @@ kts.MENU = {
          id = "premapped",
          text = "Premapped",
          choices = {
-            { 
+            {
+               id = false,
+               text = "No"
+            },
+            {
                id = true,  
                text = "Yes",
                features = function(S)
                   set_premapped()
                end
-            },
-            {
-               id = false,
-               text = "No"
             }
          }
       },
@@ -479,15 +479,15 @@ kts.MENU = {
          id = "pretrapped",
          text = "Pretrapped Chests",
          choices = {
+            { 
+               id = false, 
+               text = "No"
+            },
             { id = true,  
               text = "Yes", 
               features = function(S) 
                  set_pretrapped()
               end
-            },
-            { 
-               id = false, 
-               text = "No"
             }
          }
       },

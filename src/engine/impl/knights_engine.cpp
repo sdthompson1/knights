@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "config_map.hpp"
 #include "control.hpp"
 #include "coord_transform.hpp"
 #include "dummy_callbacks.hpp"
@@ -30,6 +31,7 @@
 #include "event_manager.hpp"
 #include "gore_manager.hpp"
 #include "home_manager.hpp"
+#include "item_respawn_task.hpp"
 #include "knights_config.hpp"
 #include "knights_engine.hpp"
 #include "lua_game_setup.hpp"
@@ -51,7 +53,9 @@ public:
         : view_manager(nplayers),
           initial_update_needed(true),
           initial_msgs(0),
-          premapped(false)
+          premapped(false),
+          respawn_delay(-1),
+          lockpick_itemtype(0), lockpick_init_time(-1), lockpick_interval(-1)
     { } 
 
     // Keep a reference on the configuration
@@ -72,10 +76,15 @@ public:
     TaskManager task_manager;        // holds all "tasks" waiting to run.
     ViewManager view_manager;        // sends updates of dungeon views / mini maps to clients.
 
-    std::vector<std::pair<const ItemType *, std::vector<int> > > starting_gears;
-    std::vector<std::string> *initial_msgs;
+    // setup variables (set by Lua functions during game startup)
     bool initial_update_needed;
+    std::vector<std::string> *initial_msgs;
+    std::vector<std::pair<const ItemType *, std::vector<int> > > starting_gears;
     bool premapped;
+    std::vector<const ItemType*> respawn_items;
+    int respawn_delay, respawn_interval;
+    const ItemType *lockpick_itemtype;
+    int lockpick_init_time, lockpick_interval;
 
     // this holds the GVT at which the game will end (or zero if no time limit)
     int final_gvt;
@@ -151,6 +160,23 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         if (!can_start) {
             throw LuaError(err_msg);
         }
+
+        // Setup the ItemRespawnTask
+        // 
+        // (Can't do this directly from Lua because the item respawn
+        // and lockpick spawn are mixed together in the same Task...
+        // maybe should separate them out?)
+
+        boost::shared_ptr<ItemRespawnTask>
+            respawn_task(new ItemRespawnTask(pimpl->respawn_items,
+                                             pimpl->respawn_delay,
+                                             config->getConfigMap()->getInt("item_respawn_interval"),
+                                             pimpl->lockpick_itemtype,
+                                             pimpl->lockpick_init_time,
+                                             pimpl->lockpick_interval));
+        pimpl->task_manager.addTask(respawn_task,
+                                    TP_NORMAL,
+                                    pimpl->task_manager.getGVT() + 1);
         
     } catch (...) {
 
@@ -404,4 +430,17 @@ void KnightsEngine::addStartingGear(const ItemType *itype, const std::vector<int
 int KnightsEngine::getTileCategory(const std::string &name)
 {
     return pimpl->config->getTileCategory(name);
+}
+
+void KnightsEngine::setItemRespawn(const std::vector<const ItemType*> &items_to_respawn, int respawn_delay)
+{
+    pimpl->respawn_items = items_to_respawn;
+    pimpl->respawn_delay = respawn_delay;
+}
+
+void KnightsEngine::setLockpickSpawn(const ItemType *lockpicks, int init_time, int interval)
+{
+    pimpl->lockpick_itemtype = lockpicks;
+    pimpl->lockpick_init_time = init_time;
+    pimpl->lockpick_interval = interval;
 }

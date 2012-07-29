@@ -359,11 +359,42 @@ namespace {
 
     int SetStuffRespawning(lua_State *lua)
     {
+        lua_len(lua, 1);
+        const int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+
+        std::vector<const ItemType *> itemtypes;
+        
+        for (int i = 1; i <= sz; ++i) {
+            lua_pushinteger(lua, i);
+            lua_gettable(lua, 1);
+            const ItemType *itype = ReadLuaPtr<const ItemType>(lua, -1);
+            if (!itype) {
+                luaL_error(lua, "Table entry %d is not a valid itemtype", i);
+            }
+            lua_pop(lua, 1);
+
+            itemtypes.push_back(itype);
+        }
+
+        const int respawn_delay_in_ms = luaL_checkinteger(lua, 2);
+
+        GetKnightsEngine(lua).setItemRespawn(itemtypes, respawn_delay_in_ms);
+        
         return 0;
     }
 
     int SetLockpickSpawn(lua_State *lua)
     {
+        const ItemType *itype = ReadLuaPtr<const ItemType>(lua, 1);
+        if (!itype) luaL_error(lua, "Argument #1 is not a valid itemtype");
+
+        // both times in ms
+        const int init_time = luaL_checkinteger(lua, 2);
+        const int interval_time = luaL_checkinteger(lua, 3);
+
+        GetKnightsEngine(lua).setLockpickSpawn(itype, init_time, interval_time);
+        
         return 0;
     }
 

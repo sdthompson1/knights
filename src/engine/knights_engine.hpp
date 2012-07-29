@@ -113,6 +113,8 @@ public:
     void gameStartupMsg(const std::string &msg);
     void addStartingGear(const ItemType *, const std::vector<int> &);
     int getTileCategory(const std::string &name);
+    void setItemRespawn(const std::vector<const ItemType*> &items_to_respawn, int respawn_delay);
+    void setLockpickSpawn(const ItemType *lockpicks, int init_time, int interval);
     
 private:
     boost::shared_ptr<KnightsEngineImpl> pimpl;
