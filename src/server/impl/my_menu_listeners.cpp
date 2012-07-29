@@ -73,7 +73,7 @@ void LogMenuListener::settingChanged(int item_num, const char *item_key,
                                      int choice_num, const char *choice_string,
                                      const std::vector<int> &allowed_choices)
 {
-    str << ", " << item_key << "=" << choice_string << ", ";
+    str << ", " << item_key << "=" << choice_string;
 }
 
 
