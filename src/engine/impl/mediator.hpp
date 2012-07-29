@@ -142,6 +142,17 @@ public:
     //
 
     lua_State * getLuaState() { return lua_state.get(); }
+
+
+    //
+    // Interface to print msgs. Usually this forwards to
+    // KnightsCallbacks::gameMsg, but during game setup it bypasses
+    // this and calls the function in lua_game_setup.cpp instead (this
+    // is to work around lack of a KnightsCallbacks object during game
+    // startup).
+    //
+
+    void gameMsg(int player_num, const std::string &msg);
     
     
     //

@@ -186,16 +186,28 @@ namespace {
                              settings);
             
         } catch (DungeonGenerationFailed &f) {
-            lua_pushstring(lua, f.what());   // [msg]
-            lua_setglobal(lua, "DUNGEON_ERROR"); // []
+            lua_getglobal(lua, "kts");  // [kts]
+            lua_pushstring(lua, f.what());   // [kts msg]
+            lua_setfield(lua, -2, "DUNGEON_ERROR"); // [kts]
+            lua_pop(lua, 1);
         }
 
         return 0;
     }
-        
+    
     int WipeDungeon(lua_State *lua)
     {
-        return 0;  // TODO
+        // clear the dungeon map
+        KnightsEngine &ke = GetKnightsEngine(lua);
+        ke.resetMap();
+
+        // clear DUNGEON_ERROR
+        lua_getglobal(lua, "kts");
+        lua_pushnil(lua);
+        lua_setfield(lua, -2, "DUNGEON_ERROR");
+        lua_pop(lua, 1);
+        
+        return 0;
     }
 
 
@@ -355,4 +367,11 @@ LuaStartupSentinel::LuaStartupSentinel(lua_State *lua_, KnightsEngine &ke)
 LuaStartupSentinel::~LuaStartupSentinel()
 {
     SetKnightsEngine(lua, 0);
+}
+
+
+void GameStartupMsg(lua_State *lua, const std::string &msg)
+{
+    KnightsEngine &ke = GetKnightsEngine(lua);
+    ke.gameStartupMsg(msg);
 }

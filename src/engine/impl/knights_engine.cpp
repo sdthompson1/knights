@@ -50,6 +50,7 @@ public:
     explicit KnightsEngineImpl(int nplayers)
         : view_manager(nplayers),
           initial_update_needed(true),
+          initial_msgs(0),
           premapped(false)
     { } 
 
@@ -72,6 +73,7 @@ public:
     ViewManager view_manager;        // sends updates of dungeon views / mini maps to clients.
 
     std::vector<std::pair<const ItemType *, std::vector<int> > > starting_gears;
+    std::vector<std::string> *initial_msgs;
     bool initial_update_needed;
     bool premapped;
 
@@ -96,7 +98,8 @@ public:
 KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
                              const std::vector<std::string> &player_names,
-                             bool tutorial_mode)
+                             bool tutorial_mode,
+                             std::vector<std::string> &messages)
 {
     try {
 
@@ -138,8 +141,10 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
 
         // Run the Lua game startup functions.
         LuaStartupSentinel s(config->getLuaState().get(), *this);
+        pimpl->initial_msgs = &messages;
         std::string err_msg;
         bool can_start = config->runGameStartup(*this, err_msg);
+        pimpl->initial_msgs = 0;
         if (!can_start) {
             throw LuaError(err_msg);
         }
@@ -148,6 +153,9 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         pimpl->config = config;
 
     } catch (...) {
+
+        pimpl->initial_msgs = 0;
+        
         // If there was an error in ctor then make sure Mediator gets
         // destroyed properly.
         Mediator::destroyInstance();
@@ -377,4 +385,13 @@ int KnightsEngine::getTimeRemaining() const
 void KnightsEngine::setPremapped(bool pm)
 {
     pimpl->premapped = pm;
+}
+
+void KnightsEngine::gameStartupMsg(const std::string &msg)
+{
+    if (pimpl->initial_msgs) {
+        pimpl->initial_msgs->push_back(msg);
+    } else {
+        throw UnexpectedError("KnightsEngine::gameStartupMsg called at unexpected time");
+    }
 }

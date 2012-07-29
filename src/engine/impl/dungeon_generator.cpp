@@ -422,7 +422,11 @@ namespace {
 
         // Assign H_RANDOM homes if required.
         if (home_type == H_RANDOM) {
-            AssignHomes(all_homes, all_homes.size(), nplayers, assigned_homes);
+            if (all_homes.size() < nplayers) {
+                throw DungeonGenerationFailed();
+            } else {
+                AssignHomes(all_homes, all_homes.size(), nplayers, assigned_homes);
+            }
         }
         
         // Shuffle the homes lists.

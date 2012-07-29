@@ -28,6 +28,9 @@ class KnightsEngine;
 
 struct lua_State;
 
+#include <string>
+
+
 // Adds Lua functions for game setup (dungeon generation, monster
 // activity setup, stuff like that). Functions are added to the "kts"
 // table.
@@ -43,5 +46,9 @@ public:
 private:
     lua_State *lua;
 };
+
+
+// this is a workaround to allow msgs to be printed during game startup
+void GameStartupMsg(lua_State *lua, const std::string &msg);
 
 #endif

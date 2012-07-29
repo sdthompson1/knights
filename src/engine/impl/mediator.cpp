@@ -32,6 +32,7 @@
 #include "home_manager.hpp"
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
+#include "lua_game_setup.hpp"
 #include "mediator.hpp"
 #include "monster_manager.hpp"
 #include "originator.hpp"
@@ -111,6 +112,20 @@ float Mediator::cfgProbability(const std::string &key) const
 const std::string &Mediator::cfgString(const std::string &key) const
 {
     return config_map->getString(key);
+}
+
+
+//
+// printing msgs
+//
+
+void Mediator::gameMsg(int player_num, const std::string &msg)
+{
+    if (callbacks) {
+        callbacks->gameMsg(player_num, msg);
+    } else {
+        GameStartupMsg(lua_state.get(), msg);
+    }
 }
 
 

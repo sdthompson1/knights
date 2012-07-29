@@ -28,7 +28,6 @@
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "knight.hpp"
-#include "knights_callbacks.hpp"
 #include "legacy_action.hpp"
 #include "lockable.hpp"
 #include "lua_func_wrapper.hpp"
@@ -432,7 +431,6 @@ namespace {
     {
         try {
             Mediator &med = Mediator::instance();
-            KnightsCallbacks& cb = med.getCallbacks();
             
             // find out if there is a 'player' argument, if so, convert it to a player number
             int player_num = -1;
@@ -462,7 +460,7 @@ namespace {
             }
             
             // print the message
-            cb.gameMsg(player_num, msg);
+            med.gameMsg(player_num, msg);
 
         } catch (MediatorUnavailable&) {
             // print it to stdout instead

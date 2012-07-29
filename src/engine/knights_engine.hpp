@@ -62,11 +62,9 @@ public:
     KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                   const std::vector<int> &hse_cols,
                   const std::vector<std::string> &player_names,
-                  bool tutorial_mode);
+                  bool tutorial_mode,
+                  std::vector<std::string> &msgs);
     ~KnightsEngine();
-
-    // Resets the map -- used by kts.WipeMap lua function.
-    void resetMap();
 
     // Run one update step (for a given time).
     // Uses KnightsCallbacks to inform caller of what happened during the update.
@@ -107,7 +105,9 @@ public:
     // Interface used by lua game setup functions.
     //
 
+    void resetMap();
     void setPremapped(bool);
+    void gameStartupMsg(const std::string &msg);
     
 private:
     boost::shared_ptr<KnightsEngineImpl> pimpl;

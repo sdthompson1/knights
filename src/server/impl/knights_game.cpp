@@ -201,6 +201,17 @@ namespace {
         }
     }
 
+    void SendMessages(game_conn_vector &conns, const std::vector<std::string> &messages)
+    {
+        for (game_conn_vector::const_iterator it = conns.begin(); it != conns.end(); ++it) {
+            Coercri::OutputByteBuf buf((*it)->output_data);
+            for (std::vector<std::string>::const_iterator msg = messages.begin(); msg != messages.end(); ++msg) {
+                buf.writeUbyte(SERVER_ANNOUNCEMENT);
+                buf.writeString(*msg);
+            }
+        }
+    }
+
     void DeactivateReadyFlags(KnightsGameImpl &kg)
     {
         for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
@@ -483,10 +494,11 @@ namespace {
 
                 nplayers = player_names.size();
 
-                // Create the KnightsEngine.
+                // Create the KnightsEngine. Pass any messages back to the players
+                std::vector<std::string> messages;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, hse_cols, player_names,
-                                                   kg.tutorial_mode));
+                                                   kg.tutorial_mode, messages));
 
                 } catch (LuaPanic &) {
                     // This is serious enough that we re-throw and let 
@@ -494,6 +506,9 @@ namespace {
                     throw;
                     
                 } catch (const std::exception &e) {
+
+                    SendMessages(kg.connections, messages);
+                    
                     kg.startup_err_msg = e.what();
                     if (kg.startup_err_msg.empty()) kg.startup_err_msg = "Unknown error";
                     kg.update_thread_wants_to_exit = true;
@@ -530,13 +545,20 @@ namespace {
                     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
                 }
 
-                // Send the team chat notification (but only if more than 1 player on the team; #151)
-                for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    Coercri::OutputByteBuf buf((*it)->output_data);
+                {
+                    boost::lock_guard<boost::mutex> lock(kg.my_mutex);
 
-                    if (!(*it)->obs_flag && team_counts[(*it)->house_colour] > 1) {
-                        buf.writeUbyte(SERVER_ANNOUNCEMENT);
-                        buf.writeString("Note: Team chat is available. Type /t at the start of your message to send to your team only.");
+                    // Send through any initialization msgs from lua.
+                    SendMessages(kg.connections, messages);
+
+                    // Send the team chat notification (but only if more than 1 player on the team; #151)
+                    for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                        Coercri::OutputByteBuf buf((*it)->output_data);
+                        
+                        if (!(*it)->obs_flag && team_counts[(*it)->house_colour] > 1) {
+                            buf.writeUbyte(SERVER_ANNOUNCEMENT);
+                            buf.writeString("Note: Team chat is available. Type /t at the start of your message to send to your team only.");
+                        }
                     }
                 }
 
