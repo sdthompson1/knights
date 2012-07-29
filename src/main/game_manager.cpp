@@ -538,9 +538,7 @@ void GameManager::createMenuWidgets(gcn::ActionListener *listener,
     }
 
     // make sure the list models get updated
-    for (int i = 0; i < menu->getNumItems(); ++i) {
-        updateMenuWidget(i);
-    }
+    updateAllMenuWidgets();
 
     y_after_menu = y;
     menu_width = max_label_w + pad + max_widget_w;
@@ -558,9 +556,7 @@ void GameManager::setMenuWidgetsEnabled(bool enabled)
     if (pimpl->are_menu_widgets_enabled == enabled) return;
     pimpl->are_menu_widgets_enabled = enabled;
     
-    for (int i = 0; i < int(pimpl->menu_widgets_map.size()); ++i) {
-        updateMenuWidget(i);
-    }
+    updateAllMenuWidgets();
 }
 
 void GameManager::getMenuStrings(std::vector<std::pair<std::string, std::string> > &menu_strings) const
@@ -645,47 +641,54 @@ void GameManager::updateMenuWidget(int item_num)
 {
     Sentinel sentinel(pimpl->doing_menu_widget_update);
     
-    if (item_num >= 0 && item_num < pimpl->menu_widgets_map.size()) {
-        MenuWidgets & mw = pimpl->menu_widgets_map[item_num];
-        MenuChoices & mc = pimpl->menu_choices[item_num];
+    ASSERT (item_num >= 0 && item_num < pimpl->menu_widgets_map.size());
 
-        // this works for both dropdowns and numeric fields
-        const bool is_enabled = (mc.allowed_choices.size() != 1 || mc.allowed_choices[0] != 0)
-            && pimpl->are_menu_widgets_enabled;
-        const gcn::Color fg_col = is_enabled ? gcn::Color(0,0,0) : gcn::Color(170,170,170);
+    MenuWidgets & mw = pimpl->menu_widgets_map[item_num];
+    const MenuChoices & mc = pimpl->menu_choices[item_num];
 
-        if (mw.dropdown) {
+    // this works for both dropdowns and numeric fields
+    const bool is_enabled = (mc.allowed_choices.size() != 1 || mc.allowed_choices[0] != 0)
+        && pimpl->are_menu_widgets_enabled;
+    const gcn::Color fg_col = is_enabled ? gcn::Color(0,0,0) : gcn::Color(170,170,170);
+
+    if (mw.dropdown) {
+        
+        mw.list_model->elts.clear();
+        mw.list_model->vals.clear();
             
-            mw.list_model->elts.clear();
-            mw.list_model->vals.clear();
-                
-            for (std::vector<int>::const_iterator it = mc.allowed_choices.begin(); it != mc.allowed_choices.end(); ++it) {
-                mw.list_model->elts.push_back(mw.menu_item->getChoiceString(*it));
-                mw.list_model->vals.push_back(*it);
-            }
-                
-            for (int idx = 0; idx < mw.list_model->vals.size(); ++idx) {
-                const int val_at_idx = mw.list_model->vals[idx];
-                if (val_at_idx == mc.choice) {
-                    mw.dropdown->setSelected(idx);
-                    break;
-                }
-            }
-
-            mw.dropdown->setForegroundColor(fg_col);
-            mw.dropdown->setEnabled(is_enabled);
-
-        } else {
-
-            std::ostringstream str;
-            if (mc.choice > 0) str << mc.choice;
-            mw.textfield->setText(str.str());
-
-            mw.textfield->setEnabled(is_enabled);
-            mw.textfield->setForegroundColor(fg_col);
+        for (std::vector<int>::const_iterator it = mc.allowed_choices.begin(); it != mc.allowed_choices.end(); ++it) {
+            mw.list_model->elts.push_back(mw.menu_item->getChoiceString(*it));
+            mw.list_model->vals.push_back(*it);
         }
             
-        pimpl->gui_invalid = true;
+        for (int idx = 0; idx < mw.list_model->vals.size(); ++idx) {
+            const int val_at_idx = mw.list_model->vals[idx];
+            if (val_at_idx == mc.choice) {
+                mw.dropdown->setSelected(idx);
+                break;
+            }
+        }
+
+        mw.dropdown->setForegroundColor(fg_col);
+        mw.dropdown->setEnabled(is_enabled);
+
+    } else {
+
+        std::ostringstream str;
+        if (mc.choice > 0) str << mc.choice;
+        mw.textfield->setText(str.str());
+
+        mw.textfield->setEnabled(is_enabled);
+        mw.textfield->setForegroundColor(fg_col);
+    }
+        
+    pimpl->gui_invalid = true;
+}
+
+void GameManager::updateAllMenuWidgets()
+{
+    for (int i = 0; i < pimpl->menu_widgets_map.size(); ++i) {
+        updateMenuWidget(i);
     }
 }
 
@@ -1023,7 +1026,10 @@ void GameManager::setMenuSelection(int item_num, int choice_num, const std::vect
     mc.choice = choice_num;
     
     // Update GUI
-    updateMenuWidget(item_num);
+    // Note: May be slightly inefficient to update *everything* every time there is a SET_MENU_SELECTION.
+    // But it does at least guarantee that the menu is in a consistent state, w/ no race conditions if
+    // multiple players are updating menu at same time...
+    updateAllMenuWidgets();
 
     pimpl->gui_invalid = true;
 }

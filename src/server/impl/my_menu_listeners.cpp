@@ -36,16 +36,8 @@ void MyMenuListener::settingChanged(int item_num, const char *,
                                     const std::vector<int> &allowed_choices)
 {
     changed = true;
-    for (std::vector<std::pair<Coercri::OutputByteBuf, bool> >::iterator bit = bufs.begin();
-         bit != bufs.end(); ++bit) {
-        
-        if (bit->second && item_num == original_item && choice_num == original_choice) {
-            // this client already knows about this setting. skip it.
-            // (this is important to avoid 'lag' when editing numeric fields.)
-            continue;
-        }
-        
-        Coercri::OutputByteBuf &buf = bit->first;
+    for (std::vector<Coercri::OutputByteBuf>::iterator bit = bufs.begin(); bit != bufs.end(); ++bit) {
+        Coercri::OutputByteBuf &buf = *bit;
         buf.writeUbyte(SERVER_SET_MENU_SELECTION);
         buf.writeVarInt(item_num);
         buf.writeVarInt(choice_num);
@@ -58,9 +50,8 @@ void MyMenuListener::settingChanged(int item_num, const char *,
 
 void MyMenuListener::questDescriptionChanged(const std::string &s)
 {
-    for (std::vector<std::pair<Coercri::OutputByteBuf, bool> >::iterator bit = bufs.begin();
-         bit != bufs.end(); ++bit) {
-        Coercri::OutputByteBuf &buf = bit->first;
+    for (std::vector<Coercri::OutputByteBuf>::iterator bit = bufs.begin(); bit != bufs.end(); ++bit) {
+        Coercri::OutputByteBuf &buf = *bit;
         buf.writeUbyte(SERVER_SET_QUEST_DESCRIPTION);
         buf.writeString(s);
     }

@@ -344,8 +344,8 @@ namespace {
         }
         
         // Send the current menu selections
-        MyMenuListener listener(0, 0);
-        listener.addBuf(buf, false);
+        MyMenuListener listener;
+        listener.addBuf(buf);
         impl.knights_config->getCurrentMenuSettings(listener);
 
         // Send the available knight house colours
@@ -384,9 +384,9 @@ namespace {
 
     void UpdateNumPlayersAndTeams(KnightsGameImpl &kg)
     {
-        MyMenuListener listener(0,0);
+        MyMenuListener listener;
         for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-            listener.addBuf((*it)->output_data, false);
+            listener.addBuf((*it)->output_data);
         }
         kg.knights_config->changeNumberOfPlayers(CountPlayers(kg), CountTeams(kg), listener);
     }
@@ -1681,9 +1681,9 @@ void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int c
 
     // since we now know the update thread is not running, there is no need to lock.
 
-    MyMenuListener listener(item_num, choice_num);
+    MyMenuListener listener;
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-        listener.addBuf((*it)->output_data, it->get() == conn);
+        listener.addBuf((*it)->output_data);
     }
     pimpl->knights_config->changeMenuSetting(item_num, choice_num, listener);
     
@@ -1716,9 +1716,9 @@ void KnightsGame::randomQuest(GameConnection &conn)
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can set quests.
 
-    MyMenuListener listener(0,0);
+    MyMenuListener listener;
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-        listener.addBuf((*it)->output_data, false);
+        listener.addBuf((*it)->output_data);
     }
     pimpl->knights_config->randomQuest(listener);
 

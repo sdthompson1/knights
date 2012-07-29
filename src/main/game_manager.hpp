@@ -225,6 +225,7 @@ public:
 
 private:
     void updateMenuWidget(int item_num);
+    void updateAllMenuWidgets();
     
 private:
     boost::shared_ptr<GameManagerImpl> pimpl;

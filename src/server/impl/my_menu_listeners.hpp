@@ -34,17 +34,9 @@
 // Implementation of MenuListener to send out a SERVER_SET_MENU_SELECTION message
 class MyMenuListener : public MenuListener {
 public:
-    MyMenuListener(int original_item_, int original_choice_)
-        : original_item(original_item_),
-          original_choice(original_choice_),
-          changed(false)
-    { }
-    void addBuf(Coercri::OutputByteBuf buf, bool original) {
-        bufs.push_back(std::make_pair(buf, original));
-    }
-    void addBuf(std::vector<unsigned char> &vec, bool original) {
-        bufs.push_back(std::make_pair(Coercri::OutputByteBuf(vec), original));
-    }
+    MyMenuListener() : changed(false) { }
+    void addBuf(Coercri::OutputByteBuf buf) { bufs.push_back(buf); }
+    void addBuf(std::vector<unsigned char> &vec) { bufs.push_back(Coercri::OutputByteBuf(vec)); }
     bool wereThereChanges() const { return changed; }
     
     virtual void settingChanged(int item_num, const char *item_key,
@@ -53,9 +45,7 @@ public:
     virtual void questDescriptionChanged(const std::string &desc);
     
 private:
-    std::vector<std::pair<Coercri::OutputByteBuf, bool> > bufs;
-    int original_item;
-    int original_choice;
+    std::vector<Coercri::OutputByteBuf> bufs;
     bool changed;
 };
 
