@@ -27,6 +27,7 @@
 #include "boost/shared_ptr.hpp"
 using namespace boost;
 
+#include <memory>
 #include <vector>
 using namespace std;
 
@@ -58,7 +59,7 @@ enum HomeType { H_NONE, H_CLOSE, H_AWAY, H_RANDOM };
 // Settings used by DungeonGenerator
 
 struct DungeonSettings {
-    const DungeonLayout *layout;
+    std::auto_ptr<DungeonLayout> layout;
     std::vector<boost::shared_ptr<Tile> > wall_tiles, hdoor_tiles, vdoor_tiles;
     std::vector<const Segment*> normal_segments, required_segments;
     HomeType home_type;
@@ -75,8 +76,7 @@ void DungeonGenerator(DungeonMap &dmap,
                       CoordTransform &ct,
                       HomeManager &home_manager,
                       MonsterManager &monster_manager,
-                      std::vector<boost::shared_ptr<Player> > &players,
-                      int nplayers,
+                      const std::vector<Player*> &players,
                       const DungeonSettings &settings);
 
 #endif

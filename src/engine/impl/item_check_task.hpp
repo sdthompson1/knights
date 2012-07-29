@@ -44,6 +44,7 @@
 #include <vector>
 
 class DungeonMap;
+class Item;
 class ItemType;
 class Quest;
 

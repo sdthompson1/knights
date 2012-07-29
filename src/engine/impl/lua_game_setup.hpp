@@ -29,6 +29,6 @@ struct lua_State;
 // Adds Lua functions for game setup (dungeon generation, monster
 // activity setup, stuff like that). Functions are added to the "kts"
 // table.
-void AddLuaConfigFunctions(lua_State *);
+void AddLuaGameSetupFunctions(lua_State *);
 
 #endif

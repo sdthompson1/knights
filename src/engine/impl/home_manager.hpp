@@ -43,7 +43,7 @@ public:
     // The pos is the tile one outside the home, and the facing must point towards
     // the home.
     // NOTE: we assume all homes are in the same DungeonMap at present. 
-    void addHome(const MapCoord &pos, MapDirection facing);
+    void addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing);
 
     // Secure a home by a given player
     // (This does nothing if the given tile is not a home.)
@@ -52,23 +52,41 @@ public:
                     shared_ptr<Tile> secured_wall_tile);
 
     // is this a securable home
-    bool isSecurableHome(const Player &pl, const MapCoord &pos, MapDirection facing) const;
+    bool isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &pos, MapDirection facing) const;
 
     // On-knight-death routine. In "different every time" respawn mode, this
     // randomizes the knight's "home" location. Otherwise it does nothing.
     void onKnightDeath(Player &pl) const;
     
 private:
-    // returns a null MapCoord if no such home can be found
-    pair<MapCoord,MapDirection> getRandomHomeFor(const Player &pl) const;
+    // returns a null DungeonMap/MapCoord if no such home can be found
+    void getRandomHomeFor(const Player &pl,
+                          DungeonMap *& dmap_out,
+                          MapCoord &mc_out,
+                          MapDirection &dir_out) const;
     
 private:
+   
+    struct HomeLocation {
+        DungeonMap *dmap;
+        MapCoord mc;            // one tile outside the home
+        MapDirection facing;    // points from mc towards the home
+
+        bool operator<(const HomeLocation &other) const
+        {
+            // Dmap/mc are enough to disambiguate different homes,
+            // so no need to compare facing
+            return mc < other.mc ? true
+                : other.mc < mc ? false
+                : dmap < other.dmap;
+        }
+    };
+
     // This map stores the secure-status of each home.
     // stored player == 0 means the home is unsecured
     // stored player != 0 means the home is secured by that player
     // Home not in map at all == The home was secured by both players.
-    // NOTE: We assume all homes are in the same DungeonMap at present. 
-    typedef map<pair<MapCoord,MapDirection>, const Player *> HomeMap;
+    typedef map<HomeLocation, const Player *> HomeMap;
     HomeMap homes;
 };
 

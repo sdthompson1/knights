@@ -232,7 +232,7 @@ d_snake = {
 
 d_ring = {
    name = "Ring",
-   next = d_huge,
+   next = d_big,
    func = function()
       local choice = kts.RandomRange(1,6)
       if choice <= 4 then

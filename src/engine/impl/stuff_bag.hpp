@@ -86,7 +86,6 @@ class StuffManager {
 public:
     // initialization -- These should be set before calling the other StuffManager functions.
     void setStuffBagGraphic(lua_State *lua, const Graphic *gfx);
-    void setDungeonMap(DungeonMap *dmap_) { dmap = dmap_; }
     
     // Get the ItemType for a stuff bag: (this is unique)
     const ItemType & getStuffBagItemType() const { return *stuff_bag_item_type; }
@@ -94,11 +93,11 @@ public:
     // Assign a StuffContents to a given MapCoord
     // (it's assumed that a stuff bag item will be put down at that position)
     // This is used by Knight::dropAllItems. 
-    void setStuffContents(const MapCoord &mc, const StuffContents &stuff);
+    void setStuffContents(DungeonMap &dmap, const MapCoord &mc, const StuffContents &stuff);
 
     // Get the Items contained within a given stuff bag.
     // (returns NULL if no stuff could be found here.)
-    const vector<shared_ptr<Item> > * getItems(const MapCoord &mc) const;
+    const vector<shared_ptr<Item> > * getItems(DungeonMap *dmap, const MapCoord &mc) const;
     
     // Pickup and Drop functions for stuff bags. (Only defined for Knights, not general
     // Creatures)
@@ -118,11 +117,21 @@ public:
 
     
 private:
-    DungeonMap *dmap;
+
+    struct Location {
+        DungeonMap *dmap;
+        MapCoord mc;
+
+        bool operator<(const Location &other) const {
+            return mc < other.mc ? true
+                : other.mc < mc ? false
+                : dmap < other.dmap;
+        }
+    };
 
     // NOTE: stuff_map may contain "stale" entries for squares where the stuff bag no longer exists.
     // These should be treated as bogus, and ignored.
-    map<MapCoord, StuffContents> stuff_map;
+    map<Location, StuffContents> stuff_map;
     
     auto_ptr<ItemType> stuff_bag_item_type;
 };

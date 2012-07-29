@@ -81,6 +81,7 @@ struct MenuWrapperImpl {
     // and min/max players/teams information
     Funcs menu_funcs;
     LuaFunc describe_quest_func;
+    LuaFunc prepare_game_func, start_game_func;
     std::vector<ItemInfo> item_info;
 
     // The mapping between Lua keys and C++ item numbers (done as STL containers)
@@ -825,8 +826,10 @@ namespace {
 
         lua_pop(lua, 1);   // [menu]
 
-        // Store a ref to 'describe_quest_func'
+        // Store refs to menu-level functions
         impl.describe_quest_func.reset(lua, -1, "describe_quest_func");    // [m]
+        impl.prepare_game_func.reset(lua, -1, "prepare_game_func");
+        impl.start_game_func.reset(lua, -1, "start_game_func");
         
         // Now call the initialization function (if present).
 
@@ -1000,4 +1003,34 @@ void MenuWrapper::randomQuest(MenuListener &listener)
 
     // Report the changed settings to the listener.
     Report(lua, *pimpl, old, listener);
+}
+
+bool MenuWrapper::runGameStartup(KnightsEngine &ke, std::string &err_msg)
+{
+    lua_State *lua = GetLuaState(*pimpl);
+
+    // Call 'prepare_game_func' (parameter S)
+    pimpl->s_table.push(lua);   // [S]
+    pimpl->prepare_game_func.runNArgsNoPop(lua, 1);  // [S]
+    
+    // Call all the 'features' functions. (pass parameter S)
+    lua_pushnil(lua);           // [S nil]
+    CallAllFuncs(lua, *pimpl, &Funcs::features);  // []
+
+    // Call 'start_game_func' (parameter S)
+    pimpl->s_table.push(lua);  // [S]
+    pimpl->start_game_func.runNArgsNoPop(lua, 1);  // [S]
+    lua_pop(lua, 1); // []
+
+    // See if DUNGEON_ERROR is set.
+    lua_getglobal(lua, "kts");  // [kts]
+    lua_getfield(lua, -1, "DUNGEON_ERROR");  // [kts err]
+    bool ok = true;
+    if (!lua_isnil(lua, -1)) {
+        ok = false;
+        err_msg = luaL_tolstring(lua, -1, 0);  // [kts err str]
+        lua_pop(lua, 1);  // [kts err]
+    }
+    lua_pop(lua, 2);  // []
+    return ok;
 }

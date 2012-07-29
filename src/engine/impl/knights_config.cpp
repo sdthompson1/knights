@@ -110,9 +110,7 @@ void KnightsConfig::randomQuest(MenuListener &listener)
 // interface used by KnightsEngine
 //
 
-void KnightsConfig::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
-                                   boost::shared_ptr<CoordTransform> &coord_transform,
-                                   HomeManager &home_manager,
+void KnightsConfig::initializeGame(HomeManager &home_manager,
                                    std::vector<boost::shared_ptr<Player> > &players,
                                    StuffManager &stuff_manager,
                                    GoreManager &gore_manager,
@@ -123,9 +121,7 @@ void KnightsConfig::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
                                    const std::vector<std::string> &player_names,
                                    TutorialManager *tutorial_manager) const
 {
-    pimpl->initializeGame(dungeon_map,
-                          coord_transform,
-                          home_manager,
+    pimpl->initializeGame(home_manager,
                           players,
                           stuff_manager,
                           gore_manager,
@@ -145,4 +141,9 @@ boost::shared_ptr<const ConfigMap> KnightsConfig::getConfigMap() const
 boost::shared_ptr<lua_State> KnightsConfig::getLuaState()
 {
     return pimpl->getLuaState();
+}
+
+bool KnightsConfig::runGameStartup(KnightsEngine &ke, std::string &err_msg)
+{
+    return pimpl->getMenuWrapper().runGameStartup(ke, err_msg);
 }

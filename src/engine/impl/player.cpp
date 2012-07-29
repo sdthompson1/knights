@@ -75,12 +75,16 @@ namespace {
         }
     }
 
-    MapCoord FindRespawnPoint(DungeonMap &dmap, MapCoord home_point)
+    MapCoord FindRespawnPoint(DungeonMap *dmap, MapCoord home_point)
     {
+        if (!dmap) {
+            return MapCoord();
+        }
+        
         if (home_point.isNull()) {
             // knight doesn't have a home, so pick a random point to respawn
-            home_point = MapCoord(g_rng.getInt(1, dmap.getWidth()-1),
-                                  g_rng.getInt(1, dmap.getHeight()-1));
+            home_point = MapCoord(g_rng.getInt(1, dmap->getWidth()-1),
+                                  g_rng.getInt(1, dmap->getHeight()-1));
         }
         
         // Trac #24. Try to find an alternative nearby respawn point
@@ -102,13 +106,13 @@ namespace {
             closed.insert(mc);
 
             // Add the surrounding squares to open list
-            TryInsert(open, dmap, closed, DisplaceCoord(mc, D_NORTH));
-            TryInsert(open, dmap, closed, DisplaceCoord(mc, D_SOUTH));
-            TryInsert(open, dmap, closed, DisplaceCoord(mc, D_EAST));
-            TryInsert(open, dmap, closed, DisplaceCoord(mc, D_WEST));
+            TryInsert(open, *dmap, closed, DisplaceCoord(mc, D_NORTH));
+            TryInsert(open, *dmap, closed, DisplaceCoord(mc, D_SOUTH));
+            TryInsert(open, *dmap, closed, DisplaceCoord(mc, D_EAST));
+            TryInsert(open, *dmap, closed, DisplaceCoord(mc, D_WEST));
             
             // Now try to respawn on this point
-            if (dmap.getAccess(mc, H_WALKING) == A_CLEAR) {
+            if (dmap->getAccess(mc, H_WALKING) == A_CLEAR) {
                 return mc;
             }
         }
@@ -149,7 +153,6 @@ void RespawnTask::execute(TaskManager &tm)
 //
 
 Player::Player(int plyr_num,
-               DungeonMap &home_map, 
                const Anim *a, const ItemType * di, 
                const vector<const Control*> &cs, 
                shared_ptr<const ColourChange> sec_home_cc,
@@ -158,7 +161,7 @@ Player::Player(int plyr_num,
     : player_num(plyr_num), control(0),
       current_room(-1), current_room_width(0), current_room_height(0),
       mini_map_width(0), mini_map_height(0),
-      home_dmap(home_map), exit_from_players_home(0), 
+      home_dmap(0), exit_from_players_home(0), 
       anim(a),
       default_item(di), backpack_capacities(0), control_set(cs),
       secured_home_cc(sec_home_cc),
@@ -509,7 +512,7 @@ bool Player::respawn()
     // NB This is done AFTER setting "knight" because we want getKnight to respond with 
     // the current knight, even before that knight is added to the map. (Otherwise Game
     // won't correctly process the onAddEntity event.)
-    my_knight->addToMap(&home_dmap, respawn_point);
+    my_knight->addToMap(home_dmap, respawn_point);
     my_knight->setFacing(Opposite(home_facing));
 
     // Add starting gear
@@ -698,11 +701,12 @@ void Player::addItemControls(const ItemType &itype, map<const Control *, Control
 }
 
 
-void Player::resetHome(const MapCoord &mc, const MapDirection &facing)
+void Player::resetHome(DungeonMap *dmap, const MapCoord &mc, const MapDirection &facing)
 {
     // NOTE: We assume the player is not currently approaching his own home.
     // (This is OK at the moment because homes can only be secured when no-one is
     // approaching them...)
+    home_dmap = dmap;
     home_location = mc;
     home_facing = facing;
 }

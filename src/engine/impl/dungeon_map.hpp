@@ -45,7 +45,6 @@ using namespace boost::multi_index;
 #include <list>
 #include <map>
 #include <vector>
-using namespace std;
 
 class Creature;
 class Entity;
@@ -118,11 +117,11 @@ public:
     // existing contents of "results" are cleared.
     // NB if an entity is halfway between squares then it counts as being on both of those
     // squares.
-    void getEntities(const MapCoord &mc, vector<shared_ptr<Entity> > &results) const;
+    void getEntities(const MapCoord &mc, std::vector<boost::shared_ptr<Entity> > &results) const;
     
     // get all entities, including approached ones
     // return them in "results" vector (existing contents of "results" vector are cleared).
-    void getAllEntities(const MapCoord &mc, vector<shared_ptr<Entity> > &results) const;
+    void getAllEntities(const MapCoord &mc, std::vector<boost::shared_ptr<Entity> > &results) const;
 
     // get target creature: this is used for combat.
     // allow_both_sqs: if true, can target attacker's sq or the sq one ahead of the attacker.
@@ -136,7 +135,7 @@ public:
     // get tiles at a given square
     // Returns results in a vector (not the most efficient method, but probably the most
     // flexible). Existing contents of the vector are deleted.
-    void getTiles(const MapCoord &mc, vector<shared_ptr<Tile> > &output) const;
+    void getTiles(const MapCoord &mc, std::vector<boost::shared_ptr<Tile> > &output) const;
     
     // displaced items:
     // Used for items that should have been dropped (eg when a knight died), but there
@@ -147,7 +146,7 @@ public:
     // Direct access to the displaced items vector. NOTE: Do not use this to add displaced items
     // as it will not set up the item replacement task. (Call addDisplacedItem instead.) It should
     // be ok to remove items, or modify existing ones, though.
-    vector<DisplacedItem> & getDisplacedItems() { return displaced_items; }
+    std::vector<DisplacedItem> & getDisplacedItems() { return displaced_items; }
 
     // Count items of various types. Used by item respawn code
     void countItems(std::map<const ItemType*, int> &result) const;
@@ -155,7 +154,7 @@ public:
 private:
     // helper function for getAllEntities
     void doEntity(const MapCoord &mc, MapDirection facing, 
-                 vector<shared_ptr<Entity> > &results) const;
+                  std::vector<boost::shared_ptr<Entity> > &results) const;
 
     // helper for getTargetCreature
     shared_ptr<Creature> getTargetCreatureHelper(const Entity &, const MapCoord &) const;
@@ -177,23 +176,23 @@ private:
     // entities which only get one entry, on their "base" square).
 
     template<class T>
-    struct GetPos : unary_function<pair<MapCoord,T>, MapCoord> {
-        const MapCoord & operator()(const pair<MapCoord, T> &p) const {
+    struct GetPos : std::unary_function<std::pair<MapCoord,T>, MapCoord> {
+        const MapCoord & operator()(const std::pair<MapCoord, T> &p) const {
             return p.first;
         }
     };
     template<class T>
-    struct GetSecond : unary_function<pair<MapCoord,T>, T> {
-        const T & operator()(const pair<MapCoord,T> &p) const {
+    struct GetSecond : std::unary_function<std::pair<MapCoord,T>, T> {
+        const T & operator()(const std::pair<MapCoord,T> &p) const {
             return p.second;
         }
     };
 
-    typedef boost::multi_index_container<pair<MapCoord, shared_ptr<Entity> >, 
+    typedef boost::multi_index_container<std::pair<MapCoord, shared_ptr<Entity> >, 
         indexed_by< hashed_non_unique<GetPos<shared_ptr<Entity> > > > > EntityContainer;
-    typedef boost::multi_index_container<pair<MapCoord, shared_ptr<Item> >,
+    typedef boost::multi_index_container<std::pair<MapCoord, shared_ptr<Item> >,
         indexed_by< hashed_unique<GetPos<shared_ptr<Item> > > > > ItemContainer;
-    typedef vector<list<shared_ptr<Tile> > > TileContainer;
+    typedef std::vector<std::list<shared_ptr<Tile> > > TileContainer;
 
     EntityContainer entities;
     ItemContainer items;
@@ -204,7 +203,7 @@ private:
     RoomMap *room_map;
 
     // List of items that need to be re-placed
-    vector<DisplacedItem> displaced_items;
+    std::vector<DisplacedItem> displaced_items;
     friend class ItemReplacementTask;
 };
 

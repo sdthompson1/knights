@@ -111,7 +111,7 @@ public:
     virtual void execute(TaskManager &tm);
     virtual void onDispel(shared_ptr<Knight> kt) { clearAllHighlights(); }
 private:
-    bool interestingItemAt(const DungeonMap &dmap, const MapCoord &mc,
+    bool interestingItemAt(DungeonMap &dmap, const MapCoord &mc,
                            const Player &pl) const;
     void setHighlight(const MapCoord &mc, bool on);
     void clearAllHighlights();
@@ -190,7 +190,7 @@ void SenseItemsTask::execute(TaskManager &tm)
     tm.addTask(shared_from_this(), TP_NORMAL, Mediator::instance().cfgInt("player_task_interval") + tm.getGVT());
 }
 
-bool SenseItemsTask::interestingItemAt(const DungeonMap &dmap, const MapCoord &mc,
+bool SenseItemsTask::interestingItemAt(DungeonMap &dmap, const MapCoord &mc,
                                        const Player &pl) const
 {
     // Check raw item
@@ -200,7 +200,7 @@ bool SenseItemsTask::interestingItemAt(const DungeonMap &dmap, const MapCoord &m
     // Check for items within stuff bags
     const StuffManager &stuff(Mediator::instance().getStuffManager());
     if (item && &item->getType() == &stuff.getStuffBagItemType()) {
-        const vector<shared_ptr<Item> > * items = stuff.getItems(mc);
+        const vector<shared_ptr<Item> > * items = stuff.getItems(&dmap, mc);
         if (items) {
             for (vector<shared_ptr<Item> >::const_iterator it = items->begin();
             it != items->end(); ++it) {

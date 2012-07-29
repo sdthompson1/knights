@@ -110,7 +110,7 @@ void ItemCheckTask::findMissingItems(std::map<const ItemType *, int> &missing_it
 
             // check for items in stuff bags
             if (item && &item->getType() == &stuff_item_type) {
-                const std::vector<boost::shared_ptr<Item> > * stuff_bag = stuff_manager.getItems(mc);
+                const std::vector<boost::shared_ptr<Item> > * stuff_bag = stuff_manager.getItems(&dmap, mc);
                 if (stuff_bag) {
                     for (std::vector<boost::shared_ptr<Item> >::const_iterator it = stuff_bag->begin(); it != stuff_bag->end(); ++it) {
                         processItem(missing_items, *it);

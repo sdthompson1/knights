@@ -32,14 +32,16 @@
 #include "lua_func.hpp"
 #include "map_support.hpp"
 
+#include "boost/shared_ptr.hpp"
+
 #include <map>
 #include <string>
-using namespace std;
 
 class Action;
 class ActionData;
 class Creature;
 class DungeonMap;
+class Originator;
 class Player;
 class Tile;
 
@@ -54,7 +56,7 @@ public:
 
     // A generic system for "event hooks"
     void setupHooks(const map<string, LuaFunc> &h) { hooks = h; }
-    void runHook(const string &h, shared_ptr<Creature> cr) const;
+    void runHook(const string &h, boost::shared_ptr<Creature> cr) const;
     void runHook(const string &h, DungeonMap *dmap, const MapCoord &mc) const;
     
 private:

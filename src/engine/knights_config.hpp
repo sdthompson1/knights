@@ -47,19 +47,19 @@
 #include "gfx/color.hpp"
 
 #include "boost/shared_ptr.hpp"
+#include <string>
 #include <vector>
 
 class Anim;
 class ConfigMap;
-class CoordTransform;
 class DungeonGenerator;
-class DungeonMap;
 class EventManager;
 class GoreManager;
 class Graphic;
 class HomeManager;
 class ItemType;
 class KnightsConfigImpl;
+class KnightsEngine;
 class Menu;
 class MenuListener;
 class MonsterManager;
@@ -128,26 +128,25 @@ public:
     // NOTE: this creates dependencies on to quite a lot of other
     // classes, it might be nice if we could reduce this somehow.
 
-    // Return value = a warning message to be displayed to players (or "" if there are no warnings)
-    
-    std::string initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
-                               boost::shared_ptr<CoordTransform> &coord_transform,
-                               std::vector<boost::shared_ptr<Quest> > &quests,
-                               HomeManager &home_manager,
-                               std::vector<boost::shared_ptr<Player> > &players,
-                               StuffManager &stuff_manager,
-                               GoreManager &gore_manager,
-                               MonsterManager &monster_manager,
-                               EventManager &event_manager,
-                               bool &premapped,
-                               std::vector<std::pair<const ItemType *, std::vector<int> > > &starting_gears,
-                               TaskManager &task_manager,
-                               const std::vector<int> &hse_cols,
-                               const std::vector<std::string> &player_names,
-                               TutorialManager *tutorial_manager,    // TutorialManager is optional
-                               int &final_gvt) const;
+    void initializeGame(HomeManager &home_manager,
+                        std::vector<boost::shared_ptr<Player> > &players,
+                        StuffManager &stuff_manager,
+                        GoreManager &gore_manager,
+                        MonsterManager &monster_manager,
+                        EventManager &event_manager,
+                        TaskManager &task_manager,
+                        const std::vector<int> &hse_cols,
+                        const std::vector<std::string> &player_names,
+                        TutorialManager *tutorial_manager) const; // TutorialManager is optional
     boost::shared_ptr<const ConfigMap> getConfigMap() const;
     boost::shared_ptr<lua_State> getLuaState();  // This will live for as long as the KnightsConfig lives.
+
+    // Run all the game startup functions.
+    // On success, returns true.
+    // On failure, returns false and sets err msg in the given string argument.
+    // (Needs to be given ptr to KnightsEngine, so that kts.WipeMap can call ke.resetMap() if needed.)
+    bool runGameStartup(KnightsEngine &ke, std::string &err_msg);
+
     
 private:
     boost::shared_ptr<KnightsConfigImpl> pimpl;

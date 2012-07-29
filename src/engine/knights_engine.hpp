@@ -41,7 +41,6 @@ class DungeonView;
 class KnightsCallbacks;
 class KnightsConfig;
 class KnightsEngineImpl;
-class MenuSelections;
 class MiniMap;
 class StatusDisplay;
 class UserControl;
@@ -63,10 +62,11 @@ public:
     KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                   const std::vector<int> &hse_cols,
                   const std::vector<std::string> &player_names,
-                  bool tutorial_mode,
-                  bool deathmatch_mode,  // HACK, this should really be in the KnightsConfig.
-                  std::string &warning_msg);
+                  bool tutorial_mode);
     ~KnightsEngine();
+
+    // Resets the map -- used by kts.WipeMap lua function.
+    void resetMap();
 
     // Run one update step (for a given time).
     // Uses KnightsCallbacks to inform caller of what happened during the update.

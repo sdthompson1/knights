@@ -70,7 +70,6 @@ public:
     // fire). (Items and Tiles will be checked for additional controls, and the global
     // controls from control.hpp will also always be available.)
     Player(int plyr_num,
-           DungeonMap &home_map, 
            const Anim * anim, const ItemType * dflt_item, 
            const vector<const Control*> &control_set_,
            shared_ptr<const ColourChange> secured_home_cc,
@@ -91,7 +90,8 @@ public:
     void setExitFromPlayersHome(const Player &p)
     { exit_from_players_home = &p; }
     
-    // accessor functions   
+    // accessor functions
+    DungeonMap * getHomeMap() const { return home_dmap; }
     const MapCoord & getHomeLocation() const { return home_location; }  // square just outside the home,
                                                                         // or NULL if all homes secured.
     MapDirection getHomeFacing() const { return home_facing; }  // direction pointing towards the home.
@@ -166,7 +166,7 @@ public:
     // reset home (called by HomeManager, also called by eliminatePlayer to stop the player respawning)
     // (mc = pos just outside home; not the home square itself)
     // (facing = towards the home.)
-    void resetHome(const MapCoord &mc, const MapDirection &facing);
+    void resetHome(DungeonMap *dmap, const MapCoord &mc, const MapDirection &facing);
     
     // event handling functions
     void onDeath(); // Called by Knight dtor. Organizes respawning, and adds a skull.
@@ -235,7 +235,7 @@ private:
     std::map<int, std::pair<int, int> > knight_locations;
     std::set<std::pair<int, int> > item_locations;
     
-    DungeonMap &home_dmap;
+    DungeonMap *home_dmap;
     const Player * exit_from_players_home;   // If set, this overrides exit_location/exit_facing.
     MapCoord home_location, exit_location;
     MapDirection home_facing, exit_facing;

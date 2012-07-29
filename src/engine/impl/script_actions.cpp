@@ -476,7 +476,7 @@ bool A_Secure::possible(const ActionData &ad) const
     shared_ptr<Creature> cr = ad.getActor();
     const Player * player = cr->getPlayer();
     if (cr && cr->getMap() && player) {
-        return Mediator::instance().isSecurableHome(*player, cr->getPos(), cr->getFacing());
+        return Mediator::instance().isSecurableHome(*player, cr->getMap(), cr->getPos(), cr->getFacing());
     } else {
         return false;
     }

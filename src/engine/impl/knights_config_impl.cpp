@@ -27,8 +27,6 @@
 #include "config_map.hpp"
 #include "control.hpp"
 #include "control_actions.hpp"     // for AddStandardControls
-#include "coord_transform.hpp"
-#include "dungeon_map.hpp"
 #include "event_manager.hpp"
 #include "gore_manager.hpp"
 #include "graphic.hpp"
@@ -37,6 +35,7 @@
 #include "knights_config_impl.hpp"
 #include "lua_ingame.hpp"
 #include "lua_exec.hpp"
+#include "lua_game_setup.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_sandbox.hpp"
 #include "lua_setup.hpp"
@@ -105,6 +104,7 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
 
         // Add our config functions to it
         AddLuaConfigFunctions(lua, this);
+        AddLuaGameSetupFunctions(lua);
         AddLuaIngameFunctions(lua);
 
         // Add the standard controls
@@ -665,9 +665,7 @@ void KnightsConfigImpl::getOtherControls(std::vector<const UserControl*> &out) c
     std::sort(out.begin(), out.end(), CompareID<UserControl>());
 }
 
-void KnightsConfigImpl::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
-                                       boost::shared_ptr<CoordTransform> &coord_transform,
-                                       HomeManager &home_manager,
+void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
                                        std::vector<boost::shared_ptr<Player> > &players,
                                        StuffManager &stuff_manager,
                                        GoreManager &gore_manager,
@@ -678,15 +676,13 @@ void KnightsConfigImpl::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_ma
                                        const std::vector<std::string> &player_names,
                                        TutorialManager *tutorial_manager)
 {
-    dungeon_map.reset(new DungeonMap);
-    coord_transform.reset(new CoordTransform);
-
     // Add players
     players.clear();
     for (int i = 0; i < hse_cols.size(); ++i) {
         const int team_num = hse_cols[i];
-        boost::shared_ptr<Player> player(new Player(i, *dungeon_map, 
-                                                    knight_anims.at(hse_cols[i]), default_item,
+        boost::shared_ptr<Player> player(new Player(i,
+                                                    knight_anims.at(hse_cols[i]),
+                                                    default_item,
                                                     control_set,
                                                     secured_cc.at(hse_cols[i]),
                                                     player_names[i],
@@ -696,7 +692,6 @@ void KnightsConfigImpl::initializeGame(boost::shared_ptr<DungeonMap> &dungeon_ma
     
     // Set up stuff manager
     stuff_manager.setStuffBagGraphic(lua_state.get(), stuff_bag_graphic);
-    stuff_manager.setDungeonMap(dungeon_map.get());
 
     // Set up gore manager
     if (dead_knight_tiles.size() >= 4 * house_colours_normal.size()) {

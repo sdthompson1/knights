@@ -34,7 +34,6 @@
 #include "knights_client.hpp"
 #include "local_display.hpp"
 #include "menu.hpp"
-#include "menu_selections.hpp"
 #include "menu_screen.hpp"
 #include "my_exceptions.hpp"
 #include "options.hpp"

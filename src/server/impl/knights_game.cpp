@@ -137,9 +137,6 @@ public:
     std::auto_ptr<std::deque<unsigned int> > random_seeds; // ditto
     bool msg_count_update_flag;
 
-    // These are set during initialization (and are only valid when game is running!)
-    bool is_deathmatch;  // used when sending "start_game" message
-
     // Condition variable used to wake up the update thread when a control comes in
     // (instead of polling, like it used to do).
     // Note, this is controlled using the same mutex (my_mutex) as the rest of the data.
@@ -486,11 +483,10 @@ namespace {
 
                 nplayers = player_names.size();
 
-                // Create the KnightsEngine. Pass any dungeon generation warnings back to the players
-                std::string warning_msg;
+                // Create the KnightsEngine.
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, hse_cols, player_names,
-                                                   kg.tutorial_mode, kg.is_deathmatch, warning_msg));
+                                                   kg.tutorial_mode));
 
                 } catch (LuaPanic &) {
                     // This is serious enough that we re-throw and let 
@@ -534,15 +530,9 @@ namespace {
                     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
                 }
 
-                // Send the warning message (from the dungeon generator) to all players and observers (Trac #47)
-                // Also send the team chat notification (but only if more than 1 player on the team; #151)
+                // Send the team chat notification (but only if more than 1 player on the team; #151)
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     Coercri::OutputByteBuf buf((*it)->output_data);
-
-                    if (!warning_msg.empty()) {
-                        buf.writeUbyte(SERVER_ANNOUNCEMENT);
-                        buf.writeString(warning_msg);
-                    }
 
                     if (!(*it)->obs_flag && team_counts[(*it)->house_colour] > 1) {
                         buf.writeUbyte(SERVER_ANNOUNCEMENT);
@@ -1076,9 +1066,6 @@ namespace {
             }
         }
 
-        // Set is_deathmatch flag
-        kg.is_deathmatch = false; /// TODO. IsDeathmatch(kg.menu_selections);
-        
         // See if we are still ready to start
         if (ready_to_start) {
 
@@ -1160,13 +1147,13 @@ namespace {
                         Coercri::OutputByteBuf buf((*it)->output_data);
                         buf.writeUbyte(SERVER_START_GAME);
                         buf.writeUbyte(num_displays);
-                        buf.writeUbyte(kg.is_deathmatch);
+                        buf.writeUbyte(false);  // should be is_deathmatch flag TODO
                     } else {
                         // Observer.
                         Coercri::OutputByteBuf buf((*it)->output_data);
                         buf.writeUbyte(SERVER_START_GAME_OBS);
                         buf.writeUbyte(num_displays);
-                        buf.writeUbyte(kg.is_deathmatch);
+                        buf.writeUbyte(false);  // should be is_deathmatch flag TODO
                         for (int i = 0; i < num_displays; ++i) {
                             buf.writeString(names[i]);
                         }
@@ -1374,7 +1361,7 @@ GameConnection & KnightsGame::newClientConnection(const std::string &client_name
         // send the msg
         buf.writeUbyte(SERVER_START_GAME_OBS);
         buf.writeUbyte(pimpl->all_player_names.size());
-        buf.writeUbyte(pimpl->is_deathmatch);
+        buf.writeUbyte(false);   // should be is_deathmatch flag TODO
         for (std::vector<std::string>::const_iterator it = pimpl->all_player_names.begin(); it != pimpl->all_player_names.end(); ++it) {
             buf.writeString(*it);
         }

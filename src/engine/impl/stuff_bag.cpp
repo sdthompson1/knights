@@ -141,15 +141,25 @@ void StuffManager::setStuffBagGraphic(lua_State *lua, const Graphic *gfx)
     stuff_bag_item_type.reset(new ItemType(gfx, IS_MAGIC, pickup_action, drop_action));
 }
 
-void StuffManager::setStuffContents(const MapCoord &mc, const StuffContents &stuff)
+void StuffManager::setStuffContents(DungeonMap &dmap, const MapCoord &mc, const StuffContents &stuff)
 {
-    stuff_map.erase(mc); // Just in case a "ghost" stuff bag is there already
-    stuff_map.insert(make_pair(mc, stuff));
+    ASSERT(!mc.isNull());
+
+    Location loc;
+    loc.dmap = &dmap;
+    loc.mc = mc;
+
+    stuff_map.erase(loc); // Just in case a "ghost" stuff bag is there already
+    stuff_map.insert(make_pair(loc, stuff));
 }
 
-const vector<shared_ptr<Item> > * StuffManager::getItems(const MapCoord &mc) const
+const vector<shared_ptr<Item> > * StuffManager::getItems(DungeonMap *dmap, const MapCoord &mc) const
 {
-    map<MapCoord, StuffContents>::const_iterator it = stuff_map.find(mc);
+    Location loc;
+    loc.dmap = dmap;
+    loc.mc = mc;
+
+    map<Location, StuffContents>::const_iterator it = stuff_map.find(loc);
     if (it == stuff_map.end()) {
         return 0;
     } else {
@@ -162,14 +172,19 @@ const vector<shared_ptr<Item> > * StuffManager::getItems(const MapCoord &mc) con
 void StuffManager::doPickUp(const MapCoord &mc, shared_ptr<Knight> actor)
 {
     if (!actor) return;
-    
-    map<MapCoord, StuffContents>::iterator it = stuff_map.find(mc);
+    if (!actor->getMap()) return;
+
+    Location loc;
+    loc.dmap = actor->getMap();
+    loc.mc = mc;
+
+    map<Location, StuffContents>::iterator it = stuff_map.find(loc);
     if (it == stuff_map.end()) {
         // An empty stuff bag. (This shouldn't really happen.)
         return;
     }
 
-    it->second.giveToKnight(*dmap, mc, actor);
+    it->second.giveToKnight(*loc.dmap, mc, actor);
 
     if (it->second.isEmpty()) {
         // Get rid of the stuff bag once and for all
@@ -178,7 +193,7 @@ void StuffManager::doPickUp(const MapCoord &mc, shared_ptr<Knight> actor)
         // Some items still left in the bag (probably the knight didn't have room to carry
         // them all). In this case we place another bag onto the map.
         shared_ptr<Item> new_bag(new Item(getStuffBagItemType()));
-        dmap->addItem(mc, new_bag);
+        loc.dmap->addItem(mc, new_bag);
     }
 }
 
@@ -188,20 +203,25 @@ void StuffManager::doDrop(const MapCoord &mc, shared_ptr<Knight> actor)
     // placed into the map.
 
     if (!actor) return;
+    if (!actor->getMap()) return;
 
-    map<MapCoord, StuffContents>::const_iterator it = stuff_map.find(mc);
+    Location loc;
+    loc.dmap = actor->getMap();
+    loc.mc = mc;
+
+    map<Location, StuffContents>::const_iterator it = stuff_map.find(loc);
     if (it == stuff_map.end()) return;
 
-    it->second.runDropEvents(*dmap, mc, actor);
+    it->second.runDropEvents(*loc.dmap, mc, actor);
 }
 
 void StuffManager::countItems(std::map<const ItemType *, int> &result) const
 {
-    for (map<MapCoord, StuffContents>::const_iterator stuff_it = stuff_map.begin();
+    for (map<Location, StuffContents>::const_iterator stuff_it = stuff_map.begin();
     stuff_it != stuff_map.end();
     ++stuff_it) {
 
-        shared_ptr<Item> item_here = dmap->getItem(stuff_it->first);
+        shared_ptr<Item> item_here = stuff_it->first.dmap->getItem(stuff_it->first.mc);
         if (!item_here || &item_here->getType() != &getStuffBagItemType()) continue;  // no actual stuff bag here
         
         for (vector<shared_ptr<Item> >::const_iterator item_it = stuff_it->second.getItems().begin();

@@ -21,12 +21,6 @@
 
 DEFAULT_ITEM = i_sword
 
-WALL = t_wall_normal
-HORIZ_DOOR_1 = t_door_horiz
-HORIZ_DOOR_2 = t_hdoor_background
-VERT_DOOR_1  = t_door_vert
-VERT_DOOR_2  = t_vdoor_background
-
 KNIGHT_ANIM = a_purple_knight   # must use the house colours of the first house in the list.
 KNIGHT_HOUSE_COLOURS = [
     [$664477, $553366, $442255],   # purple

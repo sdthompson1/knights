@@ -164,10 +164,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\engine\impl\concrete_quests.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\engine\impl\concrete_traps.cpp"
 				>
 			</File>
@@ -185,10 +181,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\create_monster_type.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\engine\impl\create_quest.cpp"
 				>
 			</File>
 			<File
@@ -297,6 +289,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\lua_func.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\lua_game_setup.cpp"
 				>
 			</File>
 			<File
@@ -426,10 +422,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\engine\impl\concrete_quests.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\engine\impl\concrete_traps.hpp"
 				>
 			</File>
@@ -447,10 +439,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\create_monster_type.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\engine\impl\create_quest.hpp"
 				>
 			</File>
 			<File
@@ -567,6 +555,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\lua_func.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\lua_game_setup.hpp"
 				>
 			</File>
 			<File

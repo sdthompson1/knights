@@ -31,6 +31,7 @@
 
 #include "boost/shared_ptr.hpp"
 
+class KnightsEngine;
 class MenuListener;
 struct MenuWrapperImpl;
 
@@ -59,6 +60,14 @@ public:
     
     // request a random quest. Changed menu items will be reported.
     void randomQuest(MenuListener &listener);
+
+
+    // Run all the game startup functions.
+    // On success, returns true.
+    // On failure, returns false and sets err msg in the given string argument.
+    // (Needs to be given ptr to KnightsEngine, so that kts.WipeMap can call ke.resetMap() if needed.)
+    bool runGameStartup(KnightsEngine &ke, std::string &err_msg);
+
     
 private:
     boost::shared_ptr<MenuWrapperImpl> pimpl;

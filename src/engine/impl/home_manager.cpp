@@ -30,14 +30,23 @@
 #include "rng.hpp"
 #include "special_tiles.hpp"
 
-void HomeManager::addHome(const MapCoord &pos, MapDirection facing)
+void HomeManager::addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing)
 {
-    homes[make_pair(pos,facing)] = 0;
+    ASSERT(!pos.isNull());
+    HomeLocation loc;
+    loc.dmap = &dmap;
+    loc.mc = pos;
+    loc.facing = facing;
+    homes[loc] = 0;
 }
 
-bool HomeManager::isSecurableHome(const Player &pl, const MapCoord &pos, MapDirection facing) const
+bool HomeManager::isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &pos, MapDirection facing) const
 {
-    HomeMap::const_iterator it = homes.find(make_pair(pos, facing));
+    HomeLocation loc;
+    loc.dmap = dmap;
+    loc.mc = pos;
+    loc.facing = facing;
+    HomeMap::const_iterator it = homes.find(loc);
     if (it == homes.end()) return false;
     if (it->second == &pl) return false;
     return true;
@@ -46,7 +55,11 @@ bool HomeManager::isSecurableHome(const Player &pl, const MapCoord &pos, MapDire
 void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &pos,
                              MapDirection facing, shared_ptr<Tile> secured_wall_tile)
 {
-    HomeMap::iterator it = homes.find(make_pair(pos,facing));
+    HomeLocation loc;
+    loc.dmap = &dmap;
+    loc.mc = pos;
+    loc.facing = facing;
+    HomeMap::iterator it = homes.find(loc);
     if (it == homes.end()) return;
     if (it->second == &pl) return; // don't secure homes twice ...
 
@@ -55,7 +68,7 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
     
     // We have to secure the home
     // First find the home tile
-    MapCoord home_mc = DisplaceCoord(pos,facing);
+    MapCoord home_mc = DisplaceCoord(pos, facing);
     shared_ptr<Home> home_tile;
     
     vector<shared_ptr<Tile> > tiles;
@@ -83,8 +96,11 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
     const vector<Player*> &players (Mediator::instance().getPlayers());
     for (int i=0; i<players.size(); ++i) {
         // Check the home
-        HomeMap::iterator it = homes.find(make_pair(players[i]->getHomeLocation(),
-                                                    players[i]->getHomeFacing()));
+        HomeLocation loc;   // shadows previous 'loc'
+        loc.dmap = players[i]->getHomeMap();
+        loc.mc   = players[i]->getHomeLocation();
+        loc.facing = players[i]->getHomeFacing();
+        HomeMap::iterator it = homes.find(loc);   // shadows previous 'it'
 
         bool my_home_secured = false;
         if (it == homes.end()) {
@@ -97,8 +113,11 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
         
         if (my_home_secured) {
             // My home seems to have been secured. Replace it with a new one
-            pair<MapCoord,MapDirection> p = getRandomHomeFor(*players[i]);
-            players[i]->resetHome(p.first, p.second);
+            DungeonMap * dmap_new;
+            MapCoord mc_new;
+            MapDirection dir_new;
+            getRandomHomeFor(*players[i], dmap_new, mc_new, dir_new);
+            players[i]->resetHome(dmap_new, mc_new, dir_new);
         }
 
         // NOTE: We don't bother reassigning exit points. This means that the exit point
@@ -112,10 +131,13 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
     }
 }
 
-pair<MapCoord,MapDirection> HomeManager::getRandomHomeFor(const Player &pl) const
+void HomeManager::getRandomHomeFor(const Player &pl, 
+                                   DungeonMap *& dmap_out,
+                                   MapCoord &mc_out,
+                                   MapDirection &dir_out) const
 {
     // First of all, work out which homes are not secured against pl
-    std::vector<std::pair<MapCoord, MapDirection> > unsecured_homes;
+    std::vector<HomeLocation> unsecured_homes;
     
     for (HomeMap::const_iterator it = homes.begin(); it != homes.end(); ++it) {
 
@@ -127,20 +149,31 @@ pair<MapCoord,MapDirection> HomeManager::getRandomHomeFor(const Player &pl) cons
         }
     }
 
-    if (unsecured_homes.empty()) return make_pair(MapCoord(), D_NORTH);
+    if (unsecured_homes.empty()) {
+        dmap_out = 0;
+        mc_out = MapCoord();
+        dir_out = D_NORTH;
     
-    // Generate a random number ...
-    int r = g_rng.getInt(0, int(unsecured_homes.size()));
+    } else {
+    
+        // Generate a random number ...
+        int r = g_rng.getInt(0, int(unsecured_homes.size()));
 
-    // ... and return the rth home
-    return unsecured_homes[r];
+        // ... and return the rth home
+        dmap_out = unsecured_homes[r].dmap;
+        mc_out = unsecured_homes[r].mc;
+        dir_out = unsecured_homes[r].facing;
+    }
 }
 
 void HomeManager::onKnightDeath(Player &pl) const
 {
     if (pl.getRespawnType() == Player::R_DIFFERENT_EVERY_TIME) {
         // Randomize the home after every death.
-        pair<MapCoord, MapDirection> p = getRandomHomeFor(pl);
-        pl.resetHome(p.first, p.second);
+        DungeonMap *dmap;
+        MapCoord mc;
+        MapDirection facing;
+        getRandomHomeFor(pl, dmap, mc, facing);
+        pl.resetHome(dmap, mc, facing);
     }
 }

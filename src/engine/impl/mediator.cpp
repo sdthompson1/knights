@@ -67,7 +67,6 @@ void Mediator::createInstance(EventManager &em, GoreManager &gm, HomeManager &hm
 
 void Mediator::destroyInstance()
 {
-    if (!g_mediator_ptr.get()) throw MediatorUnavailable();
     g_mediator_ptr.reset();
 }
 
@@ -335,9 +334,9 @@ void Mediator::playSound(DungeonMap &dm, const MapCoord &mc, const Sound &sound,
 // secureHome
 //
 
-bool Mediator::isSecurableHome(const Player &pl, const MapCoord &mc, MapDirection facing) const
+bool Mediator::isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &mc, MapDirection facing) const
 {
-    return home_manager.isSecurableHome(pl, mc, facing);
+    return home_manager.isSecurableHome(pl, dmap, mc, facing);
 }
 
 void Mediator::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &pos,
@@ -459,7 +458,7 @@ void Mediator::eliminatePlayer(Player &pl)
     }
 
     remaining_players.erase(&pl);
-    pl.resetHome(MapCoord(), D_NORTH);  // Stops him respawning
+    pl.resetHome(0, MapCoord(), D_NORTH);  // Stops him respawning
 
     pl.setElimFlag();
 

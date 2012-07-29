@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "control.hpp"
+#include "coord_transform.hpp"
 #include "dummy_callbacks.hpp"
 #include "dungeon_map.hpp"
 #include "event_manager.hpp"
@@ -35,6 +36,7 @@
 #include "mediator.hpp"
 #include "mini_map.hpp"
 #include "monster_manager.hpp"
+#include "my_exceptions.hpp"
 #include "player.hpp"
 #include "round.hpp"
 #include "stuff_bag.hpp"
@@ -94,24 +96,27 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
                              const std::vector<std::string> &player_names,
                              bool tutorial_mode)
-    : pimpl(new KnightsEngineImpl(hse_cols.size()))
 {
-    boost::shared_ptr<TutorialManager> tutorial_manager;
-    if (tutorial_mode) tutorial_manager.reset(new TutorialManager);
-    pimpl->tutorial_manager = tutorial_manager;
-
-    // Create the mediator, add stuff to it
-    Mediator::createInstance(pimpl->event_manager, pimpl->gore_manager,
-                             pimpl->home_manager, pimpl->monster_manager,
-                             pimpl->stuff_manager, pimpl->task_manager,
-                             pimpl->view_manager, config->getConfigMap(),
-                             tutorial_manager, config->getLuaState());
-
     try {
+
+        // Create new KnightsEngineImpl
+        pimpl.reset(new KnightsEngineImpl(hse_cols.size()));
+
+        // Tutorial stuff
+        boost::shared_ptr<TutorialManager> tutorial_manager;
+        if (tutorial_mode) tutorial_manager.reset(new TutorialManager);
+        pimpl->tutorial_manager = tutorial_manager;
+        
+        // Create the mediator, add stuff to it
+        Mediator::createInstance(pimpl->event_manager, pimpl->gore_manager,
+                                 pimpl->home_manager, pimpl->monster_manager,
+                                 pimpl->stuff_manager, pimpl->task_manager,
+                                 pimpl->view_manager, config->getConfigMap(),
+                                 tutorial_manager, config->getLuaState());
+
+
         // Most initialization work is delegated to the KnightsConfig object
-        config->initializeGame(pimpl->dungeon_map,
-                               pimpl->coord_transform,
-                               pimpl->home_manager,
+        config->initializeGame(pimpl->home_manager,
                                pimpl->players,
                                pimpl->stuff_manager,
                                pimpl->gore_manager,
@@ -124,10 +129,17 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         
         pimpl->house_col_idxs = hse_cols;
 
-        Mediator::instance().setMap(pimpl->dungeon_map, pimpl->coord_transform);
-        
         for (int i = 0; i < pimpl->players.size(); ++i) {
             Mediator::instance().addPlayer(*pimpl->players[i]);
+        }
+
+        resetMap();
+
+        // Run the Lua game startup functions.
+        std::string err_msg;
+        bool can_start = config->runGameStartup(*this, err_msg);
+        if (!can_start) {
+            throw LuaError(err_msg);
         }
         
         // Make sure we save a copy of the config.
@@ -140,6 +152,13 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         
         throw; // re-throw the exception
     }
+}
+
+void KnightsEngine::resetMap()
+{
+    pimpl->coord_transform.reset(new CoordTransform);
+    pimpl->dungeon_map.reset(new DungeonMap);
+    Mediator::instance().setMap(pimpl->dungeon_map, pimpl->coord_transform);
 }
 
 KnightsEngine::~KnightsEngine()

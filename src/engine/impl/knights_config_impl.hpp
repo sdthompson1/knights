@@ -87,9 +87,7 @@ public:
     void getSounds(std::vector<const Sound*> &sounds) const;
     void getStandardControls(std::vector<const UserControl*> &controls) const;
     void getOtherControls(std::vector<const UserControl*> &controls) const;
-    void initializeGame(boost::shared_ptr<DungeonMap> &dungeon_map,
-                        boost::shared_ptr<CoordTransform> &coord_transform,
-                        HomeManager &home_manager,
+    void initializeGame(HomeManager &home_manager,
                         std::vector<boost::shared_ptr<Player> > &players,
                         StuffManager &stuff_manager,
                         GoreManager &gore_manager,

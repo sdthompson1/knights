@@ -420,14 +420,18 @@ namespace {
             SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, segment_infos, assigned_homes, all_homes, n, 0);
         }
 
+        // Assign H_RANDOM homes if required.
+        if (home_type == H_RANDOM) {
+            AssignHomes(all_homes, all_homes.size(), nplayers, assigned_homes);
+        }
+        
         // Shuffle the homes lists.
         std::random_shuffle(assigned_homes.begin(), assigned_homes.end(), myrng);
         std::random_shuffle(all_homes.begin(), all_homes.end(), myrng);
 
-        // If H_CLOSE or H_AWAY were selected then enough homes should have been assigned by now.
-        // Otherwise, no homes should have been assigned.
-        ASSERT((home_type == H_CLOSE || home_type == H_AWAY) && assigned_homes.size() == nplayers
-               || (home_type != H_CLOSE && home_type != H_AWAY) && assigned_homes.empty());
+        // Check number of assigned homes equals number of players (unless H_NONE selected).
+        ASSERT(home_type != H_NONE && assigned_homes.size() == nplayers
+               || home_type == H_NONE && assigned_homes.empty());
     }
 
     // ------------------------------------------------------------------------------
@@ -549,6 +553,8 @@ namespace {
                      0, 1, lwidth, lheight-1);
                 ShiftHomes(assigned_homes, 0, -(rheight+1));
                 ShiftHomes(all_homes, 0, -(rheight+1));
+            } else {
+                break;
             }
         }
 
@@ -792,8 +798,7 @@ void DungeonGenerator(DungeonMap &dmap,
                       CoordTransform &ct,
                       HomeManager &home_manager,
                       MonsterManager &monster_manager,
-                      std::vector<boost::shared_ptr<Player> > &players,
-                      int nplayers,
+                      const std::vector<Player*> &players,
                       const DungeonSettings &settings)
 {
     int rwidth = 0, rheight = 0;
@@ -801,19 +806,19 @@ void DungeonGenerator(DungeonMap &dmap,
     FindRsize(settings.required_segments, rwidth, rheight);
 
     // Homes required is equal to number of players (unless H_NONE is set).
-    const int homes_required = (settings.home_type == H_NONE ? 0 : nplayers);
+    const int homes_required = (settings.home_type == H_NONE ? 0 : players.size());
 
     int lwidth, lheight;
     std::vector<BlockInfo> edges, blocks;
     std::vector<bool> horiz_exits, vert_exits;
     
-    DoLayout(nplayers, homes_required, *settings.layout, settings.home_type,
+    DoLayout(players.size(), homes_required, *settings.layout, settings.home_type,
              lwidth, lheight, edges, blocks, horiz_exits, vert_exits);
 
     std::vector<SegmentInfo> segment_infos;
     std::vector<HomeInfo> assigned_homes, all_homes;
     
-    PlaceSegments(nplayers, homes_required,
+    PlaceSegments(players.size(), homes_required,
                   settings.home_type, lwidth, lheight, rwidth, rheight,
                   SegmentSet(settings.normal_segments),
                   settings.required_segments,
@@ -824,6 +829,8 @@ void DungeonGenerator(DungeonMap &dmap,
              segment_infos, horiz_exits, vert_exits,
              assigned_homes, all_homes);
 
+    dmap.create(lwidth*(rwidth+1)+1, lheight*(rheight+1)+1);
+    
     CopySegmentsToMap(lwidth, lheight, rwidth, rheight,
                       settings.wall_tiles,
                       segment_infos,
@@ -840,7 +847,7 @@ void DungeonGenerator(DungeonMap &dmap,
         MapCoord pos(it->x, it->y);  // home square itself
         MapDirection facing = it->facing;  // points towards home
         pos = DisplaceCoord(pos, Opposite(facing));
-        home_manager.addHome(pos, facing);
+        home_manager.addHome(dmap, pos, facing);
     }
 
     // Give players their homes
@@ -848,7 +855,7 @@ void DungeonGenerator(DungeonMap &dmap,
         MapCoord pos(assigned_homes[i].x, assigned_homes[i].y);  // home square itself
         MapDirection facing = assigned_homes[i].facing;  // points towards home
         pos = DisplaceCoord(pos, Opposite(facing));
-        players[i]->resetHome(pos, facing);
+        players[i]->resetHome(&dmap, pos, facing);
     }
 }
 

@@ -42,8 +42,7 @@
 #else
 
 // Use C standard assert command
-#include <cassert>
-using namespace std;
+#include <assert.h>
 #define ASSERT(x) assert(x)
 
 #endif

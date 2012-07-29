@@ -199,7 +199,7 @@ public:
     void onKnightDeath(Player &player, const DungeonMap &dmap, const MapCoord &mc);
     
     // Home manager (wand of securing)
-    bool isSecurableHome(const Player &pl, const MapCoord &pos, MapDirection facing) const;
+    bool isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &pos, MapDirection facing) const;
     void secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &pos,
                     MapDirection facing, shared_ptr<Tile> secured_wall_tile);
 
@@ -221,6 +221,7 @@ public:
     const vector<Player*> &getPlayers() const { return players; }
     MonsterManager & getMonsterManager() const { return monster_manager; }
     StuffManager & getStuffManager() const { return stuff_manager; }
+    HomeManager & getHomeManager() const { return home_manager; }
     TaskManager & getTaskManager() const { return task_manager; }
     int getGVT() const;
     

@@ -501,7 +501,7 @@ void Knight::dropAllItems(bool move_back /* = false */)
                 // will not actually have done anything (because we haven't set the
                 // contents in the StuffManager yet). So we next have to set contents in
                 // the StuffManager and re-call the onDrop event.
-                stuff_manager.setStuffContents(drop_mc, bkpk_contents);
+                stuff_manager.setStuffContents(*getMap(), drop_mc, bkpk_contents);
                 stuff_manager.doDrop(drop_mc, self);
             } else {
                 // Stuff bag could not be dropped. Instead, add all the backpack items

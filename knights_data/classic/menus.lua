@@ -38,10 +38,10 @@ kts.MENU = {
       predefined_quest_func(S, "quest")  -- Loads the "gems" quest
    end,
 
+   prepare_game_func   = prepare_game,     -- defined in dungeon_setup.lua
    start_game_func     = start_game,       -- defined in dungeon_setup.lua
    describe_quest_func = describe_quest,   -- defined in quest_description.lua
 
-   default_setup = Dsetup,
 
    on_select = function(S, what)
       -- Change Quest to Custom if anything is changed 
@@ -84,9 +84,9 @@ kts.MENU = {
                   S.IsNot("exit", "none")   -- must have exit
                   S.IsNot("book", "none")   -- must have book
                end,
-               features = function(S,D)
-                  D:quest_retrieve(all_books, 1, "Book Required")
-                  D:hint("Retrieve the book", 2, 1)
+               features = function(S)
+                  quest_retrieve(all_books, 1, "Book Required")
+                  hint("Retrieve the book", 2, 1)
                end
             },
             {
@@ -97,9 +97,9 @@ kts.MENU = {
                   S.Is("book", "none")
                   S.IsAtLeast("num_wands", 1)
                end,
-               features = function(S,D)
-                  D:quest_retrieve(all_wands, 1, "Wand Required")
-                  D:hint("Retrieve the wand", 2, 1)
+               features = function(S)
+                  quest_retrieve(all_wands, 1, "Wand Required")
+                  hint("Retrieve the wand", 2, 1)
                end
             },
             {
@@ -110,13 +110,13 @@ kts.MENU = {
                   S.IsNot("book", "none")
                   S.IsAtLeast("num_wands", 1)
                end,
-               features = function(S,D)
-                  D:quest_destroy(all_books, 
-                                  all_wands, "Wand Required",
-                                  all_special_pentagrams, "Not in Special Pentagram")
-                  D:hint("Place the book in the special pentagram", 3, 1)
-                  D:hint("Strike the book with the wand", 4, 1)
-                  D:add_segment(special_pentagrams)
+               features = function(S)
+                  quest_destroy(all_books, 
+                                all_wands, "Wand Required",
+                                all_special_pentagrams, "Not in Special Pentagram")
+                  hint("Place the book in the special pentagram", 3, 1)
+                  hint("Strike the book with the wand", 4, 1)
+                  add_segment(special_pentagrams)
                end
             },
             {
@@ -140,9 +140,9 @@ kts.MENU = {
                   S.Is("book", "none")
                   S.Is("num_gems", 0)
                end,
-               features = function(S,D)
-                  D:quest_deathmatch()
-                  D:hint("Score points by killing enemy knights", 1, 1)
+               features = function(S)
+                  quest_deathmatch()
+                  hint("Score points by killing enemy knights", 1, 1)
                end
             }
          }
@@ -158,29 +158,29 @@ kts.MENU = {
             {
                id = "knowledge",
                text = "Ancient Book of Knowledge",
-               features = function(S,D)
-                  D:add_item(i_book_of_knowledge, 1, item_weights)
+               features = function(S)
+                  add_item(i_book_of_knowledge, 1, item_weights)
                end
             },
             {
                id = "ashur",
                text = "Lost Book of Ashur",
                features = function(S)
-                  D:add_item(i_basic_book, 1, item_weights)
+                  add_item(i_basic_book, 1, item_weights)
                end
             },
             {
                id = "necronomicon",
                text = "Necronomicon",
-               features = function(S, D)
-                  D:add_segment(liche_tombs)
+               features = function(S)
+                  add_segment(liche_tombs)
                end
             },
             {
                id = "gnomes",
                text = "Tome of Gnomes",
-               features = function(S, D)
-                  D:add_segment(gnome_rooms)
+               features = function(S)
+                  add_segment(gnome_rooms)
                end
             }
          }
@@ -196,31 +196,31 @@ kts.MENU = {
             {
                id = "destruction",
                text = "Wand of Destruction",
-               features = function(S, D)
-                  D:add_item(i_wand_of_destruction, S.num_wands, item_weights)
+               features = function(S)
+                  add_item(i_wand_of_destruction, S.num_wands, item_weights)
                end
             },
             {
                id = "open_ways",
                text = "Wand of Open Ways",
-               features = function(S, D)
-                  D:add_item(i_wand_of_open_ways, S.num_wands, item_weights)
+               features = function(S)
+                  add_item(i_wand_of_open_ways, S.num_wands, item_weights)
                end
             },
             {
                id = "securing",
                text = "Wand of Securing",
-               features = function(S, D)
-                  D:add_item(i_wand_of_securing, S.num_wands, item_weights)
-                  D:hint("Secure all entry points using the Wand of Securing", 1, 2)
-                  D:hint("Destroy all enemy knights", 2, 2)
+               features = function(S)
+                  add_item(i_wand_of_securing, S.num_wands, item_weights)
+                  hint("Secure all entry points using the Wand of Securing", 1, 2)
+                  hint("Destroy all enemy knights", 2, 2)
                end
             },
             {
                id = "undeath",
                text = "Wand of Undeath",
-               features = function(S, D)
-                  D:add_item(i_wand_of_undeath, S.num_wands, item_weights)
+               features = function(S)
+                  add_item(i_wand_of_undeath, S.num_wands, item_weights)
                end
             }
          }
@@ -252,8 +252,8 @@ kts.MENU = {
          constrain = function(S)
             S.IsAtMost("gems_needed", S.num_gems)
          end,
-         features = function(S,D)
-            D:add_item(i_gem, S.num_gems, item_weights)
+         features = function(S)
+            add_item(i_gem, S.num_gems, item_weights)
          end
       },
       {
@@ -262,12 +262,12 @@ kts.MENU = {
          choice_min = 0,
          choice_max = 6,
          show = show_zero_as_none,
-         features = function(S, D)
-            D:quest_retrieve(i_gem, S.num_gems, "Gem Required", "%d Gems Required")
+         features = function(S)
+            quest_retrieve(i_gem, S.num_gems, "Gem Required", "%d Gems Required")
             if S.num_gems == 1 then
-               D:hint("Retrieve 1 gem", 1, 1)
+               hint("Retrieve 1 gem", 1, 1)
             else
-               D:hint(string.format("Retrieve %d gems", S.num_gems), 1, 1)
+               hint(string.format("Retrieve %d gems", S.num_gems), 1, 1)
             end
          end
       },
@@ -280,50 +280,50 @@ kts.MENU = {
          choices = {
             { id = "tiny",
               text = "Tiny",
-              features = function(S,D) 
-                 D:set_layout(d_tiny)
+              features = function(S) 
+                 set_layout(d_tiny)
               end
             },
             { id = "small",
               text = "Small",
-              features = function(S,D)
-                 D:set_layout(d_small)
+              features = function(S)
+                 set_layout(d_small)
               end
             },
             { id = "basic",
               text = "Basic",
-              features = function(S,D)
-                 D:set_layout(d_basic)
+              features = function(S)
+                 set_layout(d_basic)
               end
             },
             { id = "big",
               text = "Big",
-              features = function(S,D)
-                 D:set_layout(d_big)
+              features = function(S)
+                 set_layout(d_big)
               end
             },
             { id = "huge",
               text = "Huge",
-              features = function(S,D)
-                 D:set_layout(d_huge)
+              features = function(S)
+                 set_layout(d_huge)
               end
             },
             { id = "snake",
               text = "Snake",
-              features = function(S,D)
-                 D:set_layout(d_snake)
+              features = function(S)
+                 set_layout(d_snake)
               end
             },
             { id = "long_snake",
               text = "Long Snake",
-              features = function(S,D)
-                 D:set_layout(d_long_snake)
+              features = function(S)
+                 set_layout(d_long_snake)
               end
             },
             { id = "ring",
               text = "Ring",
-              features = function(S,D)
-                 D:set_layout(d_ring)
+              features = function(S)
+                 set_layout(d_ring)
               end
             }
          }
@@ -335,8 +335,8 @@ kts.MENU = {
             { 
                id = true,  
                text = "Yes",
-               features = function(S,D)
-                  D:set_premapped()
+               features = function(S)
+                  set_premapped()
                end
             },
             {
@@ -352,31 +352,31 @@ kts.MENU = {
             { 
                id = "random",
                text = "Total Random",
-               features = function(S,D)
-                  D:set_entry("random")
+               features = function(S)
+                  set_entry("random")
                end
             },
             {
                id = "close",
                text = "Close to Other",
-               features = function(S,D)
-                  D:set_entry("close")
+               features = function(S)
+                  set_entry("close")
                end,
                max_players = 4    -- due to a dungeon generator limitation (#14)
             },
             {
                id = "away",
                text = "Away from Other",
-               features = function(S,D)
-                  D:set_entry("away")
+               features = function(S)
+                  set_entry("away")
                end,
                max_players = 4    -- due to a dungeon generator limitation (#15)
             },
             {
                id = "different",
                text = "Different every time",
-               features = function(S,D)
-                  D:set_entry("different")
+               features = function(S)
+                  set_entry("different")
                end
             }
          },
@@ -388,16 +388,16 @@ kts.MENU = {
             {
                id = "none",
                text = "No Escape",
-               features = function(S,D)
-                  D:set_exit("none")
+               features = function(S)
+                  set_exit("none")
                end
             },
             {
                id = "same",
                text = "Same as Entry",
-               features = function(S,D)
-                  D:set_exit("self")
-                  D:hint("Escape via your entry point", 5, 1)
+               features = function(S)
+                  set_exit("self")
+                  hint("Escape via your entry point", 5, 1)
                end
             },
             {
@@ -405,26 +405,26 @@ kts.MENU = {
                text = "Other's Entry",
                min_players = 2,
                max_players = 2,
-               features = function(S,D)
-                  D:set_exit("other")
-                  D:hint("Escape via your opponent's entry point", 5, 1)
+               features = function(S)
+                  set_exit("other")
+                  hint("Escape via your opponent's entry point", 5, 1)
                end
             },
             {
                id = "random",
                text = "Total Random",
-               features = function(S,D)
-                  D:set_exit("random")
-                  D:hint("Escape via the unknown exit point", 5, 1)
+               features = function(S)
+                  set_exit("random")
+                  hint("Escape via the unknown exit point", 5, 1)
                end
             },
             {
                id = "guarded",
                text = "Guarded",
-               features = function(S,D)
-                  D:add_segment(guarded_exits)
-                  D:set_exit("special")
-                  D:hint("Escape via the guarded exit", 5, 1)
+               features = function(S)
+                  add_segment(guarded_exits)
+                  set_exit("special")
+                  hint("Escape via the guarded exit", 5, 1)
                end
             }
          }
@@ -440,25 +440,25 @@ kts.MENU = {
             {
                id = "daggers",
                text = "Daggers",
-               features = function(S,D)
-                  D:add_gear(starting_daggers)
+               features = function(S)
+                  add_gear(starting_daggers)
                end
             },
             {
                id = "traps",
                text = "Traps",
-               features = function(S,D)
-                  D:add_gear(starting_poison_traps)
-                  D:add_gear(starting_blade_traps)
+               features = function(S)
+                  add_gear(starting_poison_traps)
+                  add_gear(starting_blade_traps)
                end
             },
             { 
                id = "both",
                text = "Daggers and Traps",
-               features = function(S,D)
-                  D:add_gear(starting_daggers)
-                  D:add_gear(starting_poison_traps)
-                  D:add_gear(starting_blade_traps)
+               features = function(S)
+                  add_gear(starting_daggers)
+                  add_gear(starting_poison_traps)
+                  add_gear(starting_blade_traps)
                end
             }
          }
@@ -469,10 +469,10 @@ kts.MENU = {
          choice_min = 1,
          choice_max = 3,
          features = function(S)
-            D:set_keys( S.num_keys, 
-                        i_lockpicks, 
-                        { i_key1, i_key2, i_key3 },
-                        item_weights )
+            set_keys( S.num_keys, 
+                      i_lockpicks, 
+                      { i_key1, i_key2, i_key3 },
+                      item_weights )
          end
       },
       {
@@ -481,8 +481,8 @@ kts.MENU = {
          choices = {
             { id = true,  
               text = "Yes", 
-              features = function(S,D) 
-                 D:set_pretrapped()
+              features = function(S) 
+                 set_pretrapped()
               end
             },
             { 
@@ -496,12 +496,12 @@ kts.MENU = {
          text = "Amount of Stuff",
          choice_min = 1,
          choice_max = 5,
-         features = function(S,D)
-            D:add_stuff("chest",       0.8,                ig_pot)
-            D:add_stuff("small_table", 0.75,               ig_small_table)
-            D:add_stuff("table",       0.67,               ig_table)
-            D:add_stuff("barrel",      1/(8  -   S.stuff), ig_trap)
-            D:add_stuff("floor",       1/(18 - 3*S.stuff), ig_big)
+         features = function(S)
+            add_stuff("chest",       0.8,                ig_pot)
+            add_stuff("small_table", 0.75,               ig_small_table)
+            add_stuff("table",       0.67,               ig_table)
+            add_stuff("barrel",      1/(8  -   S.stuff), ig_trap)
+            add_stuff("floor",       1/(18 - 3*S.stuff), ig_big)
          end
       },
       {
@@ -515,22 +515,22 @@ kts.MENU = {
             { 
                id = "slow", 
                text = "Slow", 
-               features = function(S,D)
-                  D:set_stuff_respawning(respawn_items_list, 960 * 1000)
+               features = function(S)
+                  set_stuff_respawning(respawn_items_list, 960 * 1000)
                end
             },
             { 
                id = "medium", 
                text = "Medium", 
-               features = function(S,D)
-                  D:set_stuff_respawning(respawn_items_list, 480 * 1000)
+               features = function(S)
+                  set_stuff_respawning(respawn_items_list, 480 * 1000)
                end
             },
             { 
                id = "fast", 
                text = "Fast", 
-               features = function(S,D)
-                  D:set_stuff_respawning(respawn_items_list, 240 * 1000)
+               features = function(S)
+                  set_stuff_respawning(respawn_items_list, 240 * 1000)
                end
             }
          },
@@ -543,9 +543,9 @@ kts.MENU = {
          text = "Zombie Activity",
          choice_min = 0,
          choice_max = 5,
-         features = function(S,D)
-            D:set_zombie_activity(0.04 * S.zombies * S.zombies,   -- quadratic from 0 to 100%
-               zombie_activity_table)
+         features = function(S)
+            set_zombie_activity(0.04 * S.zombies * S.zombies,   -- quadratic from 0 to 100%
+                                zombie_activity_table)
          end
       },
       {
@@ -553,23 +553,23 @@ kts.MENU = {
          text = "Vampire Bats",
          choice_min = 0,
          choice_max = 5,
-         features = function(S,D)
+         features = function(S)
             -- Vampire bats are generated randomly at pit tiles
-            D:add_monster_generator(m_vampire_bats, 
-                                    all_open_pit_tiles, 
-                                    0.2 * S.bats)
+            add_monster_generator(m_vampire_bats, 
+                                  all_open_pit_tiles, 
+                                  0.2 * S.bats)
 
             -- Add a few bats in the dungeon initially
             local num_bats = 0
             if S.bats > 0 then
                num_bats = 2 * S.bats + 1
             end
-            D:add_initial_monsters(m_vampire_bats, 
-                                   num_bats)
+            add_initial_monsters(m_vampire_bats, 
+                                 num_bats)
 
             -- The total number of bats is limited
-            D:add_monster_limit(m_vampire_bats, 
-                                3 * S.bats)
+            add_monster_limit(m_vampire_bats, 
+                              3 * S.bats)
          end
       },
 
@@ -581,8 +581,8 @@ kts.MENU = {
          type = "numeric",
          digits = 2,
          suffix = "mins",
-         features = function(S,D)
-            D:set_time_limit(60 * S.time)
+         features = function(S)
+            set_time_limit(60 * S.time)
          end
       }
    }

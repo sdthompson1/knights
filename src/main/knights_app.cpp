@@ -42,7 +42,6 @@
 #include "lua_sandbox.hpp"
 #include "load_font.hpp"
 #include "loading_screen.hpp"
-#include "menu_selections.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
 #include "options.hpp"

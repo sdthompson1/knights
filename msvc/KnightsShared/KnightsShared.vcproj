@@ -206,10 +206,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\impl\menu_selections.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\shared\impl\overlay.cpp"
 				>
 			</File>
@@ -297,10 +293,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\menu_item.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\menu_selections.hpp"
 				>
 			</File>
 			<File
