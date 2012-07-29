@@ -32,7 +32,6 @@ class Control;
 class Creature;
 class Graphic;
 class Sound;
-class ItemGenerator;
 class ItemType;
 class MonsterType;
 class Overlay;

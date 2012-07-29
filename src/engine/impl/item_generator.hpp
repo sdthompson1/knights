@@ -40,8 +40,9 @@ class ItemType;
 //
 class ItemGenerator {
 public:
-    // Ctor reads a callable object from argument position 1. Lua stack left unchanged.
+    // Ctor pops a callable object from top of stack.
     explicit ItemGenerator(lua_State *lua);
+    ItemGenerator() { }
     
     std::pair<const ItemType *, int> get() const;
 

@@ -24,9 +24,12 @@
 #ifndef DUNGEON_GENERATOR_HPP
 #define DUNGEON_GENERATOR_HPP
 
+#include "item_generator.hpp"
+
 #include "boost/shared_ptr.hpp"
 using namespace boost;
 
+#include <map>
 #include <memory>
 #include <vector>
 using namespace std;
@@ -91,5 +94,13 @@ void GenerateItem(DungeonMap &dmap,
                   const ItemType &itype,
                   const std::vector<std::pair<int,int> > &weights,
                   int total_weight);
+
+struct StuffInfo {
+    float chance;
+    ItemGenerator gen;  // call get() -- returns pair<const ItemType*, int>
+};
+
+void GenerateStuff(DungeonMap &dmap,
+                   const std::map<int, StuffInfo> &stuff);
 
 #endif

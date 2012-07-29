@@ -32,9 +32,10 @@
 
 ItemGenerator::ItemGenerator(lua_State *lua)
 {
-    LuaCheckCallable(lua, 1, "ItemGenerator");
-    lua_pushvalue(lua, 1);     // [... func]
-    item_gen_func.reset(lua);  // [...]
+    if (!LuaIsCallable(lua, -1)) {
+        luaL_error(lua, "Invalid item generator -- must be a function or callable object");
+    }
+    item_gen_func.reset(lua);
 }
 
 std::pair<const ItemType *, int> ItemGenerator::get() const

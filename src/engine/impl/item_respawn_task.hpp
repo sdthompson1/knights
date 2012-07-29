@@ -38,7 +38,6 @@
 
 #include <map>
 
-class ItemGenerator;
 class ItemType;
 
 class ItemRespawnTask : public Task

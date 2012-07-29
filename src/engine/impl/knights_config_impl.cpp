@@ -578,12 +578,6 @@ void KnightsConfigImpl::addZombieActivity(MonsterManager &mm, shared_ptr<Tile> f
     }
 }
 
-int KnightsConfigImpl::getSegmentCategory(const string &cname) 
-{
-    if (cname.empty()) return -1;
-    return segment_categories.insert(make_pair(cname, segment_categories.size())).first->second;
-}
-
 int KnightsConfigImpl::getTileCategory(const string &cname)
 {
     if (cname.empty()) return -1;

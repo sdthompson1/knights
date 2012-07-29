@@ -154,8 +154,7 @@ public:
     void popTutorial(lua_State *lua);
     void popZombieActivityTable(lua_State *lua);
 
-    int getSegmentCategory(const std::string &); // returns -1 if empty string given
-    int getTileCategory(const std::string &);    // ditto
+    int getTileCategory(const std::string &);    // returns -1 if "" given
     
     KConfig::RandomIntContainer & getRandomIntContainer() { return random_ints; }
 
@@ -224,7 +223,6 @@ private:
 
     // Some maps from names (in the config system) to integer id codes.
     // These are non-empty only during loading of the config files.
-    std::map<std::string, int> segment_categories;
     std::map<std::string, int> tile_categories;
     
     // Config Map.

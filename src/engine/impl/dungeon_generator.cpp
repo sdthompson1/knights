@@ -1015,25 +1015,40 @@ void GenerateItem(DungeonMap &dmap,
     }
 }
 
+// --------------------------------------------------------------------------------------
+
+void GenerateStuff(DungeonMap &dmap,
+                   const std::map<int, StuffInfo> &stuff)
+{
+    std::vector<boost::shared_ptr<Tile> > tiles;
+    for (int i = 0; i < dmap.getWidth(); ++i) {
+        for (int j = 0; j < dmap.getHeight(); ++j) {
+            MapCoord mc(i,j);
+
+            // Find item-category associated with this tile. Non-negative value means we
+            // should try to generate an item.
+            dmap.getTiles(mc, tiles);
+            const int chosen_cat = FindItemCategory(dmap, mc, tiles);
+            
+            // Look for the chosen category in our container of ItemGenerators.
+            if (chosen_cat >= 0) {
+                std::map<int, StuffInfo>::const_iterator it = stuff.find(chosen_cat);
+                if (it != stuff.end() && g_rng.getBool(it->second.chance)) {
+                    // We are to generate an item
+                    std::pair<const ItemType *, int> result = it->second.gen.get();
+                    ASSERT(result.first);
+                    PlaceItem(dmap, mc, tiles, *result.first, result.second);
+                }
+            }
+        }
+    }
+}
+
+
         
 /*
 
 ///////////////////////////////////////////////
-
-void DungeonGenerator::setStuff(int tile_category, float chance, const ItemGenerator *generator,
-                                int weight)
-{
-    if (stuff.find(tile_category) != stuff.end()) {
-        total_stuff_weight -= stuff[tile_category].weight;
-    }
-    StuffInfo si;
-    si.chance = chance;
-    si.generator = generator;
-    si.weight = std::max(0, weight);
-    si.forbid = weight < 0;
-    total_stuff_weight += si.weight;
-    stuff[tile_category] = si;
-}
 
 void DungeonGenerator::setMonsterLimit(const MonsterType *m, int max_monsters)
 {
@@ -1130,34 +1145,6 @@ void DungeonGenerator::generateExits()
 
 
 
-void DungeonGenerator::generateStuff(DungeonMap &dmap) 
-{
-    vector<shared_ptr<Tile> > tiles;
-    for (int i=0; i<dmap.getWidth(); ++i) {
-        for (int j=0; j<dmap.getHeight(); ++j) {
-            MapCoord mc(i,j);
-
-            // Find item-category associated with this tile. Non-negative value means we
-            // should try to generate an item.
-            dmap.getTiles(mc, tiles);
-            const int chosen_cat = findItemCategory(dmap, mc, tiles);
-            
-            // Look for the chosen category in "stuff" (our container of ItemGenerators).
-            if (chosen_cat >= 0) {
-                map<int,StuffInfo>::const_iterator it = stuff.find(chosen_cat);
-                if (it != stuff.end() && g_rng.getBool(it->second.chance)) {
-                    const ItemGenerator *generator = it->second.generator;
-                    if (generator) {
-                        // We are to generate an item
-                        pair<const ItemType *, int> result = generator->get();
-                        ASSERT(result.first);
-                        placeItem(dmap, mc, tiles, *result.first, result.second);
-                    }
-                }
-            }
-        }
-    }
-}
 
 
 void DungeonGenerator::placeInitialMonsters(DungeonMap &dmap, MonsterManager &mmgr,

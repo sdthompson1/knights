@@ -155,7 +155,44 @@ namespace {
 
     int AddStuff(lua_State *lua)
     {
-        return 0;  // TODO
+        // param 1 = list of triples: { tile_cat_string, probability, generator_func }
+
+        KnightsEngine &ke = GetKnightsEngine(lua);
+        std::map<int, StuffInfo> stuff;
+        
+        lua_len(lua, 1);
+        const int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+        
+        for (int i = 1; i <= sz; ++i) {
+            lua_pushinteger(lua, i);
+            lua_gettable(lua, 1);              // [triple]
+
+            lua_pushinteger(lua, 1);
+            lua_gettable(lua, -2);
+            if (!lua_isstring(lua, -1)) {
+                luaL_error(lua, "Tile category must be a string");
+            }
+            const int cat = ke.getTileCategory(lua_tostring(lua, -1));
+            lua_pop(lua, 1);
+
+            lua_pushinteger(lua, 2);
+            lua_gettable(lua, -2);
+            StuffInfo s;
+            s.chance = float(lua_tonumber(lua, -1));
+            lua_pop(lua, 1);
+
+            lua_pushinteger(lua, 3);
+            lua_gettable(lua, -2);             // [triple func]
+            s.gen = ItemGenerator(lua);        // [triple]
+            lua_pop(lua, 1);                   // []
+
+            stuff[cat] = s;
+        }
+
+        GenerateStuff(*Mediator::instance().getMap(), stuff);
+        
+        return 0;
     }
 
     int ConnectivityCheck(lua_State *lua)
