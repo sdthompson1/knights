@@ -31,6 +31,7 @@
 #include "lua_game_setup.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
+#include "monster_manager.hpp"
 #include "my_exceptions.hpp"
 
 #include "lua.hpp"
@@ -400,6 +401,33 @@ namespace {
 
     int AddMonsterGenerator(lua_State *lua)
     {
+        // arg 1 = montype
+        // arg 2 = list-of-tiletypes
+        // arg 3 = probability
+
+        const MonsterType *montype = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!montype) luaL_error(lua, "Argument #1 is not a valid monster type");
+
+        std::vector<boost::shared_ptr<Tile> > tiles;
+        
+        lua_len(lua, 2);
+        const int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+
+        for (int i = 1; i <= sz; ++i) {
+            lua_pushinteger(lua, i);
+            lua_gettable(lua, 2);
+            boost::shared_ptr<Tile> t = ReadLuaSharedPtr<Tile>(lua, -1);
+            if (!t) luaL_error(lua, "Invalid tile type");
+            tiles.push_back(t);
+        }
+
+        float prob = float(lua_tonumber(lua, 3));
+
+        for (std::vector<boost::shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+            Mediator::instance().getMonsterManager().addMonsterGenerator(*it, montype, prob);
+        }
+        
         return 0;
     }
 

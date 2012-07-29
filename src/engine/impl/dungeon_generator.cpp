@@ -210,6 +210,14 @@ namespace {
         int nrot;
     };
 
+    int CountNonSpecialHomes(const std::vector<HomeInfo> &homes)
+    {
+        int ct = 0;
+        for (std::vector<HomeInfo>::const_iterator it = homes.begin(); it != homes.end(); ++it) {
+            if (!it->special_exit) ++ct;
+        }
+        return ct;
+    }
     
     // Copies all homes from the given segment (whether special or
     // not) into 'all_homes'. Returns the number added.
@@ -257,16 +265,15 @@ namespace {
     }
 
     
-    // Copies upto N non-special homes, chosen randomly from the last
-    // M elements of "all_homes", into "assigned_homes". (ASSERTs if
-    // not enough non-special homes could be found.) Note: this will
-    // reorder all_homes.
+    // Copies N non-special homes, chosen randomly from the last M elements of "all_homes", into "assigned_homes". 
+    // Precondition: there must be at least that many non-special homes available.
+    // Note: this will reorder all_homes.
     void AssignHomes(std::vector<HomeInfo> &all_homes,
                      int how_many_to_choose_from,
                      int how_many_to_choose,
                      std::vector<HomeInfo> &assigned_homes)
     {
-        ASSERT(how_many_to_choose_from >= int(all_homes.size()));
+        ASSERT(how_many_to_choose_from <= int(all_homes.size()));
         
         // Shuffle the last M homes
         RNG_Wrapper myrng(g_rng);
@@ -335,6 +342,8 @@ namespace {
         const int nhomes_avail = AddSegment(r, x, y, lwidth, rwidth, rheight, segment_infos, all_homes);
 
         // Assign homes if required
+        // NOTE: Precondition of AssignHomes is satisfied, because SegmentSet::getSegment
+        // guaranteed that there are at least minhomes non-special homes, and minhomes >= assign.
         if (assign > 0) {
             AssignHomes(all_homes, nhomes_avail, assign, assigned_homes);
         }
@@ -408,11 +417,12 @@ namespace {
         
         // Place all remaining segments.
         while (!blocks.empty()) {
-            const int h = homes_required - all_homes.size();  // minimum number of homes still required
+            const int h = homes_required - CountNonSpecialHomes(all_homes);  
+                    // minimum number of non-special homes still required
             
             const int nblocks = int(blocks.size());
             
-            int n;  // *minimum* number of homes to generate in the new block
+            int n;  // *minimum* number of non-special homes to generate in the new block
             if (h > 2*nblocks) throw DungeonGenerationFailed();
             else if (h == 2*nblocks) n = 2;  // need 2 in every block
             else if (h == 2*nblocks-1) n = 1;  // need at least one here plus two in all others
@@ -426,7 +436,8 @@ namespace {
 
         // Assign H_RANDOM homes if required.
         if (home_type == H_RANDOM) {
-            if (all_homes.size() < nplayers) {
+            // Explicitly check the precondition of AssignHomes
+            if (CountNonSpecialHomes(all_homes) < nplayers) {
                 throw DungeonGenerationFailed();
             } else {
                 AssignHomes(all_homes, all_homes.size(), nplayers, assigned_homes);

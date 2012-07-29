@@ -555,7 +555,7 @@ kts.MENU = {
          choice_max = 5,
          features = function(S)
             -- Vampire bats are generated randomly at pit tiles
-            add_monster_generator(m_vampire_bats, 
+            add_monster_generator(m_vampire_bat, 
                                   all_open_pit_tiles, 
                                   0.2 * S.bats)
 
@@ -568,7 +568,7 @@ kts.MENU = {
                                  num_bats)
 
             -- The total number of bats is limited
-            add_monster_limit(m_vampire_bats, 
+            add_monster_limit(m_vampire_bat, 
                               3 * S.bats)
          end
       },
