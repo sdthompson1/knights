@@ -122,9 +122,14 @@ namespace {
         return 0;  // TODO
     }
 
-    int GenerateLocksAndTraps(lua_State *lua)
+    int GenerateLocksAndTraps_Lua(lua_State *lua)
     {
-        return 0;  // TODO
+        const int nkeys = luaL_checkinteger(lua, 1);
+        const bool pretrapped = lua_toboolean(lua, 2) != 0;
+
+        GenerateLocksAndTraps(*Mediator::instance().getMap(), nkeys, pretrapped);
+        
+        return 0;
     }
 
     int LayoutDungeon(lua_State *lua)
@@ -314,7 +319,7 @@ void AddLuaGameSetupFunctions(lua_State *lua)
     PushCFunction(lua, &ConnectivityCheck);
     lua_setfield(lua, -2, "ConnectivityCheck");
     
-    PushCFunction(lua, &GenerateLocksAndTraps);
+    PushCFunction(lua, &GenerateLocksAndTraps_Lua);
     lua_setfield(lua, -2, "GenerateLocksAndTraps");
     
     PushCFunction(lua, &LayoutDungeon);

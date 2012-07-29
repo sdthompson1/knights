@@ -79,4 +79,12 @@ void DungeonGenerator(DungeonMap &dmap,
                       const std::vector<Player*> &players,
                       const DungeonSettings &settings);
 
+
+//
+// Additional dungeon generation functions
+//
+
+void GenerateLocksAndTraps(DungeonMap &dmap, int nkeys, bool pretrapped);
+
+
 #endif

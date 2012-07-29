@@ -120,6 +120,11 @@ ActionData::ActionData(lua_State *lua)
     originator = ReadOriginator(lua, -1);
     lua_pop(lua, 1);
 
+    lua_pushstring(lua, "flag");
+    lua_gettable(lua, -2);
+    flag = lua_toboolean(lua, -1) != 0;
+    lua_pop(lua, 1);
+
     if (!item_coord.isNull() || !tile_coord.isNull() || !generic_coord.isNull()) {
         // We don't currently support multiple DungeonMaps, so just get the map from Mediator.
         DungeonMap *dmap = Mediator::instance().getMap().get();
@@ -171,6 +176,12 @@ void ActionData::pushCxtTable(lua_State *lua) const
     // generic pos
     PushMapCoord(lua, generic_coord);
     lua_setfield(lua, -2, "pos");
+
+    // flag (pretrapped chests hack)
+    if (flag) {
+        lua_pushboolean(lua, true);
+        lua_setfield(lua, -2, "flag");
+    }
     
     PushOriginator(lua, getOriginator());  // [cxt player]
     lua_setfield(lua, -2, "originator");          // [cxt]

@@ -29,6 +29,7 @@
 #include "dungeon_layout.hpp"
 #include "dungeon_map.hpp"
 #include "home_manager.hpp"
+#include "lockable.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
 #include "rng.hpp"
@@ -323,7 +324,7 @@ namespace {
                     break;
                 }
             }
-            if (found) break;
+            if (!found) break;
         }
         if (!r) throw DungeonGenerationFailed();
 
@@ -863,6 +864,33 @@ void DungeonGenerator(DungeonMap &dmap,
     }
 }
 
+// --------------------------------------------------------------------------------------
+
+void GenerateLocksAndTraps(DungeonMap &dmap,
+                           int nkeys,
+                           bool pretrapped)
+{
+    std::vector<boost::shared_ptr<Tile> > tiles;
+    for (int i = 0; i < dmap.getWidth(); ++i) {
+        for (int j = 0; j < dmap.getHeight(); ++j) {
+            MapCoord mc(i,j);
+            dmap.getTiles(mc, tiles);
+            for (std::vector<boost::shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
+            ++it) {
+                boost::shared_ptr<Lockable> lockable = dynamic_pointer_cast<Lockable>(*it);
+                if (lockable) {
+                    // try to generate a trap. (only if pretrapped is on)
+                    bool trap_placed = pretrapped ? lockable->generateTrap(dmap, mc) : false;
+                    if (!trap_placed) {
+                        // if that fails, then try to generate a lock instead.
+                        lockable->generateLock(nkeys);
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 /*
 
@@ -974,44 +1002,6 @@ void DungeonGenerator::generateExits()
         }
         break;
     }
-}
-
-
-void DungeonGenerator::getHome(int i, MapCoord &pos, MapDirection &facing_toward_home) const
-{
-    if (home_type == H_RANDOM_RESPAWN) {
-        pos = MapCoord();
-        facing_toward_home = D_NORTH;
-    } else {
-        // "assigned_homes" is what we want here
-        if (i < 0 || i >= assigned_homes.size()) throw UnexpectedError("Home number is out of range");
-        pos = assigned_homes[i].first;
-        facing_toward_home = assigned_homes[i].second;
-        pos = DisplaceCoord(pos, Opposite(facing_toward_home)); // we want the square 1 in front of the home.
-    }
-}
-
-void DungeonGenerator::getHomeOverall(int i, MapCoord &pos, MapDirection &facing) const
-{
-    // This needs to use either unassigned homes or assigned homes, as appropriate
-    if (i < 0 || i >= getNumHomesOverall()) return;
-    if (i < assigned_homes.size()) {
-        pos = assigned_homes[i].first;
-        facing = assigned_homes[i].second;
-    } else {
-        pos = unassigned_homes[i - assigned_homes.size()].first;
-        facing = unassigned_homes[i - assigned_homes.size()].second;
-    }
-    pos = DisplaceCoord(pos, Opposite(facing));
-}
-     
-
-void DungeonGenerator::getExit(int i, MapCoord &pos, MapDirection &facing) const
-{
-    if (i < 0 || i >= exits.size()) return;
-    pos = exits[i].first;
-    facing = exits[i].second;
-    pos = DisplaceCoord(pos, Opposite(facing));
 }
 
 void DungeonGenerator::generateRequiredItems(DungeonMap &dmap)
@@ -1148,28 +1138,6 @@ void DungeonGenerator::generateStuff(DungeonMap &dmap)
     }
 }
 
-void DungeonGenerator::generateLocksAndTraps(DungeonMap &dmap, int nkeys)
-{
-    vector<shared_ptr<Tile> > tiles;
-    for (int i=0; i<dmap.getWidth(); ++i) {
-        for (int j=0; j<dmap.getHeight(); ++j) {
-            MapCoord mc(i,j);
-            dmap.getTiles(mc, tiles);
-            for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
-            ++it) {
-                shared_ptr<Lockable> lockable = dynamic_pointer_cast<Lockable>(*it);
-                if (lockable) {
-                    // try to generate a trap. (only if pretrapped is on)
-                    bool trap_placed = pretrapped ? lockable->generateTrap(dmap, mc) : false;
-                    if (!trap_placed) {
-                        // if that fails, then try to generate a lock instead.
-                        lockable->generateLock(nkeys);
-                    }
-                }
-            }
-        }
-    }
-}
 
 void DungeonGenerator::placeInitialMonsters(DungeonMap &dmap, MonsterManager &mmgr,
                                             const MonsterType &mtype, int num_monsters)
