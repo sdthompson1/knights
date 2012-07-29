@@ -242,6 +242,15 @@ namespace {
     
     int AddStartingGear(lua_State *lua)
     {
+        const ItemType *itype = ReadLuaPtr<const ItemType>(lua, 1);
+
+        std::vector<int> num;
+        for (int i = 2; i <= lua_gettop(lua); ++i) {
+            num.push_back(lua_tointeger(lua, i));
+        }
+
+        GetKnightsEngine(lua).addStartingGear(itype, num);
+        
         return 0;
     }
 

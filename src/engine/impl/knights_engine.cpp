@@ -395,3 +395,8 @@ void KnightsEngine::gameStartupMsg(const std::string &msg)
         throw UnexpectedError("KnightsEngine::gameStartupMsg called at unexpected time");
     }
 }
+
+void KnightsEngine::addStartingGear(const ItemType *itype, const std::vector<int> &num)
+{
+    pimpl->starting_gears.push_back(std::make_pair(itype, num));
+}

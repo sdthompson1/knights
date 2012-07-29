@@ -37,7 +37,10 @@
 
 #include "boost/shared_ptr.hpp"
 
+#include <vector>
+
 class DungeonView;
+class ItemType;
 class KnightsCallbacks;
 class KnightsConfig;
 class KnightsEngineImpl;
@@ -108,6 +111,7 @@ public:
     void resetMap();
     void setPremapped(bool);
     void gameStartupMsg(const std::string &msg);
+    void addStartingGear(const ItemType *, const std::vector<int> &);
     
 private:
     boost::shared_ptr<KnightsEngineImpl> pimpl;
