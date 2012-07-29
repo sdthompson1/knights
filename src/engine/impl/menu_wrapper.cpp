@@ -801,6 +801,11 @@ namespace {
         PushCClosure(lua, &IsAtMost, 1);
         lua_setfield(lua, -2, "IsAtMost");  // [m S]
 
+        lua_pushinteger(lua, 0);
+        lua_setfield(lua, -2, "num_players");
+        lua_pushinteger(lua, 0);
+        lua_setfield(lua, -2, "num_teams");  // [m S]
+        
         impl.s_table.reset(lua);  // [m]        
 
         // read menu-level functions
@@ -956,6 +961,15 @@ void MenuWrapper::changeNumberOfPlayers(int nplayers, int nteams, MenuListener &
     pimpl->num_players = nplayers;
     pimpl->num_teams = nteams;
 
+    // update S table as well
+    lua_State *lua = GetLuaState(*pimpl);
+    pimpl->s_table.push(lua);  // [S]
+    lua_pushinteger(lua, nplayers); // [S n]
+    lua_setfield(lua, -2, "num_players"); // [S]
+    lua_pushinteger(lua, nteams); // [S n]
+    lua_setfield(lua, -2, "num_teams");  // [S]
+    lua_pop(lua, 1);  // []
+    
     // strictly speaking we don't need to call all the lua constraint
     // functions again, but for the sake of simplicity we want to have
     // only one unified "Validate" function that does everything...
