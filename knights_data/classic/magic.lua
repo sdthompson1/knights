@@ -137,7 +137,6 @@ end
 
 function sense_items()
    kts.SenseItems(see_item_dur())
-   kts.FlashMessage("Sense Items")
 end
 
 function potion_effect()
