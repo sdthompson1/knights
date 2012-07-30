@@ -39,9 +39,6 @@
 #include "monster.hpp"
 #include "monster_type.hpp"
 
-#include "kconfig_fwd.hpp"
-using namespace KConfig;
-
 #include "boost/shared_ptr.hpp"
 
 #include <vector>
@@ -60,17 +57,17 @@ class FlyingMonsterType : public MonsterType {
     friend class FlyingMonster;
 public:
     // reads table from top of stack (does not pop stack)
-    FlyingMonsterType(lua_State *lua, KnightsConfigImpl *kc);
+    explicit FlyingMonsterType(lua_State *lua);
 
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_FLYING; }
 
 private:
-    const RandomInt *health;
+    RandomInt health;
     int speed;
     const Anim *anim;
     int dmg;
-    const RandomInt *stun;
+    RandomInt stun;
 };
 
 //
@@ -108,12 +105,12 @@ private:
 
 class WalkingMonsterType : public MonsterType {
 public:
-    WalkingMonsterType(lua_State *lua, KnightsConfigImpl *kc);  // reads table from top of lua stack; doesn't pop
+    explicit WalkingMonsterType(lua_State *lua);  // reads table from top of lua stack; doesn't pop
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_WALKING; }
     
 private:
-    const RandomInt *health;
+    RandomInt health;
     int speed;
     const ItemType *weapon;
     const Anim *anim;

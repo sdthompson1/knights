@@ -42,9 +42,6 @@
 #include "teleport.hpp"
 #include "tile.hpp"
 
-#include "random_int.hpp"
-using namespace KConfig;
-
 #include <iostream> // used for A_DebugPrint
 using namespace std;
 

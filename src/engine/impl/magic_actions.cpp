@@ -37,9 +37,6 @@
 #include "task_manager.hpp"
 #include "teleport.hpp"
 
-#include "random_int.hpp"
-using namespace KConfig;
-
 #ifdef _MSC_VER
     // fix "bug" with MSVC static libraries and global constructors
     extern "C" void InitMagicActions()

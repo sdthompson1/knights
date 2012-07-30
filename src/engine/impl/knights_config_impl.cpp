@@ -71,7 +71,6 @@
 
 namespace {
     template<class T> struct Delete {
-        void operator()(pair<const Value *const,T*> &x) { delete x.second; }
         void operator()(T*p) { delete p; }
     };
 
@@ -81,17 +80,26 @@ namespace {
         }
     }
 
-    // Implementation of KConfigSource to use RStreams
-    struct MyFileLoader : KConfigSource {
-        virtual boost::shared_ptr<std::istream> openFile(const std::string &filename) {
-            boost::shared_ptr<std::istream> result(new RStream(filename));
-            return result;
+    void PopTileList(lua_State *lua, std::vector<boost::shared_ptr<Tile> > &result)
+    {
+        lua_len(lua, -1);
+        int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+
+        for (int i = 1; i <= sz; ++i) {
+            lua_pushinteger(lua, i);
+            lua_gettable(lua, -2);
+            result.push_back(ReadLuaSharedPtr<Tile>(lua, -1));
+            lua_pop(lua, 1);
         }
-    };
+        
+        lua_pop(lua, 1);
+    }
 }
 
 KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool menu_strict)
-    : knight_anim(0), default_item(0),
+    : doing_config(true),
+      knight_anim(0), default_item(0),
       stuff_bag_graphic(0),
       blood_icon(0)
 {
@@ -109,13 +117,8 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
         // Add the standard controls
         AddStandardControls(lua, this);
         
-        // Open the file
-        MyFileLoader my_file_loader;
-        kf.reset(new KFile(config_file_name, my_file_loader, random_ints, lua));
-
         // Load some lua code into the context
-        // TODO: The lua file name should probably be an input to the ctor, like the kconfig name is ?
-        LuaExecRStream(lua, "main.lua", 0, 0, 
+        LuaExecRStream(lua, config_file_name, 0, 0, 
                        false);   // look in top level rsrc directory only
 
         // Get the "kts" table
@@ -132,14 +135,18 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
         menu_wrapper.reset(new MenuWrapper(lua, menu_strict)); // [env kts]
 
         // Load misc other stuff.
-        kf->pushSymbol("KNIGHT_ANIM");
-        knight_anim = popAnim();
-        kf->pushSymbol("KNIGHT_HOUSE_COLOURS");
-        popHouseColours(*config_map);
-        kf->pushSymbol("KNIGHT_HOUSE_COLOURS_MENU");
-        popHouseColoursMenu();
-        kf->pushSymbol("DEFAULT_ITEM");
-        default_item = popItemType(0);
+        lua_getfield(lua, -1, "DEFAULT_ITEM");
+        default_item = ReadLuaPtr<const ItemType>(lua, -1);
+        lua_pop(lua, 1);
+        
+        lua_getfield(lua, -1, "KNIGHT_ANIM");  // [env kts anim]
+        knight_anim = ReadLuaPtr<Anim>(lua, -1);
+        lua_pop(lua, 1);  // [env kts]
+
+        lua_getfield(lua, -1, "KNIGHT_HOUSE_COLOURS");
+        popHouseColours(lua);
+        lua_getfield(lua, -1, "KNIGHT_HOUSE_COLOURS_MENU");
+        popHouseColoursMenu(lua);
 
         // controls (read from kts.CONTROLS)
         // [env kts]
@@ -157,16 +164,18 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
         lua_pop(lua, 1);   // [env kts]
         
         // monsters, gore
-        kf->pushSymbol("BLOOD_ICON");
-        blood_icon = popGraphic();
-        kf->pushSymbol("BLOOD_TILES");
-        popTileList(blood_tiles);
-        kf->pushSymbol("DEAD_KNIGHT_TILES");
-        popTileList(dead_knight_tiles);
+        lua_getfield(lua, -1, "BLOOD_ICON");
+        blood_icon = ReadLuaPtr<Graphic>(lua, -1);
+        lua_pop(lua, 1);
+        lua_getfield(lua, -1, "BLOOD_TILES");
+        PopTileList(lua, blood_tiles);
+        lua_getfield(lua, -1, "DEAD_KNIGHT_TILES");
+        PopTileList(lua, dead_knight_tiles);
 
         // misc other stuff
-        kf->pushSymbol("STUFF_BAG_GRAPHIC");
-        stuff_bag_graphic = popGraphic();
+        lua_getfield(lua, -1, "STUFF_BAG_GRAPHIC");
+        stuff_bag_graphic = ReadLuaPtr<Graphic>(lua, -1);
+        lua_pop(lua, 1);
 
         // Hooks -- These are used for various sound effects that can't
         // be fitted in more directly.
@@ -202,12 +211,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
                 dead_knight_tiles.push_back(makeDeadKnightTile(dead_knight_tiles[j], house_colours_normal[i]));
             }
         }
-
-    
-        // Check that the stack is properly empty
-        if (!kf->isStackEmpty()) {
-            kf->error("internal error: stack non-empty");
-        }
     
         // Fill knight_anims
         for (int i = 0; i < house_colours_normal.size(); ++i) {
@@ -216,6 +219,12 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
             knight_anims.back()->setColourChangeNormal(house_colours_normal[i]);
             knight_anims.back()->setColourChangeInvulnerable(house_colours_invulnerable[i]);
         }
+
+        ASSERT(lua_gettop(lua) == 0);
+
+        // The last thing we do before exiting the constructor is to
+        // turn off the "doing_config" flag.
+        doing_config = false;
         
     } catch (...) {
         // ensure memory gets freed if there is an exception during construction.
@@ -245,186 +254,141 @@ KnightsConfigImpl::~KnightsConfigImpl()
     freeMemory();
 }
 
-
-//
-// "Pop" routines
-//
-
-Anim * KnightsConfigImpl::popAnim()
-{
-    if (!kf) return 0;
-
-    Anim *result = 0;
-
-    if (kf->isLua()) {
-        kf->popLua();
-        result = ReadLuaPtr<Anim>(lua_state.get(), -1);
-        lua_pop(lua_state.get(), 1);
-    }
-
-    if (!result) kf->errExpected("anim");
-
-    return result;
-}
-
-Anim * KnightsConfigImpl::popAnim(Anim *dflt)
-{
-    if (!kf) return 0;
-    if (kf->isNone()) {
-        kf->pop();
-        return dflt;
-    } else {
-        return popAnim();
-    }
-}
-
-Graphic * KnightsConfigImpl::popGraphic()
-{
-    if (!kf) return 0;
-
-    Graphic *result = 0;
-    
-    if (kf->isLua()) {
-        kf->popLua();
-        result = ReadLuaPtr<Graphic>(lua_state.get(), -1);
-        lua_pop(lua_state.get(), 1);
-    }
-
-    if (!result) kf->errExpected("graphic");
-
-    return result;
-}
-
-Graphic * KnightsConfigImpl::popGraphic(Graphic *dflt)
-{
-    if (!kf) return 0;
-    if (kf->isNone()) {
-        kf->pop();
-        return dflt;
-    } else {
-        return popGraphic();
-    }
-}
-
-
-void KnightsConfigImpl::popHouseColours(const ConfigMap &config_map)
+void KnightsConfigImpl::popHouseColours(lua_State *lua)
 {
     // Here we set the local variable "house_colours" (both normal and invulnerable versions).
     // Expected input format is a list of lists of RGB colours.
-    if (!kf) return;
-    KFile::List lst(*kf, "HouseColourList");
-    if (lst.getSize() < 1) {
-        kf->error("house colour list is empty");
-    } else {
 
-        Colour rgb;  // work space
-        vector<Colour> src_cols;  // colours of the first House
-        
-        // First entry: N "src" colors (store these in src_cols)
-        {
-            lst.push(0);
-            KFile::List cols(*kf, "HouseColours");
-            for (int i=0; i<cols.getSize(); ++i) {
-                cols.push(i);
-                rgb = popRGB();
-                src_cols.push_back(rgb);
-            }
-            // first House's ColourChange is always empty
-            house_colours_normal.push_back(ColourChange());
-            // for first House's invulnerability, we set a single colour change
-            // from src_cols[0] to CfgInt("invuln_r/g/b")
-            ColourChange cc;
-            if (!src_cols.empty()) {
-                cc.add(src_cols[0], Colour(config_map.getInt("invuln_r"), 
-                                           config_map.getInt("invuln_g"), 
-                                           config_map.getInt("invuln_b")));
-            }
-            house_colours_invulnerable.push_back(cc);
-        }
-        
-        // Second and subsequent entries: N "dest" colors
-        // (create a ColourChange from "src_cols" to the newly-read dest cols)
-        // for the Invulnerable one: we overwrite the first entry with the value of
-        // CfgInt("invuln_r/g/b").
-        for (int n=1; n<lst.getSize(); ++n) {
-            lst.push(n);
-            KFile::List cols(*kf, "HouseColours", src_cols.size());
-            ColourChange cc, cc2;
-            for (int i=0; i<cols.getSize(); ++i) {
-                cols.push(i);
-                rgb = popRGB();
-                cc.add(src_cols[i], rgb);
-                cc2.add(src_cols[i], i==0? Colour(config_map.getInt("invuln_r"), 
-                                                  config_map.getInt("invuln_g"), 
-                                                  config_map.getInt("invuln_b")) : rgb);
-            }
-            house_colours_normal.push_back(cc);
-            house_colours_invulnerable.push_back(cc2);
-        }
-
-        // Now do the secured cc's:
-        // (By convention, home CC's change from red ie $FF0000 to the first colour
-        // in the house colours list)
-        for (int i=0; i<lst.getSize(); ++i) {
-            lst.push(i);
-            KFile::List cols(*kf, "HouseColours");
-            Colour rgb;
-            cols.push(0);
-            rgb = popRGB();
-            // (As a special rule, if all components are $40 or less, the colour value is 
-            // doubled. This is to prevent homes secured by Black knights being invisible.)
-            if (rgb.r <= 0x40 && rgb.g <= 0x40 && rgb.b <= 0x40) {
-                rgb.r *= 2;
-                rgb.g *= 2;
-                rgb.b *= 2;
-            }
-            shared_ptr<ColourChange> cc(new ColourChange);
-            cc->add(Colour(255,0,0),rgb);
-            secured_cc.push_back(cc);
-        }
+    // [tbl]
+    int sz = 0;
+    if (!lua_isnil(lua, -1)) {
+        lua_len(lua, -1);
+        sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
     }
-}
 
-void KnightsConfigImpl::popHouseColoursMenu()
-{
-    if (!kf) return;
-    KFile::List lst(*kf, "ColourList");
-    if (lst.getSize() < 1) {
-        kf->error("house colour menu list is empty");
-    } else {
-        house_col_vector.reserve(lst.getSize());
-        for (int i = 0; i < lst.getSize(); ++i) {
-            lst.push(i);
-            const Colour rgb = popRGB();
-            house_col_vector.push_back(Coercri::Color(rgb.r, rgb.g, rgb.b));
-        }
+    if (sz < 1) {
+        throw LuaError("House colour list is empty");
     }
-}
 
-const ItemType * KnightsConfigImpl::popItemType()
-{
-    if (!kf) return 0;
-    const ItemType * result = 0;
+    Colour rgb;  // work space
+    vector<Colour> src_cols;  // colours of the first House
+
     
-    if (kf->isLua()) {
-        kf->popLua();  // pop from kfile stack, push to lua stack
-        result = ReadLuaPtr<const ItemType>(lua_state.get(), -1);
-        lua_pop(lua_state.get(), 1);
-    }
+    // First entry: N "src" colors (store these in src_cols)
+    lua_pushinteger(lua, 1);  // [t 1]
+    lua_gettable(lua, -2);    // [t first_entry]
+
+    lua_len(lua, -1);         // [t fe sz1]
+    const int sz1 = lua_tointeger(lua, -1);
+    lua_pop(lua, 1);          // [t fe]
     
-    if (!result) kf->errExpected("item type");
-    return result;
+    for (int i=1; i<=sz1; ++i) {
+        lua_pushinteger(lua, i);  // [t fe i]
+        lua_gettable(lua, -2);    // [t fe rgb]
+        rgb = popRGB(lua);        // [t fe]
+        src_cols.push_back(rgb);
+    }
+    lua_pop(lua, 1);              // [t]
+    
+    // first House's ColourChange is always empty
+    house_colours_normal.push_back(ColourChange());
+    
+    // for first House's invulnerability, we set a single colour change
+    // from src_cols[0] to CfgInt("invuln_r/g/b")
+    ColourChange cc;
+    if (!src_cols.empty()) {
+        cc.add(src_cols[0], Colour(config_map->getInt("invuln_r"), 
+                                   config_map->getInt("invuln_g"), 
+                                   config_map->getInt("invuln_b")));
+    }
+    house_colours_invulnerable.push_back(cc);
+
+    
+    // Second and subsequent entries: N "dest" colors
+    // (create a ColourChange from "src_cols" to the newly-read dest cols)
+    // for the Invulnerable one: we overwrite the first entry with the value of
+    // CfgInt("invuln_r/g/b").
+    for (int n = 2; n <= sz; ++n) {
+        lua_pushinteger(lua, n);   // [t n]
+        lua_gettable(lua, -2);     // [t entry]
+
+        lua_len(lua, -1);  // [t e len]
+        const int sz2 = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);   // [t e]
+        
+        ColourChange cc, cc2;
+        for (int i = 1; i <= sz2; ++i) {
+            lua_pushinteger(lua, i);   // [t e i]
+            lua_gettable(lua, -2);     // [t e rgb]
+            rgb = popRGB(lua);         // [t e]
+            cc.add(src_cols[i-1], rgb);
+            cc2.add(src_cols[i-1], i==1? Colour(config_map->getInt("invuln_r"), 
+                                                config_map->getInt("invuln_g"), 
+                                                config_map->getInt("invuln_b")) : rgb);
+        }
+        house_colours_normal.push_back(cc);
+        house_colours_invulnerable.push_back(cc2);
+
+        lua_pop(lua, 1);  // [t]
+    }
+
+    // Now do the secured cc's:
+    // (By convention, home CC's change from red ie 0xFF0000 to the first colour
+    // in the house colours list)
+    for (int i = 1; i <= sz; ++i) {
+        lua_pushinteger(lua, i);  // [t i]
+        lua_gettable(lua, -2);    // [t entry]
+        lua_pushinteger(lua, 1);  // [t entry 1]
+        lua_gettable(lua, -2);    // [t entry first_col]
+        rgb = popRGB(lua);        // [t entry]
+        lua_pop(lua, 1);          // [t]
+        
+        // (As a special rule, if all components are $40 or less, the colour value is 
+        // doubled. This is to prevent homes secured by Black knights being invisible.)
+        if (rgb.r <= 0x40 && rgb.g <= 0x40 && rgb.b <= 0x40) {
+            rgb.r *= 2;
+            rgb.g *= 2;
+            rgb.b *= 2;
+        }
+        shared_ptr<ColourChange> cc(new ColourChange);
+        cc->add(Colour(255,0,0),rgb);
+        secured_cc.push_back(cc);
+    }
+
+    lua_pop(lua, 1);  // []
 }
 
-const ItemType * KnightsConfigImpl::popItemType(const ItemType *dflt)
+void KnightsConfigImpl::popHouseColoursMenu(lua_State *lua)
 {
-    if (!kf) return 0;
-    if (kf->isNone()) {
-        kf->pop();
-        return dflt;
-    } else {
-        return popItemType();
+    // [table]
+
+    int sz = 0;
+    if (!lua_isnil(lua, -1)) {
+        lua_len(lua, -1);
+        sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
     }
+    
+    if (sz < 1) {
+        throw LuaError("house colour menu list is empty");
+    }
+    
+    house_col_vector.reserve(sz);
+    for (int i = 1; i <= sz; ++i) {
+        lua_pushinteger(lua, i);  // [tbl i]
+        lua_gettable(lua, -2);    // [tbl rgb]
+        const Colour rgb = popRGB(lua);  // [tbl]
+        house_col_vector.push_back(Coercri::Color(rgb.r, rgb.g, rgb.b));
+    }
+    lua_pop(lua, 1);  // []
+}
+
+Colour KnightsConfigImpl::popRGB(lua_State *lua)
+{
+    int x = lua_tointeger(lua, -1);
+    lua_pop(lua, 1);
+    return Colour((x >> 16) & 255,  (x >> 8) & 255, x & 255);
 }
 
 void KnightsConfigImpl::setOverlayOffsets(lua_State *lua)
@@ -442,13 +406,6 @@ void KnightsConfigImpl::setOverlayOffsets(lua_State *lua)
     }
 }
 
-Colour KnightsConfigImpl::popRGB()
-{
-    if (!kf) return Colour(0,0,0);
-    int x = kf->popInt();
-    return Colour((x >> 16) & 255,  (x >> 8) & 255, x & 255);
-}
-
 boost::shared_ptr<Tile> KnightsConfigImpl::makeDeadKnightTile(boost::shared_ptr<Tile> orig_tile, const ColourChange &cc)
 {
     boost::shared_ptr<Graphic> new_graphic(new Graphic(*orig_tile->getGraphic()));
@@ -456,41 +413,6 @@ boost::shared_ptr<Tile> KnightsConfigImpl::makeDeadKnightTile(boost::shared_ptr<
     new_graphic->setID(dead_knight_graphics.size() + lua_graphics.size() + 1);
     dead_knight_graphics.push_back(new_graphic);
     return orig_tile->cloneWithNewGraphic(new_graphic.get());
-}
-
-shared_ptr<Tile> KnightsConfigImpl::popTile()
-{
-    shared_ptr<Tile> result;
-    if (kf && kf->isLua()) {
-        kf->popLua();
-        result = ReadLuaSharedPtr<Tile>(lua_state.get(), -1);
-        lua_pop(lua_state.get(), 1);
-    }
-    if (!result) kf->errExpected("tile");
-    return result;
-}
-
-shared_ptr<Tile> KnightsConfigImpl::popTile(shared_ptr<Tile> dflt)
-{
-    if (!kf) return shared_ptr<Tile>();
-    if (kf->isNone()) {
-        kf->pop();
-        return dflt;
-    } else {
-        return popTile();
-    }
-}
-
-void KnightsConfigImpl::popTileList(vector<shared_ptr<Tile> > &output)
-{
-    output.clear();
-    if (!kf) return;
-    KConfig::KFile::List lst(*kf, "TileList");
-    output.reserve(lst.getSize());
-    for (int i=0; i<lst.getSize(); ++i) {
-        lst.push(i);
-        output.push_back(popTile());
-    }
 }
 
 void KnightsConfigImpl::popTutorial(lua_State *lua)
@@ -526,7 +448,7 @@ void KnightsConfigImpl::popTutorial(lua_State *lua)
     lua_pop(lua, 1);  // []
 }
 
-
+// Tile category numbering
 int KnightsConfigImpl::getTileCategory(const string &cname)
 {
     if (cname.empty()) return -1;

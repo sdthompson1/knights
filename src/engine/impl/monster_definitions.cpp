@@ -30,14 +30,13 @@
 #include "mediator.hpp"
 #include "monster_definitions.hpp"
 #include "monster_support.hpp"
+#include "random_int.hpp"
 #include "rng.hpp"
 #include "special_tiles.hpp"
 #include "task.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
 
-#include "random_int.hpp"
-using namespace KConfig;
 
 
 //
@@ -212,20 +211,20 @@ void FlyingMonsterAI::execute(TaskManager &tm)
     ReplaceTask(tm, shared_from_this(), *bat, allow_bite_halfway);
 }
 
-FlyingMonsterType::FlyingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
+FlyingMonsterType::FlyingMonsterType(lua_State *lua)
     : MonsterType(lua)
 {
-    health = LuaGetRandomInt(lua, -1, "health", kc);
+    health = LuaGetRandomInt(lua, -1, "health");
     speed = LuaGetInt(lua, -1, "speed");
     anim = LuaGetPtr<Anim>(lua, -1, "anim");
 
     dmg = LuaGetInt(lua, -1, "attack_damage");
-    stun = LuaGetRandomInt(lua, -1, "attack_stun_time", kc);
+    stun = LuaGetRandomInt(lua, -1, "attack_stun_time");
 }
 
 shared_ptr<Monster> FlyingMonsterType::makeMonster(TaskManager &tm) const
 {
-    const int h = health ? health->get() : 1; 
+    const int h = std::min(1, health.get());
     shared_ptr<FlyingMonster> mon(new FlyingMonster(*this, h, anim, speed));
     shared_ptr<Task> ai(new FlyingMonsterAI(mon));
     tm.addTask(ai, TP_LOW, tm.getGVT()+1);
@@ -258,7 +257,7 @@ void FlyingMonster::bite(shared_ptr<Creature> target)
 
     // strike the target
     if (target) {
-        const int stun_until = (mtype.stun? mtype.stun->get() : 0) + gvt;
+        const int stun_until = mtype.stun.get() + gvt;
         target->damage(mtype.dmg, Originator(OT_Monster()), stun_until);
     }
 
@@ -453,12 +452,12 @@ void WalkingMonsterAI::execute(TaskManager &tm)
     ReplaceTask(tm, shared_from_this(), *mon, false);
 }
 
-WalkingMonsterType::WalkingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
+WalkingMonsterType::WalkingMonsterType(lua_State *lua)
     : MonsterType(lua)
 {
     // [... t]
     
-    health = LuaGetRandomInt(lua, -1, "health", kc);
+    health = LuaGetRandomInt(lua, -1, "health");
     speed = LuaGetInt(lua, -1, "speed");
     anim = LuaGetPtr<Anim>(lua, -1, "anim");
 
@@ -472,7 +471,7 @@ WalkingMonsterType::WalkingMonsterType(lua_State *lua, KnightsConfigImpl *kc)
 
 shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
 {
-    const int h = health ? health->get() : 1;
+    const int h = std::min(1, health.get());
     shared_ptr<WalkingMonster> monster(new WalkingMonster(*this, h, weapon, anim, speed));
     monster->setFacing(MapDirection(g_rng.getInt(0,4))); // random initial facing
     shared_ptr<Task> ai(new WalkingMonsterAI(monster, avoid_tiles, fear_item, hit_item));

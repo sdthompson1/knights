@@ -68,6 +68,8 @@ public:
     // or nil, this function does nothing.)
     void runNArgsNoPop(lua_State *lua, int n) const;
 
+    // Run the function with no args, and return a single integer.
+    int runToInt() const;
     
     // This runs the stored function, as a coroutine, with no
     // arguments, and with the global variable "cxt" set to the

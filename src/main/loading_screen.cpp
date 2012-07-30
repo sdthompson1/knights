@@ -26,7 +26,6 @@
 #include "config_map.hpp"
 #include "error_screen.hpp"
 #include "game_manager.hpp"
-#include "kconfig_loader.hpp" // for KConfigError
 #include "knights_app.hpp"
 #include "knights_client.hpp"
 #include "knights_config.hpp"
@@ -46,8 +45,6 @@ void LoadingScreen::Loader::operator()()
         
         knights_config.reset(new KnightsConfig(knights_config_filename, menu_strict));
 
-    } catch (KConfig::KConfigError &kce) {
-        kconfig_error.reset(new KConfig::KConfigError(kce));
     } catch (LuaError &err) {
         lua_error.reset(new LuaError(err));
     } catch (std::exception &e) {
@@ -96,11 +93,9 @@ void LoadingScreen::update()
         return;
     }
 
-    // KConfigErrors/LuaErrors should be re-thrown in this thread. Other errors should just go directly
+    // LuaErrors should be re-thrown in this thread. Other errors should just go directly
     // to ErrorScreen.
-    if (loader->kconfig_error.get()) {
-        throw *loader->kconfig_error;
-    } else if (loader->lua_error.get()) {
+    if (loader->lua_error.get()) {
         throw *loader->lua_error;
     }
     if (!loader->error_msg.empty()) {

@@ -158,10 +158,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\misc\krandom.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\misc\metaserver_urls.cpp"
 				>
 			</File>

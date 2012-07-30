@@ -81,8 +81,6 @@
 #include "boost/filesystem/fstream.hpp"
 #include "boost/scoped_ptr.hpp"
 
-#include "kconfig_loader.hpp"  // needed for KConfigError
-
 #include <cstdlib>
 
 #ifdef __LP64__
@@ -974,11 +972,8 @@ void KnightsApp::runKnights()
                                  // are going well & can reset num_errors.
             }
 
-        } catch (KConfig::KConfigError&) {
-            // These are big and better displayed on stdout than in a guichan dialog box:
-            throw;
         } catch (LuaError&) {
-            // Ditto
+            // These are big and better displayed on stdout than in a guichan dialog box:
             throw;
         } catch (std::exception &e) {
             error = string("ERROR: ") + e.what();

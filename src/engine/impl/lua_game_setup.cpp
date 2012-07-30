@@ -606,6 +606,8 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
     PushCFunction(lua, &SetTimeLimit);
     lua_setfield(lua, -2, "SetTimeLimit");
+
+    lua_pop(lua, 2);
 }
 
 

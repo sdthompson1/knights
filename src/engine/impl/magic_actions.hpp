@@ -35,9 +35,6 @@
 
 #include "legacy_action.hpp"
 
-// kconfig
-#include "kconfig_fwd.hpp"
-
 class A_Attractor : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;

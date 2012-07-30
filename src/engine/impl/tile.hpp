@@ -35,9 +35,7 @@
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
 #include "originator.hpp"
-
 #include "random_int.hpp"
-using namespace KConfig;
 
 #include "boost/enable_shared_from_this.hpp"
 using namespace boost;
@@ -222,7 +220,7 @@ private:
     MapDirection stair_direction;
 
     int hit_points;
-    const RandomInt * initial_hit_points;
+    RandomInt initial_hit_points;
     int connectivity_check;
     
     LuaFunc on_activate;

@@ -1,5 +1,5 @@
 /*
- * krandom.cpp
+ * random_int.cpp
  *
  * This file is part of Knights.
  *
@@ -23,10 +23,37 @@
 
 #include "misc.hpp"
 
-#include "kconfig/random_int.hpp"
-#include "rng.hpp"
+#include "lua_check.hpp"
+#include "lua_exec.hpp"
+#include "my_exceptions.hpp"
+#include "random_int.hpp"
 
-int KConfig::GetRandom(int N) {
-	return g_rng.getInt(0,N);
+#include "lua.hpp"
+
+RandomInt::RandomInt(lua_State *lua)
+{
+    ASSERT(lua);
+    if (LuaIsCallable(lua, -1)) {
+        function.reset(lua); // pops lua stack
+        value = 0;
+    } else if (lua_isnumber(lua, -1)) {
+        value = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+    } else {
+        throw LuaError("Value is not a random int");
+    }
 }
 
+int RandomInt::get() const
+{
+    if (function.hasValue()) {
+        lua_State *lua = function.getLuaState();
+        function.push(lua);
+        LuaExec(lua, 0, 1);
+        const int result = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+        return result;
+    } else {
+        return value;
+    }
+}

@@ -37,7 +37,7 @@
 // ctors
 //
 
-ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
+ItemType::ItemType(lua_State *lua, int idx)
 {
     ASSERT(lua);
 
@@ -54,19 +54,19 @@ ItemType::ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc)
     max_stack = LuaGetInt(lua, idx, "max_stack", 1);
     melee_action.reset(lua, idx, "melee_action");
     melee_backswing_time = LuaGetInt(lua, idx, "melee_backswing_time");
-    melee_damage = LuaGetRandomInt(lua, idx, "melee_damage", kc);
+    melee_damage = LuaGetRandomInt(lua, idx, "melee_damage");
     melee_downswing_time = LuaGetInt(lua, idx, "melee_downswing_time");
-    melee_stun_time = LuaGetRandomInt(lua, idx, "melee_stun_time", kc);
-    melee_tile_damage = LuaGetRandomInt(lua, idx, "melee_tile_damage", kc);
+    melee_stun_time = LuaGetRandomInt(lua, idx, "melee_stun_time");
+    melee_tile_damage = LuaGetRandomInt(lua, idx, "melee_tile_damage");
     missile_access_chance = LuaGetFloat(lua, idx, "missile_access_chance");
     missile_anim = LuaGetPtr<Anim>(lua, idx, "missile_anim");
     missile_backswing_time = LuaGetInt(lua, idx, "missile_backswing_time");
-    missile_damage = LuaGetRandomInt(lua, idx, "missile_damage", kc);
+    missile_damage = LuaGetRandomInt(lua, idx, "missile_damage");
     missile_downswing_time = LuaGetInt(lua, idx, "missile_downswing_time");
     missile_hit_multiplier = LuaGetInt(lua, idx, "missile_hit_multiplier", 1);
     missile_range = LuaGetInt(lua, idx, "missile_range");
     missile_speed = LuaGetInt(lua, idx, "missile_speed");
-    missile_stun_time = LuaGetRandomInt(lua, idx, "missile_stun_time", kc);
+    missile_stun_time = LuaGetRandomInt(lua, idx, "missile_stun_time");
     on_drop.reset(lua, idx, "on_drop");
     on_hit.reset(lua, idx, "on_hit");
     on_pick_up.reset(lua, idx, "on_pick_up");
@@ -115,19 +115,14 @@ ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
     key = 0;
     max_stack = 1;
     melee_backswing_time = 0;
-    melee_damage = 0;
     melee_downswing_time = 0;
-    melee_stun_time = 0;
-    melee_tile_damage = 0;
     missile_access_chance = 0;
     missile_anim = 0;
     missile_backswing_time = 0;
-    missile_damage = 0;
     missile_downswing_time = 0;
     missile_hit_multiplier = 0;
     missile_range = 0;
     missile_speed = 0;
-    missile_stun_time = 0;
     open_traps = false;
     overlay = 0;
     parry_chance = 0;
@@ -152,8 +147,8 @@ void ItemType::doCreatureImpact(int gvt, shared_ptr<Creature> attacker,
 
     runMeleeAction(attacker, target);
     
-    int stun_until = (melee_stun_time ? melee_stun_time->get() : 0) + gvt;
-    int damage = melee_damage ? melee_damage->get() : 0;
+    int stun_until = melee_stun_time.get() + gvt;
+    int damage = melee_damage.get();
     if (with_strength) damage += g_rng.getInt(1,3); // add d2 dmg if you have strength
     target->damage(damage, attacker->getOriginator(), stun_until);
 }
@@ -175,7 +170,7 @@ void ItemType::doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap,
             (*t)->onHit(dmap, mc, attacker, attacker->getOriginator());
             (*t)->damage(dmap, mc,
                          (with_strength && allow_strength) ? 9999 :
-                         (melee_tile_damage ? melee_tile_damage->get() : 0),
+                         melee_tile_damage.get(),
                          attacker);
         }
     }

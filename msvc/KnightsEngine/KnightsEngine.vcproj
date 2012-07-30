@@ -360,6 +360,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\random_int.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\room_map.cpp"
 				>
 			</File>
@@ -651,6 +655,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\player_task.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\random_int.hpp"
 				>
 			</File>
 			<File

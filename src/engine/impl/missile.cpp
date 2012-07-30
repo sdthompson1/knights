@@ -72,10 +72,10 @@ void MissileTask::execute(TaskManager &tm)
                 // If hit type is FRIENDLY_FIRE then delete missile from map, but don't do any damage.
 
                 if (hit_type == Missile::CAN_HIT) {
-                    const RandomInt *st = m->itype.getMissileStunTime();
-                    const RandomInt *dam = m->itype.getMissileDamage();
-                    const int stun_time = st? st->get() : 0;
-                    const int damage = dam? dam->get() : 0;
+                    const RandomInt &st = m->itype.getMissileStunTime();
+                    const RandomInt &dam = m->itype.getMissileDamage();
+                    const int stun_time = st.get();
+                    const int damage = dam.get();
                     cr->damage(damage, m->getOwner(), stun_time + tm.getGVT());
                 }
 

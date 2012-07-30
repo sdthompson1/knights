@@ -117,7 +117,7 @@ bool quit_flag = false;
 
 boost::shared_ptr<KnightsConfig> LoadKnightsConfig()
 {
-    return boost::shared_ptr<KnightsConfig>(new KnightsConfig("server_config.txt", false));
+    return boost::shared_ptr<KnightsConfig>(new KnightsConfig("main.lua", false));
 }
 
 

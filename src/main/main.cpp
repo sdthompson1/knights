@@ -129,7 +129,7 @@ int main(int argc, char **argv)   // On other systems this is our real main func
 
         // Set defaults for cmd line arguments.
         DisplayType display_type = DT_DONT_CARE;
-        std::string config_filename = "server_config.txt";
+        std::string config_filename = "main.lua";
         bool autostart = false;
 
         std::string data_dir = default_data_dir;
@@ -152,7 +152,7 @@ int main(int argc, char **argv)   // On other systems this is our real main func
         std::cout << "  -a, --autostart: Automatically start game with default settings\n";
         std::cout << "     (used by map editor)\n";
         std::cout << "  -c, --config [filename]: Set config file to use\n";
-        std::cout << "     (default: server_config.txt)\n";
+        std::cout << "     (default: main.lua)\n";
         std::cout << "  -d, --datadir [directory name]: Set location of 'knights_data' directory\n";
         std::cout << "     (default: " << default_data_dir << ")\n";
         std::cout << "\n";

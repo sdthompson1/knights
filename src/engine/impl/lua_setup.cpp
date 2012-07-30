@@ -45,41 +45,6 @@
 
 namespace {
 
-    // Class that calls Lua to generate a random integer.
-    class LuaRandomInt : public KConfig::RandomInt {
-    public:
-        explicit LuaRandomInt(lua_State *lua);  // pops a lua function.
-        virtual int get() const;  // overridden from base class
-
-    private:
-        LuaRef lua_func_ref;
-    };
-
-    LuaRandomInt::LuaRandomInt(lua_State *lua)
-    {
-        if (!LuaIsCallable(lua, -1) && !lua_isnumber(lua, -1)) {
-            throw LuaError("Value is not a random int");
-        }
-        lua_func_ref.reset(lua); // pops function/number.
-    }
-
-    int LuaRandomInt::get() const
-    {
-        lua_State *lua = lua_func_ref.getLuaState();
-        ASSERT(lua);  // should have been set in the ctor
-
-        lua_func_ref.push(lua);  // pushes function (or number)
-
-        if (LuaIsCallable(lua, -1)) {
-            LuaExec(lua, 0, 1);  // pops function and pushes number
-        }
-        // else: there should be a number on top of stack already.
-        const int result = lua_tointeger(lua, -1);
-        lua_pop(lua, 1);  // pop the result
-        return result;
-    }
-
-
     //
     // Lua Config Functions.
     //
@@ -143,7 +108,7 @@ namespace {
     int MakeItemType(lua_State *lua)
     {
         KnightsConfigImpl * kc = GetKC(lua, "ItemTypes");
-        auto_ptr<ItemType> it(new ItemType(lua, 1, kc));
+        auto_ptr<ItemType> it(new ItemType(lua, 1));
         const ItemType * lua_item_type = kc->addLuaItemType(it); // transfers ownership.
         NewLuaPtr<const ItemType>(lua, lua_item_type);
         return 1;
@@ -421,25 +386,22 @@ MapDirection LuaGetMapDirection(lua_State *lua, int idx, const char *key, MapDir
     return result;
 }
 
-const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, int idx, const char *key, KnightsConfigImpl *kc)
+RandomInt LuaGetRandomInt(lua_State *lua, int idx, const char *key)
 {
-    // Pops Lua nil, function or number; returns a RandomInt* (can be null).
+    // Pops Lua nil, function or number; returns a RandomInt (defaults to zero).
 
     lua_getfield(lua, idx, key);  // [.. function/number]
 
-    LuaRandomInt *result = 0;
-
     if (lua_isnil(lua, -1)) {
         lua_pop(lua, 1);
+        return RandomInt();
     } else if (!lua_isfunction(lua, -1) && !lua_isnumber(lua, -1)) {
         luaL_error(lua, "'%s': expected function or number, got %s", key,
                    lua_typename(lua, lua_type(lua, -1)));
+        return RandomInt(); // prevent compiler warning
     } else {
-        result = new LuaRandomInt(lua);   // pops function/number
-        kc->getRandomIntContainer().add(result);  // transfers ownership
+        return RandomInt(lua);  // pops function or number
     }
-
-    return result;
 }
 
 KnightsConfigImpl * GetKC(lua_State *lua, const char * msg)

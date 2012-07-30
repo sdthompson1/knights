@@ -33,7 +33,7 @@ dofile("item_generation.lua")
 dofile("monsters.lua")
 dofile("controls.lua")
 dofile("segments.lua")
-
+dofile("general_stuff.lua")
 dofile("quest_description.lua")
 dofile("preset_quests.lua")
 dofile("dungeon_setup.lua")

@@ -30,14 +30,12 @@
 #include "map_support.hpp"
 #include "overlay.hpp"       // needed for N_OVERLAY_FRAME
 
-// kfile
-#include "kfile.hpp"
-
 // coercri
 #include "gfx/color.hpp"
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/shared_ptr.hpp"
+#include <map>
 #include <string>
 #include <vector>
 
@@ -104,13 +102,12 @@ public:
     boost::shared_ptr<const ConfigMap> getConfigMap() const { return config_map; }
     boost::shared_ptr<lua_State> getLuaState() { return lua_state; }
 
-
     // This returns true when we are in the "config" stage (as opposed to "in-game")
-    bool doingConfig() const { return kf; }
+    bool doingConfig() const { return doing_config; }
 
     
     //
-    // Add additional objects (graphics, sounds etc) that have been created by Lua.
+    // Add objects (graphics, sounds etc) that have been created by Lua.
     // (These are stored on the Lua side as raw pointers but the KnightConfig must also be
     // informed, both so that it can delete the objects at the end, and also so that it
     // can send the objects to network players when they join the game.)
@@ -130,30 +127,9 @@ public:
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
     
-        
-    //
-    // Interface to KFile
-    //
-
-    KConfig::KFile * getKFile() { return kf.get(); }  // NULL if file not opened
-
-    Anim * popAnim();
-    Anim * popAnim(Anim *dflt);
-    Graphic * popGraphic();
-    Graphic * popGraphic(Graphic *dflt);
-    void popHouseColours(const ConfigMap &config_map);
-    void popHouseColoursMenu();
-    const ItemType * popItemType();
-    const ItemType * popItemType(const ItemType *dflt);
-    Colour popRGB();
-    boost::shared_ptr<Tile> popTile();
-    boost::shared_ptr<Tile> popTile(boost::shared_ptr<Tile> dflt);
-    void popTileList(std::vector<boost::shared_ptr<Tile> > &output);
-    void popTutorial(lua_State *lua);
-
-    int getTileCategory(const std::string &);    // returns -1 if "" given
-    
-    KConfig::RandomIntContainer & getRandomIntContainer() { return random_ints; }
+    // This maintains the mapping from tile category names to tile category numbers.
+    // "" is given the number -1, others are given arbitrary numberings.
+    int getTileCategory(const std::string &);
 
 private:
     //
@@ -162,18 +138,19 @@ private:
 
     void freeMemory();
     shared_ptr<Tile> makeDeadKnightTile(boost::shared_ptr<Tile>, const ColourChange &);
+
+    void popHouseColours(lua_State *lua);
+    void popHouseColoursMenu(lua_State *lua);
+    Colour popRGB(lua_State *lua);
+    void popTutorial(lua_State *lua);
     
 private:
     // The lua state. This stays alive between games (it is only destroyed when ~KnightsConfigImpl is called).
     // This should be the last thing destroyed, so is listed first in the class.
     boost::shared_ptr<lua_State> lua_state;
 
-
-    // Storage for all 'basic' game objects, i.e. stuff loaded directly from the config file.
-    // (Deleted by ~KnightsConfigImpl.)
-
-    std::vector<ItemType *> special_item_types;  // used for loaded crossbows (at the moment)
-    KConfig::RandomIntContainer random_ints;
+    // True during ctor, false otherwise
+    bool doing_config;
 
     // Storage for lua-created game objects. Will be deleted by ~KnightsConfigImpl.
     std::vector<Anim *> lua_anims;
@@ -184,6 +161,7 @@ private:
     std::vector<Overlay *> lua_overlays;
     std::vector<Segment *> lua_segments;
     std::vector<Sound *> lua_sounds;
+    std::vector<ItemType *> special_item_types;  // used for loaded crossbows
     
     // Menu
     std::auto_ptr<MenuWrapper> menu_wrapper;
@@ -199,17 +177,14 @@ private:
     const Graphic *stuff_bag_graphic;
 
     // Gore (blood & knight/monster corpses)
-
     std::map<MonsterType *, std::vector<shared_ptr<Tile> > > monster_corpse_tiles;
     const Graphic *blood_icon;
     std::vector<boost::shared_ptr<Tile> > blood_tiles, dead_knight_tiles;
     
-
     // The generic hook system
     std::map<std::string, LuaFunc> hooks;
 
-    // Some maps from names (in the config system) to integer id codes.
-    // These are non-empty only during loading of the config files.
+    // Mapping from tile category names to numbers
     std::map<std::string, int> tile_categories;
     
     // Config Map.
@@ -220,11 +195,7 @@ private:
         int ofsx, ofsy;
         MapDirection dir;
     };
-    OverlayData overlay_offsets[Overlay::N_OVERLAY_FRAME][4];
-    
-    // kf is non-null only during the constructor.
-    boost::shared_ptr<KConfig::KFile> kf;
-    
+    OverlayData overlay_offsets[Overlay::N_OVERLAY_FRAME][4];    
 
     // extra graphics for the dead knight tiles. added 30-May-2009
     std::vector<boost::shared_ptr<Graphic> > dead_knight_graphics;

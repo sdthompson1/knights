@@ -119,7 +119,7 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
 
     depth = LuaGetInt(lua, -1, "depth");  // default 0
     graphic = LuaGetPtr<Graphic>(lua, -1, "graphic");  // default 0
-    initial_hit_points = LuaGetRandomInt(lua, -1, "hit_points", kc);  // default 0
+    initial_hit_points = LuaGetRandomInt(lua, -1, "hit_points");  // default 0
 
     lua_getfield(lua, -1, "items");  // [t items]
     if (lua_isnumber(lua, -1)) {
@@ -186,7 +186,6 @@ Tile::Tile(const LuaFunc &walk_over, const LuaFunc &activate)
     control = 0;
     depth = 0;
     graphic = 0;
-    initial_hit_points = 0;
     item_category = -1;  // items allowed
     items_mode = ALLOWED;
     is_stair = stair_top = false;
@@ -218,11 +217,8 @@ shared_ptr<Tile> Tile::getOriginalTile() const
 
 void Tile::setHitPoints()
 {
-    if (initial_hit_points) {
-        hit_points = initial_hit_points->get();
-    } else {
-        hit_points = 0;  // tile is indestructible
-    }
+    // note: hit_points=0 (the default) means 'tile is indestructible'
+    hit_points = initial_hit_points.get();
 }
 
 void Tile::damage(DungeonMap &dmap, const MapCoord &mc, int amount, shared_ptr<Creature> actor)
@@ -399,9 +395,13 @@ shared_ptr<Tile> Tile::doClone(bool force_copy)
 {
     ASSERT(typeid(*this)==typeid(Tile)); //doClone must be overridden in subclasses.
 
+    const bool has_hit_points = 
+        !initial_hit_points.isFixed()
+        || initial_hit_points.get() != 0;
+
     // basic tiles are shared rather than cloned
     // however, if a tile has hit points, it must be copied. (and hit points must be rerolled, also.)
-    if (initial_hit_points || force_copy) {
+    if (has_hit_points || force_copy) {
         return shared_ptr<Tile>(new Tile(*this));
     } else {
         return shared_from_this();

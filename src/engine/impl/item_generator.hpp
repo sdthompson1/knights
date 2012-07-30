@@ -26,9 +26,6 @@
 
 #include "lua_ref.hpp"
 
-#include "kconfig_fwd.hpp"
-using namespace KConfig;
-
 #include <vector>
 using namespace std;
 

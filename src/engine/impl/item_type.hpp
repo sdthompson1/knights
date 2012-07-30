@@ -39,9 +39,7 @@
 
 #include "lua_func.hpp"
 #include "lua_ref.hpp"
-
 #include "random_int.hpp"
-using namespace KConfig;
 
 #include <boost/shared_ptr.hpp>
 using namespace boost;
@@ -70,7 +68,7 @@ enum ItemSize {
 
 class ItemType {
 public:
-    ItemType(lua_State *lua, int idx, KnightsConfigImpl *kc);
+    ItemType(lua_State *lua, int idx);
 
     // cut down ctor for stuff bags
     ItemType(const Graphic *gfx,
@@ -116,8 +114,8 @@ public:
     int getMissileHitMultiplier() const { return missile_hit_multiplier; }  // affects chance of hitting creatures
     int getMissileBackswingTime() const { return missile_backswing_time; }
     int getMissileDownswingTime() const { return missile_downswing_time; }
-    const RandomInt * getMissileDamage() const { return missile_damage; }
-    const RandomInt * getMissileStunTime() const { return missile_stun_time; }
+    const RandomInt & getMissileDamage() const { return missile_damage; }
+    const RandomInt & getMissileStunTime() const { return missile_stun_time; }
     const Anim * getMissileAnim() const { return missile_anim; }
     
     // Crossbow properties
@@ -190,9 +188,9 @@ private:
     
     int melee_backswing_time;             // 0 if can't swing
     int melee_downswing_time;
-    const RandomInt * melee_damage;
-    const RandomInt * melee_stun_time;    // in ticks
-    const RandomInt * melee_tile_damage;
+    RandomInt melee_damage;
+    RandomInt melee_stun_time;    // in ms
+    RandomInt melee_tile_damage;
     LuaFunc melee_action;
     float parry_chance;
 
@@ -203,8 +201,8 @@ private:
     int missile_hit_multiplier;
     int missile_backswing_time;
     int missile_downswing_time;
-    const RandomInt * missile_damage;
-    const RandomInt * missile_stun_time;  // in ticks
+    RandomInt missile_damage;
+    RandomInt missile_stun_time;  // in ms
     const Anim * missile_anim;
     
     int reload_time;                       // 0 if can't fire, -ve if loaded

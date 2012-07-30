@@ -24,7 +24,6 @@
 #ifndef LOADING_SCREEN_HPP
 #define LOADING_SCREEN_HPP
 
-#include "kconfig_fwd.hpp"
 #include "screen.hpp"
 
 #include "boost/thread.hpp"
@@ -53,7 +52,6 @@ private:
         void operator()();
         
         std::string error_msg;
-        std::auto_ptr<KConfig::KConfigError> kconfig_error;
         std::auto_ptr<LuaError> lua_error;
 
         std::string knights_config_filename;

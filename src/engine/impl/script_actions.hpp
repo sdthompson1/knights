@@ -31,9 +31,6 @@
 
 #include "legacy_action.hpp"
 
-#include "kconfig_fwd.hpp"
-using namespace KConfig;
-
 class A_AddTile : public LegacyAction {
 public:
     explicit A_AddTile(shared_ptr<Tile> t) : tile(t) { }

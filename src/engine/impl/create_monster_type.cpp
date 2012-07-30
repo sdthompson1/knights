@@ -50,9 +50,9 @@ MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
     auto_ptr<MonsterType> result;
 
     if (s == "walking") {
-        result.reset(new WalkingMonsterType(lua, kc));
+        result.reset(new WalkingMonsterType(lua));
     } else if (s == "flying") {
-        result.reset(new FlyingMonsterType(lua, kc));
+        result.reset(new FlyingMonsterType(lua));
     } else {
         luaL_error(lua, "Unknown monster type '%s'", s.c_str());
     }

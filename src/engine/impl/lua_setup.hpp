@@ -28,9 +28,9 @@
 #include "lua_userdata.hpp"
 #include "map_support.hpp"  // for MapDirection enum
 
-#include "kconfig_fwd.hpp"
-
 #include "lua.hpp"
+
+#include <vector>
 
 class Action;
 class KnightsConfigImpl;
@@ -52,7 +52,7 @@ float LuaGetProbability(lua_State *lua, int tbl_idx, const char *key, float dflt
 std::string LuaGetString(lua_State *lua, int tbl_idx, const char *key, const char *dflt = "");
 ItemSize LuaGetItemSize(lua_State *lua, int tbl_idx, const char *key, ItemSize dflt = IS_NOPICKUP);
 MapDirection LuaGetMapDirection(lua_State *lua, int tbl_idx, const char *key, MapDirection dflt = D_NORTH);
-const KConfig::RandomInt * LuaGetRandomInt(lua_State *lua, int tbl_idx, const char *key, KnightsConfigImpl *kc);
+RandomInt LuaGetRandomInt(lua_State *lua, int tbl_idx, const char *key);
 
 template<class T> T * LuaGetPtr(lua_State *lua, int tbl_idx, const char *key)
 {

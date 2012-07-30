@@ -24,9 +24,8 @@
 #ifndef LEGACY_ACTION_HPP
 #define LEGACY_ACTION_HPP
 
-#include "kconfig_fwd.hpp" // needed for RandomInt
-
 #include "map_support.hpp"
+#include "random_int.hpp"
 
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
@@ -77,7 +76,7 @@ public:
     virtual const ItemType * getItemType(int index) { error(); return 0; }
     virtual MapDirection getMapDirection(int index);  // default is to convert from a string
     virtual float getProbability(int index) { error(); return 0; }
-    virtual const KConfig::RandomInt * getRandomInt(int index) { error(); return 0; }
+    virtual RandomInt getRandomInt(int index) { error(); return RandomInt(); }
     virtual const Sound * getSound(int index) { error(); return 0; }
     virtual std::string getString(int index) { error(); return std::string(); }
     virtual boost::shared_ptr<Tile> getTile(int index) { error(); return boost::shared_ptr<Tile>(); }

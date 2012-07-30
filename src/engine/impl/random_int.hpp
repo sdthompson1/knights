@@ -1,5 +1,5 @@
 /*
- * kconfig_fwd.hpp
+ * random_int.hpp
  *
  * This file is part of Knights.
  *
@@ -21,26 +21,29 @@
  *
  */
 
-/*
- * Forward declarations of various things
- *
- */
+#ifndef RANDOM_INT_HPP
+#define RANDOM_INT_HPP
 
-#ifndef KCFG_KCONFIG_FWD_HPP
-#define KCFG_KCONFIG_FWD_HPP
+#include "lua_ref.hpp"
 
-namespace KConfig {
+class RandomInt {
+public:
+    // Default ctor sets the RandomInt to zero.
+    RandomInt() : value(0) { }
+    
+    // Pops either a number or a function off the Lua stack.
+    explicit RandomInt(lua_State *lua);
 
-	class KConfigError;
-	class KConfigLoader;
-	class KConfigSource;
-	class KFile;
-	class RandomInt;
-	class RandomIntContainer;
-	class Value;
-	
-	int GetRandom(int N);  // this must be defined by the host program (generate random no. between 0 and N-1)
-}
+    // "roll" the random int
+    int get() const;
+
+    // is this random int a fixed value (as opposed to a Lua function)?
+    bool isFixed() { return !function.hasValue(); }    
+
+private:
+    // can either be a function, or just a fixed value.
+    LuaRef function;
+    int value;
+};
 
 #endif
- 
