@@ -326,6 +326,10 @@ namespace {
 
     int AddHint(lua_State *lua)
     {
+        const std::string msg = luaL_checkstring(lua, 1);
+        const double order = luaL_checknumber(lua, 2);
+        const double group = luaL_checknumber(lua, 3);
+        GetKnightsEngine(lua).addQuestHint(msg, order, group);
         return 0;
     }
 

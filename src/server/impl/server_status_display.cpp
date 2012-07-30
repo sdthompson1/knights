@@ -58,20 +58,18 @@ void ServerStatusDisplay::setPotionMagic(PotionMagic pm, bool poison_immunity)
     buf.writeUbyte((poison_immunity?128:0) + int(pm));
 }
 
-void ServerStatusDisplay::setQuestIcons(const std::vector<StatusDisplay::QuestIcon> &icons)
+void ServerStatusDisplay::setQuestHints(const std::vector<std::string> &hints)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_EXTENDED_MESSAGE);
-    buf.writeVarInt(SERVER_EXT_SET_QUEST_ICONS);
+    buf.writeVarInt(SERVER_EXT_SET_QUEST_HINTS);
 
     size_t scratch;
     buf.writePayloadSize(scratch);
     
-    buf.writeUbyte(icons.size());
-    for (int i = 0; i < int(icons.size()); ++i) {
-        buf.writeUshort(icons[i].sort);
-        buf.writeString(icons[i].msg);
-        buf.writeUbyte(icons[i].complete);
+    buf.writeUbyte(hints.size());
+    for (int i = 0; i < int(hints.size()); ++i) {
+        buf.writeString(hints[i]);
     }
 
     buf.backpatchPayloadSize(scratch);

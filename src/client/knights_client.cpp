@@ -756,19 +756,15 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
                 // See if we want to parse any of the payload contents.
                 switch (ext_code) {
-                case SERVER_EXT_SET_QUEST_ICONS:
+                case SERVER_EXT_SET_QUEST_HINTS:
                     {
-                        int num_icons = buf.readUbyte();
-                        std::vector<StatusDisplay::QuestIcon> icons;
-                        icons.reserve(num_icons);
-                        for (int i = 0; i < num_icons; ++i) {
-                            StatusDisplay::QuestIcon qi;
-                            qi.sort = buf.readUshort();
-                            qi.msg = buf.readString();
-                            qi.complete = buf.readUbyte() != 0;
-                            icons.push_back(qi);
+                        int num_hints = buf.readUbyte();
+                        std::vector<std::string> hints;
+                        hints.reserve(num_hints);
+                        for (int i = 0; i < num_hints; ++i) {
+                            hints.push_back(buf.readString());
                         }
-                        if (status_display) status_display->setQuestIcons(icons);
+                        if (status_display) status_display->setQuestHints(hints);
                     }
                     break;
                 case SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR:

@@ -1304,29 +1304,15 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
         }
     }
 
-    if (!status_display.empty() && status_display[0]->needQuestIconUpdate()) {
+    if (!status_display.empty() && status_display[0]->needQuestHintUpdate()) {
         int old_size = quest_rqmts_list.getNumberOfElements();
 
         quest_rqmts_list.clear();
         int prev_group = -999;
 
-        std::vector<StatusDisplay::QuestIcon> icons = status_display[0]->getQuestIcons();
-        std::sort(icons.begin(), icons.end());
-
-        for (std::vector<StatusDisplay::QuestIcon>::const_iterator it = icons.begin();
-        it != icons.end(); ++it) {
-
-            const int group = it->sort / 1000;
-
-            if (prev_group != -999 && prev_group != group) {
-                quest_rqmts_list.add("");
-                quest_rqmts_list.add("--- OR ---");
-                quest_rqmts_list.add("");
-            }
-            prev_group = group;
-
-            std::string msg = it->msg;
-            quest_rqmts_list.add(msg);
+        const std::vector<std::string> & hints = status_display[0]->getQuestHints();
+        for (std::vector<std::string>::const_iterator it = hints.begin(); it != hints.end(); ++it) {
+            quest_rqmts_list.add(*it);
         }
 
         if (deathmatch_mode) {

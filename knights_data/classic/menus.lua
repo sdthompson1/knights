@@ -265,10 +265,10 @@ kts.MENU = {
          show = show_zero_as_none,
          features = function(S)
             quest_retrieve(i_gem, S.gems_needed, "Gem Required", "%d Gems Required")
-            if S.num_gems == 1 then
+            if S.gems_needed == 1 then
                hint("Retrieve 1 gem", 1, 1)
-            else
-               hint(string.format("Retrieve %d gems", S.num_gems), 1, 1)
+            elseif S.gems_needed > 1 then
+               hint(string.format("Retrieve %d gems", S.gems_needed), 1, 1)
             end
          end
       },

@@ -254,7 +254,7 @@ public:
     void addSkull() { Log("stat: add skull"); }
     void setHealth(int h) { Log("stat: set health: %d", h); }
     void setPotionMagic(PotionMagic pm, bool poison_immunity) { Log("stat: set potion magic"); }
-    void setQuestIcons(const std::vector<QuestIcon> &quest_icons) { Log("stat: set quest icons"); }
+    void setQuestHints(const std::vector<std::string> &quest_hints) { Log("stat: set quest hints"); }
 };
 
 class TestKnightsCallbacks : public KnightsCallbacks {

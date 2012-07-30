@@ -37,7 +37,7 @@ public:
     virtual void addSkull();
     virtual void setHealth(int h);
     virtual void setPotionMagic(PotionMagic pm, bool poison_immunity);
-    virtual void setQuestIcons(const std::vector<StatusDisplay::QuestIcon> &icons);
+    virtual void setQuestHints(const std::vector<std::string> &hints);
     
 private:
     std::vector<ubyte> &out;

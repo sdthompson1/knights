@@ -49,6 +49,25 @@
 #include "tutorial_manager.hpp"
 #include "view_manager.hpp"
 
+namespace {
+    struct QuestHint {
+        std::string msg;
+        double order;
+        double group;
+    };
+
+    struct CompareQuestHint {
+        bool operator()(const QuestHint &lhs, const QuestHint &rhs) const
+        {
+            return lhs.group < rhs.group ? true
+                : lhs.group > rhs.group ? false
+                : lhs.order < rhs.order ? true
+                : lhs.order > rhs.order ? false
+                : lhs.msg < rhs.msg;
+        }
+    };
+}
+
 class KnightsEngineImpl {
 public:
     explicit KnightsEngineImpl(int nplayers)
@@ -88,6 +107,7 @@ public:
     int respawn_delay, respawn_interval;
     const ItemType *lockpick_itemtype;
     int lockpick_init_time, lockpick_interval;
+    std::vector<QuestHint> quest_hints;
 
     // this holds the GVT at which the game will end (or zero if no time limit)
     int final_gvt;
@@ -300,12 +320,20 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
             }
         }
 
-        // Send out initial quest icons
-        // TODO
-        /*
+        // Sort QuestHints into order and send out the Quest Requirements strings
+        std::sort(quest_hints.begin(), quest_hints.end(), CompareQuestHint());
+        std::vector<std::string> quest_rqmts;
+        for (std::vector<QuestHint>::const_iterator it = quest_hints.begin(); it != quest_hints.end(); ++it) {
+            if (it != quest_hints.begin() && it->group != (it-1)->group) {
+                quest_rqmts.push_back("");
+                quest_rqmts.push_back("--- OR ---");
+                quest_rqmts.push_back("");
+            }
+            quest_rqmts.push_back(it->msg);
+        }
         for (int i = 0; i < players.size(); ++i) {
-            Mediator::instance().updateQuestIcons(*players[i]);
-        }*/
+            Mediator::instance().getCallbacks().getStatusDisplay(i).setQuestHints(quest_rqmts);
+        }
 
         initial_update_needed = false;
     }
@@ -468,4 +496,13 @@ void KnightsEngine::setLockpickSpawn(const ItemType *lockpicks, int init_time, i
 void KnightsEngine::setTimeLimit(int ms)
 {
     pimpl->final_gvt = pimpl->task_manager.getGVT() + ms;
+}
+
+void KnightsEngine::addQuestHint(const std::string &msg, double order, double group)
+{
+    QuestHint i;
+    i.msg = msg;
+    i.order = order;
+    i.group = group;
+    pimpl->quest_hints.push_back(i);
 }

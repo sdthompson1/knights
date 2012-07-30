@@ -214,8 +214,8 @@ void LocalStatusDisplay::setPotionMagic(PotionMagic pm, bool pi)
     poison_immun = pi;
 }
 
-void LocalStatusDisplay::setQuestIcons(const std::vector<StatusDisplay::QuestIcon> &qi)
+void LocalStatusDisplay::setQuestHints(const std::vector<std::string> &rqmts)
 {
-    quest_icons = qi;
+    quest_hints = rqmts;
     need_gui_update = true;
 }
