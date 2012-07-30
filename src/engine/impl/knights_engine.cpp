@@ -131,6 +131,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
                              const std::vector<std::string> &player_names,
                              bool tutorial_mode,
+                             bool &deathmatch_mode,
                              std::vector<std::string> &messages)
 {
     try {
@@ -212,6 +213,9 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
             boost::shared_ptr<TimeLimitTask> ttsk(new TimeLimitTask);
             pimpl->task_manager.addTask(ttsk, TP_NORMAL, pimpl->final_gvt);
         }
+
+        // Tell caller whether this is a deathmatch
+        deathmatch_mode = Mediator::instance().getDeathmatchMode();
         
     } catch (...) {
 

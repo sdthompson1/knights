@@ -102,6 +102,7 @@ public:
     boost::shared_ptr<Coercri::Timer> timer;
     bool allow_split_screen;  // Whether to allow split screen and single player games.
     bool tutorial_mode;
+    bool deathmatch_mode;
 
     std::vector<const UserControl*> controls;
     
@@ -498,7 +499,9 @@ namespace {
                 std::vector<std::string> messages;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, hse_cols, player_names,
-                                                   kg.tutorial_mode, messages));
+                                                   kg.tutorial_mode,  // input to KnightsEngine
+                                                   kg.deathmatch_mode,  // output from KnightsEngine
+                                                   messages));   // output from KnightsEngine
 
                 } catch (LuaPanic &) {
                     // This is serious enough that we re-throw and let 
@@ -1151,13 +1154,13 @@ namespace {
                         Coercri::OutputByteBuf buf((*it)->output_data);
                         buf.writeUbyte(SERVER_START_GAME);
                         buf.writeUbyte(num_displays);
-                        buf.writeUbyte(false);  // should be is_deathmatch flag TODO
+                        buf.writeUbyte(kg.deathmatch_mode);
                     } else {
                         // Observer.
                         Coercri::OutputByteBuf buf((*it)->output_data);
                         buf.writeUbyte(SERVER_START_GAME_OBS);
                         buf.writeUbyte(num_displays);
-                        buf.writeUbyte(false);  // should be is_deathmatch flag TODO
+                        buf.writeUbyte(kg.deathmatch_mode);
                         for (int i = 0; i < num_displays; ++i) {
                             buf.writeString(names[i]);
                         }
@@ -1365,7 +1368,7 @@ GameConnection & KnightsGame::newClientConnection(const std::string &client_name
         // send the msg
         buf.writeUbyte(SERVER_START_GAME_OBS);
         buf.writeUbyte(pimpl->all_player_names.size());
-        buf.writeUbyte(false);   // should be is_deathmatch flag TODO
+        buf.writeUbyte(pimpl->deathmatch_mode);
         for (std::vector<std::string>::const_iterator it = pimpl->all_player_names.begin(); it != pimpl->all_player_names.end(); ++it) {
             buf.writeString(*it);
         }

@@ -247,6 +247,9 @@ public:
     static void destroyInstance();  // must be called before the game thread exits, otherwise will leak memory
     void setMap(shared_ptr<DungeonMap> dm, shared_ptr<CoordTransform> ct) { dmap = dm; coord_transform = ct; }
     void addPlayer(Player &);
+    
+    void setDeathmatchMode(bool d) { deathmatch_mode = d; }
+    bool getDeathmatchMode() const { return deathmatch_mode; }
 
 private:
     // Note -- Mediator is not responsible for creating all of these

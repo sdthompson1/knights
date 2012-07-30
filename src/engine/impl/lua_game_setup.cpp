@@ -321,6 +321,8 @@ namespace {
 
     int SetDeathmatchMode(lua_State *lua)
     {
+        const bool dm = lua_toboolean(lua, 1);
+        Mediator::instance().setDeathmatchMode(dm);
         return 0;
     }
 
@@ -528,6 +530,8 @@ namespace {
         GetKnightsEngine(lua).setTimeLimit(seconds * 1000);
         return 0;
     }
+
+    
 }
 
 // Setup function.

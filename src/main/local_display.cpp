@@ -1315,11 +1315,6 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             quest_rqmts_list.add(*it);
         }
 
-        if (deathmatch_mode) {
-            // Deathmatch requirements are hard coded
-            quest_rqmts_list.add("Score points by killing enemy knights");
-        }
-
         if (quest_rqmts_list.getNumberOfElements() != old_size) force_setup_gui = true;
     }
 

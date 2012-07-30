@@ -66,7 +66,8 @@ public:
                   const std::vector<int> &hse_cols,
                   const std::vector<std::string> &player_names,
                   bool tutorial_mode,
-                  std::vector<std::string> &msgs);
+                  bool &deathmatch_mode,   // output.
+                  std::vector<std::string> &msgs);  // output.
     ~KnightsEngine();
 
     // Run one update step (for a given time).
