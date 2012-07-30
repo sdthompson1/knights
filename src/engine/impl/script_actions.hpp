@@ -61,14 +61,6 @@ private:
     ACTION_MAKER("ChangeTile");
 };
 
-class A_CheckQuest : public LegacyAction {
-public:
-    A_CheckQuest() { }
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("CheckQuest");
-};
-
 class A_CrystalStart : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
@@ -214,13 +206,6 @@ public:
 private:
     ACTION_MAKER("TeleportTo");
     int dx, dy;
-};
-
-class A_UpdateQuestStatus : public LegacyAction {
-public:
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("UpdateQuestStatus");
 };
 
 // ZombieKill kills a monster of a particular type

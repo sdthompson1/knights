@@ -200,7 +200,7 @@ bool SenseItemsTask::interestingItemAt(DungeonMap &dmap, const MapCoord &mc,
 {
     // Check raw item
     shared_ptr<Item> item = dmap.getItem(mc);
-    if (item && pl.isItemInteresting(item->getType())) return true;
+    //TODO if (item && pl.isItemInteresting(item->getType())) return true;
 
     // Check for items within stuff bags
     const StuffManager &stuff(Mediator::instance().getStuffManager());
@@ -209,7 +209,7 @@ bool SenseItemsTask::interestingItemAt(DungeonMap &dmap, const MapCoord &mc,
         if (items) {
             for (vector<shared_ptr<Item> >::const_iterator it = items->begin();
             it != items->end(); ++it) {
-                if (pl.isItemInteresting((*it)->getType())) return true;
+                //TODO if (pl.isItemInteresting((*it)->getType())) return true;
             }
         }
     }
@@ -219,7 +219,7 @@ bool SenseItemsTask::interestingItemAt(DungeonMap &dmap, const MapCoord &mc,
     dmap.getTiles(mc, tiles);
     for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
         item = (*it)->getPlacedItem();
-        if (item && pl.isItemInteresting(item->getType())) return true;
+        //TODO if (item && pl.isItemInteresting(item->getType())) return true;
     }
 
     // Nothing found.

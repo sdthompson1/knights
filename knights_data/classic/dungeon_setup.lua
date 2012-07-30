@@ -32,16 +32,16 @@ dungeon_setup = {
 -- Quests
 
 function quest_retrieve(itemtypes, qty, msg_singular, msg_plural)
-   kts.AddQuest("approach_exit",
-                make_retrieve_handler( itemtypes, qty, msg_singular, msg_plural ))
+   -- TODO kts.AddQuest("approach_exit",
+   --             make_retrieve_handler( itemtypes, qty, msg_singular, msg_plural ))
 end
 
 function quest_destroy(booklist, 
                        wandlist, wrong_wand_msg, 
                        tilelist, not_in_pentagram_msg)
-   kts.AddQuest("hit_book",
-                make_destroy_handler( booklist, wandlist, wrong_wand_msg,
-                                      tilelist, not_in_pentagram_msg ))
+   -- TODO kts.AddQuest("hit_book",
+   --             make_destroy_handler( booklist, wandlist, wrong_wand_msg,
+   --                                   tilelist, not_in_pentagram_msg ))
 end
 
 function quest_deathmatch()

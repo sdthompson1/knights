@@ -115,7 +115,7 @@ class Home : public Tile {
 public:
     Home(lua_State *lua, KnightsConfigImpl *kc);
     
-    // onApproach/onWithdraw are overridden to handle healing and quest-checking.
+    // onApproach/onWithdraw are overridden to handle healing.
     virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
     virtual void onWithdraw(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);
 

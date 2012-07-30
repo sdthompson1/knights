@@ -57,7 +57,6 @@ class MenuWrapper;
 class MonsterManager;
 class MonsterType;
 class Player;
-class Quest;
 class Segment;
 class Sound;
 class StuffManager;

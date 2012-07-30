@@ -475,7 +475,7 @@ public:
             } else {
                 // Drop was unsuccessful.
                 if (di.item->getType().isCritical() && di.tries > 10) {
-                    // This is a quest critical item and we have failed several times to drop it.
+                    // This is a "treasure" item and we have failed several times to drop it.
                     // In this case we go into "emergency mode" and just destroy the item already
                     // present (if there is one) to make room for the new item...
                     boost::shared_ptr<Item> current_item = dmap.getItem(mc);

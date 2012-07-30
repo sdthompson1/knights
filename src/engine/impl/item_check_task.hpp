@@ -24,7 +24,7 @@
 /*
  * Trac #33.
  *
- * This task periodically checks whether all required quest items are
+ * This task periodically checks whether all "treasure" items are
  * present in the dungeon. If not, it adds them to the dungeonmap for
  * respawning (as "displaced items").
  *
@@ -46,7 +46,6 @@
 class DungeonMap;
 class Item;
 class ItemType;
-class Quest;
 
 class ItemCheckTask : public Task
 {

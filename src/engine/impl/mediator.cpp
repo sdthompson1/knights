@@ -361,17 +361,6 @@ void Mediator::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &po
 }
 
 //
-// updateQuestIcons
-//
-
-void Mediator::updateQuestIcons(const Player &player, QuestCircumstance c)
-{
-    std::vector<StatusDisplay::QuestIcon> icons;
-    player.getQuestIcons(icons, c);
-    getCallbacks().getStatusDisplay(player.getPlayerNum()).setQuestIcons(icons);
-}
-
-//
 // ending the game
 //
 

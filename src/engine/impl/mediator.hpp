@@ -52,7 +52,6 @@
 
 #include "exception_base.hpp"
 #include "map_support.hpp"
-#include "quest_circumstance.hpp"
 
 #include "boost/shared_ptr.hpp"
 using namespace boost;
@@ -214,9 +213,6 @@ public:
     void secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &pos,
                     MapDirection facing, shared_ptr<Tile> secured_wall_tile);
 
-    // Quest updates
-    void updateQuestIcons(const Player &p, QuestCircumstance c);
-    
     
     // End-of-Game handling
     void winGame(const Player & p); // makes p win the game (everyone on p's team wins)

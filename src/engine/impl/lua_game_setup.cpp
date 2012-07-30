@@ -319,16 +319,6 @@ namespace {
     // Quests
     //
 
-    int AddQuest(lua_State *lua)
-    {
-        return 0;
-    }
-
-    int QuestFail(lua_State *lua)
-    {
-        return 0;
-    }
-
     int SetDeathmatchMode(lua_State *lua)
     {
         return 0;
@@ -569,12 +559,6 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
 
     // Quests
-
-    PushCFunction(lua, &AddQuest);
-    lua_setfield(lua, -2, "AddQuest");
-
-    PushCFunction(lua, &QuestFail);
-    lua_setfield(lua, -2, "QuestFail");
 
     PushCFunction(lua, &SetDeathmatchMode);
     lua_setfield(lua, -2, "SetDeathmatchMode");

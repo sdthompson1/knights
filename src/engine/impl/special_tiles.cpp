@@ -266,25 +266,12 @@ shared_ptr<Tile> Home::doClone(bool)
 
 void Home::onApproach(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> creature, const Originator &originator)
 {
-    // If creature is a kt, then do healing and check quest conditions.
+    // If creature is a kt, then do healing.
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(creature);
     if (kt) {
         const Player &pl (*kt->getPlayer());
         if (kt->getPos() == pl.getHomeLocation() && kt->getFacing() == pl.getHomeFacing()) {
             kt->startHomeHealing();
-        }
-        if (kt->getPos() == pl.getExitLocation() && kt->getFacing() == pl.getExitFacing()) {
-            vector<string> msgs;
-            bool result = kt->getPlayer()->checkQuests(msgs);
-            if (result) {
-                // Player has won the game
-                Mediator::instance().updateQuestIcons(pl, WIN_FROM_COMPLETE_QUEST);
-                Mediator::instance().winGame(pl);
-            } else {
-                for (int i=0; i<msgs.size(); ++i) {
-                    kt->getPlayer()->getDungeonView().addContinuousMessage(msgs[i]);
-                }
-            }
         }
     }
     Tile::onApproach(dmap, mc, creature, originator);

@@ -119,15 +119,6 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
             getRandomHomeFor(*players[i], dmap_new, mc_new, dir_new);
             players[i]->resetHome(dmap_new, mc_new, dir_new);
         }
-
-        // NOTE: We don't bother reassigning exit points. This means that the exit point
-        // remain usable by both players until it is secured by both players. (After that,
-        // the quest cannot be completed by escaping the dungeon. This never makes the
-        // game impossible though, because you can always win by fighting to the death.)
-
-        // ALSO: The above only applies to random or guarded exits. If the exit is set
-        // to "own entry" or "other's entry" then the exit will get reassigned automatically
-        // when the relevant home is reassigned.
     }
 }
 

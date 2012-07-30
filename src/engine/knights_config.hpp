@@ -65,7 +65,6 @@ class MenuListener;
 class MonsterManager;
 class Overlay;
 class Player;
-class Quest;
 class Sound;
 class StuffManager;
 class TaskManager;

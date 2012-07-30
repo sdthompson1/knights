@@ -39,7 +39,6 @@
 #include "mediator.hpp"
 #include "mini_map.hpp"
 #include "player.hpp"
-#include "quest.hpp"
 #include "rng.hpp"
 #include "status_display.hpp"
 #include "task.hpp"
@@ -222,47 +221,6 @@ RoomMap * Player::getRoomMap() const
     DungeonMap * dmap = getDungeonMap();
     if (dmap) return dmap->getRoomMap();
     else return 0;
-}
-
-bool Player::checkQuests(vector<string> &hints_out) const
-{
-    hints_out.clear();
-    bool result = true;
-    
-    shared_ptr<Knight> kt = getKnight();
-    if (!kt) return false;
-    
-    for (vector<shared_ptr<Quest> >::const_iterator it = quests.begin();
-    it != quests.end(); ++it) {
-        if (!(*it)->check(*kt)) {
-            result = false;
-            hints_out.push_back((*it)->getHint());
-        }
-    }
-    return result;
-}
-
-bool Player::isItemInteresting(const ItemType &itype) const
-{
-    for (vector<shared_ptr<Quest> >::const_iterator it = quests.begin();
-    it != quests.end(); ++it) {
-        if ((*it)->isItemInteresting(itype)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void Player::getQuestIcons(vector<StatusDisplay::QuestIcon> &quests_out, QuestCircumstance c) const
-{
-    quests_out.clear();
-    shared_ptr<Knight> kt = getKnight();
-    
-    for (vector<shared_ptr<Quest> >::const_iterator it = quests.begin();
-    it != quests.end(); ++it) {
-        const StatusDisplay::QuestIcon icon = (*it)->getQuestIcon(*kt, c);
-        quests_out.push_back(icon);
-    }
 }
 
 //
@@ -752,8 +710,6 @@ void Player::sendStatusDisplay(StatusDisplay &status_display)
         // Health
         status_display.setHealth(kt->getHealth());
         status_display.setPotionMagic(kt->getPotionMagic(), kt->getPoisonImmunity());
-
-        // NOTE: We ignore the quest info stuff for now.
     }
 
     // Skulls

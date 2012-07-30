@@ -26,7 +26,6 @@
 
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
-#include "quest_circumstance.hpp"
 #include "status_display.hpp"
 
 #include "boost/weak_ptr.hpp"
@@ -48,7 +47,6 @@ class Item;
 class ItemType;
 class Knight;
 class MiniMap;
-class Quest;
 class RespawnTask;
 class RoomMap;
 class StatusDisplay;
@@ -102,9 +100,6 @@ public:
     MapCoord getKnightPos() const; // convenience. (Returns Null mapcoord if knight doesn't exist.)
     DungeonMap * getDungeonMap() const; // convenience
     RoomMap * getRoomMap() const; // convenience
-    bool checkQuests(vector<string> &hints_out) const;
-    bool isItemInteresting(const ItemType &itm) const; // check item against quest rqmts.
-    void getQuestIcons(std::vector<StatusDisplay::QuestIcon> &icons_out, QuestCircumstance c) const;
     shared_ptr<const ColourChange> getSecuredCC() const { return secured_home_cc; }
 
     // get player num
@@ -249,8 +244,6 @@ private:
     weak_ptr<Knight> knight;
     shared_ptr<RespawnTask> respawn_task;
     shared_ptr<HealingTask> healing_task;
-
-    vector<shared_ptr<Quest> > quests;
 
     shared_ptr<const ColourChange> secured_home_cc;
 

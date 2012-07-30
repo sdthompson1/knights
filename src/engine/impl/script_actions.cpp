@@ -134,32 +134,6 @@ LegacyAction * A_ChangeTile::Maker::make(ActionPars &pars) const
 
 
 //
-// A_CheckQuest
-//
-
-void A_CheckQuest::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) {
-        vector<string> dummy;
-        if (kt->getMap() && kt->getPlayer()->checkQuests(dummy)) {
-            // Player has won the game
-            Mediator::instance().updateQuestIcons(*kt->getPlayer(), WIN_FROM_COMPLETE_QUEST);
-            Mediator::instance().winGame(*kt->getPlayer());
-        }
-    }
-}
-
-A_CheckQuest::Maker A_CheckQuest::Maker::register_me;
-
-LegacyAction * A_CheckQuest::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_CheckQuest;
-}
-
-
-//
 // A_CrystalStart
 //
 
@@ -558,27 +532,6 @@ LegacyAction * A_TeleportTo::Maker::make(ActionPars &pars) const
     return new A_TeleportTo(pars.getInt(0), pars.getInt(1));
 }
 
-//
-// A_UpdateQuestStatus
-//
-
-void A_UpdateQuestStatus::execute(const ActionData &ad) const
-{
-    shared_ptr<Creature> cr(ad.getActor());
-    Knight *kt = dynamic_cast<Knight*>(cr.get());
-    if (kt) {
-        // Send updated quest icons.
-        Mediator::instance().updateQuestIcons(*kt->getPlayer(), JUST_AN_UPDATE);
-    }
-}
-
-A_UpdateQuestStatus::Maker A_UpdateQuestStatus::Maker::register_me;
-
-LegacyAction * A_UpdateQuestStatus::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_UpdateQuestStatus;
-}
 
 //
 // A_ZombieKill

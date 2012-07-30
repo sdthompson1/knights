@@ -298,9 +298,11 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
         }
 
         // Send out initial quest icons
+        // TODO
+        /*
         for (int i = 0; i < players.size(); ++i) {
-            Mediator::instance().updateQuestIcons(*players[i], JUST_AN_UPDATE);
-        }
+            Mediator::instance().updateQuestIcons(*players[i]);
+        }*/
 
         initial_update_needed = false;
     }
