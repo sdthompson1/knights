@@ -438,11 +438,25 @@ namespace {
         const int current_choice = ItemNumToChoiceNum(lua, impl, item_num);
             
         if (!std::binary_search(valid_values.begin(), valid_values.end(), current_choice)) {
-            // EITHER: Not a valid choice, OR: it is a numeric field
-            // Set it to the first valid choice (if there is one -- only applies for dropdowns).
+            // EITHER: Dropdown set to an invalid choice, OR: it is a numeric field
             if (!valid_values.empty()) {
-                SetItemNumToChoiceNum(lua, impl, item_num, valid_values.front());
+
+                // Dropdown set to an invalid choice, but valid choices do exist for this dropdown.
+                // Set it to the allowed choice which is closest to the current value.
+
+                int best_dist = std::numeric_limits<int>::max();
+                int chosen = 0;
+                for (std::vector<int>::const_iterator it = valid_values.begin(); it != valid_values.end(); ++it) {
+                    const int dist = std::abs(*it - current_choice);
+                    if (dist < best_dist) {
+                        best_dist = dist;
+                        chosen = *it;
+                    }
+                }
+                
+                SetItemNumToChoiceNum(lua, impl, item_num, chosen);
                 return true;
+                
             } else {
                 // EITHER: it is a "bad" dropdown (the constraints forbid all the available choices)
                 // OR: it is a numeric field.
