@@ -203,6 +203,65 @@ function setup_monsters()
    end
 end
 
+function setup_special_exit()
+   -- Find the first home where the tile is marked as "special_exit". Use that as the exit.
+   local homes = kts.GetAllHomes()
+   for i,v in ipairs(homes) do
+      if v.tile.special_exit then
+         Dsetup.exit_location = v
+         return
+      end
+   end
+   -- Failed
+   kts.DUNGEON_ERROR = "Failed to create exit point"
+end
+
+function is_a_player_home(h)
+   local players = kts.GetAllPlayers()
+   for _, player in ipairs(players) do
+      local ph = kts.GetHomeFor(player)
+      if ph.x == h.x and ph.y == h.y and ph.facing == h.facing then
+         return true
+      end
+   end
+   return false
+end
+
+function setup_random_exit()
+   -- Pick any home (but not one marked as a player exit).
+   local homes = kts.GetAllHomes()
+   local num_homes = #homes
+
+   if num_homes > 0 then
+      -- Up to ten attempts
+      for attempt = 1,10 do
+         -- Pick a random home
+         local which = kts.RandomRange(1, num_homes)
+         local home = homes[which]
+
+         -- Check it is not one of the player homes
+         if not is_a_player_home(home) then
+            -- Set this up as the exit point
+            Dsetup.exit_location = home
+            return
+         end
+      end
+   end
+
+   -- If we get here then no home was picked
+   kts.DUNGEON_ERROR = "Could not create random exit point"
+end
+         
+function setup_exit_point()
+   if Dsetup.exit_type == "special" then
+      setup_special_exit()
+   elseif Dsetup.exit_type == "random" then
+      setup_random_exit()
+   end
+end
+
+
+
 function final_checks()
    kts.ConnectivityCheck(Dsetup.num_keys, Dsetup.lockpicks)
 end
@@ -222,6 +281,7 @@ function try_to_generate_dungeon()
    setup_keys_locks_traps()
    setup_items()
    setup_monsters()
+   setup_exit_point()
    final_checks()
 end
 

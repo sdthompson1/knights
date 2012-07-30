@@ -46,6 +46,8 @@ class MonsterType;
 class MonsterManager {
 public:
     MonsterManager();
+
+    void clear();  // remove all added monsters, used by kts.WipeDungeon()
     
     // Initialization of zombie activity:
     

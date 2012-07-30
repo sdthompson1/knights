@@ -41,6 +41,15 @@ MonsterManager::MonsterManager()
       monster_respawn_wait(0)
 { }
 
+void MonsterManager::clear()
+{
+    current_monsters.clear();
+    total_current_monsters = 0;
+    necronomicon_counter = 0;
+    necromancy_flag = false;
+    zombie_activity_counters.clear();
+}
+
 void MonsterManager::addZombieDecay(shared_ptr<Tile> from, shared_ptr<Tile> to)
 {
     if (!from || !to) return;

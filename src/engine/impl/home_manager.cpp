@@ -175,7 +175,8 @@ void HomeManager::onKnightDeath(Player &pl) const
 void HomeManager::pushHome(lua_State *lua, const std::pair<HomeLocation, Player *> &home)
 {
     lua_createtable(lua, 0, 4);  // [home]
-    
+
+    ASSERT(home.first.dmap);
     ASSERT(!home.first.mc.isNull());
     lua_pushinteger(lua, home.first.mc.getX());   // [home x]
     lua_setfield(lua, -2, "x");             // [home]
@@ -186,6 +187,17 @@ void HomeManager::pushHome(lua_State *lua, const std::pair<HomeLocation, Player 
     if (home.second) {
         NewLuaPtr<Player>(lua, home.second);   // [home plyr]
         lua_setfield(lua, -2, "secured_by");  // [home]
+    }
+
+    // find the home tile itself, makes it easier for lua to inspect it if required.
+    vector<shared_ptr<Tile> > tiles;
+    home.first.dmap->getTiles(DisplaceCoord(home.first.mc, home.first.facing), tiles);
+    for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+        Home *home = dynamic_cast<Home*>(it->get());
+        if (home) {
+            NewLuaSharedPtr<Tile>(lua, *it);
+            lua_setfield(lua, -2, "tile");
+        }
     }
 }
 

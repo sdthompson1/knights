@@ -45,6 +45,8 @@ public:
     // NOTE: we assume all homes are in the same DungeonMap at present. 
     void addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing);
 
+    void clear() { homes.clear(); }  // remove all added homes
+    
     // Secure a home by a given player
     // (This does nothing if the given tile is not a home.)
     void secureHome(Player &pl,
@@ -87,9 +89,9 @@ private:
 
     static void pushHome(lua_State *lua, const std::pair<HomeLocation, Player *> &home);
 
-    // This map stores the secure-status of each home.
-    // stored player == 0 means the home is unsecured
-    // stored player != 0 means the home is secured by that player
+    // This map stores info about each home.
+    // secured_by == 0 means the home is unsecured
+    // secured_by != 0 means the home is secured by that player
     // Home not in map at all == The home was secured by both players.
     typedef map<HomeLocation, Player *> HomeMap;
     HomeMap homes;

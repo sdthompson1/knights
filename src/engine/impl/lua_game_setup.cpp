@@ -304,7 +304,7 @@ namespace {
         // clear the dungeon map
         KnightsEngine &ke = GetKnightsEngine(lua);
         ke.resetMap();
-
+        
         // clear DUNGEON_ERROR
         lua_getglobal(lua, "kts");
         lua_pushnil(lua);

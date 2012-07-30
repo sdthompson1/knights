@@ -209,7 +209,10 @@ void KnightsEngine::resetMap()
 {
     pimpl->coord_transform.reset(new CoordTransform);
     pimpl->dungeon_map.reset(new DungeonMap);
-    Mediator::instance().setMap(pimpl->dungeon_map, pimpl->coord_transform);
+    Mediator &m = Mediator::instance();
+    m.getHomeManager().clear();
+    m.getMonsterManager().clear();
+    m.setMap(pimpl->dungeon_map, pimpl->coord_transform);
 }
 
 KnightsEngine::~KnightsEngine()
