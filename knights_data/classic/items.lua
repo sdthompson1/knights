@@ -213,8 +213,6 @@ basic_wand = {
     melee_downswing_time = ts,
     melee_tile_damage = 0,
     melee_action = wandzap,
-    on_pick_up = kts.UpdateQuestStatus,
-    on_drop = kts.UpdateQuestStatus,
 
     critical = "A wand"
 }
@@ -279,8 +277,6 @@ basic_book = {
     type = "held",
     graphic = g_book,
     overlay = kts.Overlay { g_book_north, g_book_east, g_book_south, g_book_west },
-    on_pick_up = kts.UpdateQuestStatus,
-    on_drop = kts.UpdateQuestStatus,
     on_hit = check_destroy_quest,
     critical = "The book"
 }
@@ -293,11 +289,9 @@ i_book_of_knowledge = kts.ItemType(
     on_pick_up = function()
         kts.MagicMapping()
         kts.RevealStart()
-        kts.UpdateQuestStatus()
     end,
     on_drop   =  function()
         kts.RevealStop()
-        kts.UpdateQuestStatus()
     end
   }
 )
@@ -311,11 +305,9 @@ i_necronomicon = kts.ItemType(
         kts.Necromancy(10, 10)    -- Attempt to raise nearby zombies. (Will only work the first time.)
         kts.OnSuccess(wandzap)    -- Flash screen if necromancy actually took place.
         kts.FullZombieActivity()  -- Always set full zombie activity while necronomicon is held.
-        kts.UpdateQuestStatus()
     end,
     on_drop = function()
         kts.NormalZombieActivity()
-        kts.UpdateQuestStatus()
     end
   }
 )
@@ -472,8 +464,6 @@ i_gem = kts.ItemType {
     graphic = g_gem,
     backpack_graphic = g_menu_drop_gem,
     backpack_slot = 30,
-    on_pick_up = kts.UpdateQuestStatus,
-    on_drop = kts.UpdateQuestStatus,
     tutorial = TUT_GEM,
     critical = "A gem"
 }

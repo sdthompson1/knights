@@ -448,6 +448,17 @@ namespace {
         lua_pushinteger(lua, num);
         return 1;
     }
+
+    int GetItemInHand(lua_State *lua)
+    {
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
+        if (cr) {
+            NewLuaPtr<const ItemType>(lua, cr->getItemInHand());
+        } else {
+            lua_pushnil(lua);
+        }
+        return 1;
+    }
     
 
     // Input: creature
@@ -766,6 +777,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &GetNumHeld);
     lua_setfield(lua, -2, "GetNumHeld");
+
+    PushCFunction(lua, &GetItemInHand);
+    lua_setfield(lua, -2, "GetItemInHand");
 
     PushCFunction(lua, &IsKnight);
     lua_setfield(lua, -2, "IsKnight");

@@ -591,7 +591,10 @@ t_special_pentagram = kts.Tile(pentagram_base & {  -- 90
     on_hit = function() end   -- does nothing, but means wand will 'zap' when you hit special pentagram with it.
 })
 
+all_special_pentagrams = { t_special_pentagram }  -- needed for 'destroy book with wand' quest
+
 set_open_closed(t_live_pentagram, t_dead_pentagram)
+
 
 
 -- Stairs
@@ -625,3 +628,4 @@ t_dead_vbat_2 = kts.Tile(floor & { graphic = g_dead_vbat_2, depth = -2 })
 t_dead_vbat_3 = kts.Tile(floor & { graphic = g_dead_vbat_3, depth = -2 })
 
 --------------------------
+

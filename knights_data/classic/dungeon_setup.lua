@@ -42,10 +42,11 @@ function quest_retrieve(itemtypes, qty, msg_singular, msg_plural)
 end
 
 function quest_destroy(booklist, 
-                       wandlist, wrong_wand_msg, 
-                       tilelist, not_in_pentagram_msg)
+                       wandlist, 
+                       tilelist, 
+                       not_in_pentagram_msg)
    table.insert(Dsetup.destroy_handlers,
-                make_destroy_handler( booklist, wandlist, wrong_wand_msg,
+                make_destroy_handler( booklist, wandlist,
                                       tilelist, not_in_pentagram_msg ))
 end
 

@@ -66,13 +66,12 @@ end
 -- Returns true/false
 function is_tile_one_of(pos, tilelist, fail_msg)
    local tiles_here = kts.GetTiles(pos)
-   for _, t in tiles_here do
+   for _, t in ipairs(tiles_here) do
       if is_one_of(t, tilelist) then
-         tile_found = true
-         break
+         return true
       end
    end
-   return tile_found
+   return false
 end
 
 
@@ -94,7 +93,7 @@ function make_retrieve_handler(itemtypes, qty, sing_msg, pl_msg)
 end
 
    
--- make_destroy_book_handler:
+-- make_destroy_handler:
 -- Handles "destroy book with wand" quests
 --
 -- booklist should be a list of book itemtypes (that can be destroyed to win)
@@ -102,34 +101,32 @@ end
 -- wrong_wand_msg is displayed if you strike the book with the wrong weapon.
 -- tilelist should be a list of special pentagram tiles, where the book can be destroyed
 -- not_special_pentagram_msg is displayed if you strike the book in the wrong tile
-function make_destroy_book_handler(booklist,
-                                   wandlist, 
-                                   wrong_wand_msg,
-                                   tilelist, 
-                                   not_special_pentagram_msg)
+function make_destroy_handler(booklist,
+                              wandlist, 
+                              tilelist, 
+                              not_special_pentagram_msg)
    return function()
-      -- Note: This runs as part of "on_hit" event of the book. So cxt.item is the book.
+      -- Note: This runs as part of "on_hit" event of the book. So cxt.item_type is the book.
 
       -- Check the item being hit is one of the "books" -- if not, just exit w/o any msg
-      if not is_one_of(cxt.item, booklist) then
+      if not is_one_of(cxt.item_type, booklist) then
          return false
       end
 
-      local result = true
+      -- Check the weapon being used is the wand (if not, exit w/o any message)
+      local weapon = kts.GetItemInHand(cxt.actor)
+      if weapon == nil or not is_one_of(weapon, wandlist) then
+         return false
+      end
 
       -- Check the tile being hit is the special pentagram
       if not is_tile_one_of(cxt.item_pos, tilelist) then
          kts.FlashMessage(not_special_pentagram_msg)
-         result = false
+         return false
       end
 
-      -- Check the weapon being used is the wand
-      if not is_one_of(cxt.item, wandlist) then
-         kts.FlashMessage(wrong_wand_msg)
-         result = false
-      end
-
-      return result
+      -- Finally, check you have enough gems
+      do_quest_check(Dsetup.retrieve_handlers)
    end
 end
 
@@ -193,7 +190,11 @@ end
 function check_destroy_quest()
    -- We check that at least one handler is present
    -- (otherwise, this isn't a destroy book with wand quest!)
+
    if Dsetup.destroy_handlers[1] ~= nil then
+
+      -- Call the destroy handler
+      -- Note: this in turn will call retrieve handlers (to check gems).
       do_quest_check(Dsetup.destroy_handlers)
    end
 end

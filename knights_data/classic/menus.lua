@@ -112,8 +112,9 @@ kts.MENU = {
                end,
                features = function(S)
                   quest_destroy(all_books, 
-                                all_wands, "Wand Required",
-                                all_special_pentagrams, "Not in Special Pentagram")
+                                all_wands,
+                                all_special_pentagrams, 
+                                "Not in Special Pentagram")
                   hint("Place the book in the special pentagram", 3, 1)
                   hint("Strike the book with the wand", 4, 1)
                   add_segment(special_pentagrams)
