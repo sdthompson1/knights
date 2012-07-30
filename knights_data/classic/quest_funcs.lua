@@ -19,7 +19,7 @@
 --
 
 
------- Part I: Helper functions ------
+------ Part I: Helper functions for quest handlers ------
 
 -- Check whether 'thing' is one of the things in 'thinglist'
 -- (Returns true/false)
@@ -37,7 +37,7 @@ end
 -- Returns how many more of the given item the knight requires.
 -- (Will be zero, or negative, if they already have enough.)
 function how_many_more_needed(itemtypes, num_needed)
-   local num_held 
+   local num_held = 0
    for _,itype in ipairs(itemtypes) do
       num_held = num_held + kts.GetNumHeld(cxt.actor, itype)
    end
@@ -45,14 +45,20 @@ function how_many_more_needed(itemtypes, num_needed)
    return num_needed - num_held
 end
 
--- Check the knight is holding the required item, and if not,
--- call QuestFail with a suitable msg
-function check_item(itemtypes, num_needed, sing, pl)
+-- Check the knight is holding the required item.
+--   If he is:  returns true
+--   Otherwise: calls FlashMessage w/ a suitable message, then returns false
+function check_item(itemtypes, num_needed, sing, plural)
    local shortfall = how_many_more_needed(itemtypes, num_needed)
-   if shortfall > 1 and pl ~= nil then
-      kts.QuestFail(string.format(pl, shortfall))
-   elseif shortfall > 0 then
-      kts.QuestFail(sing)
+   if shortfall > 0 then
+      if num_needed > 1 and plural ~= nil then
+         kts.FlashMessage(string.format(plural, num_needed))
+      else
+         kts.FlashMessage(sing)
+      end
+      return false
+   else
+      return true
    end
 end
 
@@ -70,8 +76,7 @@ function is_tile_one_of(pos, tilelist, fail_msg)
 end
 
 
------- Part II: The actual quest handlers ------
-
+------ Part II: "Make quest handler" functions, called by dungeon_setup.lua ------
 
 -- make_retrieve_handler:
 -- Handles "retrieve item" type quests
@@ -84,7 +89,7 @@ end
 -- pl_msg   = plural message   e.g. "%d Gems Required"  (can be nil)
 function make_retrieve_handler(itemtypes, qty, sing_msg, pl_msg)
    return function()
-      check_item(itemtypes, qty, sing_msg, pl_msg)
+      return check_item(itemtypes, qty, sing_msg, pl_msg)
    end
 end
 
@@ -107,18 +112,88 @@ function make_destroy_book_handler(booklist,
 
       -- Check the item being hit is one of the "books" -- if not, just exit w/o any msg
       if not is_one_of(cxt.item, booklist) then
-         kts.QuestFail()
-         return
+         return false
       end
+
+      local result = true
 
       -- Check the tile being hit is the special pentagram
       if not is_tile_one_of(cxt.item_pos, tilelist) then
-         kts.QuestFail(not_special_pentagram_msg)
+         kts.FlashMessage(not_special_pentagram_msg)
+         result = false
       end
 
       -- Check the weapon being used is the wand
       if not is_one_of(cxt.item, wandlist) then
-         kts.QuestFail(wrong_wand_msg)
+         kts.FlashMessage(wrong_wand_msg)
+         result = false
       end
+
+      return result
+   end
+end
+
+
+------ Part III: Quest checking implementation ------
+
+function is_correct_exit()
+   local exit = Dsetup.exit_type
+   local player = kts.GetPlayer(cxt.actor)
+   local e
+
+   if exit == "self" then
+      -- Exit is my own home
+      e = kts.GetHomeFor(player)
+
+   elseif exit == "other" then
+      -- Exit is the other player's home
+      -- (this only works for 2 players)
+      local players = kts.GetAllPlayers()
+      if #players ~= 2 then return false end
+      if player == players[1] then
+         e = kts.GetHomeFor(players[2])
+      else
+         e = kts.GetHomeFor(players[1])
+      end
+
+   else
+      e = Dsetup.exit_location
+   end
+
+   if e == nil then return false end   -- No escape
+
+   return ( e.x == cxt.actor_pos.x
+            and e.y == cxt.actor_pos.y
+            and e.facing == kts.GetFacing(cxt.actor) )
+end
+
+function do_quest_check(handlers)
+   
+   local result = true
+   
+   for _, v in ipairs(handlers) do
+      result = v() and result
+   end
+   
+   -- if all handlers returned true, then win the game.
+   if result then
+      kts.WinGame(cxt.actor)
+   end
+end
+
+
+------ Part IV: Quest checking functions, called by items.lua and tiles.lua ------
+
+function check_escape_quest()
+   if is_correct_exit() then
+      do_quest_check(Dsetup.retrieve_handlers)
+   end
+end
+
+function check_destroy_quest()
+   -- We check that at least one handler is present
+   -- (otherwise, this isn't a destroy book with wand quest!)
+   if Dsetup.destroy_handlers[1] ~= nil then
+      do_quest_check(Dsetup.destroy_handlers)
    end
 end

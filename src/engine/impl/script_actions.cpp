@@ -459,7 +459,7 @@ bool A_Secure::possible(const ActionData &ad) const
 void A_Secure::execute(const ActionData &ad) const
 {
     shared_ptr<Creature> cr = ad.getActor();
-    const Player * player = cr->getPlayer();
+    Player * player = cr->getPlayer();
     if (cr && cr->getMap() && player) {
         Mediator::instance().secureHome(*player,
                 *cr->getMap(), cr->getPos(), cr->getFacing(), plain_wall_tile);

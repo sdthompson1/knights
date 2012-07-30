@@ -25,10 +25,13 @@
 
 #include "dungeon_map.hpp"
 #include "home_manager.hpp"
+#include "lua_userdata.hpp"
 #include "mediator.hpp"
 #include "player.hpp"
 #include "rng.hpp"
 #include "special_tiles.hpp"
+
+#include "lua.hpp"
 
 void HomeManager::addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing)
 {
@@ -52,7 +55,7 @@ bool HomeManager::isSecurableHome(const Player &pl, DungeonMap *dmap, const MapC
     return true;
 }
 
-void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &pos,
+void HomeManager::secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
                              MapDirection facing, shared_ptr<Tile> secured_wall_tile)
 {
     HomeLocation loc;
@@ -122,7 +125,7 @@ void HomeManager::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord 
     }
 }
 
-void HomeManager::getRandomHomeFor(const Player &pl, 
+void HomeManager::getRandomHomeFor(Player &pl, 
                                    DungeonMap *& dmap_out,
                                    MapCoord &mc_out,
                                    MapDirection &dir_out) const
@@ -166,5 +169,48 @@ void HomeManager::onKnightDeath(Player &pl) const
         MapDirection facing;
         getRandomHomeFor(pl, dmap, mc, facing);
         pl.resetHome(dmap, mc, facing);
+    }
+}
+
+void HomeManager::pushHome(lua_State *lua, const std::pair<HomeLocation, Player *> &home)
+{
+    lua_createtable(lua, 0, 4);  // [home]
+    
+    ASSERT(!home.first.mc.isNull());
+    lua_pushinteger(lua, home.first.mc.getX());   // [home x]
+    lua_setfield(lua, -2, "x");             // [home]
+    lua_pushinteger(lua, home.first.mc.getY());
+    lua_setfield(lua, -2, "y");
+    PushMapDirection(lua, home.first.facing);
+    lua_setfield(lua, -2, "facing");
+    if (home.second) {
+        NewLuaPtr<Player>(lua, home.second);   // [home plyr]
+        lua_setfield(lua, -2, "secured_by");  // [home]
+    }
+}
+
+void HomeManager::pushAllHomes(lua_State *lua) const
+{
+    lua_createtable(lua, homes.size(), 0);   // [homes]
+    int n = 1;
+    for (HomeMap::const_iterator it = homes.begin(); it != homes.end(); ++it) {
+        pushHome(lua, *it);   // [homes home]
+        lua_rawseti(lua, -2, n++);  // [homes]
+    }
+}
+
+void HomeManager::pushHomeFor(lua_State *lua, Player &player) const
+{
+    HomeLocation loc;
+    loc.dmap = player.getHomeMap();
+    loc.mc = player.getHomeLocation();
+    loc.facing = player.getHomeFacing();
+
+    HomeMap::const_iterator it = homes.find(loc);
+
+    if (it == homes.end()) {
+        lua_pushnil(lua);
+    } else {
+        pushHome(lua, *it);
     }
 }

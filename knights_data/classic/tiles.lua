@@ -295,7 +295,8 @@ home = {
     type = "home",
     unsecured_colour = 0,      -- black
     on_hit = snd_tile_clunk,
-    tutorial = TUT_HOME
+    tutorial = TUT_HOME,
+    on_approach = check_escape_quest
 }
 home_south = home & {
     graphic = g_home_south, 

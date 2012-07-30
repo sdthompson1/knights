@@ -210,7 +210,7 @@ public:
     
     // Home manager (wand of securing)
     bool isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &pos, MapDirection facing) const;
-    void secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &pos,
+    void secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
                     MapDirection facing, shared_ptr<Tile> secured_wall_tile);
 
     

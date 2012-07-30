@@ -263,7 +263,7 @@ kts.MENU = {
          choice_max = 6,
          show = show_zero_as_none,
          features = function(S)
-            quest_retrieve(i_gem, S.num_gems, "Gem Required", "%d Gems Required")
+            quest_retrieve(i_gem, S.gems_needed, "Gem Required", "%d Gems Required")
             if S.num_gems == 1 then
                hint("Retrieve 1 gem", 1, 1)
             else

@@ -43,7 +43,7 @@ end
 -- teleports a knight
 function teleport_actor(x, y)
 
-  local from = kts.get_pos(cxt.actor)
+  local from = kts.GetPos(cxt.actor)
   local to = kts.rotate_add_pos(from, x, y)  -- add offset, accounting for map rotation/reflection.
 
   kts.teleport(cxt.actor, to)
@@ -68,7 +68,7 @@ function toggle_impl(x, y, door_function, tile_function, sound_flag)
 
   door_function(pos)
 
-  local tiles = kts.get_tiles(pos)
+  local tiles = kts.GetTiles(pos)
   for k,v in ipairs(tiles) do
     local new_tile = tile_function(v)
     if new_tile then

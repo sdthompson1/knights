@@ -80,21 +80,12 @@ public:
     
     // Add starting gear.
     void addStartingGear(const ItemType &itype, const vector<int> &nos);
-
-    // Setup exit
-    void setExit(const MapCoord &exit_loc, MapDirection facing)
-    { exit_location = exit_loc; exit_facing = facing; exit_from_players_home = 0; }
-
-    void setExitFromPlayersHome(const Player &p)
-    { exit_from_players_home = &p; }
     
     // accessor functions
     DungeonMap * getHomeMap() const { return home_dmap; }
     const MapCoord & getHomeLocation() const { return home_location; }  // square just outside the home,
                                                                         // or NULL if all homes secured.
     MapDirection getHomeFacing() const { return home_facing; }  // direction pointing towards the home.
-    const MapCoord & getExitLocation() const;
-    MapDirection getExitFacing() const;
     
     shared_ptr<Knight> getKnight() const { return knight.lock(); }
     MapCoord getKnightPos() const; // convenience. (Returns Null mapcoord if knight doesn't exist.)
@@ -231,9 +222,8 @@ private:
     std::set<std::pair<int, int> > item_locations;
     
     DungeonMap *home_dmap;
-    const Player * exit_from_players_home;   // If set, this overrides exit_location/exit_facing.
-    MapCoord home_location, exit_location;
-    MapDirection home_facing, exit_facing;
+    MapCoord home_location;
+    MapDirection home_facing;
     const Anim * anim;
     const ItemType * default_item;
     const map<const ItemType *, int> * backpack_capacities;

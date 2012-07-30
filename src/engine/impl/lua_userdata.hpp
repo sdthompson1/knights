@@ -42,7 +42,7 @@ bool IsLuaPtr_Impl(lua_State *lua, int index, LuaTag expected_tag);
 
 
 //
-// Create a new Lua userdata object and push it onto the stack
+// Create a new Lua userdata object and push it onto the stack. (Pushes nil if it is a null ptr.)
 // 
 // NOTE: These might raise a Lua error. They do not throw any C++ exceptions though.
 //

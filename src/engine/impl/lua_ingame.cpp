@@ -27,6 +27,7 @@
 #include "coord_transform.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
+#include "home_manager.hpp"
 #include "knight.hpp"
 #include "legacy_action.hpp"
 #include "lockable.hpp"
@@ -37,6 +38,7 @@
 #include "mediator.hpp"
 #include "missile.hpp"
 #include "my_exceptions.hpp"
+#include "player.hpp"
 #include "rng.hpp"
 #include "teleport.hpp"
 
@@ -111,27 +113,45 @@ namespace {
         luaL_error(lua, "bad type for argument #%d: expected %s", lua_index, expected);
     }
     
-    template<class T> T* CheckLuaPtr(lua_State *lua, int lua_index, const char *expected)
+    template<class T> T& CheckLuaPtr(lua_State *lua, int lua_index, const char *expected)
     {
         T* result = ReadLuaPtr<T>(lua, lua_index);
         if (!result) {
             ErrMsg(lua, lua_index, expected);
         }
-        return result;
+        return *result;
     }
 
-    template<class T> boost::shared_ptr<T> CheckLuaSharedPtr(lua_State *lua, int lua_index, const char *expected)
+    template<class T> shared_ptr<T> CheckLuaSharedPtr(lua_State *lua, int lua_index, const char *expected)
     {
-        boost::shared_ptr<T> result = ReadLuaSharedPtr<T>(lua, lua_index);
+        shared_ptr<T> result = ReadLuaSharedPtr<T>(lua, lua_index);
         if (!result) {
             ErrMsg(lua, lua_index, expected);
         }
         return result;
     }
     
+    Player & GetPlayerOrKnight(lua_State *lua, int lua_index)
+    {
+        Player *result = 0;
+        
+        if (IsLuaPtr<Player>(lua, lua_index)) {
+            result = ReadLuaPtr<Player>(lua, lua_index);
+        } else if (IsLuaPtr<Creature>(lua, lua_index)) {
+            shared_ptr<Creature> c = ReadLuaSharedPtr<Creature>(lua, lua_index);
+            if (c) result = c->getPlayer();
+        }
+
+        if (!result) {
+            ErrMsg(lua, lua_index, "player or knight");
+        }
+
+        return *result;
+    }
+
     const ItemType * LuaActionPars::getItemType(int c_index)
     {
-        return CheckLuaPtr<const ItemType>(lua, c_index+1, "item type");
+        return &CheckLuaPtr<const ItemType>(lua, c_index+1, "item type");
     }
     
     MapDirection LuaActionPars::getMapDirection(int c_index)
@@ -146,7 +166,7 @@ namespace {
 
     const Sound * LuaActionPars::getSound(int c_index)
     {
-        return CheckLuaPtr<Sound>(lua, c_index+1, "sound");
+        return &CheckLuaPtr<Sound>(lua, c_index+1, "sound");
     }
 
     std::string LuaActionPars::getString(int c_index)
@@ -162,7 +182,7 @@ namespace {
 
     const MonsterType * LuaActionPars::getMonsterType(int c_index)
     {
-        return CheckLuaPtr<MonsterType>(lua, c_index+1, "monster");
+        return &CheckLuaPtr<MonsterType>(lua, c_index+1, "monster");
     }
 
     void LuaActionPars::error()
@@ -399,6 +419,37 @@ namespace {
         return 1;
     }
 
+    int GetFacing(lua_State *lua)
+    {
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
+        if (cr) {
+            PushMapDirection(lua, cr->getFacing());
+        } else {
+            lua_pushnil(lua);
+        }
+        return 1;
+    }
+
+    int GetNumHeld(lua_State *lua)
+    {
+        int num = 0;
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
+        const ItemType * itype = ReadLuaPtr<const ItemType>(lua, 2);
+
+        if (cr && itype) {
+            if (cr->getItemInHand() == itype) ++num;
+
+            Knight * kt = dynamic_cast<Knight*>(cr.get());
+            if (kt) {
+                num += kt->getNumCarried(*itype);
+            }
+        }
+
+        lua_pushinteger(lua, num);
+        return 1;
+    }
+    
+
     // Input: creature
     // Cxt: none
     // Output: boolean
@@ -453,7 +504,7 @@ namespace {
             std::string msg;
             const int top = lua_gettop(lua);
             for (int i = start; i <= top; ++i) {
-                const char *x = lua_tostring(lua, i);
+                const char *x = luaL_tolstring(lua, i, 0);
                 if (!x) return luaL_error(lua, "'tostring' must return a string to 'print'");
                 if (i > start) msg += " ";
                 msg += x;
@@ -619,6 +670,56 @@ namespace {
         lua_pushboolean(lua, g_rng.getBool(float(chance)) ? 1 : 0);
         return 1;
     }
+
+    //
+    // Homes and players
+    //
+    
+    int GetAllHomes(lua_State *lua)
+    {
+        Mediator::instance().getHomeManager().pushAllHomes(lua);
+        return 1;
+    }
+
+    int GetHomeFor(lua_State *lua)
+    {
+        Player & plyr = GetPlayerOrKnight(lua, 1);
+        Mediator::instance().getHomeManager().pushHomeFor(lua, plyr);
+        return 1;
+    }
+
+    int GetPlayer(lua_State *lua)
+    {
+        shared_ptr<Creature> cr = CheckLuaSharedPtr<Creature>(lua, 1, "Player");
+        NewLuaPtr<Player>(lua, cr->getPlayer());
+        return 1;
+    }
+
+    int GetAllPlayers(lua_State *lua)
+    {
+        const std::vector<Player*> & plyrs = Mediator::instance().getPlayers();
+        lua_createtable(lua, plyrs.size(), 0);
+        int n = 1;
+        for (std::vector<Player*>::const_iterator it = plyrs.begin(); it != plyrs.end(); ++it) {
+            NewLuaPtr<Player>(lua, *it);
+            lua_rawseti(lua, -2, n++);
+        }
+        return 1;
+    }
+
+    int IsEliminated(lua_State *lua)
+    {
+        Player & pl = CheckLuaPtr<Player>(lua, 1, "Player");
+        lua_pushboolean(lua, pl.getElimFlag());
+        return 1;
+    }
+
+    int WinGame(lua_State *lua)
+    {
+        Player & plyr = GetPlayerOrKnight(lua, 1);
+        Mediator::instance().winGame(plyr);
+        return 0;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -646,7 +747,7 @@ void AddLuaIngameFunctions(lua_State *lua)
     lua_setfield(lua, -2, "teleport");
 
     PushCFunction(lua, &GetTiles);
-    lua_setfield(lua, -2, "get_tiles");
+    lua_setfield(lua, -2, "GetTiles");
 
     PushCFunction(lua, &RemoveTile);
     lua_setfield(lua, -2, "remove_tile");
@@ -658,7 +759,13 @@ void AddLuaIngameFunctions(lua_State *lua)
     lua_setfield(lua, -2, "play_sound");
 
     PushCFunction(lua, &GetPos);
-    lua_setfield(lua, -2, "get_pos");
+    lua_setfield(lua, -2, "GetPos");
+
+    PushCFunction(lua, &GetFacing);
+    lua_setfield(lua, -2, "GetFacing");
+
+    PushCFunction(lua, &GetNumHeld);
+    lua_setfield(lua, -2, "GetNumHeld");
 
     PushCFunction(lua, &IsKnight);
     lua_setfield(lua, -2, "IsKnight");
@@ -708,7 +815,26 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &RandomChance);
     lua_setfield(lua, -2, "RandomChance");
-    
+
+    // Homes and Players
+    PushCFunction(lua, &GetAllHomes);
+    lua_setfield(lua, -2, "GetAllHomes");
+
+    PushCFunction(lua, &GetHomeFor);
+    lua_setfield(lua, -2, "GetHomeFor");
+
+    PushCFunction(lua, &GetPlayer);
+    lua_setfield(lua, -2, "GetPlayer");
+
+    PushCFunction(lua, &GetAllPlayers);
+    lua_setfield(lua, -2, "GetAllPlayers");
+
+    PushCFunction(lua, &IsEliminated);
+    lua_setfield(lua, -2, "IsEliminated");
+
+    PushCFunction(lua, &WinGame);
+    lua_setfield(lua, -2, "WinGame");
+
     // pop the "kts" and environment tables.
     lua_pop(lua, 2);
 }

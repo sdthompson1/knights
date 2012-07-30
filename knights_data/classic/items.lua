@@ -281,7 +281,7 @@ basic_book = {
     overlay = kts.Overlay { g_book_north, g_book_east, g_book_south, g_book_west },
     on_pick_up = kts.UpdateQuestStatus,
     on_drop = kts.UpdateQuestStatus,
-    on_hit = function() kts.CheckQuest("hit_book") end,
+    on_hit = check_destroy_quest,
     critical = "The book"
 }
 

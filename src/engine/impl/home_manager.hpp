@@ -47,7 +47,7 @@ public:
 
     // Secure a home by a given player
     // (This does nothing if the given tile is not a home.)
-    void secureHome(const Player &pl,
+    void secureHome(Player &pl,
                     DungeonMap &dmap, const MapCoord &pos, MapDirection facing,
                     shared_ptr<Tile> secured_wall_tile);
 
@@ -57,16 +57,19 @@ public:
     // On-knight-death routine. In "different every time" respawn mode, this
     // randomizes the knight's "home" location. Otherwise it does nothing.
     void onKnightDeath(Player &pl) const;
+
+    // Push home(s) to Lua stack
+    void pushAllHomes(lua_State *lua) const;
+    void pushHomeFor(lua_State *lua, Player &player) const;
     
 private:
     // returns a null DungeonMap/MapCoord if no such home can be found
-    void getRandomHomeFor(const Player &pl,
+    void getRandomHomeFor(Player &pl,
                           DungeonMap *& dmap_out,
                           MapCoord &mc_out,
                           MapDirection &dir_out) const;
-    
+
 private:
-   
     struct HomeLocation {
         DungeonMap *dmap;
         MapCoord mc;            // one tile outside the home
@@ -82,11 +85,13 @@ private:
         }
     };
 
+    static void pushHome(lua_State *lua, const std::pair<HomeLocation, Player *> &home);
+
     // This map stores the secure-status of each home.
     // stored player == 0 means the home is unsecured
     // stored player != 0 means the home is secured by that player
     // Home not in map at all == The home was secured by both players.
-    typedef map<HomeLocation, const Player *> HomeMap;
+    typedef map<HomeLocation, Player *> HomeMap;
     HomeMap homes;
 };
 

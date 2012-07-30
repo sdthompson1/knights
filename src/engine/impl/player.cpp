@@ -154,7 +154,7 @@ Player::Player(int plyr_num,
     : player_num(plyr_num), control(0),
       current_room(-1), current_room_width(0), current_room_height(0),
       mini_map_width(0), mini_map_height(0),
-      home_dmap(0), exit_from_players_home(0), 
+      home_dmap(0), 
       anim(a),
       default_item(di), backpack_capacities(0), control_set(cs),
       secured_home_cc(sec_home_cc),
@@ -171,29 +171,6 @@ void Player::addStartingGear(const ItemType &itype, const vector<int> &numbers)
 
     for (int i=0; i<numbers.size(); ++i) {
         gears[i].push_back(make_pair(&itype, numbers[i]));
-    }
-}
-
-
-//
-// exit location
-//
-
-const MapCoord& Player::getExitLocation() const
-{
-    if (exit_from_players_home) {
-        return exit_from_players_home->getHomeLocation();
-    } else {
-        return exit_location;
-    }
-}
-
-MapDirection Player::getExitFacing() const
-{
-    if (exit_from_players_home) {
-        return exit_from_players_home->getHomeFacing();
-    } else {
-        return exit_facing;
     }
 }
 

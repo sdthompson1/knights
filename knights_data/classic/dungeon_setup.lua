@@ -25,23 +25,28 @@ dungeon_setup = {
    special_segments   = {},  -- list of { segment_list }
    required_items     = {},  -- list of { itemtype, number, weight_table }
    stuff              = {},  -- list of { category, probability, generator }
-   initial_monsters   = {}   -- list of { montype, number_initially }
+   initial_monsters   = {},  -- list of { montype, number_initially }
+
+   retrieve_handlers  = {},  -- list of functions
+   destroy_handlers   = {}   -- list of functions
 }
 
 
--- Quests
+-- Quest Setup Functions called by menus.lua
 
 function quest_retrieve(itemtypes, qty, msg_singular, msg_plural)
-   -- TODO kts.AddQuest("approach_exit",
-   --             make_retrieve_handler( itemtypes, qty, msg_singular, msg_plural ))
+   local i = itemtypes
+   if type(i) == "userdata" then i = {i} end  -- Wrap single item in a table.
+   table.insert(Dsetup.retrieve_handlers,
+                make_retrieve_handler( i, qty, msg_singular, msg_plural ))
 end
 
 function quest_destroy(booklist, 
                        wandlist, wrong_wand_msg, 
                        tilelist, not_in_pentagram_msg)
-   -- TODO kts.AddQuest("hit_book",
-   --             make_destroy_handler( booklist, wandlist, wrong_wand_msg,
-   --                                   tilelist, not_in_pentagram_msg ))
+   table.insert(Dsetup.destroy_handlers,
+                make_destroy_handler( booklist, wandlist, wrong_wand_msg,
+                                      tilelist, not_in_pentagram_msg ))
 end
 
 function quest_deathmatch()
@@ -74,6 +79,7 @@ function set_entry(entrytype)
 end
 
 function set_exit(exittype)
+   -- Dsetup.exit_type is used by "is_correct_exit" in quest_funcs.lua.
    Dsetup.exit_type = exittype
 end
 

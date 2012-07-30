@@ -354,7 +354,7 @@ bool Mediator::isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoor
     return home_manager.isSecurableHome(pl, dmap, mc, facing);
 }
 
-void Mediator::secureHome(const Player &pl, DungeonMap &dmap, const MapCoord &pos,
+void Mediator::secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
                           MapDirection facing, shared_ptr<Tile> wall)
 {
     home_manager.secureHome(pl, dmap, pos, facing, wall);
