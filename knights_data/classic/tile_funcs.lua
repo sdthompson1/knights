@@ -31,22 +31,22 @@ function shoot(x, y, dir_as_num)
    local direction = select(dir_as_num, "north", "east", "south", "west")
 
    -- account for map rotation/reflection
-   local from = kts.rotate_add_pos(cxt.pos, x, y)
-   local dt = kts.rotate_direction(cxt.pos, direction)
+   local from = kts.RotateAddPos(cxt.pos, x, y)
+   local dt = kts.RotateDirection(cxt.pos, direction)
 
    -- add the missile
-   kts.add_missile(from, dt, i_bolt_trap, false)
+   kts.AddMissile(from, dt, i_bolt_trap, false)
    click_sound(cxt.pos)
    crossbow_sound(from)
 end
 
--- teleports a knight
-function teleport_actor(x, y)
+-- teleports a knight by a given offset
+function teleport(x, y)
 
   local from = kts.GetPos(cxt.actor)
-  local to = kts.rotate_add_pos(from, x, y)  -- add offset, accounting for map rotation/reflection.
+  local to = kts.RotateAddPos(from, x, y)  -- add offset, accounting for map rotation/reflection.
 
-  kts.teleport(cxt.actor, to)
+  kts.TeleportTo(cxt.actor, to)
   pentagram_sound(from)
   teleport_sound(from)
   teleport_sound(to)
@@ -64,7 +64,7 @@ function toggle_impl(x, y, door_function, tile_function, sound_flag)
 
   -- get position of the tile that triggered the 'toggle',
   -- then add the xy offset
-  local pos = kts.rotate_add_pos(cxt.tile_pos, x, y)
+  local pos = kts.RotateAddPos(cxt.tile_pos, x, y)
 
   door_function(pos)
 
@@ -72,7 +72,7 @@ function toggle_impl(x, y, door_function, tile_function, sound_flag)
   for k,v in ipairs(tiles) do
     local new_tile = tile_function(v)
     if new_tile then
-      kts.remove_tile(pos, v)
+      kts.RemoveTile(pos, v)
       kts.add_tile(pos, new_tile)
     end
   end
@@ -92,7 +92,7 @@ function toggle(x, y)
     end
     return new_tile
   end
-  toggle_impl(x, y, kts.open_or_close_door, my_tile_function, true)
+  toggle_impl(x, y, kts.OpenOrCloseDoor, my_tile_function, true)
 end
 
 function toggle_no_sound(x, y)
@@ -103,19 +103,19 @@ function toggle_no_sound(x, y)
     end
     return new_tile
   end
-  toggle_impl(x, y, kts.open_or_close_door, my_tile_function, false)
+  toggle_impl(x, y, kts.OpenOrCloseDoor, my_tile_function, false)
 end
 
 function open(x, y)
   local function my_tile_function(t)
     return t.open_to
   end
-  toggle_impl(x, y, kts.open_door, my_tile_function, true)
+  toggle_impl(x, y, kts.OpenDoor, my_tile_function, true)
 end
 
 function close(x, y)
   local function my_tile_function(t)
     return t.close_to
   end
-  toggle_impl(x, y, kts.close_door, my_tile_function, true)
+  toggle_impl(x, y, kts.CloseDoor, my_tile_function, true)
 end

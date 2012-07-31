@@ -76,7 +76,7 @@ end
 -- For zombification we play the sound *before* zombifying (i.e. while the actor still exists!)
 function my_teleport()
    snd_teleport()
-   kts.Teleport()
+   kts.TeleportRandom()
    snd_teleport()
 end
 

@@ -53,33 +53,6 @@ using namespace std;
 #endif
 
 
-
-//
-// A_AddTile
-//
-
-void A_AddTile::execute(const ActionData &ad) const
-{
-    // We look for a map coord from the Tile parameter.
-    // (The usual use case is that this is called from a tile's on_destroy action.)
-    DungeonMap *dmap;
-    MapCoord mc;
-    shared_ptr<Tile> dummy;
-    ad.getTile(dmap, mc, dummy);
-    if (!dmap) return;
-    dmap->addTile(mc, tile->clone(false), ad.getOriginator());
-}
-
-A_AddTile::Maker A_AddTile::Maker::register_me;
-
-LegacyAction * A_AddTile::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_AddTile(pars.getTile(0));
-}
-
-
-
 //
 // A_ChangeItem
 //
@@ -371,37 +344,6 @@ LegacyAction * A_PitKill::Maker::make(ActionPars &pars) const
 
 
 //
-// A_PlaySound
-//
-
-void A_PlaySound::execute(const ActionData &ad) const
-{
-    if (!frequency) return;
-    shared_ptr<Creature> actor = ad.getActor();
-
-    DungeonMap *dmap;
-    MapCoord mc;    
-    ad.getGenericPos(dmap, mc);
-
-    if (dmap) {
-        Mediator::instance().playSound(*dmap, mc, *sound, frequency, all);
-    }
-}
-
-A_PlaySound::Maker A_PlaySound::Maker::register_me;
-
-LegacyAction * A_PlaySound::Maker::make(ActionPars &pars) const
-{
-    pars.require(2, 3);
-    if (pars.getSize() == 2) {
-        return new A_PlaySound(pars.getSound(0), pars.getInt(1), false);
-    } else {
-        return new A_PlaySound(pars.getSound(0), pars.getInt(1), pars.getInt(2) != 0);
-    }
-}
-
-
-//
 // A_RevealStart
 //
 
@@ -505,28 +447,6 @@ LegacyAction * A_Shoot::Maker::make(ActionPars &pars) const
         pars.error();
         return 0;
     }
-}
-
-//
-// A_TeleportTo
-//
-
-void A_TeleportTo::execute(const ActionData &ad) const
-{
-    // Only Knights are teleported. (We don't want zombies teleported by pentagrams)
-    shared_ptr<Creature> cr(ad.getActor());
-    if (cr && cr->getMap() && dynamic_cast<Knight*>(cr.get())) {
-        TeleportToSquare(cr, *cr->getMap(),
-                         MapCoord(cr->getPos().getX() + dx, cr->getPos().getY() + dy));
-    }
-}
-
-A_TeleportTo::Maker A_TeleportTo::Maker::register_me;
-
-LegacyAction * A_TeleportTo::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_TeleportTo(pars.getInt(0), pars.getInt(1));
 }
 
 

@@ -44,7 +44,7 @@ struct lua_State;
 // ACTOR is the creature who is performing the action. For most
 // actions it is also the creature that the action is to be applied
 // to. For example, A_PitKill kills the Actor (by making him fall down
-// a pit), A_Teleport teleports the Actor, etc. An exception is the
+// a pit), A_TeleportRandom teleports the Actor, etc. An exception is the
 // melee actions, which are usually applied to the Victim instead (see
 // below).
 //

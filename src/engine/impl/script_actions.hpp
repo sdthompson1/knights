@@ -31,15 +31,6 @@
 
 #include "legacy_action.hpp"
 
-class A_AddTile : public LegacyAction {
-public:
-    explicit A_AddTile(shared_ptr<Tile> t) : tile(t) { }
-    virtual void execute(const ActionData &) const;
-private:
-    shared_ptr<Tile> tile;
-    ACTION_MAKER("AddTile");
-};
-
 class A_ChangeItem : public LegacyAction {
 public:
     explicit A_ChangeItem(const ItemType *itype) : item_type(itype) { }
@@ -149,17 +140,6 @@ private:
     ACTION_MAKER("PitKill");
 };
 
-class A_PlaySound : public LegacyAction {
-public:
-    A_PlaySound(const Sound *s, int freq, bool a) : sound(s), frequency(freq), all(a) { }
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("PlaySound");
-    const Sound *sound;
-    int frequency;
-    bool all;
-};
-
 class A_RevealStart : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
@@ -194,15 +174,6 @@ private:
     int dx, dy;
     MapDirection dir;
     const ItemType &itype;
-};
-
-class A_TeleportTo : public LegacyAction {
-public:
-    A_TeleportTo(int dx_, int dy_) : dx(dx_), dy(dy_) { }
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("TeleportTo");
-    int dx, dy;
 };
 
 // ZombieKill kills a monster of a particular type

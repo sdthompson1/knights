@@ -313,7 +313,7 @@ namespace {
     // Input: creature, new position.
     // Cxt: none
     // Output: none
-    int Teleport(lua_State *lua)
+    int TeleportTo(lua_State *lua)
     {
         Mediator &med = Mediator::instance();
         DungeonMap *dmap = med.getMap().get();
@@ -740,34 +740,34 @@ void AddLuaIngameFunctions(lua_State *lua)
     luaL_getsubtable(lua, -1, "kts");                         // [env kts]
     
     PushCFunction(lua, &Open);
-    lua_setfield(lua, -2, "open_door");
+    lua_setfield(lua, -2, "OpenDoor");
 
     PushCFunction(lua, &Close);
-    lua_setfield(lua, -2, "close_door");
+    lua_setfield(lua, -2, "CloseDoor");
 
     PushCFunction(lua, &OpenOrClose);
-    lua_setfield(lua, -2, "open_or_close_door");
+    lua_setfield(lua, -2, "OpenOrCloseDoor");
 
     PushCFunction(lua, &IsOpen);
-    lua_setfield(lua, -2, "is_door_open");
+    lua_setfield(lua, -2, "IsDoorOpen");
     
     PushCFunction(lua, &AddMissile);
-    lua_setfield(lua, -2, "add_missile");
+    lua_setfield(lua, -2, "AddMissile");
 
-    PushCFunction(lua, &Teleport);
-    lua_setfield(lua, -2, "teleport");
+    PushCFunction(lua, &TeleportTo);
+    lua_setfield(lua, -2, "TeleportTo");
 
     PushCFunction(lua, &GetTiles);
     lua_setfield(lua, -2, "GetTiles");
 
     PushCFunction(lua, &RemoveTile);
-    lua_setfield(lua, -2, "remove_tile");
+    lua_setfield(lua, -2, "RemoveTile");
 
     PushCFunction(lua, &AddTile);
-    lua_setfield(lua, -2, "add_tile");
+    lua_setfield(lua, -2, "AddTile");
 
     PushCFunction(lua, &PlaySound);
-    lua_setfield(lua, -2, "play_sound");
+    lua_setfield(lua, -2, "PlaySound");
 
     PushCFunction(lua, &GetPos);
     lua_setfield(lua, -2, "GetPos");
@@ -792,10 +792,10 @@ void AddLuaIngameFunctions(lua_State *lua)
     lua_setfield(lua, -3, "print");   // [env kts]
 
     PushCFunction(lua, &RotateAddPos);
-    lua_setfield(lua, -2, "rotate_add_pos");
+    lua_setfield(lua, -2, "RotateAddPos");
 
     PushCFunction(lua, &RotateDirection);
-    lua_setfield(lua, -2, "rotate_direction");
+    lua_setfield(lua, -2, "RotateDirection");
 
     // Now we want to add all the LegacyActions as Lua functions.
     {

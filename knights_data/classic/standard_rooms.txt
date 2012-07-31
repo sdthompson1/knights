@@ -4859,10 +4859,10 @@ data:
 68 66 68 68  8 66 75 66 75 66 75 66 
 switches:
 4
-8 5 1 teleport_actor 2 1 -3
-6 7 1 teleport_actor 2 3 -5
-10 7 1 teleport_actor 2 -1 -5
-8 9 1 teleport_actor 2 1 -7
+8 5 1 teleport 2 1 -3
+6 7 1 teleport 2 3 -5
+10 7 1 teleport 2 -1 -5
+8 9 1 teleport 2 1 -7
 rooms:
 4
 0 7 6 7 

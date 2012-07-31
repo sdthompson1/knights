@@ -93,19 +93,19 @@ floor_acc = {
 -- destruction function actually runs (i.e. in-game).]
 
 function destroy1()
-   kts.AddTile(t_broken_wood_1)
+   kts.AddTile(cxt.pos, t_broken_wood_1)
    snd_tile_destroy()
 end
 function destroy3()
-   kts.AddTile(t_broken_wood_3)
+   kts.AddTile(cxt.pos, t_broken_wood_3)
    snd_tile_destroy()
 end
 function destroy4()
-   kts.AddTile(t_broken_wood_4)
+   kts.AddTile(cxt.pos, t_broken_wood_4)
    snd_tile_destroy()
 end
 function destroy5()
-   kts.AddTile(t_broken_wood_5)
+   kts.AddTile(cxt.pos, t_broken_wood_5)
    snd_tile_destroy()
 end
 
@@ -175,14 +175,14 @@ chest_control_low_pri = kts.Control (chest_control_tbl & { tap_priority = 1 })
 
 
 function door_control_lua_func(pos)
-   if kts.is_door_open(pos) then 
+   if kts.IsDoorOpen(pos) then 
       return door_control_low_pri
    else 
       return door_control
    end
 end
 function chest_control_lua_func(pos)
-   if kts.is_door_open(pos) then 
+   if kts.IsDoorOpen(pos) then 
       return chest_control_low_pri
    else 
       return chest_control

@@ -189,7 +189,7 @@ private:
     string msg;
 };
 
-class A_Teleport : public LegacyAction {
+class A_TeleportRandom : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
