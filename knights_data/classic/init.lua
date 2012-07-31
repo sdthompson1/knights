@@ -18,11 +18,7 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
-local old = _ENV
-local M = {}
-setmetatable(M, {__index=old})
-old.package.loaded[...] = M
-_ENV = M
+module(...)
 
 dofile("misc_config.lua")
 dofile("tutorial.lua")

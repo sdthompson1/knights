@@ -111,6 +111,111 @@ namespace {
 
         return 1;   // Return the contents of _LOADED[name].
     }
+
+    //
+    // "module" function
+    // Note this is considerably changed from the Lua 5.1 version.
+    //
+
+    int PrivIndex(lua_State *lua)
+    {
+        // args: _, k
+        // upvalues: M, Parent
+
+        // this function does not throw C++ exceptions
+        // (although it might throw Lua errors).
+        // therefore, it is safe to use with lua_pushcclosure
+        // w/o the PushCClosure wrapper.
+
+        ASSERT(lua_gettop(lua) == 2);
+        
+        // local x = M[k]
+        lua_pushvalue(lua, 2);  // [_ k k]
+        lua_gettable(lua, lua_upvalueindex(1));   // [_ k x]
+
+        // if x == nil then x = Parent[k] end
+        if (lua_isnil(lua, -1)) {
+            lua_pop(lua, 1);                         // [_ k]
+            lua_gettable(lua, lua_upvalueindex(2));  // [_ val]
+        }
+        
+        // return x
+        return 1;
+    }
+    
+    int Module(lua_State *lua)
+    {
+        /* This does the rough equivalent of the following lua code:
+
+              local Parent = _ENV
+
+              local M = {}
+              package.loaded[...] = M
+           
+              local Priv = {}
+              local PrivMeta = {}
+              function PrivMeta.__index(_,k)
+                 local x = M[k]
+                 if x ~= nil then
+                    return x
+                 else
+                    return Parent[k]
+                 end
+              end
+              PrivMeta.__newindex = M
+              setmetatable(Priv, PrivMeta)
+
+           And it also sets _ENV in the parent frame to Priv.
+        */
+
+        // fetch "..." argument
+        const char *name = luaL_checkstring(lua, 1);
+
+        // local Parent = _ENV
+        lua_Debug ar;
+        if (lua_getstack(lua, 1, &ar) == 0 ||
+          lua_getinfo(lua, "f", &ar) == 0 ||       // [caller]
+          lua_iscfunction(lua, -1)) {
+            luaL_error(lua, "'module' called from C");
+        }
+        const char *upval = lua_getupvalue(lua, -1, 1);  // [caller _ENV]
+        if (!name || std::strcmp(upval, "_ENV") != 0) {
+            luaL_error(lua, "'module': bad upvalue");
+        }
+
+        // local M = {}
+        lua_newtable(lua);     // [f Parent M]
+
+        // package.loaded[...] = M
+        lua_getfield(lua, LUA_REGISTRYINDEX, "_LOADED");   // [f Parent M _LOADED]
+        lua_pushvalue(lua, -2);   // [f Parent M _LOADED M] 
+        lua_setfield(lua, -2, name);  // [f Parent M _LOADED]
+        lua_pop(lua, 1);  // [f Parent M]
+
+        // local Priv = {}
+        // local PrivMeta = {}
+        lua_newtable(lua);
+        lua_createtable(lua, 0, 2);  // [f Parent M Priv PrivMeta]
+
+        // function PrivMeta.__index
+        // (Don't use PushCFunction, we need maximum efficiency here)
+        lua_pushvalue(lua, -3);               // [f Parent M Priv PrivMeta M]
+        lua_pushvalue(lua, -5);               // [f Parent M Priv PrivMeta M Parent]
+        lua_pushcclosure(lua, &PrivIndex, 2); // [f Parent M Priv PrivMeta __index]
+        lua_setfield(lua, -2, "__index");     // [f Parent M Priv PrivMeta]
+
+        // PrivMeta.__newindex = M
+        lua_pushvalue(lua, -3);               // [f Parent M Priv PrivMeta M]
+        lua_setfield(lua, -2, "__newindex");  // [f Parent M Priv PrivMeta]
+
+        // setmetatable(Priv, PrivMeta)
+        lua_setmetatable(lua, -2);            // [f Parent M Priv]
+
+        // Now set _ENV in the parent (f) to Priv
+        lua_setupvalue(lua, -4, 1);           // [f Parent M]
+
+        return 0;
+    }
 }
 
 void AddModuleFuncs(lua_State *lua)
@@ -122,6 +227,10 @@ void AddModuleFuncs(lua_State *lua)
     // Global "require" function
     PushCFunction(lua, &Require);
     lua_setglobal(lua, "require");
+
+    // Global "module" function
+    PushCFunction(lua, &Module);
+    lua_setglobal(lua, "module");
 
     // "package" table
     lua_createtable(lua, 0, 1);  // [{}]
