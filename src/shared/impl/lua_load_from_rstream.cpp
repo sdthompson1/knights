@@ -119,6 +119,35 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
             throw LuaError(err_msg);
         }
 
+        // lua_load overwrites _ENV with _G. If we have been called from lua, then set _ENV back to what it was in 
+        // the caller. (This is the "dofile namespace proposal", http://lua-users.org/wiki/DofileNamespaceProposal.)
+        lua_Debug ar;
+        const bool okay = lua_getstack(lua, 1, &ar) == 1; // [<stuff> args func]
+        if (okay) {
+            lua_getinfo(lua, "f", &ar); // [<stuff> args func caller]
+            if (!lua_iscfunction(lua, -1)) {
+                // set func _ENV to caller _ENV
+                const char *name = lua_getupvalue(lua, -1, 1);
+                if (name) {
+                    // [<> args func caller upval]
+                    if (std::strcmp(name, "_ENV") == 0) {
+                        lua_setupvalue(lua, -3, 1); // [<stuff> args func caller]
+                    } else {
+                        // Upvalue exists, but it isn't called _ENV.
+                        // Shouldn't happen (unless someone loaded a binary chunk?)
+                        lua_pop(lua, 1);  // [<stuff> args func caller]
+                    }
+                }
+                // else: no upval exists. (Again, shouldn't happen.)
+            }
+            // else: We have been called from C. We can't do anything here because C fns don't have an 
+            // environment; we will have to settle for _G.
+
+            lua_pop(lua, 1);  // [<stuff> args func]
+        }
+        // else: We have been called from the top level. There is no previous function, so _G is the 
+        // appropriate thing to use as the environment.
+
         // stack is currently [<stuff> arg1 .. argn func]
         // change this to [<stuff> func arg1 .. argn], as required for LuaExec
         lua_insert(lua, -nargs-1);

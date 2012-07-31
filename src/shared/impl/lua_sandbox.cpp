@@ -78,7 +78,7 @@ namespace {
                       // code outside the sandbox, but:
                       //  a) this would be considered rude; and
                       //  b) they won't be able to make the code outside the sandbox DO anything nasty,
-                      //       because we haven't exposed any "nasty" functions to Lua anyway.
+                      //       because we haven't exposed any "nasty" functions to Lua.
         // NOT: debug
         // NOT: dofile
         "error",      // safe
@@ -91,10 +91,10 @@ namespace {
         // NOT: newproxy (undocumented base library function)
         "next",       // safe
         // NOT: os
-        // NOT: package
+        // NOT: package (we provide our own "package" table)
         "pairs",      // safe
         "pcall",      // safe
-        "print",      // safe (printing to stdio is harmless) (NOTE: this is overwritten once we enter the game. Might be useful for config debugging though.)
+        // NOT: print (we supply our own)
         "rawequal",   // bypasses metatables but we don't care
         "rawget",     // bypasses metatables but we don't care
         "rawlen",     // bypasses metatables but we don't care

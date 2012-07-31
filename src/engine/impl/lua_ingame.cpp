@@ -486,6 +486,20 @@ namespace {
         return 1;
     }
 
+    // called by Print
+    std::string BuildMsg(lua_State *lua, int start)
+    {
+        std::string msg;
+        const int top = lua_gettop(lua);
+        for (int i = start; i <= top; ++i) {
+            const char *x = luaL_tolstring(lua, i, 0);
+            if (!x) luaL_error(lua, "'tostring' must return a string to 'print'");
+            if (i > start) msg += " ";
+            msg += x;
+        }
+        return msg;
+    }
+
     // Input: (optional) player, followed by any number of args.
     // Cxt: none
     // Output: none
@@ -493,7 +507,7 @@ namespace {
     {
         try {
             Mediator &med = Mediator::instance();
-            
+
             // find out if there is a 'player' argument, if so, convert it to a player number
             int player_num = -1;
             int start = 1;
@@ -510,26 +524,15 @@ namespace {
                     if (player_num < 0) return 0;  // that player doesn't seem to exist (shouldn't happen)
                 }
             }
-
-            // build the message
-            std::string msg;
-            const int top = lua_gettop(lua);
-            for (int i = start; i <= top; ++i) {
-                const char *x = luaL_tolstring(lua, i, 0);
-                if (!x) return luaL_error(lua, "'tostring' must return a string to 'print'");
-                if (i > start) msg += " ";
-                msg += x;
-            }
             
             // print the message
-            med.gameMsg(player_num, msg);
+            med.gameMsg(player_num, BuildMsg(lua, start));
 
         } catch (MediatorUnavailable&) {
             // print it to stdout instead
-            // (Assumes only one arg)
-            if (lua_isstring(lua, 1)) {
-                std::cout << lua_tostring(lua, 1) << std::endl;
-            }
+            // (Assumes no 'player' arg)
+            std::string msg = BuildMsg(lua, 1);
+            std::cout << msg << std::endl;
         }
         return 0;
     }
