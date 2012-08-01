@@ -30,6 +30,7 @@
 #define GRAPHIC_HPP
 
 #include "colour_change.hpp"
+#include "file_info.hpp"
 
 #include "network/byte_buf.hpp" // coercri
 
@@ -40,11 +41,11 @@ struct lua_State;
 
 class Graphic {
 public:
-    explicit Graphic(const std::string &filename_,
+    explicit Graphic(const FileInfo &file_,
                      int hx_ = 0, int hy_ = 0,
                      int r_ = -1, int g_ = -1, int b_ = -1,
                      int size_hint_num_ = 1, int size_hint_denom_ = 1)
-        : filename(filename_),
+        : file(file_),
           hx(hx_), hy(hy_), r(r_), g(g_), b(b_),
           size_hint_num(size_hint_num_), size_hint_denom(size_hint_denom_),
           id(0)
@@ -53,7 +54,7 @@ public:
     // copy ctor. takes copy of the colour change if there is one.
     Graphic(const Graphic &rhs);
 
-    const std::string &getFilename() const { return filename; }
+    const FileInfo &getFileInfo() const { return file; }
     int getHX() const { return hx; }
     int getHY() const { return hy; }
 
@@ -77,7 +78,7 @@ public:
     void serialize(Coercri::OutputByteBuf &buf) const;
     
 private:
-    std::string filename;
+    FileInfo file;
     int hx, hy;
     int r, g, b;
     int size_hint_num, size_hint_denom;  // stored as numerator/denominator to avoid complication of having to serialize floats.

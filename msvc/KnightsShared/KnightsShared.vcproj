@@ -162,6 +162,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\impl\file_info.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\impl\graphic.cpp"
 				>
 			</File>
@@ -237,6 +241,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\dungeon_view.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\file_info.hpp"
 				>
 			</File>
 			<File

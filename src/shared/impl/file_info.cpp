@@ -1,5 +1,5 @@
 /*
- * sound.hpp
+ * file_info.cpp
  *
  * This file is part of Knights.
  *
@@ -23,15 +23,28 @@
 
 #include "misc.hpp"
 
-#include "sound.hpp"
+#include "file_info.hpp"
 
-Sound::Sound(int id_, Coercri::InputByteBuf &buf)
-    : file(buf)
+FileInfo::FileInfo(const char *p)
 {
-    id = id_;
+    if (p[0] == '+') {
+        standard_file = true;
+        filename = (p+1);
+    } else {
+        standard_file = false;
+        filename = p;
+        // TODO: Read file size and timestamp, and store in the FileInfo as well.
+    }
+}       
+
+FileInfo::FileInfo(Coercri::InputByteBuf &buf)
+{
+    standard_file = buf.readUbyte() != 0;
+    filename = buf.readString();
 }
 
-void Sound::serialize(Coercri::OutputByteBuf &buf) const
+void FileInfo::serialize(Coercri::OutputByteBuf &buf) const
 {
-    file.serialize(buf);
+    buf.writeUbyte(standard_file ? 1 : 0);
+    buf.writeString(filename);
 }

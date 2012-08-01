@@ -54,6 +54,7 @@
 using namespace std;
 
 class ColourChange;
+class FileCache;
 class GfxResizer;
 class Graphic;
 
@@ -63,7 +64,8 @@ public:
                boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
                const vector<string> &ttf_font_names_,
                const vector<string> &bmp_font_names_,
-               unsigned char invis_alpha_);
+               unsigned char invis_alpha_,
+               FileCache &fc);
     ~GfxManager();
     
     // Fonts and text
@@ -141,7 +143,8 @@ private:
     // Data
     boost::shared_ptr<Coercri::GfxDriver> gfx_driver;
     boost::shared_ptr<GfxResizer> gfx_resizer;
-
+    FileCache &file_cache;
+    
     // Font data
     boost::shared_ptr<Coercri::TTFLoader> ttf_loader;
     vector<string> ttf_font_names, bmp_font_names;

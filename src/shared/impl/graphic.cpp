@@ -29,7 +29,7 @@
 #include "lua.hpp"
 
 Graphic::Graphic(const Graphic &rhs)
-    : filename(rhs.filename), hx(rhs.hx), hy(rhs.hy), r(rhs.r), g(rhs.g), b(rhs.b),
+    : file(rhs.file), hx(rhs.hx), hy(rhs.hy), r(rhs.r), g(rhs.g), b(rhs.b),
       size_hint_num(rhs.size_hint_num), size_hint_denom(rhs.size_hint_denom),
       id(rhs.id)
 {
@@ -39,8 +39,8 @@ Graphic::Graphic(const Graphic &rhs)
 }
 
 Graphic::Graphic(int id_, Coercri::InputByteBuf &buf)
+    : file(buf)
 {
-    filename = buf.readString();
     hx = buf.readVarInt();
     hy = buf.readVarInt();
     r = buf.readVarInt();
@@ -58,7 +58,7 @@ Graphic::Graphic(int id_, Coercri::InputByteBuf &buf)
 
 void Graphic::serialize(Coercri::OutputByteBuf &buf) const
 {
-    buf.writeString(filename);
+    file.serialize(buf);
     buf.writeVarInt(hx);
     buf.writeVarInt(hy);
     buf.writeVarInt(r);
@@ -99,7 +99,7 @@ std::auto_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
         }
     }
     
-    std::auto_ptr<Graphic> gfx(new Graphic(filename, x, y, r, g, b, size_hint_num, size_hint_denom));
+    std::auto_ptr<Graphic> gfx(new Graphic(FileInfo(filename), x, y, r, g, b, size_hint_num, size_hint_denom));
 
     return gfx;
 }

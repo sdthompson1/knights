@@ -1,5 +1,5 @@
 /*
- * sound.hpp
+ * file_info.hpp
  *
  * This file is part of Knights.
  *
@@ -22,33 +22,37 @@
  */
 
 /*
- * Stores FileInfo for a Sound.
+ * Stores filename and other information needed to identify a server
+ * file.
  *
  */
 
-#ifndef SOUND_HPP
-#define SOUND_HPP
+#ifndef FILE_INFO_HPP
+#define FILE_INFO_HPP
 
-#include "file_info.hpp"
-
-#include "network/byte_buf.hpp"
+#include "network/byte_buf.hpp" // coercri
 
 #include <string>
 
-class Sound {
+class FileInfo {
 public:
-    Sound(int id_, const FileInfo &file_)
-        : id(id_), file(file_) { }
+    // construction on server side
+    explicit FileInfo(const char *f);
 
-    int getID() const { return id; }
-    const FileInfo & getFileInfo() const { return file; }
-
-    explicit Sound(int id_, Coercri::InputByteBuf &buf);
+    // serialization
+    explicit FileInfo(Coercri::InputByteBuf &buf);
     void serialize(Coercri::OutputByteBuf &buf) const;
+
+    // interface used by FileCache
+    bool isStandardFile() const { return standard_file; }
+    const std::string &getFilename() const { return filename; }
     
 private:
-    int id;
-    FileInfo file;
+    std::string filename;
+
+    // false: file is on server, must be downloaded by client (or read from cache, if client does caching).
+    // true: file is one of the "standard files" included with Knights; client doesn't need to download.
+    bool standard_file;
 };
 
 #endif

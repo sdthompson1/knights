@@ -1,5 +1,5 @@
 /*
- * sound.hpp
+ * file_cache.hpp
  *
  * This file is part of Knights.
  *
@@ -21,17 +21,20 @@
  *
  */
 
-#include "misc.hpp"
+#ifndef FILE_CACHE_HPP
+#define FILE_CACHE_HPP
 
-#include "sound.hpp"
+#include "file_info.hpp"
 
-Sound::Sound(int id_, Coercri::InputByteBuf &buf)
-    : file(buf)
-{
-    id = id_;
-}
+#include "boost/shared_ptr.hpp"
 
-void Sound::serialize(Coercri::OutputByteBuf &buf) const
-{
-    file.serialize(buf);
-}
+#include <iosfwd>
+
+class FileCache {
+public:
+    // The following returns NULL if the file is not in cache, and
+    // needs to be downloaded from server.
+    boost::shared_ptr<std::istream> openFile(const FileInfo &file) const;
+};
+
+#endif

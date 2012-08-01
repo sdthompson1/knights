@@ -43,11 +43,14 @@
 #include <map>
 #include <string>
 
+class FileCache;
 class Sound;
 
 class SoundManager {
 public:
-    explicit SoundManager(boost::shared_ptr<Coercri::SoundDriver> d) : sound_driver(d) { }
+    SoundManager(boost::shared_ptr<Coercri::SoundDriver> d,
+                 FileCache &fc)
+        : sound_driver(d), file_cache(fc) { }
     
     void loadSound(const Sound &sound);
     void playSound(const Sound &sound, int frequency);
@@ -55,6 +58,8 @@ public:
     
 private:
     boost::shared_ptr<Coercri::SoundDriver> sound_driver;
+    FileCache &file_cache;
+    
     std::map<const Sound*, boost::shared_ptr<Coercri::Sound> > sound_map;
 };
 

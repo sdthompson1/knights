@@ -1,5 +1,5 @@
 /*
- * sound_manager.cpp
+ * file_cache.cpp
  *
  * This file is part of Knights.
  *
@@ -24,33 +24,18 @@
 #include "misc.hpp"
 
 #include "file_cache.hpp"
-#include "sound.hpp"
-#include "sound_manager.hpp"
+#include "my_exceptions.hpp"
+#include "rstream.hpp"
 
-void SoundManager::loadSound(const Sound &sound)
+boost::shared_ptr<std::istream> FileCache::openFile(const FileInfo &file) const
 {
-    if (!sound_driver) return;
-
-    if (sound_map.find(&sound) == sound_map.end()) {
-        boost::shared_ptr<std::istream> str = file_cache.openFile(sound.getFileInfo());
-        sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
-    }
-}
-
-void SoundManager::playSound(const Sound &sound, int frequency)
-{
-    if (!sound_driver) return;
+    boost::shared_ptr<std::istream> result;
     
-    std::map<const Sound *, boost::shared_ptr<Coercri::Sound> >::iterator it = sound_map.find(&sound);
-    if (it == sound_map.end()) {
-        loadSound(sound);
-        it = sound_map.find(&sound);
-        ASSERT(it != sound_map.end());
+    if (file.isStandardFile()) {
+        result.reset(new RStream(file.getFilename()));
+    } else {
+        throw UnexpectedError("Not Implemented");
     }
-    sound_driver->playSound(it->second, frequency);
-}
 
-void SoundManager::clear()
-{
-    sound_map.clear();
+    return result;
 }

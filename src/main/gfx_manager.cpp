@@ -23,12 +23,12 @@
 
 #include "misc.hpp"
 
+#include "file_cache.hpp"
 #include "gfx_manager.hpp"
 #include "graphic.hpp"
 #include "graphic_transform.hpp"
 #include "load_font.hpp"
 #include "my_exceptions.hpp"
-#include "rstream.hpp"
 
 #include "gfx/load_bmp.hpp"  // coercri
 
@@ -36,9 +36,11 @@ GfxManager::GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                        boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
                        const std::vector<std::string> &ttf_font_names_,
                        const std::vector<std::string> &bmp_font_names_,
-                       unsigned char invis_alpha_)
+                       unsigned char invis_alpha_,
+                       FileCache &fc)
     : gfx_driver(gfx_driver_),
       ttf_loader(ttf_loader_),
+      file_cache(fc),
       ttf_font_names(ttf_font_names_),
       bmp_font_names(bmp_font_names_),
       font_size(0),
@@ -73,8 +75,8 @@ void GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
     GfxMap::const_iterator it = gfx_map.find(&gfx);
     if (it == gfx_map.end()) {
         // Open the file. Only BMP format supported for now.
-        RStream str(gfx.getFilename());
-        boost::shared_ptr<const Coercri::PixelArray> pixels = Coercri::LoadBMP(str);
+        boost::shared_ptr<std::istream> str = file_cache.openFile(gfx.getFileInfo());
+        boost::shared_ptr<const Coercri::PixelArray> pixels = Coercri::LoadBMP(*str);
 
         // Apply colour key if necessary
         if (gfx.getR() != -1) {

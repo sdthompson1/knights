@@ -205,6 +205,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\main\file_cache.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\main\find_server_screen.cpp"
 				>
 			</File>
@@ -404,6 +408,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\main\error_screen.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\main\file_cache.hpp"
 				>
 			</File>
 			<File

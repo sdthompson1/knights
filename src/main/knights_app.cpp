@@ -26,6 +26,7 @@
 #include "config_map.hpp"
 #include "credits_screen.hpp"
 #include "error_screen.hpp"
+#include "file_cache.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
 #include "gfx_resizer_compose.hpp"
@@ -202,6 +203,7 @@ public:
 
     boost::shared_ptr<GfxManager> gfx_manager;
     boost::shared_ptr<SoundManager> sound_manager;
+    FileCache file_cache;
     boost::shared_ptr<Controller> left_controller, right_controller, net_game_controller;
 
     boost::shared_ptr<Coercri::Font> font;
@@ -460,9 +462,10 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     pimpl->gfx_manager.reset(
         new GfxManager(pimpl->gfx_driver, pimpl->ttf_loader,
                        ttf_font_names, bitmap_font_names,
-                       static_cast<unsigned char>(pimpl->config_map.getInt("invisalpha"))));
+                       static_cast<unsigned char>(pimpl->config_map.getInt("invisalpha")),
+                       pimpl->file_cache));
     setupGfxResizer();
-    pimpl->sound_manager.reset(new SoundManager(pimpl->sound_driver));
+    pimpl->sound_manager.reset(new SoundManager(pimpl->sound_driver, pimpl->file_cache));
 
     // Load all the graphics at this point
     // These are added as "permanent" so that we don't have to keep reloading them after a reset.

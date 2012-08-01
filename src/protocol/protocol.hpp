@@ -68,7 +68,9 @@ enum ClientMessageCode {
     CLIENT_REQUEST_SPEECH_BUBBLE = 18,   // followed by ubyte (0=don't show, 1=show)
     CLIENT_SET_APPROACH_BASED_CONTROLS = 19,     // followed by ubyte (1=true 0=false)
     CLIENT_SET_ACTION_BAR_CONTROLS = 20,         // followed by ubyte (1=true 0=false)
-    CLIENT_RANDOM_QUEST = 21         // no extra data
+    CLIENT_RANDOM_QUEST = 21,        // no extra data
+    CLIENT_REQUEST_GRAPHIC = 22,     // followed by number of ids, then ids (all varints)
+    CLIENT_REQUEST_SOUND = 23        // ditto
 };
 
 // Messages sent by the server
@@ -124,6 +126,10 @@ enum ServerMessageCode {
     SERVER_SET_MENU_HIGHLIGHT = 54,  // followed by ubyte (control-id)
     SERVER_FLASH_SCREEN = 55,        // followed by varint (delay)
 
+    // sending gfx, sounds etc
+    SERVER_SEND_GRAPHIC = 80,        // followed by number of gfx, then data for each. (response to CLIENT_REQUEST_GRAPHIC)
+    SERVER_SEND_SOUND = 81,          // ditto for sounds. (response to CLIENT_REQUEST_SOUND)
+    
     // dungeonview
     SERVER_SET_CURRENT_ROOM = 100,   // followed by varint (room num) + room-coord (width, height)
     SERVER_ADD_ENTITY = 101,         // complex
