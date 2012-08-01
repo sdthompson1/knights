@@ -122,6 +122,10 @@ public:
 
     void setPauseMode(bool);  // only works for split screen games currently.
 
+    // downloading of gfx/sound files
+    void requestGraphics(const std::vector<int> &ids);
+    void requestSounds(const std::vector<int> &ids);
+    
 private:
     std::auto_ptr<KnightsClientImpl> pimpl;
 };

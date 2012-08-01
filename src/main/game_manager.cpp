@@ -29,6 +29,7 @@
 #include "error_screen.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
+#include "graphic.hpp"
 #include "gui_numeric_field.hpp"
 #include "house_colour_font.hpp"
 #include "in_game_screen.hpp"
@@ -40,6 +41,7 @@
 #include "menu_screen.hpp"
 #include "my_exceptions.hpp"
 #include "password_screen.hpp"
+#include "sound.hpp"
 #include "sound_manager.hpp"
 #include "text_formatter.hpp"
 #include "title_screen.hpp"
@@ -377,7 +379,8 @@ public:
           quest_rqmts_list(9999, false, false),    // ditto
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
           my_player_name(plyr_nm), doing_menu_widget_update(false), deathmatch_mode(false),
-          game_in_progress(false)
+          game_in_progress(false),
+          download_count(0)
     { }
     
     KnightsApp &knights_app;
@@ -431,6 +434,9 @@ public:
     bool deathmatch_mode;
 
     bool game_in_progress;
+
+    // Number of graphics/sounds that we are waiting for the server to send.
+    int download_count;
 };
 
 void GameManager::setServerName(const std::string &sname)
@@ -825,12 +831,23 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->menu_choices.resize(pimpl->menu->getNumItems());
 
     // Load the graphics and sounds
+    std::vector<int> gfx_ids;
     for (std::vector<const Graphic *>::const_iterator it = conf->graphics.begin(); it != conf->graphics.end(); ++it) {
-        pimpl->knights_app.getGfxManager().loadGraphic(**it);
+        if (!pimpl->knights_app.getGfxManager().loadGraphic(**it)) {
+            gfx_ids.push_back((*it)->getID());
+        }
     }
+    std::vector<int> sound_ids;
     for (std::vector<const Sound *>::const_iterator it = conf->sounds.begin(); it != conf->sounds.end(); ++it) {
-        pimpl->knights_app.getSoundManager().loadSound(**it);
+        if (!pimpl->knights_app.getSoundManager().loadSound(**it)) {
+            sound_ids.push_back((*it)->getID());
+        }
     }
+
+    // Request download of gfx/sound files if required.
+    pimpl->knights_client->requestGraphics(gfx_ids);
+    pimpl->knights_client->requestSounds(sound_ids);
+    pimpl->download_count = gfx_ids.size() + sound_ids.size();
     
     // Clear messages, and add new "Joined game" messages for lan games
     pimpl->chat_list.clear();
@@ -840,9 +857,16 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
         }
     }
 
-    // Go to MenuScreen
-    auto_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen));
-    pimpl->knights_app.requestScreenChange(menu_screen);
+    // Go to MenuScreen, if counts are zero.
+    gotoMenuIfAllDownloaded();
+}
+
+void GameManager::gotoMenuIfAllDownloaded()
+{
+    if (pimpl->download_count == 0) {
+        auto_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen));
+        pimpl->knights_app.requestScreenChange(menu_screen);
+    }
 }
 
 void GameManager::joinGameDenied(const std::string &reason)

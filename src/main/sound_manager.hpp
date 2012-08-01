@@ -52,7 +52,7 @@ public:
                  FileCache &fc)
         : sound_driver(d), file_cache(fc) { }
     
-    void loadSound(const Sound &sound);
+    bool loadSound(const Sound &sound);
     void playSound(const Sound &sound, int frequency);
     void clear();  // unloads all sounds.
     

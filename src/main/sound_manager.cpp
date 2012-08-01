@@ -27,14 +27,20 @@
 #include "sound.hpp"
 #include "sound_manager.hpp"
 
-void SoundManager::loadSound(const Sound &sound)
+bool SoundManager::loadSound(const Sound &sound)
 {
-    if (!sound_driver) return;
+    if (!sound_driver) return false;
 
     if (sound_map.find(&sound) == sound_map.end()) {
         boost::shared_ptr<std::istream> str = file_cache.openFile(sound.getFileInfo());
-        sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
+        if (str) {
+            sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
+        } else {
+            return false;
+        }
     }
+
+    return true;
 }
 
 void SoundManager::playSound(const Sound &sound, int frequency)

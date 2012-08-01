@@ -84,6 +84,7 @@ public:
     const Overlay * readOverlay(Coercri::InputByteBuf &buf) const;
     const Sound * readSound(Coercri::InputByteBuf &buf) const;
     const UserControl * getControl(int id) const;
+    void requestImpl(ClientMessageCode msg, const std::vector<int> &ids);
 };
 
 KnightsClient::KnightsClient()
@@ -1030,3 +1031,27 @@ const UserControl * KnightsClientImpl::getControl(int id) const
         throw ProtocolError("control id out of range");
     }
 }
+
+
+void KnightsClient::requestGraphics(const std::vector<int> &ids)
+{
+    pimpl->requestImpl(CLIENT_REQUEST_GRAPHICS, ids);
+}
+
+void KnightsClient::requestSounds(const std::vector<int> &ids)
+{
+    pimpl->requestImpl(CLIENT_REQUEST_SOUNDS, ids);
+}
+
+void KnightsClientImpl::requestImpl(ClientMessageCode msg, const std::vector<int> &ids)
+{
+    if (!ids.empty()) {
+        Coercri::OutputByteBuf buf(out);
+        buf.writeUbyte(msg);
+        buf.writeVarInt(ids.size());
+        for (std::vector<int>::const_iterator it = ids.begin(); it != ids.end(); ++it) {
+            buf.writeVarInt(*it);
+        }
+    }
+}
+
