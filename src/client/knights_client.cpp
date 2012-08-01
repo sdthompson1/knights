@@ -721,6 +721,35 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
+        case SERVER_SEND_GRAPHICS:
+            {
+                const int num_gfx = buf.readVarInt();
+                for (int i = 0; i < num_gfx; ++i) {
+                    const Graphic *g = pimpl->readGraphic(buf);
+                    if (!g) throw ProtocolError("Invalid id in SERVER_SEND_GRAPHICS");
+                    
+                    // read the buffer into a string.
+                    // (Might be better to create a custom istream object that can read from
+                    // 'buf', but that is too much work)
+                    std::string contents = buf.readString();
+                    
+                    if (client_cb) client_cb->loadGraphic(*g, contents);
+                }
+            }
+            break;
+
+        case SERVER_SEND_SOUNDS:
+            {
+                const int num_sounds = buf.readVarInt();
+                for (int i = 0; i < num_sounds; ++i) {
+                    const Sound *s = pimpl->readSound(buf);
+                    if (!s) throw ProtocolError("Invalid id in SERVER_SEND_SOUNDS");
+                    std::string contents = buf.readString();
+                    if (client_cb) client_cb->loadSound(*s, contents);
+                }
+            }
+            break;
+
         case SERVER_SWITCH_PLAYER:
             {
                 const int new_player = buf.readUbyte();

@@ -95,6 +95,8 @@ public:
         join_game_accepted = true;
     }
     void joinGameDenied(const std::string &reason) { Log("Join game denied. Reason = %s", reason.c_str()); }
+    void loadGraphic(const Graphic &g, const std::string &) { Log("Loading graphic"); }
+    void loadSound(const Sound &s, const std::string &) { Log("Loading sound"); }
 
     void passwordRequested(bool first_attempt) { Log("Please enter password"); }
 

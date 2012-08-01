@@ -34,6 +34,7 @@
 #include "overlay.hpp"
 #include "protocol.hpp"
 #include "rng.hpp"
+#include "rstream.hpp"
 #include "server_callbacks.hpp"
 #include "sh_ptr_eq.hpp"
 #include "sound.hpp"
@@ -1201,6 +1202,32 @@ namespace {
 
         ReturnToMenu(kg);
     }
+
+    void SendFile(Coercri::OutputByteBuf &buf, const FileInfo &fi)
+    {
+        RStream str(fi.getFilename());
+
+        // get size
+        str.seekg(0, ios_base::end);
+        size_t filesize = str.tellg();
+        str.seekg(0, ios_base::beg);
+
+        // write size
+        buf.writeVarInt(filesize);
+        
+        // write file contents
+        size_t ct = 0;
+        while (str) {
+            char c;
+            str.get(c);
+            if (str) {
+                buf.writeUbyte(static_cast<unsigned char>(c));
+                ++ct;
+            }
+        }
+
+        if (ct != filesize) throw UnexpectedError("Problem sending file to client");
+    }
 }
 
 KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
@@ -1723,6 +1750,45 @@ void KnightsGame::randomQuest(GameConnection &conn)
         pimpl->knights_config->getCurrentMenuSettings(random_quest_listener);
         const std::string &s = random_quest_str.str();
         pimpl->knights_log->logBinary("QST", 0, s.length(), s.c_str());
+    }
+}
+
+void KnightsGame::requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids)
+{
+    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+    std::vector<const Graphic *> graphics;
+    pimpl->knights_config->getGraphics(graphics);
+    
+    buf.writeUbyte(SERVER_SEND_GRAPHICS);
+    buf.writeVarInt(ids.size());
+    
+    for (std::vector<int>::const_iterator it = ids.begin(); it != ids.end(); ++it) {
+        if (*it <= 0 || static_cast<size_t>(*it) > graphics.size()) {
+            throw ProtocolError("graphic id out of range");
+        }
+        buf.writeVarInt(*it);
+        ASSERT(graphics[*it - 1]->getID() == *it);
+        SendFile(buf, graphics[*it - 1]->getFileInfo());
+    }
+}
+
+void KnightsGame::requestSounds(GameConnection &conn, const std::vector<int> &ids)
+{
+    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+    std::vector<const Sound *> sounds;
+    pimpl->knights_config->getSounds(sounds);
+    
+    Coercri::OutputByteBuf buf(conn.output_data);
+    buf.writeUbyte(SERVER_SEND_SOUNDS);
+    buf.writeVarInt(ids.size());
+    
+    for (std::vector<int>::const_iterator it = ids.begin(); it != ids.end(); ++it) {
+        if (*it <= 0 || static_cast<size_t>(*it) > sounds.size()) {
+            throw ProtocolError("sound id out of range");
+        }
+        buf.writeVarInt(*it);
+        ASSERT(sounds[*it - 1]->getID() == *it);
+        SendFile(buf, sounds[*it - 1]->getFileInfo());
     }
 }
 

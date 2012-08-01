@@ -692,6 +692,11 @@ SoundManager & KnightsApp::getSoundManager() const
     return *pimpl->sound_manager;
 }
 
+FileCache & KnightsApp::getFileCache() const
+{
+    return pimpl->file_cache;
+}
+
 void KnightsApp::getDesktopResolution(int &w, int &h) const
 {
     Coercri::GfxDriver::DisplayMode mode = pimpl->gfx_driver->getDesktopMode();

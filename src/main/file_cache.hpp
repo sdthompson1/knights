@@ -29,12 +29,27 @@
 #include "boost/shared_ptr.hpp"
 
 #include <iosfwd>
+#include <memory>
 
 class FileCache {
 public:
     // The following returns NULL if the file is not in cache, and
     // needs to be downloaded from server.
     boost::shared_ptr<std::istream> openFile(const FileInfo &file) const;
+
+    // "Install" a server file into the cache
+
+    // It's guaranteed that calling installFile() then calling
+    // openFile() on the same FileInfo will succeed and return a
+    // stream. (But if any other file is installed in the interim, the
+    // first file might have been evicted.)
+    void installFile(const FileInfo &file, const std::string &contents);
+
+private:
+    // At the moment the cache stores only one file at a time, and
+    // stores it in RAM only.
+    std::auto_ptr<FileInfo> stored_fi;
+    std::string stored_contents;
 };
 
 #endif

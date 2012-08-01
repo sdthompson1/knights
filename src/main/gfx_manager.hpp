@@ -76,6 +76,7 @@ public:
     // Graphics
 
     bool loadGraphic(const Graphic &gfx, bool permanent = false);
+    void loadGraphic(const Graphic &gfx, const std::string &contents);
     void deleteAllGraphics();  // doesn't delete the "permanent" ones.
     
     void getGraphicSize(const Graphic &gfx, int &width, int &height) const;

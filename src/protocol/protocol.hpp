@@ -126,10 +126,6 @@ enum ServerMessageCode {
     SERVER_SET_MENU_HIGHLIGHT = 54,  // followed by ubyte (control-id)
     SERVER_FLASH_SCREEN = 55,        // followed by varint (delay)
 
-    // sending gfx, sounds etc
-    SERVER_SEND_GRAPHICS = 80,       // followed by number of gfx, size (varint) + data for each.
-    SERVER_SEND_SOUNDS = 81,         // ditto for sounds.
-    
     // dungeonview
     SERVER_SET_CURRENT_ROOM = 100,   // followed by varint (room num) + room-coord (width, height)
     SERVER_ADD_ENTITY = 101,         // complex
@@ -162,6 +158,10 @@ enum ServerMessageCode {
     SERVER_SET_POTION_MAGIC = 203,   // followed by ubyte (bit7 = poison immun, bits0-6 = potion_magic)
     // NOTE: 204, 205 no longer used (were set quest message / set quest icons)
 
+    // sending gfx, sounds etc
+    SERVER_SEND_GRAPHICS = 210,       // followed by number of gfx, (id (varint) + size (varint) + data) for each.
+    SERVER_SEND_SOUNDS = 211,         // ditto for sounds.
+    
     // misc
     SERVER_SWITCH_PLAYER = 250,      // followed by ubyte (player number)
 

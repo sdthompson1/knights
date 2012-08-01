@@ -40,6 +40,7 @@ class GameConnection;
 #include "game_info.hpp"  // for GameStatus
 
 #include "gfx/color.hpp" // coercri
+#include "network/byte_buf.hpp" // coercri
 #include "timer/timer.hpp"  // coercri
 
 #include "boost/shared_ptr.hpp"
@@ -90,6 +91,8 @@ public:
     void setMenuSelection(GameConnection &, int item_num, int new_choice_num);
     void setMenuSelectionWork(GameConnection *, int item_num, int new_choice_num);  // not usu. called directly (replays are the exception).
     void randomQuest(GameConnection &);
+    void requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids);
+    void requestSounds(GameConnection &, const std::vector<int> &ids);
     void sendControl(GameConnection &, int plyr, unsigned char control_num);  // plyr is usually 0; can be 1 in split screen mode
     void requestSpeechBubble(GameConnection &, bool show);
     void setObsFlag(GameConnection &, bool flag);

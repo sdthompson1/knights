@@ -24,8 +24,9 @@
 #include "misc.hpp"
 
 #include "file_cache.hpp"
-#include "my_exceptions.hpp"
 #include "rstream.hpp"
+
+#include <sstream>
 
 boost::shared_ptr<std::istream> FileCache::openFile(const FileInfo &file) const
 {
@@ -33,9 +34,16 @@ boost::shared_ptr<std::istream> FileCache::openFile(const FileInfo &file) const
     
     if (file.isStandardFile()) {
         result.reset(new RStream(file.getFilename()));
-    } else {
-        throw UnexpectedError("Not Implemented");
+    } else if (stored_fi.get() && *stored_fi == file) {
+        result.reset(new std::istringstream(stored_contents));
     }
+    // otherwise: cache miss (return 0).
 
     return result;
+}
+
+void FileCache::installFile(const FileInfo &file, const std::string &contents)
+{
+    stored_fi.reset(new FileInfo(file));
+    stored_contents = contents;
 }

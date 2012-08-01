@@ -46,6 +46,13 @@ public:
     // interface used by FileCache
     bool isStandardFile() const { return standard_file; }
     const std::string &getFilename() const { return filename; }
+
+    // comparison operator(s)
+    bool operator==(const FileInfo &rhs) const 
+    {
+        return filename == rhs.filename
+            && standard_file == rhs.standard_file;
+    }
     
 private:
     std::string filename;

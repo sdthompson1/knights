@@ -27,6 +27,7 @@
 #include "config_map.hpp"
 #include "copy_if.hpp"
 #include "error_screen.hpp"
+#include "file_cache.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
 #include "graphic.hpp"
@@ -874,6 +875,24 @@ void GameManager::joinGameDenied(const std::string &reason)
     pimpl->chat_list.add("Could not join game! " + reason);
     pimpl->current_game_name.clear();
     pimpl->gui_invalid = true;
+}
+
+void GameManager::loadGraphic(const Graphic &g, const std::string &contents)
+{
+    pimpl->knights_app.getFileCache().installFile(g.getFileInfo(), contents);
+    const bool success = pimpl->knights_app.getGfxManager().loadGraphic(g);
+    ASSERT(success);
+    --(pimpl->download_count);
+    gotoMenuIfAllDownloaded();
+}
+
+void GameManager::loadSound(const Sound &s, const std::string &contents)
+{
+    pimpl->knights_app.getFileCache().installFile(s.getFileInfo(), contents);
+    const bool success = pimpl->knights_app.getSoundManager().loadSound(s);
+    ASSERT(success);
+    --(pimpl->download_count);
+    gotoMenuIfAllDownloaded();
 }
 
 namespace {

@@ -189,8 +189,11 @@ public:
                                   const std::vector<std::string> &player_names,
                                   const std::vector<bool> &ready_flags,
                                   const std::vector<int> &house_cols,
-                                  const std::vector<std::string> &observers);    // goes to MenuScreen
+                                  const std::vector<std::string> &observers);
     virtual void joinGameDenied(const std::string &reason);     // goes to ErrorScreen
+
+    virtual void loadGraphic(const Graphic &g, const std::string &contents);
+    virtual void loadSound(const Sound &s, const std::string &contents);
 
     virtual void passwordRequested(bool first_attempt);
     virtual void playerConnected(const std::string &name);

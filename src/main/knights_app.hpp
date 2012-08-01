@@ -45,6 +45,7 @@ using namespace std;
 
 class ConfigMap;
 class Controller;
+class FileCache;
 class GameManager;
 class GfxManager;
 class Graphic;
@@ -92,6 +93,7 @@ public:
     const Controller & getNetGameController() const;
     GfxManager & getGfxManager() const;
     SoundManager & getSoundManager() const;
+    FileCache & getFileCache() const;
     void getDesktopResolution(int &w, int &h) const;
     const Graphic * getWinnerImage() const;
     const Graphic * getLoserImage() const;
