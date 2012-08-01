@@ -193,7 +193,7 @@ class A_TeleportRandom : public LegacyAction {
 public:
     virtual void execute(const ActionData &) const;
 private:
-    ACTION_MAKER("Teleport");
+    ACTION_MAKER("TeleportRandom");
 };
 
 class A_WipeMap : public LegacyAction {
