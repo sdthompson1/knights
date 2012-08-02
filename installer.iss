@@ -11,7 +11,7 @@ AppUpdatesURL=http://www.knightsgame.org.uk/
 DefaultDirName={pf}\Knights
 DefaultGroupName=Knights
 LicenseFile=COPYRIGHT.txt
-OutputBaseFilename=knights_020_installer
+OutputBaseFilename=knights_021_installer
 Compression=lzma
 SolidCompression=yes
 
@@ -27,24 +27,15 @@ Source: "SDL.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "COPYRIGHT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README-SDL.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "knights_data\*"; DestDir: "{app}\knights_data"; Flags: ignoreversion
+Source: "knights_data\client\*"; DestDir: "{app}\knights_data\client"; Flags: ignoreversion
+Source: "knights_data\client\std_files\*"; DestDir: "{app}\knights_data\client\std_files"; Flags: ignoreversion
+Source: "knights_data\server\*"; DestDir: "{app}\knights_data\server"; Flags: ignoreversion
+Source: "knights_data\server\classic\*"; DestDir: "{app}\knights_data\server\classic"; Flags: ignoreversion
 Source: "docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "docs\manual\*"; DestDir: "{app}\docs\manual"; Flags: ignoreversion
 Source: "docs\manual\images\*"; DestDir: "{app}\docs\manual\images"; Flags: ignoreversion
 Source: "docs\third_party_licences\*"; DestDir: "{app}\docs\third_party_licences"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-
-[UninstallDelete]
-; These files are not used by the current Knights,
-; but may have been put there by a previous version of Knights.
-Type: files; Name: "{app}\stdout.txt"
-Type: files; Name: "{app}\stderr.txt"
-Type: files; Name: "{app}\libfreetype-6.dll"
-Type: files; Name: "{app}\freetype6.dll"
-Type: files; Name: "{app}\zlib1.dll"
-Type: files; Name: "{app}\LICENCE.txt"
-Type: files; Name: "{app}\docs\manual\images\quest_selection.png"
-Type: files; Name: "{app}\docs\manual\images\in_game_screen.png"
-Type: files; Name: "{app}\docs\manual\images\game_options.png"
 
 [Icons]
 Name: "{group}\Knights"; Filename: "{app}\Knights.exe"; WorkingDir: "{app}"
