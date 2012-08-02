@@ -121,6 +121,12 @@ namespace {
     {
         KnightsConfigImpl *kc = GetKC(lua, "Overlays");
 
+        // catch case where they call as Overlay(a,b,c,d) instead of 
+        // Overlay{a,b,c,d}...
+        if (lua_gettop(lua) != 1) {
+            luaL_error(lua, "kts.Overlay expects exactly one argument (a table)");
+        }
+
         auto_ptr<Overlay> result(new Overlay(lua, 1));
         
         // expects a table of four entries to be in stack position 1 (top of stack).
