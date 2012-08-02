@@ -98,8 +98,11 @@ std::auto_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
             }
         }
     }
-    
-    std::auto_ptr<Graphic> gfx(new Graphic(FileInfo(filename), x, y, r, g, b, size_hint_num, size_hint_denom));
 
+    lua_getglobal(lua, "_CWD");  // [_CWD]
+    const char *cwd = lua_tostring(lua, -1);
+    std::auto_ptr<Graphic> gfx(new Graphic(FileInfo(filename, cwd), x, y, r, g, b, size_hint_num, size_hint_denom));
+    lua_pop(lua, 1);  // []
+    
     return gfx;
 }

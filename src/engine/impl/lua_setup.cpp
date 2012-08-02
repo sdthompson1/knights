@@ -179,8 +179,13 @@ namespace {
     {
         KnightsConfigImpl *kc = GetKC(lua, "Sounds");
         const char *filename = luaL_checkstring(lua, 1);
-        Sound * sound = kc->addLuaSound(filename);
-        NewLuaPtr<Sound>(lua, sound);
+
+        lua_getglobal(lua, "_CWD"); // [_CWD]
+        const char *cwd = lua_tostring(lua, -1);
+        Sound * sound = kc->addLuaSound(FileInfo(filename, cwd));
+        lua_pop(lua, 1);  // []
+
+        NewLuaPtr<Sound>(lua, sound);  // [snd]
         return 1;
     }
 

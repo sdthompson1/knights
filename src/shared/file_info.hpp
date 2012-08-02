@@ -32,12 +32,14 @@
 
 #include "network/byte_buf.hpp" // coercri
 
+#include "boost/filesystem.hpp"
+
 #include <string>
 
 class FileInfo {
 public:
     // construction on server side
-    explicit FileInfo(const char *f);
+    explicit FileInfo(const char *f, const char *cwd);
 
     // serialization
     explicit FileInfo(Coercri::InputByteBuf &buf);
@@ -45,17 +47,17 @@ public:
 
     // interface used by FileCache
     bool isStandardFile() const { return standard_file; }
-    const std::string &getFilename() const { return filename; }
+    const boost::filesystem::path &getPath() const { return pathname; }
 
     // comparison operator(s)
     bool operator==(const FileInfo &rhs) const 
     {
-        return filename == rhs.filename
+        return pathname == rhs.pathname
             && standard_file == rhs.standard_file;
     }
     
 private:
-    std::string filename;
+    boost::filesystem::path pathname;
 
     // false: file is on server, must be downloaded by client (or read from cache, if client does caching).
     // true: file is one of the "standard files" included with Knights; client doesn't need to download.

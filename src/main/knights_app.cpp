@@ -133,7 +133,8 @@ namespace {
 
         if (!gfx->getFileInfo().isStandardFile()) {
             throw std::runtime_error("Error in client config, non-local filename '" + 
-                gfx->getFileInfo().getFilename() + "' used (try adding '+' at start of filename)");
+                gfx->getFileInfo().getPath().generic_string() 
+                + "' used (try adding '+' at start of filename)");
         }
 
         boost::shared_ptr<Graphic> g(gfx.release());

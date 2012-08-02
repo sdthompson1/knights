@@ -46,6 +46,7 @@ class CoordTransform;
 class DungeonGenerator;
 class DungeonMap;
 class EventManager;
+class FileInfo;
 class GoreManager;
 class Graphic;
 class HomeManager;
@@ -123,7 +124,7 @@ public:
                                     std::vector<boost::shared_ptr<Tile> > &corpse_tiles);
     Overlay * addLuaOverlay(auto_ptr<Overlay> p);
     Segment * addLuaSegment(auto_ptr<Segment> p, const char *category);
-    Sound * addLuaSound(const char *name);  // creates the sound and adds it.
+    Sound * addLuaSound(const FileInfo &fi);  // creates the sound and adds it.
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
     

@@ -1206,7 +1206,7 @@ namespace {
     void SendFile(Coercri::OutputByteBuf &buf, const FileInfo &fi)
     {
         // note: this will throw if file not found
-        RStream str(fi.getFilename());
+        RStream str(fi.getPath());
 
         // get size
         str.seekg(0, ios_base::end);
@@ -1228,7 +1228,7 @@ namespace {
         }
 
         if (ct != filesize) {
-            throw std::runtime_error("Could not read file (on server): " + fi.getFilename());
+            throw std::runtime_error("Could not read file (on server): " + fi.getPath().generic_string());
         }
     }
 }

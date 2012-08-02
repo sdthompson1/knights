@@ -24,27 +24,33 @@
 #include "misc.hpp"
 
 #include "file_info.hpp"
+#include "rstream_find.hpp"
 
-FileInfo::FileInfo(const char *p)
+FileInfo::FileInfo(const char *f, const char *cwd)
 {
-    if (p[0] == '+') {
+    if (!f) throw std::invalid_argument("Incorrect argument to FileInfo ctor");
+
+    if (f[0] == '+') {
         standard_file = true;
-        filename = (p+1);
+        pathname = (f+1);
     } else {
         standard_file = false;
-        filename = p;
-        // TODO: Read file size and timestamp, and store in the FileInfo as well.
+        if (cwd) {
+            pathname = RStreamFind(f, cwd);
+        } else {
+            pathname = f;
+        }
     }
 }       
 
 FileInfo::FileInfo(Coercri::InputByteBuf &buf)
 {
     standard_file = buf.readUbyte() != 0;
-    filename = buf.readString();
+    pathname = buf.readString();
 }
 
 void FileInfo::serialize(Coercri::OutputByteBuf &buf) const
 {
     buf.writeUbyte(standard_file ? 1 : 0);
-    buf.writeString(filename);
+    buf.writeString(pathname.generic_string());
 }

@@ -709,10 +709,10 @@ Segment * KnightsConfigImpl::addLuaSegment(auto_ptr<Segment> p, const char *cate
     return q;
 }
 
-Sound * KnightsConfigImpl::addLuaSound(const char *name)
+Sound * KnightsConfigImpl::addLuaSound(const FileInfo &fi)
 {
     const int new_id = lua_sounds.size() + 1;
-    Sound * p = new Sound(new_id, FileInfo(name));
+    Sound * p = new Sound(new_id, fi);
     lua_sounds.push_back(p);
     return p;
 }
