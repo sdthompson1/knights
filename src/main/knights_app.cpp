@@ -318,7 +318,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
         lua_State * const lua = lua_sh_ptr.get();
 
         SetupLuaConfigFunctions(lua, &pimpl->config_gfx);
-        LuaExecRStream(lua, "client_config.lua", 0, 0, 
+        LuaExecRStream(lua, "client/client_config.lua", 0, 0, 
             false);   // look in root dir only
 
         lua_getglobal(lua, "MISC_CONFIG");
@@ -441,7 +441,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     // NOTE: we always try to load TTF before bitmap fonts, irrespective of the order they are in the file.
     vector<string> ttf_font_names, bitmap_font_names;
     {
-        RStream str("fonts.txt");
+        RStream str("client/fonts.txt");
 
         while (str) {
             string x;
@@ -881,7 +881,7 @@ void KnightsApp::runKnights()
     } else {
         // Go to title screen.
         if (pimpl->options->first_time) {
-            initial_screen.reset(new CreditsScreen("first_time_message.txt", 60));
+            initial_screen.reset(new CreditsScreen("client/first_time_message.txt", 60));
             pimpl->saveOptions();  // make sure they don't get the first time screen again
         } else {
             initial_screen.reset(new TitleScreen);

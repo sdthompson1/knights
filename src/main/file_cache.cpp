@@ -33,7 +33,7 @@ boost::shared_ptr<std::istream> FileCache::openFile(const FileInfo &file) const
     boost::shared_ptr<std::istream> result;
     
     if (file.isStandardFile()) {
-        result.reset(new RStream(file.getPath()));
+        result.reset(new RStream("client/std_files" / file.getPath()));
     } else if (stored_fi.get() && *stored_fi == file) {
         result.reset(new std::istringstream(stored_contents));
     }

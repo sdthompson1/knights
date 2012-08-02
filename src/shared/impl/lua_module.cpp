@@ -54,9 +54,9 @@ namespace {
 
     std::string ModNameToFilename(const char *modname)
     {
-        // module "a.b.c" converts to "a/b/c/init.lua".
+        // module "a.b.c" converts to "server/a/b/c/init.lua".
         
-        std::string result;
+        std::string result = "server/";
         for (const char *p = modname; *p != 0; ++p) {
             if (*p == '.') result += '/';
             else result += *p;
@@ -92,7 +92,7 @@ namespace {
 
         // Run the module.
         LuaExecRStream(lua, filename, 2, 1, 
-            false);  // look in root dir only (not cwd)
+            false);  // look in 'server' dir only (not cwd)
 
         // [name _LOADED result]
 

@@ -118,7 +118,10 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
         AddStandardControls(lua, this);
         
         // Load some lua code into the context
-        LuaExecRStream(lua, config_file_name, 0, 0, 
+        LuaExecRStream(lua, 
+                       boost::filesystem::path("server") / config_file_name, 
+                       0, 
+                       0, 
                        false);   // look in top level rsrc directory only
 
         // Get the "kts" table
