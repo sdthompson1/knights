@@ -673,7 +673,8 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                     for (int i = 0; i < num_ids; ++i) {
                         ids.push_back(buf.readVarInt());
                     }
-                    if (conn.game) conn.game->requestSounds(*conn.game_conn, ids);
+                    Coercri::OutputByteBuf buf(conn.output_data);
+                    if (conn.game) conn.game->requestSounds(buf, ids);
                 }                
                 break;
                 

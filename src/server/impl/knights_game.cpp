@@ -1205,6 +1205,7 @@ namespace {
 
     void SendFile(Coercri::OutputByteBuf &buf, const FileInfo &fi)
     {
+        // note: this will throw if file not found
         RStream str(fi.getFilename());
 
         // get size
@@ -1226,7 +1227,9 @@ namespace {
             }
         }
 
-        if (ct != filesize) throw UnexpectedError("Problem sending file to client");
+        if (ct != filesize) {
+            throw std::runtime_error("Could not read file (on server): " + fi.getFilename());
+        }
     }
 }
 
@@ -1772,13 +1775,12 @@ void KnightsGame::requestGraphics(Coercri::OutputByteBuf &buf, const std::vector
     }
 }
 
-void KnightsGame::requestSounds(GameConnection &conn, const std::vector<int> &ids)
+void KnightsGame::requestSounds(Coercri::OutputByteBuf &buf, const std::vector<int> &ids)
 {
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
     std::vector<const Sound *> sounds;
     pimpl->knights_config->getSounds(sounds);
     
-    Coercri::OutputByteBuf buf(conn.output_data);
     buf.writeUbyte(SERVER_SEND_SOUNDS);
     buf.writeVarInt(ids.size());
     
