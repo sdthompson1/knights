@@ -130,6 +130,12 @@ namespace {
         const unsigned int old_size = gfx_vector->size();
 
         std::auto_ptr<Graphic> gfx(CreateGraphicFromLua(lua));
+
+        if (!gfx->getFileInfo().isStandardFile()) {
+            throw std::runtime_error("Error in client config, non-local filename '" + 
+                gfx->getFileInfo().getFilename() + "' used (try adding '+' at start of filename)");
+        }
+
         boost::shared_ptr<Graphic> g(gfx.release());
         gfx_vector->push_back(g);
 
