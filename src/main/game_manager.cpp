@@ -1261,3 +1261,7 @@ GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, bo
     : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, my_player_name))
 { }
 
+void GameManager::setLanGame(bool x)
+{
+    pimpl->is_lan_game = x;
+}

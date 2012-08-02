@@ -118,6 +118,8 @@ public:
     GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> client, boost::shared_ptr<Coercri::Timer> timer,
                 bool single_player_, bool tutorial, bool autostart, const std::string &my_player_name);
 
+    void setLanGame(bool);
+    
     // join game
     void tryJoinGame(const std::string &game_name);
     void tryJoinGameSplitScreen(const std::string &game_name);
