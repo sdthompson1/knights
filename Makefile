@@ -30,9 +30,9 @@ INSTALL = install
 ########################################################################
 
 
-OFILES_MAIN = src/coercri/gfx/bitmap_font.o src/coercri/network/byte_buf.o src/coercri/gcn/cg_font.o src/coercri/gcn/cg_graphics.o src/coercri/gcn/cg_image.o src/coercri/gcn/cg_input.o src/coercri/gcn/cg_listener.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_udp_socket.o src/coercri/gfx/freetype_ttf_loader.o src/coercri/timer/generic_timer.o src/coercri/gfx/gfx_context.o src/coercri/sdl/core/istream_rwops.o src/coercri/gfx/key_name.o src/coercri/gfx/load_bmp.o src/coercri/gfx/load_system_ttf.o src/coercri/gfx/region.o src/coercri/sdl/core/sdl_error.o src/coercri/sdl/gfx/sdl_gfx_context.o src/coercri/sdl/gfx/sdl_gfx_driver.o src/coercri/sdl/gfx/sdl_graphic.o src/coercri/sdl/sound/sdl_sound_driver.o src/coercri/sdl/core/sdl_subsystem_handle.o src/coercri/sdl/timer/sdl_timer.o src/coercri/sdl/gfx/SDL_ttf.o src/coercri/sdl/gfx/sdl_ttf_font.o src/coercri/sdl/gfx/sdl_ttf_loader.o src/coercri/sdl/gfx/sdl_window.o src/coercri/gfx/window.o src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/external/guichan/src/actionevent.o src/external/guichan/src/basiccontainer.o src/external/guichan/src/widgets/button.o src/external/guichan/src/widgets/checkbox.o src/external/guichan/src/cliprectangle.o src/external/guichan/src/color.o src/external/guichan/src/widgets/container.o src/external/guichan/src/defaultfont.o src/external/guichan/src/widgets/dropdown.o src/external/guichan/src/event.o src/external/guichan/src/exception.o src/external/guichan/src/focushandler.o src/external/guichan/src/font.o src/external/guichan/src/genericinput.o src/external/guichan/src/graphics.o src/external/guichan/src/gui.o src/external/guichan/src/guichan.o src/external/guichan/src/widgets/icon.o src/external/guichan/src/image.o src/external/guichan/src/widgets/imagebutton.o src/external/guichan/src/imagefont.o src/external/guichan/src/inputevent.o src/external/guichan/src/key.o src/external/guichan/src/keyevent.o src/external/guichan/src/keyinput.o src/external/guichan/src/widgets/label.o src/external/guichan/src/widgets/listbox.o src/external/guichan/src/mouseevent.o src/external/guichan/src/mouseinput.o src/external/guichan/src/widgets/radiobutton.o src/external/guichan/src/rectangle.o src/external/guichan/src/widgets/scrollarea.o src/external/guichan/src/selectionevent.o src/external/guichan/src/widgets/slider.o src/external/guichan/src/widgets/tab.o src/external/guichan/src/widgets/tabbedarea.o src/external/guichan/src/widgets/textbox.o src/external/guichan/src/widgets/textfield.o src/external/guichan/src/widget.o src/external/guichan/src/widgets/window.o src/kconfig/gold_parser.o src/kconfig/kconfig_loader.o src/kconfig/kfile.o src/kconfig/random_int.o src/client/client_config.o src/client/knights_client.o src/engine/impl/action_data.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_quests.o src/engine/impl/concrete_traps.o src/engine/impl/control.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_monster_type.o src/engine/impl/create_quest.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/legacy_action.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_func.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_constraints.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/monster_type.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/main/action_bar.o src/main/adjust_list_box_size.o src/main/connecting_screen.o src/main/credits_screen.o src/main/draw.o src/main/entity_map.o src/main/error_screen.o src/main/find_server_screen.o src/main/game_manager.o src/main/gfx_manager.o src/main/gfx_resizer_compose.o src/main/gfx_resizer_nearest_nbr.o src/main/gfx_resizer_scale2x.o src/main/graphic_transform.o src/main/gui_button.o src/main/gui_centre.o src/main/gui_draw_box.o src/main/gui_numeric_field.o src/main/gui_panel.o src/main/gui_simple_container.o src/main/gui_text_wrap.o src/main/host_lan_screen.o src/main/house_colour_font.o src/main/in_game_screen.o src/main/keyboard_controller.o src/main/knights_app.o src/main/load_font.o src/main/loading_screen.o src/main/lobby_screen.o src/main/local_display.o src/main/local_dungeon_view.o src/main/local_mini_map.o src/main/local_status_display.o src/main/main.o src/main/make_scroll_area.o src/main/menu_screen.o src/main/options.o src/main/options_screen.o src/main/password_screen.o src/main/potion_renderer.o src/main/skull_renderer.o src/main/sound_manager.o src/main/start_game_screen.o src/main/tab_font.o src/main/text_formatter.o src/main/title_block.o src/main/title_screen.o src/main/x_centre.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_ref.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/menu_selections.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/user_control.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/krandom.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_rwops.o
+OFILES_MAIN = src/coercri/gfx/bitmap_font.o src/coercri/network/byte_buf.o src/coercri/gcn/cg_font.o src/coercri/gcn/cg_graphics.o src/coercri/gcn/cg_image.o src/coercri/gcn/cg_input.o src/coercri/gcn/cg_listener.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_udp_socket.o src/coercri/gfx/freetype_ttf_loader.o src/coercri/timer/generic_timer.o src/coercri/gfx/gfx_context.o src/coercri/sdl/core/istream_rwops.o src/coercri/gfx/key_name.o src/coercri/gfx/load_bmp.o src/coercri/gfx/load_system_ttf.o src/coercri/gfx/region.o src/coercri/sdl/core/sdl_error.o src/coercri/sdl/gfx/sdl_gfx_context.o src/coercri/sdl/gfx/sdl_gfx_driver.o src/coercri/sdl/gfx/sdl_graphic.o src/coercri/sdl/sound/sdl_sound_driver.o src/coercri/sdl/core/sdl_subsystem_handle.o src/coercri/sdl/timer/sdl_timer.o src/coercri/sdl/gfx/SDL_ttf.o src/coercri/sdl/gfx/sdl_ttf_font.o src/coercri/sdl/gfx/sdl_ttf_loader.o src/coercri/sdl/gfx/sdl_window.o src/coercri/gfx/window.o src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/external/guichan/src/actionevent.o src/external/guichan/src/basiccontainer.o src/external/guichan/src/widgets/button.o src/external/guichan/src/widgets/checkbox.o src/external/guichan/src/cliprectangle.o src/external/guichan/src/color.o src/external/guichan/src/widgets/container.o src/external/guichan/src/defaultfont.o src/external/guichan/src/widgets/dropdown.o src/external/guichan/src/event.o src/external/guichan/src/exception.o src/external/guichan/src/focushandler.o src/external/guichan/src/font.o src/external/guichan/src/genericinput.o src/external/guichan/src/graphics.o src/external/guichan/src/gui.o src/external/guichan/src/guichan.o src/external/guichan/src/widgets/icon.o src/external/guichan/src/image.o src/external/guichan/src/widgets/imagebutton.o src/external/guichan/src/imagefont.o src/external/guichan/src/inputevent.o src/external/guichan/src/key.o src/external/guichan/src/keyevent.o src/external/guichan/src/keyinput.o src/external/guichan/src/widgets/label.o src/external/guichan/src/widgets/listbox.o src/external/guichan/src/mouseevent.o src/external/guichan/src/mouseinput.o src/external/guichan/src/widgets/radiobutton.o src/external/guichan/src/rectangle.o src/external/guichan/src/widgets/scrollarea.o src/external/guichan/src/selectionevent.o src/external/guichan/src/widgets/slider.o src/external/guichan/src/widgets/tab.o src/external/guichan/src/widgets/tabbedarea.o src/external/guichan/src/widgets/textbox.o src/external/guichan/src/widgets/textfield.o src/external/guichan/src/widget.o src/external/guichan/src/widgets/window.o src/client/client_config.o src/client/knights_client.o src/engine/impl/action_data.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_traps.o src/engine/impl/control.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_monster_type.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/legacy_action.o src/engine/impl/load_segments.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_func.o src/engine/impl/lua_game_setup.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_wrapper.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/monster_type.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/random_int.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/main/action_bar.o src/main/adjust_list_box_size.o src/main/connecting_screen.o src/main/credits_screen.o src/main/draw.o src/main/entity_map.o src/main/error_screen.o src/main/file_cache.o src/main/find_server_screen.o src/main/game_manager.o src/main/gfx_manager.o src/main/gfx_resizer_compose.o src/main/gfx_resizer_nearest_nbr.o src/main/gfx_resizer_scale2x.o src/main/graphic_transform.o src/main/gui_button.o src/main/gui_centre.o src/main/gui_draw_box.o src/main/gui_numeric_field.o src/main/gui_panel.o src/main/gui_simple_container.o src/main/gui_text_wrap.o src/main/host_lan_screen.o src/main/house_colour_font.o src/main/in_game_screen.o src/main/keyboard_controller.o src/main/knights_app.o src/main/load_font.o src/main/loading_screen.o src/main/lobby_screen.o src/main/local_display.o src/main/local_dungeon_view.o src/main/local_mini_map.o src/main/local_status_display.o src/main/main.o src/main/make_scroll_area.o src/main/menu_screen.o src/main/options.o src/main/options_screen.o src/main/password_screen.o src/main/potion_renderer.o src/main/skull_renderer.o src/main/sound_manager.o src/main/start_game_screen.o src/main/tab_font.o src/main/text_formatter.o src/main/title_block.o src/main/title_screen.o src/main/x_centre.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/my_menu_listeners.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/file_info.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_ref.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/trim.o src/shared/impl/user_control.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_find.o src/rstream/rstream_rwops.o
 
-OFILES_SERVER = src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/kconfig/gold_parser.o src/kconfig/kconfig_loader.o src/kconfig/kfile.o src/kconfig/random_int.o src/engine/impl/action_data.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_quests.o src/engine/impl/concrete_traps.o src/engine/impl/control.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_monster_type.o src/engine/impl/create_quest.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/legacy_action.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_func.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_constraints.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/monster_type.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_ref.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/menu_selections.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/user_control.o src/svr_main/config.o src/svr_main/replay_file.o src/svr_main/server_main.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/krandom.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_rwops.o src/coercri/network/byte_buf.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_udp_socket.o src/coercri/timer/generic_timer.o
+OFILES_SERVER = src/external/enet/callbacks.o src/external/enet/host.o src/external/enet/list.o src/external/enet/packet.o src/external/enet/peer.o src/external/enet/protocol.o src/external/enet/unix.o src/external/enet/win32.o src/engine/impl/action_data.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_traps.o src/engine/impl/control.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_monster_type.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/legacy_action.o src/engine/impl/load_segments.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_func.o src/engine/impl/lua_game_setup.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_wrapper.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/monster_type.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/random_int.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/tutorial_manager.o src/engine/impl/view_manager.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/my_menu_listeners.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/file_info.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_ref.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/overlay.o src/shared/impl/sound.o src/shared/impl/trim.o src/shared/impl/user_control.o src/svr_main/config.o src/svr_main/replay_file.o src/svr_main/server_main.o src/external/lua/lapi.o src/external/lua/lauxlib.o src/external/lua/lbaselib.o src/external/lua/lbitlib.o src/external/lua/lcode.o src/external/lua/lcorolib.o src/external/lua/lctype.o src/external/lua/ldblib.o src/external/lua/ldebug.o src/external/lua/ldo.o src/external/lua/ldump.o src/external/lua/lfunc.o src/external/lua/lgc.o src/external/lua/linit.o src/external/lua/liolib.o src/external/lua/llex.o src/external/lua/lmathlib.o src/external/lua/lmem.o src/external/lua/loadlib.o src/external/lua/lobject.o src/external/lua/lopcodes.o src/external/lua/loslib.o src/external/lua/lparser.o src/external/lua/lstate.o src/external/lua/lstring.o src/external/lua/lstrlib.o src/external/lua/ltable.o src/external/lua/ltablib.o src/external/lua/ltm.o src/external/lua/lundump.o src/external/lua/lvm.o src/external/lua/lzio.o src/misc/config_map.o src/misc/metaserver_urls.o src/misc/rng.o src/misc/round.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_find.o src/rstream/rstream_rwops.o src/coercri/network/byte_buf.o src/coercri/enet/enet_network_driver.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_udp_socket.o src/coercri/timer/generic_timer.o
 
 
 
@@ -117,32 +117,14 @@ src/rstream/rstream_error.o: src/rstream/rstream_error.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/rstream/rstream_rwops.o: src/rstream/rstream_rwops.cpp
+src/rstream/rstream_find.o: src/rstream/rstream_find.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags`  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/kconfig/gold_parser.o: src/kconfig/gold_parser.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -I. -Isrc/misc -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/kconfig/kconfig_loader.o: src/kconfig/kconfig_loader.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -I. -Isrc/misc -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/kconfig/kfile.o: src/kconfig/kfile.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -I. -Isrc/misc -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/kconfig/random_int.o: src/kconfig/random_int.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -I. -Isrc/misc -Isrc/external/lua  -MD -c -o $@ $<
+src/rstream/rstream_rwops.o: src/rstream/rstream_rwops.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags`  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -154,6 +136,12 @@ src/shared/impl/anim.o: src/shared/impl/anim.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/colour_change.o: src/shared/impl/colour_change.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/shared/impl/file_info.o: src/shared/impl/file_info.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -225,12 +213,6 @@ src/shared/impl/menu_item.o: src/shared/impl/menu_item.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/shared/impl/menu_selections.o: src/shared/impl/menu_selections.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
 src/shared/impl/overlay.o: src/shared/impl/overlay.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
@@ -243,259 +225,313 @@ src/shared/impl/sound.o: src/shared/impl/sound.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
+src/shared/impl/trim.o: src/shared/impl/trim.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
 src/shared/impl/user_control.o: src/shared/impl/user_control.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/actionevent.o: src/external/guichan/src/actionevent.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/action_bar.o: src/main/action_bar.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/basiccontainer.o: src/external/guichan/src/basiccontainer.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/adjust_list_box_size.o: src/main/adjust_list_box_size.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/button.o: src/external/guichan/src/widgets/button.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/connecting_screen.o: src/main/connecting_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/checkbox.o: src/external/guichan/src/widgets/checkbox.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/credits_screen.o: src/main/credits_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/cliprectangle.o: src/external/guichan/src/cliprectangle.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/draw.o: src/main/draw.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/color.o: src/external/guichan/src/color.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/entity_map.o: src/main/entity_map.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/container.o: src/external/guichan/src/widgets/container.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/error_screen.o: src/main/error_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/defaultfont.o: src/external/guichan/src/defaultfont.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/file_cache.o: src/main/file_cache.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/dropdown.o: src/external/guichan/src/widgets/dropdown.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/find_server_screen.o: src/main/find_server_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/event.o: src/external/guichan/src/event.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/game_manager.o: src/main/game_manager.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/exception.o: src/external/guichan/src/exception.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gfx_manager.o: src/main/gfx_manager.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/focushandler.o: src/external/guichan/src/focushandler.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gfx_resizer_compose.o: src/main/gfx_resizer_compose.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/font.o: src/external/guichan/src/font.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gfx_resizer_nearest_nbr.o: src/main/gfx_resizer_nearest_nbr.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/genericinput.o: src/external/guichan/src/genericinput.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gfx_resizer_scale2x.o: src/main/gfx_resizer_scale2x.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/graphics.o: src/external/guichan/src/graphics.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/graphic_transform.o: src/main/graphic_transform.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/gui.o: src/external/guichan/src/gui.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gui_button.o: src/main/gui_button.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/guichan.o: src/external/guichan/src/guichan.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gui_centre.o: src/main/gui_centre.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/icon.o: src/external/guichan/src/widgets/icon.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gui_draw_box.o: src/main/gui_draw_box.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/image.o: src/external/guichan/src/image.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gui_numeric_field.o: src/main/gui_numeric_field.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/imagebutton.o: src/external/guichan/src/widgets/imagebutton.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gui_panel.o: src/main/gui_panel.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/imagefont.o: src/external/guichan/src/imagefont.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gui_simple_container.o: src/main/gui_simple_container.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/inputevent.o: src/external/guichan/src/inputevent.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/gui_text_wrap.o: src/main/gui_text_wrap.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/key.o: src/external/guichan/src/key.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/host_lan_screen.o: src/main/host_lan_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/keyevent.o: src/external/guichan/src/keyevent.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/house_colour_font.o: src/main/house_colour_font.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/keyinput.o: src/external/guichan/src/keyinput.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/in_game_screen.o: src/main/in_game_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/label.o: src/external/guichan/src/widgets/label.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/keyboard_controller.o: src/main/keyboard_controller.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/listbox.o: src/external/guichan/src/widgets/listbox.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/knights_app.o: src/main/knights_app.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/mouseevent.o: src/external/guichan/src/mouseevent.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/load_font.o: src/main/load_font.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/mouseinput.o: src/external/guichan/src/mouseinput.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/loading_screen.o: src/main/loading_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/radiobutton.o: src/external/guichan/src/widgets/radiobutton.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/lobby_screen.o: src/main/lobby_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/rectangle.o: src/external/guichan/src/rectangle.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/local_display.o: src/main/local_display.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/scrollarea.o: src/external/guichan/src/widgets/scrollarea.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/local_dungeon_view.o: src/main/local_dungeon_view.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/selectionevent.o: src/external/guichan/src/selectionevent.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/local_mini_map.o: src/main/local_mini_map.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/slider.o: src/external/guichan/src/widgets/slider.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/local_status_display.o: src/main/local_status_display.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/tab.o: src/external/guichan/src/widgets/tab.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/main.o: src/main/main.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/tabbedarea.o: src/external/guichan/src/widgets/tabbedarea.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/make_scroll_area.o: src/main/make_scroll_area.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/textbox.o: src/external/guichan/src/widgets/textbox.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/menu_screen.o: src/main/menu_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/textfield.o: src/external/guichan/src/widgets/textfield.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/options.o: src/main/options.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widget.o: src/external/guichan/src/widget.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/options_screen.o: src/main/options_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/external/guichan/src/widgets/window.o: src/external/guichan/src/widgets/window.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
+src/main/password_screen.o: src/main/password_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/potion_renderer.o: src/main/potion_renderer.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/skull_renderer.o: src/main/skull_renderer.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/sound_manager.o: src/main/sound_manager.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/start_game_screen.o: src/main/start_game_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/tab_font.o: src/main/tab_font.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/text_formatter.o: src/main/text_formatter.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/title_block.o: src/main/title_block.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/title_screen.o: src/main/title_screen.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/main/x_centre.o: src/main/x_centre.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/misc/config_map.o: src/misc/config_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc -I. -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/misc/krandom.o: src/misc/krandom.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -531,12 +567,6 @@ src/engine/impl/anim_lua_ctor.o: src/engine/impl/anim_lua_ctor.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/engine/impl/concrete_quests.o: src/engine/impl/concrete_quests.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
 src/engine/impl/concrete_traps.o: src/engine/impl/concrete_traps.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
@@ -562,12 +592,6 @@ src/engine/impl/coord_transform.o: src/engine/impl/coord_transform.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/create_monster_type.o: src/engine/impl/create_monster_type.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/engine/impl/create_quest.o: src/engine/impl/create_quest.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -705,6 +729,12 @@ src/engine/impl/legacy_action.o: src/engine/impl/legacy_action.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
+src/engine/impl/load_segments.o: src/engine/impl/load_segments.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
 src/engine/impl/lockable.o: src/engine/impl/lockable.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
@@ -724,6 +754,12 @@ src/engine/impl/lua_exec_coroutine.o: src/engine/impl/lua_exec_coroutine.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_func.o: src/engine/impl/lua_func.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/engine/impl/lua_game_setup.o: src/engine/impl/lua_game_setup.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -765,7 +801,7 @@ src/engine/impl/mediator.o: src/engine/impl/mediator.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/engine/impl/menu_constraints.o: src/engine/impl/menu_constraints.cpp
+src/engine/impl/menu_wrapper.o: src/engine/impl/menu_wrapper.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -820,6 +856,12 @@ src/engine/impl/player.o: src/engine/impl/player.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/player_task.o: src/engine/impl/player_task.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/engine/impl/random_int.o: src/engine/impl/random_int.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -1108,37 +1150,43 @@ src/external/lua/lzio.o: src/external/lua/lzio.c
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/server/impl/knights_game.o: src/server/impl/knights_game.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/server/impl/knights_server.o: src/server/impl/knights_server.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/server/impl/my_menu_listeners.o: src/server/impl/my_menu_listeners.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/server/impl/server_callbacks.o: src/server/impl/server_callbacks.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/server/impl/server_dungeon_view.o: src/server/impl/server_dungeon_view.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/server/impl/server_mini_map.o: src/server/impl/server_mini_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/server/impl/server_status_display.o: src/server/impl/server_status_display.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/coercri -Isrc/engine -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -1323,290 +1371,242 @@ src/coercri/gfx/window.o: src/coercri/gfx/window.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/action_bar.o: src/main/action_bar.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/actionevent.o: src/external/guichan/src/actionevent.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/adjust_list_box_size.o: src/main/adjust_list_box_size.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/basiccontainer.o: src/external/guichan/src/basiccontainer.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/connecting_screen.o: src/main/connecting_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/button.o: src/external/guichan/src/widgets/button.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/credits_screen.o: src/main/credits_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/checkbox.o: src/external/guichan/src/widgets/checkbox.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/draw.o: src/main/draw.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/cliprectangle.o: src/external/guichan/src/cliprectangle.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/entity_map.o: src/main/entity_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/color.o: src/external/guichan/src/color.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/error_screen.o: src/main/error_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/container.o: src/external/guichan/src/widgets/container.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/find_server_screen.o: src/main/find_server_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/defaultfont.o: src/external/guichan/src/defaultfont.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/game_manager.o: src/main/game_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/dropdown.o: src/external/guichan/src/widgets/dropdown.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gfx_manager.o: src/main/gfx_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/event.o: src/external/guichan/src/event.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gfx_resizer_compose.o: src/main/gfx_resizer_compose.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/exception.o: src/external/guichan/src/exception.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gfx_resizer_nearest_nbr.o: src/main/gfx_resizer_nearest_nbr.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/focushandler.o: src/external/guichan/src/focushandler.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gfx_resizer_scale2x.o: src/main/gfx_resizer_scale2x.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/font.o: src/external/guichan/src/font.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/graphic_transform.o: src/main/graphic_transform.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/genericinput.o: src/external/guichan/src/genericinput.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gui_button.o: src/main/gui_button.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/graphics.o: src/external/guichan/src/graphics.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gui_centre.o: src/main/gui_centre.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/gui.o: src/external/guichan/src/gui.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gui_draw_box.o: src/main/gui_draw_box.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/guichan.o: src/external/guichan/src/guichan.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gui_numeric_field.o: src/main/gui_numeric_field.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/icon.o: src/external/guichan/src/widgets/icon.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gui_panel.o: src/main/gui_panel.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/image.o: src/external/guichan/src/image.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gui_simple_container.o: src/main/gui_simple_container.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/imagebutton.o: src/external/guichan/src/widgets/imagebutton.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/gui_text_wrap.o: src/main/gui_text_wrap.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/imagefont.o: src/external/guichan/src/imagefont.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/host_lan_screen.o: src/main/host_lan_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/inputevent.o: src/external/guichan/src/inputevent.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/house_colour_font.o: src/main/house_colour_font.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/key.o: src/external/guichan/src/key.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/in_game_screen.o: src/main/in_game_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/keyevent.o: src/external/guichan/src/keyevent.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/keyboard_controller.o: src/main/keyboard_controller.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/keyinput.o: src/external/guichan/src/keyinput.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/knights_app.o: src/main/knights_app.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/label.o: src/external/guichan/src/widgets/label.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/load_font.o: src/main/load_font.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/listbox.o: src/external/guichan/src/widgets/listbox.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/loading_screen.o: src/main/loading_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/mouseevent.o: src/external/guichan/src/mouseevent.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/lobby_screen.o: src/main/lobby_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/mouseinput.o: src/external/guichan/src/mouseinput.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/local_display.o: src/main/local_display.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/radiobutton.o: src/external/guichan/src/widgets/radiobutton.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/local_dungeon_view.o: src/main/local_dungeon_view.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/rectangle.o: src/external/guichan/src/rectangle.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/local_mini_map.o: src/main/local_mini_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/scrollarea.o: src/external/guichan/src/widgets/scrollarea.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/local_status_display.o: src/main/local_status_display.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/selectionevent.o: src/external/guichan/src/selectionevent.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/main.o: src/main/main.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/slider.o: src/external/guichan/src/widgets/slider.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/make_scroll_area.o: src/main/make_scroll_area.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/tab.o: src/external/guichan/src/widgets/tab.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/menu_screen.o: src/main/menu_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/tabbedarea.o: src/external/guichan/src/widgets/tabbedarea.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/options.o: src/main/options.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/textbox.o: src/external/guichan/src/widgets/textbox.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/options_screen.o: src/main/options_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/textfield.o: src/external/guichan/src/widgets/textfield.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/password_screen.o: src/main/password_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widget.o: src/external/guichan/src/widget.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/main/potion_renderer.o: src/main/potion_renderer.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/skull_renderer.o: src/main/skull_renderer.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/sound_manager.o: src/main/sound_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/start_game_screen.o: src/main/start_game_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/tab_font.o: src/main/tab_font.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/text_formatter.o: src/main/text_formatter.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/title_block.o: src/main/title_block.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/title_screen.o: src/main/title_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/x_centre.o: src/main/x_centre.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+src/external/guichan/src/widgets/window.o: src/external/guichan/src/widgets/window.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` -Isrc/external/guichan/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -1639,330 +1639,333 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 755 -d $(BIN_DIR)
 	$(INSTALL) -m 755 $(KNIGHTS_BINARY_NAME) $(BIN_DIR)
 	$(INSTALL) -m 755 -d $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/API.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/axe.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/axe_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/axe_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/axe_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/axe_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/barrel.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/beartrap_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/beartrap_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/beartrap_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/beartrap_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/blade_trap.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/blood_1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/blood_2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/blood_3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/blood_icon.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/bolts.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/bolt_horiz.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/bolt_vert.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/book.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/book_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/book_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/book_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/book_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/broken_wood_1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/broken_wood_2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/broken_wood_3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/broken_wood_4.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/broken_wood_5.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/cage.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chair_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chair_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chair_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chair_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chest_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chest_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chest_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/chest_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/click.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/client_config.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/closed_bear_trap.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/credits.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/crossbow.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/crystal_ball.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dagger.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/daggers.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dagger_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dagger_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dagger_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dagger_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_knight_1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_knight_2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_knight_3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_knight_4.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_vbat_1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_vbat_2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_vbat_3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/dead_zombie.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_hgc.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_hgo.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_hic.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_hio.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_hwc.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_hwo.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_vgc.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_vgo.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_vic.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_vio.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_vwc.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/door_vwo.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/drink.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/editor.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/first_time_message.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/fixup.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor10.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor4.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor5.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor6.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor7.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor8.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/floor9.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/fonts.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/gem.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/hammer.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/hammer_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/hammer_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/hammer_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/hammer_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/haystack.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/hdoor_background.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/health0.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/health1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/health2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/health3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/health4.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/home_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/home_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/home_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/home_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/inv_bolt.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/inv_dagger.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/inv_key1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/inv_key2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/inv_key3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/inv_lockpicks.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/inv_overdraw.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/key.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/knights_rooms.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/knights_sfont.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp1e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp1n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp1s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp1w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp2e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp2n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp2s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp2w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp3e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp3n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp3s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp3w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp4e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp4n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp4s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp4w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp5e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp5n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp5s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp5w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp6e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp6n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp6s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp6w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp7e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp7n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp7s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp7w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp8e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp8n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp8s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ktp8w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/large_table_horiz.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/large_table_vert.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/loser.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/main.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/main_config.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menus.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_axe.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_beartrap.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_blade_trap.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_centre.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_crossbow.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_dagger.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_diagonal_arrow.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_drop.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_drop_gem.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_empty.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_fist.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_highlight.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_lockpicks.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_open_close.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_pickup.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_poison_trap.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menu_suicide.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_stand_2e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_stand_2n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_stand_2s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_stand_2w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_1e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_1n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_1s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_1w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_3e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_3n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_3s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_strike_3w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_walk_1e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_walk_1n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_walk_1s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ogre_walk_1w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/open_bear_trap.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/open_chest_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/open_chest_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/open_chest_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/open_chest_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/parry.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pentagram.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pillar.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pith_c.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pith_o.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pitv_c.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pitv_o.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pit_c.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pit_o.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/poison_trap.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/potion.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/pressure_plate.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/quests.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/screech.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/scroll.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/server_config.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull4.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull_down.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull_left.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull_right.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/skull_up.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/small_skull.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/speech_bubble.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/squelch.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/staff.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/staff_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/staff_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/staff_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/staff_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/stairs_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/stairs_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/stairs_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/stairs_top.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/stairs_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/stuff_bag.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/switch_down.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/switch_up.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/sword_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/sword_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/sword_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/sword_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/table_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/table_horiz.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/table_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/table_small.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/table_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/table_vert.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/table_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/ugh.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/vbat1.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/vbat2.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/vbat3.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/vbatbite.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/vdoor_background.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wall.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wand.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wand_east.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wand_north.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wand_south.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wand_west.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/winner.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wooden_floor.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/wooden_pit.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom1e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom1n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom1s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom1w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom2e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom2n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom2s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom2w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom3e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom3n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom3s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom3w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom4e.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom4n.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom4s.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zom4w.bmp $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zombie2.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/zombie3.wav $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/#dungeon_layouts.lua# $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/anims.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/controls.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/dungeon_layouts.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/dungeon_setup.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/graphics.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/init.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/items.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/item_generation.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/magic.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/menus.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/misc_config.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/monsters.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/sounds.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/tiles.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/tile_funcs.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/tutorial.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/client_config.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/credits.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/first_time_message.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/fonts.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/axe.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/axe_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/axe_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/axe_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/axe_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/barrel.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/beartrap_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/beartrap_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/beartrap_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/beartrap_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/blade_trap.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/blood_1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/blood_2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/blood_3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/blood_icon.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/bolts.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/bolt_horiz.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/bolt_vert.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/book.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/book_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/book_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/book_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/book_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/broken_wood_1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/broken_wood_2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/broken_wood_3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/broken_wood_4.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/broken_wood_5.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/cage.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chair_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chair_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chair_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chair_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chest_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chest_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chest_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/chest_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/click.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/closed_bear_trap.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/crossbow.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/crystal_ball.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dagger.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/daggers.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dagger_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dagger_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dagger_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dagger_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_knight_1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_knight_2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_knight_3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_knight_4.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_vbat_1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_vbat_2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_vbat_3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/dead_zombie.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_hgc.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_hgo.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_hic.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_hio.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_hwc.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_hwo.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_vgc.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_vgo.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_vic.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_vio.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_vwc.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/door_vwo.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/drink.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor10.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor4.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor5.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor6.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor7.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor8.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/floor9.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/gem.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/hammer.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/hammer_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/hammer_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/hammer_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/hammer_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/haystack.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/hdoor_background.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/health0.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/health1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/health2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/health3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/health4.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/home_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/home_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/home_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/home_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/inv_bolt.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/inv_dagger.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/inv_key1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/inv_key2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/inv_key3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/inv_lockpicks.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/inv_overdraw.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/key.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/knights_sfont.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp1e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp1n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp1s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp1w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp2e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp2n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp2s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp2w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp3e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp3n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp3s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp3w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp4e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp4n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp4s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp4w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp5e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp5n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp5s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp5w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp6e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp6n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp6s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp6w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp7e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp7n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp7s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp7w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp8e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp8n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp8s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ktp8w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/large_table_horiz.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/large_table_vert.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/loser.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_axe.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_beartrap.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_blade_trap.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_centre.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_crossbow.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_dagger.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_diagonal_arrow.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_drop.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_drop_gem.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_empty.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_fist.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_highlight.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_lockpicks.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_open_close.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_pickup.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_poison_trap.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/menu_suicide.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_stand_2e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_stand_2n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_stand_2s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_stand_2w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_1e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_1n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_1s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_1w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_3e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_3n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_3s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_strike_3w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_walk_1e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_walk_1n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_walk_1s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ogre_walk_1w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/open_bear_trap.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/open_chest_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/open_chest_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/open_chest_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/open_chest_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/parry.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pentagram.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pillar.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pith_c.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pith_o.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pitv_c.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pitv_o.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pit_c.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pit_o.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/poison_trap.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/potion.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/pressure_plate.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/screech.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/scroll.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull4.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull_down.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull_left.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull_right.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/skull_up.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/small_skull.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/speech_bubble.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/squelch.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/staff.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/staff_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/staff_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/staff_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/staff_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/stairs_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/stairs_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/stairs_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/stairs_top.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/stairs_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/stuff_bag.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/switch_down.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/switch_up.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/sword_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/sword_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/sword_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/sword_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/table_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/table_horiz.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/table_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/table_small.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/table_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/table_vert.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/table_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/ugh.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/vbat1.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/vbat2.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/vbat3.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/vbatbite.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/vdoor_background.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wall.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wand.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wand_east.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wand_north.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wand_south.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wand_west.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/winner.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wooden_floor.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/wooden_pit.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom1e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom1n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom1s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom1w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom2e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom2n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom2s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom2w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom3e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom3n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom3s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom3w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom4e.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom4n.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom4s.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zom4w.bmp $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zombie2.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/std_files/zombie3.wav $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/main.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/anims.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/controls.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/dungeon_layouts.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/dungeon_setup.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/general_stuff.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/gnome_rooms.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/graphics.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/guarded_exits.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/init.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/items.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/item_generation.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/liche_tombs.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/magic.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/menus.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/misc_config.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/monsters.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/preset_quests.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/quest_description.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/quest_funcs.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/segments.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/sounds.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/special_pentagrams.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/standard_rooms.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/tiles.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/tile_funcs.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/tutorial.lua $(DATA_DIR)
 
 install_server: $(SERVER_BINARY_NAME)
 	$(INSTALL) -m 755 -d $(BIN_DIR)
 	$(INSTALL) -m 755 $(SERVER_BINARY_NAME) $(BIN_DIR)
 	$(INSTALL) -m 755 -d $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/API.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/client_config.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/credits.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/editor.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/first_time_message.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/fixup.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/fonts.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/knights_rooms.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/main.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/main_config.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/menus.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/quests.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/server_config.txt $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/anims.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/controls.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/dungeon_layouts.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/dungeon_setup.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/graphics.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/init.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/items.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/item_generation.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/magic.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/menus.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/misc_config.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/monsters.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/sounds.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/tiles.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/tile_funcs.lua $(DATA_DIR)
-	$(INSTALL) -m 644 knights_data/classic/tutorial.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/client_config.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/credits.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/first_time_message.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/client/fonts.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/main.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/anims.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/controls.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/dungeon_layouts.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/dungeon_setup.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/general_stuff.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/gnome_rooms.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/graphics.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/guarded_exits.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/init.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/items.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/item_generation.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/liche_tombs.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/magic.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/menus.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/misc_config.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/monsters.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/preset_quests.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/quest_description.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/quest_funcs.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/segments.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/sounds.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/special_pentagrams.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/standard_rooms.txt $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/tiles.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/tile_funcs.lua $(DATA_DIR)
+	$(INSTALL) -m 644 knights_data/server/classic/tutorial.lua $(DATA_DIR)
 
 install_docs:
 	$(INSTALL) -m 755 -d $(DOC_DIR)
@@ -2050,7 +2053,10 @@ install_docs:
 uninstall:
 	rm -f $(BIN_DIR)/$(KNIGHTS_BINARY_NAME)
 	rm -f $(BIN_DIR)/$(SERVER_BINARY_NAME)
-	rm -f $(DATA_DIR)/API.txt
+	rm -f $(DATA_DIR)/client_config.lua
+	rm -f $(DATA_DIR)/credits.txt
+	rm -f $(DATA_DIR)/first_time_message.txt
+	rm -f $(DATA_DIR)/fonts.txt
 	rm -f $(DATA_DIR)/axe.bmp
 	rm -f $(DATA_DIR)/axe_east.bmp
 	rm -f $(DATA_DIR)/axe_north.bmp
@@ -2089,9 +2095,7 @@ uninstall:
 	rm -f $(DATA_DIR)/chest_south.bmp
 	rm -f $(DATA_DIR)/chest_west.bmp
 	rm -f $(DATA_DIR)/click.wav
-	rm -f $(DATA_DIR)/client_config.lua
 	rm -f $(DATA_DIR)/closed_bear_trap.bmp
-	rm -f $(DATA_DIR)/credits.txt
 	rm -f $(DATA_DIR)/crossbow.bmp
 	rm -f $(DATA_DIR)/crystal_ball.bmp
 	rm -f $(DATA_DIR)/dagger.bmp
@@ -2122,9 +2126,6 @@ uninstall:
 	rm -f $(DATA_DIR)/door_vwc.bmp
 	rm -f $(DATA_DIR)/door_vwo.bmp
 	rm -f $(DATA_DIR)/drink.wav
-	rm -f $(DATA_DIR)/editor.lua
-	rm -f $(DATA_DIR)/first_time_message.txt
-	rm -f $(DATA_DIR)/fixup.txt
 	rm -f $(DATA_DIR)/floor1.bmp
 	rm -f $(DATA_DIR)/floor10.bmp
 	rm -f $(DATA_DIR)/floor2.bmp
@@ -2135,7 +2136,6 @@ uninstall:
 	rm -f $(DATA_DIR)/floor7.bmp
 	rm -f $(DATA_DIR)/floor8.bmp
 	rm -f $(DATA_DIR)/floor9.bmp
-	rm -f $(DATA_DIR)/fonts.txt
 	rm -f $(DATA_DIR)/gem.bmp
 	rm -f $(DATA_DIR)/hammer.bmp
 	rm -f $(DATA_DIR)/hammer_east.bmp
@@ -2161,7 +2161,6 @@ uninstall:
 	rm -f $(DATA_DIR)/inv_lockpicks.bmp
 	rm -f $(DATA_DIR)/inv_overdraw.bmp
 	rm -f $(DATA_DIR)/key.bmp
-	rm -f $(DATA_DIR)/knights_rooms.txt
 	rm -f $(DATA_DIR)/knights_sfont.bmp
 	rm -f $(DATA_DIR)/ktp1e.bmp
 	rm -f $(DATA_DIR)/ktp1n.bmp
@@ -2198,9 +2197,6 @@ uninstall:
 	rm -f $(DATA_DIR)/large_table_horiz.bmp
 	rm -f $(DATA_DIR)/large_table_vert.bmp
 	rm -f $(DATA_DIR)/loser.bmp
-	rm -f $(DATA_DIR)/main.lua
-	rm -f $(DATA_DIR)/main_config.txt
-	rm -f $(DATA_DIR)/menus.txt
 	rm -f $(DATA_DIR)/menu_axe.bmp
 	rm -f $(DATA_DIR)/menu_beartrap.bmp
 	rm -f $(DATA_DIR)/menu_blade_trap.bmp
@@ -2251,10 +2247,8 @@ uninstall:
 	rm -f $(DATA_DIR)/poison_trap.bmp
 	rm -f $(DATA_DIR)/potion.bmp
 	rm -f $(DATA_DIR)/pressure_plate.bmp
-	rm -f $(DATA_DIR)/quests.txt
 	rm -f $(DATA_DIR)/screech.wav
 	rm -f $(DATA_DIR)/scroll.bmp
-	rm -f $(DATA_DIR)/server_config.txt
 	rm -f $(DATA_DIR)/skull1.bmp
 	rm -f $(DATA_DIR)/skull2.bmp
 	rm -f $(DATA_DIR)/skull3.bmp
@@ -2323,20 +2317,30 @@ uninstall:
 	rm -f $(DATA_DIR)/zom4w.bmp
 	rm -f $(DATA_DIR)/zombie2.wav
 	rm -f $(DATA_DIR)/zombie3.wav
-	rm -f $(DATA_DIR)/#dungeon_layouts.lua#
+	rm -f $(DATA_DIR)/main.lua
 	rm -f $(DATA_DIR)/anims.lua
 	rm -f $(DATA_DIR)/controls.lua
 	rm -f $(DATA_DIR)/dungeon_layouts.lua
 	rm -f $(DATA_DIR)/dungeon_setup.lua
+	rm -f $(DATA_DIR)/general_stuff.lua
+	rm -f $(DATA_DIR)/gnome_rooms.txt
 	rm -f $(DATA_DIR)/graphics.lua
+	rm -f $(DATA_DIR)/guarded_exits.txt
 	rm -f $(DATA_DIR)/init.lua
 	rm -f $(DATA_DIR)/items.lua
 	rm -f $(DATA_DIR)/item_generation.lua
+	rm -f $(DATA_DIR)/liche_tombs.txt
 	rm -f $(DATA_DIR)/magic.lua
 	rm -f $(DATA_DIR)/menus.lua
 	rm -f $(DATA_DIR)/misc_config.lua
 	rm -f $(DATA_DIR)/monsters.lua
+	rm -f $(DATA_DIR)/preset_quests.lua
+	rm -f $(DATA_DIR)/quest_description.lua
+	rm -f $(DATA_DIR)/quest_funcs.lua
+	rm -f $(DATA_DIR)/segments.lua
 	rm -f $(DATA_DIR)/sounds.lua
+	rm -f $(DATA_DIR)/special_pentagrams.txt
+	rm -f $(DATA_DIR)/standard_rooms.txt
 	rm -f $(DATA_DIR)/tiles.lua
 	rm -f $(DATA_DIR)/tile_funcs.lua
 	rm -f $(DATA_DIR)/tutorial.lua

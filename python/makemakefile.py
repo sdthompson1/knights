@@ -12,9 +12,9 @@ import os
 import os.path
 import re
 
-PROJECTS_MAIN = ['Coercri', 'ENet', 'guichan', 'KConfig', 'KnightsClient', 'KnightsEngine', 'KnightsMain',
+PROJECTS_MAIN = ['Coercri', 'ENet', 'guichan', 'KnightsClient', 'KnightsEngine', 'KnightsMain',
                 'KnightsServer', 'KnightsShared', 'lua', 'Misc', 'RStream']
-PROJECTS_SERVER = ['ENet', 'KConfig', 'KnightsEngine', 'KnightsServer', 'KnightsShared',
+PROJECTS_SERVER = ['ENet', 'KnightsEngine', 'KnightsServer', 'KnightsShared',
                    'KnightsSvrMain', 'lua', 'Misc', 'RStream']
 EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o', 
                      'src/coercri/enet/enet_network_driver.o',
