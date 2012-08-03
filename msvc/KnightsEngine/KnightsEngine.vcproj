@@ -352,6 +352,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\overlay_lua_ctor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\player.cpp"
 				>
 			</File>
@@ -409,6 +413,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\tutorial_manager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\user_control_lua_ctor.cpp"
 				>
 			</File>
 			<File

@@ -31,21 +31,6 @@
 
 #include <stdexcept>
 
-Overlay::Overlay(lua_State *lua, int idx)
-    : id(-1)
-{
-    if (lua) {
-        lua_pushvalue(lua, idx); // push
-        table_ref.reset(lua);    // pop
-    }
-
-    for (int i = 0; i < 4; ++i) raw_graphic[i] = 0;
-    for (int i = 0; i < N_OVERLAY_FRAME*4; ++i) {
-        offset_data[i].ofsx = offset_data[i].ofsy = 0;
-        offset_data[i].dir = D_NORTH;
-    }
-}
-
 void Overlay::getGraphic(MapDirection facing, int frame, const Graphic *&gfx, int &ofsx, int &ofsy) const
 {
     gfx = 0;
@@ -60,11 +45,6 @@ void Overlay::getGraphic(MapDirection facing, int frame, const Graphic *&gfx, in
         }
         gfx = raw_graphic[d];
     }
-}
-
-void Overlay::setRawGraphic(MapDirection d, const Graphic *g)
-{
-    raw_graphic[d] = g;
 }
 
 void Overlay::setOffset(MapDirection facing, int frame, MapDirection new_dir, int ofsx, int ofsy)

@@ -46,8 +46,10 @@ public:
     // Construct from lua
     Anim(int id_, lua_State *lua, int idx);
 
+    void newIndex(lua_State *lua);
+    
     // push the stored table
-    void pushTable(lua_State *lua) { table_ref.push(lua); }
+    void pushTable(lua_State *lua) const { table_ref.push(lua); }
 
     // Overwrite id (useful if copying another Anim and then modifying it)
     void setID(int id_) { id = id_; }

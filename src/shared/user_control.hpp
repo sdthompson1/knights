@@ -35,13 +35,17 @@ class Graphic;
 
 class UserControl {
 public:
-    UserControl(const Graphic *menu_gfx, MapDirection menu_dir,
-                int tap_pri, int action_slot, int action_pri, bool suicide,
-                bool cts, unsigned int special, const std::string &name_)
-        : id(-1), menu_graphic(menu_gfx), menu_direction(menu_dir),
-          tap_priority(tap_pri), action_bar_slot(action_slot), action_bar_priority(action_pri),
-          suicide_key(suicide),
-          continuous(cts), menu_special(special), name(name_)
+    // reads from lua, doesn't pop. sets id to -1.
+    UserControl(lua_State *lua, int idx);
+
+    void newIndex(lua_State *lua);
+
+    // cut down default ctor.
+    explicit UserControl(bool cts) 
+        : id(-1), menu_graphic(0), menu_direction(D_NORTH),
+        tap_priority(0), action_bar_slot(0), action_bar_priority(0),
+        continuous(cts), suicide_key(false),
+        menu_special(0)
     { }
 
     void setID(int id_) { id = id_; } // called by KnightsConfigImpl

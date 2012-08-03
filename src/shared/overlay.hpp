@@ -33,13 +33,16 @@
 #include "lua_ref.hpp"
 #include "map_support.hpp"
 
+#include "network/byte_buf.hpp" // coercri
+
 class Graphic;
 
 class Overlay {
 public:
-    Overlay(lua_State *lua, int idx);
+    Overlay(lua_State *lua, int idx); // reads from lua (doesn't pop)
+    void newIndex(lua_State *lua);
+
     void setID(int id_) { id = id_; }  // called by KnightsConfigImpl
-    
     int getID() const { return id; }
     
     // Given entity's current facing and frame, return which graphic
@@ -48,10 +51,9 @@ public:
     // all.
     void getGraphic(MapDirection facing, int frame, const Graphic *&gfx, int &ofsx, int &ofsy) const;
 
-    // set functions. called by KnightsConfigImpl.
-    void setRawGraphic(MapDirection d, const Graphic *g);
+    // setOffset function. called by KnightsConfigImpl.
     void setOffset(MapDirection facing, int frame, MapDirection new_dir, int ofsx, int ofsy);
-
+    
     enum { N_OVERLAY_FRAME = 5 };
 
     // serialization

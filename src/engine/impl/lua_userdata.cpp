@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "anim.hpp"
 #include "control.hpp"
 #include "item_type.hpp"
 #include "lua_func_wrapper.hpp"
