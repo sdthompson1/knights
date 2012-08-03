@@ -40,6 +40,7 @@ function _G.rf_shoot(x, y, dir_as_num)
    -- add the missile
    kts.AddMissile(from, dt, i_bolt_trap, false)
    click_sound(cxt.pos)
+   crossbow_sound(cxt.pos)
    crossbow_sound(from)
 end
 
@@ -81,7 +82,6 @@ function toggle_impl(x, y, door_function, tile_function, sound_flag)
   end
 
   if sound_flag then
-    click_sound(cxt.tile_pos)
     door_sound(cxt.tile_pos)
     door_sound(pos)
   end
