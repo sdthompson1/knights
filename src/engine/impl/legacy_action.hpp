@@ -51,8 +51,16 @@ class Tile;
 class LegacyAction {
 public:
     virtual ~LegacyAction() { }
-    virtual void execute(const ActionData &) const = 0;
+
     virtual bool possible(const ActionData &) const { return true; }
+    virtual bool executeWithResult(const ActionData &ad) const { execute(ad); return false; }
+
+protected:
+    // execute() is provided for backward compatibility with old actions that don't return a result
+    // (which is most of them).
+    // The default executeWithResult() implementation calls execute(), then returns false.
+    // If executeBool() is overridden then execute() is not used.
+    virtual void execute(const ActionData &) const { }
 };
 
 

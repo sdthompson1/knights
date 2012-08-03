@@ -216,7 +216,7 @@ class A_ZombifyTarget : public LegacyAction {
 public:
     explicit A_ZombifyTarget(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual bool possible(const ActionData &) const;
-    virtual void execute(const ActionData &) const;
+    virtual bool executeWithResult(const ActionData &) const;
 private:
     ACTION_MAKER("ZombifyTarget");
     const MonsterType & zom_type;

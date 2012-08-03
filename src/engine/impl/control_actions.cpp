@@ -159,8 +159,9 @@ namespace {
     {
         LegacyAction * ac = static_cast<LegacyAction*>(lua_touserdata(lua, lua_upvalueindex(2)));
         ActionData ad(lua);
-        ac->execute(ad);
-        return 0;
+        bool result = ac->executeWithResult(ad);
+        lua_pushboolean(lua, result);
+        return 1;
     }
 
     int StdActionPossible(lua_State *lua)

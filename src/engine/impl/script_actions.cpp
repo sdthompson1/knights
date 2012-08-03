@@ -260,7 +260,7 @@ bool A_Necromancy::possible(const ActionData &) const
     return !Mediator::instance().getMonsterManager().hasNecromancyBeenDone();
 }
 
-void A_Necromancy::execute(const ActionData &ad) const
+bool A_Necromancy::executeWithResult(const ActionData &ad) const
 {
     if (possible(ad)) {
 
@@ -272,8 +272,11 @@ void A_Necromancy::execute(const ActionData &ad) const
             Mediator::instance().getMonsterManager().doNecromancy(nzoms, *dmap,
                     pos.getX() - range,     pos.getY() - range,
                     pos.getX() + range + 1, pos.getY() + range + 1);
+            return true;
         }
     }
+
+    return false;
 }
 
 A_Necromancy::Maker A_Necromancy::Maker::register_me;
@@ -395,13 +398,15 @@ bool A_Secure::possible(const ActionData &ad) const
     }
 }
 
-void A_Secure::execute(const ActionData &ad) const
+bool A_Secure::executeWithResult(const ActionData &ad) const
 {
     shared_ptr<Creature> cr = ad.getActor();
     Player * player = cr->getPlayer();
     if (cr && cr->getMap() && player) {
-        Mediator::instance().secureHome(*player,
-                *cr->getMap(), cr->getPos(), cr->getFacing(), plain_wall_tile);
+        return Mediator::instance().secureHome(*player,
+                   *cr->getMap(), cr->getPos(), cr->getFacing(), plain_wall_tile);
+    } else {
+        return false;
     }
 }
 
@@ -469,13 +474,16 @@ bool A_ZombieKill::possible(const ActionData &ad) const
     return false;
 }
 
-void A_ZombieKill::execute(const ActionData &ad) const
+bool A_ZombieKill::executeWithResult(const ActionData &ad) const
 {
     // Kills the *victim* if it is a zombie (Used as a melee_action)
     shared_ptr<Monster> cr = dynamic_pointer_cast<Monster>(ad.getVictim());
     if (cr && cr->getMap() && &cr->getMonsterType() == &zom_type) {
         cr->onDeath(Creature::NORMAL_MODE, ad.getOriginator());
         cr->rmFromMap();
+        return true;
+    } else {
+        return false;
     }
 }
 

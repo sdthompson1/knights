@@ -471,7 +471,7 @@ LegacyAction * A_WipeMap::Maker::make(ActionPars &pars) const
 //
 
 namespace {
-    void ZombifyCreature(shared_ptr<Creature> cr, const MonsterType &zom_type, const Originator &originator)
+    bool ZombifyCreature(shared_ptr<Creature> cr, const MonsterType &zom_type, const Originator &originator)
     {
         // Only Knights can be zombified. This prevents zombification
         // of vampire bats or other weird things like that. Of course,
@@ -488,6 +488,9 @@ namespace {
             kt->rmFromMap();
             MonsterManager &mm = Mediator::instance().getMonsterManager();
             mm.placeMonster(zom_type, *dmap, mc, facing);
+            return true;
+        } else {
+            return false;
         }
     }
 }
@@ -517,9 +520,9 @@ bool A_ZombifyTarget::possible(const ActionData &ad) const
     return dynamic_pointer_cast<Knight>(ad.getVictim());
 }
 
-void A_ZombifyTarget::execute(const ActionData &ad) const
+bool A_ZombifyTarget::executeWithResult(const ActionData &ad) const
 {
-    ZombifyCreature(ad.getVictim(), zom_type, ad.getOriginator());
+    return ZombifyCreature(ad.getVictim(), zom_type, ad.getOriginator());
 }
 
 A_ZombifyTarget::Maker A_ZombifyTarget::Maker::register_me;

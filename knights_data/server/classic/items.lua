@@ -231,11 +231,8 @@ i_wand_of_undeath = kts.ItemType(
     melee_stun_time = ts,
     melee_action = function()
        wandzap()
-       local zombified = kts.ZombifyTarget(m_zombie)
-       local killed = kts.ZombieKill(m_zombie)
-       if zombified or killed then
-          snd_zombie()
-       end
+       if kts.ZombifyTarget(m_zombie) then snd_zombie() end
+       kts.ZombieKill(m_zombie)
     end
   }
 )
@@ -302,8 +299,10 @@ i_necronomicon = kts.ItemType(
     -- Note on kts.Necromancy: first number is the number of zombies to generate (I have increased
     -- this slightly compared to the original Knights), and second number is the range (in squares). 
     on_pick_up = function()
-        kts.Necromancy(10, 10)    -- Attempt to raise nearby zombies. (Will only work the first time.)
-        kts.OnSuccess(wandzap)    -- Flash screen if necromancy actually took place.
+        local success = kts.Necromancy(10, 10)    -- Attempt to raise nearby zombies. (Will only work the first time.)
+        if success then
+           wandzap()    -- Flash screen if necromancy actually took place.
+        end
         kts.FullZombieActivity()  -- Always set full zombie activity while necronomicon is held.
     end,
     on_drop = function()

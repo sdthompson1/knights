@@ -635,10 +635,11 @@ namespace {
         ActionData ad( lua );
 
         // Call the action
-        action->execute(ad);
+        bool result = action->executeWithResult(ad);
 
         // Done.
-        return 0;
+        lua_pushboolean(lua, result);
+        return 1;
     }
 
     int LuaLegacyPossibleFunc(lua_State *lua)

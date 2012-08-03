@@ -113,7 +113,7 @@ class A_Necromancy : public LegacyAction {
 public:
     A_Necromancy(int nzom, int rang) : nzoms(nzom), range(rang) { }
     virtual bool possible(const ActionData &) const;
-    virtual void execute(const ActionData &) const;
+    virtual bool executeWithResult(const ActionData &) const;
 private:
     ACTION_MAKER("Necromancy");
     int nzoms, range;
@@ -158,7 +158,7 @@ class A_Secure : public LegacyAction {
 public:
     explicit A_Secure(shared_ptr<Tile> pwt) : plain_wall_tile(pwt) { }
     virtual bool possible(const ActionData &) const;
-    virtual void execute(const ActionData &) const;
+    virtual bool executeWithResult(const ActionData &) const;
 private:
     ACTION_MAKER("Secure");
     shared_ptr<Tile> plain_wall_tile;
@@ -182,7 +182,7 @@ class A_ZombieKill : public LegacyAction {
 public:
     explicit A_ZombieKill(const MonsterType &zom_type_) : zom_type(zom_type_) { }
     virtual bool possible(const ActionData &) const;
-    virtual void execute(const ActionData &) const;
+    virtual bool executeWithResult(const ActionData &) const;
 private:
     ACTION_MAKER("ZombieKill");
     const MonsterType &zom_type;
