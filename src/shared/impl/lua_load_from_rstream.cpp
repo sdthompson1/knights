@@ -173,20 +173,3 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
         }
     }
 }
-
-// Load lua code from a string
-// (Deprecated)
-void LuaLoadFromString(lua_State *lua, const char *str)
-{
-    if (!str || str[0] == 0) throw LuaError("Empty lua string");
-    if (str[0] == 27) throw LuaError("Lua string is in binary format, which is not supported");
-
-    const int result = luaL_loadstring(lua, str);
-    if (result != 0) {
-        // throw a C++ exception on errors.
-        const std::string err_msg = lua_isstring(lua, -1)
-            ? lua_tostring(lua, -1) : "<No err msg>";
-        lua_pop(lua, 1);
-        throw LuaError(err_msg);
-    }
-}

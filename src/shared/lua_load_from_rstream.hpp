@@ -48,9 +48,4 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
                     int nargs, int nresults,
                     bool look_in_cwd);
 
-
-// Reads a lua chunk from a string and pushes it onto the lua stack.
-// (Deprecated, will be removed once we convert knights_data to lua.)
-void LuaLoadFromString(lua_State *lua, const char *str);
-
 #endif

@@ -20,13 +20,16 @@
 
 
 -- Lua functions for working with tiles.
--- Some of these are used by the dungeon room files.
+
+-- NOTE: "rf" stands for "room function" and is used as a prefix for all functions
+-- called from the dungeon room files.
+-- These functions have to be global (unfortunately).
 
 
 -- fires a crossbow bolt
 -- (usually attached to a tile, e.g. a switch; cxt.pos is the position of that tile.)
 -- NOTE: this is hardwired to use i_bolt_trap
-function shoot(x, y, dir_as_num)
+function _G.rf_shoot(x, y, dir_as_num)
    
    local direction = select(dir_as_num, "north", "east", "south", "west")
 
@@ -41,7 +44,7 @@ function shoot(x, y, dir_as_num)
 end
 
 -- teleports a knight by a given offset
-function teleport(x, y)
+function _G.rf_teleport(x, y)
 
   local from = kts.GetPos(cxt.actor)
   local to = kts.RotateAddPos(from, x, y)  -- add offset, accounting for map rotation/reflection.
@@ -73,7 +76,7 @@ function toggle_impl(x, y, door_function, tile_function, sound_flag)
     local new_tile = tile_function(v)
     if new_tile then
       kts.RemoveTile(pos, v)
-      kts.add_tile(pos, new_tile)
+      kts.AddTile(pos, new_tile)
     end
   end
 
@@ -84,7 +87,7 @@ function toggle_impl(x, y, door_function, tile_function, sound_flag)
   end
 end
 
-function toggle(x, y)
+function _G.rf_toggle(x, y)
   local function my_tile_function(t)
     new_tile = t.open_to
     if not new_tile then
@@ -95,7 +98,7 @@ function toggle(x, y)
   toggle_impl(x, y, kts.OpenOrCloseDoor, my_tile_function, true)
 end
 
-function toggle_no_sound(x, y)
+function _G.rf_toggle_no_sound(x, y)
   local function my_tile_function(t)
     new_tile = t.open_to
     if not new_tile then
@@ -106,14 +109,14 @@ function toggle_no_sound(x, y)
   toggle_impl(x, y, kts.OpenOrCloseDoor, my_tile_function, false)
 end
 
-function open(x, y)
+function _G.rf_open(x, y)
   local function my_tile_function(t)
     return t.open_to
   end
   toggle_impl(x, y, kts.OpenDoor, my_tile_function, true)
 end
 
-function close(x, y)
+function _G.rf_close(x, y)
   local function my_tile_function(t)
     return t.close_to
   end

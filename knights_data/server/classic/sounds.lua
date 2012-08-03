@@ -123,11 +123,11 @@ end
 
 -- FUNCTIONS TO PLAY A SOUND AT A GIVEN POSITION
 
-function click_sound(pos)     kts.play_sound(pos, s_click, 20000)  end
-function crossbow_sound(pos)  kts.play_sound(pos, s_door, 35000)   end
-function door_sound(pos)      kts.play_sound(pos, s_door, 20000)   end
-function pentagram_sound(pos) kts.play_sound(pos, s_door, 30000)   end
-function teleport_sound(pos)  kts.play_sound(pos, s_squelch, 4000) end
+function click_sound(pos)     kts.PlaySound(pos, s_click, 20000)  end
+function crossbow_sound(pos)  kts.PlaySound(pos, s_door, 35000)   end
+function door_sound(pos)      kts.PlaySound(pos, s_door, 20000)   end
+function pentagram_sound(pos) kts.PlaySound(pos, s_door, 30000)   end
+function teleport_sound(pos)  kts.PlaySound(pos, s_squelch, 4000) end
 
 
 -- HOOKS

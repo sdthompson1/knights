@@ -180,7 +180,7 @@ void Segment::loadSwitches(std::istream &str, lua_State *lua)
         for (int j = 0; j < nfuncs; ++j) {
             std::string name;
             str >> name;
-            lua_code << name << '(';
+            lua_code << "rf_" << name << '(';
 
             int nargs = 0;
             str >> nargs;
