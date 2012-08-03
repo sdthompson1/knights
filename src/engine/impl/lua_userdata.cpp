@@ -434,7 +434,7 @@ int GetTileCategory(lua_State *lua, int idx)
     // Registry at index "kts_tile_cats" holds a table with keys:
     //   lightuserdata "0" ==> Next integer to use as category
     //   anything else     ==> User supplied tile category values (usually strings)
-    
+
     if (lua_isnil(lua, idx)) {
         // "Nil" is always assigned number -1
         return -1;
@@ -452,7 +452,7 @@ int GetTileCategory(lua_State *lua, int idx)
     lua_pushvalue(lua, -2);  // [cat tbl cat]
     lua_rawget(lua, -2);     // [cat tbl result]
 
-    if (lua_isnil(lua, -2)) {
+    if (lua_isnil(lua, -1)) {
         // It wasn't in table. Need to generate a new tile-category-number
         lua_pop(lua, 1);     // [cat tbl]
 
@@ -466,7 +466,12 @@ int GetTileCategory(lua_State *lua, int idx)
 
         // Next time we need to use this number + 1
         lua_pushinteger(lua, val_to_use + 1);  // [cat tbl nextval]
-        lua_rawsetp(lua, -1, 0);   // [cat tbl]
+        lua_rawsetp(lua, -2, 0);   // [cat tbl]
+
+        // Now store the value in the table
+        lua_pushvalue(lua, -2);  // [cat tbl cat]
+        lua_pushinteger(lua, val_to_use);  // [cat tbl cat val]
+        lua_rawset(lua, -3);  // [cat tbl]
 
         // We're done.
         lua_pop(lua, 2);  // []
