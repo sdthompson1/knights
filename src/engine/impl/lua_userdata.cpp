@@ -155,7 +155,7 @@ namespace {
             break;
 
         case TAG_OVERLAY:
-            luaL_error(lua, "Modifying existing Overlays is not currently supported");
+            static_cast<Overlay*>(ptr)->newIndex(lua);
             break;
 
         case TAG_TILE:

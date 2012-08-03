@@ -107,16 +107,6 @@ namespace {
         }
 
         auto_ptr<Overlay> result(new Overlay(lua, 1));
-        
-        // expects a table of four entries to be in stack position 1 (top of stack).
-        for (int i = 0; i < 4; ++i) {
-            lua_pushinteger(lua, i+1);
-            lua_gettable(lua, 1);
-            Graphic * graphic = ReadLuaPtr<Graphic>(lua, -1);
-            lua_pop(lua, 1);
-            result->setRawGraphic(MapDirection(i), graphic);
-        }
-
         Overlay *r = kc->addLuaOverlay(result);  // transfers ownership
         NewLuaPtr<Overlay>(lua, r);
         return 1;
