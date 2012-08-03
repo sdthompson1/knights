@@ -446,6 +446,35 @@ LegacyAction * A_Super::Maker::make(ActionPars &pars) const
     return new A_Super(pars.getInt(0), pars.getString(1));
 }
 
+//
+// A_TeleportRandom
+//
+
+void A_TeleportRandom::execute(const ActionData &ad) const
+{
+    // Only Knights can teleport, because we don't want zombies to be teleported about
+    // by pentagrams....
+    shared_ptr<Creature> cr(ad.getActor());
+    shared_ptr<Knight> kt = boost::dynamic_pointer_cast<Knight>(cr);
+    if (kt && kt->getMap()) {
+        shared_ptr<Knight> where_to_teleport_to = FindRandomOtherKnight(kt);
+        if (where_to_teleport_to) {
+            TeleportToRoom(kt, where_to_teleport_to);
+        } else {
+            // If no other knights exist then just teleport myself randomly
+            TeleportToRandomSquare(kt);
+        }
+    }
+}
+
+A_TeleportRandom::Maker A_TeleportRandom::Maker::register_me;
+
+LegacyAction * A_TeleportRandom::Maker::make(ActionPars &pars) const
+{
+    pars.require(0);
+    return new A_TeleportRandom;
+}
+
 
 //
 // A_WipeMap
