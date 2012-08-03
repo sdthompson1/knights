@@ -66,3 +66,21 @@ Anim::Anim(int id_, lua_State *lua, int idx)
         }
     }
 }
+
+void Anim::newIndex(lua_State *lua)
+{
+    // [ud k v]
+
+    if (lua_isstring(lua, 2) && std::strcmp(lua_tostring(lua, 2), "bat") == 0) {
+        vbat_mode = lua_toboolean(lua, 3) != 0;
+
+    } else if (lua_isnumber(lua, 2)) {
+        const int k = lua_tointeger(lua, 2);
+        const int d = (k-1) % 4;
+        const int f = (k-1) / 4;
+        if (f >= 0 && f < NFRAMES && d >= 0) {
+            g[d][f] = ReadLuaPtr<Graphic>(lua, 3);
+        }
+    }
+}
+

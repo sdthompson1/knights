@@ -95,6 +95,12 @@ namespace {
         const void *ptr = GetPtr(*ud);
         
         switch (ud->tag) {
+        case TAG_ANIM:
+            {
+                const Anim *anim = static_cast<const Anim*>(ptr);
+                anim->pushTable(lua);
+                return true;
+            }
         case TAG_CONTROL:
             {
                 const Control *ctrl = static_cast<const Control*>(ptr);
@@ -142,6 +148,10 @@ namespace {
         void *ptr = GetPtr(*ud);
         
         switch (ud->tag) {
+        case TAG_ANIM:
+            static_cast<Anim*>(ptr)->newIndex(lua);
+            break;
+            
         case TAG_CONTROL:
             static_cast<Control*>(ptr)->newIndex(lua);
             break;
