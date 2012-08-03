@@ -31,7 +31,7 @@
 #include <cctype>
 #include <string>
 
-boost::shared_ptr<Tile> CreateTile(lua_State *lua, KnightsConfigImpl *kc)
+boost::shared_ptr<Tile> CreateTile(lua_State *lua)
 {
     // [t]
     lua_getfield(lua, -1, "type");  // [t type]
@@ -48,15 +48,15 @@ boost::shared_ptr<Tile> CreateTile(lua_State *lua, KnightsConfigImpl *kc)
     boost::shared_ptr<Tile> tile;
     
     if (s == "") {
-        tile.reset(new Tile(lua, kc));
+        tile.reset(new Tile(lua));
     } else if (s == "home") {
-        tile.reset(new Home(lua, kc));
+        tile.reset(new Home(lua));
     } else if (s == "door") {
-        tile.reset(new Door(lua, kc));
+        tile.reset(new Door(lua));
     } else if (s == "chest") {
-        tile.reset(new Chest(lua, kc));
+        tile.reset(new Chest(lua));
     } else if (s == "barrel") {
-        tile.reset(new Barrel(lua, kc));
+        tile.reset(new Barrel(lua));
     } else {
         luaL_error(lua, "Unknown tile type '%s'", s.c_str());
     }

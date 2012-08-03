@@ -142,7 +142,6 @@ public:
                         TutorialManager *tutorial_manager) const; // TutorialManager is optional
     boost::shared_ptr<const ConfigMap> getConfigMap() const;
     boost::shared_ptr<lua_State> getLuaState();  // This will live for as long as the KnightsConfig lives.
-    int getTileCategory(const std::string &name) const;
 
     // Run all the game startup functions.
     // On success, returns true.

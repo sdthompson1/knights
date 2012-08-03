@@ -39,7 +39,7 @@ class ItemType;
 
 class Door : public Lockable {
 public:
-    Door(lua_State *lua, KnightsConfigImpl *kc);
+    explicit Door(lua_State *lua);
 
     virtual void damage(DungeonMap &, const MapCoord &, int amt, shared_ptr<Creature> actor);
     virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &);
@@ -59,7 +59,7 @@ private:
 
 class Chest : public Lockable {
 public:
-    Chest(lua_State *lua, KnightsConfigImpl *kc);
+    explicit Chest(lua_State *lua);
 
     virtual bool cannotActivateFrom(MapDirection &dir) const;
     
@@ -80,7 +80,7 @@ private:
         ItemType *itype;
         LuaFunc action;  // action to place the trap ...
     };
-    static TrapInfo popTrapInfo(lua_State *lua, KnightsConfigImpl *kc);
+    static TrapInfo popTrapInfo(lua_State *lua);
     
 private:
     const Graphic *open_graphic;
@@ -95,8 +95,7 @@ private:
 
 class Barrel : public Tile {
 public:
-    Barrel(lua_State *lua, KnightsConfigImpl *kc)
-        : Tile(lua, kc) { }
+    explicit Barrel(lua_State *lua) : Tile(lua) { }
     
     virtual bool canPlaceItem() const;
     virtual shared_ptr<Item> getPlacedItem() const;
@@ -113,7 +112,7 @@ private:
     
 class Home : public Tile {
 public:
-    Home(lua_State *lua, KnightsConfigImpl *kc);
+    explicit Home(lua_State *lua);
     
     // onApproach/onWithdraw are overridden to handle healing.
     virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);

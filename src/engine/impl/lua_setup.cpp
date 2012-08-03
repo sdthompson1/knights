@@ -171,8 +171,7 @@ namespace {
     {
         // note: no need to store Tiles in the KnightsConfigImpl.
         // They are shared_ptrs and will be automatically released when the lua state is closed down.
-        KnightsConfigImpl *kc = GetKC(lua, "tiles");
-        boost::shared_ptr<Tile> tile = CreateTile(lua, kc);
+        boost::shared_ptr<Tile> tile = CreateTile(lua);
         NewLuaSharedPtr<Tile>(lua, tile);
         return 1;
     }

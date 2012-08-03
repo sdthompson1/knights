@@ -60,7 +60,7 @@ public:
     // Current hitpoints are set by "setHitPoints", which is called by clone().
 
     // Construct from lua table at top of stack. Leaves the table on the stack.
-    Tile(lua_State *lua, KnightsConfigImpl *kc);
+    explicit Tile(lua_State *lua);
 
     // Construct a "dummy" tile for switch-actions.
     Tile(const LuaFunc &walk_over, const LuaFunc &activate);
@@ -202,6 +202,7 @@ protected:
 private:
     void readAccess(lua_State *lua);
     void readStairsDown(lua_State *lua);
+    void popItems(lua_State *lua);
     
     // SetHitPoints -- this sets hit_points, using initial_hit_points.
     // This is called automatically by "clone", so new copies of tiles will automatically

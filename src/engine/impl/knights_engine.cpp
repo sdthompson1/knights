@@ -496,11 +496,6 @@ void KnightsEngine::addStartingGear(ItemType *itype, const std::vector<int> &num
     pimpl->starting_gears.push_back(std::make_pair(itype, num));
 }
 
-int KnightsEngine::getTileCategory(const std::string &name)
-{
-    return pimpl->config->getTileCategory(name);
-}
-
 void KnightsEngine::setItemRespawn(const std::vector<ItemType*> &items_to_respawn, int respawn_delay)
 {
     pimpl->respawn_items = items_to_respawn;

@@ -451,14 +451,6 @@ void KnightsConfigImpl::popTutorial(lua_State *lua)
     lua_pop(lua, 1);  // []
 }
 
-// Tile category numbering
-int KnightsConfigImpl::getTileCategory(const string &cname)
-{
-    if (cname.empty()) return -1;
-    return tile_categories.insert(make_pair(cname, tile_categories.size())).first->second;
-}
-
-
 
 //
 // stuff forwarded from KnightsConfig

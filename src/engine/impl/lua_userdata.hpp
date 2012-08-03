@@ -89,4 +89,8 @@ void PushMapCoord(lua_State *lua, const MapCoord &mc);
 // Push MapDirection onto the stack, as string ("north", "east", "south" or "west")
 void PushMapDirection(lua_State *lua, MapDirection dir);
 
+// Conversion between tile-categories and tile-category-numbers
+// note: nil is given the number -1; others are given arbitrary numberings.
+int GetTileCategory(lua_State *lua, int idx);
+
 #endif

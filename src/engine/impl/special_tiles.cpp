@@ -43,8 +43,7 @@
 // Door
 //
 
-Door::Door(lua_State *lua, KnightsConfigImpl *kc)
-    : Lockable(lua, kc)
+Door::Door(lua_State *lua) : Lockable(lua)
 {
     open_graphic = LuaGetPtr<Graphic>(lua, -1, "open_graphic");   // default null
     closed_graphic = getGraphic();
@@ -113,7 +112,7 @@ bool Door::targettable() const
 // Chest
 //
 
-Chest::TrapInfo Chest::popTrapInfo(lua_State *lua, KnightsConfigImpl *kc)
+Chest::TrapInfo Chest::popTrapInfo(lua_State *lua)
 {
     // [traps]
 
@@ -132,8 +131,7 @@ Chest::TrapInfo Chest::popTrapInfo(lua_State *lua, KnightsConfigImpl *kc)
     return result;
 }
 
-Chest::Chest(lua_State *lua, KnightsConfigImpl *kc)
-    : Lockable(lua, kc)
+Chest::Chest(lua_State *lua) : Lockable(lua)
 {
     open_graphic = LuaGetPtr<Graphic>(lua, -1, "open_graphic");  // default null
     closed_graphic = getGraphic();    
@@ -147,7 +145,7 @@ Chest::Chest(lua_State *lua, KnightsConfigImpl *kc)
     for (int i = 0; i < sz; ++i) {
         lua_pushinteger(lua, i+1);  // [t traps idx]
         lua_gettable(lua, -2);      // [t traps trap]
-        traps.push_back(popTrapInfo(lua, kc));  // [t traps]
+        traps.push_back(popTrapInfo(lua));  // [t traps]
     }
     lua_pop(lua, 1);  // [t]
 
@@ -243,8 +241,7 @@ bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
 // Home
 //
 
-Home::Home(lua_State *lua, KnightsConfigImpl *kc)
-    : Tile(lua, kc)
+Home::Home(lua_State *lua) : Tile(lua)
 {
     facing = LuaGetMapDirection(lua, -1, "facing");  // default = north
     special_exit = LuaGetBool(lua, -1, "special_exit");  // #20. default = false

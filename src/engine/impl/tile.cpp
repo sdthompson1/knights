@@ -77,7 +77,7 @@ namespace {
 
 // constructs a Tile from a lua table, assumed to be at top of stack.
 // note this ignores "type" and just constructs a plain Tile.
-Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
+Tile::Tile(lua_State *lua)
     : hit_points(0)
 {
     ASSERT(lua);   // [t]
@@ -113,35 +113,7 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
     initial_hit_points = LuaGetRandomInt(lua, -1, "hit_points");  // default 0
 
     lua_getfield(lua, -1, "items");  // [t items]
-    if (lua_isnumber(lua, -1)) {
-        if (lua_tointeger(lua, -1) == 0) {
-            item_category = -2;   // blocked
-        } else {
-            item_category = -1;   // allowed
-        }
-    } else if (lua_isnil(lua, -1)) {
-        // default (allow items for A_CLEAR, else block)
-        if (access[H_WALKING] == A_CLEAR) item_category = -1;  // allowed
-        else item_category = -2;  // blocked
-    } else if (lua_isstring(lua, -1)) {
-        const char *s = lua_tostring(lua, -1);
-        if (std::strcmp(s, "destroy") == 0) {
-            item_category = -3;  // destroy
-        } else {
-            item_category = kc->getTileCategory(s);
-        }
-    } else {
-        luaL_error(lua, "tile 'items' field is invalid");
-    }
-    lua_pop(lua, 1);  // [t]
-
-    if (item_category > -2) {
-        items_mode = ALLOWED;
-    } else if (item_category == -3) {
-        items_mode = DESTROY;
-    } else {
-        items_mode = BLOCKED;
-    }
+    popItems(lua);                   // [t]
 
     on_activate.reset(lua, -1, "on_activate");
     on_approach.reset(lua, -1, "on_approach");
@@ -155,6 +127,35 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
     lua_pop(lua, 1);
 
     tutorial_key = LuaGetInt(lua, -1, "tutorial");  // default 0
+}
+
+void Tile::popItems(lua_State *lua)
+{
+    if (lua_isnumber(lua, -1)) {
+        if (lua_tointeger(lua, -1) == 0) {
+            item_category = -2;   // blocked
+        } else {
+            item_category = -1;   // allowed
+        }
+    } else if (lua_isnil(lua, -1)) {
+        // default (allow items for A_CLEAR, else block)
+        if (access[H_WALKING] == A_CLEAR) item_category = -1;  // allowed
+        else item_category = -2;  // blocked
+    } else if (lua_isstring(lua, -1)
+               && std::strcmp( lua_tostring(lua, -1), "destroy") == 0) {
+        item_category = -3;  // destroy
+    } else {
+        item_category = GetTileCategory(lua, -1);
+    }
+    lua_pop(lua, 1);  // [t]
+
+    if (item_category > -2) {
+        items_mode = ALLOWED;
+    } else if (item_category == -3) {
+        items_mode = DESTROY;
+    } else {
+        items_mode = BLOCKED;
+    }
 }
 
 void Tile::readAccess(lua_State *lua)
@@ -241,8 +242,8 @@ void Tile::newIndex(lua_State *lua)
         initial_hit_points = LuaPopRandomInt(lua, "hit_points");
 
     } else if (k == "items") {
-        // we need access to kconfigimpl which is tricky...
-        luaL_error(lua, "Sorry, resetting 'items' after construction is not currently implemented.");
+        lua_pushvalue(lua, 3);
+        popItems(lua);
 
     } else if (k == "on_activate") {
         lua_pushvalue(lua, 3);

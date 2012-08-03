@@ -113,7 +113,6 @@ public:
     void setPremapped(bool);
     void gameStartupMsg(const std::string &msg);
     void addStartingGear(ItemType *, const std::vector<int> &);
-    int getTileCategory(const std::string &name);
     void setItemRespawn(const std::vector<ItemType*> &items_to_respawn, int respawn_delay);
     void setLockpickSpawn(ItemType *lockpicks, int init_time, int interval);
     void setTimeLimit(int ms);

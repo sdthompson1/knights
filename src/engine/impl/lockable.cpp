@@ -39,8 +39,8 @@
 // constructor
 //
 
-Lockable::Lockable(lua_State *lua, KnightsConfigImpl *kc)
-    : Tile(lua, kc),
+Lockable::Lockable(lua_State *lua)
+    : Tile(lua),
       trap_owner(OT_None())
 {
     // [t]

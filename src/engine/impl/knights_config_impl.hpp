@@ -128,10 +128,6 @@ public:
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
     
-    // This maintains the mapping from tile category names to tile category numbers.
-    // "" is given the number -1, others are given arbitrary numberings.
-    int getTileCategory(const std::string &);
-
 private:
     //
     // helper functions

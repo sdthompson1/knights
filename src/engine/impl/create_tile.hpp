@@ -28,7 +28,6 @@
 
 struct lua_State;
 
-class KnightsConfigImpl;
 class Tile;
 
 // Factory function for Tiles. Creates appropriate tile type (Tile,
@@ -36,6 +35,6 @@ class Tile;
 
 // Reads table from top of lua stack; does not pop it.
 
-boost::shared_ptr<Tile> CreateTile(lua_State *lua, KnightsConfigImpl *kc);
+boost::shared_ptr<Tile> CreateTile(lua_State *lua);
 
 #endif

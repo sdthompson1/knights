@@ -428,3 +428,53 @@ void PushMapDirection(lua_State *lua, MapDirection dir)
     default: lua_pushnil(lua); break;
     }
 }
+
+int GetTileCategory(lua_State *lua, int idx)
+{
+    // Registry at index "kts_tile_cats" holds a table with keys:
+    //   lightuserdata "0" ==> Next integer to use as category
+    //   anything else     ==> User supplied tile category values (usually strings)
+    
+    if (lua_isnil(lua, idx)) {
+        // "Nil" is always assigned number -1
+        return -1;
+    }
+
+    // If they are trying to use lightuserdata "0" as a key, it is
+    // going to break things.
+    if (lua_islightuserdata(lua, idx) && lua_touserdata(lua, idx) == 0) {
+        luaL_error(lua, "Invalid tile category value!");
+    }
+
+    // Look up the supplied value in the table, it might already be there.
+    lua_pushvalue(lua, idx);  // [category]
+    luaL_getsubtable(lua, LUA_REGISTRYINDEX, "kts_tile_cats"); // [cat tbl]
+    lua_pushvalue(lua, -2);  // [cat tbl cat]
+    lua_rawget(lua, -2);     // [cat tbl result]
+
+    if (lua_isnil(lua, -2)) {
+        // It wasn't in table. Need to generate a new tile-category-number
+        lua_pop(lua, 1);     // [cat tbl]
+
+        // Find out what the next val to generate is
+        int val_to_use = 0;
+        lua_rawgetp(lua, -1, 0);  // [cat tbl val]
+        if (!lua_isnil(lua, -1)) {
+            val_to_use = lua_tointeger(lua, -1);
+        }
+        lua_pop(lua, 1);  // [cat tbl]
+
+        // Next time we need to use this number + 1
+        lua_pushinteger(lua, val_to_use + 1);  // [cat tbl nextval]
+        lua_rawsetp(lua, -1, 0);   // [cat tbl]
+
+        // We're done.
+        lua_pop(lua, 2);  // []
+        return val_to_use;
+        
+    } else {
+        const int val_to_use = lua_tointeger(lua, -1);
+        lua_pop(lua, 3);    // []
+        return val_to_use;
+    }
+}

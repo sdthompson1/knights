@@ -43,7 +43,7 @@ class Lockable : public Tile {
     enum { PICK_ONLY_LOCK_NUM=99998, SPECIAL_LOCK_NUM = 99999 };
     
 public:
-    Lockable(lua_State *lua, KnightsConfigImpl *kc);
+    explicit Lockable(lua_State *lua);
 
     // Override canActivateHere, onActivate to deal with opening and closing.
     virtual bool canActivateHere() const { return false; }

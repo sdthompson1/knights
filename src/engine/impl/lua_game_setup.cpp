@@ -106,8 +106,6 @@ namespace {
 
     int AddItem(lua_State *lua)
     {
-        KnightsEngine &ke = GetKnightsEngine(lua);
-        
         ItemType *itype = ReadLuaPtr<ItemType>(lua, 1);
         if (!itype) luaL_error(lua, "AddItem: no item specified");
 
@@ -125,10 +123,7 @@ namespace {
         for (int i = 1; i < sz; i += 2) {
             lua_pushinteger(lua, i);
             lua_gettable(lua, 3);
-            if (!lua_isstring(lua, -1)) {
-                luaL_error(lua, "Tile category must be a string");
-            }
-            const int cat = ke.getTileCategory(lua_tostring(lua, -1));
+            const int cat = GetTileCategory(lua, -1);
             lua_pop(lua, 1);
 
             lua_pushinteger(lua, i+1);
@@ -172,7 +167,6 @@ namespace {
     {
         // param 1 = list of triples: { tile_cat_string, probability, generator_func }
 
-        KnightsEngine &ke = GetKnightsEngine(lua);
         std::map<int, StuffInfo> stuff;
         
         lua_len(lua, 1);
@@ -185,10 +179,7 @@ namespace {
 
             lua_pushinteger(lua, 1);
             lua_gettable(lua, -2);
-            if (!lua_isstring(lua, -1)) {
-                luaL_error(lua, "Tile category must be a string");
-            }
-            const int cat = ke.getTileCategory(lua_tostring(lua, -1));
+            const int cat = GetTileCategory(lua, -1);
             lua_pop(lua, 1);
 
             lua_pushinteger(lua, 2);
