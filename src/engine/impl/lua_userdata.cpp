@@ -143,7 +143,7 @@ namespace {
         
         switch (ud->tag) {
         case TAG_CONTROL:
-            luaL_error(lua, "Modifying existing Control objects is not currently supported");
+            static_cast<Control*>(ptr)->newIndex(lua);
             break;
 
         case TAG_ITEM_TYPE:

@@ -39,20 +39,17 @@ using namespace std;
 
 class Control : public UserControl {
 public:
-    Control(lua_State *lua, int idx,   // reads from lua; doesn't pop.
-            const Graphic *menu_gfx, MapDirection menu_dir,
-            int tap_pri, int action_slot, int action_pri, bool suicide,
-            bool cts, unsigned int special, const std::string &name,
-            const LuaFunc &exec, const LuaFunc &poss,
-            bool can_while_moving, bool can_while_stunned);
+    Control(lua_State *lua, int idx);   // reads from lua; doesn't pop.
 
     // 'cut down' constructor for the standard controls.
     Control(bool cts, const LuaFunc &ac, const LuaFunc &poss, bool wm, bool ws)
-        : UserControl(0, D_NORTH, 0, 0, 0, false, cts, 0, ""),
+        : UserControl(cts),
           execute(ac), possible(poss),
           can_execute_while_moving(wm),
           can_execute_while_stunned(ws)
     { }
+
+    void newIndex(lua_State *lua);  // also calls UserControl::newIndex (if required)
 
     // get the underlying lua table (if there is one).
     void pushTable(lua_State *lua) const { table_ref.push(lua); }

@@ -24,23 +24,43 @@
 #include "misc.hpp"
 
 #include "control.hpp"
+#include "lua_setup.hpp"
 
 #include "lua.hpp"
 
-Control::Control(lua_State *lua, int idx,
-                 const Graphic *menu_gfx, MapDirection menu_dir,
-                 int tap_pri, int action_slot, int action_pri, bool suicide,
-                 bool cts, unsigned int special, const std::string &name,
-                 const LuaFunc &exec, const LuaFunc &poss,
-                 bool can_while_moving, bool can_while_stunned)
-  : UserControl(menu_gfx, menu_dir, tap_pri, action_slot, action_pri, suicide, cts, special, name),
-    execute(exec), possible(poss),
-    can_execute_while_moving(can_while_moving),
-    can_execute_while_stunned(can_while_stunned)
+Control::Control(lua_State *lua, int idx)
+    : UserControl(lua, idx)
 {
     ASSERT(lua);
+
+    execute = LuaFunc(lua, idx, "action");
+    possible = LuaFunc(lua, idx, "possible");
+    can_execute_while_moving = LuaGetBool(lua, idx, "can_do_while_moving", false);
+    can_execute_while_stunned = LuaGetBool(lua, idx, "can_do_while_stunned", false);
+    
     lua_pushvalue(lua, idx);   // [t]
-    table_ref.reset(lua);      // []
+    table_ref.reset(lua);      // []            
+}
+
+void Control::newIndex(lua_State *lua)
+{
+    // [ud k v]
+    if (!lua_isstring(lua, 2)) return;
+    const std::string k = lua_tostring(lua, 2);
+
+    if (k == "action") {
+        lua_pushvalue(lua, 3);
+        execute = LuaFunc(lua);
+    } else if (k == "possible") {
+        lua_pushvalue(lua, 3);
+        possible = LuaFunc(lua);
+    } else if (k == "can_do_while_moving") {
+        can_execute_while_moving = lua_toboolean(lua, 3) != 0;
+    } else if (k == "can_do_while_stunned") {
+        can_execute_while_stunned = lua_toboolean(lua, 3) != 0;
+    } else {
+        UserControl::newIndex(lua);
+    }
 }
 
 bool Control::checkPossible(const ActionData &ad) const

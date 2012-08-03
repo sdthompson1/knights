@@ -63,28 +63,7 @@ namespace {
     int MakeControl(lua_State *lua)
     {
         KnightsConfigImpl * kc = GetKC(lua, "Controls");
-
-        LuaFunc action(lua, 1, "action");
-        LuaFunc possible(lua, 1, "possible");
-        bool can_do_while_moving = LuaGetBool(lua, 1, "can_do_while_moving", false);
-        bool can_do_while_stunned = LuaGetBool(lua, 1, "can_do_while_stunned", false);
-        
-        int action_bar_slot = LuaGetInt(lua, 1, "action_bar_slot", -1);
-        int tap_priority = LuaGetInt(lua, 1, "tap_priority", 0);
-        int action_bar_priority = LuaGetInt(lua, 1, "action_bar_priority", tap_priority);
-        bool continuous = LuaGetBool(lua, 1, "continuous", false);
-        MapDirection menu_direction = LuaGetMapDirection(lua, 1, "menu_direction", D_NORTH);
-        const Graphic * menu_icon = LuaGetPtr<Graphic>(lua, 1, "menu_icon");
-        unsigned int menu_special = static_cast<unsigned int>(LuaGetInt(lua, 1, "menu_special", 0));
-        std::string name = LuaGetString(lua, 1, "name");
-        bool suicide_key = LuaGetBool(lua, 1, "suicide_key", false);
-
-        auto_ptr<Control> ctrl(new Control(lua, 1,
-                                           menu_icon, menu_direction, tap_priority, action_bar_slot,
-                                           action_bar_priority, suicide_key, continuous, menu_special,
-                                           name,
-                                           action, possible, can_do_while_moving, can_do_while_stunned));
-
+        auto_ptr<Control> ctrl(new Control(lua, 1));
         Control *c = kc->addLuaControl(ctrl); // transfers ownership (also sets control's ID)
         NewLuaPtr<Control>(lua, c);
         return 1;
