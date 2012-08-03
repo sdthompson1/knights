@@ -857,7 +857,7 @@ namespace {
     void PlaceItem(DungeonMap &dmap,
                    const MapCoord &mc,
                    std::vector<boost::shared_ptr<Tile> > &tiles,
-                   const ItemType &itype,
+                   ItemType &itype,
                    int no)
     {
         shared_ptr<Item> item(new Item(itype, no));
@@ -876,7 +876,7 @@ namespace {
 
     // Connectivity check implementation
 
-    void ConnectivityCheckImpl(DungeonMap &dmap, const MapCoord &from_where, int num_keys, const ItemType &lockpicks)
+    void ConnectivityCheckImpl(DungeonMap &dmap, const MapCoord &from_where, int num_keys, ItemType &lockpicks)
     {
         // This checks to see whether it is possible to obtain all keys
         // (or the lock picks) starting from "from_where".
@@ -1162,7 +1162,7 @@ void GenerateLocksAndTraps(DungeonMap &dmap,
 // --------------------------------------------------------------------------------------
 
 void GenerateItem(DungeonMap &dmap,
-                  const ItemType &itype,
+                  ItemType &itype,
                   const std::vector<std::pair<int,int> > &weights,
                   int total_weight)
 {
@@ -1237,7 +1237,7 @@ void GenerateStuff(DungeonMap &dmap,
                 std::map<int, StuffInfo>::const_iterator it = stuff.find(chosen_cat);
                 if (it != stuff.end() && g_rng.getBool(it->second.chance)) {
                     // We are to generate an item
-                    std::pair<const ItemType *, int> result = it->second.gen.get();
+                    std::pair<ItemType *, int> result = it->second.gen.get();
                     ASSERT(result.first);
                     PlaceItem(dmap, mc, tiles, *result.first, result.second);
                 }
@@ -1286,7 +1286,7 @@ void GenerateMonsters(DungeonMap &dmap,
 
 void ConnectivityCheck(const std::vector<Player*> &players,
                        int num_keys,
-                       const ItemType &lockpicks)
+                       ItemType &lockpicks)
 {
     // Run the connectivity check from every player's starting square, in turn.
     for (std::vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {

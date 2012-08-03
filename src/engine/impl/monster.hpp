@@ -39,7 +39,7 @@ class MonsterType;
 class Monster : public Creature {
 public:
     Monster(const MonsterType &type_, int health, MapHeight ht,
-            const ItemType *item_in_hand, const Anim *anim, int speed)
+            ItemType *item_in_hand, const Anim *anim, int speed)
         : Creature(health, ht, item_in_hand, anim, speed),
           type(type_) { }
 

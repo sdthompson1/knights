@@ -51,8 +51,10 @@ float LuaGetFloat(lua_State *lua, int tbl_idx, const char *key, float dflt = 0.0
 float LuaGetProbability(lua_State *lua, int tbl_idx, const char *key, float dflt = 0.0f);
 std::string LuaGetString(lua_State *lua, int tbl_idx, const char *key, const char *dflt = "");
 ItemSize LuaGetItemSize(lua_State *lua, int tbl_idx, const char *key, ItemSize dflt = IS_NOPICKUP);
+ItemSize LuaPopItemSize(lua_State *lua, ItemSize dflt);
 MapDirection LuaGetMapDirection(lua_State *lua, int tbl_idx, const char *key, MapDirection dflt = D_NORTH);
 RandomInt LuaGetRandomInt(lua_State *lua, int tbl_idx, const char *key);
+RandomInt LuaPopRandomInt(lua_State *lua, const char *key); // key is used for err msgs
 
 template<class T> T * LuaGetPtr(lua_State *lua, int tbl_idx, const char *key)
 {
@@ -72,7 +74,7 @@ template<class T> boost::shared_ptr<T> LuaGetSharedPtr(lua_State *lua, int tbl_i
 
 // nil is treated as an empty list
 void LuaGetTileList(lua_State *lua, int tbl_idx, const char *key, std::vector<boost::shared_ptr<Tile> > &tiles);
-
+void LuaPopTileList(lua_State *lua, std::vector<boost::shared_ptr<Tile> > &tiles);
 
 // Get the KnightsConfigImpl* from the lua state.
 // If not available, raises lua error "Cannot create new " + msg + " during the game".

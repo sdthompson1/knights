@@ -121,7 +121,7 @@ Chest::TrapInfo Chest::popTrapInfo(lua_State *lua, KnightsConfigImpl *kc)
     
     lua_pushinteger(lua, 1);   // [traps 1]
     lua_gettable(lua, -2);     // [traps itemtype]
-    result.itype = ReadLuaPtr<const ItemType>(lua, -1);
+    result.itype = ReadLuaPtr<ItemType>(lua, -1);
     lua_pop(lua, 1);    // [traps]
 
     lua_pushinteger(lua, 2);  // [traps 2]

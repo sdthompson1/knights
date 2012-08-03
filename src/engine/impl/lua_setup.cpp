@@ -109,8 +109,8 @@ namespace {
     {
         KnightsConfigImpl * kc = GetKC(lua, "ItemTypes");
         auto_ptr<ItemType> it(new ItemType(lua, 1));
-        const ItemType * lua_item_type = kc->addLuaItemType(it); // transfers ownership.
-        NewLuaPtr<const ItemType>(lua, lua_item_type);
+        ItemType * lua_item_type = kc->addLuaItemType(it); // transfers ownership.
+        NewLuaPtr<ItemType>(lua, lua_item_type);
         return 1;
     }
 
@@ -376,14 +376,33 @@ std::string LuaGetString(lua_State *lua, int idx, const char *key, const char * 
     return result;
 }
 
+namespace {
+    ItemSize ToItemSize(const std::string &s, ItemSize dflt)
+    {
+        if (s == "held") return IS_BIG;
+        else if (s == "backpack") return IS_SMALL;
+        else if (s == "magic") return IS_MAGIC;
+        else if (s == "nopickup") return IS_NOPICKUP;
+        else return dflt;
+    }        
+}
+
 ItemSize LuaGetItemSize(lua_State *lua, int idx, const char *key, ItemSize dflt)
 {
     std::string s = LuaGetString(lua, idx, key);
-    if (s == "held") return IS_BIG;
-    else if (s == "backpack") return IS_SMALL;
-    else if (s == "magic") return IS_MAGIC;
-    else if (s == "nopickup") return IS_NOPICKUP;
-    else return dflt;
+    return ToItemSize(s, dflt);
+}
+
+ItemSize LuaPopItemSize(lua_State *lua, ItemSize dflt)
+{
+    ItemSize result;
+    if (lua_isstring(lua, -1)) {
+        result = ToItemSize(lua_tostring(lua, -1), dflt);
+    } else {
+        result = dflt;
+    }
+    lua_pop(lua, 1);
+    return result;
 }
 
 MapDirection LuaGetMapDirection(lua_State *lua, int idx, const char *key, MapDirection dflt)
@@ -399,10 +418,13 @@ MapDirection LuaGetMapDirection(lua_State *lua, int idx, const char *key, MapDir
 
 RandomInt LuaGetRandomInt(lua_State *lua, int idx, const char *key)
 {
-    // Pops Lua nil, function or number; returns a RandomInt (defaults to zero).
-
+    // Returns a RandomInt (defaults to zero).
     lua_getfield(lua, idx, key);  // [.. function/number]
-
+    return LuaPopRandomInt(lua, key);  // [..]
+}
+    
+RandomInt LuaPopRandomInt(lua_State *lua, const char *key)
+{
     if (lua_isnil(lua, -1)) {
         lua_pop(lua, 1);
         return RandomInt();
@@ -428,7 +450,11 @@ void LuaGetTileList(lua_State *lua, int tbl_idx, const char *key, std::vector<bo
 {
     tiles.clear();
     lua_getfield(lua, tbl_idx, key);  // [... tbl]
+    LuaPopTileList(lua, tiles);
+}
 
+void LuaPopTileList(lua_State *lua, std::vector<boost::shared_ptr<Tile> > &tiles)
+{
     if (!lua_isnil(lua, -1)) {
         lua_len(lua, -1); // [... tbl len]
         const int sz = lua_tointeger(lua, -1);

@@ -50,6 +50,7 @@ public:
     virtual ~MonsterType() { }
 
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
+    virtual void newIndex(lua_State *lua); // handles keys common to all montypes
     
     // makeMonster should both return a new monster object, and start off an AI task.
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const = 0;

@@ -41,7 +41,7 @@ public:
     explicit ItemGenerator(lua_State *lua);
     ItemGenerator() { }
     
-    std::pair<const ItemType *, int> get() const;
+    std::pair<ItemType *, int> get() const;
 
 private:
     LuaRef item_gen_func;

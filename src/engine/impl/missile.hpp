@@ -39,7 +39,7 @@ class ItemType;
 //                       => If true, the missile can hit anyone (used for traps etc).
 // Returns true if the missile was successfully created.
 bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir, 
-                   const ItemType &it, bool drop_after, bool with_strength,
+                   ItemType &it, bool drop_after, bool with_strength,
                    const Originator &owner, bool allow_friendly_fire);
 
 // The Missile class itself
@@ -47,7 +47,7 @@ class Missile : public Entity {
     friend class MissileTask;
 
 public:
-    Missile(const ItemType &it, bool da, const Originator &ownr, bool allow_friendly_fire_);
+    Missile(ItemType &it, bool da, const Originator &ownr, bool allow_friendly_fire_);
     virtual MapHeight getHeight() const;
     void doubleRange() { range_left *= 2; } // used for strength
     const Originator & getOwner() const { return owner; }
@@ -56,7 +56,7 @@ public:
     HitResult canHitPlayer(const Player *target) const;
 
 private:
-    const ItemType &itype;
+    ItemType &itype;
     int range_left;
     bool drop_after;
     Originator owner;

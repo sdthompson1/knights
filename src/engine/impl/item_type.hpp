@@ -77,7 +77,8 @@ public:
              const LuaFunc &drop_action);
     
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
-
+    void newIndex(lua_State *lua);
+    
     // Graphics
     const Graphic * getSingleGraphic() const { return graphic; }
     const Graphic * getStackGraphic() const { return stack_graphic; }
@@ -101,9 +102,9 @@ public:
     int getMeleeBackswingTime() const { return melee_backswing_time; }
     int getMeleeDownswingTime() const { return melee_downswing_time; }
     void doCreatureImpact(int gvt, shared_ptr<Creature> attacker,
-                          shared_ptr<Creature> target, bool with_strength) const;
+                          shared_ptr<Creature> target, bool with_strength);
     void doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap, const MapCoord &mc, 
-                      bool with_strength) const;
+                      bool with_strength);
     float getParryChance() const { return parry_chance; }
     
     // Missile properties
@@ -126,11 +127,11 @@ public:
     int getReloadTime() const { return reload_time; }
     const LuaFunc & getReloadAction() const { return reload_action; }
     int getReloadActionTime() const { return reload_action_time; }
-    const ItemType * getAmmo() const { return ammo; }
-    const ItemType * getLoaded() const { return canLoad() ? loaded : 0; }
-    const ItemType * getUnloaded() const { return canShoot() ? loaded : 0; }
-    void setLoaded(const ItemType *i) { loaded = i; }
-    void setUnloaded(const ItemType *i) { loaded = i; reload_time = -1; }
+    ItemType * getAmmo() const { return ammo; }
+    ItemType * getLoaded() const { return canLoad() ? loaded : 0; }
+    ItemType * getUnloaded() const { return canShoot() ? loaded : 0; }
+    void setLoaded(ItemType *i) { loaded = i; }
+    void setUnloaded(ItemType *i) { loaded = i; reload_time = -1; }
     
     // Keys and traps
     bool canOpenTraps() const { return open_traps; } // used for staffs
@@ -154,22 +155,22 @@ public:
     // Actions
 
     // onPickUp -- runs on_pick_up
-    void onPickUp(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor) const;
+    void onPickUp(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor);
 
     // onDrop -- runs on_drop
-    void onDrop(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor) const;
+    void onDrop(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor);
 
     // onWalkOver -- runs on_walk_over
     // (NB Does nothing if actor->getHeight() != H_WALKING.)
-    void onWalkOver(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &item_owner) const;
+    void onWalkOver(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &item_owner);
 
     // onHit -- runs on_hit
-    void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor) const;
+    void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor);
 
     // runMeleeAction -- runs melee_action against either a creature or a tile
-    void runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> victim) const;
+    void runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> victim);
     void runMeleeAction(shared_ptr<Creature> actor, DungeonMap &, const MapCoord &,
-                        shared_ptr<Tile> target) const;
+                        shared_ptr<Tile> target);
 
     int getTutorialKey() const { return tutorial_key; }
     
@@ -206,8 +207,8 @@ private:
     const Anim * missile_anim;
     
     int reload_time;                       // 0 if can't fire, -ve if loaded
-    const ItemType * ammo;
-    const ItemType * loaded;
+    ItemType * ammo;
+    ItemType * loaded;
     LuaFunc reload_action;
     int reload_action_time;
     

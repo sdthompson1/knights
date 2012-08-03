@@ -88,7 +88,7 @@ public:
     void setStuffBagGraphic(lua_State *lua, const Graphic *gfx);
     
     // Get the ItemType for a stuff bag: (this is unique)
-    const ItemType & getStuffBagItemType() const { return *stuff_bag_item_type; }
+    ItemType & getStuffBagItemType() const { return *stuff_bag_item_type; }
     
     // Assign a StuffContents to a given MapCoord
     // (it's assumed that a stuff bag item will be put down at that position)
@@ -113,7 +113,7 @@ public:
     void doDrop(const MapCoord &, shared_ptr<Knight> actor);
 
     // This is used for counting how many items of various types exist in stuff bags
-    void countItems(std::map<const ItemType *, int> &result) const;    
+    void countItems(std::map<ItemType *, int> &result) const;    
 
     
 private:

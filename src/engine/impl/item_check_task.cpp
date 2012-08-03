@@ -41,16 +41,16 @@ ItemCheckTask::ItemCheckTask(DungeonMap &dmap_, int interval_)
     
     findMissingItems(required_items);
 
-    for (std::map<const ItemType *, int>::iterator it = required_items.begin(); it != required_items.end(); ++it) {
+    for (std::map<ItemType *, int>::iterator it = required_items.begin(); it != required_items.end(); ++it) {
         it->second = -(it->second);
     }
 }
 
 void ItemCheckTask::execute(TaskManager &tm)
 {
-    std::map<const ItemType *, int> missing_items;
+    std::map<ItemType *, int> missing_items;
     findMissingItems(missing_items);
-    for (std::map<const ItemType *, int>::const_iterator it = missing_items.begin(); it != missing_items.end(); ++it) {
+    for (std::map<ItemType *, int>::const_iterator it = missing_items.begin(); it != missing_items.end(); ++it) {
         if (it->second > 0) {
             // Add to displaced items list
             boost::shared_ptr<Item> item(new Item(*it->first, it->second));
@@ -60,12 +60,12 @@ void ItemCheckTask::execute(TaskManager &tm)
     tm.addTask(shared_from_this(), TP_NORMAL, tm.getGVT() + interval);
 }
 
-void ItemCheckTask::processItemType(std::map<const ItemType *, int> &missing_items, const ItemType &itype, int no)
+void ItemCheckTask::processItemType(std::map<ItemType *, int> &missing_items, ItemType &itype, int no)
 {
     // we are only interested in critical items.
     if (!itype.isCritical()) return;
     
-    std::map<const ItemType *, int>::iterator it = missing_items.find(&itype);
+    std::map<ItemType *, int>::iterator it = missing_items.find(&itype);
     if (it != missing_items.end()) {
         it->second -= no;
     } else {
@@ -73,18 +73,18 @@ void ItemCheckTask::processItemType(std::map<const ItemType *, int> &missing_ite
     }
 }    
 
-void ItemCheckTask::processItem(std::map<const ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item)
+void ItemCheckTask::processItem(std::map<ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item)
 {
     // Wrapper around processItemType.
     if (!item) return;
     processItemType(missing_items, item->getType(), item->getNumber());
 }
 
-void ItemCheckTask::findMissingItems(std::map<const ItemType *, int> &missing_items) const
+void ItemCheckTask::findMissingItems(std::map<ItemType *, int> &missing_items) const
 {
     Mediator & mediator = Mediator::instance();
     const StuffManager & stuff_manager = mediator.getStuffManager();
-    const ItemType & stuff_item_type = stuff_manager.getStuffBagItemType();
+    ItemType & stuff_item_type = stuff_manager.getStuffBagItemType();
     
     std::vector<boost::shared_ptr<Tile> > tiles;
     

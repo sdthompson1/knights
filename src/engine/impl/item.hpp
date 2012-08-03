@@ -47,10 +47,10 @@ class Item {
 public:
     // The ItemType is assumed not to be deleted until the end of the
     // game. Also, an individual item never changes its ItemType.
-    explicit Item(const ItemType &t, int no = 1);
+    explicit Item(ItemType &t, int no = 1);
 
     // ItemTypes can be compared by taking their addresses (eg &i1.getType() == &i2.getType())
-    const ItemType & getType() const { return type; }
+    ItemType & getType() const { return type; }
 
     // get/set the number in the stack.
     int getNumber() const { return number; }
@@ -66,7 +66,7 @@ public:
     void setOwner(const Originator &o) { owner = o; }
     
 private:
-    const ItemType &type;
+    ItemType &type;
     int number;
     Originator owner;
 };

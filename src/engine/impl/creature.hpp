@@ -44,7 +44,7 @@ class Creature : public Entity {
     friend class ThrowingTask;
 public:
     // ctor, dtor
-    Creature(int health, MapHeight height, const ItemType * item_in_hand,
+    Creature(int health, MapHeight height, ItemType * item_in_hand,
              const Anim * lower_anim, int base_speed);
 
     // various accessors
@@ -58,8 +58,8 @@ public:
     virtual Originator getOriginator() const { return Originator(OT_None()); } // default -- unknown originator.
 
     // item in hand
-    const ItemType * getItemInHand() const { return item_in_hand; }
-    virtual void setItemInHand(const ItemType * i)  // pass 0 to mean 'no item in hand'
+    ItemType * getItemInHand() const { return item_in_hand; }
+    virtual void setItemInHand(ItemType * i)  // pass 0 to mean 'no item in hand'
         { doSetItemInHand(i); }
 
     // remove given no. of a given itemtype from inventory.
@@ -177,11 +177,11 @@ public:
     void resetWalkOverFlag() { walk_over_pos = getPos(); }
     
 protected:
-    void doSetItemInHand(const ItemType *i);
+    void doSetItemInHand(ItemType *i);
     virtual bool isParalyzed() const { return false; } // if true, then makes the creature stunned (for an unknown time).
 
     // routines for throwing daggers, axes etc
-    void doThrow(const ItemType &);
+    void doThrow(ItemType &);
     virtual void throwAwayItem(const ItemType *);
     
 private:
@@ -195,7 +195,7 @@ private:
     int health, max_health;
     int speed; // base speed, before quickness is applied
     int stun_until;  // 0 if not stunned. NB stun_until is guaranteed to be non-decreasing.
-    const ItemType * item_in_hand;
+    ItemType * item_in_hand;
     int impact_time;  // if nonzero, the creature is attacking and will hit at this time.
     MapCoord walk_over_pos;
 };

@@ -163,7 +163,7 @@ void MissileTask::execute(TaskManager &tm)
 }
 
 bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
-                   const ItemType &itype, bool drop_after, bool with_strength,
+                   ItemType &itype, bool drop_after, bool with_strength,
                    const Originator &owner, bool allow_friendly_fire)
 {
     // Check if we can place a missile here
@@ -192,7 +192,7 @@ bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
     return true;
 }
 
-Missile::Missile(const ItemType &it, bool da, const Originator & ownr, bool aff)
+Missile::Missile(ItemType &it, bool da, const Originator & ownr, bool aff)
     : itype(it), range_left(it.getMissileRange()), drop_after(da), owner(ownr), allow_friendly_fire(aff)
 {
     setAnim(it.getMissileAnim());

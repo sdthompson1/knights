@@ -105,7 +105,7 @@ namespace {
         // Map and pos come from the "Item" field of ActionData
         DungeonMap *dmap;
         MapCoord mc;
-        const ItemType *dummy;
+        ItemType *dummy;
         ad.getItem(dmap, mc, dummy);
         if (!dmap || mc.isNull()) return;
 
@@ -215,7 +215,7 @@ void StuffManager::doDrop(const MapCoord &mc, shared_ptr<Knight> actor)
     it->second.runDropEvents(*loc.dmap, mc, actor);
 }
 
-void StuffManager::countItems(std::map<const ItemType *, int> &result) const
+void StuffManager::countItems(std::map<ItemType *, int> &result) const
 {
     for (map<Location, StuffContents>::const_iterator stuff_it = stuff_map.begin();
     stuff_it != stuff_map.end();
@@ -227,8 +227,8 @@ void StuffManager::countItems(std::map<const ItemType *, int> &result) const
         for (vector<shared_ptr<Item> >::const_iterator item_it = stuff_it->second.getItems().begin();
         item_it != stuff_it->second.getItems().end();
         ++item_it) {
-            const ItemType * item_type = &((*item_it)->getType());
-            std::map<const ItemType*, int>::iterator result_it = result.find(item_type);
+            ItemType * item_type = &((*item_it)->getType());
+            std::map<ItemType*, int>::iterator result_it = result.find(item_type);
             if (result_it != result.end()) ++ result_it->second;
         }
     }

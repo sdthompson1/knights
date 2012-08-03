@@ -38,7 +38,7 @@ ItemGenerator::ItemGenerator(lua_State *lua)
     item_gen_func.reset(lua);
 }
 
-std::pair<const ItemType *, int> ItemGenerator::get() const
+std::pair<ItemType *, int> ItemGenerator::get() const
 {
     // Call the function -- pass no args, get upto 2 results.
     lua_State *lua = item_gen_func.getLuaState();
@@ -47,7 +47,7 @@ std::pair<const ItemType *, int> ItemGenerator::get() const
     item_gen_func.push(lua);   // [... func]
     LuaExec(lua, 0, 2);    // [... r1 r2]
 
-    const ItemType * itype = ReadLuaPtr<const ItemType>(lua, -2);
+    ItemType * itype = ReadLuaPtr<ItemType>(lua, -2);
     int num = lua_tointeger(lua, -1);
     if (num < 1) num = 1;
 

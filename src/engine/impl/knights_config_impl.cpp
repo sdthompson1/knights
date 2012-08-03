@@ -139,7 +139,7 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
 
         // Load misc other stuff.
         lua_getfield(lua, -1, "DEFAULT_ITEM");
-        default_item = ReadLuaPtr<const ItemType>(lua, -1);
+        default_item = ReadLuaPtr<ItemType>(lua, -1);
         lua_pop(lua, 1);
         
         lua_getfield(lua, -1, "KNIGHT_ANIM");  // [env kts anim]

@@ -146,7 +146,7 @@ void RespawnTask::execute(TaskManager &tm)
 //
 
 Player::Player(int plyr_num,
-               const Anim *a, const ItemType * di, 
+               const Anim *a, ItemType * di, 
                const vector<const Control*> &cs, 
                shared_ptr<const ColourChange> sec_home_cc,
                const std::string &name_,
@@ -165,7 +165,7 @@ Player::Player(int plyr_num,
 }
 
 
-void Player::addStartingGear(const ItemType &itype, const vector<int> &numbers)
+void Player::addStartingGear(ItemType &itype, const vector<int> &numbers)
 {
     if (gears.size() < numbers.size()) gears.resize(numbers.size());
 
@@ -386,9 +386,9 @@ void Player::onDeath()
 // respawn
 //
 
-void Player::giveStartingGear(shared_ptr<Knight> knight, const vector<pair<const ItemType *, int> > &items)
+void Player::giveStartingGear(shared_ptr<Knight> knight, const vector<pair<ItemType *, int> > &items)
 {
-    for (vector<pair<const ItemType *, int> >::const_iterator it = items.begin(); it != items.end(); ++it) {
+    for (vector<pair<ItemType *, int> >::const_iterator it = items.begin(); it != items.end(); ++it) {
         knight->addToBackpack(*it->first, it->second);
     }
 }
@@ -479,7 +479,7 @@ bool Player::respawn()
 // This returns the item and tile that caused a control to be generated. This information can
 // be used to set up an ActionData. Note that the corresponding dmap can be taken from the
 // Knight itself.
-void Player::getControlInfo(const Control *ctrl_in, const ItemType *& itype_out,
+void Player::getControlInfo(const Control *ctrl_in, ItemType *& itype_out,
                             weak_ptr<Tile> &tile_out, MapCoord &tile_mc_out) const
 {
     map<const Control *, ControlInfo>::const_iterator it;
@@ -617,7 +617,7 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
     }
 }
 
-void Player::addItemControls(const ItemType &itype, map<const Control *, ControlInfo> &cmap,
+void Player::addItemControls(ItemType &itype, map<const Control *, ControlInfo> &cmap,
                              shared_ptr<Creature> cr)
 {
     if (!cr) return;

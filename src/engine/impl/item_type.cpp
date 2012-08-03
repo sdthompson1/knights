@@ -42,7 +42,7 @@ ItemType::ItemType(lua_State *lua, int idx)
     ASSERT(lua);
 
     allow_strength = LuaGetBool(lua, idx, "allow_strength", true);
-    ammo = LuaGetPtr<const ItemType>(lua, idx, "ammo");
+    ammo = LuaGetPtr<ItemType>(lua, idx, "ammo");
     backpack_graphic = LuaGetPtr<Graphic>(lua, idx, "backpack_graphic");
     backpack_overdraw = LuaGetPtr<Graphic>(lua, idx, "backpack_overdraw");
     backpack_slot = LuaGetInt(lua, idx, "backpack_slot");
@@ -133,7 +133,156 @@ ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
     is = item_size;
     loaded = 0;
 }
-    
+
+void ItemType::newIndex(lua_State *lua)
+{
+    // [ud key val]
+    if (!lua_isstring(lua, 2)) return;
+    const std::string k = lua_tostring(lua, 2);
+
+    // slow one-by-one string comparisons, seems easiest way though, and
+    // this code would only be run during setup.
+    if (k == "allow_strength") {
+        allow_strength = lua_toboolean(lua, 3) != 0;
+
+    } else if (k == "ammo") {
+        ammo = ReadLuaPtr<ItemType>(lua, 3);
+
+    } else if (k == "backpack_graphic") {
+        backpack_graphic = ReadLuaPtr<Graphic>(lua, 3);
+
+    } else if (k == "backpack_overdraw") {
+        backpack_overdraw = ReadLuaPtr<Graphic>(lua, 3);
+
+    } else if (k == "backpack_slot") {
+        backpack_slot = lua_tointeger(lua, 3);
+
+    } else if (k == "can_throw") {
+        can_throw = lua_toboolean(lua, 3) != 0;
+
+    } else if (k == "control") {
+        control = ReadLuaPtr<Control>(lua, 3);
+
+    } else if (k == "fragile") {
+        fragile = lua_toboolean(lua, 3) != 0;
+
+    } else if (k == "graphic") {
+        graphic = ReadLuaPtr<Graphic>(lua, 3);
+        
+    } else if (k == "key") {
+        key = lua_tointeger(lua, 3);
+
+    } else if (k == "max_stack") {
+        max_stack = lua_tointeger(lua, 3);
+
+    } else if (k == "melee_action") {
+        lua_pushvalue(lua, 3);
+        melee_action = LuaFunc(lua); // pops
+
+    } else if (k == "melee_backswing_time") {
+        melee_backswing_time = lua_tointeger(lua, 3);
+
+    } else if (k == "melee_damage") {
+        lua_pushvalue(lua, 3);
+        melee_damage = LuaPopRandomInt(lua, "melee_damage");
+
+    } else if (k == "melee_downswing_time") {
+        melee_downswing_time = lua_tointeger(lua, 3);
+
+    } else if (k == "melee_stun_time") {
+        lua_pushvalue(lua, 3);
+        melee_stun_time = LuaPopRandomInt(lua, "melee_stun_time");
+
+    } else if (k == "melee_tile_damage") {
+        lua_pushvalue(lua, 3);
+        melee_tile_damage = LuaPopRandomInt(lua, "melee_tile_damage");
+
+    } else if (k == "missile_access_chance") {
+        missile_access_chance = float(lua_tonumber(lua, 3));
+
+    } else if (k == "missile_anim") {
+        missile_anim = ReadLuaPtr<Anim>(lua, 3);
+
+    } else if (k == "missile_backswing_time") {
+        missile_backswing_time = lua_tointeger(lua, 3);
+
+    } else if (k == "missile_damage") {
+        lua_pushvalue(lua, 3);
+        missile_damage = LuaPopRandomInt(lua, "missile_damage");
+
+    } else if (k == "missile_downswing_time") {
+        missile_downswing_time = lua_tointeger(lua, 3);
+
+    } else if (k == "missile_hit_multiplier") {
+        missile_hit_multiplier = lua_tointeger(lua, 3);
+
+    } else if (k == "missile_range") {
+        missile_range = lua_tointeger(lua, 3);
+
+    } else if (k == "missile_speed") {
+        missile_speed = lua_tointeger(lua, 3);
+
+    } else if (k == "missile_stun_time") {
+        lua_pushvalue(lua, 3);
+        missile_stun_time = LuaPopRandomInt(lua, "missile_stun_time");
+
+    } else if (k == "on_drop") {
+        lua_pushvalue(lua, 3);
+        on_drop = LuaFunc(lua); // pops
+
+    } else if (k == "on_hit") {
+        lua_pushvalue(lua, 3);
+        on_hit = LuaFunc(lua);
+
+    } else if (k == "on_pick_up") {
+        lua_pushvalue(lua, 3);
+        on_pick_up = LuaFunc(lua);
+
+    } else if (k == "on_walk_over") {
+        lua_pushvalue(lua, 3);
+        on_walk_over = LuaFunc(lua);
+
+    } else if (k == "open_traps") {
+        open_traps = lua_toboolean(lua, 3) != 0;
+
+    } else if (k == "overlay") {
+        overlay = ReadLuaPtr<Overlay>(lua, 3);
+
+    } else if (k == "parry_chance") {
+        parry_chance = float(lua_tonumber(lua, 3));
+
+    } else if (k == "reload_action") {
+        lua_pushvalue(lua, 3);
+        reload_action = LuaFunc(lua); // pops
+
+    } else if (k == "reload_action_time") {
+        reload_action_time = lua_tointeger(lua, 3);
+
+    } else if (k == "reload_time") {
+        luaL_error(lua, "Re-setting 'reload_time' after construction is not implemented");
+        
+    } else if (k == "stack_graphic") {
+        stack_graphic = ReadLuaPtr<Graphic>(lua, 3);
+        if (!stack_graphic) stack_graphic = graphic;
+
+    } else if (k == "tutorial") {
+        tutorial_key = lua_tointeger(lua, 3);
+
+    } else if (k == "type") {
+        lua_pushvalue(lua, 3);
+        is = LuaPopItemSize(lua, IS_NOPICKUP);
+
+    } else if (k == "critical") {
+        if (lua_toboolean(lua, 3) != 0) {
+            const char *p = lua_tostring(lua, 3);
+            if (p) critical_msg = p;
+            is_critical = true;
+        } else {
+            is_critical = false;
+        }
+    }
+}        
+
 
 //
 // combat stuff
@@ -141,7 +290,7 @@ ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
 
 void ItemType::doCreatureImpact(int gvt, shared_ptr<Creature> attacker,
                                 shared_ptr<Creature> target,
-                                bool with_strength) const
+                                bool with_strength)
 {
     if (!target) return;
 
@@ -154,7 +303,7 @@ void ItemType::doCreatureImpact(int gvt, shared_ptr<Creature> attacker,
 }
 
 void ItemType::doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap,
-                            const MapCoord &mc, bool with_strength) const
+                            const MapCoord &mc, bool with_strength)
 {
     // Impact against tiles. (This is only done against targettable tiles.)
     vector<shared_ptr<Tile> > tiles;
@@ -189,7 +338,7 @@ void ItemType::doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap,
 //
 
 void ItemType::onPickUp(DungeonMap &dmap, const MapCoord &mc,
-                        shared_ptr<Creature> actor) const
+                        shared_ptr<Creature> actor)
 {
     if (on_pick_up.hasValue()) {
         ActionData ad;
@@ -201,7 +350,7 @@ void ItemType::onPickUp(DungeonMap &dmap, const MapCoord &mc,
     }
 }
 
-void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor) const
+void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor)
 {
     if (on_drop.hasValue()) {
         ActionData ad;
@@ -216,7 +365,7 @@ void ItemType::onDrop(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 
 void ItemType::onWalkOver(DungeonMap &dmap, const MapCoord &mc,
                           shared_ptr<Creature> actor,
-                          const Originator &item_owner) const
+                          const Originator &item_owner)
 {
     if (on_walk_over.hasValue() && actor && actor->getHeight() == H_WALKING) {
         ActionData ad;
@@ -231,7 +380,7 @@ void ItemType::onWalkOver(DungeonMap &dmap, const MapCoord &mc,
     }
 }
 
-void ItemType::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor) const
+void ItemType::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> actor)
 {
     if (on_hit.hasValue()) {
         ActionData ad;
@@ -243,7 +392,7 @@ void ItemType::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> 
     }
 }
 
-void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> victim) const
+void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> victim)
 {
     if (melee_action.hasValue()) {
         ActionData ad;
@@ -260,7 +409,7 @@ void ItemType::runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> v
 
 void ItemType::runMeleeAction(shared_ptr<Creature> actor,
                               DungeonMap &dmap, const MapCoord &mc,
-                              shared_ptr<Tile> tile) const
+                              shared_ptr<Tile> tile)
 {
     if (melee_action.hasValue()) {
         ActionData ad;

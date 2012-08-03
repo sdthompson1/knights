@@ -90,18 +90,9 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
 
     // read the "access" field
     lua_getfield(lua, -1, "access");   // [t access-table]
-    
     if (!lua_isnil(lua, -1)) {
-        lua_getfield(lua, -1, "flying");   // [t at access]
-        access[H_FLYING] = PopAccess(lua); // [t at]
-
-        lua_getfield(lua, -1, "missiles");
-        access[H_MISSILES] = PopAccess(lua);
-
-        lua_getfield(lua, -1, "walking");
-        access[H_WALKING] = PopAccess(lua);
+        readAccess(lua);
     }
-
     lua_pop(lua, 1);  // [t]
     
     // read other fields
@@ -160,6 +151,26 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
     on_withdraw.reset(lua, -1, "on_withdraw");
 
     lua_getfield(lua, -1, "stairs_down");
+    readStairsDown(lua);
+    lua_pop(lua, 1);
+
+    tutorial_key = LuaGetInt(lua, -1, "tutorial");  // default 0
+}
+
+void Tile::readAccess(lua_State *lua)
+{
+    lua_getfield(lua, -1, "flying");   // [at access]
+    access[H_FLYING] = PopAccess(lua); // [at]
+
+    lua_getfield(lua, -1, "missiles");
+    access[H_MISSILES] = PopAccess(lua);
+    
+    lua_getfield(lua, -1, "walking");
+    access[H_WALKING] = PopAccess(lua);
+}    
+
+void Tile::readStairsDown(lua_State *lua)
+{
     if (lua_isnil(lua, -1)) {
         is_stair = stair_top = false;
     } else {
@@ -173,9 +184,6 @@ Tile::Tile(lua_State *lua, KnightsConfigImpl *kc)
             stair_direction = GetMapDirection(lua, -1);
         }
     }
-    lua_pop(lua, 1);
-
-    tutorial_key = LuaGetInt(lua, -1, "tutorial");  // default 0
 }
 
 Tile::Tile(const LuaFunc &walk_over, const LuaFunc &activate)
@@ -190,6 +198,85 @@ Tile::Tile(const LuaFunc &walk_over, const LuaFunc &activate)
     items_mode = ALLOWED;
     is_stair = stair_top = false;
     tutorial_key = 0;
+}
+
+void Tile::newIndex(lua_State *lua)
+{
+    // [ud key val]
+    if (!lua_isstring(lua, 2)) {
+        return;
+    }
+
+    const std::string k = lua_tostring(lua, 2);
+
+    if (k == "access") {
+        if (lua_isnil(lua, 3)) {
+            luaL_error(lua, "Cannot set 'access' to nil");
+        } else {
+            lua_pushvalue(lua, 3);
+            readAccess(lua);
+            lua_pop(lua, 1);
+        }
+
+    } else if (k == "connectivity_check") {
+        connectivity_check = lua_tointeger(lua, 3);
+
+    } else if (k == "control") {
+        if (IsLuaPtr<Control>(lua, 3)) {
+            control = ReadLuaPtr<Control>(lua, 3);
+        } else {
+            control = 0;
+            lua_pushvalue(lua, 3);
+            control_func_ref.reset(lua); // pops
+        }
+
+    } else if (k == "depth") {
+        depth = lua_tointeger(lua, 3);
+
+    } else if (k == "graphic") {
+        graphic = ReadLuaPtr<Graphic>(lua, 3);
+
+    } else if (k == "hit_points") {
+        lua_pushvalue(lua, 3);
+        initial_hit_points = LuaPopRandomInt(lua, "hit_points");
+
+    } else if (k == "items") {
+        // we need access to kconfigimpl which is tricky...
+        luaL_error(lua, "Sorry, resetting 'items' after construction is not currently implemented.");
+
+    } else if (k == "on_activate") {
+        lua_pushvalue(lua, 3);
+        on_activate = LuaFunc(lua); // pops
+
+    } else if (k == "on_approach") {
+        lua_pushvalue(lua, 3);
+        on_approach = LuaFunc(lua);
+
+    } else if (k == "on_destroy") {
+        lua_pushvalue(lua, 3);
+        on_destroy = LuaFunc(lua);
+
+    } else if (k == "on_hit") {
+        lua_pushvalue(lua, 3);
+        on_hit = LuaFunc(lua);
+
+    } else if (k == "on_walk_over") {
+        lua_pushvalue(lua, 3);
+        on_walk_over = LuaFunc(lua);
+
+    } else if (k == "on_withdraw") {
+        lua_pushvalue(lua, 3);
+        on_withdraw = LuaFunc(lua);
+
+    } else if (k == "stairs_down") {
+        lua_pushvalue(lua, 3);
+        readStairsDown(lua);
+        lua_pop(lua, 1);
+
+    } else if (k == "tutorial") {
+        tutorial_key = lua_tointeger(lua, 3);
+
+    }
 }
 
 shared_ptr<Tile> Tile::clone(bool force_copy)

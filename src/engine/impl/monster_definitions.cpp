@@ -222,6 +222,33 @@ FlyingMonsterType::FlyingMonsterType(lua_State *lua)
     stun = LuaGetRandomInt(lua, -1, "attack_stun_time");
 }
 
+void FlyingMonsterType::newIndex(lua_State *lua)
+{
+    if (!lua_isstring(lua, 2)) return;
+    const std::string k = lua_tostring(lua, 2);
+
+    if (k == "health") {
+        lua_pushvalue(lua, 3);
+        health = LuaPopRandomInt(lua, "health");
+
+    } else if (k == "speed") {
+        speed = lua_tointeger(lua, 3);
+
+    } else if (k == "anim") {
+        anim = ReadLuaPtr<Anim>(lua, 3);
+
+    } else if (k == "attack_damage") {
+        dmg = lua_tointeger(lua ,3);
+
+    } else if (k == "attack_stun_time") {
+        lua_pushvalue(lua, 3);
+        stun = LuaPopRandomInt(lua, "attack_stun_time");
+
+    } else {
+        MonsterType::newIndex(lua);
+    }
+}    
+
 shared_ptr<Monster> FlyingMonsterType::makeMonster(TaskManager &tm) const
 {
     const int h = std::min(1, health.get());
@@ -461,13 +488,42 @@ WalkingMonsterType::WalkingMonsterType(lua_State *lua)
     speed = LuaGetInt(lua, -1, "speed");
     anim = LuaGetPtr<Anim>(lua, -1, "anim");
 
-    weapon = LuaGetPtr<const ItemType>(lua, -1, "weapon");
-    fear_item = LuaGetPtr<const ItemType>(lua, -1, "ai_fear");
-    hit_item = LuaGetPtr<const ItemType>(lua, -1, "ai_hit");
+    weapon = LuaGetPtr<ItemType>(lua, -1, "weapon");
+    fear_item = LuaGetPtr<ItemType>(lua, -1, "ai_fear");
+    hit_item = LuaGetPtr<ItemType>(lua, -1, "ai_hit");
 
     LuaGetTileList(lua, -1, "ai_avoid", avoid_tiles);
 }
 
+void WalkingMonsterType::newIndex(lua_State *lua)
+{
+    if (!lua_isstring(lua, 2)) return;
+    const std::string k = lua_tostring(lua, 2);
+
+    if (k == "health") {
+        lua_pushvalue(lua, 3);
+        health = LuaPopRandomInt(lua, "health");
+
+    } else if (k == "speed") {
+        speed = lua_tointeger(lua, 3);
+
+    } else if (k == "anim") {
+        anim = ReadLuaPtr<Anim>(lua, 3);
+
+    } else if (k == "weapon") {
+        weapon = ReadLuaPtr<ItemType>(lua, 3);
+
+    } else if (k == "ai_fear") {
+        fear_item = ReadLuaPtr<ItemType>(lua, 3);
+
+    } else if (k == "ai_hit") {
+        hit_item = ReadLuaPtr<ItemType>(lua, 3);
+
+    } else if (k == "ai_avoid") {
+        lua_pushvalue(lua, 3);
+        LuaPopTileList(lua, avoid_tiles);
+    }
+}
 
 shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
 {

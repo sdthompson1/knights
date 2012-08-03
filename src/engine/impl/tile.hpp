@@ -66,7 +66,8 @@ public:
     Tile(const LuaFunc &walk_over, const LuaFunc &activate);
     
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
-
+    void newIndex(lua_State *lua);
+    
     // clone
     // Clones the tile.
     // WARNING: some tiles are copied and some are shared, so "clone" could either return a new copy
@@ -199,6 +200,9 @@ protected:
     void setCCNoNotify(shared_ptr<ColourChange> cc_) { cc = cc_; }
     
 private:
+    void readAccess(lua_State *lua);
+    void readStairsDown(lua_State *lua);
+    
     // SetHitPoints -- this sets hit_points, using initial_hit_points.
     // This is called automatically by "clone", so new copies of tiles will automatically
     // be given an appropriate (possibly randomized) number of hit points.

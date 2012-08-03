@@ -173,7 +173,7 @@ private:
     std::vector<boost::shared_ptr<ColourChange> > secured_cc;
     Anim * knight_anim;   // In colours of house 0, ie house_colours[0] is always 'empty'.
     std::vector<Anim *> knight_anims;   // copies of 'knight_anim' with appropriate colour changes
-    const ItemType * default_item;
+    ItemType * default_item;
     std::vector<const Control *> control_set;
     const Graphic *stuff_bag_graphic;
 

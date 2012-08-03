@@ -108,7 +108,7 @@ namespace {
     {
         KnightsEngine &ke = GetKnightsEngine(lua);
         
-        const ItemType *itype = ReadLuaPtr<const ItemType>(lua, 1);
+        ItemType *itype = ReadLuaPtr<ItemType>(lua, 1);
         if (!itype) luaL_error(lua, "AddItem: no item specified");
 
         const int qty = luaL_checkinteger(lua, 2);
@@ -213,7 +213,7 @@ namespace {
     int ConnectivityCheck_Lua(lua_State *lua)
     {
         const int num_keys = luaL_checkinteger(lua, 1);
-        const ItemType *lockpicks = ReadLuaPtr<const ItemType>(lua, 2);
+        ItemType *lockpicks = ReadLuaPtr<ItemType>(lua, 2);
         if (!lockpicks) {
             luaL_error(lua, "Invalid Lockpicks itemtype passed to ConnectivityCheck");
         }
@@ -321,7 +321,7 @@ namespace {
 
     int SetDeathmatchMode(lua_State *lua)
     {
-        const bool dm = lua_toboolean(lua, 1);
+        const bool dm = lua_toboolean(lua, 1) != 0;
         Mediator::instance().setDeathmatchMode(dm);
         return 0;
     }
@@ -342,7 +342,7 @@ namespace {
     
     int AddStartingGear(lua_State *lua)
     {
-        const ItemType *itype = ReadLuaPtr<const ItemType>(lua, 1);
+        ItemType *itype = ReadLuaPtr<ItemType>(lua, 1);
         if (!itype) luaL_error(lua, "AddStartingGear: no item specified");
 
         std::vector<int> num;
@@ -361,12 +361,12 @@ namespace {
         const int sz = lua_tointeger(lua, -1);
         lua_pop(lua, 1);
 
-        std::vector<const ItemType *> itemtypes;
+        std::vector<ItemType *> itemtypes;
         
         for (int i = 1; i <= sz; ++i) {
             lua_pushinteger(lua, i);
             lua_gettable(lua, 1);
-            const ItemType *itype = ReadLuaPtr<const ItemType>(lua, -1);
+            ItemType *itype = ReadLuaPtr<ItemType>(lua, -1);
             if (!itype) {
                 luaL_error(lua, "Table entry %d is not a valid itemtype", i);
             }
@@ -384,7 +384,7 @@ namespace {
 
     int SetLockpickSpawn(lua_State *lua)
     {
-        const ItemType *itype = ReadLuaPtr<const ItemType>(lua, 1);
+        ItemType *itype = ReadLuaPtr<ItemType>(lua, 1);
         if (!itype) luaL_error(lua, "Argument #1 is not a valid itemtype");
 
         // both times in ms

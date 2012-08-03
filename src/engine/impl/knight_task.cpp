@@ -72,7 +72,7 @@ void KnightTask::doControls(shared_ptr<Knight> knight)
         
         // check Lua possible function. Also set up the ActionData.
         if (possible) {
-            const ItemType *item_type = 0;
+            ItemType *item_type = 0;
             weak_ptr<Tile> tile;
             MapCoord tile_mc;
             player.getControlInfo(ctrl, item_type, tile, tile_mc);
@@ -136,7 +136,7 @@ void KnightTask::execute(TaskManager &tm)
 
     // Now do the crossbow loading
     const int gvt = tm.getGVT();    
-    const ItemType *held_item = knight->getItemInHand();
+    ItemType *held_item = knight->getItemInHand();
     bool can_load_xbow = !knight->isStunned()
         && !knight->isMoving()
         && held_item

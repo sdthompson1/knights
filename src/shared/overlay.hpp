@@ -41,7 +41,7 @@ public:
     void setID(int id_) { id = id_; }  // called by KnightsConfigImpl
     
     int getID() const { return id; }
-
+    
     // Given entity's current facing and frame, return which graphic
     // should be shown and the offset to display it at. NB can return
     // graphic==0 in which case the overlay should not be drawn at

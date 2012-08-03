@@ -74,7 +74,7 @@ struct LuaTraits<Sound> {
 };
 
 template<>
-struct LuaTraits<const ItemType> {
+struct LuaTraits<ItemType> {
     enum { tag = TAG_ITEM_TYPE };
 };
 

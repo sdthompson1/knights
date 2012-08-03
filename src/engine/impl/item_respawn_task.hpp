@@ -43,28 +43,28 @@ class ItemType;
 class ItemRespawnTask : public Task
 {
 public:
-    ItemRespawnTask(const std::vector<const ItemType*> &items_to_respawn,  // not including lockpicks
+    ItemRespawnTask(const std::vector<ItemType*> &items_to_respawn,  // not including lockpicks
                     int respawn_delay_,
                     int interval_,
-                    const ItemType * lockpicks_,
+                    ItemType * lockpicks_,
                     int lockpick_init_time_,
                     int lockpick_interval_);
 
     virtual void execute(TaskManager &tm);
 
-    void removeFromQueue(const ItemType &);
+    void removeFromQueue(ItemType &);
     
 private:
-    void countItems(std::map<const ItemType*, int> &result) const;
+    void countItems(std::map<ItemType*, int> &result) const;
     int countActiveLockpicks() const;
     
 private:
-    std::map<const ItemType*, int> initial_numbers;   // initial number of each item in the game.
-    std::map<const ItemType*, int> numbers_in_queue;  // number of each item with active respawn tasks.
+    std::map<ItemType*, int> initial_numbers;   // initial number of each item in the game.
+    std::map<ItemType*, int> numbers_in_queue;  // number of each item with active respawn tasks.
     int interval;    // interval at which checks are performed.
     int respawn_delay;    // delay between item disappearing and the respawned item appearing.
     
-    const ItemType * lockpicks;   // lockpicks are handled separately.
+    ItemType * lockpicks;        // lockpicks are handled separately.
     int lockpick_init_time;      // gvt at which we start respawning lockpicks
     int lockpick_interval;       // interval at which lockpicks are respawned.
     int last_lockpick_time;      // last time at which lockpicks were respawned

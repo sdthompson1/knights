@@ -58,7 +58,9 @@ class FlyingMonsterType : public MonsterType {
 public:
     // reads table from top of stack (does not pop stack)
     explicit FlyingMonsterType(lua_State *lua);
-
+    
+    virtual void newIndex(lua_State *lua);
+    
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_FLYING; }
 
@@ -106,13 +108,14 @@ private:
 class WalkingMonsterType : public MonsterType {
 public:
     explicit WalkingMonsterType(lua_State *lua);  // reads table from top of lua stack; doesn't pop
+    virtual void newIndex(lua_State *);
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_WALKING; }
     
 private:
     RandomInt health;
     int speed;
-    const ItemType *weapon;
+    ItemType *weapon;
     const Anim *anim;
 
     std::vector<shared_ptr<Tile> > avoid_tiles;
@@ -127,7 +130,7 @@ private:
 
 class WalkingMonster : public Monster {
 public:
-    WalkingMonster(const MonsterType &type, int health, const ItemType *weapon,
+    WalkingMonster(const MonsterType &type, int health, ItemType *weapon,
                    const Anim *anim, int speed)
         : Monster(type, health, H_WALKING, weapon, anim, speed) { }
     virtual int bloodLevel() const { return 0; }

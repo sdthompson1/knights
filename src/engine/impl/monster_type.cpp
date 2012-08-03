@@ -33,3 +33,16 @@ MonsterType::MonsterType(lua_State *lua)
 
     sound_action.reset(lua, -1, "sound");
 }
+
+void MonsterType::newIndex(lua_State *lua)
+{
+    // [ud key val]
+    if (!lua_isstring(lua, 2)) return;
+
+    const std::string k = lua_tostring(lua, 2);
+
+    if (k == "sound") {
+        lua_pushvalue(lua, 3);
+        sound_action = LuaFunc(lua); // pops
+    }
+}

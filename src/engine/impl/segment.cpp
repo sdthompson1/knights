@@ -90,8 +90,8 @@ void Segment::readTile(lua_State *lua, int x, int y)
         if (IsLuaPtr<Tile>(lua, -1)) {
             addTile(x, y, ReadLuaSharedPtr<Tile>(lua, -1));
 
-        } else if (IsLuaPtr<const ItemType>(lua, -1)) {
-            addItem(x, y, ReadLuaPtr<const ItemType>(lua, -1));
+        } else if (IsLuaPtr<ItemType>(lua, -1)) {
+            addItem(x, y, ReadLuaPtr<ItemType>(lua, -1));
 
         } else if (IsLuaPtr<MonsterType>(lua, -1)) {
             addMonster(x, y, ReadLuaPtr<MonsterType>(lua, -1));
@@ -291,7 +291,7 @@ void Segment::addTile(int x, int y, shared_ptr<Tile> t)
     }
 }
 
-void Segment::addItem(int x, int y, const ItemType *itype)
+void Segment::addItem(int x, int y, ItemType *itype)
 {
     if (!itype) return;
     if (x < 0 || x >= width || y < 0 || y >= height) return;

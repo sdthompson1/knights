@@ -51,7 +51,7 @@ public:
     // not in the map then the number held is assumed to be
     // unlimited.) (the map is not copied!)
     Knight(Player &pl, const map<const ItemType *, int> * backpack_capacities,
-           int health, MapHeight height, const ItemType * default_item,
+           int health, MapHeight height, ItemType * default_item,
            const Anim * lower_anim, int spd);
     virtual ~Knight();
 
@@ -111,19 +111,19 @@ public:
     //
     // -- "backpack" items are stored as (itemtype, number_held) pairs.
     //
-    virtual void setItemInHand(const ItemType *i);
+    virtual void setItemInHand(ItemType *i);
     bool canDropHeld() const { return getItemInHand() && getItemInHand() != default_item; }
 
     virtual void removeItem(const ItemType &itype, int number); // removes from either item-in-hand or backpack    
     
     int getBackpackCount() const { return backpack.size(); }   // get no of itemtypes in backpack
-    const ItemType & getBackpackItem(int idx) const { return *backpack[idx].first; }   // get itemtype
+    ItemType & getBackpackItem(int idx) const { return *backpack[idx].first; }   // get itemtype
     int getNumCarried(int idx) const { return backpack[idx].second; }                  // get number held (by index)
     int getNumCarried(const ItemType &itype) const;     // get number held (by itemtype)
     int getMaxNo(const ItemType &) const;  // returns 0 if no maximum (be careful!)
     
     bool canAddToBackpack(const ItemType &itype) const;  // true if (at least one of) "itype" can be added
-    int addToBackpack(const ItemType &itype, int no_to_add);  // returns number *actually* added.
+    int addToBackpack(ItemType &itype, int no_to_add);  // returns number *actually* added.
     void rmFromBackpack(const ItemType &itype, int no_to_rm);
     
     void dropAllItems(bool move_back = false);  // drops the entire inventory.
@@ -141,7 +141,7 @@ public:
     // throwing of backpack items (as opposed to item-in-hand).
     // canThrowItem: true if Creature::canThrow() and you are carrying itemtype and itemtype->canThrow().
     bool canThrowItem(const ItemType &itemtype, bool strict) const;
-    void throwItem(const ItemType &itemtype);
+    void throwItem(ItemType &itemtype);
     
 
 protected:
@@ -157,9 +157,9 @@ private:
     friend class ResetMagicTask;
     
 private:
-    typedef vector<pair<const ItemType *, int> > BackpackType;
+    typedef vector<pair<ItemType *, int> > BackpackType;
     BackpackType backpack;
-    const ItemType * default_item;
+    ItemType * default_item;
     const map<const ItemType*, int> * b_capacity;
     Player & player;
     PotionMagic potion_magic; int potion_stop_time;

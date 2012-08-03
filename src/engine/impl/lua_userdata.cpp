@@ -28,6 +28,7 @@
 #include "lua_func_wrapper.hpp"
 #include "lua_userdata.hpp"
 #include "map_support.hpp"
+#include "monster_type.hpp"
 #include "overlay.hpp"
 #include "tile.hpp"
 
@@ -106,6 +107,12 @@ namespace {
                 itype->pushTable(lua);
                 return true;
             }
+        case TAG_MONSTER_TYPE:
+            {
+                const MonsterType *mtype = static_cast<const MonsterType*>(ptr);
+                mtype->pushTable(lua);
+                return true;
+            }
         case TAG_OVERLAY:
             {
                 const Overlay *ovl = static_cast<const Overlay*>(ptr);
@@ -120,6 +127,40 @@ namespace {
             }
         default:
             return false;
+        }
+    }
+
+    void TryNewIndex(lua_State *lua)
+    {
+        // [ud key val]
+        UserData *ud = static_cast<UserData*>(lua_touserdata(lua, 1));
+        if (!ud) {
+            // This shouldn't happen, but does no harm to check for it.
+            luaL_error(lua, "TryNewIndex: object is not a userdata");
+        }
+
+        void *ptr = GetPtr(*ud);
+        
+        switch (ud->tag) {
+        case TAG_CONTROL:
+            luaL_error(lua, "Modifying existing Control objects is not currently supported");
+            break;
+
+        case TAG_ITEM_TYPE:
+            static_cast<ItemType*>(ptr)->newIndex(lua);
+            break;
+
+        case TAG_MONSTER_TYPE:
+            static_cast<MonsterType*>(ptr)->newIndex(lua);
+            break;
+
+        case TAG_OVERLAY:
+            luaL_error(lua, "Modifying existing Overlays is not currently supported");
+            break;
+
+        case TAG_TILE:
+            static_cast<Tile*>(ptr)->newIndex(lua);
+            break;
         }
     }
 
@@ -151,7 +192,11 @@ namespace {
         if (lua_isstring(lua, 2) && std::strcmp(lua_tostring(lua, 2), "table") == 0) {
             luaL_error(lua, "Can't write to special index 'table'");
         }
-        
+
+        // Special behaviour of some indices
+        TryNewIndex(lua);
+
+        // Always write to the underlying table as well
         if (PushObjectTable(lua, 1)) {
             // [ud key value table]
             lua_insert(lua, 2);  // [ud table key value]
@@ -159,7 +204,7 @@ namespace {
         } else {
             luaL_error(lua, "This userdata does not have an underlying table");
         }
-
+        
         return 0;
     }
 

@@ -61,7 +61,7 @@ void A_ChangeItem::execute(const ActionData &ad) const
 {
     DungeonMap *dmap;
     MapCoord mc;
-    const ItemType *old_item;
+    ItemType *old_item;
     ad.getItem(dmap, mc, old_item);
     if (!dmap || mc.isNull() || !old_item || !item_type) return;
     dmap->rmItem(mc);
@@ -441,7 +441,7 @@ LegacyAction * A_Shoot::Maker::make(ActionPars &pars) const
     int dx = pars.getInt(0);
     int dy = pars.getInt(1);
     MapDirection dir = pars.getMapDirection(2);
-    const ItemType *itype = pars.getItemType(3);
+    ItemType *itype = pars.getItemType(3);
     if (itype) return new A_Shoot(dx, dy, dir, *itype);
     else {
         pars.error();

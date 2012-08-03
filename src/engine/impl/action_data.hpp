@@ -104,7 +104,7 @@ public:
     // modifier fns:
     void setActor(boost::shared_ptr<Creature> c) { actor = c; }
     void setVictim(boost::shared_ptr<Creature> c) { victim = c; }
-    void setItem(DungeonMap *, const MapCoord &, const ItemType *);
+    void setItem(DungeonMap *, const MapCoord &, ItemType *);
     void setTile(DungeonMap *, const MapCoord &, boost::shared_ptr<Tile>);
     void setGenericPos(DungeonMap *, const MapCoord &);
     void setFlag(bool f) { flag = f; }
@@ -113,7 +113,7 @@ public:
     // accessor fns:
     boost::shared_ptr<Creature> getActor() const { return actor; }
     boost::shared_ptr<Creature> getVictim() const { return victim; }
-    void getItem(DungeonMap *&dm, MapCoord &mc, const ItemType * &it) const
+    void getItem(DungeonMap *&dm, MapCoord &mc, ItemType * &it) const
         { dm = item_dmap; mc = item_coord; it = item; }
     void getTile(DungeonMap *&dm, MapCoord &mc, boost::shared_ptr<Tile> &t) const
         { dm = tile_dmap; mc = tile_coord; t = tile; }
@@ -125,7 +125,7 @@ public:
 private:
     boost::shared_ptr<Creature> actor, victim;
     bool flag;
-    const ItemType * item;
+    ItemType * item;
     boost::shared_ptr<Tile> tile;
     DungeonMap *item_dmap, *tile_dmap, *generic_dmap;
     MapCoord item_coord, tile_coord, generic_coord;

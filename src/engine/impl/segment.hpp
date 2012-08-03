@@ -73,7 +73,7 @@ public:
     // add tile or item (can be called more than once per square)
     // x,y range from 0 to w-1, h-1, and increase rightwards and upwards as usual.
     void addTile(int x, int y, boost::shared_ptr<Tile> t);
-    void addItem(int x, int y, const ItemType * i);
+    void addItem(int x, int y, ItemType * i);
     void addMonster(int x, int y, const MonsterType * m);
         
     // set a room (coords are relative to bottom left of segment -- note that the
@@ -128,7 +128,7 @@ private:
     struct ItemInfo {
         int x;
         int y;
-        const ItemType * itype;
+        ItemType * itype;
     };
     std::vector<ItemInfo> items;
 

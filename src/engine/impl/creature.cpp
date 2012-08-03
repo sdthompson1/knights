@@ -215,11 +215,11 @@ bool Creature::impactVeto(int gvt, const Creature &attacker)
 
 class ThrowingTask : public Task {
 public:
-    ThrowingTask(weak_ptr<Creature> c_, const ItemType &i) : c(c_), itype(i) { }
+    ThrowingTask(weak_ptr<Creature> c_, ItemType &i) : c(c_), itype(i) { }
     virtual void execute(TaskManager &);
 private:
     weak_ptr<Creature> c;
-    const ItemType &itype;
+    ItemType &itype;
 };
 
 void ThrowingTask::execute(TaskManager &tm)
@@ -268,7 +268,7 @@ void ThrowingTask::execute(TaskManager &tm)
 // Creature
 //
 
-Creature::Creature(int h, MapHeight ht, const ItemType * i, const Anim * a, int s)
+Creature::Creature(int h, MapHeight ht, ItemType * i, const Anim * a, int s)
     : height(ht), health(h), max_health(h), speed(s), stun_until(0), item_in_hand(i),
       impact_time(0)
 {
@@ -322,7 +322,7 @@ void Creature::stunnedUntil(bool &known, int &s_until) const
 // sets the item in hand, & updates overlay graphic
 //
 
-void Creature::doSetItemInHand(const ItemType * i)
+void Creature::doSetItemInHand(ItemType * i)
 {
     item_in_hand = i;
     if (i) setOverlay(i->getOverlay());
@@ -450,7 +450,7 @@ void Creature::throwItemInHand()
     doThrow(*getItemInHand());
 }
 
-void Creature::doThrow(const ItemType &itype)
+void Creature::doThrow(ItemType &itype)
 {
     // Check if can throw 
     if (!canThrow(true)) return;

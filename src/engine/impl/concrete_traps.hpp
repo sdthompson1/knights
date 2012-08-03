@@ -34,19 +34,19 @@
 
 class BladeTrap : public Trap {
 public:
-    BladeTrap(const ItemType *trap_item, const ItemType &missile_type,
+    BladeTrap(ItemType *trap_item, ItemType &missile_type,
               MapDirection fire_direction)
         : Trap(trap_item), mtype(missile_type), fire_dirn(fire_direction) { }
     virtual void spring(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &originator);
     virtual bool activateOnHit() const { return true; }
 private:
-    const ItemType &mtype;
+    ItemType &mtype;
     MapDirection fire_dirn;
 };
 
 class PoisonTrap : public Trap {
 public:
-    explicit PoisonTrap(const ItemType *trap_item) : Trap(trap_item) { }
+    explicit PoisonTrap(ItemType *trap_item) : Trap(trap_item) { }
     virtual void spring(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &originator);
     virtual bool activateOnHit() const { return false; }
 };

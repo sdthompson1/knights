@@ -92,7 +92,7 @@ ActionData::ActionData(lua_State *lua)
 
     lua_pushstring(lua, "item_type");
     lua_gettable(lua, -2);
-    item = ReadLuaPtr<const ItemType>(lua, -1);
+    item = ReadLuaPtr<ItemType>(lua, -1);
     lua_pop(lua, 1);
 
     lua_pushstring(lua, "tile");
@@ -161,7 +161,7 @@ void ActionData::pushCxtTable(lua_State *lua) const
         lua_setfield(lua, -2, "victim_pos");
     }
 
-    NewLuaPtr<const ItemType>(lua, item);
+    NewLuaPtr<ItemType>(lua, item);
     lua_setfield(lua, -2, "item_type");
 
     PushMapCoord(lua, item_coord);
@@ -188,7 +188,7 @@ void ActionData::pushCxtTable(lua_State *lua) const
 }
 
 
-void ActionData::setItem(DungeonMap *dmap, const MapCoord &mc, const ItemType * it)
+void ActionData::setItem(DungeonMap *dmap, const MapCoord &mc, ItemType * it)
 {
     // Can't set the item location (dmap & mc) without setting an item
     // (although an item without a location IS allowed). Also, can't

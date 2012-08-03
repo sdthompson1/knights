@@ -65,7 +65,7 @@ namespace {
         int getSize();
 
         int getInt(int index);
-        const ItemType * getItemType(int index);
+        ItemType * getItemType(int index);
         MapDirection getMapDirection(int index);
         float getProbability(int index);
         const Sound * getSound(int index);
@@ -149,9 +149,9 @@ namespace {
         return *result;
     }
 
-    const ItemType * LuaActionPars::getItemType(int c_index)
+    ItemType * LuaActionPars::getItemType(int c_index)
     {
-        return &CheckLuaPtr<const ItemType>(lua, c_index+1, "item type");
+        return &CheckLuaPtr<ItemType>(lua, c_index+1, "item type");
     }
     
     MapDirection LuaActionPars::getMapDirection(int c_index)
@@ -300,7 +300,7 @@ namespace {
 
         const MapCoord mc = GetMapCoord(lua, 1);
         const MapDirection dir = GetMapDirection(lua, 2);
-        const ItemType * itype = ReadLuaPtr<const ItemType>(lua, 3);
+        ItemType * itype = ReadLuaPtr<ItemType>(lua, 3);
         const bool drop_after = lua_toboolean(lua, 4) != 0;
 
         if (itype) {
@@ -434,7 +434,7 @@ namespace {
     {
         int num = 0;
         shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
-        const ItemType * itype = ReadLuaPtr<const ItemType>(lua, 2);
+        const ItemType * itype = ReadLuaPtr<ItemType>(lua, 2);
 
         if (cr && itype) {
             if (cr->getItemInHand() == itype) ++num;
@@ -453,7 +453,7 @@ namespace {
     {
         shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
         if (cr) {
-            NewLuaPtr<const ItemType>(lua, cr->getItemInHand());
+            NewLuaPtr<ItemType>(lua, cr->getItemInHand());
         } else {
             lua_pushnil(lua);
         }

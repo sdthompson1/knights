@@ -37,11 +37,11 @@
 namespace {
     class DoRespawnTask : public Task {
     public:
-        DoRespawnTask(const ItemType &it, boost::shared_ptr<ItemRespawnTask> rt)
+        DoRespawnTask(ItemType &it, boost::shared_ptr<ItemRespawnTask> rt)
             : itype(it), respawn_task(rt) { }
         void execute(TaskManager&);
     private:
-        const ItemType &itype;
+        ItemType &itype;
         boost::shared_ptr<ItemRespawnTask> respawn_task;
     };
 
@@ -56,10 +56,10 @@ namespace {
     }
 }
 
-ItemRespawnTask::ItemRespawnTask(const std::vector<const ItemType*> &items_to_respawn,
+ItemRespawnTask::ItemRespawnTask(const std::vector<ItemType*> &items_to_respawn,
                                  int respawn_delay_,
                                  int interval_,
-                                 const ItemType *lockpicks_,
+                                 ItemType *lockpicks_,
                                  int lockpick_init_time_,
                                  int lockpick_interval_)
     : interval(interval_),
@@ -70,13 +70,13 @@ ItemRespawnTask::ItemRespawnTask(const std::vector<const ItemType*> &items_to_re
       last_lockpick_time(0),
       first_run(true)
 {
-    for (std::vector<const ItemType*>::const_iterator it = items_to_respawn.begin();
+    for (std::vector<ItemType*>::const_iterator it = items_to_respawn.begin();
     it != items_to_respawn.end(); ++it) {
         initial_numbers.insert(std::make_pair(*it, 0));
     }
 }
 
-void ItemRespawnTask::countItems(std::map<const ItemType*, int> &result) const
+void ItemRespawnTask::countItems(std::map<ItemType*, int> &result) const
 {
     // "result" is assumed to be initialized with the desired item types.
     
@@ -87,9 +87,9 @@ void ItemRespawnTask::countItems(std::map<const ItemType*, int> &result) const
     player_it != mediator.getPlayers().end(); ++player_it) {
         shared_ptr<Knight> kt((*player_it)->getKnight());
         if (kt) {
-            for (std::map<const ItemType*, int>::iterator item_it = result.begin();
+            for (std::map<ItemType*, int>::iterator item_it = result.begin();
             item_it != result.end(); ++item_it) {
-                const ItemType * item_type = item_it->first;
+                ItemType * item_type = item_it->first;
                 item_it->second += kt->getNumCarried(*item_type);
                 if (kt->getItemInHand() == item_type) ++ item_it->second;
             }
@@ -120,7 +120,7 @@ int ItemRespawnTask::countActiveLockpicks() const
         }
 
         // Count lockpicks in stuff bags
-        std::map<const ItemType*, int> n_in_stuff_bags;
+        std::map<ItemType*, int> n_in_stuff_bags;
         n_in_stuff_bags[lockpicks] = 0;
         mediator.getStuffManager().countItems(n_in_stuff_bags);
         result += n_in_stuff_bags[lockpicks];
@@ -144,18 +144,18 @@ void ItemRespawnTask::execute(TaskManager &tm)
         } else if (respawn_delay >= 0) {
             // Re-count how many items need to be generated.
 
-            std::map<const ItemType*, int> counts;
-            for (std::map<const ItemType*, int>::const_iterator it = initial_numbers.begin();
+            std::map<ItemType*, int> counts;
+            for (std::map<ItemType*, int>::const_iterator it = initial_numbers.begin();
             it != initial_numbers.end(); ++it) {
                 counts.insert(std::make_pair(it->first, 0));
             }
             
             countItems(counts);
             
-            for (std::map<const ItemType*, int>::iterator it = counts.begin();
+            for (std::map<ItemType*, int>::iterator it = counts.begin();
             it != counts.end(); ++it) {
 
-                const ItemType * item_type = it->first;
+                ItemType * item_type = it->first;
                 const int num_in_play = it->second;
                 
                 // Count the number needed.
@@ -198,7 +198,7 @@ void ItemRespawnTask::execute(TaskManager &tm)
     tm.addTask(shared_from_this(), TP_NORMAL, tm.getGVT() + interval);
 }
 
-void ItemRespawnTask::removeFromQueue(const ItemType &it)
+void ItemRespawnTask::removeFromQueue(ItemType &it)
 {
     int & num = numbers_in_queue[&it];
     ASSERT(num > 0);

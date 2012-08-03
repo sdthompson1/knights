@@ -58,13 +58,13 @@ public:
     virtual void execute(TaskManager &tm);
 
 private:
-    static void processItemType(std::map<const ItemType *, int> &missing_items, const ItemType &itype, int no);
-    static void processItem(std::map<const ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item);
-    void findMissingItems(std::map<const ItemType *, int> &missing_items) const;
+    static void processItemType(std::map<ItemType *, int> &missing_items, ItemType &itype, int no);
+    static void processItem(std::map<ItemType *, int> &missing_items, const boost::shared_ptr<Item> &item);
+    void findMissingItems(std::map<ItemType *, int> &missing_items) const;
     
 private:
     DungeonMap &dmap;
-    std::map<const ItemType *, int> required_items;
+    std::map<ItemType *, int> required_items;
     int interval;
 };
 

@@ -36,7 +36,7 @@
 #include "task_manager.hpp"
 
 Knight::Knight(Player &pl, const map<const ItemType *, int> * b,
-               int health, MapHeight height, const ItemType * di, const Anim * anim,
+               int health, MapHeight height, ItemType * di, const Anim * anim,
                int speed)
     : Creature(health, height, di, anim, speed),
       default_item(di), b_capacity(b), player(pl), potion_magic(NO_POTION),
@@ -331,7 +331,7 @@ void Knight::onDownswing()
 // inventory
 //
 
-void Knight::setItemInHand(const ItemType *i)
+void Knight::setItemInHand(ItemType *i)
 {
     if (i) {
         doSetItemInHand(i);
@@ -391,7 +391,7 @@ int Knight::getMaxNo(const ItemType &itype) const
     return 0;
 }
 
-int Knight::addToBackpack(const ItemType &itype, int no_to_add)
+int Knight::addToBackpack(ItemType &itype, int no_to_add)
 {
     if (no_to_add <= 0) return 0;
     
@@ -519,7 +519,7 @@ void Knight::unloadBackpack(StuffContents &sc)
 
     while (getBackpackCount() > 0) {
         int i = getBackpackCount() - 1;
-        const ItemType &itype(getBackpackItem(i));
+        ItemType &itype(getBackpackItem(i));
         const int num = getNumCarried(i);
         int no_to_rm = min(num, itype.getMaxStack());
         shared_ptr<Item> item(new Item(itype, no_to_rm));
@@ -606,7 +606,7 @@ bool Knight::canThrowItem(const ItemType &it, bool strict) const
     return true;
 }
 
-void Knight::throwItem(const ItemType &it)
+void Knight::throwItem(ItemType &it)
 {
     if (!canThrowItem(it, true)) return;
     const bool use_time_penalty = !it.isBig() && getPlayer()->getActionBarControls();

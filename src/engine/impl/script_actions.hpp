@@ -33,10 +33,10 @@
 
 class A_ChangeItem : public LegacyAction {
 public:
-    explicit A_ChangeItem(const ItemType *itype) : item_type(itype) { }
+    explicit A_ChangeItem(ItemType *itype) : item_type(itype) { }
     virtual void execute(const ActionData &) const;
 private:
-    const ItemType *item_type;
+    ItemType *item_type;
     ACTION_MAKER("ChangeItem");
 };
 
@@ -166,14 +166,14 @@ private:
 
 class A_Shoot : public LegacyAction {
 public:
-    A_Shoot(int dx_, int dy_, MapDirection dir_, const ItemType &it)
+    A_Shoot(int dx_, int dy_, MapDirection dir_, ItemType &it)
         : dx(dx_), dy(dy_), dir(dir_), itype(it) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Shoot");
     int dx, dy;
     MapDirection dir;
-    const ItemType &itype;
+    ItemType &itype;
 };
 
 // ZombieKill kills a monster of a particular type

@@ -524,19 +524,19 @@ void DungeonMap::addDisplacedItem(shared_ptr<Item> i)
     displaced_items.push_back(di);
 }
 
-void DungeonMap::countItems(std::map<const ItemType*, int> &result) const
+void DungeonMap::countItems(std::map<ItemType*, int> &result) const
 {
     // search items on tiles.
     for (ItemContainer::const_iterator it = items.begin(); it != items.end(); ++it) {
-        const ItemType * item_type = &it->second->getType();
-        std::map<const ItemType*, int>::iterator result_it = result.find(item_type);
+        ItemType * item_type = &it->second->getType();
+        std::map<ItemType*, int>::iterator result_it = result.find(item_type);
         if (result_it != result.end()) ++result_it->second;
     }
 
     // search items in the displaced queue
     for (std::vector<DisplacedItem>::const_iterator it = displaced_items.begin(); it != displaced_items.end(); ++it) {
-        const ItemType * item_type = &it->item->getType();
-        std::map<const ItemType*, int>::iterator result_it = result.find(item_type);
+        ItemType * item_type = &it->item->getType();
+        std::map<ItemType*, int>::iterator result_it = result.find(item_type);
         if (result_it != result.end()) ++result_it->second;
     }
 
@@ -545,8 +545,8 @@ void DungeonMap::countItems(std::map<const ItemType*, int> &result) const
         for (list<shared_ptr<Tile> >::const_iterator it2 = it1->begin(); it2 != it1->end(); ++it2) {
             const Item * placed_item = (*it2)->getPlacedItem().get();
             if (placed_item) {
-                const ItemType * item_type = &placed_item->getType();
-                std::map<const ItemType*, int>::iterator result_it = result.find(item_type);
+                ItemType * item_type = &placed_item->getType();
+                std::map<ItemType*, int>::iterator result_it = result.find(item_type);
                 if (result_it != result.end()) ++result_it->second;
             }
         }

@@ -89,11 +89,11 @@ public:
 
 class A_Drop : public LegacyAction {
 public:
-    explicit A_Drop(const ItemType &it_) : it(it_) { }
+    explicit A_Drop(ItemType &it_) : it(it_) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
-    const ItemType &it;
+    ItemType &it;
     ACTION_MAKER("Drop");
 };
 
@@ -126,21 +126,21 @@ private:
 
 class A_SetBearTrap : public LegacyAction {
 public:
-    explicit A_SetBearTrap(const ItemType &trap_) : trap_itype(trap_) { }
+    explicit A_SetBearTrap(ItemType &trap_) : trap_itype(trap_) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
-    const ItemType &trap_itype;
+    ItemType &trap_itype;
     ACTION_MAKER("SetBearTrap");
 };
 
 class A_SetBladeTrap : public LegacyAction {
 public:
-    explicit A_SetBladeTrap(const ItemType &missile) : missile_type(missile) { }
+    explicit A_SetBladeTrap(ItemType &missile) : missile_type(missile) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
-    const ItemType &missile_type;
+    ItemType &missile_type;
     ACTION_MAKER("SetBladeTrap");
 };
 

@@ -73,7 +73,7 @@ public:
 
     // get each parameter by index (from 0 to npars-1)
     virtual int getInt(int index) { error(); return 0; }
-    virtual const ItemType * getItemType(int index) { error(); return 0; }
+    virtual ItemType * getItemType(int index) { error(); return 0; }
     virtual MapDirection getMapDirection(int index);  // default is to convert from a string
     virtual float getProbability(int index) { error(); return 0; }
     virtual RandomInt getRandomInt(int index) { error(); return RandomInt(); }

@@ -83,11 +83,11 @@ namespace {
         else return actor;
     }
 
-    const ItemType * ExtractItemType(const ActionData &ad)
+    ItemType * ExtractItemType(const ActionData &ad)
     {
         DungeonMap *dummy;
         MapCoord dummy2;
-        const ItemType *result;
+        ItemType *result;
         ad.getItem(dummy, dummy2, result);
         return result;
     }
@@ -512,7 +512,7 @@ A_Drop::Maker A_Drop::Maker::register_me;
 LegacyAction * A_Drop::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
-    const ItemType *it = pars.getItemType(0);
+    ItemType *it = pars.getItemType(0);
     if (it) return new A_Drop(*it);
     else return 0;
 }
@@ -834,7 +834,7 @@ A_SetBearTrap::Maker A_SetBearTrap::Maker::register_me;
 LegacyAction * A_SetBearTrap::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
-    const ItemType *it = pars.getItemType(0);
+    ItemType *it = pars.getItemType(0);
     if (it) return new A_SetBearTrap(*it);
     else return 0;
 }
@@ -894,7 +894,7 @@ void A_SetBladeTrap::execute(const ActionData &ad) const
     shared_ptr<Lockable> target = CheckSetTrap(ad, target_pos);
     shared_ptr<Creature> actor = ExtractCreature(ad);
     if (target && actor) {
-        const ItemType *it = ExtractItemType(ad);
+        ItemType *it = ExtractItemType(ad);
         shared_ptr<Trap> trap(new BladeTrap(it, missile_type, Opposite(actor->getFacing())));
         target->setTrap(*actor->getMap(), target_pos, actor, trap);
         RemoveItem(actor, it);
@@ -906,7 +906,7 @@ A_SetBladeTrap::Maker A_SetBladeTrap::Maker::register_me;
 LegacyAction * A_SetBladeTrap::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
-    const ItemType *it = pars.getItemType(0);
+    ItemType *it = pars.getItemType(0);
     if (it) return new A_SetBladeTrap(*it);
     else return 0;
 }
@@ -924,7 +924,7 @@ void A_SetPoisonTrap::execute(const ActionData &ad) const
     shared_ptr<Lockable> target = CheckSetTrap(ad, target_pos);
     shared_ptr<Creature> actor = ExtractCreature(ad);
     if (target && actor) {
-        const ItemType *it = ExtractItemType(ad);
+        ItemType *it = ExtractItemType(ad);
         shared_ptr<Trap> trap(new PoisonTrap(it));
         target->setTrap(*actor->getMap(), target_pos, actor, trap);
         RemoveItem(actor, it);
@@ -1015,7 +1015,7 @@ bool A_Throw::possible(const ActionData &ad) const
 
     DungeonMap *dum;
     MapCoord dum2;
-    const ItemType *itype;
+    ItemType *itype;
     ad.getItem(dum, dum2, itype);
     if (!itype) return false;
 
@@ -1039,7 +1039,7 @@ void A_Throw::execute(const ActionData &ad) const
         // do the throw.
         DungeonMap *dum;
         MapCoord dum2;
-        const ItemType *itype;
+        ItemType *itype;
         ad.getItem(dum, dum2, itype);
         if (!itype) return;
         

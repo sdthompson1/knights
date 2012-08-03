@@ -101,11 +101,11 @@ public:
     // setup variables (set by Lua functions during game startup)
     bool initial_update_needed;
     std::vector<std::string> *initial_msgs;
-    std::vector<std::pair<const ItemType *, std::vector<int> > > starting_gears;
+    std::vector<std::pair<ItemType *, std::vector<int> > > starting_gears;
     bool premapped;
-    std::vector<const ItemType*> respawn_items;
+    std::vector<ItemType*> respawn_items;
     int respawn_delay, respawn_interval;
-    const ItemType *lockpick_itemtype;
+    ItemType *lockpick_itemtype;
     int lockpick_init_time, lockpick_interval;
     std::vector<QuestHint> quest_hints;
 
@@ -474,7 +474,7 @@ void KnightsEngine::gameStartupMsg(const std::string &msg)
     }
 }
 
-void KnightsEngine::addStartingGear(const ItemType *itype, const std::vector<int> &num)
+void KnightsEngine::addStartingGear(ItemType *itype, const std::vector<int> &num)
 {
     pimpl->starting_gears.push_back(std::make_pair(itype, num));
 }
@@ -484,13 +484,13 @@ int KnightsEngine::getTileCategory(const std::string &name)
     return pimpl->config->getTileCategory(name);
 }
 
-void KnightsEngine::setItemRespawn(const std::vector<const ItemType*> &items_to_respawn, int respawn_delay)
+void KnightsEngine::setItemRespawn(const std::vector<ItemType*> &items_to_respawn, int respawn_delay)
 {
     pimpl->respawn_items = items_to_respawn;
     pimpl->respawn_delay = respawn_delay;
 }
 
-void KnightsEngine::setLockpickSpawn(const ItemType *lockpicks, int init_time, int interval)
+void KnightsEngine::setLockpickSpawn(ItemType *lockpicks, int init_time, int interval)
 {
     pimpl->lockpick_itemtype = lockpicks;
     pimpl->lockpick_init_time = init_time;

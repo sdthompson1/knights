@@ -68,7 +68,7 @@ public:
     // fire). (Items and Tiles will be checked for additional controls, and the global
     // controls from control.hpp will also always be available.)
     Player(int plyr_num,
-           const Anim * anim, const ItemType * dflt_item, 
+           const Anim * anim, ItemType * dflt_item, 
            const vector<const Control*> &control_set_,
            shared_ptr<const ColourChange> secured_home_cc,
            const std::string &name_, int team_num_);
@@ -79,7 +79,7 @@ public:
     RespawnType getRespawnType() const { return respawn_type; }
     
     // Add starting gear.
-    void addStartingGear(const ItemType &itype, const vector<int> &nos);
+    void addStartingGear(ItemType &itype, const vector<int> &nos);
     
     // accessor functions
     DungeonMap * getHomeMap() const { return home_dmap; }
@@ -161,7 +161,7 @@ public:
     bool respawn();
 
     // Control functions (see .cpp file for more info)
-    void getControlInfo(const Control *ctrl_in, const ItemType *& itype_out,
+    void getControlInfo(const Control *ctrl_in, ItemType *& itype_out,
                         weak_ptr<Tile> &tile_out, MapCoord &tile_mc_out) const;
     void computeAvailableControls();
 
@@ -185,7 +185,7 @@ private:
     struct ControlInfo {
         weak_ptr<Tile> tile;
         MapCoord tile_mc;
-        const ItemType *item_type; // The item is always assumed to be in the creature's inventory...
+        ItemType *item_type; // The item is always assumed to be in the creature's inventory...
         bool primary;
         
         ControlInfo() : item_type(0), primary(true) { }
@@ -201,10 +201,10 @@ private:
     void addTileControls(DungeonMap *dmap, const MapCoord &mc,
                          map<const Control *, ControlInfo> &cmap, bool ahead,
                          bool approaching, bool approach_based, MapHeight ht, shared_ptr<Creature>);
-    void addItemControls(const ItemType &itype,
+    void addItemControls(ItemType &itype,
                          map<const Control *, ControlInfo> &cmap,
                          shared_ptr<Creature>);
-    static void giveStartingGear(shared_ptr<Knight> knight, const vector<pair<const ItemType*, int> > &items);
+    static void giveStartingGear(shared_ptr<Knight> knight, const vector<pair<ItemType*, int> > &items);
 
 private:
     friend class RespawnTask;
@@ -225,7 +225,7 @@ private:
     MapCoord home_location;
     MapDirection home_facing;
     const Anim * anim;
-    const ItemType * default_item;
+    ItemType * default_item;
     const map<const ItemType *, int> * backpack_capacities;
     const vector<const Control *> & control_set;
 
@@ -237,7 +237,7 @@ private:
 
     shared_ptr<const ColourChange> secured_home_cc;
 
-    deque<vector<pair<const ItemType *, int> > > gears;
+    deque<vector<pair<ItemType *, int> > > gears;
 
     int nskulls;
     int nkills;

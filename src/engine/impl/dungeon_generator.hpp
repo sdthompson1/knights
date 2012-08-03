@@ -92,7 +92,7 @@ void DungeonGenerator(DungeonMap &dmap,
 void GenerateLocksAndTraps(DungeonMap &dmap, int nkeys, bool pretrapped);
 
 void GenerateItem(DungeonMap &dmap,
-                  const ItemType &itype,
+                  ItemType &itype,
                   const std::vector<std::pair<int,int> > &weights,
                   int total_weight);
 
@@ -109,6 +109,6 @@ void GenerateMonsters(DungeonMap &dmap,
                       const MonsterType &montype,
                       int number_to_place);
 
-void ConnectivityCheck(const std::vector<Player*> &players, int num_keys, const ItemType &lockpicks);
+void ConnectivityCheck(const std::vector<Player*> &players, int num_keys, ItemType &lockpicks);
 
 #endif

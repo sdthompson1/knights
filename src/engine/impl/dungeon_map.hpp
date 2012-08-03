@@ -148,7 +148,7 @@ public:
     std::vector<DisplacedItem> & getDisplacedItems() { return displaced_items; }
 
     // Count items of various types. Used by item respawn code
-    void countItems(std::map<const ItemType*, int> &result) const;
+    void countItems(std::map<ItemType*, int> &result) const;
     
 private:
     // helper function for getAllEntities

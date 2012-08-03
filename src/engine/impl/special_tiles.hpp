@@ -77,7 +77,7 @@ protected:
 
 private:
     struct TrapInfo {
-        const ItemType *itype;
+        ItemType *itype;
         LuaFunc action;  // action to place the trap ...
     };
     static TrapInfo popTrapInfo(lua_State *lua, KnightsConfigImpl *kc);
