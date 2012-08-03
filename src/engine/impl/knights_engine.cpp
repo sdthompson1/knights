@@ -49,6 +49,9 @@
 #include "tutorial_manager.hpp"
 #include "view_manager.hpp"
 
+#include "dungeon_generator.hpp" // TODO: Remove this once new tutorial is in place.
+#include "dungeon_generation_failed.hpp" // Ditto.
+
 namespace {
     struct QuestHint {
         std::string msg;
@@ -170,19 +173,33 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
             Mediator::instance().addPlayer(*pimpl->players[i]);
         }
 
-        resetMap();
-
         // Make sure we save a copy of the config.
         pimpl->config = config;        
 
-        // Run the Lua game startup functions.
-        LuaStartupSentinel s(config->getLuaState().get(), *this);
-        pimpl->initial_msgs = &messages;
-        std::string err_msg;
-        bool can_start = config->runGameStartup(err_msg);
-        pimpl->initial_msgs = 0;
-        if (!can_start) {
-            throw LuaError(err_msg);
+        // Tutorial loop
+        while (1) {
+            resetMap();
+
+            // Run the Lua game startup functions.
+            LuaStartupSentinel s(config->getLuaState().get(), *this);
+            pimpl->initial_msgs = &messages;
+            std::string err_msg;
+            bool can_start = config->runGameStartup(err_msg);
+            pimpl->initial_msgs = 0;
+            if (!can_start) {
+                throw LuaError(err_msg);
+            }
+
+            // In tutorial mode, keep looping until CheckTutorial returns true.
+            // (In normal mode, break out of loop after first run through.)
+            if (tutorial_mode) {
+                try {
+                    CheckTutorial(*pimpl->players[0]);
+                } catch (DungeonGenerationFailed &) {
+                    continue;
+                }
+            }
+            break;
         }
 
         // Setup the ItemRespawnTask

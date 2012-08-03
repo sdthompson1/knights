@@ -1299,124 +1299,35 @@ void ConnectivityCheck(const std::vector<Player*> &players,
     }
 }
 
-        
-/*
+// --------------------------------------------------------------------------------------
 
-///////////////////////////////////////////////
-
-
-     bool FindSpecialExit(const Segment &seg, bool x_reflect, int nrot, HomeInfo &hi)
-    {
-        const std::vector<HomeInfo> & homes = seg.getHomes(x_reflect, nrot);
-        for (std::vector<HomeInfo>::const_iterator it = homes.begin(); it != homes.end(); ++it) {
-            if (it->special_exit) {
-                hi = *it;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    */
-     
-
-/*
-
-void DungeonGenerator::generateExits()
+void CheckTutorial(Player &player)
 {
-    // This generates the "standard" player exit points (not the special exit points).
-    switch (exit_type) {
-    case E_SPECIAL:
-        {
-            // This is a little unsophisticated, but fine for what we want to use it for:
-            // Look for the first segment of the given category.
-            // Then look for the first home within that segment.
-            // Then add it to unassigned_homes, as well as setting it as the exit point.
-            // UPDATE for #20: We now insist that the home has the special_exit flag set on it.
-            bool found = false;
-            for (int x=0; x<lwidth; ++x) {
-                for (int y=0; y<lheight; ++y) {
-                    if (segment_categories[y*lwidth+x] == exit_category) {
-                        const Segment *seg = segments[y*lwidth+x];
-                        ASSERT(seg); // if seg_category is set, then so must seg be
-                        if (seg->getNumHomes() > 0) {
-
-                            // find the first home with special exit flag set.
-                            HomeInfo hi;
-                            found = FindSpecialExit(*seg, segment_x_reflect[y*lwidth+x], segment_nrot[y*lwidth+x], hi);
-
-                            if (found) {
-                                                            
-                                // assigned_homes.size() is just giving us the number of players here.
-                                for (int i=0; i<assigned_homes.size(); ++i) {
-                                
-                                    exits.push_back(make_pair(MapCoord(hi.x + x*(rwidth+1)+1,
-                                                                       hi.y + y*(rheight+1)+1),
-                                                              hi.facing));
-                                }
-
-                                // add it to unassigned_homes, too (this is so wand of
-                                // securing can work on it):
-                                unassigned_homes.push_back(exits.back());
-                            
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (found) break;
-            }
-        }
-        break;
-    case E_RANDOM:
-        {
-            // choose from the unassigned homes only (Trac #75)
-            const int k = g_rng.getInt(0, unassigned_homes.size());
-            for (int i=0; i<assigned_homes.size(); ++i) {
-                exits.push_back(unassigned_homes[k]);
-            }
-        }
-        break;
-    default:
-        {
-            for (int i=0; i<assigned_homes.size(); ++i) {
-                exits.push_back(make_pair(MapCoord(), D_NORTH));
-            }
-        }
-        break;
-    }
-}
-
-
-
-
-void DungeonGenerator::checkTutorial(DungeonMap &dmap)
-{
-    MapCoord home_pos;  // the floor space in front of the home.
-    MapDirection facing_toward_home;
-    getHome(0, home_pos, facing_toward_home);
+    DungeonMap *dmap = player.getHomeMap();
+    MapCoord home_pos = player.getHomeLocation();  // the floor space in front of the home.
+    MapDirection facing_toward_home = player.getHomeFacing();
 
     // Check the home and the eight surrounding squares (except the entry point square itself).
     for (int x = home_pos.getX() - 1; x <= home_pos.getX() + 1; ++x) {
         for (int y = home_pos.getY() - 1; y <= home_pos.getY() + 1; ++y) {
             MapCoord mc(x,y);
-            if (dmap.valid(mc) && mc != DisplaceCoord(home_pos, facing_toward_home)) {
+            if (dmap->valid(mc) && mc != DisplaceCoord(home_pos, facing_toward_home)) {
 
                 // Check there are no tutorial tiles on this square
                 std::vector<boost::shared_ptr<Tile> > tiles;
-                dmap.getTiles(mc, tiles);
+                dmap->getTiles(mc, tiles);
                 for (std::vector<boost::shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
                     if ((*it)->getTutorialKey() > 0) throw DungeonGenerationFailed();
                 }
 
                 // Check there are no items on this square
-                if (dmap.getItem(mc)) throw DungeonGenerationFailed();
+                if (dmap->getItem(mc)) throw DungeonGenerationFailed();
             }
         }
     }
 
     // Check that any wooden doors in the starting room are unlocked.
-    const RoomMap *rmap = dmap.getRoomMap();
+    const RoomMap *rmap = dmap->getRoomMap();
     if (!rmap) throw DungeonGenerationFailed();
     int room_arr[2];
     rmap->getRoomAtPos(home_pos, room_arr[0], room_arr[1]);
@@ -1430,7 +1341,7 @@ void DungeonGenerator::checkTutorial(DungeonMap &dmap)
                 for (int y = 0; y < h; ++y) {
                     MapCoord mc(top_left.getX() + x, top_left.getY() + y);
                     std::vector<boost::shared_ptr<Tile> > tiles;
-                    dmap.getTiles(mc, tiles);
+                    dmap->getTiles(mc, tiles);
                     for (std::vector<boost::shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
                         Lockable * lockable = dynamic_cast<Lockable*>(it->get());
                         if (lockable && lockable->destructible()) { // wooden door
@@ -1447,6 +1358,3 @@ void DungeonGenerator::checkTutorial(DungeonMap &dmap)
         }
     }
 }
-
-
-*/

@@ -111,4 +111,7 @@ void GenerateMonsters(DungeonMap &dmap,
 
 void ConnectivityCheck(const std::vector<Player*> &players, int num_keys, ItemType &lockpicks);
 
+// throws DungeonGenerationFailed if the map is unsuitable for a tutorial
+void CheckTutorial(Player &player);
+
 #endif
