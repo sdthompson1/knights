@@ -958,6 +958,9 @@ void MenuWrapper::changeSetting(int item_num, int new_choice_num, MenuListener &
     OldSettings old;
     SaveOldSettings(lua, *pimpl, old);
 
+    // If the setting hasn't actually been changed then we need go no further.
+    if (old.choices[item_num] == new_choice_num) return;
+
     // change the setting in S table
     SetItemNumToChoiceNum(lua, *pimpl, item_num, new_choice_num);
 
