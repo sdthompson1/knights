@@ -19,4 +19,4 @@
 --
 
 require ("classic")
-require ("multiwand")
+
