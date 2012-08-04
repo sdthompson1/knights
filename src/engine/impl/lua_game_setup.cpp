@@ -37,6 +37,7 @@
 
 #include "lua.hpp"
 
+#include <cstring>
 #include <vector>
 
 namespace {

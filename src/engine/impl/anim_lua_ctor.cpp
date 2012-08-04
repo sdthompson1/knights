@@ -29,6 +29,8 @@
 
 #include "lua.hpp"
 
+#include <cstring>
+
 Anim::Anim(int id_, lua_State *lua, int idx)
     : id(id_)
 {
