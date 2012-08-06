@@ -393,15 +393,14 @@ namespace {
         DungeonMap *dmap = med.getMap().get();
         if (!dmap) return 0;
 
-        const bool all = lua_isnil(lua, 1);
-        const MapCoord mc = all ? MapCoord() : GetMapCoord(lua, 1);
+        const MapCoord mc = GetMapCoord(lua, 1);
 
         const Sound *sound = ReadLuaPtr<Sound>(lua, 2);
         if (!sound) return 0;
 
         const int frequency = lua_tointeger(lua, 3);
 
-        med.playSound(*dmap, mc, *sound, frequency, all);
+        med.playSound(*dmap, mc, *sound, frequency, mc.isNull());
         return 0;
     }
 

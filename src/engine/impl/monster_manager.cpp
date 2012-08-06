@@ -341,7 +341,7 @@ shared_ptr<Monster> MonsterManager::addMonsterToMap(const MonsterType &mt, Dunge
     ++total_current_monsters;
 
     return mnstr;
-}           
+}
 
 //
 // zombie activity counters (#152) -- support functions

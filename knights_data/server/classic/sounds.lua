@@ -39,7 +39,7 @@ function snd_bat_screech()
 end
 
 function snd_bear_trap()
-   kts.PlaySound(cxt.pos, s_parry, 4000, 1)   -- Stepping on a bear trap (can be heard by all players)
+   kts.PlaySound(nil, s_parry, 4000)          -- Stepping on a bear trap (can be heard by all players)
 end
 
 function snd_click()
