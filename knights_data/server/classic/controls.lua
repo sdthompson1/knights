@@ -48,7 +48,7 @@ kts.CONTROLS = {
     kts.Control {
         action         = kts.SwingOrDrop,
         possible       = kts.Can_SwingOrDrop,
-        continuous     = 1,
+        continuous     = true,
         action_bar_slot = 1,
         menu_icon = g_menu_fist,
         menu_direction = "left",

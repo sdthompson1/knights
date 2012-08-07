@@ -72,7 +72,7 @@ public:
 
     // Special properties
     // MS_WEAK = Can be overridden by another control on the menu (e.g. open door: can be overridden by lock picks)
-    // MS_APPR_BASED = This control is only available if old-style "approach based" controls are being used.
+    // MS_APPR_BASED = This control is only available if "approach based" controls are being used. (NOT CURRENTLY USED)
     // MS_NO_MENU = This control should not appear on the Action Menu (but it can appear on the Action Bar).
     enum MenuSpecial { MS_WEAK=1, MS_APPR_BASED = 2, MS_NO_MENU = 4 };
     unsigned int getMenuSpecial() const { return menu_special; }
