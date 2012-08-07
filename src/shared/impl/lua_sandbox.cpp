@@ -85,8 +85,8 @@ namespace {
         "getmetatable",  // they might use this to e.g. redefine string metatable, but we don't care
         // NOT: io
         "ipairs",     // safe
-        // NOT: load
-        // NOT: loadfile
+        // NOT: load (allows unsafe loading of binary chunks)
+        // NOT: loadfile (ditto; also accesses filesystem)
         "math",       // no problem (see whitelist below)
         // NOT: newproxy (undocumented base library function)
         "next",       // safe
