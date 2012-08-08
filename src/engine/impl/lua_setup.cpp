@@ -416,13 +416,14 @@ KnightsConfigImpl * GetKC(lua_State *lua, const char * msg)
 
 void LuaGetTileList(lua_State *lua, int tbl_idx, const char *key, std::vector<boost::shared_ptr<Tile> > &tiles)
 {
-    tiles.clear();
     lua_getfield(lua, tbl_idx, key);  // [... tbl]
-    LuaPopTileList(lua, tiles);
+    LuaPopTileList(lua, tiles);       // [...]
 }
 
 void LuaPopTileList(lua_State *lua, std::vector<boost::shared_ptr<Tile> > &tiles)
 {
+    // [... tbl]
+    tiles.clear();
     if (!lua_isnil(lua, -1)) {
         lua_len(lua, -1); // [... tbl len]
         const int sz = lua_tointeger(lua, -1);
@@ -438,4 +439,30 @@ void LuaPopTileList(lua_State *lua, std::vector<boost::shared_ptr<Tile> > &tiles
     }
 
     lua_pop(lua, 1);  // [...]
+}
+
+void LuaGetItemList(lua_State *lua, int tbl_idx, const char *key, std::vector<ItemType*> &items)
+{
+    lua_getfield(lua, tbl_idx, key);  // [.. tbl]
+    LuaPopItemList(lua, items); // [..]
+}
+
+void LuaPopItemList(lua_State *lua, std::vector<ItemType*> &items)
+{
+    // [... tbl]
+    items.clear();
+    if (!lua_isnil(lua, -1)) {
+        lua_len(lua, -1);  // [.. tbl len]
+        const int sz = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);  // [.. tbl]
+        items.clear();
+        items.reserve(sz);
+        for (int i = 1; i <= sz; ++i) {
+            lua_pushinteger(lua, i); // [.. tbl i]
+            lua_gettable(lua, -2); // [.. tbl item]
+            items.push_back(ReadLuaPtr<ItemType>(lua, -1));
+            lua_pop(lua, 1); // [.. tbl]
+        }
+    }
+    lua_pop(lua, 1);  // [..]
 }

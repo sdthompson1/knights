@@ -40,9 +40,9 @@ using namespace boost;
 
 //
 // Check if there is a knight at a given square
-// The knight must not be holding the "fear" item (if any)
+// The knight must not be holding one of the "fear" items (if any)
 //
-bool KnightAt(DungeonMap &dmap, const MapCoord &mc, const ItemType *fear);
+bool KnightAt(DungeonMap &dmap, const MapCoord &mc, const std::vector<ItemType *> &fear);
 
 //
 // Get direction from one square to another

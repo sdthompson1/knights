@@ -73,6 +73,8 @@ template<class T> boost::shared_ptr<T> LuaGetSharedPtr(lua_State *lua, int tbl_i
 }
 
 // nil is treated as an empty list
+void LuaGetItemList(lua_State *lua, int tbl_idx, const char *key, std::vector<ItemType *> &items);
+void LuaPopItemList(lua_State *lua, std::vector<ItemType*> &items);
 void LuaGetTileList(lua_State *lua, int tbl_idx, const char *key, std::vector<boost::shared_ptr<Tile> > &tiles);
 void LuaPopTileList(lua_State *lua, std::vector<boost::shared_ptr<Tile> > &tiles);
 

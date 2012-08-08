@@ -61,11 +61,11 @@ m_zombie = kts.MonsterType {
    -- list of tiles that zombies don't want to walk onto:
    ai_avoid = all_open_pit_tiles,
 
-   -- item that zombies will whack with sword instead of walking onto:
-   ai_hit = i_bear_trap_open,
+   -- list of items that zombies will whack with sword instead of walking onto:
+   ai_hit = {i_bear_trap_open},
 
-   -- item that zombies will run away from (if a knight is carrying it):
-   ai_fear = i_wand_of_undeath
+   -- list of items that zombies will run away from (if a knight is carrying one of them):
+   ai_fear = {i_wand_of_undeath}
 }
 
 

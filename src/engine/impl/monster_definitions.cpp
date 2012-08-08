@@ -303,12 +303,12 @@ class WalkingMonsterAI : public Task {
 public:
     WalkingMonsterAI(weak_ptr<WalkingMonster> m,
                      const std::vector<shared_ptr<Tile> > &avoid_tiles_,
-                     const ItemType *fear_item_,
-                     const ItemType *hit_item_)
+                     const std::vector<ItemType *> &fear_items_,
+                     const std::vector<ItemType *> &hit_items_)
         : monster(m),
           avoid_tiles(avoid_tiles_),
-          fear_item(fear_item_),
-          hit_item(hit_item_)
+          fear_items(fear_items_),
+          hit_items(hit_items_)
     { }
 
     virtual void execute(TaskManager &tm);
@@ -317,8 +317,8 @@ private:
     weak_ptr<WalkingMonster> monster;
     
     const std::vector<shared_ptr<Tile> > & avoid_tiles;
-    const ItemType * fear_item;
-    const ItemType * hit_item;
+    const std::vector<ItemType*> & fear_items;
+    const std::vector<ItemType*> & hit_items;
 };
 
 namespace {
@@ -331,11 +331,12 @@ namespace {
     };
 
     struct VisibleAndCarrying {
-        explicit VisibleAndCarrying(const ItemType *it_) : it(it_) { }
+        explicit VisibleAndCarrying(const std::vector<ItemType *> it_) : items(it_) { }
         bool operator()(shared_ptr<Knight> kt) const {
-            return kt->getItemInHand() == it && kt->isVisible();
+            return kt->isVisible() &&
+                std::find(items.begin(), items.end(), kt->getItemInHand()) != items.end();
         }
-        const ItemType *it;
+        const std::vector<ItemType *> &items;
     };
 
     struct ZombieCanWalk {
@@ -362,11 +363,12 @@ namespace {
     };
 
     struct ZombieCanFight {
-        explicit ZombieCanFight(const ItemType *fear_item_, const ItemType *hit_item_)
-            : fear_item(fear_item_), hit_item(hit_item_) { }
+        explicit ZombieCanFight(const std::vector<ItemType *> &fear_items_, 
+                                const std::vector<ItemType *> &hit_items_)
+            : fear_items(fear_items_), hit_items(hit_items_) { }
 
-        const ItemType *fear_item;
-        const ItemType *hit_item;
+        const std::vector<ItemType *> &fear_items;
+        const std::vector<ItemType *> &hit_items;
 
         bool operator()(DungeonMap &dmap, const MapCoord &mc) const {
             
@@ -375,10 +377,11 @@ namespace {
             // Note: this means a zombie will be able to attack an invisible knight if it
             // is next to such a knight. But zombies will not *target* invisible knights
             // from a distance.
-            if (KnightAt(dmap, mc, fear_item)) return true;
+            if (KnightAt(dmap, mc, fear_items)) return true;
 
             // A walking monster can fight a "bear trap" tile
-            if (dmap.getItem(mc) && &dmap.getItem(mc)->getType() == hit_item) {
+            if (dmap.getItem(mc) && 
+            std::find(hit_items.begin(), hit_items.end(), &dmap.getItem(mc)->getType()) != hit_items.end()) {
                 return true;
             }
             
@@ -399,10 +402,10 @@ namespace {
 
     struct ZombieCanMove {
         explicit ZombieCanMove(const std::vector<shared_ptr<Tile> > &avoid_tiles,
-                               const ItemType *fear_item,
-                               const ItemType *hit_item)
+                               const std::vector<ItemType *> &fear_items,
+                               const std::vector<ItemType *> &hit_items)
             : zcw(avoid_tiles),
-              zcf(fear_item, hit_item)
+              zcf(fear_items, hit_items)
         { }
         
         const ZombieCanWalk zcw;
@@ -426,8 +429,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
     p.second = false;
     
     // Find a target (or something to run away from!)
-    shared_ptr<Knight> target = FindClosestKnight(mon,
-            VisibleAndCarrying(fear_item));
+    shared_ptr<Knight> target = FindClosestKnight(mon, VisibleAndCarrying(fear_items));
     bool run_away;
     if (target) {
         run_away = true;
@@ -441,7 +443,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
     // where it is and do nothing, rather than randomly walking about.)
     if (!(!target && g_rng.getBool(mediator.cfgProbability("monster_wait_chance")))) {
         p = ChooseDirection(mon, target? target->getPos() : MapCoord(), run_away,
-                            ZombieCanMove(avoid_tiles, fear_item, hit_item));
+                            ZombieCanMove(avoid_tiles, fear_items, hit_items));
     }
 
     // Move (if we can act)
@@ -454,7 +456,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
             // Either fight or walk, depending on what's in the tile ahead.
             MapCoord sq_ahead = DisplaceCoord(mon->getPos(), mon->getFacing());
             const ZombieCanWalk zcw(avoid_tiles);
-            const ZombieCanFight zcf(fear_item, hit_item);
+            const ZombieCanFight zcf(fear_items, hit_items);
             if (zcf(*mon->getMap(), sq_ahead)) {
                 mon->swing();
             } else if (zcw(*mon->getMap(), sq_ahead)) {
@@ -489,8 +491,9 @@ WalkingMonsterType::WalkingMonsterType(lua_State *lua)
     anim = LuaGetPtr<Anim>(lua, -1, "anim");
 
     weapon = LuaGetPtr<ItemType>(lua, -1, "weapon");
-    fear_item = LuaGetPtr<ItemType>(lua, -1, "ai_fear");
-    hit_item = LuaGetPtr<ItemType>(lua, -1, "ai_hit");
+
+    LuaGetItemList(lua, -1, "ai_fear", fear_items);
+    LuaGetItemList(lua, -1, "ai_hit", hit_items);
 
     LuaGetTileList(lua, -1, "ai_avoid", avoid_tiles);
 }
@@ -514,10 +517,12 @@ void WalkingMonsterType::newIndex(lua_State *lua)
         weapon = ReadLuaPtr<ItemType>(lua, 3);
 
     } else if (k == "ai_fear") {
-        fear_item = ReadLuaPtr<ItemType>(lua, 3);
+        lua_pushvalue(lua, 3);
+        LuaPopItemList(lua, fear_items);
 
     } else if (k == "ai_hit") {
-        hit_item = ReadLuaPtr<ItemType>(lua, 3);
+        lua_pushvalue(lua, 3);
+        LuaPopItemList(lua, hit_items);
 
     } else if (k == "ai_avoid") {
         lua_pushvalue(lua, 3);
@@ -530,7 +535,7 @@ shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
     const int h = std::min(1, health.get());
     shared_ptr<WalkingMonster> monster(new WalkingMonster(*this, h, weapon, anim, speed));
     monster->setFacing(MapDirection(g_rng.getInt(0,4))); // random initial facing
-    shared_ptr<Task> ai(new WalkingMonsterAI(monster, avoid_tiles, fear_item, hit_item));
+    shared_ptr<Task> ai(new WalkingMonsterAI(monster, avoid_tiles, fear_items, hit_items));
     tm.addTask(ai, TP_LOW, tm.getGVT()+1);
     return monster;
 }

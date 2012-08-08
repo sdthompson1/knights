@@ -119,8 +119,8 @@ private:
     const Anim *anim;
 
     std::vector<shared_ptr<Tile> > avoid_tiles;
-    const ItemType * fear_item;
-    const ItemType * hit_item;
+    std::vector<ItemType *> fear_items;
+    std::vector<ItemType *> hit_items;
 };
 
 //
