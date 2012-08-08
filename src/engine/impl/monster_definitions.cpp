@@ -331,7 +331,7 @@ namespace {
     };
 
     struct VisibleAndCarrying {
-        explicit VisibleAndCarrying(const std::vector<ItemType *> it_) : items(it_) { }
+        explicit VisibleAndCarrying(const std::vector<ItemType *> &it_) : items(it_) { }
         bool operator()(shared_ptr<Knight> kt) const {
             return kt->isVisible() &&
                 std::find(items.begin(), items.end(), kt->getItemInHand()) != items.end();
