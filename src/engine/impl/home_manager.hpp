@@ -50,6 +50,7 @@ public:
     // Secure a home by a given player
     // (This does nothing if the given tile is not a home.)
     // Returns true if a home was secured
+    // (The secured_wall_tile is cloned if necessary.)
     bool secureHome(Player &pl,
                     DungeonMap &dmap, const MapCoord &pos, MapDirection facing,
                     shared_ptr<Tile> secured_wall_tile);

@@ -37,6 +37,8 @@
 #include "task_manager.hpp"
 #include "tile.hpp"
 
+#include <stdexcept>
+
 
 /////////////////
 //  MapHelper  //
@@ -343,6 +345,12 @@ bool DungeonMap::addTile(const MapCoord &mc, shared_ptr<Tile> t, const Originato
 {
     if (!valid(mc)) return false;
     if (!t) return false;
+
+    // Only cloned tiles should be added to the map...
+    if (!t->getOriginalTile()) {
+        throw std::invalid_argument("Error in DungeonMap::addTile");
+    }
+
     const int idx = index(mc);
     const int tdepth = t->getDepth();
     list<shared_ptr<Tile> >::iterator it;

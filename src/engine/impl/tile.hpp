@@ -80,7 +80,7 @@ public:
     shared_ptr<Tile> cloneWithNewGraphic(const Graphic *new_graphic);
 
     // If a tile was cloned this returns a pointer back to the original tile.
-    // Otherwise it returns this.
+    // Otherwise it returns NULL.
     // Used for things like monster_ai_avoid tiles, monster generator tiles etc.
     // See also #139
     shared_ptr<Tile> getOriginalTile() const;

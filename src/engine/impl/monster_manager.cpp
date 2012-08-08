@@ -134,7 +134,7 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
                 // We found a decaying corpse. Roll for zombie activity, and we're done.
                 if (rollZombieActivity()) {
                     dmap.rmTile(mc, d->first, Originator(OT_None()));
-                    dmap.addTile(mc, d->second, Originator(OT_None()));
+                    dmap.addTile(mc, d->second->clone(false), Originator(OT_None()));
                 }
                 return;
             }

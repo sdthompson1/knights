@@ -22,7 +22,11 @@
  */
 
 /*
- * An attempt to standardize some of the exceptions used in the game
+ * An attempt to standardize some of the exceptions used in the game.
+ *
+ * Note: These should probably be phased out in favour of the exceptions
+ * in <stdexcept> (except maybe the Lua ones which are useful to be able
+ * to catch separately).
  *
  */
 
