@@ -39,7 +39,6 @@ struct lua_State;
 
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
                   const char *filename,
-                  const boost::filesystem::path &cwd,
-                  const char *category);
+                  const boost::filesystem::path &cwd);
 
 #endif

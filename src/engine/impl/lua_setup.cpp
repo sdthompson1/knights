@@ -124,13 +124,12 @@ namespace {
     }
 
     // Upvalue: KnightsConfigImpl*
-    // Input: table of tiles, and segments-filename (relative to _CWD), and category string (temporary)
+    // Input: table of tiles, and segments-filename (relative to _CWD)
     // Output: table (sequence) of segment-userdatas.
     int MakeSegments(lua_State *lua)
     {
         KnightsConfigImpl *kc = GetKC(lua, "Segments");        
         const char *filename = luaL_checkstring(lua, 2);
-        const char *category = luaL_checkstring(lua, 3);
 
         boost::filesystem::path cwd;
         lua_getglobal(lua, "_CWD");  // [.. cwd]
@@ -142,7 +141,7 @@ namespace {
 
         lua_pushvalue(lua, 1);  // [.. tiletable]
 
-        LoadSegments(lua, kc, filename, cwd, category);  // [.. segments]
+        LoadSegments(lua, kc, filename, cwd);  // [.. segments]
         
         return 1;
     }        

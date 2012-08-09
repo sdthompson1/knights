@@ -34,8 +34,7 @@
 #include "lua.hpp"
 
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
-                  const char *filename, const boost::filesystem::path &cwd,
-                  const char *category)
+                  const char *filename, const boost::filesystem::path &cwd)
 {
     // [tiletbl]
     
@@ -56,7 +55,7 @@ void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
 
         if (x == "segment") {
             auto_ptr<Segment> segment(new Segment(str, lua)); // reads tiletbl (doesn't pop)
-            Segment *result = kc->addLuaSegment(segment, category); // hands over 'segment'
+            Segment *result = kc->addLuaSegment(segment); // hands over 'segment'
             NewLuaPtr<Segment>(lua, result);  // [result tiletbl newseg]
             lua_rawseti(lua, -3, idx++);      // [result tiletbl]
 

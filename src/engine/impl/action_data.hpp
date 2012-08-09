@@ -61,8 +61,7 @@ struct lua_State;
 // no Item was given.
 //
 // For TILEs, null dm & mc means that no tile was given. Null Tile ptr
-// means "no specific tile" (this is used by on_impact when a square
-// is being hit, or by on_destroy when the destroyed tile has already
+// means "no specific tile" (e.g. on_destroy when the destroyed tile has already
 // been removed from the map).
 //
 // The GENERIC POS (lua cxt field "pos") will be equal to one of the item, 

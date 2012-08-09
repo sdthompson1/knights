@@ -418,41 +418,6 @@ LegacyAction * A_Secure::Maker::make(ActionPars &pars) const
     shared_ptr<Tile> wall = pars.getTile(0);
     return new A_Secure(wall);
 }
-    
-
-//
-// A_Shoot
-//
-
-void A_Shoot::execute(const ActionData &ad) const
-{
-    DungeonMap *dm;
-    MapCoord mc;
-    shared_ptr<Tile> t;
-    ad.getTile(dm, mc, t);
-    if (dm) {
-        mc.setX(mc.getX() + dx);
-        mc.setY(mc.getY() + dy);
-        CreateMissile(*dm, mc, dir, itype, false, false, ad.getOriginator(), true);
-        Mediator::instance().runHook("HOOK_SHOOT", dm, mc);
-    }
-}
-
-A_Shoot::Maker A_Shoot::Maker::register_me;
-
-LegacyAction * A_Shoot::Maker::make(ActionPars &pars) const
-{
-    pars.require(4);
-    int dx = pars.getInt(0);
-    int dy = pars.getInt(1);
-    MapDirection dir = pars.getMapDirection(2);
-    ItemType *itype = pars.getItemType(3);
-    if (itype) return new A_Shoot(dx, dy, dir, *itype);
-    else {
-        pars.error();
-        return 0;
-    }
-}
 
 
 //

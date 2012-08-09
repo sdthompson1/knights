@@ -260,8 +260,8 @@ void A_Activate::execute(const ActionData &ad) const
     ad.getTile(dm, mc, t);
     if (!dm || !t) return;
 
-    mc.setX(mc.getX()+dx);
-    mc.setY(mc.getY()+dy);
+    mc.setX(mc.getX());
+    mc.setY(mc.getY());
     vector<shared_ptr<Tile> > tiles;
     dm->getTiles(mc, tiles);
     for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
@@ -279,12 +279,8 @@ A_Activate::Maker A_Activate::Maker::register_me;
 
 LegacyAction * A_Activate::Maker::make(ActionPars &pars) const
 {
-    pars.require(0,2);
-    if (pars.getSize()==0) {
-        return new A_Activate(0,0);
-    } else {
-        return new A_Activate(pars.getInt(0), pars.getInt(1));
-    }
+    pars.require(0);
+    return new A_Activate;
 }
 
 

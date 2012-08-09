@@ -697,7 +697,7 @@ Overlay * KnightsConfigImpl::addLuaOverlay(auto_ptr<Overlay> p)
     return q;
 }
 
-Segment * KnightsConfigImpl::addLuaSegment(auto_ptr<Segment> p, const char *category)
+Segment * KnightsConfigImpl::addLuaSegment(auto_ptr<Segment> p)
 {
     Segment *q = p.release();
     lua_segments.push_back(q);

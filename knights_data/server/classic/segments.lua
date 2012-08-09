@@ -126,8 +126,8 @@ tile_table = {
 
 -- Load the room files
 
-standard_rooms     = kts.LoadSegments(tile_table, "standard_rooms.txt",     "")
-gnome_rooms        = kts.LoadSegments(tile_table, "gnome_rooms.txt",        "gnome_room")
-liche_tombs        = kts.LoadSegments(tile_table, "liche_tombs.txt",        "liche_tomb")
-guarded_exits      = kts.LoadSegments(tile_table, "guarded_exits.txt",      "guarded_exit")
-special_pentagrams = kts.LoadSegments(tile_table, "special_pentagrams.txt", "special_pentagram")
+standard_rooms     = kts.LoadSegments(tile_table, "standard_rooms.txt")
+gnome_rooms        = kts.LoadSegments(tile_table, "gnome_rooms.txt")
+liche_tombs        = kts.LoadSegments(tile_table, "liche_tombs.txt")
+guarded_exits      = kts.LoadSegments(tile_table, "guarded_exits.txt")
+special_pentagrams = kts.LoadSegments(tile_table, "special_pentagrams.txt")

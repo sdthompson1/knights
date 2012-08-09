@@ -45,12 +45,10 @@ void AddStandardControls(lua_State *lua, KnightsConfigImpl *kc);
 
 class A_Activate : public LegacyAction {
 public:
-    A_Activate(int dx_, int dy_) : dx(dx_), dy(dy_) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Activate");
-    int dx, dy;
 };
 
 class A_Attack : public LegacyAction {
