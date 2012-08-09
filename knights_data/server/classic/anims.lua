@@ -42,6 +42,7 @@ a_zombie = kts.Anim {
 }
 
 -- ogre (not used yet)
+-- TODO: Move this into its own module (it is not part of Classic Knights)
 --a_ogre = kts.Anim {
 --    g_ogre_walk_1n,   g_ogre_walk_1e,   g_ogre_walk_1s,   g_ogre_walk_1w,   -- normal
 --    g_ogre_strike_1n, g_ogre_strike_1e, g_ogre_strike_1s, g_ogre_strike_1w, -- backswing

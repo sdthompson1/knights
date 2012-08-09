@@ -283,7 +283,9 @@ g_zom4s = kts.Graphic("+zom4s.bmp", 0,0,0)
 g_zom4w = kts.Graphic("+zom4w.bmp", 0,0,0)
 
 
--- Ogres
+-- Ogre graphics supplied by Loki Trickster
+-- (Not used yet.)
+-- (TODO: Move these into their own module, because they are not part of Classic Knights.)
 
 --g_ogre_stand_2n  = kts.Graphic("+ogre_stand_2n.bmp",  255,255,255, 0,0, 3,1)
 --g_ogre_stand_2e  = kts.Graphic("+ogre_stand_2e.bmp",  255,255,255, 0,0, 3,1)
