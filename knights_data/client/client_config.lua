@@ -127,7 +127,16 @@ pause4b = 85;
 
 pausealpha = 220;
 
-invisalpha = 140;       -- 0 to 255
+-- Opacity of invisible knights (0 to 255)
+-- (Set to 255 to disable transparency effect for invisible knights.)
+invisalpha = 140;
+
+-- Number of lines in player list & tutorial windows
+player_list_lines = 12;
+tutorial_lines = 20;
+
+-- Number of extra blank lines in quest requirements window
+quest_rqmts_extra_lines = 3;
 
 }
 
@@ -170,10 +179,6 @@ SKULL_SETUP = {
     rows = {45, 30, 15, 0};
     columns = {0, 8, 4};
 }
-
-
--- Maximum number of chat lines that will be remembered
-max_chat_lines = 200
 
 -- Speech bubble image
 SPEECH_BUBBLE = Graphic("+speech_bubble.bmp", 0,255,0, -7,5)

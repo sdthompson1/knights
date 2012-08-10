@@ -1363,7 +1363,8 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             player_list_y = vp_y + player_list_margin;
             player_list_width = vp_width - 2*player_list_margin;
 
-            player_list_height = gui_font->getHeight() * (tutorial_mode ? 20 : 12);
+            player_list_height = gui_font->getHeight() * (tutorial_mode ? config_map.getInt("tutorial_lines")
+                                                                        : config_map.getInt("player_list_lines"));
 
             const int third_height = vp_height/3 - 2*player_list_margin;
             if (player_list_height > third_height) player_list_height = third_height;
@@ -1378,8 +1379,9 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             if (quest_rqmts_minimized) {
                 quest_rqmts_height = gui_font->getHeight() + 8;
             } else {
-                quest_rqmts_height = gui_font->getHeight() * (quest_rqmts_list.getNumberOfElements() + 3);
-                // the +3 just gives it a bit of extra black space underneath.
+                quest_rqmts_height = gui_font->getHeight() * (quest_rqmts_list.getNumberOfElements() + 
+                    config_map.getInt("quest_rqmts_extra_lines"));
+                // the +quest_rqmts_extra_lines just gives it a bit of extra black space underneath.
             }
             
             if (quest_rqmts_height > third_height) quest_rqmts_height = third_height;
