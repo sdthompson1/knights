@@ -46,15 +46,26 @@ namespace {
         return y;
     }
 
-    int StrToInt(int line, const std::string &x)
+    template<class T>
+    T StrToT(int line, const std::string &x)
     {
         std::istringstream str(x);
-        int result = 0;
+        T result = 0;
         str >> result;
         if (!str) throw ConfigError(line, "Integer expected");
         return result;
     }
 
+    int StrToInt(int line, const std::string &x)
+    {
+        return StrToT<int>(line, x);
+    }
+
+    unsigned int StrToUnsignedInt(int line, const std::string &x)
+    {
+        return StrToT<unsigned int>(line, x);
+    }
+    
     bool StrToBool(int line, const std::string &x)
     {
         const std::string y = LowerCase(x);
@@ -81,6 +92,8 @@ Config::Config(std::istream &str)
     max_players = 100;  // reasonable default. can't set this too high else enet_host_create will fail.
     metaserver = true;
     broadcast = true;
+    timestamp_size = sizeof(time_t);
+    fast_forward_until = 0;
 
     // Now load the config file.
     // Throws ConfigError if there is a problem.
@@ -137,6 +150,10 @@ Config::Config(std::istream &str)
             binary_log_file = value;
         } else if (lkey == "replay") {
             replay_file = value;
+        } else if (lkey == "timestampsize") {
+            timestamp_size = StrToInt(line_counter, value);
+        } else if (lkey == "fastforwarduntil") {
+            fast_forward_until = StrToUnsignedInt(line_counter, value);
         } else {
             throw ConfigError(line_counter, "Unknown setting: " + key);
         }

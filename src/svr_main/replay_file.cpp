@@ -27,13 +27,15 @@
 
 #include <vector>
 
-ReplayFile::ReplayFile(const std::string &filename)
-    : str(filename.c_str(), std::ios::in | std::ios::binary)
+ReplayFile::ReplayFile(const std::string &filename, int t)
+    : str(filename.c_str(), std::ios::in | std::ios::binary),
+      timestamp_size(t)
 { }
 
 void ReplayFile::readMessage(std::string &msg,
                              int &int_arg,
-                             std::string &extra_bytes)
+                             std::string &extra_bytes,
+                             unsigned int &msec)
 {
     // Read the #KTS# header
     const char * header = "#KTS#";
@@ -61,9 +63,7 @@ void ReplayFile::readMessage(std::string &msg,
     msg.assign(&msg_code[0], 3);
 
     // Read the timestamps. Note these are ignored currently
-    time_t seconds;
-    unsigned int msec;
-    str.read(reinterpret_cast<char*>(&seconds), sizeof(seconds));
+    str.seekg(timestamp_size, std::ios_base::cur);  // skip timestamp (in seconds)
     str.read(reinterpret_cast<char*>(&msec), sizeof(msec));
 
     // Read the message data

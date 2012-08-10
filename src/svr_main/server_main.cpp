@@ -68,6 +68,8 @@
 #undef max
 #endif
 
+extern bool g_hack_fast_forward_flag;
+
 // This is used when contacting the Metaserver
 const char * user_agent_string = 
     "Knights-Server/" KNIGHTS_VERSION " (" KNIGHTS_PLATFORM "; " KNIGHTS_WEBSITE ")";
@@ -369,14 +371,17 @@ bool ProcessIncomingNetMsgs()
     return did_something;
 }
 
-bool ProcessReplayFile(ReplayFile & file, std::list<UpdateStruct> & update_structs)
+bool ProcessReplayFile(ReplayFile & file, std::vector<UpdateStruct*> & update_structs)
 {
     // Read a message from the replay file
     std::string msg;
     int int_arg;
     std::string extra_bytes;
-    file.readMessage(msg, int_arg, extra_bytes);
+    unsigned int msec;
+    file.readMessage(msg, int_arg, extra_bytes, msec);
 
+    g_hack_fast_forward_flag = msec < g_config->getFastForwardUntil();
+    
     if (msg == "EOF") return false;
     
     if (msg == "NCC") {
@@ -400,11 +405,11 @@ bool ProcessReplayFile(ReplayFile & file, std::list<UpdateStruct> & update_struc
         std::auto_ptr<std::deque<unsigned int> > random_seeds;
         
         // Look for the game in update_structs
-        for (std::list<UpdateStruct>::iterator it = update_structs.begin(); it != update_structs.end(); ++it) {
-            if (it->game_name == extra_bytes) {
-                update_counts.reset(new std::deque<int>(it->update_counts));
-                time_deltas.reset(new std::deque<int>(it->time_deltas));
-                random_seeds.reset(new std::deque<unsigned int>(it->random_seeds));
+        for (std::vector<UpdateStruct*>::iterator it = update_structs.begin(); it != update_structs.end(); ++it) {
+            if ((*it)->game_name == extra_bytes) {
+                update_counts.reset(new std::deque<int>((*it)->update_counts));
+                time_deltas.reset(new std::deque<int>((*it)->time_deltas));
+                random_seeds.reset(new std::deque<unsigned int>((*it)->random_seeds));
                 update_structs.erase(it);
                 break;
             }
@@ -862,25 +867,33 @@ int main(int argc, char **argv)
     // If replay mode then do first pass through replay file (to get the update times)
     // then open file ready for second pass.
     std::auto_ptr<ReplayFile> replay_file;
-    std::list<UpdateStruct> update_structs;
+    std::vector<UpdateStruct*> update_structs;
     if (!g_config->getReplayFile().empty()) {
 
         std::map<std::string, UpdateStruct*> curr;
         
-        replay_file.reset(new ReplayFile(g_config->getReplayFile()));
+        replay_file.reset(new ReplayFile(g_config->getReplayFile(), g_config->getTimestampSize()));
         std::string msg;
         int int_arg;
         std::string extra_bytes;
+        unsigned int dummy_msec;
         while (1) {
-            replay_file->readMessage(msg, int_arg, extra_bytes);
+            replay_file->readMessage(msg, int_arg, extra_bytes, dummy_msec);
             if (msg == "EOF") break;
             if (msg == "NGM") {
                 // new game
                 // extra_bytes is the game name
-                UpdateStruct foo;
-                foo.game_name = extra_bytes;
+
+                // NOTE: This "new" doesn't have a corresponding "delete".
+                // Therefore, we leak memory.
+                // However, we don't really care because the replay mode is only for testing/debugging,
+                // and anyway you only run through this code once at the beginning, therefore we leak
+                // only a constant amount of memory (which we rely on the OS to free at program exit).
+                
+                UpdateStruct *foo = new UpdateStruct;
+                foo->game_name = extra_bytes;
                 update_structs.push_back(foo);
-                curr[extra_bytes] = &update_structs.back();
+                curr[extra_bytes] = foo;
             } else if (msg == "UPD") {
                 // update time stored in int_arg
                 // extra_bytes is the time_delta foll. by the game name
@@ -898,7 +911,7 @@ int main(int argc, char **argv)
         }
 
         // rewind the file
-        replay_file.reset(new ReplayFile(g_config->getReplayFile()));
+        replay_file.reset(new ReplayFile(g_config->getReplayFile(), g_config->getTimestampSize()));
     }
     
     // Send log msgs to log file, or to cout if no log file specified

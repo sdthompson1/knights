@@ -31,15 +31,17 @@
 
 class ReplayFile {
 public:
-    explicit ReplayFile(const std::string &filename);
+    ReplayFile(const std::string &filename, int timestamp_size_);
 
     // Returns msg=="EOF" if end of file found, otherwise reads one msg from the file.
     void readMessage(std::string &msg,
                      int &int_arg,
-                     std::string &extra_bytes);
+                     std::string &extra_bytes,
+                     unsigned int &msec);
 
 private:
     std::ifstream str;
+    int timestamp_size;
 };
 
 #endif

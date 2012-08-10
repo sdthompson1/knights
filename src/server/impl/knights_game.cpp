@@ -57,6 +57,9 @@
 #undef max
 #endif
 
+// This is a hack for FastForwardUntil
+bool g_hack_fast_forward_flag = false;
+
 class GameConnection {
 public:
     GameConnection(const std::string &n, const std::string &n2, bool new_obs_flag, int ver,
@@ -182,7 +185,7 @@ namespace {
                     }
                 }
                 // sleep until the update gets completed.
-                boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+                boost::this_thread::sleep(boost::posix_time::milliseconds(1));
             }
         }
     }
@@ -582,6 +585,10 @@ namespace {
                     // schedule the next update
                     const int max_time_to_update = 250;
                     const unsigned int time_of_next_update =
+                        g_hack_fast_forward_flag
+                        ?
+                        timer->getMsec()
+                        :
                         last_time + std::min(max_time_to_update, engine->getTimeToNextUpdate());
                     
                     // Sleep until main thread signals us, or until we reach time_of_next_update
@@ -719,6 +726,7 @@ namespace {
                 // the correct value yet.
                 if (kg.update_counts.get()) {
                     if (kg.update_counts->empty() || kg.update_counts->front() > msg_counter) {
+                        boost::this_thread::interruption_point(); // ensure main thread can interrupt us
                         return true;  // ignore the update
                     } else {
                         kg.update_counts->pop_front();
