@@ -43,6 +43,7 @@
 #include "monster_manager.hpp"
 #include "monster_task.hpp"
 #include "monster_type.hpp"
+#include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
 #include "rng.hpp"
@@ -76,7 +77,7 @@ namespace {
 
     void MakeLowerCase(string &s) {
         for (int i=0; i<s.size(); ++i) {
-            s[i] = tolower(s[i]);
+            s[i] = ToLower(s[i]);
         }
     }
 

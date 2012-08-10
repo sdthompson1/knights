@@ -25,6 +25,7 @@
 
 #include "dungeon_layout.hpp"
 #include "lua_check.hpp"
+#include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 
 #include "lua.hpp"
@@ -32,7 +33,7 @@
 namespace {
     void MakeLowerCase(std::string &s) {
         for (int i=0; i<s.size(); ++i) {
-            s[i] = tolower(s[i]);
+            s[i] = ToLower(s[i]);
         }
     }
 

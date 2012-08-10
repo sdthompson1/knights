@@ -40,6 +40,7 @@
 #include "menu.hpp"
 #include "menu_item.hpp"
 #include "menu_screen.hpp"
+#include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "password_screen.hpp"
 #include "sound.hpp"
@@ -50,7 +51,6 @@
 #include "guichan.hpp"
 
 #include <algorithm>
-#include <cctype>
 #include <ctime>
 #include <set>
 #include <sstream>
@@ -132,7 +132,7 @@ void ChatList::add(const std::string &msg_in)
 {
     bool msg_empty = true;
     for (std::string::const_iterator it = msg_in.begin(); it != msg_in.end(); ++it) {
-        if (!std::isspace(*it)) {
+        if (!IsSpace(*it)) {
             msg_empty = false;
             break;
         }
@@ -207,7 +207,7 @@ std::string NameList::Name::ToUpper(const std::string &input)
 {
     std::string result;
     for (std::string::const_iterator it = input.begin(); it != input.end(); ++it) {
-        result += std::toupper(*it);
+        result += ::ToUpper(*it);
     }
     return result;
 }

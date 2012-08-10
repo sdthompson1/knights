@@ -23,15 +23,14 @@
 
 #include "misc.hpp"
 
+#include "my_ctype.hpp"
 #include "trim.hpp"
-
-#include <cctype>
 
 std::string Trim(const std::string &s)
 {
     size_t beg = 0;
     while (beg < s.size()) {
-        if (!std::isspace(s[beg])) break;
+        if (!IsSpace(s[beg])) break;
         ++beg;
     }
     // 'beg' is now the first non-space character
@@ -39,7 +38,7 @@ std::string Trim(const std::string &s)
     
     size_t end = s.size();
     while (end != beg) {
-        if (!std::isspace(s[end-1])) break;
+        if (!IsSpace(s[end-1])) break;
         --end;
     }
     // 'end' is now one plus the last non-space character,

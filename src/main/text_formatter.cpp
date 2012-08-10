@@ -21,9 +21,8 @@
  *
  */
 
+#include "my_ctype.hpp"
 #include "text_formatter.hpp"
-
-#include <cctype>
 
 TextFormatter::TextFormatter(Printer &p, int width, bool rich)
     : printer(p), max_line_width(width), is_rich(rich), do_centre(false), y(0)
@@ -79,7 +78,7 @@ int TextFormatter::printString(const std::string &text)
         
         // Check to see if we are at a possible line break point.
         // (This means a non-space character where the next character IS a space.)
-        if (c != 0 && !std::isspace(c) && (it == text.end() || std::isspace(*it))) {
+        if (c != 0 && !IsSpace(c) && (it == text.end() || IsSpace(*it))) {
             if (line_width <= max_line_width) {
                 // OK, approve this point as a possible line break position.
                 fit_chars = line.length();
@@ -107,7 +106,7 @@ int TextFormatter::printString(const std::string &text)
             y += printer.getTextHeight();
             
             // Reset for the next line (skip any spaces)
-            while (fit_chars < line.length() && std::isspace(line[fit_chars])) ++fit_chars;
+            while (fit_chars < line.length() && IsSpace(line[fit_chars])) ++fit_chars;
             line = line.substr(fit_chars, std::string::npos);
             fit_chars = 0;
         }

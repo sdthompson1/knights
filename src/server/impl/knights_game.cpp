@@ -30,6 +30,7 @@
 #include "knights_game.hpp"
 #include "knights_log.hpp"
 #include "menu.hpp"
+#include "my_ctype.hpp"
 #include "my_menu_listeners.hpp"
 #include "overlay.hpp"
 #include "protocol.hpp"
@@ -47,7 +48,6 @@
 #include "boost/thread/thread.hpp"
 
 #include <algorithm>
-#include <cctype>
 #include <set>
 
 #ifdef min
@@ -1032,7 +1032,7 @@ namespace {
         {
             std::string result;
             for (std::string::const_iterator it = input.begin(); it != input.end(); ++it) {
-                result += std::toupper(*it);
+                result += ::ToUpper(*it);
             }
             return result;
         }

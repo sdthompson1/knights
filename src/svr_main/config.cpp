@@ -22,9 +22,9 @@
  */
 
 #include "config.hpp"
+#include "my_ctype.hpp"
 #include "trim.hpp"
 
-#include <cctype>
 #include <fstream>
 #include <sstream>
 
@@ -41,7 +41,7 @@ namespace {
     {
         std::string y = x;
         for (std::string::iterator it = y.begin(); it != y.end(); ++it) {
-            *it = std::tolower(*it);
+            *it = ToLower(*it);
         }
         return y;
     }

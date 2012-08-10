@@ -24,8 +24,6 @@
 #include "gui_text_wrap.hpp"
 #include "text_formatter.hpp"
 
-#include <cctype>
-
 namespace {
     const int pad = 2;
     

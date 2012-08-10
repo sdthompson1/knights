@@ -24,11 +24,11 @@
 #include "misc.hpp"
 
 #include "create_tile.hpp"
+#include "my_ctype.hpp"
 #include "special_tiles.hpp"
 
 #include "lua.hpp"
 
-#include <cctype>
 #include <string>
 
 boost::shared_ptr<Tile> CreateTile(lua_State *lua)
@@ -42,7 +42,7 @@ boost::shared_ptr<Tile> CreateTile(lua_State *lua)
     lua_pop(lua, 1);  // [t]
 
     for (std::string::iterator it = s.begin(); it != s.end(); ++it) {
-        *it = std::tolower(*it);
+        *it = ToLower(*it);
     }
 
     boost::shared_ptr<Tile> tile;

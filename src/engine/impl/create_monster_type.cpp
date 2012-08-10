@@ -27,10 +27,10 @@
 #include "knights_config_impl.hpp"
 #include "lua_setup.hpp"
 #include "monster_definitions.hpp"
+#include "my_ctype.hpp"
 
 #include "lua.hpp"
 
-#include <cctype>
 #include <string>
 
 MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
@@ -44,7 +44,7 @@ MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
     lua_pop(lua, 1);  // [... t]
 
     for (std::string::iterator it = s.begin(); it != s.end(); ++it) {
-        *it = std::tolower(*it);
+        *it = ToLower(*it);
     }
 
     auto_ptr<MonsterType> result;

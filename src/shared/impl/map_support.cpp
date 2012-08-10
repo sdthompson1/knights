@@ -24,10 +24,9 @@
 #include "misc.hpp"
 
 #include "map_support.hpp"
+#include "my_ctype.hpp"
 
 #include "lua.hpp"
-
-#include <cctype>
 
 namespace {
     // check if two C strings are equal (case insensitive)
@@ -36,7 +35,7 @@ namespace {
         while (1) {
             if (*p == 0 && *q == 0) return true;
             if (*p == 0 || *q == 0) return false;
-            if (std::toupper(*p) != std::toupper(*q)) return false;
+            if (ToUpper(*p) != ToUpper(*q)) return false;
             ++p;
             ++q;
         }

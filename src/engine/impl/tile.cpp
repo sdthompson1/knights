@@ -34,13 +34,13 @@
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
 #include "mediator.hpp"
+#include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "sweep.hpp"
 #include "tile.hpp"
 
 #include "lua.hpp"
 
-#include <cctype>
 #include <cstring>
 
 namespace {
@@ -53,7 +53,7 @@ namespace {
             
             // convert to uppercase
             std::string s(p ? p : "");
-            for (std::string::iterator it = s.begin(); it != s.end(); ++it) *it = std::toupper(*it);
+            for (std::string::iterator it = s.begin(); it != s.end(); ++it) *it = ToUpper(*it);
 
             if (s == "APPROACH" || s == "PARTIAL") result = A_APPROACH;
             else if (s == "BLOCKED") result = A_BLOCKED;

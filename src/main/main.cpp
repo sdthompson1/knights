@@ -29,6 +29,7 @@
 #include "misc.hpp"
 
 #include "knights_app.hpp"
+#include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "version.hpp"
 
@@ -37,7 +38,6 @@
 #include "SDL.h"
 #endif
 
-#include <cctype>
 #include <sstream>
 #include <string>
 
@@ -243,10 +243,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     arg_vec.push_back(&app_path[pathlen+1]); // program name
     char * arg = szCmdLine;
     while (arg[0]) {
-        while (arg[0] && std::isspace(arg[0])) ++arg;
+        while (arg[0] && IsSpace(arg[0])) ++arg;
         if (arg[0]) {
             arg_vec.push_back(arg);
-            while (arg[0] && !std::isspace(arg[0])) ++arg;
+            while (arg[0] && !IsSpace(arg[0])) ++arg;
             if (arg[0]) {
                 arg[0] = 0;
                 ++arg;

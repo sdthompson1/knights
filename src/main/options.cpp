@@ -24,9 +24,9 @@
 #include "misc.hpp"
 
 #include "config_map.hpp"
+#include "my_ctype.hpp"
 #include "options.hpp"
 
-#include <cctype>
 #include <cstring>
 
 Options::Options()
@@ -81,7 +81,7 @@ Options LoadOptions(std::istream &str)
         || buf[1] != 'O'
         || buf[2] != 'P'
         || buf[3] != 'T'
-        || !std::isdigit(buf[4])
+        || !IsDigit(buf[4])
         || buf[5] != '\0') return Options();
 
     const int version = buf[4] - '0';
@@ -148,7 +148,7 @@ Options LoadOptions(std::istream &str)
         // eat white space
         char c;
         while (str.get(c)) {
-            if (!std::isspace(c)) {
+            if (!IsSpace(c)) {
                 str.putback(c);
                 break;
             }

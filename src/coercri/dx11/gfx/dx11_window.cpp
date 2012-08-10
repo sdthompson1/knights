@@ -765,7 +765,10 @@ namespace Coercri {
                             // then look this up in g_char_to_rk
                             UINT ch = MapVirtualKey(wparam, MAPVK_VK_TO_CHAR) & 0xffff;
                             if (ch != 0) {
-                                const std::map<UINT, RawKey>::const_iterator it2 = g_char_to_rk.find(std::tolower(ch));
+                                UINT new_ch;
+                                if (ch <= 0xff) new_ch = std::tolower(ch);
+                                else new_ch = ch;
+                                const std::map<UINT, RawKey>::const_iterator it2 = g_char_to_rk.find(new_ch);
                                 if (it2 != g_char_to_rk.end()) {
                                     // Found it
                                     rk = it2->second;

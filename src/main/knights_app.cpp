@@ -43,6 +43,7 @@
 #include "lua_sandbox.hpp"
 #include "load_font.hpp"
 #include "loading_screen.hpp"
+#include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
 #include "options.hpp"
@@ -448,9 +449,9 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
             getline(str, x);
         
             // Left trim
-            x.erase(x.begin(), find_if(x.begin(), x.end(), not1(ptr_fun<int,int>(isspace))));
+            x.erase(x.begin(), find_if(x.begin(), x.end(), not1(ptr_fun<char,bool>(IsSpace))));
             // Right trim
-            x.erase(find_if(x.rbegin(), x.rend(), not1(ptr_fun<int,int>(isspace))).base(), x.end());
+            x.erase(find_if(x.rbegin(), x.rend(), not1(ptr_fun<char,bool>(IsSpace))).base(), x.end());
             
             if (x.empty()) continue;
         

@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "legacy_action.hpp"
+#include "my_ctype.hpp"
 
 
 //
@@ -36,7 +37,7 @@ MapDirection ActionPars::getMapDirection(int index)
     // (It should probably be removed now, and made pure virtual in the base class)
     std::string d = getString(index);
     for (std::string::iterator it = d.begin(); it != d.end(); ++it) { 
-        *it = std::toupper(*it);
+        *it = ToUpper(*it);
     }
     if (d == "NORTH") return D_NORTH;
     else if (d == "EAST") return D_EAST;
