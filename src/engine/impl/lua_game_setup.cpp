@@ -151,6 +151,8 @@ namespace {
         // arg 1 = monstertype
         // arg 2 = number to place
 
+        // See also "AddMonster" in lua_ingame.cpp
+
         const MonsterType *montype = ReadLuaPtr<MonsterType>(lua, 1);
         if (!montype) {
             luaL_error(lua, "Invalid monster type passed to AddMonsters");

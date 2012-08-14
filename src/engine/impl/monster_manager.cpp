@@ -86,6 +86,30 @@ void MonsterManager::limitTotalMonsters(int max_number)
     total_monster_limit = max_number;
 }
 
+int MonsterManager::getMonsterLimit(const MonsterType &type) const
+{
+    std::map<const MonsterType *, int>::const_iterator it = monster_limit.find(&type);
+    if (it == monster_limit.end()) return -1;
+    else return it->second;
+}
+
+int MonsterManager::getTotalMonsterLimit() const
+{
+    return total_monster_limit;
+}
+
+int MonsterManager::getMonsterCount(const MonsterType &montype) const
+{
+    std::map<const MonsterType *, int>::const_iterator it = current_monsters.find(&montype);
+    if (it == current_monsters.end()) return 0;
+    else return it->second;
+}
+
+int MonsterManager::getTotalMonsterCount() const
+{
+    return total_current_monsters;
+}
+
 namespace {
     // generate a random square within the given box:
     MapCoord GetRandomSquare(int left, int bottom, int right, int top)
@@ -258,9 +282,14 @@ void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bot
     }
 }
 
-void MonsterManager::placeMonster(const MonsterType &type, DungeonMap &dmap, const MapCoord &mc, MapDirection facing)
+shared_ptr<Monster> MonsterManager::placeMonster(const MonsterType &type,
+                                                 DungeonMap &dmap,
+                                                 const MapCoord &mc,
+                                                 MapDirection facing)
 {
-    addMonsterToMap(type, dmap, mc)->setFacing(facing);
+    shared_ptr<Monster> mon (addMonsterToMap(type, dmap, mc));
+    mon->setFacing(facing);
+    return mon;
 }
 
 void MonsterManager::subtractMonster(const MonsterType &mt)

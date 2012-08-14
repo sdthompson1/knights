@@ -81,7 +81,7 @@ public:
     void addMonsterGenerator(shared_ptr<Tile> tile, const MonsterType * monster_type, float chance);
 
 
-    // Initialization of monster limits:
+    // Monster limits:
     
     // Limit the number of a certain monster that can be added to the dungeon
     void limitMonster(const MonsterType * monster_type, int max_number);
@@ -89,6 +89,14 @@ public:
     // Limit the *total* number of monsters that can be added to the dungeon
     void limitTotalMonsters(int max_number);
 
+    // read current limits (return -1 if no limit)
+    int getMonsterLimit(const MonsterType &montype) const;
+    int getTotalMonsterLimit() const;
+
+    // find out current monster counts.
+    int getMonsterCount(const MonsterType &montype) const;
+    int getTotalMonsterCount() const;
+    
     
     //
     // doMonsterGeneration:
@@ -108,8 +116,11 @@ public:
     
     //
     // manual monster generation
+    // (returns ptr to the monster)
+    // Note: caller is responsible for checking that a monster can be placed here.
+    // This function will always succeed.
     //
-    void placeMonster(const MonsterType &type, DungeonMap &dmap, const MapCoord &mc, MapDirection facing);
+    shared_ptr<Monster> placeMonster(const MonsterType &type, DungeonMap &dmap, const MapCoord &mc, MapDirection facing);
 
 
     //

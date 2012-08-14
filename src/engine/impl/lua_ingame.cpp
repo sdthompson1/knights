@@ -37,6 +37,9 @@
 #include "map_support.hpp"
 #include "mediator.hpp"
 #include "missile.hpp"
+#include "monster.hpp"
+#include "monster_manager.hpp"
+#include "monster_type.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
 #include "rng.hpp"
@@ -310,6 +313,33 @@ namespace {
         return 0;
     }
 
+    int AddMonster(lua_State *lua)
+    {
+        // arg 1 = position
+        // arg 2 = monstertype
+        // result = creature (or nil if placement failed)
+        
+        // See also "AddMonsters" in lua_game_setup.cpp
+
+        const MapCoord mc = GetMapCoord(lua, 1);
+        const MonsterType *montype = ReadLuaPtr<MonsterType>(lua, 2);
+        if (!montype) {
+            luaL_error(lua, "Invalid monster type passed to AddMonster");
+        }
+
+        boost::shared_ptr<Creature> cr;
+        Mediator &m = Mediator::instance();
+        boost::shared_ptr<DungeonMap> dmap = m.getMap();
+        
+        if (dmap && dmap->getAccess(mc, montype->getHeight()) == A_CLEAR) {
+            cr = m.getMonsterManager().placeMonster(*montype, *dmap, mc, D_NORTH);
+        }
+
+        // Return the creature to lua
+        NewLuaWeakPtr<Creature>(lua, cr);
+        return 1;
+    }
+
     // Input: creature, new position.
     // Cxt: none
     // Output: none
@@ -470,6 +500,16 @@ namespace {
         }
         shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
         lua_pushboolean(lua, cr && dynamic_pointer_cast<Knight>(cr));
+        return 1;
+    }
+
+    int IsAlive(lua_State *lua)
+    {
+        if (lua_gettop(lua) == 0) {
+            luaL_error(lua, "IsAlive: requires 1 parameter");
+        }
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
+        lua_pushboolean(lua, !!cr);
         return 1;
     }
     
@@ -734,6 +774,48 @@ namespace {
         Mediator::instance().winGame(plyr);
         return 0;
     }
+
+    int GetMonsterLimit(lua_State *lua)
+    {
+        const MonsterType *montype = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!montype) luaL_error(lua, "GetMonsterLimit: parameter 1 must be a monster type");
+
+        const int lim = Mediator::instance().getMonsterManager().getMonsterLimit(*montype);
+        if (lim < 0) {
+            lua_pushnil(lua);
+        } else {
+            lua_pushinteger(lua, lim);
+        }
+        return 1;
+    }
+
+    int GetTotalMonsterLimit(lua_State *lua)
+    {
+        const int lim = Mediator::instance().getMonsterManager().getTotalMonsterLimit();
+        if (lim < 0) {
+            lua_pushnil(lua);
+        } else {
+            lua_pushinteger(lua, lim);
+        }
+        return 1;
+    }
+
+    int GetMonsterCount(lua_State *lua)
+    {
+        const MonsterType *montype = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!montype) luaL_error(lua, "GetMonsterCount: parameter 1 must be a monster type");
+        
+        const int ct = Mediator::instance().getMonsterManager().getMonsterCount(*montype);
+        lua_pushinteger(lua, ct);
+        return 1;
+    }
+
+    int GetTotalMonsterCount(lua_State *lua)
+    {
+        const int ct = Mediator::instance().getMonsterManager().getTotalMonsterCount();
+        lua_pushinteger(lua, ct);
+        return 1;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -757,6 +839,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &AddMissile);
     lua_setfield(lua, -2, "AddMissile");
 
+    PushCFunction(lua, &AddMonster);
+    lua_setfield(lua, -2, "AddMonster");
+    
     PushCFunction(lua, &TeleportTo);
     lua_setfield(lua, -2, "TeleportTo");
 
@@ -784,6 +869,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &GetItemInHand);
     lua_setfield(lua, -2, "GetItemInHand");
 
+    PushCFunction(lua, &IsAlive);
+    lua_setfield(lua, -2, "IsAlive");
+    
     PushCFunction(lua, &IsKnight);
     lua_setfield(lua, -2, "IsKnight");
 
@@ -851,6 +939,15 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &WinGame);
     lua_setfield(lua, -2, "WinGame");
+
+    PushCFunction(lua, &GetMonsterLimit);
+    lua_setfield(lua, -2, "GetMonsterLimit");
+    PushCFunction(lua, &GetTotalMonsterLimit);
+    lua_setfield(lua, -2, "GetTotalMonsterLimit");
+    PushCFunction(lua, &GetMonsterCount);
+    lua_setfield(lua, -2, "GetMonsterCount");
+    PushCFunction(lua, &GetTotalMonsterCount);
+    lua_setfield(lua, -2, "GetTotalMonsterCount");
 
     // pop the "kts" and environment tables.
     lua_pop(lua, 2);
