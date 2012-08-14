@@ -43,7 +43,9 @@ struct TutorialWindow {
 
     // text to be displayed.
     // ^ character indicates new page.
-    // %L, %R, %U, %D, %A indicate knight control keys (left/right/up/down/action).
+    // %L, %R, %U, %D, %A, %S indicate knight control keys (left/right/up/down/action/suicide).
+    // Also %M represents the string "WASD keys", "ARROW KEYS", or a longhand description of the 
+    //   current movement keys, as appropriate.
     std::string msg;
 
     // Whether this should be a popup window or not
