@@ -133,7 +133,6 @@ public:
 KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
                              const std::vector<std::string> &player_names,
-                             bool tutorial_mode,
                              bool &deathmatch_mode,
                              std::vector<std::string> &messages)
 {
@@ -141,18 +140,13 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
 
         // Create new KnightsEngineImpl
         pimpl.reset(new KnightsEngineImpl(hse_cols.size()));
-
-        // Tutorial stuff
-        boost::shared_ptr<TutorialManager> tutorial_manager;
-        if (tutorial_mode) tutorial_manager.reset(new TutorialManager);
-        pimpl->tutorial_manager = tutorial_manager;
         
         // Create the mediator, add stuff to it
         Mediator::createInstance(pimpl->event_manager, pimpl->gore_manager,
                                  pimpl->home_manager, pimpl->monster_manager,
                                  pimpl->stuff_manager, pimpl->task_manager,
                                  pimpl->view_manager, config->getConfigMap(),
-                                 tutorial_manager, config->getLuaState());
+                                 config->getLuaState());
 
 
         // Most initialization work is delegated to the KnightsConfig object
@@ -164,8 +158,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                                pimpl->event_manager,
                                pimpl->task_manager,
                                hse_cols,
-                               player_names,
-                               tutorial_manager.get());
+                               player_names);
         
         pimpl->house_col_idxs = hse_cols;
 
@@ -176,11 +169,11 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         // Make sure we save a copy of the config.
         pimpl->config = config;        
 
-        // Tutorial loop
-        while (1) {
-            resetMap();
+        // Create the map etc ready for Lua to fill in
+        resetMap();
 
-            // Run the Lua game startup functions.
+        // Run the Lua game startup functions.
+        {
             LuaStartupSentinel s(config->getLuaState().get(), *this);
             pimpl->initial_msgs = &messages;
             std::string err_msg;
@@ -189,17 +182,6 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
             if (!can_start) {
                 throw LuaError(err_msg);
             }
-
-            // In tutorial mode, keep looping until CheckTutorial returns true.
-            // (In normal mode, break out of loop after first run through.)
-            if (tutorial_mode) {
-                try {
-                    CheckTutorial(*pimpl->players[0]);
-                } catch (DungeonGenerationFailed &) {
-                    continue;
-                }
-            }
-            break;
         }
 
         // Setup the ItemRespawnTask

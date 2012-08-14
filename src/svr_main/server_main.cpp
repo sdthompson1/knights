@@ -966,7 +966,6 @@ int main(int argc, char **argv)
         // Create the KnightsServer.
         g_knights_server.reset(new KnightsServer(timer, 
                                                  false,  // don't allow split screen
-                                                 false,  // tutorial mode off
                                                  g_config->getMOTDFile(), g_config->getOldMOTDFile(),
                                                  g_config->getPassword()));
         g_knights_server->setKnightsLog(&my_log);

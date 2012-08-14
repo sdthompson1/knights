@@ -86,7 +86,6 @@ class KnightsServerImpl {
 public:
     boost::shared_ptr<Coercri::Timer> timer;
     bool allow_split_screen;
-    bool tutorial_mode;
     
     game_map games;
     connection_vector connections;
@@ -235,13 +234,12 @@ namespace {
 }
 
 KnightsServer::KnightsServer(boost::shared_ptr<Coercri::Timer> timer,
-                             bool allow_split_screen, bool tutorial_mode, const std::string &motd_file, 
+                             bool allow_split_screen, const std::string &motd_file, 
                              const std::string &old_motd_file, const std::string &password)
     : pimpl(new KnightsServerImpl)
 {
     pimpl->timer = timer;
     pimpl->allow_split_screen = allow_split_screen;
-    pimpl->tutorial_mode = tutorial_mode;
     pimpl->motd_file = motd_file;
     pimpl->old_motd_file = old_motd_file;
     pimpl->password = password;
@@ -788,7 +786,7 @@ void KnightsServer::startNewGame(boost::shared_ptr<KnightsConfig> config,
     } else {
         // The new game starts "empty" ie with no players attached to it.
         boost::shared_ptr<KnightsGame> game(new KnightsGame(config, pimpl->timer,
-                                                            pimpl->allow_split_screen, pimpl->tutorial_mode,
+                                                            pimpl->allow_split_screen,
                                                             pimpl->knights_log,
                                                             game_name,
                                                             update_counts, time_deltas, random_seeds));

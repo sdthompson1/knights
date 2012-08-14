@@ -106,7 +106,7 @@ void LoadingScreen::update()
     
     if (server_port < 0) {
         // create server & game
-        KnightsServer *server = knights_app->createLocalServer(tutorial_mode);
+        KnightsServer *server = knights_app->createLocalServer();
         server->startNewGame(loader->knights_config, "#SplitScreenGame");
 
         // set dummy player name.

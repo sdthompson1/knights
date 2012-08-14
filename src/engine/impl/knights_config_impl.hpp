@@ -93,8 +93,7 @@ public:
                         EventManager &event_manager,
                         TaskManager &task_manager,
                         const std::vector<int> &hse_cols,
-                        const std::vector<std::string> &player_names,
-                        TutorialManager *tutorial_manager);
+                        const std::vector<std::string> &player_names);
     const Menu & getMenu() const;
     MenuWrapper & getMenuWrapper() { return *menu_wrapper; }
     void resetMenu();
@@ -105,6 +104,9 @@ public:
 
     // This returns true when we are in the "config" stage (as opposed to "in-game")
     bool doingConfig() const { return doing_config; }
+
+    // called to initialize tutorial manager mid-game
+    void initializeTutorialManager(TutorialManager &tm) const;
 
     
     //

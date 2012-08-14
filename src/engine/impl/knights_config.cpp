@@ -123,8 +123,7 @@ void KnightsConfig::initializeGame(HomeManager &home_manager,
                                    EventManager &event_manager,
                                    TaskManager &task_manager,
                                    const std::vector<int> &hse_cols,
-                                   const std::vector<std::string> &player_names,
-                                   TutorialManager *tutorial_manager) const
+                                   const std::vector<std::string> &player_names) const
 {
     pimpl->initializeGame(home_manager,
                           players,
@@ -134,8 +133,7 @@ void KnightsConfig::initializeGame(HomeManager &home_manager,
                           event_manager,
                           task_manager,
                           hse_cols,
-                          player_names,
-                          tutorial_manager);
+                          player_names);
 }
 
 boost::shared_ptr<const ConfigMap> KnightsConfig::getConfigMap() const

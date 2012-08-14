@@ -60,10 +60,10 @@ namespace {
 void Mediator::createInstance(EventManager &em, GoreManager &gm, HomeManager &hm,
                               MonsterManager &mm, StuffManager &sm, TaskManager &tm,
                               ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
-                              boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua)
+                              boost::shared_ptr<lua_State> lua)
 {
     if (g_mediator_ptr.get()) throw MediatorCreatedTwice();
-    g_mediator_ptr.reset(new Mediator(em, gm, hm, mm, sm, tm, vm, cmap, tut_m, lua));
+    g_mediator_ptr.reset(new Mediator(em, gm, hm, mm, sm, tm, vm, cmap, lua));
 }
 
 void Mediator::destroyInstance()

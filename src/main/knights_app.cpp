@@ -1125,16 +1125,16 @@ const std::string & KnightsApp::getKnightsConfigFilename() const
 KnightsServer * KnightsApp::createServer(int port)
 {
     if (pimpl->knights_server) throw UnexpectedError("KnightsServer created twice");
-    pimpl->knights_server.reset(new KnightsServer(pimpl->timer, false, false, "", "", ""));
+    pimpl->knights_server.reset(new KnightsServer(pimpl->timer, false, "", "", ""));
     pimpl->net_driver->setServerPort(port);
     pimpl->net_driver->enableServer(true);
     return pimpl->knights_server.get();
 }
 
-KnightsServer * KnightsApp::createLocalServer(bool tutorial)
+KnightsServer * KnightsApp::createLocalServer()
 {
     if (pimpl->knights_server) throw UnexpectedError("KnightsServer created twice");
-    pimpl->knights_server.reset(new KnightsServer(pimpl->timer, true, tutorial, "", "", ""));
+    pimpl->knights_server.reset(new KnightsServer(pimpl->timer, true, "", "", ""));
     return pimpl->knights_server.get();
 }
 

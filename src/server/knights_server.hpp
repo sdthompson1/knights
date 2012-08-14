@@ -53,7 +53,6 @@ public:
 
     KnightsServer(boost::shared_ptr<Coercri::Timer> timer,
                   bool allow_split_screen,
-                  bool tutorial_mode,
                   const std::string &motd_filename,
                   const std::string &old_motd_filename,
                   const std::string &password);

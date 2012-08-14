@@ -65,7 +65,6 @@ public:
     KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                   const std::vector<int> &hse_cols,
                   const std::vector<std::string> &player_names,
-                  bool tutorial_mode,
                   bool &deathmatch_mode,   // output.
                   std::vector<std::string> &msgs);  // output.
     ~KnightsEngine();

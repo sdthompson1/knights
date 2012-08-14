@@ -105,7 +105,6 @@ public:
     boost::shared_ptr<KnightsConfig> knights_config;
     boost::shared_ptr<Coercri::Timer> timer;
     bool allow_split_screen;  // Whether to allow split screen and single player games.
-    bool tutorial_mode;
     bool deathmatch_mode;
 
     std::vector<const UserControl*> controls;
@@ -503,7 +502,6 @@ namespace {
                 std::vector<std::string> messages;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, hse_cols, player_names,
-                                                   kg.tutorial_mode,  // input to KnightsEngine
                                                    kg.deathmatch_mode,  // output from KnightsEngine
                                                    messages));   // output from KnightsEngine
 
@@ -1244,7 +1242,6 @@ namespace {
 KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
                          boost::shared_ptr<Coercri::Timer> tmr,
                          bool allow_split_screen,
-                         bool tutorial_mode,
                          KnightsLog *knights_log,
                          const std::string &game_name,
                          std::auto_ptr<std::deque<int> > update_counts,
@@ -1255,7 +1252,6 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
     pimpl->knights_config = config;
     pimpl->timer = tmr;
     pimpl->allow_split_screen = allow_split_screen;
-    pimpl->tutorial_mode = tutorial_mode;
     pimpl->game_over = false;
     pimpl->pause_mode = false;
     pimpl->update_thread_wants_to_exit = false;

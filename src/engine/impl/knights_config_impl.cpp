@@ -534,8 +534,7 @@ void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
                                        EventManager &event_manager,
                                        TaskManager &task_manager,
                                        const std::vector<int> &hse_cols,
-                                       const std::vector<std::string> &player_names,
-                                       TutorialManager *tutorial_manager)
+                                       const std::vector<std::string> &player_names)
 {
     // Add players
     players.clear();
@@ -583,13 +582,14 @@ void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
 
     // Set up event manager
     event_manager.setupHooks(hooks);
+}
 
+void KnightsConfigImpl::initializeTutorialManager(TutorialManager &tutorial_manager) const
+{
     // Set up tutorial manager if needed
-    if (tutorial_manager) {
-        for (std::map<int, std::pair<std::string,std::string> >::const_iterator it = tutorial_data.begin(); 
-        it != tutorial_data.end(); ++it) {
-            tutorial_manager->addTutorialKey(it->first, it->second.first, it->second.second);
-        }
+    for (std::map<int, std::pair<std::string,std::string> >::const_iterator it = tutorial_data.begin(); 
+    it != tutorial_data.end(); ++it) {
+        tutorial_manager.addTutorialKey(it->first, it->second.first, it->second.second);
     }
 }
 

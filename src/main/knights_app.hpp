@@ -170,7 +170,7 @@ public:
 
     const std::string & getKnightsConfigFilename() const;
     KnightsServer * createServer(int port);
-    KnightsServer * createLocalServer(bool tutorial);
+    KnightsServer * createLocalServer();
 
     //
     // LAN broadcast replies. (Reset when we return to title screen.)

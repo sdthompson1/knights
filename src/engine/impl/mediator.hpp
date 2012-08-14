@@ -242,7 +242,6 @@ public:
     static void createInstance(EventManager &em, GoreManager &gm, HomeManager &hm,
                                MonsterManager &mm, StuffManager &sm, TaskManager &tm,
                                ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
-                               boost::shared_ptr<TutorialManager> tut_m,
                                boost::shared_ptr<lua_State> lua);
     static void destroyInstance();  // must be called before the game thread exits, otherwise will leak memory
     void setMap(shared_ptr<DungeonMap> dm, shared_ptr<CoordTransform> ct) { dmap = dm; coord_transform = ct; }
@@ -257,9 +256,9 @@ private:
     // Here, we mostly only have to keep references to things...
     Mediator(EventManager &em, GoreManager &gm, HomeManager &hm, MonsterManager &mm,
              StuffManager &sm, TaskManager &tm, ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
-             boost::shared_ptr<TutorialManager> tut_m, boost::shared_ptr<lua_State> lua)
+             boost::shared_ptr<lua_State> lua)
         : config_map(cmap), event_manager(em), gore_manager(gm), home_manager(hm), monster_manager(mm),
-          stuff_manager(sm), task_manager(tm), view_manager(vm), tutorial_manager(tut_m), game_running(true), callbacks(0),
+          stuff_manager(sm), task_manager(tm), view_manager(vm), game_running(true), callbacks(0),
           lua_state(lua), deathmatch_mode(false) { }
     void operator=(const Mediator &) const;  // not defined
     Mediator(const Mediator &);              // not defined

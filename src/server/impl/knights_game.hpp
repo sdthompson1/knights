@@ -54,7 +54,7 @@ class KnightsLog;
 class KnightsGame {
 public:
     explicit KnightsGame(boost::shared_ptr<KnightsConfig> config, boost::shared_ptr<Coercri::Timer> tmr,
-                         bool allow_split_screen, bool tutorial_mode, KnightsLog *knights_log, 
+                         bool allow_split_screen, KnightsLog *knights_log, 
                          const std::string &game_name,
                          std::auto_ptr<std::deque<int> > update_counts,
                          std::auto_ptr<std::deque<int> > time_deltas,
