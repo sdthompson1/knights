@@ -31,6 +31,7 @@
 #include "knight.hpp"
 #include "legacy_action.hpp"
 #include "lockable.hpp"
+#include "lua_exec_coroutine.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_ingame.hpp"
 #include "lua_userdata.hpp"
@@ -816,6 +817,14 @@ namespace {
         lua_pushinteger(lua, ct);
         return 1;
     }
+
+    int AddTask(lua_State *lua)
+    {
+        lua_createtable(lua, 0, 0); // empty cxt table
+        lua_pushvalue(lua, 1);      // the function (1st and only argument of AddTask)
+        LuaExecCoroutine(lua, 0);
+        return 0;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -949,6 +958,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &GetTotalMonsterCount);
     lua_setfield(lua, -2, "GetTotalMonsterCount");
 
+    PushCFunction(lua, &AddTask);
+    lua_setfield(lua, -2, "AddTask");
+    
     // pop the "kts" and environment tables.
     lua_pop(lua, 2);
 }
