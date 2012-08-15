@@ -24,6 +24,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
+#include "lua_func.hpp"
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
 #include "status_display.hpp"
@@ -77,6 +78,7 @@ public:
     enum RespawnType { R_NORMAL, R_RANDOM_SQUARE, R_DIFFERENT_EVERY_TIME };
     void setRespawnType(RespawnType r) { respawn_type = r; }
     RespawnType getRespawnType() const { return respawn_type; }
+    void setRespawnFunc(const LuaFunc &func) { respawn_func = func; }
     
     // Add starting gear.
     void addStartingGear(ItemType &itype, const vector<int> &nos);
@@ -205,7 +207,8 @@ private:
                          map<const Control *, ControlInfo> &cmap,
                          shared_ptr<Creature>);
     static void giveStartingGear(shared_ptr<Knight> knight, const vector<pair<ItemType*, int> > &items);
-
+    void findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &facing);
+    
 private:
     friend class RespawnTask;
     friend class HealingTask;
@@ -247,6 +250,7 @@ private:
     bool elim_flag;
 
     RespawnType respawn_type;
+    LuaFunc respawn_func;
     int team_num;
 
     bool teleport_flag;

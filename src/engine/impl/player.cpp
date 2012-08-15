@@ -33,6 +33,8 @@
 #include "dungeon_map.hpp"
 #include "dungeon_view.hpp"
 #include "item_type.hpp"
+#include "lua_func_wrapper.hpp"
+#include "lua_userdata.hpp"
 #include "knight.hpp"
 #include "knight_task.hpp"
 #include "knights_callbacks.hpp"
@@ -44,6 +46,8 @@
 #include "task.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
+
+#include "lua.hpp"
 
 #include <set>
 #include <sstream>
@@ -428,16 +432,12 @@ bool Player::respawn()
         return true;  // this counts as a "success" -- we do not want the respawn task to keep retrying.
     }
 
-    // If respawn type is R_RANDOM_SQUARE then reset the home to somewhere completely random.
-    if (respawn_type == R_RANDOM_SQUARE) {
-        home_dmap = Mediator::instance().getMap().get();
-        home_location = MapCoord(g_rng.getInt(1, home_dmap->getWidth()-1),
-                                 g_rng.getInt(1, home_dmap->getHeight()-1));
-    }
-    
-    // Find an empty square (at the home, or nearby) to respawn on.
-    MapCoord respawn_point = FindRespawnPoint(home_dmap, home_location);
-    if (respawn_point.isNull()) return false;
+    // Find out where we should respawn
+    DungeonMap *respawn_map = 0;
+    MapCoord respawn_point;
+    MapDirection respawn_facing;
+    findRespawnPoint(respawn_map, respawn_point, respawn_facing);
+    if (!respawn_map || respawn_point.isNull()) return false;
 
     // Respawn successful -- Create a new knight.
     shared_ptr<Knight> my_knight(new Knight(*this, backpack_capacities,
@@ -448,8 +448,8 @@ bool Player::respawn()
     // NB This is done AFTER setting "knight" because we want getKnight to respond with 
     // the current knight, even before that knight is added to the map. (Otherwise Game
     // won't correctly process the onAddEntity event.)
-    my_knight->addToMap(home_dmap, respawn_point);
-    my_knight->setFacing(Opposite(home_facing));
+    my_knight->addToMap(respawn_map, respawn_point);
+    my_knight->setFacing(respawn_facing);
 
     // Add starting gear
     if (!gears.empty()) {
@@ -470,6 +470,80 @@ bool Player::respawn()
     
     return true;
 }
+
+void Player::findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &facing)
+{
+    dmap = 0;
+    
+    // First run the respawn_func (if there is one).
+    if (respawn_func.hasValue()) {
+        // Call the respawn func, with "this" as argument.
+        lua_State *lua = Mediator::instance().getLuaState();
+
+        // Lua api usage, wrap in pcall
+        struct Pcall {
+            DungeonMap *& dmap;
+            MapCoord &mc;
+            MapDirection &facing;
+            Player *plyr;
+            static int run(lua_State *lua) {
+                Pcall *p = static_cast<Pcall*>(lua_touserdata(lua, 1));
+                NewLuaPtr<Player>(lua, p->plyr);  // [plyr]
+                p->plyr->respawn_func.run(lua, 1, 3);   // [x y dir] or [nil nil nil]
+                if (!lua_isnil(lua, -3)) {
+                    p->dmap = Mediator::instance().getMap().get();
+                    p->mc.setX(lua_tointeger(lua, -3));
+                    p->mc.setY(lua_tointeger(lua, -2));
+                    p->facing = GetMapDirection(lua, -1);
+                }
+                return 0;
+            }
+        } pc = { dmap, mc, facing, this };
+
+        PushCFunction(lua, &Pcall::run);   // [func]
+        lua_pushlightuserdata(lua, &pc);   // [func arg]
+        int err = lua_pcall(lua, 1, 0, 0);
+        if (err) {
+            // [errmsg]
+            Mediator::instance().gameMsg(-1,
+                                         std::string("(Error in respawn function) ") + lua_tostring(lua, -1));
+            lua_pop(lua, 1); // []
+        } else {
+            // []
+            // copy back results
+            dmap = pc.dmap;
+            mc = pc.mc;
+            facing = pc.facing;
+        }
+    }
+
+    if (!dmap) {
+        // There was no respawn function, or, it failed to run.
+        // Use the normal "respawn type" logic instead.
+        
+        // If respawn type is R_RANDOM_SQUARE then set the spawn point to
+        // somewhere completely random
+        if (respawn_type == R_RANDOM_SQUARE) {
+            dmap = Mediator::instance().getMap().get();
+            mc = MapCoord(g_rng.getInt(1, dmap->getWidth()-1),
+                          g_rng.getInt(1, dmap->getHeight()-1));
+            facing = MapDirection(g_rng.getInt(0, 4));
+            
+        } else {
+            // For R_NORMAL we use the home location as respawn point.
+            // For R_DIFFERENT_EVERY_TIME we also use the home location
+            //   (HomeManager is responsible for reassigning the home, not us).
+            dmap = home_dmap;
+            mc = home_location;
+            facing = Opposite(home_facing);
+        }
+    }
+    
+    // If the chosen spawn point is occupied then this will find a
+    // nearby empty square to use:
+    mc = FindRespawnPoint(dmap, mc);
+}
+
 
 
 //
