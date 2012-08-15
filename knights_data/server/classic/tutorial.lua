@@ -56,7 +56,7 @@ TUT_CHEST = 59
 
 
 
-kts.TUTORIAL = {
+tutorial_table = {
 
     TUT_ITEM,
          "ITEM",

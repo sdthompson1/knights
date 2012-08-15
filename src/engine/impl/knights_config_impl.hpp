@@ -61,7 +61,6 @@ class Sound;
 class StuffManager;
 class TaskManager;
 class Tile;
-class TutorialManager;
 class UserControl;
 
 class KnightsConfigImpl {
@@ -105,9 +104,6 @@ public:
     // This returns true when we are in the "config" stage (as opposed to "in-game")
     bool doingConfig() const { return doing_config; }
 
-    // called to initialize tutorial manager mid-game
-    void initializeTutorialManager(TutorialManager &tm) const;
-
     
     //
     // Add objects (graphics, sounds etc) that have been created by Lua.
@@ -141,7 +137,6 @@ private:
     void popHouseColours(lua_State *lua);
     void popHouseColoursMenu(lua_State *lua);
     Colour popRGB(lua_State *lua);
-    void popTutorial(lua_State *lua);
     
 private:
     // The lua state. This stays alive between games (it is only destroyed when ~KnightsConfigImpl is called).
@@ -198,9 +193,6 @@ private:
 
     // extra graphics for the dead knight tiles. added 30-May-2009
     std::vector<boost::shared_ptr<Graphic> > dead_knight_graphics;
-
-    // Tutorial
-    std::map<int, std::pair<std::string,std::string> > tutorial_data;
 };
 
 #endif

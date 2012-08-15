@@ -47,7 +47,6 @@
 #include "stuff_bag.hpp"
 #include "task_manager.hpp"
 #include "time_limit_task.hpp"
-#include "tutorial_manager.hpp"
 #include "view_manager.hpp"
 
 class KnightsEngineImpl {
@@ -102,8 +101,6 @@ public:
     std::map<int,bool> speech_bubble_requests;
 
     std::vector<int> house_col_idxs;
-
-    boost::shared_ptr<TutorialManager> tutorial_manager;
 
     void doInitialUpdateIfNeeded();
 };
@@ -351,7 +348,6 @@ void KnightsEngine::setActionBarControls(int player, bool flag)
 {
     boost::shared_ptr<Player> p = pimpl->players.at(player);
     p->setActionBarControls(flag);
-    if (pimpl->tutorial_manager && !flag) pimpl->tutorial_manager->setOldStyleControls();
 }
 
 void KnightsEngine::setSpeechBubble(int player, bool show)

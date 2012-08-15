@@ -254,6 +254,11 @@ public:
     void setDeathmatchMode(bool d) { deathmatch_mode = d; }
     bool getDeathmatchMode() const { return deathmatch_mode; }
 
+    //
+    // Add tutorial manager -- can be called in middle of game if required
+    //
+    void setTutorialManager(boost::shared_ptr<TutorialManager> tm) { tutorial_manager = tm; }
+    
 private:
     // Note -- Mediator is not responsible for creating all of these
     // objects. That is done by the higher-ups (ie KnightsEngine).

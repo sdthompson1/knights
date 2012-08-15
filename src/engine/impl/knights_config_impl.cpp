@@ -53,7 +53,6 @@
 #include "stuff_bag.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
-#include "tutorial_manager.hpp"
 
 #include "lua.hpp"
 
@@ -199,10 +198,6 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
                 hooks.insert(std::make_pair(hook_names[i], ac));
             }
         }
-
-        // Tutorial (kts.TUTORIAL)
-        luaL_getsubtable(lua, -1, "TUTORIAL");  // [env kts tutorial_table]
-        popTutorial(lua);                       // [env kts]
 
         // now pop env and "kts" table from lua stack
         lua_pop(lua, 2);
@@ -419,39 +414,6 @@ boost::shared_ptr<Tile> KnightsConfigImpl::makeDeadKnightTile(boost::shared_ptr<
     return orig_tile->cloneWithNewGraphic(new_graphic.get());
 }
 
-void KnightsConfigImpl::popTutorial(lua_State *lua)
-{
-    // [tutorial_table]
-    lua_len(lua, -1);  // [tt len]
-    const int sz = lua_tointeger(lua, -1);
-    lua_pop(lua, 1);  // [tt]
-
-    if (sz % 3 != 0) luaL_error(lua, "kts.TUTORIAL list size must be a multiple of 3");
-
-    for (int i = 0; i < sz; i += 3) {
-        lua_pushinteger(lua, i+1);  // [tt 1]
-        lua_gettable(lua, -2);  // [tt key]
-        const int t_key = lua_tointeger(lua, -1);
-        lua_pop(lua, 1);  // [tt]
-
-        lua_pushinteger(lua, i+2);  // [tt 2]
-        lua_gettable(lua, -2);   // [tt title]
-        const char * title_c = lua_tostring(lua, -1);
-        std::string title = title_c ? title_c : "";
-        lua_pop(lua, 1);  // [tt]
-        
-        lua_pushinteger(lua, i+3);  // [tt 3]
-        lua_gettable(lua, -2); // [tt msg]
-        const char * msg_c = lua_tostring(lua, -1);
-        std::string msg = msg_c ? msg_c : "";
-        lua_pop(lua, 1);  // [tt]
-
-        tutorial_data.insert(std::make_pair(t_key, std::make_pair(title, msg)));
-    }
-
-    lua_pop(lua, 1);  // []
-}
-
 
 //
 // stuff forwarded from KnightsConfig
@@ -582,15 +544,6 @@ void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
 
     // Set up event manager
     event_manager.setupHooks(hooks);
-}
-
-void KnightsConfigImpl::initializeTutorialManager(TutorialManager &tutorial_manager) const
-{
-    // Set up tutorial manager if needed
-    for (std::map<int, std::pair<std::string,std::string> >::const_iterator it = tutorial_data.begin(); 
-    it != tutorial_data.end(); ++it) {
-        tutorial_manager.addTutorialKey(it->first, it->second.first, it->second.second);
-    }
 }
 
 const Menu & KnightsConfigImpl::getMenu() const
