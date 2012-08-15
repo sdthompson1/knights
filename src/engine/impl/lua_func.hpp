@@ -50,7 +50,8 @@ public:
     // hasValue(): returns true if lua != 0 && stored value != nil
     bool hasValue() const { return function_ref.hasValue(); }
 
-    // Run the function with a LuaExec.
+    
+    // Run the function with a custom number of args and results.
     // nargs args are popped from stack, and nresults results are pushed.
     // (Caller MUST check that hasValue() is true before calling this)
     void run(lua_State *lua, int nargs, int nresults);
@@ -68,8 +69,6 @@ public:
     // or nil, this function does nothing.)
     void runNArgsNoPop(lua_State *lua, int n) const;
 
-    // Run the function with no args, and return a single integer.
-    int runToInt() const;
     
     // This runs the stored function, as a coroutine, with no
     // arguments, and with the global variable "cxt" set to the
