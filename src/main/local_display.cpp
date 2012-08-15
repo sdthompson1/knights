@@ -1149,9 +1149,9 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         // draw the "1/6" string
         if (!won[0]) {
             std::ostringstream str;
-            str << tutorial_windows.size() - tutorial_popups.size();
+            str << tutorial_windows.size() - tutorial_popups.size() + 1;
             str << '/';
-            str << tutorial_windows.size() - 1;
+            str << tutorial_windows.size();
             gc.drawText(t_x + t_w - gm.getFont()->getTextWidth(str.str()) - x_margin, t_y + title_txt_yofs, *gm.getFont(), str.str(), col3);
         }
         

@@ -24,11 +24,13 @@
 #include "misc.hpp"
 
 #include "action_data.hpp"
+#include "colour_change.hpp"
 #include "coord_transform.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "home_manager.hpp"
 #include "knight.hpp"
+#include "knights_callbacks.hpp"
 #include "legacy_action.hpp"
 #include "lockable.hpp"
 #include "lua_exec_coroutine.hpp"
@@ -46,6 +48,7 @@
 #include "quest_hint_manager.hpp"
 #include "rng.hpp"
 #include "teleport.hpp"
+#include "tutorial_window.hpp"
 
 #include "lua.hpp"
 
@@ -852,6 +855,101 @@ namespace {
         Mediator::instance().getQuestHintManager().sendHints();
         return 0;
     }
+
+
+    //
+    // Tutorial
+    //
+
+    ColourChange PopColourChange(lua_State *lua)
+    {
+        // [cc]
+        // where cc is a list of alternating from-colour, to-colour, from-colour, to-colour etc.
+
+        ColourChange result;
+        
+        if (!lua_isnil(lua, -1)) {
+
+            lua_len(lua, -1);  // [cc len]
+            const int sz = lua_tointeger(lua, -1);
+            lua_pop(lua, 1);   // [cc]
+
+            if (sz % 2 != 0) {
+                luaL_error(lua, "Colour-change list must have even number of elements");
+            }
+
+            for (int i = 0; i < sz/2; ++i) {
+                lua_pushinteger(lua, i*2 + 1); // [cc fromidx]
+                lua_gettable(lua, -2);         // [cc from]
+                const int from = lua_tointeger(lua, -1);
+                lua_pop(lua, 1);  // [cc]
+
+                lua_pushinteger(lua, i*2 + 2);
+                lua_gettable(lua, -2);
+                const int to = lua_tointeger(lua, -1);
+                lua_pop(lua, 1); // [cc]
+
+                result.add(Colour((from >> 16) & 255, (from >> 8) & 255, from & 255),
+                           Colour((to   >> 16) & 255, (to   >> 8) & 255, to   & 255));
+            }
+        }
+
+        lua_pop(lua, 1);
+        return result;
+    }
+                
+    int PopUpWindow(lua_State *lua)
+    {
+        // Read out the table
+        TutorialWindow win;
+        
+        lua_getfield(lua, 1, "title");  // [title]
+        if (lua_isstring(lua, -1)) win.title = lua_tostring(lua, -1);
+        lua_pop(lua, 1);  // []
+
+        lua_getfield(lua, 1, "body");  // [body]
+        if (lua_isstring(lua, -1)) win.msg = lua_tostring(lua, -1);
+        lua_pop(lua, 1); // []
+
+        lua_getfield(lua, 1, "popup");  // [popup]
+        win.popup = lua_toboolean(lua, -1) != 0;
+        lua_pop(lua, 1); // []
+
+        lua_getfield(lua, 1, "graphics");  // [graphics]
+        if (!lua_isnil(lua, -1)) {
+            lua_len(lua, -1);   // [gfx len]
+            const int n = lua_tointeger(lua, -1);
+            lua_pop(lua, 1);  // [gfx]
+
+            for (int i = 1; i <= n; ++i) {
+                lua_pushinteger(lua, i);  // [gfx i]
+                lua_gettable(lua, -2);    // [gfx g]
+                win.gfx.push_back(ReadLuaPtr<Graphic>(lua, -1));
+                lua_pop(lua, 1);  // [gfx]
+            }
+        }
+        lua_pop(lua, 1);  // []
+
+        lua_getfield(lua, 1, "colour_changes");  // [cctbl]
+        if (!lua_isnil(lua, -1)) {
+            for (int i = 1; i <= int(win.gfx.size()); ++i) {
+                lua_pushinteger(lua, i);  // [cctbl i]
+                lua_gettable(lua, -2);  // [cctbl cc]
+                win.cc.push_back(PopColourChange(lua)); // [cctbl]
+            }
+        } else {
+            win.cc.resize(win.gfx.size()); // fill with empty colour changes
+        }
+        
+        Mediator::instance().getCallbacks().popUpWindow(std::vector<TutorialWindow>(1, win));
+        return 0;
+    }
+
+    int StartTutorialManager(lua_State *lua)
+    {
+        // TODO
+        return 0;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -999,6 +1097,15 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &ResendHints);
     lua_setfield(lua, -2, "ResendHints");
+
+
+    // Tutorial
+
+    PushCFunction(lua, &PopUpWindow);
+    lua_setfield(lua, -2, "PopUpWindow");
+
+    PushCFunction(lua, &StartTutorialManager);
+    lua_setfield(lua, -2, "StartTutorialManager");
 
         
     // pop the "kts" and environment tables.
