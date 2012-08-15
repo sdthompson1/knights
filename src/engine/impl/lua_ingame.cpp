@@ -43,6 +43,7 @@
 #include "monster_type.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
+#include "quest_hint_manager.hpp"
 #include "rng.hpp"
 #include "teleport.hpp"
 
@@ -825,6 +826,32 @@ namespace {
         LuaExecCoroutine(lua, 0);
         return 0;
     }
+
+
+    //
+    // Quests
+    //
+
+    int AddHint(lua_State *lua)
+    {
+        const std::string msg = luaL_checkstring(lua, 1);
+        const double order = luaL_checknumber(lua, 2);
+        const double group = luaL_checknumber(lua, 3);
+        Mediator::instance().getQuestHintManager().addHint(msg, order, group);
+        return 0;
+    }
+
+    int ClearHints(lua_State *lua)
+    {
+        Mediator::instance().getQuestHintManager().clearHints();
+        return 0;
+    }
+
+    int ResendHints(lua_State *lua)
+    {
+        Mediator::instance().getQuestHintManager().sendHints();
+        return 0;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -960,7 +987,20 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &AddTask);
     lua_setfield(lua, -2, "AddTask");
-    
+
+
+    // Quests
+
+    PushCFunction(lua, &AddHint);
+    lua_setfield(lua, -2, "AddHint");
+
+    PushCFunction(lua, &ClearHints);
+    lua_setfield(lua, -2, "ClearHints");
+
+    PushCFunction(lua, &ResendHints);
+    lua_setfield(lua, -2, "ResendHints");
+
+        
     // pop the "kts" and environment tables.
     lua_pop(lua, 2);
 }

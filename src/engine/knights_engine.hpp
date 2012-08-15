@@ -115,7 +115,6 @@ public:
     void setItemRespawn(const std::vector<ItemType*> &items_to_respawn, int respawn_delay);
     void setLockpickSpawn(ItemType *lockpicks, int init_time, int interval);
     void setTimeLimit(int ms);
-    void addQuestHint(const std::string &msg, double order, double group);
         
 private:
     boost::shared_ptr<KnightsEngineImpl> pimpl;

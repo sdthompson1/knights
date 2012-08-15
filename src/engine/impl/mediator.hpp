@@ -78,6 +78,7 @@ class MonsterManager;
 class MonsterType;
 class Originator;
 class Player;
+class QuestHintManager;
 class Sound;
 class StuffManager;
 class TaskManager;
@@ -227,6 +228,7 @@ public:
     shared_ptr<CoordTransform> getCoordTransform() const { return coord_transform; }
     const vector<Player*> &getPlayers() const { return players; }
     MonsterManager & getMonsterManager() const { return monster_manager; }
+    QuestHintManager & getQuestHintManager() const { return quest_hint_manager; }
     StuffManager & getStuffManager() const { return stuff_manager; }
     HomeManager & getHomeManager() const { return home_manager; }
     TaskManager & getTaskManager() const { return task_manager; }
@@ -240,7 +242,9 @@ public:
     //
     
     static void createInstance(EventManager &em, GoreManager &gm, HomeManager &hm,
-                               MonsterManager &mm, StuffManager &sm, TaskManager &tm,
+                               MonsterManager &mm,
+                               QuestHintManager &qm,
+                               StuffManager &sm, TaskManager &tm,
                                ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
                                boost::shared_ptr<lua_State> lua);
     static void destroyInstance();  // must be called before the game thread exits, otherwise will leak memory
@@ -255,9 +259,11 @@ private:
     // objects. That is done by the higher-ups (ie KnightsEngine).
     // Here, we mostly only have to keep references to things...
     Mediator(EventManager &em, GoreManager &gm, HomeManager &hm, MonsterManager &mm,
+             QuestHintManager &qm,
              StuffManager &sm, TaskManager &tm, ViewManager &vm, boost::shared_ptr<const ConfigMap> cmap,
              boost::shared_ptr<lua_State> lua)
         : config_map(cmap), event_manager(em), gore_manager(gm), home_manager(hm), monster_manager(mm),
+          quest_hint_manager(qm),
           stuff_manager(sm), task_manager(tm), view_manager(vm), game_running(true), callbacks(0),
           lua_state(lua), deathmatch_mode(false) { }
     void operator=(const Mediator &) const;  // not defined
@@ -276,6 +282,7 @@ private:
     GoreManager &gore_manager;
     HomeManager &home_manager;
     MonsterManager &monster_manager;
+    QuestHintManager &quest_hint_manager;
     StuffManager &stuff_manager;
     TaskManager &task_manager;
     ViewManager &view_manager;  

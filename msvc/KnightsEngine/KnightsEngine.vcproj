@@ -364,6 +364,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\impl\quest_hint_manager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\impl\random_int.cpp"
 				>
 			</File>
@@ -663,6 +667,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine\impl\player_task.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\engine\impl\quest_hint_manager.hpp"
 				>
 			</File>
 			<File

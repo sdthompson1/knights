@@ -320,15 +320,6 @@ namespace {
         return 0;
     }
 
-    int AddHint(lua_State *lua)
-    {
-        const std::string msg = luaL_checkstring(lua, 1);
-        const double order = luaL_checknumber(lua, 2);
-        const double group = luaL_checknumber(lua, 3);
-        GetKnightsEngine(lua).addQuestHint(msg, order, group);
-        return 0;
-    }
-
 
     //
     // General Settings
@@ -564,9 +555,6 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
     PushCFunction(lua, &SetDeathmatchMode);
     lua_setfield(lua, -2, "SetDeathmatchMode");
-
-    PushCFunction(lua, &AddHint);
-    lua_setfield(lua, -2, "AddHint");
 
 
     // General Settings
