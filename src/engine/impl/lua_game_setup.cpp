@@ -509,14 +509,29 @@ namespace {
         return 0;
     }
 
+    int SetRespawnFunction(lua_State *lua)
+    {
+        // [func]
+        LuaFunc func;
+        if (!lua_isnil(lua, 1)) {
+            lua_pushvalue(lua, 1);
+            func = LuaFunc(lua);  // pops
+        }
+
+        Mediator & m = Mediator::instance();
+        for (std::vector<Player*>::const_iterator it = m.getPlayers().begin(); it != m.getPlayers().end(); ++it) {
+            (*it)->setRespawnFunc(func);
+        }
+
+        return 0;
+    }
+
     int SetTimeLimit(lua_State *lua)
     {
         int seconds = luaL_checkinteger(lua, 1);
         GetKnightsEngine(lua).setTimeLimit(seconds * 1000);
         return 0;
     }
-
-    
 }
 
 // Setup function.
@@ -585,6 +600,9 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
     PushCFunction(lua, &SetRespawnType);
     lua_setfield(lua, -2, "SetRespawnType");
+
+    PushCFunction(lua, &SetRespawnFunction);
+    lua_setfield(lua, -2, "SetRespawnFunction");
 
     PushCFunction(lua, &SetTimeLimit);
     lua_setfield(lua, -2, "SetTimeLimit");
