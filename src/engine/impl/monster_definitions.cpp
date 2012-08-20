@@ -251,7 +251,7 @@ void FlyingMonsterType::newIndex(lua_State *lua)
 
 shared_ptr<Monster> FlyingMonsterType::makeMonster(TaskManager &tm) const
 {
-    const int h = std::min(1, health.get());
+    const int h = std::max(1, health.get());
     shared_ptr<FlyingMonster> mon(new FlyingMonster(*this, h, anim, speed));
     shared_ptr<Task> ai(new FlyingMonsterAI(mon));
     tm.addTask(ai, TP_LOW, tm.getGVT()+1);
@@ -532,7 +532,7 @@ void WalkingMonsterType::newIndex(lua_State *lua)
 
 shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
 {
-    const int h = std::min(1, health.get());
+    const int h = std::max(1, health.get());
     shared_ptr<WalkingMonster> monster(new WalkingMonster(*this, h, weapon, anim, speed));
     monster->setFacing(MapDirection(g_rng.getInt(0,4))); // random initial facing
     shared_ptr<Task> ai(new WalkingMonsterAI(monster, avoid_tiles, fear_items, hit_items));
