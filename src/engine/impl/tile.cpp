@@ -127,6 +127,25 @@ Tile::Tile(lua_State *lua)
     lua_pop(lua, 1);
 
     tutorial_key = LuaGetInt(lua, -1, "tutorial");  // default 0
+
+    lua_getfield(lua, -1, "map_as");
+    popMapAs(lua);
+}
+
+void Tile::popMapAs(lua_State *lua)
+{
+    const char * map_as = lua_tostring(lua, -1);
+    use_col = false;
+    if (map_as) {
+        if (std::strcmp(map_as, "wall") == 0) {
+            use_col = true;
+            col = COL_WALL;
+        } else if (std::strcmp(map_as, "floor") == 0) {
+            use_col = true;
+            col = COL_FLOOR;
+        }
+    }
+    lua_pop(lua, 1);
 }
 
 void Tile::popItems(lua_State *lua)
@@ -199,6 +218,7 @@ Tile::Tile(const LuaFunc &walk_over, const LuaFunc &activate)
     items_mode = ALLOWED;
     is_stair = stair_top = false;
     tutorial_key = 0;
+    use_col = false;
 }
 
 void Tile::newIndex(lua_State *lua)
@@ -245,6 +265,10 @@ void Tile::newIndex(lua_State *lua)
         lua_pushvalue(lua, 3);
         popItems(lua);
 
+    } else if (k == "map_as") {
+        lua_pushvalue(lua, 3);
+        popMapAs(lua);
+        
     } else if (k == "on_activate") {
         lua_pushvalue(lua, 3);
         on_activate = LuaFunc(lua); // pops
@@ -559,7 +583,10 @@ MiniMapColour Tile::getColour() const
     // * else, colour is COL_FLOOR
     //
     // This can be overridden by subclasses if required.
+    //
+    // This can also be overridden by Lua "map_as" property.
 
+    if (use_col) return col;
     if (destructible()) return COL_FLOOR;
     if (getAccess(H_WALKING) == A_CLEAR) return COL_FLOOR;
     if (getAccess(H_FLYING) == A_CLEAR) return COL_FLOOR;

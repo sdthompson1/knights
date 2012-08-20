@@ -203,6 +203,7 @@ private:
     void readAccess(lua_State *lua);
     void readStairsDown(lua_State *lua);
     void popItems(lua_State *lua);
+    void popMapAs(lua_State *lua);
     
     // SetHitPoints -- this sets hit_points, using initial_hit_points.
     // This is called automatically by "clone", so new copies of tiles will automatically
@@ -243,6 +244,9 @@ private:
     boost::weak_ptr<Tile> original_tile;
 
     LuaRef table_ref;
+
+    bool use_col;
+    MiniMapColour col;
 };
 
 
