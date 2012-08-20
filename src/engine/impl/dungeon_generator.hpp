@@ -68,6 +68,7 @@ struct DungeonSettings {
     std::vector<boost::shared_ptr<Tile> > wall_tiles, hdoor_tiles, vdoor_tiles;
     std::vector<const Segment*> normal_segments, required_segments;
     HomeType home_type;
+    bool allow_rotate;
 };
 
 

@@ -254,13 +254,19 @@ namespace {
                    int y,
                    int lwidth,
                    int rwidth, int rheight,
+                   bool allow_rotate,
                    std::vector<SegmentInfo> &segment_infos,
                    std::vector<HomeInfo> &all_homes)
     {
         SegmentInfo &inf = segment_infos[y*lwidth + x];
         inf.segment = segment;
-        inf.x_reflect = g_rng.getBool();
-        inf.nrot = g_rng.getInt(0, 4);
+        if (allow_rotate) {
+            inf.x_reflect = g_rng.getBool();
+            inf.nrot = g_rng.getInt(0, 4);
+        } else {
+            inf.x_reflect = false;
+            inf.nrot = 0;
+        }
         return CopyHomes(inf, rwidth, rheight, x, y, all_homes);
     }
 
@@ -306,6 +312,7 @@ namespace {
                         int y,
                         int lwidth,
                         int rwidth, int rheight,
+                        bool allow_rotate,
                         std::vector<SegmentInfo> &segment_infos,
                         std::vector<HomeInfo> &assigned_homes,
                         std::vector<HomeInfo> &all_homes,
@@ -339,7 +346,8 @@ namespace {
         if (!r) throw DungeonGenerationFailed();
 
         // Add it to the dungeon
-        const int nhomes_avail = AddSegment(r, x, y, lwidth, rwidth, rheight, segment_infos, all_homes);
+        const int nhomes_avail = AddSegment(r, x, y, lwidth, rwidth, rheight, allow_rotate,
+                                            segment_infos, all_homes);
 
         // Assign homes if required
         // NOTE: Precondition of AssignHomes is satisfied, because SegmentSet::getSegment
@@ -359,6 +367,7 @@ namespace {
                        HomeType home_type,
                        int lwidth, int lheight,
                        int rwidth, int rheight,
+                       bool allow_rotate,
                        const SegmentSet &segment_set,
                        const std::vector<const Segment *> & required_segments,
                        std::vector<BlockInfo> &edges,           // in/out
@@ -379,7 +388,7 @@ namespace {
                 int x, y;
                 FetchBlockFrom(edges, x, y);
                 ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
-                SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, 
+                SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, allow_rotate, 
                                segment_infos, assigned_homes, all_homes, 1, 1);
             }
         }
@@ -390,7 +399,7 @@ namespace {
             int x, y;
             FetchEdgeOrBlock(edges, blocks, x, y);
             ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
-            AddSegment(*it, x, y, lwidth, rwidth, rheight, segment_infos, all_homes);
+            AddSegment(*it, x, y, lwidth, rwidth, rheight, allow_rotate, segment_infos, all_homes);
         }
         
         // Eliminate "special" blocks if they have not been assigned.
@@ -403,7 +412,8 @@ namespace {
             int x, y;
             FetchEdgeOrBlock(edges, blocks, x, y);
             ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
-            SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, segment_infos,
+            SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, allow_rotate,
+                           segment_infos,
                            assigned_homes, all_homes,
                            nplayers, nplayers);
         }
@@ -431,7 +441,8 @@ namespace {
             int x, y;
             FetchBlockFrom(blocks, x, y);
             ASSERT(x >= 0 && x < lwidth && y >= 0 && y < lheight);
-            SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, segment_infos, assigned_homes, all_homes, n, 0);
+            SetHomeSegment(segment_set, x, y, lwidth, rwidth, rheight, allow_rotate,
+                           segment_infos, assigned_homes, all_homes, n, 0);
         }
 
         // Assign H_RANDOM homes if required.
@@ -1093,6 +1104,7 @@ void DungeonGenerator(DungeonMap &dmap,
     
     PlaceSegments(players.size(), homes_required,
                   settings.home_type, lwidth, lheight, rwidth, rheight,
+                  settings.allow_rotate,
                   SegmentSet(settings.normal_segments),
                   settings.required_segments,
                   edges, blocks,

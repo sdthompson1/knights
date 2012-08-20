@@ -88,14 +88,17 @@ namespace {
     void PopSegments(lua_State *lua, std::vector<const Segment *> &segs)
     {
         // [s]
-        lua_len(lua, -1); // [s l]
-        int sz = lua_tointeger(lua, -1);
-        lua_pop(lua, 1); // [s]
-        for (int i = 1; i <= sz; ++i) {
-            lua_pushinteger(lua, i);  // [s i]
-            lua_gettable(lua, -2);    // [s s]
-            segs.push_back(ReadLuaPtr<Segment>(lua, -1));
+        segs.clear();
+        if (!lua_isnil(lua, -1)) {
+            lua_len(lua, -1); // [s l]
+            int sz = lua_tointeger(lua, -1);
             lua_pop(lua, 1); // [s]
+            for (int i = 1; i <= sz; ++i) {
+                lua_pushinteger(lua, i);  // [s i]
+                lua_gettable(lua, -2);    // [s s]
+                segs.push_back(ReadLuaPtr<Segment>(lua, -1));
+                lua_pop(lua, 1); // [s]
+            }
         }
         lua_pop(lua, 1); // []
     }
@@ -234,6 +237,7 @@ namespace {
         // * segments             -- list of segments, a random subset will be included
         // * special_segments     -- list of segments, all must be included
         // * entry_type           -- one of "none", "close", "away", "random" (corresponding to HomeType enum)
+        // * allow_rotate         -- boolean, default true.
 
         DungeonSettings settings;
         
@@ -271,6 +275,13 @@ namespace {
         }
         if (!home_set) {
             luaL_error(lua, "'home_type' is invalid, must be 'none', 'close', 'away' or 'random'");
+        }
+
+        lua_getfield(lua, 1, "allow_rotate");
+        if (lua_isnil(lua, -1) || lua_toboolean(lua, -1) == 1) {
+            settings.allow_rotate = true;
+        } else {
+            settings.allow_rotate = false;
         }
 
         Mediator &m = Mediator::instance();

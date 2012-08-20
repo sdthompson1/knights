@@ -57,6 +57,7 @@ public:
              std::vector<std::string> &settings)  // swapped into place
         : title(title_), numeric(false), space_after(false)
     {
+        if (settings.empty()) throw std::invalid_argument("MenuItem with no choices!");
         value_str.swap(settings);
     }
 
