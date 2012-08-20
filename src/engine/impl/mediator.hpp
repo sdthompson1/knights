@@ -151,8 +151,10 @@ public:
     // is to work around lack of a KnightsCallbacks object during game
     // startup).
     //
+    // is_err should be true if this is a Lua error message.
+    //
 
-    void gameMsg(int player_num, const std::string &msg);
+    void gameMsg(int player_num, const std::string &msg, bool is_err = false);
     
     
     //

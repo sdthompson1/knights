@@ -151,8 +151,6 @@ public:
     // the corpse.
     // -- onDeath can also be called directly (eg this is done by PitKill). However note that
     // this won't take invulnerability into account.
-    // -- "attacker" should be set to the player who caused this creature to die (or NULL). Used
-    // for attributing kills.
     enum DeathMode { PIT_MODE,  // items to be dropped one square back; no corpse to be placed
                      ZOMBIE_MODE,  // no corpse to be placed
                      POISON_MODE,  // corpse to be placed but no blood

@@ -65,10 +65,15 @@ namespace {
 Originator GetOriginatorFromCxt(lua_State *lua)
 {
     lua_getglobal(lua, "cxt");              // [cxt]
-    lua_getfield(lua, -1, "originator");    // [cxt originator]
-    Originator orig = ReadOriginator(lua, -1);
-    lua_pop(lua, 2);                        // []
-    return orig;
+    if (lua_isnil(lua, -1)) {
+        lua_pop(lua, 1);                    // []
+        return Originator(OT_None());
+    } else {
+        lua_getfield(lua, -1, "originator");    // [cxt originator]
+        Originator orig = ReadOriginator(lua, -1);
+        lua_pop(lua, 2);                        // []
+        return orig;
+    }
 }
 
 // Read everything from "cxt", create new ActionData

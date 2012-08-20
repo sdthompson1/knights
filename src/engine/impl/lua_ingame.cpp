@@ -651,6 +651,40 @@ namespace {
         return lua_yield(lua, 1);
     }
 
+    // Input: creature; (optional) death type
+    // Cxt: originator (optionally).
+    // Output: none
+    int DestroyCreature(lua_State *lua)
+    {
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
+
+        Creature::DeathMode dm = Creature::NORMAL_MODE;
+        if (lua_isstring(lua, 2)) {
+            const char *s = lua_tostring(lua, 2);
+            if (std::strcmp(s, "pit") == 0) {
+                dm = Creature::PIT_MODE;
+            } else if (std::strcmp(s, "zombie") == 0) {
+                dm = Creature::ZOMBIE_MODE;
+            } else if (std::strcmp(s, "poison") == 0) {
+                dm = Creature::POISON_MODE;
+            } else if (std::strcmp(s, "normal") == 0) {
+                dm = Creature::NORMAL_MODE;
+            } else {
+                luaL_error(lua, "Death type '%s' is invalid, should be one of 'pit', 'zombie', 'poison', 'normal'");
+            }
+        }
+        
+        Originator orig = GetOriginatorFromCxt(lua);
+
+        if (cr && cr->getMap()) {
+            cr->onDeath(dm, orig);
+            cr->rmFromMap();
+        }
+
+        return 0;
+    }
+    
+    
     // Input: none
     // Cxt: none
     // Output: time in ms
@@ -1009,9 +1043,6 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &AddMonster);
     lua_setfield(lua, -2, "AddMonster");
     
-    PushCFunction(lua, &TeleportTo);
-    lua_setfield(lua, -2, "TeleportTo");
-
     PushCFunction(lua, &GetTiles);
     lua_setfield(lua, -2, "GetTiles");
 
@@ -1024,27 +1055,6 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &PlaySound);
     lua_setfield(lua, -2, "PlaySound");
 
-    PushCFunction(lua, &GetPos);
-    lua_setfield(lua, -2, "GetPos");
-
-    PushCFunction(lua, &GetFacing);
-    lua_setfield(lua, -2, "GetFacing");
-
-    PushCFunction(lua, &GetNumHeld);
-    lua_setfield(lua, -2, "GetNumHeld");
-
-    PushCFunction(lua, &GetItemInHand);
-    lua_setfield(lua, -2, "GetItemInHand");
-
-    PushCFunction(lua, &IsAlive);
-    lua_setfield(lua, -2, "IsAlive");
-    
-    PushCFunction(lua, &IsKnight);
-    lua_setfield(lua, -2, "IsKnight");
-
-    PushCFunction(lua, &ActorIsKnight);
-    lua_setfield(lua, -2, "ActorIsKnight");
-    
     // "print" is set globally, NOT in kts table
     PushCFunction(lua, &Print);       // [env kts Print]
     lua_setfield(lua, -3, "print");   // [env kts]
@@ -1073,10 +1083,6 @@ void AddLuaIngameFunctions(lua_State *lua)
         }
     }
 
-    // Function to stun a knight and also yield for that length of time.
-    PushCFunction(lua, &Delay);
-    lua_setfield(lua, -2, "Delay");
-
     // Function to return total elapsed time of this game, in ms.
     PushCFunction(lua, &GameTime);
     lua_setfield(lua, -2, "GameTime");
@@ -1094,9 +1100,6 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &GetHomeFor);
     lua_setfield(lua, -2, "GetHomeFor");
-
-    PushCFunction(lua, &GetPlayer);
-    lua_setfield(lua, -2, "GetPlayer");
 
     PushCFunction(lua, &GetAllPlayers);
     lua_setfield(lua, -2, "GetAllPlayers");
@@ -1118,6 +1121,46 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &AddTask);
     lua_setfield(lua, -2, "AddTask");
+
+
+
+    // Creatures
+
+    PushCFunction(lua, &ActorIsKnight);
+    lua_setfield(lua, -2, "ActorIsKnight");
+
+    // Stun a knight and also yield for that length of time.
+    PushCFunction(lua, &Delay);
+    lua_setfield(lua, -2, "Delay");
+
+    PushCFunction(lua, &DestroyCreature);
+    lua_setfield(lua, -2, "DestroyCreature");
+
+    PushCFunction(lua, &GetFacing);
+    lua_setfield(lua, -2, "GetFacing");
+
+    PushCFunction(lua, &GetItemInHand);
+    lua_setfield(lua, -2, "GetItemInHand");
+
+    PushCFunction(lua, &GetNumHeld);
+    lua_setfield(lua, -2, "GetNumHeld");
+
+    PushCFunction(lua, &GetPlayer);
+    lua_setfield(lua, -2, "GetPlayer");
+
+    PushCFunction(lua, &GetPos);
+    lua_setfield(lua, -2, "GetPos");
+
+    PushCFunction(lua, &IsAlive);
+    lua_setfield(lua, -2, "IsAlive");
+    
+    PushCFunction(lua, &IsKnight);
+    lua_setfield(lua, -2, "IsKnight");
+    
+    PushCFunction(lua, &TeleportTo);
+    lua_setfield(lua, -2, "TeleportTo");
+
+    
 
 
     // Quests

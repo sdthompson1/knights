@@ -121,10 +121,10 @@ const std::string &Mediator::cfgString(const std::string &key) const
 // printing msgs
 //
 
-void Mediator::gameMsg(int player_num, const std::string &msg)
+void Mediator::gameMsg(int player_num, const std::string &msg, bool is_err)
 {
     if (callbacks) {
-        callbacks->gameMsg(player_num, msg);
+        callbacks->gameMsg(player_num, msg, is_err);
     } else {
         GameStartupMsg(lua_state.get(), msg);
     }

@@ -513,7 +513,8 @@ void Player::findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &fa
         if (err) {
             // [errmsg]
             Mediator::instance().gameMsg(-1,
-                                         std::string("(Error in respawn function) ") + lua_tostring(lua, -1));
+                                         std::string("(Error in respawn function) ") + lua_tostring(lua, -1),
+                                         true);
             lua_pop(lua, 1); // []
         } else {
             // []
