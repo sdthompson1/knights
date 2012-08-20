@@ -138,8 +138,7 @@ void RespawnTask::execute(TaskManager &tm)
     if (this != player.respawn_task.get()) return;
     bool success = player.respawn();
     if (!success) {
-        tm.addTask(shared_from_this(), TP_NORMAL, 
-            tm.getGVT() + Mediator::instance().cfgInt("respawn_delay")); // try again later
+        tm.addTask(shared_from_this(), TP_NORMAL, tm.getGVT() + 100); // try again later
     }
 }
 
@@ -370,11 +369,7 @@ void Player::onDeath()
     // NOTE: This MUST NOT call Lua because we are not allowed to raise Lua errors from
     // this function...
 
-    Mediator &mediator = Mediator::instance();
-    shared_ptr<RespawnTask> rt(new RespawnTask(*this));
-    respawn_task = rt;
-    TaskManager &tm(mediator.getTaskManager());
-    tm.addTask(respawn_task, TP_NORMAL, tm.getGVT() + mediator.cfgInt("respawn_delay"));
+    scheduleRespawn(Mediator::instance().cfgInt("respawn_delay"));
 
     // Also add a skull
     getStatusDisplay().addSkull();
@@ -384,6 +379,15 @@ void Player::onDeath()
     setSpeechBubble(false);
 }
 
+void Player::scheduleRespawn(int delay)
+{
+    // NOTE: This function must not call Lua, because called by Player::onDeath
+    Mediator &mediator = Mediator::instance();
+    shared_ptr<RespawnTask> rt(new RespawnTask(*this));
+    respawn_task = rt;
+    TaskManager &tm(mediator.getTaskManager());
+    tm.addTask(respawn_task, TP_NORMAL, tm.getGVT() + delay);
+}
 
 
 //
@@ -405,7 +409,10 @@ bool Player::respawn()
     if (knight.lock()) return false;
 
     // If we do not have a home, then it's game over
-    if ((!home_dmap || home_location.isNull()) && getRespawnType() != R_RANDOM_SQUARE) {
+    // (Exceptions: respawn_func is set, or RANDOM_SQUARE respawn type)
+    if (!respawn_func.hasValue()
+    && getRespawnType() != R_RANDOM_SQUARE
+    && (!home_dmap || home_location.isNull())) {
 
         const bool already_eliminated = getElimFlag();
         

@@ -162,6 +162,10 @@ public:
     // Try to respawn. Returns true if successful.
     bool respawn();
 
+    // This schedules a respawn in the given number of ms, and keeps trying if respawn fails.
+    // (Called by onDeath, also called at startup by KnightsEngine.)
+    void scheduleRespawn(int delay);
+
     // Control functions (see .cpp file for more info)
     void getControlInfo(const Control *ctrl_in, ItemType *& itype_out,
                         weak_ptr<Tile> &tile_out, MapCoord &tile_mc_out) const;

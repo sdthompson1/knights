@@ -289,8 +289,8 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
                 players[i]->addStartingGear(*starting_gears[j].first, starting_gears[j].second);
             }
             
-            // Spawn the player
-            players[i]->respawn();
+            // Spawn the player (and keeps trying if it fails)
+            players[i]->scheduleRespawn(0);
         }
         
         // Do premapping if wanted
