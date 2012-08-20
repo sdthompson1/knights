@@ -22,10 +22,30 @@ module(...)
 
 local C = require("classic")
 
--- A version of t_switch_up that appears as a wall on the mini map
+
+----------------------------------------------------------------------
+-- New tiles and items
+----------------------------------------------------------------------
+
+-- This is a "fake" stuff bag item that gives you a gem when you pick
+-- it up.
+stuff_with_gem = kts.ItemType {
+   type = "magic",
+   graphic = C.g_stuff_bag,
+   on_pick_up = function()
+      -- Give the actor one gem
+      kts.GiveItem(cxt.actor, C.i_gem, 1)
+   end
+}
+
+-- A version of t_switch_up that appears as a wall on the mini map.
 switch_new = kts.Tile( C.t_switch_up.table & { map_as = "wall" })
 
--- Tile table needed for tutorial_map.txt
+
+----------------------------------------------------------------------
+-- Load tutorial_map.txt
+----------------------------------------------------------------------
+
 tiles = {}
 for i,v in pairs(C.tile_table) do
    tiles[i] = v
@@ -44,16 +64,19 @@ tiles[106] = { C.t_floor1, C.i_bolts }
 tiles[107] = { C.t_floor1, C.i_potion }
 tiles[108] = { C.t_floor1, C.i_scroll }
 tiles[109] = { C.t_table_small, C.i_gem }
-tiles[110] = { C.t_floor1, C.i_bear_trap_open }  -- TODO: Should be stuff bag (containing gem)
+tiles[110] = { C.t_floor1, stuff_with_gem }
 tiles[111] = { C.t_floor1, C.m_zombie }
 tiles[113] = { C.t_floor1, C.i_gem }
 tiles[114] = { C.t_table_south, C.i_gem }
 tiles[115] = switch_new
 
--- Load the map
 tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 
--- This function determines where the knight respawns.
+
+----------------------------------------------------------------------
+-- Respawn function
+----------------------------------------------------------------------
+
 function respawn_func()
 
    -- Turn off the "chamber of bats" if it is active
@@ -77,7 +100,11 @@ function respawn_func()
    --return 29,31,"west" -- in bat chamber (by east door)
 end
 
--- This function starts the game
+
+----------------------------------------------------------------------
+-- Game start function
+----------------------------------------------------------------------
+
 function start_tutorial()
 
    -- Install the Chamber of Bats background task
@@ -110,7 +137,11 @@ function start_tutorial()
    -- TODO: Set Gems Required
 end
 
--- Install a dummy menu.
+
+----------------------------------------------------------------------
+-- Menu
+----------------------------------------------------------------------
+
 kts.MENU = {
    text = "TUTORIAL",
    start_game_func = start_tutorial,
@@ -127,6 +158,11 @@ kts.MENU = {
       }
    }
 }
+
+
+----------------------------------------------------------------------
+-- Switch Puzzle
+----------------------------------------------------------------------
 
 -- Custom switch action for the switch puzzle
 switches_hit = {}

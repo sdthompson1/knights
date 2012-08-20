@@ -29,6 +29,7 @@
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "home_manager.hpp"
+#include "item_type.hpp"
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
 #include "legacy_action.hpp"
@@ -494,7 +495,23 @@ namespace {
         }
         return 1;
     }
-    
+
+    int GiveItem(lua_State *lua)
+    {
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, 1);
+        shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(cr);
+        ItemType *itype = ReadLuaPtr<ItemType>(lua, 2);
+        int num = 1;
+        if (lua_isnumber(lua, 3)) {
+            num = lua_tointeger(lua, 3);
+        }
+
+        if (kt && itype && !itype->isBig() && num > 0) {
+            kt->addToBackpack(*itype, num);
+        }
+
+        return 0;
+    }
 
     // Input: creature
     // Cxt: none
@@ -1151,6 +1168,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &GetPos);
     lua_setfield(lua, -2, "GetPos");
 
+    PushCFunction(lua, &GiveItem);
+    lua_setfield(lua, -2, "GiveItem");
+    
     PushCFunction(lua, &IsAlive);
     lua_setfield(lua, -2, "IsAlive");
     
