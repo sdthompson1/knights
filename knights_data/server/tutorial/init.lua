@@ -72,16 +72,18 @@ function respawn_func()
 
    --return 7, 2, "south"
    --return 16, 18, "east"  -- start of switch puzzle
-   --return 24, 10, "south"  -- room beyond first gem.
+   return 24, 10, "south"  -- room beyond first gem.
    --return 32, 31, "south"  -- chest room, east of bat chamber
-   return 29,31,"west" -- in bat chamber (by east door)
+   --return 29,31,"west" -- in bat chamber (by east door)
 end
 
 -- This function starts the game
 function start_tutorial()
 
+   -- Install the Chamber of Bats background task
    kts.AddTask(bat_task)
 
+   -- Create the basic dungeon layout
    kts.LayoutDungeon {
       layout = {
          width = 1,
@@ -94,7 +96,14 @@ function start_tutorial()
       allow_rotate = false
    }
 
+   -- Setup the skull puzzle
+   setup_skull(skull_x + 2)
+   setup_skull(skull_x + 4)
+   setup_skull(skull_x + 6)
+
+   -- Install custom respawn function
    kts.SetRespawnFunction(respawn_func)
+
 
    -- TODO: Set "home" so they can heal from starting point.
    -- TODO: Set exit point to "same as entry"
@@ -154,9 +163,9 @@ function _G.rf_sw_puzzle()
 end
 
 
---
+----------------------------------------------------------------------
 -- Chamber of Vampire Bats
---
+----------------------------------------------------------------------
 
 bat_door_1 = { x = 26, y = 27 }
 bat_door_2 = { x = 30, y = 31 }
@@ -335,4 +344,35 @@ function _G.rf_vampire_bats()
 
       update_bat_rqmts()
    end
+end
+
+
+
+----------------------------------------------------------------------
+-- Skull Puzzle 
+----------------------------------------------------------------------
+
+skull_x = 11
+
+skull_tile = kts.Tile {
+   on_walk_over = function()
+      kts.AddMissile( {x=skull_x, y=cxt.tile_pos.y},
+                      "east",
+                      C.i_bolt_trap,
+                      false )
+      C.click_sound(cxt.pos)
+      C.crossbow_sound(cxt.pos)
+   end,
+
+   depth = 1
+}
+
+function setup_skull_at(x, y)
+   kts.AddTile( {x=x,y=y}, skull_tile )
+end
+
+function setup_skull(x)
+   local choice = kts.RandomRange(0, 2)
+   setup_skull_at(x, 21 + choice)
+   setup_skull_at(x, 21 + (choice+1) % 3)
 end
