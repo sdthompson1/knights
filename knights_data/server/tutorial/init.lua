@@ -99,7 +99,7 @@ for i,v in pairs(C.tile_table) do
    tiles[i] = v
 end
 tiles[96]  = { C.t_table_small, C.i_key1 }
-tiles[97]  = { C.t_floor7, C.i_hammer }
+tiles[97]  = { C.t_floor1, C.i_hammer }
 tiles[98]  = { C.t_floor1, C.i_lockpicks }
 tiles[99]  = { C.t_floor1, C.i_poison_trap }
 tiles[100] = { C.t_floor1, C.i_blade_trap }
@@ -115,6 +115,7 @@ tiles[111] = { C.t_floor1, C.m_zombie }
 tiles[113] = { C.t_floorpp, C.i_gem }
 tiles[114] = { C.t_table_south, C.i_gem }
 tiles[115] = switch_new
+tiles[116] = { C.t_floor1, C.i_gem }
 
 tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 
@@ -244,41 +245,49 @@ switches_hit = {}
 num_switches_hit = 0
 door1_pos = {x=22, y=13}
 door2_pos = {x=22, y=11}
+secret_door_pos = {x=22, y=9}
+
+function open_gate(pos)
+   -- Open the gate.
+   -- We assume there is only one tile on the gate square.
+   -- We remove that tile, then add its "open_to" tile instead.
+   local tiles = kts.GetTiles(pos)
+   if tiles[1].open_to ~= nil then
+      kts.RemoveTile(pos, tiles[1])
+      kts.AddTile(pos, tiles[1].open_to)
+   end
+end
 
 function _G.rf_sw_puzzle()
 
    -- Find out whether we have hit this particular switch before
    -- (Use x coord of switch as index into "switches_hit" table)
+   local hit_before = switches_hit[cxt.tile_pos.x] ~= nil
+   
+   -- Remember that we have hit this switch
+   switches_hit[cxt.tile_pos.x] = true
 
-   -- NOTE: If they have already hit two switches then this test is
-   -- disabled, this allows them to re-open the second gate after it
-   -- was shut behind them.
+   if not hit_before then 
+      num_switches_hit = num_switches_hit + 1 
+   end
 
-   if num_switches_hit >= 2   -- Already hit two switches,
-   or switches_hit[cxt.tile_pos.x] == nil    -- or, first time we've hit this switch
-   then
+   -- Open all relevant gates/doors
+   if num_switches_hit >= 1 then
+      open_gate(door1_pos)
+   end
 
-      -- Remember that we have hit this switch
-      switches_hit[cxt.tile_pos.x] = true
-      num_switches_hit = num_switches_hit + 1
+   if num_switches_hit >= 2 then
+      open_gate(door2_pos)
+   end
 
-      -- Work out which gate to open
-      local pos
-      if num_switches_hit == 1 then
-         pos = door1_pos
-      else
-         pos = door2_pos
+   if num_switches_hit >= 3 then
+      local tiles = kts.GetTiles(secret_door_pos)
+      kts.RemoveTile(secret_door_pos, tiles[1])
+      kts.AddTile(secret_door_pos, C.t_floor1)
+
+      if not hit_before then
+         print("You have opened a secret door!")
       end
-
-      -- Open the gate.
-      -- We assume there is only one tile on the gate square.
-      -- We remove that tile, then add its "open_to" tile instead.
-      local tiles = kts.GetTiles(pos)
-      if tiles[1].open_to ~= nil then
-         kts.RemoveTile(pos, tiles[1])
-         kts.AddTile(pos, tiles[1].open_to)
-      end
-
    end
 end
 
@@ -528,3 +537,22 @@ function setup_skull(x)
    setup_skull_at(x, 21 + choice)
    setup_skull_at(x, 21 + (choice+1) % 3)
 end
+
+
+----------------------------------------------------------------------
+-- Victory Conditions
+----------------------------------------------------------------------
+
+function check_gems()
+   if kts.GetNumHeld(cxt.actor, C.i_gem) >= 5 then
+      kts.WinGame(cxt.actor)
+   else
+      kts.FlashMessage("5 Gems Required")
+   end
+end
+
+-- Modify the home on_approach actions, because we don't use the
+-- standard Dsetup system.
+C.t_home_north.on_approach = check_gems
+C.t_home_south.on_approach = nil
+
