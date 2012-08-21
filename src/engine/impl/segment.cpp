@@ -62,9 +62,6 @@ void Segment::readTable(lua_State *lua, int x, int y)
 {
     // Top of stack contains a table (list of tiles, items, monsters).
     // Read each element one by one, and add it to the segment at (x,y).
-    // (If any subtables are encountered, descend into them recursively.)
-
-    luaL_checkstack(lua, 1, 0);
 
     // [tbl]
 
@@ -76,13 +73,13 @@ void Segment::readTable(lua_State *lua, int x, int y)
         lua_pushinteger(lua, i);  // [tbl i]
         lua_gettable(lua, -2);    // [tbl value]
 
-        readTile(lua, x, y);   // [tbl value]
+        readTile(lua, x, y, false);   // [tbl value]
 
         lua_pop(lua, 1);  // [tbl]
     }
 }
 
-void Segment::readTile(lua_State *lua, int x, int y)
+void Segment::readTile(lua_State *lua, int x, int y, bool top_level)
 {
     // [value]  (where value is a tile, itemtype, monster or table, or perhaps nil)
 
@@ -91,14 +88,26 @@ void Segment::readTile(lua_State *lua, int x, int y)
             addTile(x, y, ReadLuaSharedPtr<Tile>(lua, -1));
 
         } else if (IsLuaPtr<ItemType>(lua, -1)) {
-            addItem(x, y, ReadLuaPtr<ItemType>(lua, -1));
+            addItem(x, y, ReadLuaPtr<ItemType>(lua, -1), 1);
 
         } else if (IsLuaPtr<MonsterType>(lua, -1)) {
             addMonster(x, y, ReadLuaPtr<MonsterType>(lua, -1));
 
-        } else {
-            // try reading it as a table
+        } else if (top_level) {
+            // try reading it as a list of tiles/items/etc
             readTable(lua, x, y);
+
+        } else {
+            // must be an {itemtype,num} pair
+            lua_pushinteger(lua, 1);  // [tbl 1]
+            lua_gettable(lua, -2);    // [tbl itype]
+            ItemType *itype = ReadLuaPtr<ItemType>(lua, -1);
+            lua_pop(lua,1);  // [tbl]
+            lua_pushinteger(lua, 2);  // [tbl 2]
+            lua_gettable(lua, -2);    // [tbl num]
+            int num = lua_tointeger(lua, -1);
+            lua_pop(lua, 1);         // [tbl]
+            addItem(x, y, itype, num);
         }
     }
 }
@@ -113,7 +122,7 @@ void Segment::readSquare(lua_State *lua, int x, int y, int n)
     lua_pushinteger(lua, n);   // [tiletbl n]
     lua_gettable(lua, -2);     // [tiletbl value]
 
-    readTile(lua, x, y);
+    readTile(lua, x, y, true);
 
     lua_pop(lua, 1);  // [tiletbl]
 }
@@ -291,7 +300,7 @@ void Segment::addTile(int x, int y, shared_ptr<Tile> t)
     }
 }
 
-void Segment::addItem(int x, int y, ItemType *itype)
+void Segment::addItem(int x, int y, ItemType *itype, int num)
 {
     if (!itype) return;
     if (x < 0 || x >= width || y < 0 || y >= height) return;
@@ -299,6 +308,7 @@ void Segment::addItem(int x, int y, ItemType *itype)
     ii.x = x;
     ii.y = y;
     ii.itype = itype;
+    ii.num = num;
     items.push_back(ii);
 }
 
@@ -351,7 +361,7 @@ void Segment::copyToMap(DungeonMap &dmap, MonsterManager &monster_manager,
     }
 
     for (vector<ItemInfo>::const_iterator it = items.begin(); it != items.end(); ++it) {
-        shared_ptr<Item> item(new Item(*it->itype));
+        shared_ptr<Item> item(new Item(*it->itype, it->num));
         MapCoord mc = TransformMapCoord(width, x_reflect, nrot, top_left, it->x, it->y);
         dmap.addItem(mc, item);
     }

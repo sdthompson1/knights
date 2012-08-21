@@ -73,7 +73,7 @@ public:
     // add tile or item (can be called more than once per square)
     // x,y range from 0 to w-1, h-1, and increase rightwards and upwards as usual.
     void addTile(int x, int y, boost::shared_ptr<Tile> t);
-    void addItem(int x, int y, ItemType * i);
+    void addItem(int x, int y, ItemType * i, int num);
     void addMonster(int x, int y, const MonsterType * m);
         
     // set a room (coords are relative to bottom left of segment -- note that the
@@ -103,7 +103,7 @@ public:
 
 private:
     void readTable(lua_State *lua, int x, int y);
-    void readTile(lua_State *lua, int x, int y);
+    void readTile(lua_State *lua, int x, int y, bool top_level);
     void readSquare(lua_State *lua, int x, int y, int n);
     void loadData(std::istream &str, lua_State *lua);
     void loadRooms(std::istream &str, lua_State *lua);
@@ -129,6 +129,7 @@ private:
         int x;
         int y;
         ItemType * itype;
+        int num;
     };
     std::vector<ItemInfo> items;
 

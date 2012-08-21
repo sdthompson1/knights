@@ -58,7 +58,7 @@ tiles[100] = { C.t_floor1, C.i_blade_trap }
 tiles[101] = { C.t_floor1, C.i_staff }
 tiles[102] = { C.t_floor1, C.i_bear_trap }
 tiles[103] = { C.t_floor1, C.i_axe }
-tiles[104] = { C.t_floor1, C.i_dagger }
+tiles[104] = { C.t_floor1, {C.i_dagger,8} }
 tiles[105] = { C.t_floor1, C.i_crossbow }
 tiles[106] = { C.t_floor1, C.i_bolts }
 tiles[107] = { C.t_floor1, C.i_potion }
@@ -93,11 +93,12 @@ function respawn_func()
       return 26, 34, "south"
    end
 
-   --return 7, 2, "south"
-   return 16, 18, "east"  -- start of switch puzzle
+   --return 7, 2, "south"  -- start point
+   --return 16, 18, "east"  -- start of switch puzzle
    --return 24, 10, "south"  -- room beyond first gem.
    --return 32, 31, "south"  -- chest room, east of bat chamber
    --return 29,31,"west" -- in bat chamber (by east door)
+   return 12,25,"south"  -- after skull room
 end
 
 
