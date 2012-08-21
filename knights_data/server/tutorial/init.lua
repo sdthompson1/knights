@@ -66,7 +66,7 @@ tiles[108] = { C.t_floor1, C.i_scroll }
 tiles[109] = { C.t_table_small, C.i_gem }
 tiles[110] = { C.t_floor1, stuff_with_gem }
 tiles[111] = { C.t_floor1, C.m_zombie }
-tiles[113] = { C.t_floor1, C.i_gem }
+tiles[113] = { C.t_floorpp, C.i_gem }
 tiles[114] = { C.t_table_south, C.i_gem }
 tiles[115] = switch_new
 
@@ -94,8 +94,8 @@ function respawn_func()
    end
 
    --return 7, 2, "south"
-   --return 16, 18, "east"  -- start of switch puzzle
-   return 24, 10, "south"  -- room beyond first gem.
+   return 16, 18, "east"  -- start of switch puzzle
+   --return 24, 10, "south"  -- room beyond first gem.
    --return 32, 31, "south"  -- chest room, east of bat chamber
    --return 29,31,"west" -- in bat chamber (by east door)
 end
@@ -168,7 +168,6 @@ kts.MENU = {
 -- Switch Puzzle
 ----------------------------------------------------------------------
 
--- Custom switch action for the switch puzzle
 switches_hit = {}
 num_switches_hit = 0
 door1_pos = {x=22, y=13}
@@ -178,7 +177,14 @@ function _G.rf_sw_puzzle()
 
    -- Find out whether we have hit this particular switch before
    -- (Use x coord of switch as index into "switches_hit" table)
-   if switches_hit[cxt.tile_pos.x] == nil then
+
+   -- NOTE: If they have already hit two switches then this test is
+   -- disabled, this allows them to re-open the second gate after it
+   -- was shut behind them.
+
+   if num_switches_hit >= 2   -- Already hit two switches,
+   or switches_hit[cxt.tile_pos.x] == nil    -- or, first time we've hit this switch
+   then
 
       -- Remember that we have hit this switch
       switches_hit[cxt.tile_pos.x] = true
@@ -196,8 +202,10 @@ function _G.rf_sw_puzzle()
       -- We assume there is only one tile on the gate square.
       -- We remove that tile, then add its "open_to" tile instead.
       local tiles = kts.GetTiles(pos)
-      kts.RemoveTile(pos, tiles[1])
-      kts.AddTile(pos, tiles[1].open_to)
+      if tiles[1].open_to ~= nil then
+         kts.RemoveTile(pos, tiles[1])
+         kts.AddTile(pos, tiles[1].open_to)
+      end
 
    end
 end
