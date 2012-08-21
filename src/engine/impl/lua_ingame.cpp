@@ -29,6 +29,7 @@
 #include "creature.hpp"
 #include "dungeon_map.hpp"
 #include "home_manager.hpp"
+#include "item.hpp"
 #include "item_type.hpp"
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
@@ -952,7 +953,50 @@ namespace {
         return 0;
     }
 
+    //
+    // Items
+    //
 
+    int PlaceItem(lua_State *lua)
+    {
+        const MapCoord mc = GetMapCoord(lua, 1);
+        ItemType *itype = ReadLuaPtr<ItemType>(lua, 2);
+        DungeonMap *dmap = Mediator::instance().getMap().get();
+        
+        if (itype && dmap) {
+
+            int num = 1;
+            if (lua_isnumber(lua, 3)) num = lua_tointeger(lua, 3);
+            boost::shared_ptr<Item> item(new Item(*itype, num));
+            
+            // see if we can "place" the item
+            std::vector<shared_ptr<Tile> > tiles;
+            dmap->getTiles(mc, tiles);
+            for (std::vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+                if ((*it)->canPlaceItem()) {
+                    if ((*it)->itemPlacedAlready()) {
+                        // failure
+                        lua_pushboolean(lua, false);
+                        return 1;
+                    } else {
+                        (*it)->placeItem(item);
+                        lua_pushboolean(lua, true);
+                        return 1;
+                    }
+                }
+            }
+
+            // put item directly in dungeon map
+            lua_pushboolean(lua, dmap->addItem(mc, item));
+            return 1;
+        }
+
+        lua_pushboolean(lua, false);
+        return 1;
+    }
+                
+                
+                
     //
     // Tutorial
     //
@@ -1228,7 +1272,11 @@ void AddLuaIngameFunctions(lua_State *lua)
     lua_setfield(lua, -2, "TeleportTo");
 
     
+    // Items
 
+    PushCFunction(lua, &PlaceItem);
+    lua_setfield(lua, -2, "PlaceItem");
+    
 
     // Quests
 

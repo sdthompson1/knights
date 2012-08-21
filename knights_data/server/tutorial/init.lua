@@ -27,19 +27,38 @@ local C = require("classic")
 -- New tiles and items
 ----------------------------------------------------------------------
 
--- This is a "fake" stuff bag item that gives you a gem when you pick
--- it up.
-stuff_with_gem = kts.ItemType {
-   type = "magic",
-   graphic = C.g_stuff_bag,
-   on_pick_up = function()
-      -- Give the actor one gem
-      kts.GiveItem(cxt.actor, C.i_gem, 1)
-   end
-}
-
 -- A version of t_switch_up that appears as a wall on the mini map.
 switch_new = kts.Tile( C.t_switch_up.table & { map_as = "wall" })
+
+-- Potions/scrolls with fixed effects
+function make_potion(effect)
+   return kts.ItemType {
+      type = "magic",
+      graphic = C.g_potion,
+      fragile = true,
+      on_pick_up = function()
+         C.snd_drink()
+         kts.Delay(750)
+         effect()
+      end
+   }
+end
+
+function make_scroll(effect)
+   return kts.ItemType {
+      type = "magic",
+      graphic = C.g_scroll,
+      on_pick_up = function() 
+         C.zap() 
+         effect()
+      end
+   }
+end      
+
+poison_potion = make_potion(C.poison)
+regeneration_potion = make_potion(C.regeneration)
+super_potion = make_potion(C.super)
+quickness_scroll = make_scroll(C.quickness)
 
 
 ----------------------------------------------------------------------
@@ -61,10 +80,7 @@ tiles[103] = { C.t_floor1, C.i_axe }
 tiles[104] = { C.t_floor1, {C.i_dagger,8} }
 tiles[105] = { C.t_floor1, C.i_crossbow }
 tiles[106] = { C.t_floor1, C.i_bolts }
-tiles[107] = { C.t_floor1, C.i_potion }
-tiles[108] = { C.t_floor1, C.i_scroll }
-tiles[109] = { C.t_table_small, C.i_gem }
-tiles[110] = { C.t_floor1, stuff_with_gem }
+tiles[108] = { C.t_floor1, quickness_scroll }
 tiles[111] = { C.t_floor1, C.m_zombie }
 tiles[113] = { C.t_floorpp, C.i_gem }
 tiles[114] = { C.t_table_south, C.i_gem }
@@ -133,13 +149,21 @@ function start_tutorial()
    kts.LockDoor({x=3,y=11}, "pick_only")
    kts.LockDoor({x=23,y=20}, 1)
 
+   -- Place items in chests
+   kts.PlaceItem({x=31,y=33}, super_potion)
+   kts.PlaceItem({x=32,y=33}, C.i_gem)
+   kts.PlaceItem({x=4,y=36}, poison_potion)
+   kts.PlaceItem({x=5,y=36}, regeneration_potion)
+   kts.PlaceItem({x=8,y=34}, C.i_gem)
+   kts.LockDoor({x=8,y=34}, "pick_only") -- lock the final gem chest
+
    -- Install custom respawn function
    kts.SetRespawnFunction(respawn_func)
 
 
    -- TODO: Set "home" so they can heal from starting point.
    -- TODO: Set exit point to "same as entry"
-   -- TODO: Set Gems Required
+   -- TODO: Set Gems Required = 4
 end
 
 
