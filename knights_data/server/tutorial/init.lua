@@ -471,7 +471,7 @@ function _G.rf_vampire_bats()
       bat_actor = cxt.actor
 
       if bat_level > 5 then
-         print("You have completed all the available bat levels. Now go and finish the Tutorial like "
+         print("That's enough messing around with bats. Now go finish the Tutorial like "
                .. "you are supposed to be doing.")
          return
       end
