@@ -53,14 +53,14 @@ function make_scroll(effect)
          effect()
       end
    }
-end      
+end
 
 poison_potion = make_potion(C.poison)
 regeneration_potion = make_potion(C.regeneration)
 super_potion = make_potion(C.super)
 quickness_scroll = make_scroll(C.quickness)
 
-low_damage_bolt = kts.ItemType( C.i_bolts.table & { missile_damage = 1 } )
+low_damage_bolt = kts.ItemType( C.i_bolts.table & { missile_damage = C.rng_range(1,2) } )
 
 -- Modify the pentagram to teleport to a fixed location instead of randomly.
 -- Quickest way to do this is to modify "my_teleport" in classic module.
@@ -99,8 +99,12 @@ tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 
 
 ----------------------------------------------------------------------
--- Respawn function
+-- Custom respawn function
 ----------------------------------------------------------------------
+
+respawn_x = 7
+respawn_y = 2
+respawn_dir = "south"
 
 function respawn_func()
 
@@ -118,12 +122,19 @@ function respawn_func()
       return 26, 34, "south"
    end
 
-   --return 7, 2, "south"  -- start point
-   --return 16, 18, "east"  -- start of switch puzzle
-   --return 24, 10, "south"  -- room beyond first gem.
-   return 32, 31, "south"  -- chest room, east of bat chamber
-   --return 29,31,"west" -- in bat chamber (by east door)
-   --return 12,25,"south"  -- after skull room
+   return respawn_x, respawn_y, respawn_dir
+end
+
+function setup_respawn(x, y, dir)
+   local tile = kts.Tile { 
+      on_walk_over = function()
+         respawn_x = cxt.tile_pos.x
+         respawn_y = cxt.tile_pos.y
+         respawn_dir = dir
+      end,
+      depth = 1
+   }
+   kts.AddTile({x=x,y=y}, tile)
 end
 
 
@@ -169,6 +180,11 @@ function start_tutorial()
 
    -- Install custom respawn function
    kts.SetRespawnFunction(respawn_func)
+
+   -- Set up the respawn points
+   setup_respawn(24, 10, "south")
+   setup_respawn(20, 22, "west")
+   setup_respawn(12, 25, "south")
 
 
    -- TODO: Set "home" so they can heal from starting point.
@@ -392,6 +408,12 @@ end
    
 function _G.rf_vampire_bats()
 
+   -- pressing the switch shifts your respawn point to the middle of the bat chamber
+   respawn_x = 26
+   respawn_y = 31
+   respawn_dir = "south"
+
+   -- start the bat game (if it is not already in progress)
    if not bat_task_active then 
 
       print ("Level " .. bat_level .. ". Fight!")
@@ -441,7 +463,7 @@ skull_tile = kts.Tile {
    on_walk_over = function()
       kts.AddMissile( {x=skull_x, y=cxt.tile_pos.y},
                       "east",
-                      C.i_bolt_trap,
+                      low_damage_bolt,
                       false )
       C.click_sound(cxt.pos)
       C.crossbow_sound(cxt.pos)

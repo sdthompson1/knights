@@ -289,8 +289,8 @@ namespace {
         dmap->getTiles(mc, tiles);
 
         int lock;
-        bool pick_only;
-        bool special;
+        bool pick_only = false;
+        bool special = false;
         if (lua_isnumber(lua, 2)) {
             lock = lua_tointeger(lua, 2);
         } else if (lua_isstring(lua, 2)) {
