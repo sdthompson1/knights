@@ -61,6 +61,9 @@ public:
     bool isLocked() const { return lock > 0; }
     bool isSpecialLocked() const { return lock == SPECIAL_LOCK_NUM; }
     void generateLock(int nkeys);  // If "lock" is negative then this generates a lock.
+    void setLock(int n);           // Set lock (0=unlocked, 1-3=locked with key)
+    void setLockPickOnly();        // Set lock to PICK_ONLY_LOCK_NUM
+    void setLockSpecial();         // Set lock to SPECIAL_LOCK_NUM
 
     // return lock num (1,2,3 or PICK_ONLY_LOCK_NUM), or 0 (if not
     // locked, or special-locked). used by the dungeon generator for

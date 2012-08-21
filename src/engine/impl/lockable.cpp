@@ -202,6 +202,21 @@ void Lockable::generateLock(int nkeys)
     }
 }
 
+void Lockable::setLock(int lock_num)
+{
+    lock = lock_num;
+}
+
+void Lockable::setLockPickOnly()
+{
+    lock = PICK_ONLY_LOCK_NUM;
+}
+
+void Lockable::setLockSpecial()
+{
+    lock = SPECIAL_LOCK_NUM;
+}
+
 void Lockable::disarmTraps(DungeonMap &dmap, const MapCoord &mc)
 {
     if (trap) {

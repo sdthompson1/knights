@@ -273,6 +273,50 @@ namespace {
         return 0;
     }
 
+    // Input: position, lock type (number or string)
+    // Cxt: none
+    // Output: none
+    int LockDoor(lua_State *lua)
+    {
+        Mediator &med = Mediator::instance();
+        DungeonMap *dmap = med.getMap().get();
+        if (!dmap) return 0;
+        
+        MapCoord mc = GetMapCoord(lua, 1);
+        std::vector<shared_ptr<Tile> > tiles;
+        dmap->getTiles(mc, tiles);
+
+        int lock;
+        bool pick_only;
+        bool special;
+        if (lua_isnumber(lua, 2)) {
+            lock = lua_tointeger(lua, 2);
+        } else if (lua_isstring(lua, 2)) {
+            if (std::strcmp(lua_tostring(lua, 2), "special") == 0) {
+                special = true;
+            } else if (std::strcmp(lua_tostring(lua, 2), "pick_only") == 0) {
+                pick_only = true;
+            } else {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+        
+        for (std::vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
+            Tile *tile = it->get();
+            Lockable *lockable = dynamic_cast<Lockable*>(tile);
+            if (lockable) {
+                if (pick_only) lockable->setLockPickOnly();
+                else if (special) lockable->setLockSpecial();
+                else lockable->setLock(lock);
+            }
+        }
+
+        return 0;
+    }
+
+    
     // Input: position
     // Cxt: none
     // Output: true, false or nil
@@ -1051,6 +1095,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &OpenOrClose);
     lua_setfield(lua, -2, "OpenOrCloseDoor");
 
+    PushCFunction(lua, &LockDoor);
+    lua_setfield(lua, -2, "LockDoor");
+    
     PushCFunction(lua, &IsOpen);
     lua_setfield(lua, -2, "IsDoorOpen");
     

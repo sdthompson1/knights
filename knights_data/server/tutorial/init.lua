@@ -128,6 +128,10 @@ function start_tutorial()
    setup_skull(skull_x + 4)
    setup_skull(skull_x + 6)
 
+   -- Setup locked doors
+   kts.LockDoor({x=3,y=11}, "pick_only")
+   kts.LockDoor({x=23,y=20}, 1)
+
    -- Install custom respawn function
    kts.SetRespawnFunction(respawn_func)
 
