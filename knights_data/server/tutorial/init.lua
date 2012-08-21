@@ -135,8 +135,10 @@ function respawn_func()
       -- turn off bat spawning, remove all bats
       reset_bat_task()
 
-      -- if lvl 2 or above, open the doors.
-      if bat_level > 1 then
+      bat_failures = bat_failures + 1
+
+      -- if lvl 2 or above (or >=3 failures), open the doors.
+      if bat_level > 1 or bat_failures >= 3 then
          open_bat_doors()
       end
 
@@ -371,6 +373,7 @@ next_spawn_at = 0   -- In milliseconds.
 -- Difficulty settings
 bat_level = 1
 bat_schedule = { def=10 }  -- In seconds.
+bat_failures = 0
 
 function update_bat_rqmts()
    kts.ClearHints()
@@ -443,6 +446,7 @@ function bat_task()
    return bat_task()  -- tail call
 end
 
+-- This is called from respawn_func(), if player died while bats active.
 function reset_bat_task()
    bat_task_active = false
    bat_count = 0
@@ -555,4 +559,3 @@ end
 -- standard Dsetup system.
 C.t_home_north.on_approach = check_gems
 C.t_home_south.on_approach = nil
-
