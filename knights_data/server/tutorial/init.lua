@@ -27,6 +27,21 @@ local C = require("classic")
 -- New tiles and items
 ----------------------------------------------------------------------
 
+-- This is a "fake" stuff bag item that gives you a gem (among other
+-- things) when you pick it up.
+stuff_with_gem = kts.ItemType {
+   type = "magic",
+   graphic = C.g_stuff_bag,
+   on_pick_up = function()
+      -- Give the actor the stuff
+      kts.GiveItem(cxt.actor, C.i_gem, 1)
+      kts.GiveItem(cxt.actor, C.i_bolts, 3)
+      kts.GiveItem(cxt.actor, C.i_daggers, 4)
+      kts.GiveItem(cxt.actor, C.i_blade_trap, 2)
+      kts.GiveItem(cxt.actor, C.i_poison_trap, 2)
+   end
+}
+
 -- Prevent bats flying over switches
 new_acc = C.switch_acc & { flying="blocked" }
 C.t_switch_up.access = new_acc
@@ -95,6 +110,7 @@ tiles[104] = { C.t_floor1, {C.i_dagger,8} }
 tiles[105] = { C.t_floor1, C.i_crossbow }
 tiles[106] = { C.t_floor1, C.i_bolts }
 tiles[108] = { C.t_floor1, quickness_scroll }
+tiles[110] = { C.t_floor6, stuff_with_gem }
 tiles[111] = { C.t_floor1, C.m_zombie }
 tiles[113] = { C.t_floorpp, C.i_gem }
 tiles[114] = { C.t_table_south, C.i_gem }
@@ -107,8 +123,8 @@ tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 -- Custom respawn function
 ----------------------------------------------------------------------
 
-respawn_x = 26 --  7
-respawn_y = 34 --  2
+respawn_x = 7
+respawn_y = 2
 respawn_dir = "south"
 
 function respawn_func()
