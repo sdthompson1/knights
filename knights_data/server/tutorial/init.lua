@@ -60,6 +60,13 @@ regeneration_potion = make_potion(C.regeneration)
 super_potion = make_potion(C.super)
 quickness_scroll = make_scroll(C.quickness)
 
+-- Modify the pentagram to teleport to a fixed location instead of randomly.
+-- Quickest way to do this is to modify "my_teleport" in classic module.
+function C.my_teleport()
+   C.snd_teleport()
+   kts.TeleportTo(cxt.actor, {x=32, y=31})
+end   
+
 
 ----------------------------------------------------------------------
 -- Load tutorial_map.txt
@@ -112,9 +119,9 @@ function respawn_func()
    --return 7, 2, "south"  -- start point
    --return 16, 18, "east"  -- start of switch puzzle
    --return 24, 10, "south"  -- room beyond first gem.
-   --return 32, 31, "south"  -- chest room, east of bat chamber
+   return 32, 31, "south"  -- chest room, east of bat chamber
    --return 29,31,"west" -- in bat chamber (by east door)
-   return 12,25,"south"  -- after skull room
+   --return 12,25,"south"  -- after skull room
 end
 
 
