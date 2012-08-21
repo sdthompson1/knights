@@ -403,8 +403,13 @@ chest = {
     items       = "chest",
     access      = furniture_acc,
     trap_chance = 0.5,   -- This only applies if pretrapped chests is on
-    traps       = { {i_poison_trap,kts.SetPoisonTrap}, 
-                    {i_blade_trap, function() kts.SetBladeTrap(i_bolts) end} },
+    traps       = function(pos,dir) 
+       if kts.RandomChance(0.5) then
+          kts.SetPoisonTrap(pos, i_poison_trap)
+       else
+          kts.SetBladeTrap(pos, i_blade_trap, i_bolts, dir)
+       end
+    end,
     lock_chance = 0.5,   -- This only applies if a trap was not generated.
     lock_pick_only_chance = 0.16667,  -- Chance that the lock cannot be opened by any key, and requires lock picks.
     keymax      = 3,                  -- If nkeys < this then there is more chance the chest will be unlocked.

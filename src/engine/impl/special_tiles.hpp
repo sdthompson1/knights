@@ -74,13 +74,6 @@ protected:
     virtual shared_ptr<Tile> doClone(bool);
     virtual void openImpl(DungeonMap &, const MapCoord &, const Originator &);
     virtual void closeImpl(DungeonMap &, const MapCoord &, const Originator &);
-
-private:
-    struct TrapInfo {
-        ItemType *itype;
-        LuaFunc action;  // action to place the trap ...
-    };
-    static TrapInfo popTrapInfo(lua_State *lua);
     
 private:
     const Graphic *open_graphic;
@@ -89,7 +82,7 @@ private:
 
     MapDirection facing;
     float trap_chance;
-    vector<TrapInfo> traps;
+    LuaFunc traps;
 };
 
 

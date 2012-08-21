@@ -60,11 +60,13 @@ regeneration_potion = make_potion(C.regeneration)
 super_potion = make_potion(C.super)
 quickness_scroll = make_scroll(C.quickness)
 
+low_damage_bolt = kts.ItemType( C.i_bolts.table & { missile_damage = 1 } )
+
 -- Modify the pentagram to teleport to a fixed location instead of randomly.
 -- Quickest way to do this is to modify "my_teleport" in classic module.
 function C.my_teleport()
    C.snd_teleport()
-   kts.TeleportTo(cxt.actor, {x=32, y=31})
+   kts.TeleportTo(cxt.actor, {x=33, y=31})
 end   
 
 
@@ -159,10 +161,11 @@ function start_tutorial()
    -- Place items in chests
    kts.PlaceItem({x=31,y=33}, super_potion)
    kts.PlaceItem({x=32,y=33}, C.i_gem)
+   kts.SetBladeTrap({x=33,y=33}, C.i_blade_trap, low_damage_bolt, "north")
    kts.PlaceItem({x=4,y=36}, poison_potion)
    kts.PlaceItem({x=5,y=36}, regeneration_potion)
    kts.PlaceItem({x=8,y=34}, C.i_gem)
-   kts.LockDoor({x=8,y=34}, "pick_only") -- lock the final gem chest
+   kts.LockDoor({x=8,y=34}, "pick_only")
 
    -- Install custom respawn function
    kts.SetRespawnFunction(respawn_func)

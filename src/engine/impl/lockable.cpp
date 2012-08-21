@@ -244,13 +244,14 @@ void Lockable::activateTraps(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Cr
 }
 
 void Lockable::setTrap(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr,
+                       const Originator &originator,
                        shared_ptr<Trap> newtrap)
 {
     if (trap) {
         activateTraps(dmap, mc, cr);
     }
     trap = newtrap;
-    trap_owner = cr ? cr->getOriginator() : Originator(OT_None());
+    trap_owner = originator;
 }
 
 void Lockable::onHit(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr, const Originator &originator)

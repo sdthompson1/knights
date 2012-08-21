@@ -132,22 +132,22 @@ private:
     ACTION_MAKER("SetBearTrap");
 };
 
-class A_SetBladeTrap : public LegacyAction {
+class A_SetBladeTrapOld : public LegacyAction {
 public:
-    explicit A_SetBladeTrap(ItemType &missile) : missile_type(missile) { }
+    explicit A_SetBladeTrapOld(ItemType &missile) : missile_type(missile) { }
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
     ItemType &missile_type;
-    ACTION_MAKER("SetBladeTrap");
+    ACTION_MAKER("SetBladeTrapOld");
 };
 
-class A_SetPoisonTrap : public LegacyAction {
+class A_SetPoisonTrapOld : public LegacyAction {
 public:
     virtual bool possible(const ActionData &) const;
     virtual void execute(const ActionData &) const;
 private:
-    ACTION_MAKER("SetPoisonTrap");
+    ACTION_MAKER("SetPoisonTrapOld");
 };
 
 class A_Suicide : public LegacyAction {

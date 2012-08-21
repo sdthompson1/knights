@@ -25,6 +25,7 @@
 
 #include "action_data.hpp"
 #include "colour_change.hpp"
+#include "concrete_traps.hpp"
 #include "coord_transform.hpp"
 #include "creature.hpp"
 #include "dungeon_map.hpp"
@@ -1122,6 +1123,50 @@ namespace {
         
         return 0;
     }
+
+    //
+    // Traps
+    //
+
+    void SetTrapImpl(const MapCoord &mc, const Originator &orig, boost::shared_ptr<Trap> trap)
+    {
+        DungeonMap *dmap = Mediator::instance().getMap().get();
+        if (!dmap) return;
+        
+        std::vector<boost::shared_ptr<Tile> > tiles;
+        Lockable *result = 0;
+        dmap->getTiles(mc, tiles);
+        for (std::vector<boost::shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+            result = dynamic_cast<Lockable*>(it->get());
+            if (result) break;
+        }
+
+        if (result) {
+            result->setTrap(*dmap, mc, boost::shared_ptr<Creature>(), orig, trap);
+        }
+    }
+    
+    int SetPoisonTrap(lua_State *lua)
+    {
+        MapCoord mc = GetMapCoord(lua, 1);
+        ItemType *trap_item = ReadLuaPtr<ItemType>(lua, 2);
+        boost::shared_ptr<Trap> trap(new PoisonTrap(trap_item));
+        SetTrapImpl(mc, GetOriginatorFromCxt(lua), trap);
+        return 0;
+    }
+
+    int SetBladeTrap(lua_State *lua)
+    {
+        MapCoord mc = GetMapCoord(lua, 1);
+        ItemType *trap_item = ReadLuaPtr<ItemType>(lua, 2);
+        ItemType *bolt_item = ReadLuaPtr<ItemType>(lua, 3);
+        MapDirection dir = GetMapDirection(lua, 4);
+        if (bolt_item) {
+            boost::shared_ptr<Trap> trap(new BladeTrap(trap_item, *bolt_item, dir));
+            SetTrapImpl(mc, GetOriginatorFromCxt(lua), trap);
+        }
+        return 0;
+    }
 }
 
 void AddLuaIngameFunctions(lua_State *lua)
@@ -1298,6 +1343,15 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &StartTutorialManager);
     lua_setfield(lua, -2, "StartTutorialManager");
 
+
+    // Traps
+
+    PushCFunction(lua, &SetPoisonTrap);
+    lua_setfield(lua, -2, "SetPoisonTrap");
+
+    PushCFunction(lua, &SetBladeTrap);
+    lua_setfield(lua, -2, "SetBladeTrap");
+    
         
     // pop the "kts" and environment tables.
     lua_pop(lua, 2);

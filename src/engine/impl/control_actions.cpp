@@ -837,7 +837,7 @@ LegacyAction * A_SetBearTrap::Maker::make(ActionPars &pars) const
 }
 
 
-// NB there is a little bit of shared code between SetPoisonTrap and SetBladeTrap.
+// NB there is a little bit of shared code between SetPoisonTrapOld and SetBladeTrapOld.
 // If more trap types are added it may be worth factoring this out.
 
 namespace {
@@ -845,11 +845,8 @@ namespace {
     {
         shared_ptr<Creature> actor = ExtractCreature(ad);
 
-        // Normally we require the actor to be approaching the door or chest,
-        // but if FLAG is set we skip this check. The flag is only ever set
-        // by the pretrapped chests code. This is an evil hack and should probably
-        // be removed somehow...
-        bool approach_check = ad.getFlag() || actor->isApproaching();
+        // To set a trap the actor must be approaching the chest
+        bool approach_check = actor->isApproaching();
         
         // Also: if the player has non-approach based controls then we don't actually need
         // to approach to set a trap
@@ -879,13 +876,13 @@ namespace {
     }
 }
 
-bool A_SetBladeTrap::possible(const ActionData &ad) const
+bool A_SetBladeTrapOld::possible(const ActionData &ad) const
 {
     MapCoord dummy;
     return bool(CheckSetTrap(ad, dummy));
 }
 
-void A_SetBladeTrap::execute(const ActionData &ad) const
+void A_SetBladeTrapOld::execute(const ActionData &ad) const
 {
     MapCoord target_pos;
     shared_ptr<Lockable> target = CheckSetTrap(ad, target_pos);
@@ -893,29 +890,29 @@ void A_SetBladeTrap::execute(const ActionData &ad) const
     if (target && actor) {
         ItemType *it = ExtractItemType(ad);
         shared_ptr<Trap> trap(new BladeTrap(it, missile_type, Opposite(actor->getFacing())));
-        target->setTrap(*actor->getMap(), target_pos, actor, trap);
+        target->setTrap(*actor->getMap(), target_pos, actor, actor->getOriginator(), trap);
         RemoveItem(actor, it);
     }
 }
 
-A_SetBladeTrap::Maker A_SetBladeTrap::Maker::register_me;
+A_SetBladeTrapOld::Maker A_SetBladeTrapOld::Maker::register_me;
 
-LegacyAction * A_SetBladeTrap::Maker::make(ActionPars &pars) const
+LegacyAction * A_SetBladeTrapOld::Maker::make(ActionPars &pars) const
 {
     pars.require(1);
     ItemType *it = pars.getItemType(0);
-    if (it) return new A_SetBladeTrap(*it);
+    if (it) return new A_SetBladeTrapOld(*it);
     else return 0;
 }
 
 
-bool A_SetPoisonTrap::possible(const ActionData &ad) const
+bool A_SetPoisonTrapOld::possible(const ActionData &ad) const
 {
     MapCoord dummy;
     return bool(CheckSetTrap(ad, dummy));
 }
 
-void A_SetPoisonTrap::execute(const ActionData &ad) const
+void A_SetPoisonTrapOld::execute(const ActionData &ad) const
 {
     MapCoord target_pos;
     shared_ptr<Lockable> target = CheckSetTrap(ad, target_pos);
@@ -923,17 +920,17 @@ void A_SetPoisonTrap::execute(const ActionData &ad) const
     if (target && actor) {
         ItemType *it = ExtractItemType(ad);
         shared_ptr<Trap> trap(new PoisonTrap(it));
-        target->setTrap(*actor->getMap(), target_pos, actor, trap);
+        target->setTrap(*actor->getMap(), target_pos, actor, actor->getOriginator(), trap);
         RemoveItem(actor, it);
     }
 }
 
-A_SetPoisonTrap::Maker A_SetPoisonTrap::Maker::register_me;
+A_SetPoisonTrapOld::Maker A_SetPoisonTrapOld::Maker::register_me;
 
-LegacyAction * A_SetPoisonTrap::Maker::make(ActionPars &pars) const
+LegacyAction * A_SetPoisonTrapOld::Maker::make(ActionPars &pars) const
 {
     pars.require(0);
-    return new A_SetPoisonTrap;
+    return new A_SetPoisonTrapOld;
 }
 
 

@@ -70,10 +70,6 @@ struct lua_State;
 // is an "on_open_or_close" for a tile, then it will be the tile pos. If it is 
 // "on_hit" for some item, it will be the item pos. Etc.
 //
-// The FLAG parameter is a hack, used only by the pretrapped chests
-// code. (It is not represented in Lua "cxt" and is hard-wired to false in
-// Lua contexts.)
-//
 // ORIGINATOR is the player who set this action in motion. It's used
 // for attributing kills (in certain actions). For example, if player
 // 1 presses a switch which opens a pit beneath player 2, then
@@ -90,7 +86,7 @@ struct lua_State;
 class ActionData {
 public:
     ActionData()
-        : flag(false), item(0), item_dmap(0), tile_dmap(0), 
+        : item(0), item_dmap(0), tile_dmap(0), 
           generic_dmap(0), originator(OT_None()) { }
 
     // construct from global var "cxt" in lua state
@@ -106,7 +102,6 @@ public:
     void setItem(DungeonMap *, const MapCoord &, ItemType *);
     void setTile(DungeonMap *, const MapCoord &, boost::shared_ptr<Tile>);
     void setGenericPos(DungeonMap *, const MapCoord &);
-    void setFlag(bool f) { flag = f; }
     void setOriginator(const Originator &o) { originator = o; }
 
     // accessor fns:
@@ -118,12 +113,10 @@ public:
         { dm = tile_dmap; mc = tile_coord; t = tile; }
     void getGenericPos(DungeonMap *&dm, MapCoord &mc) const
         { dm = generic_dmap; mc = generic_coord; }
-    bool getFlag() const { return flag; }
     const Originator & getOriginator() const { return originator; }
     
 private:
     boost::shared_ptr<Creature> actor, victim;
-    bool flag;
     ItemType * item;
     boost::shared_ptr<Tile> tile;
     DungeonMap *item_dmap, *tile_dmap, *generic_dmap;

@@ -112,25 +112,6 @@ bool Door::targettable() const
 // Chest
 //
 
-Chest::TrapInfo Chest::popTrapInfo(lua_State *lua)
-{
-    // [traps]
-
-    Chest::TrapInfo result;
-    
-    lua_pushinteger(lua, 1);   // [traps 1]
-    lua_gettable(lua, -2);     // [traps itemtype]
-    result.itype = ReadLuaPtr<ItemType>(lua, -1);
-    lua_pop(lua, 1);    // [traps]
-
-    lua_pushinteger(lua, 2);  // [traps 2]
-    lua_gettable(lua, -2);    // [traps action]
-    result.action = LuaFunc(lua);  // [traps]
-    lua_pop(lua, 1);   // []
-
-    return result;
-}
-
 Chest::Chest(lua_State *lua) : Lockable(lua)
 {
     open_graphic = LuaGetPtr<Graphic>(lua, -1, "open_graphic");  // default null
@@ -139,15 +120,7 @@ Chest::Chest(lua_State *lua) : Lockable(lua)
     trap_chance = LuaGetProbability(lua, -1, "trap_chance");  // default = 0
 
     lua_getfield(lua, -1, "traps");  // [t traps]
-    lua_len(lua, -1);   // [t traps len]
-    const int sz = lua_tointeger(lua, -1);
-    lua_pop(lua, 1);    // [t traps]
-    for (int i = 0; i < sz; ++i) {
-        lua_pushinteger(lua, i+1);  // [t traps idx]
-        lua_gettable(lua, -2);      // [t traps trap]
-        traps.push_back(popTrapInfo(lua));  // [t traps]
-    }
-    lua_pop(lua, 1);  // [t]
+    traps = LuaFunc(lua);            // [t]
 
     if (isClosed()) {
         setItemsAllowedNoSweep(false, false);
@@ -213,23 +186,10 @@ void Chest::onDestroy(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>
 bool Chest::generateTrap(DungeonMap &dmap, const MapCoord &mc)
 {
     if (g_rng.getBool(trap_chance)) {
-        const TrapInfo &ti(traps[g_rng.getInt(0, traps.size())]);
-
-        // We create a "simulated creature" and get him to place the trap using the action given in the TrapInfo.
-        // This is really really ugly, but I want to get the pretrapped chests working fairly quickly :)
-        // (What's really needed is a whole new way of specifying traps in the config file.)
-        shared_ptr<Creature> dummy(new Creature(1, H_FLYING, 0, 0, 1));
-        dummy->setFacing(Opposite(facing));  // this makes sure the bolt traps fire the right way
-        dummy->addToMap(&dmap, DisplaceCoord(mc, facing));  // position him in front of the chest
-        ActionData ad;
-        ad.setActor(dummy);
-        ad.setItem(0, MapCoord(), ti.itype);  // this should ensure the correct item gets dropped if the trap is disarmed
-        ad.setTile(&dmap, mc, shared_from_this());
-        ad.setGenericPos(&dmap, mc);
-        ad.setFlag(true);  // enable hack on the control_actions side...
-        ti.action.execute(ad);
-        dummy->rmFromMap();
-
+        lua_State *lua = Mediator::instance().getLuaState();
+        PushMapCoord(lua, mc);
+        PushMapDirection(lua, facing);
+        traps.run(lua, 2, 0);
         return true;
     } else {
         return false;

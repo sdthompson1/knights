@@ -72,13 +72,20 @@ public:
 
     
     // Traps
-    // setTrap: Set a trap which will be triggered when the door/chest is opened. If a trap
-    // is already present, then the existing trap will be set off.
+    //
+    // setTrap: Set a trap which will be triggered when the door/chest is opened. 
+    //   -- If a trap is already present, then the existing trap will be set off (it will affect the given
+    //      creature; if "cr" is null, then poison traps won't be set off, but I think bolt traps will).
     //   -- Note: "mc" must be the position of the door/chest, not the position of the knight setting the trap! (#167)
+    //
     // generateTrap: like setTrap but called during initial "pretrapped chests" generation.
-    // (returns true if a trap was generated.)
+    //   (returns true if a trap was generated.)
+    //
     // onHit: Override this to deal with setting off traps when a door/chest is hit.
-    void setTrap(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature> cr,
+    //
+    void setTrap(DungeonMap &dmap, const MapCoord &mc, 
+                 shared_ptr<Creature> cr,
+                 const Originator &originator,
                  shared_ptr<Trap> newtrap);
     virtual bool generateTrap(DungeonMap &, const MapCoord &) { return false; }
     virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);

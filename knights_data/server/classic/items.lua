@@ -361,10 +361,10 @@ i_poison_trap = kts.ItemType {
     backpack_slot = 11,
     control = kts.Control {
        action = function()
-          kts.SetPoisonTrap()
+          kts.SetPoisonTrapOld()
           snd_click()
        end,
-       possible = kts.Can_SetPoisonTrap,
+       possible = kts.Can_SetPoisonTrapOld,
        menu_icon = g_menu_poison_trap,
        menu_direction = "left",
        action_bar_slot = 8,
@@ -381,11 +381,11 @@ i_blade_trap = kts.ItemType {
     backpack_slot = 12,
     control = kts.Control {
        action = function()
-          kts.SetBladeTrap(i_bolt_trap)
+          kts.SetBladeTrapOld(i_bolt_trap)
           snd_click()
        end,
        possible = function()
-          return kts.Can_SetBladeTrap(i_bolt_trap)
+          return kts.Can_SetBladeTrapOld(i_bolt_trap)
        end,
        menu_icon = g_menu_blade_trap,
        menu_direction = "right",

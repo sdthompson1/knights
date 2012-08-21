@@ -93,8 +93,6 @@ ActionData::ActionData(lua_State *lua)
     victim = ReadLuaSharedPtr<Creature>(lua, -1);
     lua_pop(lua, 1);
 
-    flag = false;
-
     lua_pushstring(lua, "item_type");
     lua_gettable(lua, -2);
     item = ReadLuaPtr<ItemType>(lua, -1);
@@ -123,11 +121,6 @@ ActionData::ActionData(lua_State *lua)
     lua_pushstring(lua, "originator");
     lua_gettable(lua, -2);
     originator = ReadOriginator(lua, -1);
-    lua_pop(lua, 1);
-
-    lua_pushstring(lua, "flag");
-    lua_gettable(lua, -2);
-    flag = lua_toboolean(lua, -1) != 0;
     lua_pop(lua, 1);
 
     if (!item_coord.isNull() || !tile_coord.isNull() || !generic_coord.isNull()) {
@@ -182,12 +175,6 @@ void ActionData::pushCxtTable(lua_State *lua) const
     PushMapCoord(lua, generic_coord);
     lua_setfield(lua, -2, "pos");
 
-    // flag (pretrapped chests hack)
-    if (flag) {
-        lua_pushboolean(lua, true);
-        lua_setfield(lua, -2, "flag");
-    }
-    
     PushOriginator(lua, getOriginator());  // [cxt player]
     lua_setfield(lua, -2, "originator");          // [cxt]
 }
