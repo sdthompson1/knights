@@ -27,6 +27,11 @@ local C = require("classic")
 -- New tiles and items
 ----------------------------------------------------------------------
 
+-- Prevent bats flying over switches
+new_acc = C.switch_acc & { flying="blocked" }
+C.t_switch_up.access = new_acc
+C.t_switch_down.access = new_acc
+
 -- A version of t_switch_up that appears as a wall on the mini map.
 switch_new = kts.Tile( C.t_switch_up.table & { map_as = "wall" })
 
@@ -102,8 +107,8 @@ tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 -- Custom respawn function
 ----------------------------------------------------------------------
 
-respawn_x = 7
-respawn_y = 2
+respawn_x = 26 --  7
+respawn_y = 34 --  2
 respawn_dir = "south"
 
 function respawn_func()
@@ -286,20 +291,38 @@ end
 bat_pits = { {x=23, y=28}, {x=29,y=28},
              {x=25, y=29}, {x=28,y=29},
              {x=24, y=30},
-             {x=27, y=31},
              {x=24, y=32}, {x=28,y=32},
              {x=26, y=33},
              {x=23, y=34}, {x=29,y=34} }
-num_bat_pits = 11
+num_bat_pits = 10
 
 bat_count = 0
 bat_list = {}
 
 function spawn_bat()
-   local n = kts.RandomRange(1, num_bat_pits)
-   local bat = kts.AddMonster(bat_pits[n], C.m_vampire_bat)
-   bat_count = bat_count + 1
-   table.insert(bat_list, bat)
+
+   local kt_pos = kts.GetPos(bat_actor)
+   if kt_pos == nil then return end  -- Suspend bat spawning if player is dead.
+
+   -- 10 attempts
+   for i=1,10 do
+      
+      local n = kts.RandomRange(1, num_bat_pits)
+      local pos = bat_pits[n]
+
+      -- Reduce chance of spawning immediately next to the knight 
+      -- (includes diagonals)
+      if math.abs(pos.x-kt_pos.x) > 1 or math.abs(pos.y-kt_pos.y) > 1 or
+      kts.RandomChance(bat_level*0.2 - 0.2) then
+         
+         local bat = kts.AddMonster(bat_pits[n], C.m_vampire_bat)
+         if bat ~= nil then
+            bat_count = bat_count + 1
+            table.insert(bat_list, bat)
+            return
+         end
+      end
+   end
 end
 
 function update_bat_list()
@@ -322,7 +345,7 @@ next_spawn_at = 0   -- In milliseconds.
 
 -- Difficulty settings
 bat_level = 1
-bat_schedule = { 1, 10, def=10 }   -- In seconds.
+bat_schedule = { def=10 }  -- In seconds.
 
 function update_bat_rqmts()
    kts.ClearHints()
@@ -360,7 +383,7 @@ function bat_task()
          local num_killed = old_bat_count - bat_count
          bats_remaining = bats_remaining - num_killed
          update_bat_rqmts()
-
+         
          -- Reschedule next spawn if required
          schedule_bat()
 
@@ -414,7 +437,15 @@ function _G.rf_vampire_bats()
    respawn_dir = "south"
 
    -- start the bat game (if it is not already in progress)
-   if not bat_task_active then 
+   if not bat_task_active then
+
+      bat_actor = cxt.actor
+
+      if bat_level > 5 then
+         print("You have completed all the available bat levels. Now go and finish the Tutorial like "
+               .. "you are supposed to be doing.")
+         return
+      end
 
       print ("Level " .. bat_level .. ". Fight!")
 
@@ -432,19 +463,19 @@ function _G.rf_vampire_bats()
          bat_schedule = { 10 }
       elseif bat_level == 2 then
          bats_remaining = 8
-         bat_schedule = { 2, 6 }
+         bat_schedule = { 1.7, 6 }
       elseif bat_level == 3 then
          bats_remaining = 10
-         bat_schedule = { 2, 3, 6 }
+         bat_schedule = { 1.5, 3, 6 }
+      elseif bat_level == 4 then
+         bats_remaining = 12
+         bat_schedule = { 1, 2, 4, 6 }
       else
-         bats_remaining = 12 + 2 * (bat_level-4)
-         bat_schedule = { 2, 2, 3, 5, 6 }
-         for i = 5,bat_level do
-            bat_schedule[i-2] = 2
-         end
+         bats_remaining = 15
+         bat_schedule = { 1, 2, 3, 4, 6 }
       end
 
-      bat_schedule[0] = 1.2 - 0.2*bat_level
+      bat_schedule[0] = 1 - 0.1 * (bat_level-1)
       bat_schedule.def = 8
 
       update_bat_rqmts()
