@@ -48,7 +48,6 @@
 #include "monster_type.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
-#include "quest_hint_manager.hpp"
 #include "rng.hpp"
 #include "teleport.hpp"
 #include "tutorial_manager.hpp"
@@ -938,19 +937,19 @@ namespace {
         const std::string msg = luaL_checkstring(lua, 1);
         const double order = luaL_checknumber(lua, 2);
         const double group = luaL_checknumber(lua, 3);
-        Mediator::instance().getQuestHintManager().addHint(msg, order, group);
+        Mediator::instance().addQuestHint(msg, order, group);
         return 0;
     }
 
     int ClearHints(lua_State *lua)
     {
-        Mediator::instance().getQuestHintManager().clearHints();
+        Mediator::instance().clearQuestHints();
         return 0;
     }
 
     int ResendHints(lua_State *lua)
     {
-        Mediator::instance().getQuestHintManager().sendHints();
+        Mediator::instance().sendQuestHints();
         return 0;
     }
 

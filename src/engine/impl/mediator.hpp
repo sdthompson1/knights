@@ -225,12 +225,16 @@ public:
     int getNumPlayersRemaining() const
         { return remaining_players.size(); }
 
+    // Quest hint manager
+    void addQuestHint(const std::string &msg, double order, double group);
+    void clearQuestHints();
+    void sendQuestHints();
+
     // Various accessor functions.
     shared_ptr<DungeonMap> getMap() const { return dmap; }
     shared_ptr<CoordTransform> getCoordTransform() const { return coord_transform; }
     const vector<Player*> &getPlayers() const { return players; }
     MonsterManager & getMonsterManager() const { return monster_manager; }
-    QuestHintManager & getQuestHintManager() const { return quest_hint_manager; }
     StuffManager & getStuffManager() const { return stuff_manager; }
     HomeManager & getHomeManager() const { return home_manager; }
     TaskManager & getTaskManager() const { return task_manager; }

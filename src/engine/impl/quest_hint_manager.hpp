@@ -24,13 +24,15 @@
 #ifndef QUEST_HINT_MANAGER_HPP
 #define QUEST_HINT_MANAGER_HPP
 
+class StatusDisplay;
+
 #include <vector>
 
 class QuestHintManager {
 public:
     void addHint(const std::string &msg, double order, double group);
     void clearHints();
-    void sendHints();
+    void sendHints(StatusDisplay &sd);
 
 private:
     struct QuestHint {

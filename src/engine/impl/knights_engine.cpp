@@ -301,7 +301,9 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
         }
 
         // Send initial quest hint update
-        Mediator::instance().getQuestHintManager().sendHints();
+        for (int i = 0; i < players.size(); ++i) {
+            quest_hint_manager.sendHints(players[i]->getStatusDisplay());
+        }
 
         initial_update_needed = false;
     }
@@ -321,6 +323,9 @@ void KnightsEngine::catchUp(int player, DungeonView &dungeon_view, MiniMap &mini
     
     // Send the current room to the DungeonView
     pimpl->view_manager.sendCurrentRoom(player, dungeon_view);
+
+    // Send the quest hints
+    pimpl->quest_hint_manager.sendHints(status_display);
 }
 
 

@@ -23,10 +23,10 @@
 
 #include "misc.hpp"
 
-#include "knights_callbacks.hpp"
-#include "mediator.hpp"
 #include "quest_hint_manager.hpp"
 #include "status_display.hpp"
+
+#include <algorithm>
 
 bool QuestHintManager::QuestHint::operator<(const QuestHintManager::QuestHint &rhs) const
 {
@@ -51,7 +51,7 @@ void QuestHintManager::clearHints()
     quest_hints.clear();
 }
 
-void QuestHintManager::sendHints()
+void QuestHintManager::sendHints(StatusDisplay &status_display)
 {
     // Sort QuestHints into order
     std::sort(quest_hints.begin(), quest_hints.end());
@@ -68,10 +68,5 @@ void QuestHintManager::sendHints()
     }
 
     // Now send them out
-    Mediator &m = Mediator::instance();
-    KnightsCallbacks &cb = m.getCallbacks();
-    const int nplayers = int(m.getPlayers().size());
-    for (int i = 0; i < nplayers; ++i) {
-        cb.getStatusDisplay(i).setQuestHints(quest_rqmts);
-    }
+    status_display.setQuestHints(quest_rqmts);
 }

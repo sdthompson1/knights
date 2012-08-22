@@ -38,6 +38,7 @@
 #include "originator.hpp"
 #include "player.hpp"
 #include "player_task.hpp"
+#include "quest_hint_manager.hpp"
 #include "task_manager.hpp"
 #include "tutorial_manager.hpp"
 #include "view_manager.hpp"
@@ -495,6 +496,23 @@ void Mediator::eliminatePlayer(Player &pl)
     } else {
         // this puts him into observer mode, but he is still in the game (as an observer).
         Mediator::getCallbacks().onElimination(pl.getPlayerNum());
+    }
+}
+
+void Mediator::addQuestHint(const std::string &msg, double order, double group)
+{
+    quest_hint_manager.addHint(msg, order, group);
+}
+
+void Mediator::clearQuestHints()
+{
+    quest_hint_manager.clearHints();
+}
+
+void Mediator::sendQuestHints()
+{
+    for (int i = 0; i < int(players.size()); ++i) {
+        quest_hint_manager.sendHints(players[i]->getStatusDisplay());
     }
 }
 
