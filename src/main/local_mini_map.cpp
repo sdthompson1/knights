@@ -88,11 +88,16 @@ void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int
                 }
 
                 MiniMapColour csel = COL_UNMAPPED;
-                for (int j = 0; j < (extend_up ? recip_scale+1 : recip_scale); ++j) {
-                    for (int i = 0; i < (extend_right ? recip_scale+1 : recip_scale); ++i) {
-                        ASSERT(xbase + i < width);
-                        ASSERT(ybase + j < height);
-                        csel = min(csel, new_data[(xbase+i) + (ybase+j)*width]);
+
+                const int jmin = ybase;
+                const int jmax = std::min(height, ybase + (extend_up ? recip_scale+1 : recip_scale));
+
+                const int imin = xbase;
+                const int imax = std::min(width, xbase + (extend_right ? recip_scale+1 : recip_scale));
+
+                for (int j = jmin; j < jmax; ++j) {
+                    for (int i = imin; i < imax; ++i) {
+                        csel = min(csel, new_data[i + j*width]);
                     }
                 }
 
