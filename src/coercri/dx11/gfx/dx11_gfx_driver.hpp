@@ -72,8 +72,8 @@ namespace Coercri {
         ~DX11GfxDriver();
 
         // Functions overridden from GfxDriver
-        virtual DisplayModeVector getFullScreenModes() { return full_screen_modes; }
-        virtual DisplayMode getDesktopMode() { return desktop_mode; }
+        virtual DisplayModeVector getFullScreenModes() { return DisplayModeVector(); }
+        virtual DisplayMode getDesktopMode();
         virtual boost::shared_ptr<Window> createWindow(int width, int height,
                                                        bool resizable, bool fullscreen,
                                                        const std::string &title);
@@ -105,9 +105,6 @@ namespace Coercri {
         ComPtrWrapper<IDXGIOutput> m_psOutput;
 
         std::auto_ptr<PrimitiveBatch> m_psPrimitiveBatch;
-
-        DisplayModeVector full_screen_modes;
-        DisplayMode desktop_mode;
 
         int icon_id;
     };

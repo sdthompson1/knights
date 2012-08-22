@@ -921,24 +921,14 @@ namespace Coercri {
 
     void DX11Window::handleWindowResize()
     {
-        int width = 0, height = 0;
-        if (m_psSwapChain.get() && isFullScreen()) {
-            // Full screen mode.
-            // We have to resize the back-buffer to the desktop resolution.
-            const GfxDriver::DisplayMode desktop_mode = gfx_driver.getDesktopMode();
-            width = desktop_mode.width;
-            height = desktop_mode.height;
-        } else {
-            // Windowed mode.
-            // We have to resize the back-buffer to the size returned by GetClientRect.
-            RECT rect;
-            if (!GetClientRect(hwnd, &rect)) {
-                throw DXError("GetClientRect failed", HRESULT_FROM_WIN32(GetLastError()));
-            }
-            width = rect.right;
-            height = rect.bottom;
+        // Find the current window size
+        RECT rect;
+        if (!GetClientRect(hwnd, &rect)) {
+            throw DXError("GetClientRect failed", HRESULT_FROM_WIN32(GetLastError()));
         }
-     
+        const int width = rect.right;
+        const int height = rect.bottom;
+        
         if (m_psSwapChain.get()) {
 
             // We have to release the render target view, resize the

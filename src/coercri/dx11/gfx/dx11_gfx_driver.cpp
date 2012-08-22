@@ -90,25 +90,15 @@ namespace Coercri {
                                  UINT flags,
                                  D3D_FEATURE_LEVEL feature_level)
         : icon_id(-1)
-    {
-        memset(&desktop_mode, 0, sizeof(desktop_mode));  // in case it fails to initialize in getAvailableDisplayModes()
-        
+    {        
         // Open DirectX
         if (!LoadDX11()) {
             throw CoercriError("DirectX 11 is not available on this machine.");
         }
-
-        // Initialize everything
+        
+        // Create device
         createDevice(driver_type, flags, feature_level);
-        getAvailableDisplayModes();
 
-        m_psPrimitiveBatch.reset(new PrimitiveBatch(m_psDevice.get(), m_psDeviceContext.get()));
-    }
-    
-    // Get all available fullscreen display modes
-    // (Currently only the "primary" monitor is supported for full screen mode.)
-    void DX11GfxDriver::getAvailableDisplayModes()
-    {
         // Find the default display adapter
         IDXGIAdapter *pAdapter = 0;
         HRESULT hr = m_psFactory->EnumAdapters(0, &pAdapter);
@@ -116,7 +106,7 @@ namespace Coercri {
             throw DXError("IDXGIFactory::EnumAdapters failed", hr);
         }
         ComPtrWrapper<IDXGIAdapter> psAdapter(pAdapter);
-        
+
         // Find the primary "output" (i.e. monitor) on this adapter
         IDXGIOutput *pOutput = 0;
         hr = pAdapter->EnumOutputs(0, &pOutput);
@@ -125,50 +115,10 @@ namespace Coercri {
         }
         m_psOutput.reset(pOutput);
         
-        // Enumerate the display modes available on this output
-        const DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM; // the pixel format we want to use
-        const UINT flags = 0;   // only 'basic' display modes (i.e. no scaled modes, no interlaced, no stereo)
-        UINT num_modes = 0;
-
-        hr = pOutput->GetDisplayModeList(format, flags, &num_modes, 0);
-        if (hr == DXGI_ERROR_NOT_CURRENTLY_AVAILABLE) {
-            // This can happen if we are running over remote desktop.
-            // We don't currently support full screen mode in this configuration,
-            // so just return with an empty list of display modes.
-            return;
-        } else if (FAILED(hr)) {
-            throw DXError("IDXGIOutput::GetDisplayModeList failed", hr);
-        }
-        
-        boost::scoped_array<DXGI_MODE_DESC> modes(new DXGI_MODE_DESC[num_modes]);
-        hr = pOutput->GetDisplayModeList(format, flags, &num_modes, &modes[0]);
-        if (FAILED(hr)) {
-            throw DXError("IDXGIOutput::GetDisplayModeList failed", hr);
-        }
-        
-        // modes[] now contains a list of display modes. iterate through them.
-        for (UINT i = 0; i < num_modes; ++i) {
-            DisplayMode m;
-            m.width = modes[i].Width;
-            m.height = modes[i].Height;
-            full_screen_modes.push_back(m);
-        }
-
-        // sort and remove duplicates
-        std::sort(full_screen_modes.begin(), full_screen_modes.end(), CmpDisplayMode());
-        full_screen_modes.erase(std::unique(full_screen_modes.begin(), full_screen_modes.end(), EqDisplayMode()),
-                                full_screen_modes.end());
-        
-        // find the desktop mode.
-        DXGI_OUTPUT_DESC output_desc;
-        hr = pOutput->GetDesc(&output_desc);
-        if (FAILED(hr)) {
-            throw DXError("IDXGIOutput::GetDesc failed", hr);
-        }
-        desktop_mode.width = output_desc.DesktopCoordinates.right - output_desc.DesktopCoordinates.left;
-        desktop_mode.height = output_desc.DesktopCoordinates.bottom - output_desc.DesktopCoordinates.top;
+        // Setup the PrimitiveBatch class
+        m_psPrimitiveBatch.reset(new PrimitiveBatch(m_psDevice.get(), m_psDeviceContext.get()));
     }
-
+        
     // Create the D3D device and immediate context
     void DX11GfxDriver::createDevice(D3D_DRIVER_TYPE driver_type,
                                      UINT flags,
@@ -216,7 +166,20 @@ namespace Coercri {
         }
         m_psFactory.reset(pFactory);
     }
-        
+
+    DX11GfxDriver::DisplayMode DX11GfxDriver::getDesktopMode()
+    {
+        DXGI_OUTPUT_DESC output_desc;
+        HRESULT hr = m_psOutput->GetDesc(&output_desc);
+        if (FAILED(hr)) {
+            throw DXError("IDXGIOutput::GetDesc failed", hr);
+        }
+        DisplayMode dm;
+        dm.width = output_desc.DesktopCoordinates.right - output_desc.DesktopCoordinates.left;
+        dm.height = output_desc.DesktopCoordinates.bottom - output_desc.DesktopCoordinates.top;
+        return dm;
+    }
+
 
     //
     // Destructor
