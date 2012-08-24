@@ -224,6 +224,7 @@ bool Segment::readLine(std::istream &str, lua_State *lua, std::string &key, std:
 {
     std::string s;
     do {
+        if (!str) luaL_error(lua, "Error while loading segment: read error in Segment::readLine");
         s.clear();
         std::getline(str, s);
         s = Trim(s);

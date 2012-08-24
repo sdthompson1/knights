@@ -798,7 +798,7 @@ void LocalDisplay::clearTutorialWindow()
     // clears any popup present.
     if (!tutorial_popups.empty()) {
         tutorial_popups.pop_front();
-        if (tutorial_popups.empty() && tutorial_selected_window == -1) {
+        if (tutorial_popups.empty()) {
             tutorial_selected_window = tutorial_windows.size() - 1;
             updateTutorialWidget();
         }
@@ -1146,15 +1146,6 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         const int title_txt_yofs = title_yofs + std::max(0, title_height - text_height)/2;
         gc.drawText(t_x + title_xofs, t_y + title_txt_yofs, *gm.getFont(), title, col3);
 
-        // draw the "1/6" string
-        if (!won[0]) {
-            std::ostringstream str;
-            str << tutorial_windows.size() - tutorial_popups.size() + 1;
-            str << '/';
-            str << tutorial_windows.size();
-            gc.drawText(t_x + t_w - gm.getFont()->getTextWidth(str.str()) - x_margin, t_y + title_txt_yofs, *gm.getFont(), str.str(), col3);
-        }
-        
         // draw the message
         MyPrinter pr(gc, *gm.getFont(), col3, t_x + msg_margin, t_y + title_yofs + title_height + text_height);
         TextFormatter tf(pr, t_w - msg_margin*2, false);
@@ -1837,7 +1828,7 @@ void LocalDisplay::popUpWindow(const std::vector<TutorialWindow> &windows)
             popup = true;
         }
         tutorial_windows.push_back(*it);
-        if (tutorial_selected_window != -1 || !popup) tutorial_selected_window = tutorial_windows.size() - 1;
+        if (tutorial_popups.empty() && !popup) tutorial_selected_window = tutorial_windows.size() - 1;
     }
     updateTutorialWidget();
 }
