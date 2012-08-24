@@ -41,6 +41,8 @@ class Door : public Lockable {
 public:
     explicit Door(lua_State *lua);
 
+    virtual void newIndex(lua_State *lua);
+
     virtual void damage(DungeonMap &, const MapCoord &, int amt, shared_ptr<Creature> actor);
     virtual void onHit(DungeonMap &, const MapCoord &, shared_ptr<Creature> actor, const Originator &);
     virtual bool targettable() const;
@@ -61,6 +63,8 @@ class Chest : public Lockable {
 public:
     explicit Chest(lua_State *lua);
 
+    virtual void newIndex(lua_State *lua);
+    
     virtual bool cannotActivateFrom(MapDirection &dir) const;
     
     virtual bool canPlaceItem() const;
@@ -106,6 +110,8 @@ private:
 class Home : public Tile {
 public:
     explicit Home(lua_State *lua);
+
+    virtual void newIndex(lua_State *lua);
     
     // onApproach/onWithdraw are overridden to handle healing.
     virtual void onApproach(DungeonMap &, const MapCoord &, shared_ptr<Creature>, const Originator &);

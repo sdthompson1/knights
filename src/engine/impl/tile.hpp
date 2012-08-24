@@ -66,7 +66,7 @@ public:
     Tile(const LuaFunc &walk_over, const LuaFunc &activate);
     
     void pushTable(lua_State *lua) const { table_ref.push(lua); }
-    void newIndex(lua_State *lua);
+    virtual void newIndex(lua_State *lua);
     
     // clone
     // Clones the tile.

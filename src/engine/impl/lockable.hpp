@@ -45,6 +45,8 @@ class Lockable : public Tile {
 public:
     explicit Lockable(lua_State *lua);
 
+    virtual void newIndex(lua_State *lua);
+
     // Override canActivateHere, onActivate to deal with opening and closing.
     virtual bool canActivateHere() const { return false; }
     virtual void onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creature>, const Originator &,

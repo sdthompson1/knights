@@ -63,6 +63,15 @@ Door::Door(lua_State *lua) : Lockable(lua)
     }
 }
 
+void Door::newIndex(lua_State *lua)
+{
+    if (lua_isstring(lua, 2) && std::strcmp(lua_tostring(lua, 2), "open_graphic") == 0) {
+        open_graphic = ReadLuaPtr<Graphic>(lua, 3);
+    } else {
+        Lockable::newIndex(lua);
+    }
+}
+
 shared_ptr<Tile> Door::doClone(bool)
 {
     return shared_ptr<Tile>(new Door(*this));
@@ -127,6 +136,29 @@ Chest::Chest(lua_State *lua) : Lockable(lua)
     } else {
         setItemsAllowedNoSweep(true, false);
         setGraphicNoNotify(open_graphic);
+    }
+}
+
+void Chest::newIndex(lua_State *lua)
+{
+    std::string k;
+    if (lua_isstring(lua, 2)) k = lua_tostring(lua, 2);
+
+    if (k == "open_graphic") {
+        open_graphic = ReadLuaPtr<Graphic>(lua, 3);
+
+    } else if (k == "facing") {
+        facing = GetMapDirection(lua, 3);
+
+    } else if (k == "trap_chance") {
+        lua_pushvalue(lua, 3);
+        trap_chance = LuaPopProbability(lua, "trap_chance");
+
+    } else if (k == "traps") {
+        lua_pushvalue(lua, 3);
+        traps = LuaFunc(lua);
+    } else {
+        Lockable::newIndex(lua);
     }
 }
 
@@ -213,6 +245,35 @@ Home::Home(lua_State *lua) : Tile(lua)
                          (col & 0x00ff00) >> 8,
                          col & 0xff));
     setCCNoNotify(cc_unsec);
+}
+
+void Home::newIndex(lua_State *lua)
+{
+    std::string k;
+    if (lua_isstring(lua, 2)) k = lua_tostring(lua, 2);
+
+    if (k == "facing") {
+        facing = GetMapDirection(lua, 3);
+
+    } else if (k == "special_exit") {
+        special_exit = lua_toboolean(lua, 3) != 0;
+
+    } else if (k == "unsecured_colour") {
+        unsigned int col = static_cast<unsigned int>(lua_tointeger(lua, 3));
+        shared_ptr<ColourChange> cc_unsec(new ColourChange);
+        cc_unsec->add(Colour(255,0,0),
+                      Colour((col & 0xff0000) >> 16,
+                             (col & 0x00ff00) >> 8,
+                             col & 0xff));
+        // If game is running, then use of setCCNoNotify isn't strictly correct, because it means the new
+        // colour won't be sent out to players.
+        // However, we expect 'unsecured_colour' to be changed by Lua only before the game begins
+        // (if at all) so we should get away with it.
+        setCCNoNotify(cc_unsec);
+
+    } else {
+        Tile::newIndex(lua);
+    }
 }
 
 shared_ptr<Tile> Home::doClone(bool)

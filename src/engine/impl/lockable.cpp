@@ -60,6 +60,44 @@ Lockable::Lockable(lua_State *lua)
     on_unlock_fail.reset(lua, -1, "on_unlock_fail");      // default null
 }
 
+void Lockable::newIndex(lua_State *lua)
+{
+    if (!lua_isstring(lua, 2)) {
+        Tile::newIndex(lua);
+        return;
+    }
+    
+    const std::string k = lua_tostring(lua, 2);
+    if (k == "open") {
+        luaL_error(lua, "Sorry, cannot set 'open' directly. Use kts.OpenDoor or kts.CloseDoor instead.");
+        
+    } else if (k == "special_lock") {
+        luaL_error(lua, "Sorry, cannot set 'special_lock' directly. Use kts.LockDoor instead.");
+        
+    } else if (k == "lock_chance") {
+        lua_pushvalue(lua, 3);
+        lock_chance = LuaPopProbability(lua, "lock_chance");
+        
+    } else if (k == "lock_pick_only_chance") {
+        lua_pushvalue(lua, 3);
+        pick_only_chance = LuaPopProbability(lua, "lock_pick_only_chance");
+
+    } else if (k == "keymax") {
+        keymax = lua_tointeger(lua, -1);
+
+    } else if (k == "on_open_or_close") {
+        lua_pushvalue(lua, 3);
+        on_open_or_close = LuaFunc(lua);
+
+    } else if (k == "on_unlock_fail") {
+        lua_pushvalue(lua, 3);
+        on_unlock_fail = LuaFunc(lua);
+
+    } else {
+        Tile::newIndex(lua);
+    }
+}
+
 
 //
 // opening/closing: private functions

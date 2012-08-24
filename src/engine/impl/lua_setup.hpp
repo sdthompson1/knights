@@ -49,6 +49,7 @@ bool LuaGetBool(lua_State *lua, int tbl_idx, const char *key, bool dflt = false)
 int LuaGetInt(lua_State *lua, int tbl_idx, const char *key, int dflt = 0);
 float LuaGetFloat(lua_State *lua, int tbl_idx, const char *key, float dflt = 0.0f);
 float LuaGetProbability(lua_State *lua, int tbl_idx, const char *key, float dflt = 0.0f);
+float LuaPopProbability(lua_State *lua, const char *key);  // key is used for err msgs
 std::string LuaGetString(lua_State *lua, int tbl_idx, const char *key, const char *dflt = "");
 ItemSize LuaGetItemSize(lua_State *lua, int tbl_idx, const char *key, ItemSize dflt = IS_NOPICKUP);
 ItemSize LuaPopItemSize(lua_State *lua, ItemSize dflt);

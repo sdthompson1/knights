@@ -328,6 +328,20 @@ float LuaGetProbability(lua_State *lua, int idx, const char *key, float dflt)
     return p;
 }
 
+float LuaPopProbability(lua_State *lua, const char *key)
+{
+    int isnum;
+    float p = static_cast<float>(lua_tonumberx(lua, -1, &isnum));
+    if (!isnum) {
+        luaL_error(lua, "'%s' must be a number", key);
+    }
+    lua_pop(lua, 1);
+    if (p < 0.0f || p > 1.0f) {
+        luaL_error(lua, "'%s' must be between 0 and 1", key);
+    }
+    return p;
+}        
+
 std::string LuaGetString(lua_State *lua, int idx, const char *key, const char * dflt)
 {
     lua_getfield(lua, idx, key);
