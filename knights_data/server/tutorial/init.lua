@@ -109,6 +109,13 @@ function C.my_teleport()
    kts.TeleportTo(cxt.actor, {x=33, y=31})
 end   
 
+-- Also modify zombify effect to print tutorial message 78
+-- (The pentagram is the only way you can get zombified in this tutorial.)
+old_zombify = C.my_zombify
+function C.my_zombify()
+   old_zombify()
+   tutorial_msg(78)
+end
 
 ----------------------------------------------------------------------
 -- Load tutorial_map.txt
@@ -247,6 +254,9 @@ function start_tutorial()
 
    -- Setup tutorial messages
    add_msgs()
+
+   -- Set Quest Requirements messages
+   set_quest_rqmts()
 end
 
 
@@ -411,7 +421,13 @@ bat_level = 1
 bat_schedule = { def=10 }  -- In seconds.
 bat_failures = 0
 
+-- Quest Requirements messages
 function update_quest_rqmts()
+   set_quest_rqmts()
+   kts.ResendHints()
+end
+
+function set_quest_rqmts()
    kts.ClearHints()
    if bats_remaining > 0 then
       local msg
@@ -426,7 +442,6 @@ function update_quest_rqmts()
       kts.AddHint(normal_objective_1, 1, 1)
       kts.AddHint(normal_objective_2, 2, 1)
    end
-   kts.ResendHints()
 end
 
 function schedule_bat()
@@ -700,9 +715,28 @@ function add_msg(x, y, n)
    kts.AddTile(pos, kts.Tile(t))
 end
 
+gem_hint_seen = false
 function gem_hint()
-   if kts.GetNumHeld(cxt.actor, C.i_gem) == 0 then
+   if kts.GetNumHeld(cxt.actor, C.i_gem) == 0 and not gem_hint_seen then
+      -- The purpose of gem_hint_seen is to prevent this message being displayed
+      -- if they die, get returned to the top of the map, 
+      -- then walk over this trigger point again with no gems.
+      gem_hint_seen = true
+
+      -- Go back and get gem
       tutorial_msg(20)
+   else
+      -- Mini map explanation
+      tutorial_msg(8)
+   end
+end
+
+-- Similar thing for exiting skull room.
+gems_left_behind_seen = false
+function gems_left_behind()
+   if kts.GetNumHeld(cxt.actor, C.i_gem) == 0 and not gems_left_behind_seen then
+      gems_left_behind_seen = true
+      tutorial_msg(51)
    end
 end
 
@@ -721,9 +755,7 @@ function add_msgs()
    add_msg(  7,  7,  2 )
    add_msg(  7, 12,  4 )
    add_msg(  6, 13,  5 )
-   add_msg(  7, 15,  8 )
-   add_msg( 11, 12,  8 )
-   add_msg(  1, 20, 12 )
+   add_msg(  1, 19, 12 )
    add_msg( 16, 17, 13 )
    add_msg( 18, 17, 13 )
    add_msg( 20, 17, 13 )
@@ -732,13 +764,13 @@ function add_msgs()
    add_msg( 20, 11, 14 )
    add_msg( 22, 10, 17 )
    add_msg( 22,  9, 19 )
-   add_msg( 24, 13, gem_hint )
+   add_msg( 24, 15, gem_hint )
    add_msg( 31, 17, 21 )
    add_msg( 32, 17, 22 )
    add_msg( 31, 20, 23 )
    add_msg( 25, 20, 24 )
    add_msg( 27, 20, 24 )
-   add_msg( 27, 27, 26 )
+   add_msg( 26, 27, 26 )
    add_msg( 22, 31, 38 )
    add_msg( 30, 31, 40 )
    add_msg( 31, 33, 41 )
@@ -746,7 +778,7 @@ function add_msgs()
    add_msg( 33, 33, 44 )
    add_msg( 34, 31, 45 )
    add_msg( 19, 22, 49 )
-   add_msg( 12, 25, 51 )
+   add_msg( 12, 25, gems_left_behind )
    add_msg( 24, 23, 52 )
    add_msg( 16, 30, 52 )
    add_msg( 11, 29, 52 )
@@ -762,7 +794,7 @@ function add_msgs()
    add_msg(  6, 29, 58 )
    add_msg(  5, 33, 59 )
    add_msg( 10, 36, 64 )
-   add_msg(  4, 35, 65 )
+   add_msg(  3, 35, 65 )
    add_msg(  5, 26, 66 )
    add_msg(  5, 22, 67 )
    add_msg(  6, 10, almost_home_msg )
@@ -772,7 +804,7 @@ end
 C.i_hammer.on_pick_up = function() tutorial_msg(6) end
 C.i_key1.on_pick_up = function() tutorial_msg(39) end
 C.i_lockpicks.on_pick_up = function() tutorial_msg(54) end
-C.i_bear_trap_open.on_pick_up = function() tutorial_msg(72) end
+C.i_bear_trap.on_pick_up = function() tutorial_msg(72) end
 C.i_poison_trap.on_pick_up = function() tutorial_msg(73) end
 C.i_blade_trap.on_pick_up = function() tutorial_msg(74) end
 
@@ -783,7 +815,7 @@ C.t_iron_door_horiz.on_unlock_fail = function()
    print("HERE")
    if cxt.actor_pos.y == 10 then
       tutorial_msg(3)
-   elseif kts.GetNumHeld(cxt.actor, C.i_lock_picks) >= 1 then
+   elseif kts.GetNumHeld(cxt.actor, C.i_lockpicks) >= 1 then
       tutorial_msg(75)
    else
       tutorial_msg(76)
