@@ -152,8 +152,9 @@ public:
     bool getSpeechBubble() const { return speech_bubble; }
     
     // reset home (called by HomeManager, also called by eliminatePlayer to stop the player respawning)
-    // (mc = pos just outside home; not the home square itself)
-    // (facing = towards the home.)
+    // (Also called by Lua function "kts.SetHomeFor")
+    // mc = pos just outside home; not the home square itself
+    // facing = towards the home.
     void resetHome(DungeonMap *dmap, const MapCoord &mc, const MapDirection &facing);
     
     // event handling functions

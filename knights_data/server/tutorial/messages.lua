@@ -56,7 +56,7 @@ messages = {
          title = "DUNGEON ENTRY POINT",
          graphics = {C.g_home_north},
          colour_changes = {{0xff0000, 0}},  -- change red to black
-         body = "These stairs lead down into the dungeon. Use the %M to step boldly forward..."
+         body = "These stairs lead down into the dungeon. Using the %M, move your knight boldly forward..."
       }
    },
 

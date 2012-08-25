@@ -176,7 +176,7 @@ void HomeManager::onKnightDeath(Player &pl) const
 
 void HomeManager::pushHome(lua_State *lua, const std::pair<HomeLocation, Player *> &home)
 {
-    lua_createtable(lua, 0, 4);  // [home]
+    lua_newtable(lua);  // [home]
 
     ASSERT(home.first.dmap);
     ASSERT(!home.first.mc.isNull());
@@ -223,8 +223,16 @@ void HomeManager::pushHomeFor(lua_State *lua, Player &player) const
     HomeMap::const_iterator it = homes.find(loc);
 
     if (it == homes.end()) {
-        lua_pushnil(lua);
+        // just give the position/facing
+        lua_newtable(lua);
+        lua_pushinteger(lua, loc.mc.getX());
+        lua_setfield(lua, -2, "x");
+        lua_pushinteger(lua, loc.mc.getY());
+        lua_setfield(lua, -2, "y");
+        PushMapDirection(lua, loc.facing);
+        lua_setfield(lua, -2, "facing");
     } else {
+        // push all info about the home (including tile and secured_by)
         pushHome(lua, *it);
     }
 }

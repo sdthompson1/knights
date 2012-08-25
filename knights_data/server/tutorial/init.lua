@@ -25,11 +25,11 @@ dofile("messages.lua")
 local C = require("classic")
 
 -- Debug
-C.t_floor1.on_walk_over = function() 
-   if kts.IsKnight(cxt.actor) then
-      print(cxt.tile_pos.x - 1, " ", cxt.tile_pos.y - 1)
-   end
-end
+--C.t_floor1.on_walk_over = function() 
+--   if kts.IsKnight(cxt.actor) then
+--      print(cxt.tile_pos.x, " ", cxt.tile_pos.y)
+--   end
+--end
 
 ----------------------------------------------------------------------
 -- New tiles and items
@@ -151,8 +151,8 @@ tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 -- Custom respawn function
 ----------------------------------------------------------------------
 
-respawn_x = 7
-respawn_y = 2
+respawn_x = 24  -- 7
+respawn_y = 10  -- 2
 respawn_dir = "south"
 
 function respawn_func()
@@ -257,6 +257,10 @@ function start_tutorial()
 
    -- Set Quest Requirements messages
    set_quest_rqmts()
+
+   -- Setup home position (this allows knight to heal at entrance)
+   local p = kts.GetAllPlayers()[1]
+   kts.SetHomeFor(p, {x=7, y=2}, "north")
 end
 
 
@@ -335,7 +339,13 @@ function _G.rf_sw_puzzle()
 
    if num_switches_hit >= 3 then
       local tiles = kts.GetTiles(secret_door_pos)
-      kts.RemoveTile(secret_door_pos, tiles[1])
+      for _,v in pairs(tiles) do
+         -- We only want to remove the wall tile, not the hidden "trigger" tiles.
+         -- We can detect the wall tile by looking at its "access" field
+         if v.access and v.access.walking == "blocked" then
+            kts.RemoveTile(secret_door_pos, v)
+         end
+      end
       kts.AddTile(secret_door_pos, C.t_floor1)
    end
 end
@@ -667,7 +677,6 @@ C.t_home_north.on_hit = function() tutorial_msg(11) end
 ----------------------------------------------------------------------
 
 function tutorial_msg(x)
-   print("Tutorial " .. x)
    local t = messages[x]
 
    if t ~= nil then
@@ -721,7 +730,6 @@ function gem_hint()
       -- The purpose of gem_hint_seen is to prevent this message being displayed
       -- if they die, get returned to the top of the map, 
       -- then walk over this trigger point again with no gems.
-      gem_hint_seen = true
 
       -- Go back and get gem
       tutorial_msg(20)
@@ -729,15 +737,17 @@ function gem_hint()
       -- Mini map explanation
       tutorial_msg(8)
    end
+
+   gem_hint_seen = true
 end
 
 -- Similar thing for exiting skull room.
 gems_left_behind_seen = false
 function gems_left_behind()
    if kts.GetNumHeld(cxt.actor, C.i_gem) == 0 and not gems_left_behind_seen then
-      gems_left_behind_seen = true
       tutorial_msg(51)
    end
+   gems_left_behind_seen = true
 end
 
 function almost_home_msg()

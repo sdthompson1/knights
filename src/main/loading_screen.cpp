@@ -62,7 +62,10 @@ LoadingScreen::Loader::Loader(const std::string & config_filename, bool menu_str
 bool LoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui &)
 {
     knights_app = &ka;
-    loader.reset(new Loader(ka.getKnightsConfigFilename(), menu_strict_mode));
+    loader.reset(new Loader(
+        tutorial_mode ? "main_tutorial.lua" :
+                        ka.getKnightsConfigFilename(), 
+        menu_strict_mode));
 
     boost::thread new_thread(boost::ref(*loader));
     loader_thread.swap(new_thread);

@@ -844,6 +844,15 @@ namespace {
         return 1;
     }
 
+    int SetHomeFor(lua_State *lua)
+    {
+        Player & plyr = GetPlayerOrKnight(lua, 1);
+        MapCoord pos = GetMapCoord(lua, 2);
+        MapDirection facing = GetMapDirection(lua, 3);
+        plyr.resetHome(Mediator::instance().getMap().get(), pos, facing);
+        return 0;
+    }
+
     int GetPlayer(lua_State *lua)
     {
         shared_ptr<Creature> cr = CheckLuaSharedPtr<Creature>(lua, 1, "Player");
@@ -1252,6 +1261,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &GetHomeFor);
     lua_setfield(lua, -2, "GetHomeFor");
+
+    PushCFunction(lua, &SetHomeFor);
+    lua_setfield(lua, -2, "SetHomeFor");
 
     PushCFunction(lua, &GetAllPlayers);
     lua_setfield(lua, -2, "GetAllPlayers");
