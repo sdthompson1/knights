@@ -249,58 +249,6 @@ void TutorialManager::update(const MapCoord &knight_pos, int knight_room,
                              TutorialWindow window,
                              bool is_pickup)
 {
-    std::vector<TutorialWindow> output;
-    if (!sent_first_msg) {
-
-        sent_first_msg = true;
-        
-        TutorialWindow win;
-        win.popup = true;
-
-        if (!new_control_system) {
-            win.title = "NOTE";
-            win.msg = "You have selected old-style controls (keyboard only). "
-                "This tutorial only works with new-style controls (mouse and keyboard)."
-                "^For this tutorial we will temporarily switch your controls to mouse and keyboard mode."
-                "They will be switched back again when the tutorial ends.";
-            output.push_back(win);
-        }
-        
-        win.title = "KNIGHTS TUTORIAL";
-        win.msg = "Welcome to the Knights tutorial. This will teach you the basics of how to play Knights.";
-        output.push_back(win);
-
-        win.title = "THE QUEST";
-        win.msg = "Each game of Knights revolves around a quest, which you must complete in order to win the game."
-            "^In this tutorial, your quest is to find three gems, which have been hidden somewhere in the dungeon, "
-            "and carry them back to your starting point.";
-        output.push_back(win);
-        
-        win.title = "CONTROLLING YOUR KNIGHT";
-        win.msg = "To move your knight, use the %M."
-            "^To perform other actions, click the icons in the Action Bar (below the main play area). "
-            "You can mouse over each icon to see what it does."
-            "^As a shortcut, you can use the RIGHT MOUSE BUTTON to attack, or the LEFT MOUSE BUTTON "
-            "(when the mouse is outside the Action Bar area) to pick up and drop items, or open and close doors.";
-        output.push_back(win);
-
-        win.title = "WEAPONS AND ITEMS";
-        win.msg = "You start the game carrying only your sword. If you pick up another weapon, your sword will be sheathed. "
-            "When you drop the other weapon, your knight will draw his sword again."
-            "^The dungeon contains many other items besides weapons. Any non-weapon items carried will be shown as icons "
-            "on the lower part of your screen.";
-        output.push_back(win);
-       
-        win.title = "FINAL NOTES";
-        win.msg = "The Potion Bottle (lower left corner) indicates your knight's current health level. "
-            "There is also a mini-map, which shows the dungeon rooms visited so far."
-            "^You can pause or quit by pressing ESC."
-            "^Keep an eye on the 'Tutorial' window (top right of screen) for further hints as you explore the dungeon."
-            "^Good Luck!";
-        output.push_back(win);
-    }
-        
-
     const int TUTORIAL_RANGE = 5;
     
     bool replace_current = false;  // Should we replace the current window?
@@ -338,11 +286,12 @@ void TutorialManager::update(const MapCoord &knight_pos, int knight_room,
             current_window_pos = trigger_pos;
             curr_is_pickup = is_pickup;
             known_triggers.insert(trigger);
-            output.push_back(window);
+            Mediator::instance().getCallbacks().popUpWindow(
+                std::vector<TutorialWindow>(1, window));
         } else {
             clearCurrentTrigger();
         }
 
-        Mediator::instance().getCallbacks().popUpWindow(output);
+        
     }
 }

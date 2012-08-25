@@ -115,6 +115,7 @@ old_zombify = C.my_zombify
 function C.my_zombify()
    old_zombify()
    tutorial_msg(78)
+   death_flag = true
 end
 
 ----------------------------------------------------------------------
@@ -151,9 +152,12 @@ tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 -- Custom respawn function
 ----------------------------------------------------------------------
 
-respawn_x = 24  -- 7
-respawn_y = 10  -- 2
+respawn_x = 7
+respawn_y = 2
 respawn_dir = "south"
+
+-- death_flag controls whether to print the "you have died" msg (tutorial msg 79) on respawn.
+death_flag = true
 
 function respawn_func()
 
@@ -187,6 +191,11 @@ function respawn_func()
       -- respawn outside the switch
       return 26, 34, "south"
    end
+
+   if not death_flag then
+      tutorial_msg(79)
+   end
+   death_flag = false
 
    return respawn_x, respawn_y, respawn_dir
 end
@@ -760,6 +769,11 @@ function almost_home_msg()
    end
 end
 
+function pit_death()
+   tutorial_msg(22)
+   death_flag = true
+end
+
 function add_msgs()
    add_msg(  7,  2,  1 )
    add_msg(  7,  7,  2 )
@@ -776,7 +790,7 @@ function add_msgs()
    add_msg( 22,  9, 19 )
    add_msg( 24, 15, gem_hint )
    add_msg( 31, 17, 21 )
-   add_msg( 32, 17, 22 )
+   add_msg( 32, 17, pit_death )
    add_msg( 31, 20, 23 )
    add_msg( 25, 20, 24 )
    add_msg( 27, 20, 24 )

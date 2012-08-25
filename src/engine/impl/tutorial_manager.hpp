@@ -42,7 +42,7 @@ class Player;
 class TutorialManager {
 public:
     explicit TutorialManager() : current_window_room(-999), sent_first_msg(false),
-                                 curr_is_pickup(false), new_control_system(true) { }
+                                 curr_is_pickup(false) { }
 
     void addTutorialKey(int key, const std::string &title, const std::string &msg);
 
@@ -50,8 +50,6 @@ public:
     void onPickup(const Player &player, const ItemType &itype);
     void onOpenLockable(const Player &player, const MapCoord &mc);
     void onKnightDeath(const Player &player, const DungeonMap &dmap, const MapCoord &mc);
-
-    void setOldStyleControls() { new_control_system = false; }
     
 private:
     void clearCurrentTrigger();
@@ -75,7 +73,6 @@ private:
     std::map<int, std::string> titles, messages;
     bool sent_first_msg;
     bool curr_is_pickup;
-    bool new_control_system;
 };
 
 #endif

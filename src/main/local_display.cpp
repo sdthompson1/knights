@@ -376,6 +376,17 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<std::string> &player
         game_over_time[i] = -9999;
         flash_screen_start[i] = -9999;
     }
+
+    if (tutorial_mode && controller1 && !controller1->usingActionBar()) {
+        TutorialWindow win;
+        win.title = "NOTE";
+        win.msg = "You have selected old-style controls (keyboard only). "
+            "This tutorial only works with new-style controls (mouse and keyboard).\n\n"
+            "For this tutorial we will temporarily switch your controls to mouse and keyboard mode. "
+            "They will be switched back again when the tutorial ends.";
+        tutorial_popups.push_back(win);
+        tutorial_windows.push_back(win);
+    }
 }
 
 void LocalDisplay::recalculateTime(bool is_paused, int remaining)

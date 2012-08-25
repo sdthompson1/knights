@@ -219,8 +219,8 @@ messages = {
       title = "PIT",
       graphics = {C.g_pit_o},
       body = "Argh, you fell into a Bottomless Pit!\n\n"..
-         "Fortunately, in Knights, lives are unlimited. But your items have been dropped at the point "..
-         "where you died. Be sure to go back and pick them up before continuing..."
+         "Note that your items (including any gems carried) have been left behind at the place where you "..
+         "died. Be sure to collect them again before continuing..."
    },
 
    [23] = {
@@ -631,6 +631,17 @@ messages = {
       graphics = {C.g_floor1, C.g_zom1w},
       body = "Oh no, you got turned into a zombie! Slay the foul creature with your sword.\n\n"..
          "You will also need to step back on to the pentagram again, to pick up the stuff you were carrying..."
+   },
+
+   [79] = {
+      title = "DEATH",
+      graphics = {C.g_dead_knight_1, C.g_stuff_bag},
+      body = "Oh dear, you seem to have died.\n\n"..
+         "Fortunately, in Knights, lives are unlimited. However, "..
+         "your items have been left behind at the "..
+         "place where you died. (If you had multiple items, they will have "..
+         "been left in a brown bag like the one shown above.) "..
+         "Don't forget to go back and collect them before continuing."
    }
 }
 
