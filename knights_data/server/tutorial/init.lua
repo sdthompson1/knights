@@ -45,8 +45,6 @@ stuff_with_gem = kts.ItemType {
       kts.GiveItem(cxt.actor, C.i_gem, 1)
       kts.GiveItem(cxt.actor, C.i_bolts, 3)
       kts.GiveItem(cxt.actor, C.i_daggers, 4)
-      kts.GiveItem(cxt.actor, C.i_blade_trap, 2)
-      kts.GiveItem(cxt.actor, C.i_poison_trap, 2)
 
       -- Display the tutorial message
       local n = kts.GetNumHeld(cxt.actor, C.i_gem)
@@ -57,6 +55,9 @@ stuff_with_gem = kts.ItemType {
          m.body = m.body .. string.format(stuff_msg_nonfinal, n, 5-n)
       end
       kts.PopUpWindow(m)
+
+      -- Ensure the normal "gem pickup message" doesn't get shown
+      gem_pickup_flag[n] = true
    end
 }
 
@@ -69,7 +70,7 @@ C.t_switch_down.access = new_acc
 switch_new = kts.Tile( C.t_switch_up.table & { map_as = "wall" })
 
 -- Potions/scrolls with fixed effects
-function make_potion(effect, hint)
+function make_potion(effect, hint, set_flag)
    return kts.ItemType {
       type = "magic",
       graphic = C.g_potion,
@@ -79,6 +80,7 @@ function make_potion(effect, hint)
          kts.Delay(750)
          effect()
          tutorial_msg(hint)
+         if set_flag then death_flag = true end
       end
    }
 end
@@ -95,7 +97,7 @@ function make_scroll(effect, hint)
    }
 end
 
-poison_potion = make_potion(C.poison, 61)
+poison_potion = make_potion(C.poison, 61, true)
 regeneration_potion = make_potion(C.regeneration, 60)
 super_potion = make_potion(C.super, 42)
 quickness_scroll = make_scroll(C.quickness, 71)
@@ -556,8 +558,6 @@ function _G.rf_vampire_bats()
          return
       end
 
-      print ("Level " .. bat_level .. ". Fight!")
-
       -- Seal them in the room
       close_bat_doors()
       
@@ -836,7 +836,6 @@ C.i_blade_trap.on_pick_up = function() tutorial_msg(74) end
 old_unlock_fail = C.t_iron_door_horiz.on_unlock_fail
 C.t_iron_door_horiz.on_unlock_fail = function()
    old_unlock_fail()
-   print("HERE")
    if cxt.actor_pos.y == 10 then
       tutorial_msg(3)
    elseif kts.GetNumHeld(cxt.actor, C.i_lockpicks) >= 1 then

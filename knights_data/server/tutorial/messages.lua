@@ -37,8 +37,7 @@ messages = {
          title = "THE QUEST",
          body = "Each game of Knights revolves around a quest. The object of the game is to be the first player " ..
             "(or team) to complete the quest.\n\n" ..
-            "Normally you would choose a quest at the start of each game. However, in this Tutorial, the "..
-            "quest has already been chosen: you must find five gems " ..
+            "In this Tutorial, your quest is to find five gems " ..
             "and carry them back to your starting point.",
          popup = true
       },
@@ -53,6 +52,15 @@ messages = {
       },
 
       {
+         title = "WINDOW SIZE",
+         body = "Finally, don't forget that if you are playing in windowed mode, you can maximize " ..
+            "the Knights window to get a better view of the dungeon. The graphics will automatically "..
+            "scale to fit the new window size.\n\n" ..
+            "You can also play in full-screen mode (see \"Options\" on the main menu).",
+         popup = true
+      },
+
+      {
          title = "DUNGEON ENTRY POINT",
          graphics = {C.g_home_north},
          colour_changes = {{0xff0000, 0}},  -- change red to black
@@ -63,7 +71,7 @@ messages = {
    [2] = {
       title = "DOORS",
       graphics = {C.g_hdoor_background, C.g_door_hwc},
-      body = "These are wooden doors.\n\n"..
+      body = "This room contains two wooden doors.\n\n"..
          "To open a door, move your knight towards it, and, while still " ..
          "holding down the movement key, click the left mouse button.\n\n" ..
          "To close a door, turn to face it and left-click."
@@ -89,7 +97,7 @@ messages = {
       graphics = {C.g_floor1, C.g_hammer},
       body = "You found a hammer!\n\n"..
          "Your knight starts out carrying a sword, but you can find other weapons (like this hammer). "..
-         "When you take another weapon, your sword will be sheathed temporarily. When you drop the other weapon, "..
+         "When you pick up another weapon, your sword will be sheathed temporarily. When you drop the other weapon, "..
          "your knight will go back to using the sword.\n\n"..
          "To pick up the hammer, move on top of it, then left-click."
    },
@@ -109,20 +117,20 @@ messages = {
          "Normally rooms are mapped automatically, but if a monster or enemy "..
          "knight is in the room with you, then mapping is delayed "..
          "until they have left.\n\n"..
-         "Also, certain magical scrolls may complete your map for you, "..
-         "or even wipe it completely."
+         "Also, certain magical scrolls may give you a full map of the dungeon, "..
+         "or even wipe your map completely."
    },
 
    [9] = {
       title = "LOCKED DOOR",
-      graphics = {C.g_hdoor_background, C.g_door_vwc},
+      graphics = {C.g_vdoor_background, C.g_door_vwc},
       body = "This door seems to be locked. Never mind, since it is made of wood, "..
          "you can just smash it with your hammer..."
    },
 
    [10] = {
       title = "IRON DOOR",
-      graphics = {C.g_hdoor_background, C.g_door_vic},
+      graphics = {C.g_hdoor_background, C.g_door_hic},
       body = "You can't break down iron doors. The only way to get past a "..
          "locked iron door is to find the key (or pick the lock)."
    },
@@ -138,9 +146,10 @@ messages = {
    [12] = {
       title = "ENTRY POINT",
       graphics = {C.g_home_south},
-      body = "This is a dungeon entrance. Each knight will have their own separate entry point, "..
-         "and there will also be some dungeon entrances (like this one) that do not belong to any knight.\n\n"..
-         "You can't do anything at this entry point - you need to return to your own entry point "..
+      colour_changes = {{0xff0000, 0}},  -- change red to black
+      body = "This is a dungeon entrance. Each knight has their own separate entry point, "..
+         "and there are also some dungeon entrances (like this one) that do not belong to any knight.\n\n"..
+         "You can't do anything at this entry point -- you need to return to your own entry point "..
          "(at the top of the map) to win the quest."
    },
 
@@ -171,7 +180,7 @@ messages = {
    [16] = {
       title = "GEM RELEASED",
       graphics = {C.g_floor1, C.g_gem},
-      body = "That's it! Both gates are now open and you can reach the first gem!\n\n"..
+      body = "That's it! Both gates are open and you can now reach the first gem!\n\n"..
          "Make your way to the top right hand corner of the room, and pick up the gem."
    },
 
@@ -185,8 +194,8 @@ messages = {
    [18] = {
       title = "GEM",
       graphics = {C.g_floor1, C.g_gem},
-      body = "Congratulations, you now have one gem. Notice how a gem icon has appeared at "..
-         "the bottom of the screen, to let you know you are carrying it.\n\n"..
+      body = "Congratulations, you now have one gem. (Notice how a gem icon has appeared at "..
+         "the bottom of the screen, to let you know you are carrying it.)\n\n"..
          "If you want to drop the gem, you can click \"Drop Gem\" on the "..
          "Action Bar (fourth from the right). You won't need to do that in this Tutorial, "..
          "but in a multiplayer game it can sometimes be useful to hide gems in secret places, "..
@@ -226,10 +235,9 @@ messages = {
    [23] = {
       title = "GEM",
       graphics = {C.g_table_south, C.g_gem},
-      body = "A glint of light catches your eye from the nearby table. You have found another gem!\n\n"..
-         "Picking up items from tables is similar to opening doors; you first have to \"approach\" the table "..
-         "(by pushing your knight towards it), then left-click the mouse (while still holding the "..
-         "movement key)."
+      body = "A glimmer of light catches your eye from the nearby table. You have found another gem!\n\n"..
+         "To pick it up, move your knight towards the table and then, while still holding down the "..
+         "movement key, left-click the mouse."
    },
 
    [24] = {
@@ -246,7 +254,7 @@ messages = {
          title = "WEAPONS",
          body = "As you know, you can swing your current weapon by right-clicking.\n\n"..
             "Different weapons have different combat characteristics. The sword is the fastest, but it "..
-            "does the least damage. By contrast, the hammer is powerful, but slow. Axes "..
+            "does the least damage. The hammer is powerful, but slow. Axes "..
             "are somewhere in between.\n\n"..
             "In this case you should drop your hammer (left-click) if you are still carrying it; you will "..
             "need a fast weapon to deal with bats."
@@ -256,16 +264,17 @@ messages = {
          popup = true,
          title = "DAMAGE AND HEALTH",
          body = "As you land blows on monsters (or other knights), their health will decrease. "..
-            "When health drops to zero, the creature dies.\n\n"..
-            "Your own health level is shown in the Potion Bottle at the lower left. When this empties, you "..
-            "will die. Fortunately, it is full at the moment.\n\n"..
+            "When their health drops to zero, they will die.\n\n"..
+            "Your own health level is shown in the Potion Bottle at the lower left. "..
+            "Fortunately, this is full at the moment.\n\n"..
             "You can regain lost health by returning to your Entry Point, or by drinking healing potions."
       },
 
       {
          title = "VAMPIRE BAT",
          graphics = {C.g_floor1, C.g_vbat_1},
-         body = "Now pull the lever to release the bat. Then turn towards it, and right-click to kill it.\n\n"..
+         body = "Drop your hammer if you're still carrying it. Then pull the lever to release the bat. "..
+            "Finally, turn towards the bat, and right-click to kill it.\n\n"..
             "Remember: don't panic. Time your blows carefully and you should have no problems."
       }
    },
@@ -289,7 +298,8 @@ messages = {
    [29] = {
       title = "MISSION FAILED",
       graphics = {C.g_wooden_floor, C.g_vbat_1},
-      body = "Oh well. Pull the lever and have another go."
+      body = "Oh well. Pull the lever and have another go.\n\n"..
+         "(Don't forget to pick up your gems, if you were carrying any.)"
    },
 
    [30] = {
@@ -383,10 +393,11 @@ messages = {
    [44] = {
       title = "TRAPPED CHEST",
       graphics = {C.g_open_chest_north},
-      body = "Did I tell you that chests can sometimes be trapped?\n\n"..
-         "Ah well, I must have forgotten to mention it.\n\n"..
-         "This chest had a spring blade traps. There are also poison traps. You "..
-         "will discover one way to avoid traps later in this Tutorial."
+      body = "Ouch, you got hit by a blade trap.\n\n"..
+         "Did I tell you that chests are sometimes trapped? Ah well, I must have forgotten to mention it.\n\n"..
+         "As well as blade traps, there are also poison traps. You "..
+         "will discover one way to avoid traps later in this Tutorial.\n\n" ..
+         "You can also set your own traps for other knights... again, this will be explained later on."
    },
 
    [45] = {
@@ -437,7 +448,7 @@ messages = {
    [53] = {
       title = "KEY",
       graphics = {C.g_floor1, C.g_key},
-      body = "Another key is here. Walk over it and left-click to pick it up."
+      body = "There seems to be another key here. Walk over it and left-click to pick it up."
    },
 
    [54] = {
@@ -472,7 +483,7 @@ messages = {
       title = "CRYSTAL BALL",
       graphics = {C.g_crystal_ball},
       body = "This is a crystal ball. It can be used to find out the location of other knights in the dungeon.\n\n"..
-         "If you approach a crystal ball, then - as long as you are holding the movement key - "..
+         "If you approach a crystal ball, then -- as long as you are holding the movement key -- "..
          "the locations of other knights will be revealed on your mini-map.\n\n"..
          "Note that in this Tutorial, there are no other knights in the dungeon, so the crystal ball will have no "..
          "effect."
@@ -503,8 +514,9 @@ messages = {
       graphics = {C.g_open_chest_north, C.g_potion},
       body = "Oh dear, that potion was poisonous.\n\n"..
          "In general, most potions are helpful, but some will poison or paralyze you.\n\n"..
-         "You can also find potions of poison immunity. These will protect you from harmful potions (as well "..
-         "as poison traps)."
+         "You can also find potions of poison immunity. These will protect you from harmful potions.\n\n"..
+         "(Remember that all items are dropped when you die. "..
+         "Don't forget to go back to the chest to pick up your gems again.)"
    },
 
    [62] = {
@@ -514,8 +526,8 @@ messages = {
          "You could try to break into the chest using a hammer or axe "..
          "(or even your sword, if you "..
          "are patient). However, smashing a chest will destroy any potions inside.\n\n"..
-         "Alternatively, if you have found lock picks, now is the time to use them. Click the "..
-         "\"Pick Lock\" icon on the Action Bar, and hold the mouse button down until the chest opens. "..
+         "Alternatively, if you have lock picks, now is the time to use them. Click the "..
+         "\"Pick Lock\" icon (third from the right), and hold the mouse button down until the chest opens. "..
          "(This may take some time.)" 
    },
 
@@ -552,6 +564,8 @@ messages = {
 
    [68] = {
       title = "ALMOST HOME!",
+      graphics = {C.g_home_north},
+      colour_changes = {{0xff0000, 0}},
       body = "Victory awaits you! Just go through the corridor to the north, climb the stairs to your "..
          "entry point, and escape from this dungeon at last!"
    },
@@ -578,8 +592,8 @@ messages = {
       graphics = {C.g_floor1, C.g_closed_bear_trap},
       body = "A bear trap can be set on any open dungeon square. To set the trap, just click the bear "..
          "trap icon on the Action Bar. Any knight who walks into the trap will be injured and stuck for a while.\n\n"..
-         "A bear trap set by one of your opponents will always be visible on your screen, "..
-         "and you can safely disarm it by striking it with a weapon. "..
+         "A bear trap set by your opponents will always be visible on your screen, "..
+         "and you can disarm it by striking it with a weapon. "..
          "However, the sound of the bear trap closing will be loud enough to be "..
          "heard across the dungeon. This makes bear traps useful as \"alarms\"; you can set one in a strategic "..
          "place, and be alerted when someone sets it off."
@@ -591,7 +605,7 @@ messages = {
       body = "You can set poison needle traps on any door or chest. Any knight who tries to open the trapped "..
          "object will be killed instantly (unless they are immune to poison, or using a staff).\n\n"..
          "To set traps, approach a closed door or chest, then (while still holding the movement key) click the "..
-         "trap icon on the Action Bar."
+         "trap icon on the Action Bar (third from the right)."
    },
 
    [74] = {
@@ -601,7 +615,7 @@ messages = {
          "trapped object will cause the blade to fire (towards the direction from which the trap was originally "..
          "set).\n\n"..
          "To set traps, approach a closed door or chest, then (while still holding the movement key) click the "..
-         "trap icon on the Action Bar."
+         "trap icon on the Action Bar (second from the right)."
    },
 
 
