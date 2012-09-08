@@ -31,6 +31,7 @@
 
 #include "network/byte_buf.hpp"  // coercri
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 

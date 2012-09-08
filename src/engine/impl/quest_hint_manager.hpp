@@ -26,6 +26,7 @@
 
 class StatusDisplay;
 
+#include <string>
 #include <vector>
 
 class QuestHintManager {

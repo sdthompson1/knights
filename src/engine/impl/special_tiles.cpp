@@ -38,6 +38,7 @@
 
 #include "lua.hpp"
 
+#include <cstring>
 
 //
 // Door
