@@ -783,7 +783,7 @@ void LocalDisplay::mouseClicked(gcn::MouseEvent &event)
 // The idea is to prevent LMB from controlling the knight when you are clicking on important GUI buttons.
 bool LocalDisplay::mouseInGuiControl(int mx, int my) const
 {
-    const gcn::Widget * widget = container.getWidgetAt(mx, my);
+    gcn::Widget * widget = container.getWidgetAt(mx, my);
 
     if (widget) {
         if (widget == chat_field.get() ||
@@ -793,12 +793,12 @@ bool LocalDisplay::mouseInGuiControl(int mx, int my) const
             widget == tutorial_right.get() ||
             widget == quest_titleblock.get()) {
                 return true;
-        } else if (widget == chat_scrollarea.get()) {
-            const int relx = mx - chat_scrollarea->getX();
-            const int rely = my - chat_scrollarea->getY();
-            return (! chat_scrollarea->getChildrenArea().isPointInRect(relx, rely));  // This means the mouse is
+        } else if (widget == chat_scrollarea.get() || widget == tutorial_scrollarea.get()) {
+            const int relx = mx - widget->getX();
+            const int rely = my - widget->getY();
+            return (! widget->getChildrenArea().isPointInRect(relx, rely));  // This means the mouse is
                 // in the scroll bar, as opposed to the "children area" of the scroll area (which would be the 
-                // chat message window itself).
+                // message window itself).
         }
     }
 
