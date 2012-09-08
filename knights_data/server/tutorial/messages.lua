@@ -576,7 +576,7 @@ messages = {
       body = "Well done -- you have found a way back to your entry point (it's just to the north).\n\n"..
          "Unfortunately you don't have enough gems to win yet. Go back through the dungeon and find the missing "..
          "gem(s).\n\n"..
-         "Remember, you can check the mini-map (lower right of screen) to navigate and check which areas you "..
+         "Remember, you can use the mini-map (lower right of screen) to navigate and check which areas you "..
          "haven't explored yet."
    },
 
@@ -680,7 +680,7 @@ stuff_title = "STUFF BAG"
 stuff_msg = "Excellent, this bag contained a gem!\n\n"
 stuff_msg_final = "You now have enough gems to win! All you need to do now is find a way to get back to your "..
    "entry point..."
-stuff_msg_nonfinal = "You now have %d gems. Only %d more to find, then you will be able to win the quest."
+stuff_msg_nonfinal = "You now have %d gem(s). Only %d more to find, then you will be able to win the quest."
 
 bat_mission_title = "CHAMBER OF BATS"
 bat_mission_title_2 = "CHAMBER OF BATS - LEVEL %d"
