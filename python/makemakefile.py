@@ -205,7 +205,7 @@ for root, dirs, files in os.walk('knights_data'):
     if root.find(".svn") == -1:
         for f in files:
             f2 = os.path.join(root, f)
-            print "\t$(INSTALL) -m 644 -T " + f2 + " $(DATA_DIR)" + f2[12:]
+            print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
 
 print """
 install_server: $(SERVER_BINARY_NAME)
@@ -217,7 +217,7 @@ for root, dirs, files in os.walk('knights_data/server'):
     if root.find(".svn") == -1:
         for f in files:
             f2 = os.path.join(root, f)
-            print "\t$(INSTALL) -m 644 -T " + f2 + " $(DATA_DIR)" + f2[12:]
+            print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
 
 print
 print "install_docs:"
