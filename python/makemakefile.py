@@ -204,7 +204,8 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 for root, dirs, files in os.walk('knights_data'):
     if root.find(".svn") == -1:
         for f in files:
-            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DATA_DIR)"
+            f2 = os.path.join(root, f)
+            print "\t$(INSTALL) -m 644 -T " + f2 + " $(DATA_DIR)" + f2[12:]
 
 print """
 install_server: $(SERVER_BINARY_NAME)
@@ -212,11 +213,11 @@ install_server: $(SERVER_BINARY_NAME)
 \t$(INSTALL) -m 755 $(SERVER_BINARY_NAME) $(BIN_DIR)
 \t$(INSTALL) -m 755 -d $(DATA_DIR)"""
 
-for root, dirs, files in os.walk('knights_data'):
+for root, dirs, files in os.walk('knights_data/server'):
     if root.find(".svn") == -1:
         for f in files:
-            if (f.endswith(".txt") or f.endswith(".lua")):
-                print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DATA_DIR)"
+            f2 = os.path.join(root, f)
+            print "\t$(INSTALL) -m 644 -T " + f2 + " $(DATA_DIR)" + f2[12:]
 
 print
 print "install_docs:"
@@ -256,7 +257,8 @@ uninstall:
 for root, dirs, files in os.walk('knights_data'):
     if root.find(".svn") == -1:
         for f in files:
-            print "\trm -f $(DATA_DIR)/" + os.path.basename(f)
+            f2 = os.path.join(root, f)
+            print "\trm -f $(DATA_DIR)" + f2[12:]
 
 for root, dirs, files in os.walk('docs'):
     if root.find(".svn") == -1:
