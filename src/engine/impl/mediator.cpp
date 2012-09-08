@@ -485,9 +485,7 @@ void Mediator::eliminatePlayer(Player &pl)
     if (game_over) {
         // end the game
         if (remaining_players.empty()) {
-            // The only way this can happen is if no entry points have been set at 
-            // the start of the game
-            endGame(std::vector<const Player *>(), "ERROR: Entry point has not been set! ");
+            endGame(std::vector<const Player *>(), "");
         } else {
             // All remaining players are on the same team so any one of them can be used in the call to winGame
             winGame(**remaining_players.begin());

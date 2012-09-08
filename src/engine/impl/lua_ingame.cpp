@@ -879,6 +879,13 @@ namespace {
         return 1;
     }
 
+    int EliminatePlayer(lua_State *lua)
+    {
+        Player & pl = GetPlayerOrKnight(lua, 1);
+        Mediator::instance().eliminatePlayer(pl);
+        return 0;
+    }
+
     int WinGame(lua_State *lua)
     {
         Player & plyr = GetPlayerOrKnight(lua, 1);
@@ -1271,6 +1278,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     PushCFunction(lua, &IsEliminated);
     lua_setfield(lua, -2, "IsEliminated");
 
+    PushCFunction(lua, &EliminatePlayer);
+    lua_setfield(lua, -2, "EliminatePlayer");
+    
     PushCFunction(lua, &WinGame);
     lua_setfield(lua, -2, "WinGame");
 

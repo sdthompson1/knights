@@ -291,6 +291,11 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
             
             // Spawn the player (and keeps trying if it fails)
             players[i]->scheduleRespawn(0);
+
+            // Also check at this point whether entry point has been set
+            if (!players[i]->getHomeMap() || players[i]->getHomeLocation().isNull()) {
+                throw std::runtime_error("Dungeon entry point has not been set!");
+            }
         }
         
         // Do premapping if wanted
