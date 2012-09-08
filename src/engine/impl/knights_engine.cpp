@@ -296,7 +296,7 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
         // Do premapping if wanted
         if (premapped) {
             for (int i = 0; i < players.size(); ++i) {
-                MagicMapping(players[i]->getKnight());
+                MagicMapping(*players[i], *dungeon_map);
             }
         }
 
