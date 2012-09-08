@@ -47,7 +47,7 @@ messages = {
          body = "To move, use the %M.\n\n" ..
             "Other actions will appear as clickable icons on the \"Action Bar\" (below the main dungeon view). " ..
             "These will be explained later on.\n\n" ..
-            "For now, simply follow the instructions at the top right of your screen. Good luck!",
+            "For now, simply follow the instructions at the top right of your screen.",
          popup = true
       },
 
@@ -56,7 +56,8 @@ messages = {
          body = "Finally, don't forget that if you are playing in windowed mode, you can maximize " ..
             "the Knights window to get a better view of the dungeon. The graphics will automatically "..
             "scale to fit the new window size.\n\n" ..
-            "You can also play in full-screen mode (see \"Options\" on the main menu).",
+            "You can also play in full-screen mode (see \"Options\" on the main menu).\n\n"..
+            "Good Luck!",
          popup = true
       },
 
