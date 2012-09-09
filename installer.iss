@@ -26,11 +26,12 @@ Source: "Knights.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SDL.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "COPYRIGHT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README-SDL.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "knights_data\*"; DestDir: "{app}\knights_data"; Flags: ignoreversion
 Source: "knights_data\client\*"; DestDir: "{app}\knights_data\client"; Flags: ignoreversion
 Source: "knights_data\client\std_files\*"; DestDir: "{app}\knights_data\client\std_files"; Flags: ignoreversion
 Source: "knights_data\server\*"; DestDir: "{app}\knights_data\server"; Flags: ignoreversion
 Source: "knights_data\server\classic\*"; DestDir: "{app}\knights_data\server\classic"; Flags: ignoreversion
+Source: "knights_data\server\menu\*"; DestDir: "{app}\knights_data\server\menu"; Flags: ignoreversion
+Source: "knights_data\server\tutorial\*"; DestDir: "{app}\knights_data\server\tutorial"; Flags: ignoreversion
 Source: "docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "docs\manual\*"; DestDir: "{app}\docs\manual"; Flags: ignoreversion
 Source: "docs\manual\images\*"; DestDir: "{app}\docs\manual\images"; Flags: ignoreversion
