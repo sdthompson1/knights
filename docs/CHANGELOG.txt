@@ -2,6 +2,46 @@ Note: Numbers in square brackets refer to Trac
 <http://www.knightsgame.org.uk:8000/>.
 
 
+Release 021
+===========
+
+Released 10-Sep-2012
+
+[#70, #94, #162, #183] New Lua scripting system added.
+
+[#80] "Tutorial Mk II" added.
+
+[#197] Changes made to bring gameplay closer to the original Knights:
+
+  * Chance of healing potion reduced from 60% to 40%.
+
+  * Chance of "Sense Items" scroll effect now increases steadily as
+    the game progresses.
+
+  * Creatures hit by crossbow bolts are now stunned for a short time.
+
+[#142] (Scripting) Monster sound effects can now be defined on a
+  per-monster basis.
+
+[#161] (Scripting) ai_fear now accepts a list of items.
+
+[#193] (Windows) Fixed full screen resolution issue (resolution
+  changes weren't being detected until Knights was restarted).
+
+[#184] (Windows) Support Unicode path names for knights_config.txt.
+
+[#190] Fixed incorrect starting point in "Run for the Freedom" quest
+  (when playing in single player mode).
+
+[#201] Fixed bug: Quest requirements box was blank for observers.
+
+[#186] "Gems Needed" message now displayed when striking book with
+  wand.
+
+[#188] "Time Limit" setting can no longer be changed by observers.
+
+
+
 Release 020
 ===========
 
