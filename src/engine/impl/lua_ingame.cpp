@@ -872,6 +872,13 @@ namespace {
         return 1;
     }
 
+    int GetPlayerName(lua_State *lua)
+    {
+        Player & plyr = GetPlayerOrKnight(lua, 1);
+        lua_pushstring(lua, plyr.getName().c_str());
+        return 1;
+    }
+
     int IsEliminated(lua_State *lua)
     {
         Player & pl = CheckLuaPtr<Player>(lua, 1, "Player");
@@ -1274,6 +1281,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &GetAllPlayers);
     lua_setfield(lua, -2, "GetAllPlayers");
+
+    PushCFunction(lua, &GetPlayerName);
+    lua_setfield(lua, -2, "GetPlayerName");
 
     PushCFunction(lua, &IsEliminated);
     lua_setfield(lua, -2, "IsEliminated");

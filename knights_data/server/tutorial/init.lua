@@ -24,13 +24,6 @@ dofile("messages.lua")
 
 local C = require("classic")
 
--- Debug
---C.t_floor1.on_walk_over = function() 
---   if kts.IsKnight(cxt.actor) then
---      print(cxt.tile_pos.x, " ", cxt.tile_pos.y)
---   end
---end
-
 ----------------------------------------------------------------------
 -- New tiles and items
 ----------------------------------------------------------------------
