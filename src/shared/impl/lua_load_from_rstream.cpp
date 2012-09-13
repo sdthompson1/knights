@@ -31,6 +31,8 @@
 
 #include "lua.hpp"
 
+#include <cstring>
+
 namespace {
     struct ReadContext {
         std::string filename;

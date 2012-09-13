@@ -30,6 +30,8 @@
 
 #include "lua.hpp"
 
+#include <cstring>
+
 namespace {
 
     int DoFile(lua_State *lua)
