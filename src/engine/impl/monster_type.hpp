@@ -58,6 +58,12 @@ public:
     // at which height will this monster be generated?
     virtual MapHeight getHeight() const = 0;
 
+    // This checks whether this particular monster type has any reason why it could not be created
+    // at the given location.
+    // At the time of writing (Sep 2012), for flying monsters this always returns true, but for
+    // walking monsters it checks the "ai_avoid" list to stop walking monsters being created on such tiles (usu. pits).
+    virtual bool okToCreateAt(const DungeonMap &dmap, const MapCoord &pos) const;
+
     const LuaFunc & getSoundAction() const { return sound_action; }
 
 private:

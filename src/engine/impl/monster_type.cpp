@@ -46,3 +46,8 @@ void MonsterType::newIndex(lua_State *lua)
         sound_action = LuaFunc(lua); // pops
     }
 }
+
+bool MonsterType::okToCreateAt(const DungeonMap &dmap, const MapCoord &pos) const
+{
+    return true;
+}

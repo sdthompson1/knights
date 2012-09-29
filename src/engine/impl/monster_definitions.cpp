@@ -344,7 +344,7 @@ namespace {
 
         const std::vector<shared_ptr<Tile> > & avoid_tiles;
         
-        bool operator()(DungeonMap &dmap, const MapCoord &mc) const {
+        bool operator()(const DungeonMap &dmap, const MapCoord &mc) const {
             // If the access is not A_CLEAR then we may not walk into this square
             if (dmap.getAccess(mc, H_WALKING) != A_CLEAR) return false;
             
@@ -538,6 +538,12 @@ shared_ptr<Monster> WalkingMonsterType::makeMonster(TaskManager &tm) const
     shared_ptr<Task> ai(new WalkingMonsterAI(monster, avoid_tiles, fear_items, hit_items));
     tm.addTask(ai, TP_LOW, tm.getGVT()+1);
     return monster;
+}
+
+bool WalkingMonsterType::okToCreateAt(const DungeonMap &dmap, const MapCoord &pos) const
+{
+    const ZombieCanWalk zcw(avoid_tiles);
+    return zcw(dmap, pos);
 }
 
 //

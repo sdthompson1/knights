@@ -383,7 +383,9 @@ namespace {
         Mediator &m = Mediator::instance();
         boost::shared_ptr<DungeonMap> dmap = m.getMap();
         
-        if (dmap && dmap->getAccess(mc, montype->getHeight()) == A_CLEAR) {
+        if (dmap 
+        && dmap->getAccess(mc, montype->getHeight()) == A_CLEAR
+        && montype->okToCreateAt(*dmap, mc)) {  // stops zombies being placed on pits
             cr = m.getMonsterManager().placeMonster(*montype, *dmap, mc, D_NORTH);
         }
 

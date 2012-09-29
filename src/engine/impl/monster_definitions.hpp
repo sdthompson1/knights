@@ -111,6 +111,7 @@ public:
     virtual void newIndex(lua_State *);
     virtual shared_ptr<Monster> makeMonster(TaskManager &tm) const;
     virtual MapHeight getHeight() const { return H_WALKING; }
+    virtual bool okToCreateAt(const DungeonMap &dmap, const MapCoord &mc) const;
     
 private:
     RandomInt health;
