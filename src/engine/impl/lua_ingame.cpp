@@ -827,6 +827,29 @@ namespace {
         return 1;
     }
 
+    int GetRandomPos(lua_State *lua)
+    {
+        if (!g_rng.isInitialized()) {
+            luaL_error(lua, "Can't generate random numbers during init phase");
+        }
+
+        boost::shared_ptr<DungeonMap> dmap = Mediator::instance().getMap();
+        if (!dmap) {
+            luaL_error(lua, "Problem in GetRandomPos: Map not created yet");
+        }
+
+        const int x = g_rng.getInt(0, dmap->getWidth());
+        const int y = g_rng.getInt(0, dmap->getHeight());
+
+        lua_createtable(lua, 0, 2);
+        lua_pushinteger(lua, x);
+        lua_setfield(lua, -2, "x");
+        lua_pushinteger(lua, y);
+        lua_setfield(lua, -2, "y");
+        return 1;
+    }
+
+
     //
     // Homes and players
     //
@@ -1268,6 +1291,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &RandomChance);
     lua_setfield(lua, -2, "RandomChance");
+
+    PushCFunction(lua, &GetRandomPos);
+    lua_setfield(lua, -2, "GetRandomPos");
 
     // Homes and Players
     PushCFunction(lua, &GetAllHomes);
