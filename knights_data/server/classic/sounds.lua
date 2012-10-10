@@ -137,7 +137,7 @@ kts.HOOK_WEAPON_DOWNSWING = snd_downswing
 kts.HOOK_WEAPON_PARRY = snd_parry
 
 -- (a) Knight takes damage, suicides or is poisoned. 
--- (b) Any creature takes damage >0.
+-- (b) Knight takes damage >0, or monster is killed.
 kts.HOOK_KNIGHT_DAMAGE = snd_ugh
 kts.HOOK_CREATURE_SQUELCH = snd_squelch
 
@@ -146,5 +146,3 @@ kts.HOOK_SHOOT = snd_crossbow
 
 -- Dagger or crossbow bolt hits a wall (or other obstacle) and drops to floor.
 kts.HOOK_MISSILE_MISS = snd_daggerfall
-
-
