@@ -864,8 +864,9 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
 
 void GameManager::gotoMenuIfAllDownloaded()
 {
-    if (pimpl->download_count == 0   // wait until all files are downloaded
-    && !pimpl->tutorial_mode) {  // tutorial should never go into menu screen
+    if (pimpl->download_count == 0    // wait until all files are downloaded
+    && !pimpl->tutorial_mode          // tutorial should never go into menu screen
+    && !pimpl->game_in_progress) {    // don't go to menu screen if observation of a game is in progress (#214)
         auto_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen));
         pimpl->knights_app.requestScreenChange(menu_screen);
     }
