@@ -872,7 +872,13 @@ int main(int argc, char **argv)
 
         std::map<std::string, UpdateStruct*> curr;
         
-        replay_file.reset(new ReplayFile(g_config->getReplayFile(), g_config->getTimestampSize()));
+        try {
+            replay_file.reset(new ReplayFile(g_config->getReplayFile(), g_config->getTimestampSize()));
+        } catch (std::exception &e) {
+            std::cout << e.what() << std::endl;
+            return 1;
+        }
+
         std::string msg;
         int int_arg;
         std::string extra_bytes;

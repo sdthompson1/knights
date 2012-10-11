@@ -25,12 +25,17 @@
 
 #include "replay_file.hpp"
 
+#include <stdexcept>
 #include <vector>
 
 ReplayFile::ReplayFile(const std::string &filename, int t)
     : str(filename.c_str(), std::ios::in | std::ios::binary),
       timestamp_size(t)
-{ }
+{ 
+    if (!str) {
+        throw std::runtime_error("Failed to open replay file: " + filename);
+    }
+}
 
 void ReplayFile::readMessage(std::string &msg,
                              int &int_arg,
