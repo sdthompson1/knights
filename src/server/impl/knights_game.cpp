@@ -68,7 +68,7 @@ public:
           is_ready(false), finished_loading(false), ready_to_end(false), 
           obs_flag(new_obs_flag), cancel_obs_mode_after_game(false), house_colour(0),
           client_version(ver),
-          observer_num(0),
+          observer_num(0), player_num(-1),
           ping_time(0),
           speech_request(false), speech_bubble(false),
           approach_based_controls(approach_based_ctrls),
@@ -86,7 +86,7 @@ public:
 
     int client_version;
     int observer_num;   // 0 if not an observer, or not set yet. >0 if set.
-    int player_num;     // 0..num_players-1, or undefined if the game is not running.
+    int player_num;     // 0..num_players-1, or -1 if the game is not running or if this player is an observer (or eliminated).
     int ping_time;
     
     std::vector<unsigned char> output_data;    
@@ -407,7 +407,7 @@ namespace {
         for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
             (*it)->output_data.push_back(SERVER_GOTO_MENU);
             (*it)->observer_num = 0;
-            (*it)->player_num = 0;
+            (*it)->player_num = -1;
             if ((*it)->cancel_obs_mode_after_game) (*it)->obs_flag = false;
             (*it)->cancel_obs_mode_after_game = false;
         }
@@ -705,8 +705,8 @@ namespace {
                                 buf.writeString(*it);
                             }
 
-                            // Set his player_num and obs_num to zero, and his obs_flag to true.
-                            (*c)->player_num = 0;
+                            // Set his player_num to -1, obs_num to zero, and his obs_flag to true.
+                            (*c)->player_num = -1;
                             (*c)->obs_flag = true;
                             (*c)->observer_num = 0;
                             (*c)->cancel_obs_mode_after_game = true;
