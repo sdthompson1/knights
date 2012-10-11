@@ -23,8 +23,8 @@ MaxGames = 40
 # Whether to "advertise" this server on the LAN and/or the Internet.
 #  - To run an Internet server, set UseMetaserver = yes and UseBroadcast = no.
 #  - To run a LAN server, set UseMetaserver = no and UseBroadcast = yes.
-UseMetaserver = yes
-UseBroadcast = no
+UseMetaserver = no
+UseBroadcast = yes
 
 
 # Set this to password protect your server

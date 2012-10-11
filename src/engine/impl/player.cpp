@@ -417,24 +417,23 @@ bool Player::respawn()
         const bool already_eliminated = getElimFlag();
         
         if (!already_eliminated) {
-            mediator.eliminatePlayer(*this);
-        }
-
-        if (mediator.gameRunning() && !already_eliminated) {
+            // Send "PlayerName has been eliminated" to all players.
 
             // NOTE: These messages ONLY get sent if the player is eliminated by dying in-game.
             // If they are eliminated "externally" (i.e. by quitting or leaving the game) then 
             // the external code is assumed to have already sent a "has quit" or "has left" type 
             // message, so we don't send further messages here. (Trac #36.)
 
-            // Send "PlayerName has been eliminated" to all players.
             std::ostringstream str;
             str << getName() << " has been eliminated.";
-            const int nleft = mediator.getNumPlayersRemaining();
+            const int nleft = mediator.getNumPlayersRemaining() - 1;
             if (nleft > 1) {
                 str << " " << nleft << " players are left.";
             }
             mediator.getCallbacks().gameMsg(-1, str.str());
+
+            // Now eliminate the player.
+            mediator.eliminatePlayer(*this);
         }
         return true;  // this counts as a "success" -- we do not want the respawn task to keep retrying.
     }
