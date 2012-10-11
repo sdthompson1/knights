@@ -86,7 +86,9 @@ public:
 
     int client_version;
     int observer_num;   // 0 if not an observer, or not set yet. >0 if set.
-    int player_num;     // 0..num_players-1, or -1 if the game is not running or if this player is an observer (or eliminated).
+    int player_num;     // 0..num_players-1, or -1 if the game is not running.
+                        //  Also, observers have -1, unless they are eliminated players in which
+                        //  case they retain their original player_num.
     int ping_time;
     
     std::vector<unsigned char> output_data;    
@@ -705,8 +707,8 @@ namespace {
                                 buf.writeString(*it);
                             }
 
-                            // Set his player_num to -1, obs_num to zero, and his obs_flag to true.
-                            (*c)->player_num = -1;
+                            // Set his obs_num to zero (which means "observer num not allocated yet")
+                            // and his obs_flag to true. (Leave player_num unchanged.)
                             (*c)->obs_flag = true;
                             (*c)->observer_num = 0;
                             (*c)->cancel_obs_mode_after_game = true;
@@ -862,61 +864,59 @@ namespace {
 
                 boost::lock_guard<boost::mutex> lock(kg.my_mutex);
 
+                // first job: remove any players who don't have a corresponding connection.
+                // (e.g. this can happen if a player disconnects after they are eliminated from the game.)
+                for (size_t idx = 0; idx < player_list.size(); ++idx) {
+                    const int num = player_list[idx].player_num;
+                    bool found = false;
+                    for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                        if ((*it)->player_num == num) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        ++idx;
+                    } else {
+                        player_list.erase(player_list.begin() + idx);
+                    }
+                }
+
                 // associate a ping time with each player
                 // -- Only do this if the timer ran out, not if we are updating following a death,
                 // otherwise it looks strange when the pings update just because someone died.
                 if (time_to_player_list_update <= 0) {
                     for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                        const std::string &player_name = player_list[idx].name;
+                        const int num = player_list[idx].player_num;
                         for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                            if ((*it)->name == player_name) {
-                                pings[player_name] = (*it)->ping_time;
+                            if ((*it)->player_num == num) {
+                                pings[(*it)->name] = (*it)->ping_time;
                             }
                         }
+                    }
+                }
+
+                // any eliminated player should have (Eliminated) after their name
+                for (size_t idx = 0; idx < player_list.size(); ++idx) {
+                    if (player_list[idx].eliminated) {
+                        player_list[idx].name += " (Eliminated)";
                     }
                 }
 
                 // now add observers to the list (Trac #26)
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    if ((*it)->observer_num > 0) {
-
-                        bool found = false;
-                        for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                            if (player_list[idx].name == (*it)->name) {
-                                // found an eliminated player corresponding to this observer.
-                                // We clear the eliminated flag at this point. (The eliminated flag is not sent to
-                                // the client, so it is safe to do this.)
-                                player_list[idx].eliminated = false;
-                                player_list[idx].name += " (Eliminated)";
-                                pings[player_list[idx].name] = (*it)->ping_time;
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found) {
-                            // This observer is not one of the eliminated players so add him to the list.
-                            PlayerInfo pi;
-                            pi.name = (*it)->name + " (Observer)";
-                            pi.house_colour = Coercri::Color(0,0,0);
-                            pi.player_num = -1;
-                            pi.kills = -1;
-                            pi.deaths = -1;
-                            pi.frags = -1000;
-                            pi.eliminated = false;
-                            player_list.push_back(pi);
-                            pings[pi.name] = (*it)->ping_time;
-                        }
-                    }
-                }
-
-                // Now remove any eliminated players. (The ones who are still observing are not
-                // removed, because their eliminated flag was cleared above.)
-                for (size_t idx = 0; idx < player_list.size(); /* incremented below */) {
-                    if (player_list[idx].eliminated) {
-                        player_list.erase(player_list.begin() + idx);
-                    } else {
-                        ++idx;
+                    if ((*it)->player_num == -1) {
+                        ASSERT((*it)->obs_flag);  // when game is running, player_num == -1 implies obs_flag
+                        PlayerInfo pi;
+                        pi.name = (*it)->name + " (Observer)";
+                        pi.house_colour = Coercri::Color(0,0,0);
+                        pi.player_num = -1;
+                        pi.kills = -1;
+                        pi.deaths = -1;
+                        pi.frags = -1000;
+                        pi.eliminated = false;
+                        player_list.push_back(pi);
+                        pings[pi.name] = (*it)->ping_time;
                     }
                 }
 
