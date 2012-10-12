@@ -103,18 +103,23 @@ public:
     // functions specific to this class
     //
 
-    // should be called before each call to draw().
+    // should be called before each call to drawNormal, drawSplitScreen or drawObs.
     // remaining = time left until end of game (milliseconds) or <0 for no time limit
     void recalculateTime(bool is_paused, int remaining);
 
-    // draw the in-game screen for one player within the given viewport.
-    // bias = 0 to centre within viewport, -1 to draw left of centre, +1 to draw right of centre (useful for split screen mode).
+    // routines to draw the in-game screen (dungeon view, status display etc.)
     // return value = actual height used.
-    int draw(Coercri::GfxContext &gc, GfxManager &gm,
-             int plyr_num,
-             int vp_x, int vp_y, int vp_width, int vp_height,
-             int bias);
-
+    int drawNormal(Coercri::GfxContext &gc, GfxManager &gm,
+                   int vp_x, int vp_y, int vp_width, int vp_height);
+    int drawSplitScreen(Coercri::GfxContext &gc, GfxManager &gm,
+                        int vp_x, int vp_y, int vp_width, int vp_height);
+    int drawObs(Coercri::GfxContext &gc, GfxManager &gm,
+                int vp_x, int vp_y, int vp_width, int vp_height);
+    
+    // cycle through the available players. used with drawObs.
+    // (used to implement left/right arrow keys in observer mode.)
+    void cycleObsPlayer(int delta);
+    
     // draw the quest info / press q to quit screen.
     // is_paused => say "GAME PAUSED" instead of "KNIGHTS"
     // blend => draw a blended black rectangle behind the pause display.
@@ -131,8 +136,8 @@ public:
     void hideGui();
     
     // play all queued sounds, then clear the sound queue.
-    // Only sounds for the given player nums are played.
-    void playSounds(SoundManager &sm, const std::vector<int> &player_nums);
+    // Only sounds for currently-observed players are played.
+    void playSounds(SoundManager &sm);
 
     // This routine reads the joystick/controller, and converts this
     // information to a UserControl. It also activates the on-screen
@@ -211,6 +216,15 @@ private:
     void activateChatField();
     void deactivateChatField();
 
+    // draw the in-game screen for one player within the given viewport.
+    // bias = 0 to centre within viewport, -1 to draw left of centre,
+    // +1 to draw right of centre (useful for split screen mode).
+    // return value = actual height used.
+    int draw(Coercri::GfxContext &gc, GfxManager &gm,
+             int plyr_num,
+             int vp_x, int vp_y, int vp_width, int vp_height,
+             int bias);    
+    
 private:
     const ConfigMap &config_map;
     const int approach_offset;
@@ -334,7 +348,8 @@ private:
     // player names. used in "observer" mode.
     std::vector<std::string> names;
     int nplayers;
-
+    int curr_obs_player;
+    
     bool observer_mode;
     bool single_player;
     bool tutorial_mode;

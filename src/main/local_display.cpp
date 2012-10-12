@@ -53,6 +53,15 @@
 #include <sstream>
 
 namespace {    
+
+    int GetNextPlayer(int p, int n)
+    {
+        ASSERT(p >= 0 && p < n);
+        ++p;
+        if (p == n) p = 0;
+        return p;
+    }
+
     // a version of ListBox that doesn't react to mouse clicks on it.
     class ListBoxNoMouse : public gcn::ListBox {
     public:
@@ -349,6 +358,7 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<std::string> &player
 {
     // common code between ctor and goIntoObserverMode.
     nplayers = nplyrs;
+    curr_obs_player = 0;
     names = player_names;
 
     dungeon_view.resize(nplyrs);
@@ -892,6 +902,34 @@ void LocalDisplay::focusLost(const gcn::Event &event)
     }
 }
 
+void LocalDisplay::cycleObsPlayer(int delta)
+{
+    curr_obs_player = (curr_obs_player + delta) % nplayers;
+    if (curr_obs_player < 0) curr_obs_player += nplayers;
+}
+
+int LocalDisplay::drawNormal(Coercri::GfxContext &gc, GfxManager &gm,
+                             int vp_x, int vp_y, int vp_width, int vp_height)
+{
+    return draw(gc, gm, curr_obs_player, vp_x, vp_y, vp_width, vp_height, 0);
+}
+
+int LocalDisplay::drawSplitScreen(Coercri::GfxContext &gc, GfxManager &gm,
+                                  int vp_x, int vp_y, int vp_width, int vp_height)
+{
+    draw(gc, gm, 0, vp_x, vp_y, vp_width/2, vp_height, -1);
+    return draw(gc, gm, 1, vp_x + vp_width/2, vp_y, vp_width/2, vp_height, 1);
+}
+
+int LocalDisplay::drawObs(Coercri::GfxContext &gc, GfxManager &gm,
+                          int vp_x, int vp_y, int vp_width, int vp_height)
+{
+    draw(gc, gm, curr_obs_player, vp_x, vp_y, vp_width/2, vp_height, 0);
+    const int p2 = GetNextPlayer(curr_obs_player, nplayers);
+    return draw(gc, gm, p2,
+                vp_x + vp_width/2, vp_y, vp_width/2, vp_height, 0);
+}
+
 int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm, 
                        int player_num,
                        int vp_x, int vp_y, int vp_width, int vp_height,
@@ -1413,15 +1451,16 @@ void LocalDisplay::hideGui()
     if (container.isVisible()) container.setVisible(false);
 }
 
-
-void LocalDisplay::playSounds(SoundManager &sm, const std::vector<int> &player_nums)
+void LocalDisplay::playSounds(SoundManager &sm)
 {
+    const int p1 = curr_obs_player;
+    const int p2 = GetNextPlayer(p1, nplayers);
+    
     for (std::vector<MySound>::iterator it = sounds.begin(); it != sounds.end(); ++it) {
 
-        // somewhat crappy n^2 algorithm...
         bool found = false;
         for (int p = 0; p < nplayers; ++p) {
-            if (it->plyr[p] && std::find(player_nums.begin(), player_nums.end(), p) != player_nums.end()) {
+            if (it->plyr[p] && (p == p1 || p == p2)) {
                 found = true;
                 break;
             }

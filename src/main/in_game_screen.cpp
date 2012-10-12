@@ -41,17 +41,6 @@
 // coercri
 #include "gfx/rectangle.hpp"
 
-namespace {
-    std::vector<int> GetObsPlayers(int curr_obs_plyr, int nplyrs)
-    {
-        std::vector<int> x(2);
-        x[0] = curr_obs_plyr;
-        x[1] = x[0] + 1;
-        if (x[1] == nplyrs) x[1] = 0;
-        return x;
-    }
-}
-
 InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, 
                            boost::shared_ptr<const ClientConfig> cfg, int nplayers_,
                            bool deathmatch_mode_,
@@ -195,26 +184,17 @@ void InGameScreen::draw(Coercri::GfxContext &gc)
     display->recalculateTime(is_gameplay_paused,
                              knights_app.getGameManager().getTimeRemaining());
 
-    std::vector<int> plyrs_to_draw;
-    if (player_names.empty()) {
-        for (int i = 0; i < 2; ++i) plyrs_to_draw.push_back(i);
-    } else {
-        plyrs_to_draw = GetObsPlayers(curr_obs_player, player_names.size());
-    }
-
     if (nplayers >= 2) {
         if (player_names.empty()) {
 
             // Split screen mode
-            const int w1 = gc.getWidth()/2;
-            const int w2 = w1;
+            const int w = gc.getWidth();
             const int h = gc.getHeight();
             if (pause_mode) {
-                display->drawPauseDisplay(gc, gm, 0, 0, w1, h, true, false);
-                display->drawPauseDisplay(gc, gm, w1, 0, w2, h, true, false);
+                display->drawPauseDisplay(gc, gm, 0,   0, w/2, h, true, false);
+                display->drawPauseDisplay(gc, gm, w/2, 0, w/2, h, true, false);
             } else {
-                display->draw(gc, gm, plyrs_to_draw[0], 0, 0, w1, h, -1);
-                display->draw(gc, gm, plyrs_to_draw[1], w1, 0, w2, h, 1);
+                display->drawSplitScreen(gc, gm, 0, 0, w, h);
             }
             
         } else {
@@ -222,10 +202,8 @@ void InGameScreen::draw(Coercri::GfxContext &gc)
             // Observer mode
             const int h2 = std::max(200, gc.getHeight()/6);
             const int h1 = std::max(0, gc.getHeight() - h2);
-            const int w1 = gc.getWidth()/2;
-            const int w2 = w1;
-            const int actual_height = display->draw(gc, gm, plyrs_to_draw[0], 0, 0, w1, h1, 0);
-            display->draw(gc, gm, plyrs_to_draw[1], w1, 0, w2, h1, 0);
+            const int w = gc.getWidth();
+            const int actual_height = display->drawObs(gc, gm, 0, 0, w, h1);
             display->updateGui(gm, 0, actual_height, gc.getWidth(), gc.getHeight() - actual_height, true);
             if (pause_mode) {
                 display->drawPauseDisplay(gc, gm, 0, 0, gc.getWidth(), gc.getHeight(), false, true);
@@ -239,7 +217,7 @@ void InGameScreen::draw(Coercri::GfxContext &gc)
         const int h = gc.getHeight();
         
         // Draw main screen area
-        display->draw(gc, gm, plyrs_to_draw[0], 0, 0, w1, h, 0);
+        display->drawNormal(gc, gm, 0, 0, w1, h);
 
         // Draw gui area
         display->updateGui(gm, w1, 0, w2, h, false);
@@ -268,8 +246,7 @@ void InGameScreen::update()
     }
 
     // Make sure sounds get played
-    std::vector<int> players = GetObsPlayers(curr_obs_player, player_names.size());
-    display->playSounds(knights_app.getSoundManager(), players);
+    display->playSounds(knights_app.getSoundManager());
 
     // Save chat field contents (Trac #12)
     // Also: speech bubble (Trac #11)
@@ -401,11 +378,9 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
     // Left/Right in Observe mode => shift currently observed player.
     if (player_names.size() > 2 && pressed) {
         if (rk == Coercri::RK_LEFT) {
-            --curr_obs_player;
-            if (curr_obs_player < 0) curr_obs_player = player_names.size() - 1;
+            display->cycleObsPlayer(-1);
         } else if (rk == Coercri::RK_RIGHT) {
-            ++curr_obs_player;
-            if (curr_obs_player >= player_names.size()) curr_obs_player = 0;
+            display->cycleObsPlayer(1);
         }
     }
 }
