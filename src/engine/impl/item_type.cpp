@@ -112,6 +112,7 @@ ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
     control = 0;
     fragile = false;
     graphic = gfx;
+    is_critical = false;
     key = 0;
     max_stack = 1;
     melee_backswing_time = 0;

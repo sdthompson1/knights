@@ -72,15 +72,15 @@ namespace {
 
 void PushCClosure(lua_State *lua, lua_CFunction func, int nupvalues)
 {
-    int i = g_next_index++;
+    int i;  // initialized below
+    {
+        boost::unique_lock<boost::mutex> lock(g_wrapper_mutex);
+        i = g_next_index++;
+        g_func_map[i] = func;
+    }
     
     lua_pushinteger(lua, i);
     lua_insert(lua, -nupvalues - 1);
-
-    {
-        boost::unique_lock<boost::mutex> lock(g_wrapper_mutex);
-        g_func_map[i] = func;
-    }
 
     lua_pushcclosure(lua, &LuaWrapperFunc, nupvalues + 1);
 }
