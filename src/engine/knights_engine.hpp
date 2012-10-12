@@ -83,7 +83,7 @@ public:
     void setSpeechBubble(int player, bool show);
     
     // Send initial updates to an observer who has just joined the game.
-    void catchUp(int player, DungeonView &dungeon_view, MiniMap &mini_map, StatusDisplay &status_display);
+    void catchUp(int player, KnightsCallbacks &cb);
 
     // Find out how many players are still active in the game
     int getNumPlayersRemaining() const;

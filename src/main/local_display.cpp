@@ -54,12 +54,26 @@
 
 namespace {    
 
-    int GetNextPlayer(int p, int n)
+    int GetNextPlayer(int p1, int delta, const std::vector<bool> &obs_visible)
     {
-        ASSERT(p >= 0 && p < n);
-        ++p;
-        if (p == n) p = 0;
-        return p;
+        ASSERT(delta == 1 || delta == -1);
+        ASSERT(p1 >= 0 && p1 < int(obs_visible.size()));
+        
+        int p2 = p1;
+        while (1) {
+            p2 += delta;
+            if (p2 == int(obs_visible.size())) {
+                p2 = 0;
+            }
+            if (p2 == -1) {
+                p2 = int(obs_visible.size()) - 1;
+            }
+
+            if (p2 == p1) break; // got back to where we started
+            if (obs_visible[p2]) break; // this screen is visible so display it
+        }
+
+        return p2;
     }
 
     // a version of ListBox that doesn't react to mouse clicks on it.
@@ -336,7 +350,18 @@ LocalDisplay::~LocalDisplay()
     // empty dtor - needed because of auto_ptrs in the header file.
 }
 
-void LocalDisplay::goIntoObserverMode(int nplyrs, const std::vector<std::string> &player_names)
+void LocalDisplay::disableView(int p)
+{
+    if (p < 0 || p >= nplayers) return;
+
+    obs_visible[p] = false;
+    if (p == curr_obs_player) {
+        curr_obs_player = GetNextPlayer(curr_obs_player, 1, obs_visible);
+    }
+}
+
+void LocalDisplay::goIntoObserverMode(int nplyrs,
+                                      const std::vector<std::string> &player_names)
 {
     dungeon_view.clear();
     mini_map.clear();
@@ -359,6 +384,7 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<std::string> &player
     // common code between ctor and goIntoObserverMode.
     nplayers = nplyrs;
     curr_obs_player = 0;
+    obs_visible.assign(nplayers, true);  // all screens visible initially
     names = player_names;
 
     dungeon_view.resize(nplyrs);
@@ -904,8 +930,7 @@ void LocalDisplay::focusLost(const gcn::Event &event)
 
 void LocalDisplay::cycleObsPlayer(int delta)
 {
-    curr_obs_player = (curr_obs_player + delta) % nplayers;
-    if (curr_obs_player < 0) curr_obs_player += nplayers;
+    curr_obs_player = GetNextPlayer(curr_obs_player, delta, obs_visible);
 }
 
 int LocalDisplay::drawNormal(Coercri::GfxContext &gc, GfxManager &gm,
@@ -925,7 +950,7 @@ int LocalDisplay::drawObs(Coercri::GfxContext &gc, GfxManager &gm,
                           int vp_x, int vp_y, int vp_width, int vp_height)
 {
     draw(gc, gm, curr_obs_player, vp_x, vp_y, vp_width/2, vp_height, 0);
-    const int p2 = GetNextPlayer(curr_obs_player, nplayers);
+    const int p2 = GetNextPlayer(curr_obs_player, 1, obs_visible);
     return draw(gc, gm, p2,
                 vp_x + vp_width/2, vp_y, vp_width/2, vp_height, 0);
 }
@@ -1454,7 +1479,7 @@ void LocalDisplay::hideGui()
 void LocalDisplay::playSounds(SoundManager &sm)
 {
     const int p1 = curr_obs_player;
-    const int p2 = GetNextPlayer(p1, nplayers);
+    const int p2 = GetNextPlayer(p1, 1, obs_visible);
     
     for (std::vector<MySound>::iterator it = sounds.begin(); it != sounds.end(); ++it) {
 

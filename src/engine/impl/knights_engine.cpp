@@ -318,8 +318,17 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
 // catchUp
 //
 
-void KnightsEngine::catchUp(int player, DungeonView &dungeon_view, MiniMap &mini_map, StatusDisplay &status_display)
+void KnightsEngine::catchUp(int player, KnightsCallbacks &cb)
 {
+    MiniMap &mini_map = cb.getMiniMap(player);
+    StatusDisplay &status_display = cb.getStatusDisplay(player);
+    DungeonView &dungeon_view = cb.getDungeonView(player);
+
+    // If 'player' is eliminated then send this fact to everyone
+    if (pimpl->players[player]->getElimFlag()) {
+        cb.disableView(player);
+    }
+
     // Send the mini map
     pimpl->players[player]->sendMiniMap(mini_map);
 

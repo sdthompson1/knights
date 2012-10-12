@@ -94,7 +94,7 @@ enum ServerMessageCode {
     SERVER_START_GAME_OBS = 13,      // followed by ubyte (num_displays), ubyte (deathmatch flag), NDisp strings (player names, for obs-mode)
                                      //   + ubyte (0 = at start of game, 1 = halfway through.)
     SERVER_GO_INTO_OBS_MODE = 14,    // followed by ubyte (num displays) + NDisp strings (player names, for obs-mode)
-
+    
     SERVER_PLAYER_JOINED_THIS_GAME = 20,     // followed by string (name), ubyte (obs-flag), ubyte (house-col)
     SERVER_PLAYER_LEFT_THIS_GAME = 21,       // followed by string (name), ubyte (obs-flag)
     SERVER_SET_READY = 22,           // followed by string (name) and ubyte (ready status)
@@ -172,7 +172,8 @@ enum ServerMessageCode {
 
 enum ServerExtendedCode {
     SERVER_EXT_SET_QUEST_HINTS = 1,
-    SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR = 2
+    SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR = 2,
+    SERVER_EXT_DISABLE_VIEW = 3
 };
 
 

@@ -254,9 +254,17 @@ void ServerCallbacks::popUpWindow(const std::vector<TutorialWindow> &windows)
     }
 }
 
-void ServerCallbacks::onElimination(const int player_num)
+void ServerCallbacks::onElimination(int player_num)
 {
     players_to_put_into_obs_mode.push_back(player_num);
+}
+
+void ServerCallbacks::disableView(int player_num)
+{
+    Coercri::OutputByteBuf buf(pub[player_num]);
+    buf.writeUbyte(SERVER_EXTENDED_MESSAGE);
+    buf.writeVarInt(SERVER_EXT_DISABLE_VIEW);
+    buf.writeUshort(0);
 }
 
 std::vector<int> ServerCallbacks::getPlayersToPutIntoObsMode()

@@ -197,6 +197,7 @@ public:
 
     void popUpWindow(const std::vector<TutorialWindow> &windows);
     void onElimination(int) { }
+    void disableView(int player_num);
     void goIntoObserverMode(int nplayers, const std::vector<std::string> &names);
     
 private:
@@ -349,6 +350,7 @@ private:
     std::vector<std::string> names;
     int nplayers;
     int curr_obs_player;
+    std::vector<bool> obs_visible;
     
     bool observer_mode;
     bool single_player;

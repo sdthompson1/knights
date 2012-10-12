@@ -89,8 +89,10 @@ public:
     // Tutorial pop-up windows
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows) = 0;
 
-    // This pair of functions is slightly hacky but is used for Trac #10 -- Go into observer mode once you are eliminated.
+    // These functions are slightly hacky but used for Trac #10 -- Go into observer mode once you are eliminated.
+    // And also #165 -- Disabling the observer window for players who are eliminated.
     virtual void onElimination(int player_num) = 0;
+    virtual void disableView(int player_num) = 0;
     virtual void goIntoObserverMode(int nplayers, const std::vector<std::string> &names) = 0;
 };
 

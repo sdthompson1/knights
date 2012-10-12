@@ -782,10 +782,7 @@ namespace {
                                 // A previous version of this code used a hack to try to avoid the unnecessary updates,
                                 // but that caused a bug (Trac #115), so it has been removed, and we just accept the 
                                 // unnecessary updates for now.
-                                engine->catchUp(p, 
-                                                callbacks->getDungeonView(p),
-                                                callbacks->getMiniMap(p),
-                                                callbacks->getStatusDisplay(p));
+                                engine->catchUp(p, *callbacks);
                             }
                             
                             (*it)->observer_num = callbacks->allocObserverNum();

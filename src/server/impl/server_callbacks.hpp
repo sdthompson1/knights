@@ -81,6 +81,7 @@ public:
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows);
 
     virtual void onElimination(int player_num);
+    virtual void disableView(int player_num);
     virtual void goIntoObserverMode(int nplayers, const std::vector<std::string> &names) { }
 
 private:

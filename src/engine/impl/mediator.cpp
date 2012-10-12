@@ -493,7 +493,7 @@ void Mediator::eliminatePlayer(Player &pl)
         
     } else {
         // this puts him into observer mode, but he is still in the game (as an observer).
-        Mediator::getCallbacks().onElimination(pl.getPlayerNum());
+        getCallbacks().onElimination(pl.getPlayerNum());
     }
 }
 

@@ -82,6 +82,7 @@ public:
     virtual void gameMsg(int,const std::string&,bool) { }
     virtual void popUpWindow(const std::vector<TutorialWindow> &) { }
     virtual void onElimination(int) { }
+    virtual void disableView(int) { }
     virtual void goIntoObserverMode(int, const std::vector<std::string>&) { }
 private:
     DummyDungeonView dummy_dungeon_view;

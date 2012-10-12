@@ -797,8 +797,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                         if (status_display) status_display->setQuestHints(hints);
                     }
                     break;
+
                 case SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR:
                     pimpl->next_announcement_is_error = true;
+                    break;
+
+                case SERVER_EXT_DISABLE_VIEW:
+                    knights_cb->disableView(pimpl->player);
                     break;
                 }
 
