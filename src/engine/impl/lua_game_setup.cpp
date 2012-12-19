@@ -496,6 +496,31 @@ namespace {
         return 0;
     }
 
+    int GetRespawnType(lua_State *lua)
+    {
+        const std::vector<Player*> & players = Mediator::instance().getPlayers();
+        if (!players.empty()) {
+            switch (players.front()->getRespawnType()) {
+                case Player::R_NORMAL:
+                    lua_pushstring(lua, "normal");
+                    break;
+                case Player::R_RANDOM_SQUARE:
+                    lua_pushstring(lua, "anywhere");
+                    break;
+                case Player::R_DIFFERENT_EVERY_TIME:
+                    lua_pushstring(lua, "different");
+                    break;
+                default:
+                    lua_pushstring(lua, "UNKNOWN");
+                    break;
+            }
+            return 1;
+        } else {
+            // this shouldn't happen -- just return nil if it does...
+            return 0;
+        }
+    }
+
     int SetRespawnType(lua_State *lua)
     {
         const char *p = luaL_checkstring(lua, 1);
@@ -535,6 +560,19 @@ namespace {
         }
 
         return 0;
+    }
+
+    int GetRespawnFunction(lua_State *lua)
+    {
+        Mediator &m = Mediator::instance();
+        for (std::vector<Player*>::const_iterator it = m.getPlayers().begin(); it != m.getPlayers().end(); ++it) {
+            const LuaFunc & fn = (*it)->getRespawnFunc();
+            if (fn.hasValue()) {
+                fn.push(lua);
+                return 1;
+            }
+        }
+        return 0; // function not found (return nil)
     }
 
     int SetTimeLimit(lua_State *lua)
@@ -609,8 +647,14 @@ void AddLuaGameSetupFunctions(lua_State *lua)
     PushCFunction(lua, &SetPremapped);
     lua_setfield(lua, -2, "SetPremapped");
 
+    PushCFunction(lua, &GetRespawnType);
+    lua_setfield(lua, -2, "GetRespawnType");
+
     PushCFunction(lua, &SetRespawnType);
     lua_setfield(lua, -2, "SetRespawnType");
+
+    PushCFunction(lua, &GetRespawnFunction);
+    lua_setfield(lua, -2, "GetRespawnFunction");
 
     PushCFunction(lua, &SetRespawnFunction);
     lua_setfield(lua, -2, "SetRespawnFunction");

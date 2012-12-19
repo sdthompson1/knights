@@ -79,6 +79,7 @@ public:
     void setRespawnType(RespawnType r) { respawn_type = r; }
     RespawnType getRespawnType() const { return respawn_type; }
     void setRespawnFunc(const LuaFunc &func) { respawn_func = func; }
+    const LuaFunc & getRespawnFunc() const { return respawn_func; }
     
     // Add starting gear.
     void addStartingGear(ItemType &itype, const vector<int> &nos);

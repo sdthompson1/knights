@@ -50,6 +50,10 @@ public:
     // hasValue(): returns true if lua != 0 && stored value != nil
     bool hasValue() const { return function_ref.hasValue(); }
 
+    // Push the function to the lua stack
+    // (useful if you want to pass the function back to lua, e.g. kts.GetRespawnFunction())
+    void push(lua_State *lua) const { function_ref.push(lua); }
+
     
     // Run the function with a custom number of args and results.
     // nargs args are popped from stack, and nresults results are pushed.
