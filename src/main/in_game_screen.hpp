@@ -94,7 +94,7 @@ private:
 
     boost::scoped_ptr<gcn::Container> container;
 
-    int curr_obs_player;
+    bool shift_key_held;
 
     // held across initialization only:
     std::vector<std::string> init_player_names;

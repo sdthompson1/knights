@@ -355,8 +355,10 @@ void LocalDisplay::disableView(int p)
     if (p < 0 || p >= nplayers) return;
 
     obs_visible[p] = false;
-    if (p == curr_obs_player) {
-        curr_obs_player = GetNextPlayer(curr_obs_player, 1, obs_visible);
+    for (int which = 0; which < 2; ++which) {
+        if (p == curr_obs_player[which]) {
+            curr_obs_player[which] = GetNextPlayer(curr_obs_player[which], 1, obs_visible);
+        }
     }
 }
 
@@ -383,7 +385,8 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<std::string> &player
 {
     // common code between ctor and goIntoObserverMode.
     nplayers = nplyrs;
-    curr_obs_player = 0;
+    curr_obs_player[0] = 0;
+    curr_obs_player[1] = nplayers >= 2 ? 1 : 0;
     obs_visible.assign(nplayers, true);  // all screens visible initially
     names = player_names;
 
@@ -928,15 +931,17 @@ void LocalDisplay::focusLost(const gcn::Event &event)
     }
 }
 
-void LocalDisplay::cycleObsPlayer(int delta)
+void LocalDisplay::cycleObsPlayer(int which, int delta)
 {
-    curr_obs_player = GetNextPlayer(curr_obs_player, delta, obs_visible);
+    if (which == 0 || which == 1) {
+        curr_obs_player[which] = GetNextPlayer(curr_obs_player[which], delta, obs_visible);
+    }
 }
 
 int LocalDisplay::drawNormal(Coercri::GfxContext &gc, GfxManager &gm,
                              int vp_x, int vp_y, int vp_width, int vp_height)
 {
-    return draw(gc, gm, curr_obs_player, vp_x, vp_y, vp_width, vp_height, 0);
+    return draw(gc, gm, curr_obs_player[0], vp_x, vp_y, vp_width, vp_height, 0);
 }
 
 int LocalDisplay::drawSplitScreen(Coercri::GfxContext &gc, GfxManager &gm,
@@ -949,9 +954,8 @@ int LocalDisplay::drawSplitScreen(Coercri::GfxContext &gc, GfxManager &gm,
 int LocalDisplay::drawObs(Coercri::GfxContext &gc, GfxManager &gm,
                           int vp_x, int vp_y, int vp_width, int vp_height)
 {
-    draw(gc, gm, curr_obs_player, vp_x, vp_y, vp_width/2, vp_height, 0);
-    const int p2 = GetNextPlayer(curr_obs_player, 1, obs_visible);
-    return draw(gc, gm, p2,
+    draw(gc, gm, curr_obs_player[0], vp_x, vp_y, vp_width/2, vp_height, 0);
+    return draw(gc, gm, curr_obs_player[1],
                 vp_x + vp_width/2, vp_y, vp_width/2, vp_height, 0);
 }
 
@@ -1478,8 +1482,8 @@ void LocalDisplay::hideGui()
 
 void LocalDisplay::playSounds(SoundManager &sm)
 {
-    const int p1 = curr_obs_player;
-    const int p2 = GetNextPlayer(p1, 1, obs_visible);
+    const int p1 = curr_obs_player[0];
+    const int p2 = curr_obs_player[1];
     
     for (std::vector<MySound>::iterator it = sounds.begin(); it != sounds.end(); ++it) {
 

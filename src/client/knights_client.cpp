@@ -271,7 +271,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     player_names.push_back(buf.readString());
                 }
                 if (knights_cb) knights_cb->goIntoObserverMode(pimpl->ndisplays, player_names);
-                if (client_cb) client_cb->announcement("** You have been eliminated from this game. You are now in observer mode. Use left/right arrow keys to switch between players.", false);
+                if (client_cb) client_cb->announcement("** You have been eliminated from this game. You are now in observer mode. Use left/right arrow keys (with or without SHIFT) to switch between players.", false);
             }
             break;
 

@@ -118,7 +118,8 @@ public:
     
     // cycle through the available players. used with drawObs.
     // (used to implement left/right arrow keys in observer mode.)
-    void cycleObsPlayer(int delta);
+    // (which=0 to cycle the left player, which=1 for the right player.)
+    void cycleObsPlayer(int which, int delta);
     
     // draw the quest info / press q to quit screen.
     // is_paused => say "GAME PAUSED" instead of "KNIGHTS"
@@ -349,7 +350,7 @@ private:
     // player names. used in "observer" mode.
     std::vector<std::string> names;
     int nplayers;
-    int curr_obs_player;
+    int curr_obs_player[2];
     std::vector<bool> obs_visible;
     
     bool observer_mode;
