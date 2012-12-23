@@ -32,12 +32,14 @@
   the game.</p>
 
 <p>Before compiling, make sure you have the necessary dependencies
-  installed. The game requires Boost, SDL, libcurl, Freetype and Fontconfig. On
-  Debian systems the following packages will satisfy the
-  requirements:</p>
+  installed. The game requires Boost, SDL, libcurl, Freetype and
+  Fontconfig. On Debian systems the following packages will satisfy
+  the requirements:</p>
 
 <ul>
   <li>libboost-dev</li>
+  <li>libboost-filesystem-dev</li>
+  <li>libboost-system-dev</li>
   <li>libboost-thread-dev</li>
   <li>libsdl-dev</li>
   <li>libcurl4-openssl-dev <i>or</i> libcurl4-gnutls-dev</li>
@@ -45,14 +47,25 @@
   <li>libfontconfig-dev</li>
 </ul>
 
-<p>If you only want to build the server (and not the game itself) then
-  you only need the first three of the above.</p>
+<p>(If you only want to build the server, and not the game itself,
+  then only Boost and libcurl are needed.)</p>
 
-<p>Also, make sure that you have at least version 1.48 of Boost. Some
-  Linux distributions come with older versions, which will not work
-  with <i>Knights</i>. Also, if your Boost is installed in a
+<h4>Troubleshooting</h4>
+
+<ul>
+<li>On some Linux distributions you may get undefined references to
+  "clock_gettime@@GLIBC_2.2.5" or similar. To fix this, append "-lrt"
+  (without the quotes) to the BOOST_LIBS line in the Knights
+  Makefile.</li>
+
+<li>If you get Boost related errors, check that you have at least
+  version 1.48 of Boost, and that you have all the relevant Boost
+  packages installed. Also, if your Boost is installed in a
   non-standard location, you may need to edit CPPFLAGS and/or
-  BOOST_LIBS to get it to build.</p>
+  BOOST_LIBS in the Makefile.</li>
+</ul>
+
+<h4>More Details</h4>
 
 <p>You can install only parts of the game by using the following:</p>
 
@@ -89,18 +102,19 @@
 
 <p>It is possible to build a version without sound support by editing
   the Makefile and adding "-DDISABLE_SOUND" to the CPPFLAGS. This
-  might be useful if you are having trouble getting sound to work on
-  your system.</p>
+  might be useful if sound doesn't work on your system for some
+  reason.</p>
 
 <p>The Makefile also supports "make uninstall" (but make sure you pass
   the correct PREFIX or DIR variables, e.g. "make uninstall
   PREFIX=$HOME", if you changed these from their default values).</p>
 
 <p>If you are developing, you may like to know that the Makefile is
-  generated automatically from the Visual Studio project files (see
-  makemakefile.py in the python directory). The Makefile also uses
-  the "Advanced Auto-Dependency Generation" technique described here:
+  generated automatically from Visual Studio project files (see
+  makemakefile.py in the python directory). The Makefile also uses the
+  "Advanced Auto-Dependency Generation" technique described here:
   <a href="http://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html">http://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html</a>.</p>
+
 
 
 <h3>Windows</h3>
