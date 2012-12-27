@@ -52,7 +52,6 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
       window_minimized(false),
       auto_mouse(false),
       speech_bubble_flag(false),
-      shift_key_held(false),
       init_nplayers(nplayers_),
       deathmatch_mode(deathmatch_mode_),
       prevent_drawing(false),
@@ -305,10 +304,6 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
 {
     if (auto_mouse) window->showMousePointer(false);
 
-    if (rk == Coercri::RK_LEFT_SHIFT || rk == Coercri::RK_RIGHT_SHIFT) {
-        shift_key_held = pressed;
-    }
-    
     // Keys only work when in game
     if (prevent_drawing) return;
 
@@ -379,14 +374,25 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
         return;
     }
 
-    // Left/Right in Observe mode => change currently observed player.
-    // (When Shift key held, changes right window instead of left. #164)
+    // Left/Right in Observe mode => change currently observed player (window 1)
+    // Up/Down => the same, but for window 2 (#164)
     if (player_names.size() > 2 && pressed) {
-        const int which = shift_key_held ? 1 : 0;
-        if (rk == Coercri::RK_LEFT) {
-            display->cycleObsPlayer(which, -1);
-        } else if (rk == Coercri::RK_RIGHT) {
-            display->cycleObsPlayer(which, 1);
+        switch (rk) {
+        case Coercri::RK_LEFT:
+            display->cycleObsPlayer(0, -1);
+            break;
+
+        case Coercri::RK_RIGHT:
+            display->cycleObsPlayer(0, 1);
+            break;
+
+        case Coercri::RK_UP:
+            display->cycleObsPlayer(1, -1);
+            break;
+
+        case Coercri::RK_DOWN:
+            display->cycleObsPlayer(1, 1);
+            break;
         }
     }
 }

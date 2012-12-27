@@ -1126,7 +1126,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
             pimpl->chat_list.add("Game started. You are observing this game.");
         }
         if (player_names.size() > 2) {
-            pimpl->chat_list.add("Use left and right arrow keys to switch between players.");
+            pimpl->chat_list.add("Use arrow keys (left/right/up/down) to switch between players.");
         }
     } else {
         pimpl->chat_list.add("Game started.");
