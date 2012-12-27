@@ -261,27 +261,28 @@ shared_ptr<Monster> FlyingMonsterType::makeMonster(TaskManager &tm) const
 
 void FlyingMonster::damage(int amount, const Originator &attacker, int su, bool inhibit_squelch)
 {
-    // run vampire bat hook (usually plays "screech" sound effect)
-    // -- Only want this if the bat was not killed.
+    // call HOOK_CREATURE_SQUELCH if required
     shared_ptr<FlyingMonster> self(static_pointer_cast<FlyingMonster>(shared_from_this()));
-    if (amount < getHealth()) {
-        runSoundAction();
-    } else if (!inhibit_squelch) {
+    if (amount >= getHealth() && !inhibit_squelch) {
         Mediator::instance().runHook("HOOK_CREATURE_SQUELCH", self);
     }
     
     // Flying monsters will run away after they get hit.
     // Also: Flying monsters are immune to being "stunned" by weapon impacts.
-    Creature::damage(amount, attacker, -1, inhibit_squelch);
+    Monster::damage(amount, attacker, -1, inhibit_squelch);
     run_away_flag = true;
 }
 
 void FlyingMonster::bite(shared_ptr<Creature> target)
 {
     if (isStunned()) return;
+
     Mediator &mediator = Mediator::instance();
     const int gvt = mediator.getGVT();
 
+    // call Lua on_attack method
+    runAction(getMonsterType().getOnAttack());
+    
     // strike the target
     if (target) {
         const int stun_until = mtype.stun.get() + gvt;
@@ -554,18 +555,11 @@ void WalkingMonster::damage(int amount, const Originator &attacker, int stun_unt
 {
     Mediator &mediator = Mediator::instance();
     shared_ptr<WalkingMonster> self(static_pointer_cast<WalkingMonster>(shared_from_this()));
-    runSoundAction();
     if (amount >= getHealth() && !inhibit_squelch) {
         mediator.runHook("HOOK_CREATURE_SQUELCH", self);
     }
-    Creature::damage(amount, attacker, stun_until, inhibit_squelch);
+    Monster::damage(amount, attacker, stun_until, inhibit_squelch);
     setAnimFrame(AF_PARRY,
                  stun_until != -1 ? stun_until
                                   : (mediator.getGVT() + mediator.cfgInt("walking_monster_damage_delay")));
-}
-
-void WalkingMonster::onDownswing()
-{
-    // zombies play "moo" sound when swinging weapon
-    runSoundAction();
 }

@@ -38,7 +38,7 @@ m_vampire_bat = kts.MonsterType {
    speed = 86,                  -- slightly slower than a knight
    anim = a_vbat,
    corpse_tiles = { t_dead_vbat_1, t_dead_vbat_2, t_dead_vbat_3 },
-   sound = snd_bat_screech,
+   on_damage = snd_bat_screech,
 
    -- properties specific to flying monsters:
    attack_damage = 1,
@@ -53,7 +53,11 @@ m_zombie = kts.MonsterType {
    speed = 67,                  -- zombies are slow
    anim = a_zombie,
    corpse_tiles = { t_dead_zombie },
-   sound = snd_zombie,
+
+   sound = snd_zombie,       -- called randomly while the zombie is walking around
+   on_attack = snd_zombie,   -- called when zombie swings weapon
+   on_damage = snd_zombie,   -- called when zombie takes non-fatal damage
+   on_death = snd_zombie,    -- called when zombie dies
 
    -- properties specific to walking monsters:
    weapon = zombie_weapon,

@@ -136,8 +136,6 @@ public:
         : Monster(type, health, H_WALKING, weapon, anim, speed) { }
     virtual int bloodLevel() const { return 0; }
     virtual void damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch);
-
-    virtual void onDownswing();
 };
 
 #endif

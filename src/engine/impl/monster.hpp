@@ -34,6 +34,7 @@
 
 #include "creature.hpp"
 
+class LuaFunc;
 class MonsterType;
 
 class Monster : public Creature {
@@ -44,13 +45,19 @@ public:
           type(type_) { }
 
     virtual ~Monster();
+
+    virtual void damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch);
     virtual void onDeath(DeathMode dmode, const Originator &);
+    virtual void onDownswing();
 
     virtual Originator getOriginator() const { return Originator(OT_Monster()); }
 
     const MonsterType & getMonsterType() const { return type; }
 
     void runSoundAction();
+
+protected:
+    void runAction(const LuaFunc &);
     
 private:
     const MonsterType &type;

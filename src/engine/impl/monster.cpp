@@ -37,24 +37,47 @@ Monster::~Monster()
     }
 }
 
+void Monster::damage(int amount, const Originator &originator, int stun_until, bool inhibit_squelch)
+{
+    if (amount > 0 && amount < getHealth()) {
+        // call "on_damage" when non-fatal damage is received
+        runAction(type.getOnDamage());
+    }
+
+    // call base class
+    Creature::damage(amount, originator, stun_until, inhibit_squelch);
+}
+
 void Monster::onDeath(DeathMode dmode, const Originator &)
 {
-    // We use this routine to place the monster corpse.
-    if (!getMap()) return;
-    if (dmode != PIT_MODE && dmode != ZOMBIE_MODE) {
-        Mediator::instance().placeMonsterCorpse(*getMap(), getNearestPos(), type);
+    // Call the lua "on_death" action if required.
+    runAction(type.getOnDeath());
+    
+    // Place the monster corpse.
+    if (getMap()) {
+        if (dmode != PIT_MODE && dmode != ZOMBIE_MODE) {
+            Mediator::instance().placeMonsterCorpse(*getMap(), getNearestPos(), type);
+        }
     }
+}
+
+void Monster::onDownswing()
+{
+    runAction(type.getOnAttack());
 }
 
 void Monster::runSoundAction()
 {
-    const LuaFunc &ac = type.getSoundAction();
-    if (ac.hasValue()) {
+    runAction(type.getSoundAction());
+}
+
+void Monster::runAction(const LuaFunc &func)
+{
+    if (func.hasValue()) {
         ActionData ad;
         ad.setActor(static_pointer_cast<Creature>(shared_from_this()));
         ad.setGenericPos(getMap(), getPos());
         ad.setOriginator(Originator(OT_Monster()));
-        
-        ac.execute(ad);
+        func.execute(ad);
     }
 }
