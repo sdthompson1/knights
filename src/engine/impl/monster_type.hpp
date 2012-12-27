@@ -64,15 +64,14 @@ public:
     // walking monsters it checks the "ai_avoid" list to stop walking monsters being created on such tiles (usu. pits).
     virtual bool okToCreateAt(const DungeonMap &dmap, const MapCoord &pos) const;
 
-    const LuaFunc & getSoundAction() const { return sound_action; }
     const LuaFunc & getOnAttack() const { return on_attack; }
     const LuaFunc & getOnDamage() const { return on_damage; }
     const LuaFunc & getOnDeath() const { return on_death; }
+    const LuaFunc & getOnMove() const { return on_move; }
     
 private:
     LuaRef table_ref;
-    LuaFunc sound_action;
-    LuaFunc on_attack, on_damage, on_death;
+    LuaFunc on_attack, on_damage, on_death, on_move;
 };
 
 

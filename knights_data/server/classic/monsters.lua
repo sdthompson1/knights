@@ -42,7 +42,7 @@ m_vampire_bat = kts.MonsterType {
 
    -- properties specific to flying monsters:
    attack_damage = 1,
-   attack_stun_time = rng_time_range(2, 3),
+   attack_stun_time = rng_time_range(2, 3)
 }
 
 m_zombie = kts.MonsterType {
@@ -54,10 +54,16 @@ m_zombie = kts.MonsterType {
    anim = a_zombie,
    corpse_tiles = { t_dead_zombie },
 
-   sound = snd_zombie,       -- called randomly while the zombie is walking around
    on_attack = snd_zombie,   -- called when zombie swings weapon
    on_damage = snd_zombie,   -- called when zombie takes non-fatal damage
    on_death = snd_zombie,    -- called when zombie dies
+   on_move = function()      -- called when zombie moves
+      -- There is a 5% chance of a zombie making a sound while it is
+      -- moving around.
+      if kts.RandomChance(0.05) then
+         snd_zombie()
+      end
+   end,
 
    -- properties specific to walking monsters:
    weapon = zombie_weapon,

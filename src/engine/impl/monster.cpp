@@ -66,9 +66,11 @@ void Monster::onDownswing()
     runAction(type.getOnAttack());
 }
 
-void Monster::runSoundAction()
+void Monster::runMovementAction()
 {
-    runAction(type.getSoundAction());
+    if (isMoving()) {
+        runAction(type.getOnMove());
+    }
 }
 
 void Monster::runAction(const LuaFunc &func)

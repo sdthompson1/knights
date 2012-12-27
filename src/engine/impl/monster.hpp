@@ -54,8 +54,10 @@ public:
 
     const MonsterType & getMonsterType() const { return type; }
 
-    void runSoundAction();
-
+    // If the monster is currently moving, then run the "on_move" Lua function
+    // (otherwise, do nothing)
+    void runMovementAction();
+    
 protected:
     void runAction(const LuaFunc &);
     

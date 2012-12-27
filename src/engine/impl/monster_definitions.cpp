@@ -198,6 +198,7 @@ void FlyingMonsterAI::execute(TaskManager &tm)
         if (p.second) {
             bat->setFacing(p.first);
             bat->move(MT_MOVE);
+            bat->runMovementAction();
             bat->clearRunAwayFlag();
         } else if (bite) {
             ASSERT(bite_allowed);
@@ -462,10 +463,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
                 mon->swing();
             } else if (zcw(*mon->getMap(), sq_ahead)) {
                 mon->move(MT_MOVE);
-                // Play a moo sound 1 in every 20 zombie moves
-                if (g_rng.getBool(0.05f)) {
-                    mon->runSoundAction();
-                }
+                mon->runMovementAction();
             }
         } else {
             // We have chosen to stay where we are. But we should at least

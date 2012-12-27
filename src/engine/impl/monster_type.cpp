@@ -31,11 +31,10 @@ MonsterType::MonsterType(lua_State *lua)
     lua_pushvalue(lua, -1);
     table_ref.reset(lua);
 
-    sound_action.reset(lua, -1, "sound");
-
     on_attack.reset(lua, -1, "on_attack");
     on_damage.reset(lua, -1, "on_damage");
     on_death.reset(lua, -1, "on_death");
+    on_move.reset(lua, -1, "on_move");
 }
 
 void MonsterType::newIndex(lua_State *lua)
@@ -45,13 +44,9 @@ void MonsterType::newIndex(lua_State *lua)
 
     const std::string k = lua_tostring(lua, 2);
 
-    if (k == "sound") {
+    if (k == "on_attack") {
         lua_pushvalue(lua, 3);
-        sound_action = LuaFunc(lua); // pops
-
-    } else if (k == "on_attack") {
-        lua_pushvalue(lua, 3);
-        on_attack = LuaFunc(lua);
+        on_attack = LuaFunc(lua);  // pops
 
     } else if (k == "on_damage") {
         lua_pushvalue(lua, 3);
@@ -60,6 +55,10 @@ void MonsterType::newIndex(lua_State *lua)
     } else if (k == "on_death") {
         lua_pushvalue(lua, 3);
         on_death = LuaFunc(lua);
+
+    } else if (k == "on_move") {
+        lua_pushvalue(lua, 3);
+        on_move = LuaFunc(lua);
     }
 }
 
