@@ -89,7 +89,7 @@ end
 
 function _G.rf_toggle(x, y)
   local function my_tile_function(t)
-    new_tile = t.open_to
+    local new_tile = t.open_to
     if not new_tile then
        new_tile = t.close_to
     end
@@ -100,7 +100,7 @@ end
 
 function _G.rf_toggle_no_sound(x, y)
   local function my_tile_function(t)
-    new_tile = t.open_to
+    local new_tile = t.open_to
     if not new_tile then
        new_tile = t.close_to
     end

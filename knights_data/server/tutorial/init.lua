@@ -385,6 +385,7 @@ num_bat_pits = 10
 
 bat_count = 0
 bat_list = {}
+bat_actor = nil
 
 function spawn_bat()
 

@@ -121,50 +121,141 @@ namespace {
 
     int PrivIndex(lua_State *lua)
     {
-        // args: _, k
-        // upvalues: M, Parent
+        /* This is the rough equivalent of the following Lua code:
 
-        // this function does not throw C++ exceptions
-        // (although it might throw Lua errors).
-        // therefore, it is safe to use with lua_pushcclosure
-        // w/o the PushCClosure wrapper.
+             function PrivMeta.__index(_, k)
+                if rawget(Declared,k) then       -- 'Declared' is second upvalue
+                   -- The var was previously declared in this module
+                   return rawget(M,k)            -- M is first upvalue
+                else
+                   local g = _G[k]               -- Here _G refers to the 'real' global env (LUA_RIDX_GLOBALS)
+                   if g ~= nil then
+                      -- The var is non-nil in the global env, so use that
+                      return g
+                   else
+                      -- The var is not declared nor is it inherited from the global env
+                      error("Variable '" .. k .. "' is not declared")
+                   end
+                end
+             end
+        */
+
+        // NOTE: This function does not throw C++ exceptions (although
+        // it might throw Lua errors). Therefore, it is safe to use
+        // with lua_pushcclosure w/o the PushCClosure wrapper.
 
         ASSERT(lua_gettop(lua) == 2);
-        
-        // local x = M[k]
-        lua_pushvalue(lua, 2);  // [_ k k]
-        lua_gettable(lua, lua_upvalueindex(1));   // [_ k x]
 
-        // if x == nil then x = Parent[k] end
-        if (lua_isnil(lua, -1)) {
-            lua_pop(lua, 1);                         // [_ k]
-            lua_gettable(lua, lua_upvalueindex(2));  // [_ val]
+        // if rawget(Declared,k) then
+        lua_pushvalue(lua, 2);                    // [_ k k]
+        lua_rawget(lua, lua_upvalueindex(2));     // [t k declared]
+        const bool declared = lua_toboolean(lua, -1) != 0;
+        lua_pop(lua, 1);        // [t k]
+        if (declared) {
+
+            // return M[k]
+            lua_rawget(lua, lua_upvalueindex(1));    // [t M[k]]
+            return 1;
+
+        } else {
+
+            // local g = _G[k]
+            // (Note: don't do rawget here, because the global environment
+            // might legitimately have its own metatable)
+            lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);   // [t k _G]
+            lua_pushvalue(lua, 2);   // [t k _G k]
+            lua_gettable(lua, -2);   // [t k _G g]
+
+            // if g ~= nil then
+            const bool is_nil = lua_isnil(lua, -1);
+            if (!is_nil) {
+
+                // return g
+                return 1;
+
+            } else {
+                // error
+                return luaL_error(lua,
+                                  "Variable '%s' is not declared",
+                                  lua_tostring(lua, 2));
+            }
         }
-        
-        // return x
-        return 1;
     }
-    
+
+    int PrivNewIndex(lua_State *lua)
+    {
+        /* Equivalent to the following Lua code:
+
+             function PrivMeta.__newindex(_, k, v)
+                if not rawget(Declared,k) then     -- Declared is second upvalue
+                   -- The var was not previously declared
+                   if Called_From_Chunk() then
+                      -- Declare it
+                      rawset(Declared,k,true)
+                   else
+                      error("Assignment to undeclared variable '" .. k .. "'")
+                   end
+                end
+                rawset(M,k,v)      -- M is first upvalue
+             end
+        */
+
+        // NOTE: Once again, this does not throw C++ exceptions (but
+        // it might raise Lua errors)
+
+        ASSERT(lua_gettop(lua) == 3);
+
+        // if not rawget(Declared,k) then
+        lua_pushvalue(lua, 2);                  // [t k v k]
+        lua_rawget(lua, lua_upvalueindex(2));   // [t k v declared]
+        const bool declared = lua_toboolean(lua, -1) != 0;
+        lua_pop(lua, 1);         // [t k v]
+        if (!declared) {
+
+            // if Called_From_Chunk() then
+            lua_Debug ar;
+            const int getstack_ok = lua_getstack(lua, 1, &ar);
+            if (!getstack_ok) {
+                return luaL_error(lua, "lua_module.cpp: lua_getstack failed");
+            }
+            const int getinfo_ok = lua_getinfo(lua, "S", &ar);
+            if (!getinfo_ok) {
+                return luaL_error(lua, "lua_module.cpp: lua_getinfo failed");
+            }
+            const bool called_from_chunk = (ar.what[0] == 'm');
+            if (called_from_chunk) {
+
+                // rawset(Declared, k, true)
+                lua_pushvalue(lua, 2);        // [t k v k]
+                lua_pushboolean(lua, true);   // [t k v k true]
+                lua_rawset(lua, lua_upvalueindex(2));  // [t k v]
+
+            } else {
+                // error
+                return luaL_error(lua,
+                                  "Assignment to undeclared variable '%s'",
+                                  lua_tostring(lua, 2));
+            }
+        }
+
+        // rawset(M,k,v)
+        lua_rawset(lua, lua_upvalueindex(1));   // [t]
+        return 0;
+    }
+
     int Module(lua_State *lua)
     {
         /* This does the rough equivalent of the following lua code:
 
-              local Parent = _ENV
-
               local M = {}
               package.loaded[...] = M
-           
+
+              local Declared = {}
               local Priv = {}
-              local PrivMeta = {}
-              function PrivMeta.__index(_,k)
-                 local x = M[k]
-                 if x ~= nil then
-                    return x
-                 else
-                    return Parent[k]
-                 end
-              end
-              PrivMeta.__newindex = M
+              local PrivMeta = {
+                 __index = <See above>,
+                 __newindex = <See above>
+              }
               setmetatable(Priv, PrivMeta)
 
            And it also sets _ENV in the parent frame to Priv.
@@ -172,6 +263,9 @@ namespace {
 
         // fetch "..." argument
         const char *name = luaL_checkstring(lua, 1);
+        if (!name) {
+            luaL_error(lua, "'module': problem in luaL_checkstring");
+        }
 
         // local Parent = _ENV
         lua_Debug ar;
@@ -180,41 +274,41 @@ namespace {
           lua_iscfunction(lua, -1)) {
             luaL_error(lua, "'module' called from C");
         }
-        const char *upval = lua_getupvalue(lua, -1, 1);  // [caller _ENV]
-        if (!name || std::strcmp(upval, "_ENV") != 0) {
-            luaL_error(lua, "'module': bad upvalue");
-        }
 
         // local M = {}
-        lua_newtable(lua);     // [f Parent M]
+        lua_newtable(lua);     // [f M]
 
         // package.loaded[...] = M
-        lua_getfield(lua, LUA_REGISTRYINDEX, "_LOADED");   // [f Parent M _LOADED]
-        lua_pushvalue(lua, -2);   // [f Parent M _LOADED M] 
-        lua_setfield(lua, -2, name);  // [f Parent M _LOADED]
-        lua_pop(lua, 1);  // [f Parent M]
+        lua_getfield(lua, LUA_REGISTRYINDEX, "_LOADED");   // [f M _LOADED]
+        lua_pushvalue(lua, -2);       // [f M _LOADED M] 
+        lua_setfield(lua, -2, name);  // [f M _LOADED]
+        lua_pop(lua, 1);              // [f M]
 
+        // local Declared = {}
         // local Priv = {}
         // local PrivMeta = {}
         lua_newtable(lua);
-        lua_createtable(lua, 0, 2);  // [f Parent M Priv PrivMeta]
+        lua_newtable(lua);
+        lua_createtable(lua, 0, 2);  // [f M Declared Priv PrivMeta]
 
         // function PrivMeta.__index
         // (Don't use PushCFunction, we need maximum efficiency here)
-        lua_pushvalue(lua, -3);               // [f Parent M Priv PrivMeta M]
-        lua_pushvalue(lua, -5);               // [f Parent M Priv PrivMeta M Parent]
-        lua_pushcclosure(lua, &PrivIndex, 2); // [f Parent M Priv PrivMeta __index]
-        lua_setfield(lua, -2, "__index");     // [f Parent M Priv PrivMeta]
+        lua_pushvalue(lua, -4);               // [f M D Priv PrivMeta M]
+        lua_pushvalue(lua, -4);               // [f M D Priv PrivMeta M D]
+        lua_pushcclosure(lua, &PrivIndex, 2); // [f M D Priv PrivMeta __index]
+        lua_setfield(lua, -2, "__index");     // [f M D Priv PrivMeta]
 
-        // PrivMeta.__newindex = M
-        lua_pushvalue(lua, -3);               // [f Parent M Priv PrivMeta M]
-        lua_setfield(lua, -2, "__newindex");  // [f Parent M Priv PrivMeta]
+        // function PrivMeta.__newindex
+        lua_pushvalue(lua, -4);                  // [f M D Priv PrivMeta M]
+        lua_pushvalue(lua, -4);                  // [f M D Priv PrivMeta M D]
+        lua_pushcclosure(lua, &PrivNewIndex, 2); // [f M D Priv PrivMeta __newindex]
+        lua_setfield(lua, -2, "__newindex");     // [f M D Priv PrivMeta]
 
         // setmetatable(Priv, PrivMeta)
-        lua_setmetatable(lua, -2);            // [f Parent M Priv]
+        lua_setmetatable(lua, -2);            // [f M D Priv]
 
         // Now set _ENV in the parent (f) to Priv
-        lua_setupvalue(lua, -4, 1);           // [f Parent M]
+        lua_setupvalue(lua, -4, 1);           // [f M D]
 
         return 0;
     }

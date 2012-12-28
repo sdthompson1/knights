@@ -31,6 +31,10 @@ dungeon_setup = {
    destroy_handlers   = {}   -- list of functions
 }
 
+-- Declare the global variable "Dsetup"
+-- (Don't set it to anything yet; that will be done when the game starts)
+Dsetup = nil
+
 
 -- Quest Setup Functions called by menus.lua
 

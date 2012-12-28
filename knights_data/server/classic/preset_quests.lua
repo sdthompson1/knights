@@ -392,7 +392,7 @@ end
 -- This function runs when someone changes the "Quest" setting
 function predefined_quest_func(S, what)
    if S.quest ~= "custom" then       
-      q = quest_table[S.quest]
+      local q = quest_table[S.quest]
       if q ~= nil then
          for k,v in pairs(q.settings) do
             S[k] = v
