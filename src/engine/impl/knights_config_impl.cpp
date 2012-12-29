@@ -122,7 +122,8 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
                        boost::filesystem::path("server") / config_file_name, 
                        0, 
                        0, 
-                       false);   // look in top level rsrc directory only
+                       false,    // look in top level rsrc directory only
+                       false);   // no dofile namespace proposal
 
         // Get the "kts" table
         lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);  // [env]

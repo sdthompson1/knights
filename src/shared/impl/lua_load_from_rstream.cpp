@@ -78,7 +78,8 @@ namespace {
 // Load and execute lua code in rstream named 'filename'
 void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
                     int nargs, int nresults,
-                    bool look_in_cwd)
+                    bool look_in_cwd,
+                    bool use_dofile_namespace_proposal)
 {
     // Catch exceptions and convert them to lua errors if required.
     try {
@@ -125,7 +126,7 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
         // the caller. (This is the "dofile namespace proposal", http://lua-users.org/wiki/DofileNamespaceProposal.)
         lua_Debug ar;
         const bool okay = lua_getstack(lua, 1, &ar) == 1; // [<stuff> args func]
-        if (okay) {
+        if (okay && use_dofile_namespace_proposal) {
             lua_getinfo(lua, "f", &ar); // [<stuff> args func caller]
             if (!lua_iscfunction(lua, -1)) {
                 // set func _ENV to caller _ENV

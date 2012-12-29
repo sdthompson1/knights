@@ -46,6 +46,7 @@ struct lua_State;
 
 void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
                     int nargs, int nresults,
-                    bool look_in_cwd);
+                    bool look_in_cwd,
+                    bool use_dofile_namespace_proposal);
 
 #endif

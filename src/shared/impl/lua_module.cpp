@@ -48,7 +48,8 @@ namespace {
 
         // execute the file (convert the lua string directly to a path.)
         LuaExecRStream(lua, filename, 0, LUA_MULTRET, 
-                       true);   // look in both cwd & root dir
+                       true,    // look in both cwd & root dir
+                       true);   // use dofile namespace proposal
 
         // return the actual no of results.
         return lua_gettop(lua);
@@ -94,7 +95,8 @@ namespace {
 
         // Run the module.
         LuaExecRStream(lua, filename, 2, 1, 
-            false);  // look in 'server' dir only (not cwd)
+            false,   // look in 'server' dir only (not cwd)
+            false);  // no dofile namespace proposal
 
         // [name _LOADED result]
 

@@ -320,7 +320,8 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
 
         SetupLuaConfigFunctions(lua, &pimpl->config_gfx);
         LuaExecRStream(lua, "client/client_config.lua", 0, 0, 
-            false);   // look in root dir only
+            false,    // look in root dir only
+            false);   // no dofile namespace proposal
 
         lua_getglobal(lua, "MISC_CONFIG");
         PopConfigMap(lua, pimpl->config_map);
