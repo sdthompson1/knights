@@ -19,6 +19,7 @@
 --
 
 module(...)
+use_strict()
 
 dofile("misc_config.lua")
 dofile("tutorial.lua")

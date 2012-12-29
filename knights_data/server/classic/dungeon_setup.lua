@@ -32,7 +32,8 @@ dungeon_setup = {
 }
 
 -- Declare the global variable "Dsetup"
--- (Don't set it to anything yet; that will be done when the game starts)
+-- (This is needed because we are now using "use_strict()"
+-- for the "classic" module -- Trac #203)
 Dsetup = nil
 
 
