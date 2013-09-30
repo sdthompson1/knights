@@ -26,6 +26,8 @@
 #include "legacy_action.hpp"
 #include "my_ctype.hpp"
 
+#include "boost/thread/locks.hpp"
+
 
 //
 // ActionPars
