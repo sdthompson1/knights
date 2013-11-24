@@ -85,7 +85,7 @@ namespace Coercri {
 #elif defined(__linux__)
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        return (now.tv_sec * 1000) + (now.tv_nsec / 1000000);
+        return (now.tv_sec * 1000u) + (now.tv_nsec / 1000000u);
 
 #else
 #error "Timer not implemented for this operating system!"
