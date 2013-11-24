@@ -704,7 +704,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 void KnightsServer::getOutputData(ServerConnection &conn,
                                   std::vector<ubyte> &data)
 {
-    if (conn.wait_until != 0 && pimpl->timer->getMsec() < conn.wait_until) {
+    if (conn.wait_until != 0 && (int(pimpl->timer->getMsec() - conn.wait_until)) > 0) {
         // don't release the output yet -- still waiting
         data.clear();
 

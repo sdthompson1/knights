@@ -637,7 +637,7 @@ bool DoBroadcastReplies()
 {
     // don't run this more than once per second
     const unsigned int time_now = timer->getMsec();
-    if (time_now < broadcast_last_time + 1000) return false;
+    if (time_now - broadcast_last_time < 1000) return false;
     broadcast_last_time = time_now;
 
     // check for incoming msgs, send replies if necessary
@@ -1031,7 +1031,7 @@ int main(int argc, char **argv)
 
             // Misc Updates -- run every 1/10 second.
             const unsigned int time_now = timer->getMsec();
-            if (time_now > last_misc_update + 100) {
+            if (time_now - last_misc_update > 100) {
                 last_misc_update = time_now;
 
                 // Spawn new games / clean up old games if needed.
