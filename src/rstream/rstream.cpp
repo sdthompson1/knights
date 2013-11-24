@@ -63,7 +63,7 @@ namespace {
             return CP_NOT_FOUND;
         }
 
-        bfs::path c_file = canonical(file, ec);
+        bfs::path c_file = bfs::canonical(file, ec);
         if (ec) {
             // An unexpected / "other" error occurred
             return CP_ERROR;
@@ -118,7 +118,7 @@ void RStream::Initialize(const boost::filesystem::path &base_path_)
 
     // NOTE: If the basepath does not exist, the following call to canonical() will throw.
     
-    base_path = canonical(base_path_);
+    base_path = bfs::canonical(base_path_);
     
     initialized = true;
 }
