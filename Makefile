@@ -4,19 +4,16 @@
 # NOTE: Audio can be disabled by adding -DDISABLE_SOUND to the CPPFLAGS.
 # This is useful if audio doesn't work on your system for some reason.
 
-# NOTE: On some Linux distributions the "-mt" suffix is missing from 
-# the Boost library names. If you get an error
-# "cannot find -lboost_thread-mt" (or similar) then try changing
-# "BOOST_SUFFIX = -mt" below to "BOOST_SUFFIX =".
- 
+# NOTE: On some Linux distributions the Boost libraries require a "-mt" suffix.
+# If you get a link error, try changing "BOOST_SUFFIX =" to "BOOST_SUFFIX = -mt" below.
 # (Also, if you have Boost in a non-standard location then you may
-# need to add some -I flags to CPPFLAGS, and/or edit BOOST_LIBS below.)
+# need to add some -I flags to CPPFLAGS, and/or edit BOOST_LIBS.)
 
 PREFIX = /usr/local
 BIN_DIR = $(PREFIX)/bin
 DOC_DIR = $(PREFIX)/share/doc/knights
 DATA_DIR = $(PREFIX)/share/knights
-BOOST_SUFFIX = -mt
+BOOST_SUFFIX = 
 
 KNIGHTS_BINARY_NAME = knights
 SERVER_BINARY_NAME = knights_server
