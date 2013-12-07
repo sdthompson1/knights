@@ -158,6 +158,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\misc\find_knights_data_dir.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\misc\metaserver_urls.cpp"
 				>
 			</File>
@@ -185,6 +189,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\misc\exception_base.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\misc\find_knights_data_dir.hpp"
 				>
 			</File>
 			<File

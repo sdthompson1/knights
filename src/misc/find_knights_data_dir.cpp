@@ -21,15 +21,13 @@
  *
  */
 
-#include 
+#include "find_knights_data_dir.hpp"
 
 #include <iostream>
 
-#include "boost/filesystem.hpp"
+static boost::filesystem::path g_knights_data_dir;
 
-static std::string g_knights_data_dir;
-
-std::string FindKnightsDataDir()
+boost::filesystem::path FindKnightsDataDir()
 {
     if (g_knights_data_dir.empty()) {
 
@@ -40,8 +38,8 @@ std::string FindKnightsDataDir()
 #define QUOTEME(x) _QUOTEME(x)
         boost::filesystem::path p2 = QUOTEME(DATA_DIR);
 
-        if (p2.exists()) {
-            if (p.exists()) {
+        if (boost::filesystem::exists(p2)) {
+            if (boost::filesystem::exists(p)) {
                 // both paths exist. print a message so the user knows which one we are using.
                 std::cout << "Note: Using \"knights_data\" from the current directory, instead of \"" 
                           << DATA_DIR << "\".\n";
@@ -53,13 +51,13 @@ std::string FindKnightsDataDir()
 #endif
 
         // we've chosen our directory, now check whether it exists.
-        if (!p.exists()) {
+        if (!boost::filesystem::exists(p)) {
             std::cout << "Error: Could not find the \"knights_data\" directory. Exiting.\n";
             std::exit(1);
         }
 
         // cache the result - this means the message (if any) will be printed only once
-        g_knights_data_dir = p;
+        g_knights_data_dir = p.generic_string();
     }        
     
     return g_knights_data_dir;
