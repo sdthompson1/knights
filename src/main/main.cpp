@@ -28,6 +28,7 @@
 
 #include "misc.hpp"
 
+#include "find_knights_data_dir.hpp"
 #include "knights_app.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
@@ -76,7 +77,7 @@ namespace {
     // or PrintVersionAndExit if "-v" option was given.
     void ParseCmdLineArgs(int argc, char const * const * argv,
                           DisplayType & display_type,
-                          std::string & data_dir,
+                          boost::filesystem::path & data_dir,
                           std::string & config_filename,
                           bool & autostart)
     {
@@ -105,20 +106,14 @@ namespace {
 extern "C" {  // needed for SDL I think
 
 #ifdef WIN32
-int KnightsMain(int argc, char **argv, const std::string &default_data_dir)  // On Windows this is called from WinMain below
+int KnightsMain(int argc, char **argv, const boost::filesystem::path &default_data_dir)  // On Windows this is called from WinMain below
 #else
 int main(int argc, char **argv)   // On other systems this is our real main function
 #endif
 {
 
 #ifndef WIN32
-#ifdef DATA_DIR
-#define _QUOTEME(x) #x
-#define QUOTEME(x) _QUOTEME(x)
-        const std::string default_data_dir = QUOTEME(DATA_DIR);
-#else
-        const std::string default_data_dir = "knights_data";
-#endif
+    const boost::filesystem::path default_data_dir = FindKnightsDataDir();
 #endif
 
     std::string err_msg;
@@ -132,7 +127,7 @@ int main(int argc, char **argv)   // On other systems this is our real main func
         std::string config_filename = "main.lua";
         bool autostart = false;
 
-        std::string data_dir = default_data_dir;
+        boost::filesystem::path data_dir = default_data_dir;
 
         // Parse the cmd line arguments
         ParseCmdLineArgs(argc, argv, display_type, data_dir, config_filename, autostart);

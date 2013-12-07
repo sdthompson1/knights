@@ -36,6 +36,7 @@
 #include "network/network_driver.hpp"
 #include "timer/timer.hpp"
 
+#include "boost/filesystem.hpp"
 #include "boost/shared_ptr.hpp"
 
 #include <iosfwd>
@@ -66,7 +67,7 @@ enum DisplayType {
 
 class KnightsApp {
 public:
-    explicit KnightsApp(DisplayType dt, const string &resource_dir, const string &config_filename,
+    explicit KnightsApp(DisplayType dt, const boost::filesystem::path &resource_dir, const string &config_filename,
                         bool autostart);
 
     // Start the main loop

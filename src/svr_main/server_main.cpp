@@ -29,6 +29,7 @@
 #include "misc.hpp"
 
 #include "config.hpp"
+#include "find_knights_data_dir.hpp"
 #include "knights_config.hpp"
 #include "knights_log.hpp"
 #include "knights_server.hpp"
@@ -934,19 +935,13 @@ int main(int argc, char **argv)
     try {
 
         // Get resource dir.
-        // If KnightsDataDir is set (in config) then use that, else use DATA_DIR if available, else default to knights_data.
-        std::string rdir;
+        boost::filesystem::path rdir;
         if (!g_config->getKnightsDataDir().empty()) {
             rdir = g_config->getKnightsDataDir();
         } else {
-#ifdef DATA_DIR
-#define _QUOTEME(x) #x
-#define QUOTEME(x) _QUOTEME(x)
-            rdir = QUOTEME(DATA_DIR);
-#else
-            rdir = "knights_data";
-#endif
+            rdir = FindKnightsDataDir();
         }
+        my_log.logMessage(std::string("\tLoading data files from \"") + rdir.native() + "\".");
         RStream::Initialize(rdir);
 
         // Initialize CURL

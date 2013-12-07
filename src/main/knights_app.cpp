@@ -84,6 +84,7 @@
 #include "boost/scoped_ptr.hpp"
 
 #include <cstdlib>
+#include <iostream>
 
 #ifdef __LP64__
 #include <stdint.h>
@@ -293,7 +294,7 @@ public:
 // Constructor (One-Time Initialization)
 /////////////////////////////////////////////////////
 
-KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, const string &config_filename,
+KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &resource_dir, const string &config_filename,
                        bool autostart)
     : pimpl(new KnightsAppImpl)
 {
@@ -307,6 +308,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const string &resource_dir, con
     g_rng.setSeed(static_cast<unsigned int>(std::time(0)));
 
     // initialize resource lib
+    std::cout << "Loading data files from \"" << resource_dir.native() << "\".\n";
     RStream::Initialize(resource_dir);
 
     // read the client config

@@ -25,40 +25,20 @@
 
 #include <iostream>
 
-static boost::filesystem::path g_knights_data_dir;
-
 boost::filesystem::path FindKnightsDataDir()
 {
-    if (g_knights_data_dir.empty()) {
-
-        boost::filesystem::path p = "knights_data";
+    boost::filesystem::path p = "knights_data";
 
 #ifdef DATA_DIR
 #define _QUOTEME(x) #x
 #define QUOTEME(x) _QUOTEME(x)
-        boost::filesystem::path p2 = QUOTEME(DATA_DIR);
+    boost::filesystem::path p2 = QUOTEME(DATA_DIR);
 
-        if (boost::filesystem::exists(p2)) {
-            if (boost::filesystem::exists(p)) {
-                // both paths exist. print a message so the user knows which one we are using.
-                std::cout << "Note: Using \"knights_data\" from the current directory, instead of \"" 
-                          << DATA_DIR << "\".\n";
-            } else {
-                // only DATA_DIR exists. use that.
-                p = p2;
-            }
-        }
+    // In the case where p doesn't exist, but p2 does, we want to use p2 instead of p
+    if (boost::filesystem::exists(p2) && !boost::filesystem::exists(p)) {
+        p = p2;
+    }
 #endif
 
-        // we've chosen our directory, now check whether it exists.
-        if (!boost::filesystem::exists(p)) {
-            std::cout << "Error: Could not find the \"knights_data\" directory. Exiting.\n";
-            std::exit(1);
-        }
-
-        // cache the result - this means the message (if any) will be printed only once
-        g_knights_data_dir = p.generic_string();
-    }        
-    
-    return g_knights_data_dir;
+    return p;
 }
