@@ -941,7 +941,8 @@ int main(int argc, char **argv)
         } else {
             rdir = FindKnightsDataDir();
         }
-        my_log.logMessage(std::string("\tLoading data files from \"") + rdir.native() + "\".");
+        my_log.logMessage(std::string("\tLoading data files from \"") 
+                          + rdir.string() + std::string("\"."));
         RStream::Initialize(rdir);
 
         // Initialize CURL
