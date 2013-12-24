@@ -24,4 +24,4 @@ GPL.txt for a copy of the licence itself.
 -----
 Stephen Thompson
 stephen@solarflare.org.uk
-December 2012
+December 2013
