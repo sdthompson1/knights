@@ -204,6 +204,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\misc\my_ctype.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\misc\my_exceptions.hpp"
 				>
 			</File>

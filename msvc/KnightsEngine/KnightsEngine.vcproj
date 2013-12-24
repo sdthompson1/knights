@@ -622,6 +622,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\engine\menu_listener.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\engine\menu_selections.hpp"
 				>
 			</File>
