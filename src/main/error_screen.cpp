@@ -3,7 +3,7 @@
  * 
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2012.
+ * Copyright (C) Stephen Thompson, 2006 - 2013.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
