@@ -1,4 +1,4 @@
-Knights Release 023 -- Source Code
+Knights Release 024 -- Source Code
 ----------------------------------
 
 This is the source code for KNIGHTS, a game of multi-player violent

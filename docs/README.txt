@@ -1,4 +1,4 @@
-Knights Release 023
+Knights Release 024
 -------------------
 
 KNIGHTS is a remake of a classic Amiga game for two players, in which
