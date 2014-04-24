@@ -50,6 +50,8 @@
 #include "../core/com_ptr_wrapper.hpp"
 #include "../../gfx/gfx_driver.hpp"
 
+#include <list>
+
 #include <d3d11.h>
 #ifdef max
 #undef max
@@ -61,7 +63,8 @@
 namespace Coercri {
 
     class PrimitiveBatch;
-    
+    class DX11Window;
+
     class DX11GfxDriver : public GfxDriver {
     public:
         // Constructor
@@ -72,15 +75,12 @@ namespace Coercri {
         ~DX11GfxDriver();
 
         // Functions overridden from GfxDriver
-        virtual DisplayModeVector getFullScreenModes() { return DisplayModeVector(); }
-        virtual DisplayMode getDesktopMode();
         virtual boost::shared_ptr<Window> createWindow(int width, int height,
                                                        bool resizable, bool fullscreen,
                                                        const std::string &title);
         virtual boost::shared_ptr<Graphic> createGraphic(boost::shared_ptr<const PixelArray> pixels,
                                                          int hx = 0, int hy = 0);
         virtual bool pollEvents();
-        virtual void setWindowsIcon(int resource_id);
 
         // Functions for accessing the Direct3D objects
         ID3D11Device * getDevice() { return m_psDevice.get(); }
@@ -96,7 +96,6 @@ namespace Coercri {
                 
     private:
         void createDevice(D3D_DRIVER_TYPE driver_type, UINT flags, D3D_FEATURE_LEVEL feature_level);
-        void getAvailableDisplayModes();
 
     private:
         ComPtrWrapper<ID3D11Device> m_psDevice;
@@ -106,7 +105,7 @@ namespace Coercri {
 
         std::auto_ptr<PrimitiveBatch> m_psPrimitiveBatch;
 
-        int icon_id;
+        std::list<boost::weak_ptr<DX11Window> > all_windows;
     };
 
 }

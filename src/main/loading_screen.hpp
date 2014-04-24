@@ -36,7 +36,7 @@ class LuaError;
 class LoadingScreen : public Screen {
 public:
     // set port to -1 and player_name to "" for local game.
-    explicit LoadingScreen(int port, const std::string & player_name, bool single_player, 
+    explicit LoadingScreen(int port, const UTF8String & player_name, bool single_player, 
                            bool menu_strict,  // set for single player & split screen games, where there is a fixed no of players
                            bool tutorial,
                            bool autostart);
@@ -61,7 +61,7 @@ private:
 
     KnightsApp *knights_app;
     int server_port;
-    std::string player_name;
+    UTF8String player_name;
     bool single_player_mode;
     bool menu_strict_mode;
     bool tutorial_mode;

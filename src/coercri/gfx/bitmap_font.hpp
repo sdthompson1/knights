@@ -5,11 +5,19 @@
  * PURPOSE:
  *   Simple class for drawing bitmap fonts.
  *
+ *   The input strings are interpreted as UTF-8, but this class can only 
+ *   render the Latin-1 subset at the moment. (Other chars display as 
+ *   question marks.)
+ *
+ * TODO:
+ *   - Full Unicode support.
+ *   - Blit graphics instead of plotting pixels individually.
+ *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2013.
+ *   Copyright (C) Stephen Thompson, 2008 - 2014.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -89,15 +97,16 @@ namespace Coercri {
         // pixel at a time.)
         //
         // Note char 32 is a special case, it is always completely
-        // blank and plotPixel has no effect for this character.
+        // blank and plotPixel has no effect for this character. Also,
+        // c is limited to the [0,255] range for this class.
         //
         // Note plotPixel() is harmless (and does nothing) if called
         // with "out of range" x,y values. However, it crashes if
         // called on a "c" that hasn't been set up by setupChar.
         //
         BitmapFont(boost::shared_ptr<KernTable> kern_table, int height_);
-        void setupCharacter(char c, int width, int height, int xofs, int yofs, int xadvance);
-        void plotPixel(char c, int x, int y, unsigned char alpha);
+        void setupCharacter(int c, int width, int height, int xofs, int yofs, int xadvance);
+        void plotPixel(int c, int x, int y, unsigned char alpha);
 
         
         // destructor
@@ -105,9 +114,9 @@ namespace Coercri {
 
         
         // Overridden from Font:
-        void getTextSize(const std::string &text, int &w, int &h) const;
+        void getTextSize(const UTF8String &text, int &w, int &h) const;
         int getTextHeight() const;
-        void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const;
+        void drawText(GfxContext &dest, int x, int y, const UTF8String &text, Color col) const;
 
     private:
         struct Character {

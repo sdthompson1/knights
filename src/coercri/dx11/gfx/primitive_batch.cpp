@@ -46,16 +46,22 @@
 #include "../core/dx_error.hpp"
 #include "../core/load_dx11_dlls.hpp"
 
+// these headers are built by MSVC.
+// you need to add the HLSL files to your project, configure MSVC to build header files,
+// then add the build dir to your include-path.
+#include "primitive_batch_ps.h"
+#include "primitive_batch_ps_tex.h"
+#include "primitive_batch_vs.h"
+
 #include <cmath>
 #include <string>
 
-#include <d3dcompiler.h>
-#include <d3dx10math.h>
+#include <DirectXMath.h>
 
 namespace Coercri {
 
     struct PrimitiveBatchVertex {
-        D3DXVECTOR2 pos;
+        DirectX::XMFLOAT2 pos;
         unsigned char r;
         unsigned char g;
         unsigned char b;
@@ -69,48 +75,6 @@ namespace Coercri {
 
     namespace {
         const int NUM_VERTS_IN_BUFFER = 2000;   // what is best value for this??
-
-        void CompileShader(const char *shader_code,
-                           const char *filename,
-                           const char *entry_point,
-                           const char *profile,
-                           ComPtrWrapper<ID3DBlob> &compiled_code)
-        {
-            DWORD compile_flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
-#if defined(DEBUG) | defined(_DEBUG)
-            compile_flags |= D3DCOMPILE_DEBUG;
-#endif
-
-            ID3DBlob *output_blob;
-            ID3DBlob *error_blob;
-
-            HRESULT hr = D3DCompile_Wrapper(shader_code,
-                                            strlen(shader_code),
-                                            filename,
-                                            0,  // macro definitions
-                                            0,  // include file handler
-                                            entry_point,
-                                            profile,
-                                            compile_flags,
-                                            0,   // effect flags (ignored for vertex/pixel shaders)
-                                            &output_blob,
-                                            &error_blob);
-
-            compiled_code.reset(output_blob);
-            ComPtrWrapper<ID3DBlob> error_sentinel(error_blob);
-            
-            if (FAILED(hr)) {
-                std::string msg = "D3DCompile failed";
-                if (error_blob) {
-                    // Include the compiler errors in the exception message.
-                    // Also output using OutputDebugStringA (in case it is too long for a message box)
-                    OutputDebugStringA((char*)error_blob->GetBufferPointer());
-                    msg += "\n\n";
-                    msg += (char*)error_blob->GetBufferPointer();
-                }
-                throw DXError(msg, hr);
-            }
-        }
 
         int RoundUpTo16(int x)
         {
@@ -141,66 +105,10 @@ namespace Coercri {
     // Also create corresponding input layout
     void PrimitiveBatch::createShaders(ID3D11Device *device)
     {
-        // code for vertex and pixel shader
-        // vertex shader --> transforms from pixel coordinates to normalized device coordinates
-        // pixel shader --> just passes through the given colour
-        const char * shader_code =
-            "Texture2D myTexture : register( t0 );\n"
-            "SamplerState mySampler : register( s0 );\n"
-            "\n"
-            "cbuffer MyConstBuffer : register( b0 )\n"
-            "{\n"
-            "    int width;\n"
-            "    int height;\n"
-            "};\n"
-            "\n"
-            "struct VS_INPUT\n"
-            "{\n"
-            "    float2 Pos : POSITION;\n"
-            "    unorm float4 Col : COLOR;\n"
-            "};\n"
-            "\n"
-            "struct PS_INPUT\n"
-            "{\n"
-            "    float4 Pos : SV_POSITION;\n"
-            "    float4 Col : COLOR;\n"
-            "};\n"
-            "\n"
-            "PS_INPUT VS( VS_INPUT input )\n"
-            "{\n"
-            "    PS_INPUT output;\n"
-            "    output.Pos = float4( ( 2 * input.Pos.x - width)  / width,   \n"
-            "                         (-2 * input.Pos.y + height) / height,  \n"
-            "                         0.5f,   \n"
-            "                         1.0f ); \n"
-            "    output.Col = input.Col;\n"
-            "    return output;\n"
-            "}\n"
-            "\n"
-            "float4 PS( PS_INPUT input ) : SV_TARGET\n"
-            "{\n"
-            "    return input.Col;\n"
-            "}\n"
-            "\n"
-            "float4 PS_Tex( PS_INPUT input ) : SV_TARGET\n"
-            "{\n"
-            "    return myTexture.Sample(mySampler, float2(input.Col.x, input.Col.y));\n"
-            "}\n";
-
-        const char * shader_code_name = "coercri_shaders";  // dummy "filename" for the shader code
-
-        // compile the vertex shader to a Blob
-        ComPtrWrapper<ID3DBlob> code_blob;
-        CompileShader(shader_code,
-                      shader_code_name,
-                      "VS",
-                      "vs_4_0_level_9_1",  // TODO might need to change this for diff feature levels?
-                      code_blob);
-
-        // now we can create the vertex shader
+        // create the vertex shader
         ID3D11VertexShader *vert_shader = 0;
-        HRESULT hr = device->CreateVertexShader(code_blob->GetBufferPointer(),
-                                                code_blob->GetBufferSize(),
+        HRESULT hr = device->CreateVertexShader(primitive_batch_vs,
+                                                sizeof(primitive_batch_vs),
                                                 0,
                                                 &vert_shader);
         if (FAILED(hr)) {
@@ -217,25 +125,18 @@ namespace Coercri {
         ID3D11InputLayout *input_layout;
         hr = device->CreateInputLayout(&layout[0],
                                        2,
-                                       code_blob->GetBufferPointer(),
-                                       code_blob->GetBufferSize(),
+                                       primitive_batch_vs,
+                                       sizeof(primitive_batch_vs),
                                        &input_layout);
         if (FAILED(hr)) {
             throw DXError("CreateInputLayout failed", hr);
         }
         m_psInputLayout.reset(input_layout);
         
-        // compile the pixel shader to a Blob
-        CompileShader(shader_code,
-                      shader_code_name,
-                      "PS",
-                      "ps_4_0_level_9_1",
-                      code_blob);
-
         // create the pixel shader
         ID3D11PixelShader *pix_shader = 0;
-        hr = device->CreatePixelShader(code_blob->GetBufferPointer(),
-                                       code_blob->GetBufferSize(),
+        hr = device->CreatePixelShader(primitive_batch_ps,
+                                       sizeof(primitive_batch_ps),
                                        0,
                                        &pix_shader);
         if (FAILED(hr)) {
@@ -244,8 +145,10 @@ namespace Coercri {
         m_psPixelShader.reset(pix_shader);
 
         // compile the 2nd pixel shader (for texture blits)
-        CompileShader(shader_code, shader_code_name, "PS_Tex", "ps_4_0_level_9_1", code_blob);
-        hr = device->CreatePixelShader(code_blob->GetBufferPointer(), code_blob->GetBufferSize(), 0, &pix_shader);
+        hr = device->CreatePixelShader(primitive_batch_ps_tex, 
+                                       sizeof(primitive_batch_ps_tex),
+                                       0, 
+                                       &pix_shader);
         if (FAILED(hr)) {
             throw DXError("CreatePixelShader (2) failed", hr);
         }

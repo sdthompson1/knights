@@ -45,6 +45,7 @@
 
 #include "../core/coercri_error.hpp"
 
+#include <algorithm>
 #include <cstddef>
 
 namespace Coercri {

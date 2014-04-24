@@ -28,6 +28,7 @@
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
 #include "status_display.hpp"
+#include "utf8string.hpp"
 
 #include "boost/weak_ptr.hpp"
 using namespace boost;
@@ -36,7 +37,6 @@ using namespace boost;
 #include <map>
 #include <set>
 #include <vector>
-using namespace std;
 
 class Anim;
 class ColourChange;
@@ -70,9 +70,9 @@ public:
     // controls from control.hpp will also always be available.)
     Player(int plyr_num,
            const Anim * anim, ItemType * dflt_item, 
-           const vector<const Control*> &control_set_,
+           const std::vector<const Control*> &control_set_,
            shared_ptr<const ColourChange> secured_home_cc,
-           const std::string &name_, int team_num_);
+           const UTF8String &name_, int team_num_);
 
     // Respawn type
     enum RespawnType { R_NORMAL, R_RANDOM_SQUARE, R_DIFFERENT_EVERY_TIME };
@@ -82,7 +82,7 @@ public:
     const LuaFunc & getRespawnFunc() const { return respawn_func; }
     
     // Add starting gear.
-    void addStartingGear(ItemType &itype, const vector<int> &nos);
+    void addStartingGear(ItemType &itype, const std::vector<int> &nos);
     
     // accessor functions
     DungeonMap * getHomeMap() const { return home_dmap; }
@@ -174,7 +174,7 @@ public:
     void computeAvailableControls();
 
     // get player name
-    const std::string & getName() const { return name; }
+    const UTF8String & getName() const { return name; }
 
     // "eliminated" flag.
     void setElimFlag() { elim_flag = true; }
@@ -207,12 +207,12 @@ private:
 
 private:
     void addTileControls(DungeonMap *dmap, const MapCoord &mc,
-                         map<const Control *, ControlInfo> &cmap, bool ahead,
+                         std::map<const Control *, ControlInfo> &cmap, bool ahead,
                          bool approaching, bool approach_based, MapHeight ht, shared_ptr<Creature>);
     void addItemControls(ItemType &itype,
-                         map<const Control *, ControlInfo> &cmap,
+                         std::map<const Control *, ControlInfo> &cmap,
                          shared_ptr<Creature>);
-    static void giveStartingGear(shared_ptr<Knight> knight, const vector<pair<ItemType*, int> > &items);
+    static void giveStartingGear(shared_ptr<Knight> knight, const std::vector<std::pair<ItemType*, int> > &items);
     void findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &facing);
     
 private:
@@ -235,10 +235,10 @@ private:
     MapDirection home_facing;
     const Anim * anim;
     ItemType * default_item;
-    const map<const ItemType *, int> * backpack_capacities;
-    const vector<const Control *> & control_set;
+    const std::map<const ItemType *, int> * backpack_capacities;
+    const std::vector<const Control *> & control_set;
 
-    map<const Control *, ControlInfo> current_controls;
+    std::map<const Control *, ControlInfo> current_controls;
     
     weak_ptr<Knight> knight;
     shared_ptr<RespawnTask> respawn_task;
@@ -246,13 +246,13 @@ private:
 
     shared_ptr<const ColourChange> secured_home_cc;
 
-    deque<vector<pair<ItemType *, int> > > gears;
+    std::deque<std::vector<std::pair<ItemType *, int> > > gears;
 
     int nskulls;
     int nkills;
     int frags;
     
-    std::string name;
+    UTF8String name;
     bool elim_flag;
 
     RespawnType respawn_type;

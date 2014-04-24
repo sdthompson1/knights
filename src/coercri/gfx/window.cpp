@@ -39,19 +39,26 @@
  */
 
 #include "window.hpp"
+#include "../core/coercri_error.hpp"
 
 namespace Coercri {
 
     void Window::addWindowListener(WindowListener *wl)
     {
+        if (wl == 0) {
+            throw CoercriError("Attempting to add null WindowListener");
+        }
         listeners.push_back(wl);
     }
 
     void Window::rmWindowListener(WindowListener *wl)
     {
-        for (std::vector<WindowListener*>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-            if (*it == wl) {
-                listeners.erase(it);
+        for (int i = 0; i < int(listeners.size()); ++i) {
+            if (listeners[i] == wl) {
+                if (i <= for_each_idx) {
+                    --for_each_idx;
+                }
+                listeners.erase(listeners.begin() + i);
                 break;
             }
         }

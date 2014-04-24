@@ -1,0 +1,140 @@
+/* Select sans-serif font, black text, white background, 1 em between paragraphs */
+body {
+  font-family: sans-serif;
+  color: black; 
+  background-color: white;
+  margin: 1em;
+}
+
+/* Select navy colour for headings */
+h1,h2,h3,h4 {
+  font-family: sans-serif;
+  color: navy;
+}
+
+/* h1 should be centred */
+h1 {
+  text-align: center;
+}
+
+/* Extra spacing for h2's, in order to better separate sections */
+h2 {
+  margin-top: 1.3em;
+}
+
+/* ... but don't use extra spacing for an h2 immediately below an h1 */
+h1 + h2 {
+  margin-top: 0;
+}
+
+
+/* Page header (gives a horizontal rule at top of page, also used
+   for the "nav bar" on Knights pages) */
+div.header {
+  padding: 0 0 0.5em 0;
+  margin: 0 0 1.7em 0;
+  border-bottom: solid thin;
+}
+
+div.header ul {
+  padding: 0 0 0 0;
+  margin: 0 0 0 0;
+}
+
+div.header li {
+  display: inline;
+  padding: 0 1em 0 0;
+  margin: 0 0 0 0;
+}
+
+div.header table {
+  width: 100%;
+}
+
+div.header td {
+  width: 33.3333%;
+}
+
+
+/* Footers */
+
+/* used for solarflare site */
+div.footer {
+  font-style: italic;
+  margin-top: 2.5em;
+  border-top: thin solid;
+}
+
+/* used for Knights Manual (with previous/next page links) */
+div.footer2 {
+  margin-top: 2.5em;
+  padding-top: 0.4em;
+  border-top: thin solid;
+}  
+
+div.footer2 table { 
+  width: 100%;
+}
+
+div.footer2 td {
+  width: 33.3333%;
+}
+
+/* used for knightsgame site */
+div.footer3 { 
+  margin-top: 2.5em;
+}
+
+
+/* "Pre" text ("codeBlock") should use monospace font */
+pre {
+  font-family: monospace;
+}
+
+
+/* Two column styling (e.g. used for solarflare front page) */
+div.left_column {
+  float: left;
+  width: 47%;
+}
+
+div.right_column {
+  float: right;
+  width: 47%;
+}
+
+img.small_img {
+  float: left;
+  padding-right: 1em;
+  border-style: none;
+}
+
+
+/* Spacers: these clear out the two column mode.
+ (I think only small_spacer is used currently, but not sure.) */
+
+div.spacer {
+  clear: both;
+  padding: 1em;
+}
+
+div.small_spacer {
+  clear: both;
+  padding: 0.25em;
+}
+
+
+/* Boxout on Knights front page */
+div.boxout {
+  float: right;
+  width: auto;
+  max-width: 25em;
+  background-color: #eeeeff;
+  padding: 0 2em 1.5em 1em;
+  margin: 0 0 0 0.5em;
+}
+
+/* Hidden field in the server list form */
+div.knights123 {
+  display: none;
+}

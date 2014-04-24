@@ -28,13 +28,12 @@
 using namespace boost;
 
 #include <vector>
-using namespace std;
 
 class Knight;
 class Player;
 
 // This routine simply calls dispelMagic() on each Knight.
-void DispelMagic(const vector<Player*> &);
+void DispelMagic(const std::vector<Player*> &);
 
 // DispelObserver: class that gets notified when a dispel magic occurs
 // (These are attached to Knights.)

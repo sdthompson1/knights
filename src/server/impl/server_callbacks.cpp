@@ -242,8 +242,8 @@ void ServerCallbacks::popUpWindow(const std::vector<TutorialWindow> &windows)
     buf.writeUbyte(SERVER_POP_UP_WINDOW);
     buf.writeVarInt(windows.size());
     for (std::vector<TutorialWindow>::const_iterator it = windows.begin(); it != windows.end(); ++it) {
-        buf.writeString(it->title);
-        buf.writeString(it->msg);
+        buf.writeString(it->title_latin1);
+        buf.writeString(it->msg_latin1);
         buf.writeVarInt(it->popup ? 1 : 0);
         buf.writeVarInt(it->gfx.size());
         ASSERT(it->cc.size() == it->gfx.size());

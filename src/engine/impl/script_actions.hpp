@@ -76,20 +76,20 @@ private:
 
 class A_DebugPrint : public LegacyAction {
 public:
-    explicit A_DebugPrint(const string &m) : msg(m) { }
+    explicit A_DebugPrint(const std::string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("DebugPrint");
-    string msg;
+    std::string msg;
 };
 
 class A_FlashMessage : public LegacyAction {
 public:
-    explicit A_FlashMessage(const string &m, int nt) : msg(m), num_times(nt) { }
+    explicit A_FlashMessage(const std::string &m, int nt) : msg(m), num_times(nt) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("FlashMessage");
-    string msg;
+    std::string msg;
     int num_times;
 };
 

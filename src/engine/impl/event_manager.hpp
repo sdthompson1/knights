@@ -55,17 +55,17 @@ public:
     static void onRmTile(DungeonMap &, const MapCoord &, Tile &, const Originator &);   // on_withdraw
 
     // A generic system for "event hooks"
-    void setupHooks(const map<string, LuaFunc> &h) { hooks = h; }
-    void runHook(const string &h, boost::shared_ptr<Creature> cr) const;
-    void runHook(const string &h, DungeonMap *dmap, const MapCoord &mc) const;
+    void setupHooks(const std::map<std::string, LuaFunc> &h) { hooks = h; }
+    void runHook(const std::string &h, boost::shared_ptr<Creature> cr) const;
+    void runHook(const std::string &h, DungeonMap *dmap, const MapCoord &mc) const;
     
 private:
     static void walkOverEvent(Creature &, const Originator &);
     static void withdrawEvent(Creature &);
 
-    void doHook(const string &name, const ActionData &ad) const;
+    void doHook(const std::string &name, const ActionData &ad) const;
 
-    map<string, LuaFunc> hooks;
+    std::map<std::string, LuaFunc> hooks;
 };
 
 #endif

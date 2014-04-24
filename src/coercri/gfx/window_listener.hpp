@@ -52,8 +52,15 @@ namespace Coercri {
 
     class GfxContext;
     class Region;
+    class UTF8String;
     class Window;
     
+    enum KeyEventType {
+        KEY_PRESSED,
+        KEY_RELEASED,
+        KEY_AUTO_REPEAT
+    };
+        
     class WindowListener {
     public:
 
@@ -72,37 +79,23 @@ namespace Coercri {
         virtual void onResize(int new_width, int new_height) { }
 
         // Window minimized / un-minimized
-        virtual void onActivate() { }
-        virtual void onDeactivate() { }
+        virtual void onMinimize() { }
+        virtual void onUnminimize() { }
 
         
         // Keyboard events
-
-        // onRawKey. Used for "raw" key press/release events.
-        // pressed = true for KEY DOWN event, false for KEY UP event.
-        // rk = raw key code, see key_code.hpp.
 
         // NOTE: If window loses focus while a key is held, the "key
         // up" msg may not be generated. It is recommended that
         // applications clear any "key pressed" flags they may be
         // holding whenever the window loses focus.
         
-        virtual void onRawKey(bool pressed, RawKey rk) { }
+        virtual void onKey(KeyEventType type, KeyCode code, KeyModifier mods) { }
 
-        
-        // onCookedKey. Used for "cooked" keypresses such as <a>, <A>, <F1>, <Ctrl-c>, <Alt-Shift-F8>
 
-        // ck = cooked key code, see key_code.hpp
-        // ch = character (Unicode code point) in case of CK_CHARACTER.
-        // mods = OR'd list of key modifiers.
-
-        // Note that the character returned is "case sensitive", so,
-        // for example, there is a difference between Ctrl-c and
-        // Ctrl-Shift-C and Ctrl-C (the latter with caps lock on).
-
-        // Note that CK_CHARACTER is only supposed to return printable characters.
-        
-        virtual void onCookedKey(CookedKey ck, int ch, KeyModifier mods) { }
+        // Text input events
+        // (is passed a valid UTF-8-encoded string)
+        virtual void onTextInput(const UTF8String &txt) { }
 
         
         // Mouse button events

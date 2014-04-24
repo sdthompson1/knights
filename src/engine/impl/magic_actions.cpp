@@ -37,6 +37,8 @@
 #include "task_manager.hpp"
 #include "teleport.hpp"
 
+using std::string;
+
 #ifdef _MSC_VER
     // fix "bug" with MSVC static libraries and global constructors
     extern "C" void InitMagicActions()
@@ -546,7 +548,7 @@ LegacyAction * A_ZombifyActor::Maker::make(ActionPars &pars) const
 bool A_ZombifyTarget::possible(const ActionData &ad) const
 {
     // Only knights can be zombified
-    return dynamic_pointer_cast<Knight>(ad.getVictim());
+    return bool(dynamic_pointer_cast<Knight>(ad.getVictim()));
 }
 
 bool A_ZombifyTarget::executeWithResult(const ActionData &ad) const

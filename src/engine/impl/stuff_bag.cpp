@@ -49,7 +49,7 @@ void StuffContents::giveToKnight(DungeonMap &dmap, const MapCoord &mc, shared_pt
     if (!kt) return;
     
     // Add items to kt's backpack; remove them from the stuff bag
-    for (vector<shared_ptr<Item> >::iterator it = contents.begin(); it != contents.end();
+    for (std::vector<shared_ptr<Item> >::iterator it = contents.begin(); it != contents.end();
     ++it) {
         int no_added = kt->addToBackpack((*it)->getType(), (*it)->getNumber());
         if (no_added > 0) {
@@ -66,7 +66,7 @@ void StuffContents::giveToKnight(DungeonMap &dmap, const MapCoord &mc, shared_pt
 void StuffContents::runDropEvents(DungeonMap &dmap, const MapCoord &mc,
                                   shared_ptr<Knight> kt) const
 {
-    for (vector<shared_ptr<Item> >::const_iterator it = contents.begin();
+    for (std::vector<shared_ptr<Item> >::const_iterator it = contents.begin();
     it != contents.end(); ++it) {
         (*it)->getType().onDrop(dmap, mc, kt);
     }
@@ -74,7 +74,7 @@ void StuffContents::runDropEvents(DungeonMap &dmap, const MapCoord &mc,
 
 void StuffContents::putIntoDisplacedItems(DungeonMap &dmap, shared_ptr<Knight> kt)
 {
-    for (vector<shared_ptr<Item> >::iterator it = contents.begin(); it != contents.end();
+    for (std::vector<shared_ptr<Item> >::iterator it = contents.begin(); it != contents.end();
     ++it) {
         dmap.addDisplacedItem(*it);
     }
@@ -150,16 +150,16 @@ void StuffManager::setStuffContents(DungeonMap &dmap, const MapCoord &mc, const 
     loc.mc = mc;
 
     stuff_map.erase(loc); // Just in case a "ghost" stuff bag is there already
-    stuff_map.insert(make_pair(loc, stuff));
+    stuff_map.insert(std::make_pair(loc, stuff));
 }
 
-const vector<shared_ptr<Item> > * StuffManager::getItems(DungeonMap *dmap, const MapCoord &mc) const
+const std::vector<shared_ptr<Item> > * StuffManager::getItems(DungeonMap *dmap, const MapCoord &mc) const
 {
     Location loc;
     loc.dmap = dmap;
     loc.mc = mc;
 
-    map<Location, StuffContents>::const_iterator it = stuff_map.find(loc);
+    std::map<Location, StuffContents>::const_iterator it = stuff_map.find(loc);
     if (it == stuff_map.end()) {
         return 0;
     } else {
@@ -178,7 +178,7 @@ void StuffManager::doPickUp(const MapCoord &mc, shared_ptr<Knight> actor)
     loc.dmap = actor->getMap();
     loc.mc = mc;
 
-    map<Location, StuffContents>::iterator it = stuff_map.find(loc);
+    std::map<Location, StuffContents>::iterator it = stuff_map.find(loc);
     if (it == stuff_map.end()) {
         // An empty stuff bag. (This shouldn't really happen.)
         return;
@@ -209,7 +209,7 @@ void StuffManager::doDrop(const MapCoord &mc, shared_ptr<Knight> actor)
     loc.dmap = actor->getMap();
     loc.mc = mc;
 
-    map<Location, StuffContents>::const_iterator it = stuff_map.find(loc);
+    std::map<Location, StuffContents>::const_iterator it = stuff_map.find(loc);
     if (it == stuff_map.end()) return;
 
     it->second.runDropEvents(*loc.dmap, mc, actor);
@@ -217,14 +217,14 @@ void StuffManager::doDrop(const MapCoord &mc, shared_ptr<Knight> actor)
 
 void StuffManager::countItems(std::map<ItemType *, int> &result) const
 {
-    for (map<Location, StuffContents>::const_iterator stuff_it = stuff_map.begin();
+    for (std::map<Location, StuffContents>::const_iterator stuff_it = stuff_map.begin();
     stuff_it != stuff_map.end();
     ++stuff_it) {
 
         shared_ptr<Item> item_here = stuff_it->first.dmap->getItem(stuff_it->first.mc);
         if (!item_here || &item_here->getType() != &getStuffBagItemType()) continue;  // no actual stuff bag here
         
-        for (vector<shared_ptr<Item> >::const_iterator item_it = stuff_it->second.getItems().begin();
+        for (std::vector<shared_ptr<Item> >::const_iterator item_it = stuff_it->second.getItems().begin();
         item_it != stuff_it->second.getItems().end();
         ++item_it) {
             ItemType * item_type = &((*item_it)->getType());

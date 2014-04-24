@@ -43,7 +43,6 @@
 #include "tile.hpp"
 
 #include <iostream> // used for A_DebugPrint
-using namespace std;
 
 #ifdef _MSC_VER
     // fix "bug" with MSVC static libraries and global constructors
@@ -171,7 +170,7 @@ LegacyAction * A_Damage::Maker::make(ActionPars &pars) const
 
 void A_DebugPrint::execute(const ActionData &ad) const
 {
-    cout << msg << endl;
+    std::cout << msg << std::endl;
 }
 
 A_DebugPrint::Maker A_DebugPrint::Maker::register_me;

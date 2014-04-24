@@ -84,9 +84,12 @@ namespace {
 
     // draw "key" lines in the ESC menu.
     void DrawKeyLine(int xc, int y, const Coercri::Color &col1, const Coercri::Color &col2,
-                     Coercri::GfxContext &gc, GfxManager &gm, const string &msg1, const string &msg2)
+                     Coercri::GfxContext &gc, GfxManager &gm, const char *msg1_utf8, const char *msg2_utf8)
     {
-        const char * separator = ": ";
+        const UTF8String separator = UTF8String::fromUTF8(": ");
+        const UTF8String msg1 = UTF8String::fromUTF8(msg1_utf8);
+        const UTF8String msg2 = UTF8String::fromUTF8(msg2_utf8);
+
         const int w1 = gm.getFont()->getTextWidth(msg1 + separator);
         const int w = gm.getFont()->getTextWidth(msg1 + separator + msg2);
         gc.drawText(xc - w/2, y, *gm.getFont(), msg1 + separator, col1);
@@ -95,9 +98,9 @@ namespace {
 
     struct CountingPrinter : Printer {
         explicit CountingPrinter(const Coercri::Font &font_) : font(font_), count(0) { }
-        int getTextWidth(const std::string &t) { return font.getTextWidth(t); }
-        int getTextHeight() { return font.getTextHeight(); }
-        void printLine(const std::string &, int, bool) { ++count; }
+        virtual int getTextWidth(const std::string &t_latin1) { return font.getTextWidth(UTF8String::fromLatin1(t_latin1)); }
+        virtual int getTextHeight() { return font.getTextHeight(); }
+        virtual void printLine(const std::string &, int, bool) { ++count; }
 
         const Coercri::Font &font;
         int count;
@@ -116,9 +119,9 @@ namespace {
     struct MyPrinter : Printer {
         MyPrinter(Coercri::GfxContext &gc_, const Coercri::Font &font_, const Coercri::Color &col_,
                   int x, int y) : gc(gc_), font(font_), col(col_), x0(x), y0(y) { }
-        int getTextWidth(const std::string &t) { return font.getTextWidth(t); }
-        int getTextHeight() { return font.getTextHeight(); }
-        void printLine(const std::string &text, int y, bool do_centre) { gc.drawText(x0, y0 + y, font, text, col); }
+        virtual int getTextWidth(const std::string &t_latin1) { return font.getTextWidth(UTF8String::fromLatin1(t_latin1)); }
+        virtual int getTextHeight() { return font.getTextHeight(); }
+        void printLine(const std::string &text_latin1, int y, bool do_centre) { gc.drawText(x0, y0 + y, font, UTF8String::fromLatin1(text_latin1), col); }
 
         Coercri::GfxContext &gc;
         const Coercri::Font &font;
@@ -143,8 +146,8 @@ public:
     TutorialWidget(GfxManager &gm_)
         : gm(gm_), scale_factor(1.0f) { }
     
-    void setTitle(const std::string &t) { title = t; }
-    void setText(const std::string &t) { text = t; }
+    void setTitle(const std::string &t) { title = t; }   // latin1
+    void setText(const std::string &t) { text = t; }     // latin1
     void setGfx(const std::vector<const Graphic *> &gfx_, const std::vector<ColourChange> &cc_)
         { gfx = gfx_; cc = cc_; }
     void setScaleFactor(float sf) { scale_factor = sf; }
@@ -248,7 +251,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            const Controller *ctrlr2,
                            int nplyrs,
                            bool dm_mode,
-                           const std::vector<std::string> &player_names,
+                           const std::vector<UTF8String> &player_names,
                            Coercri::Timer & timer_,
                            ChatList &chat_list_,
                            ChatList &ingame_player_list_,
@@ -363,7 +366,7 @@ void LocalDisplay::disableView(int p)
 }
 
 void LocalDisplay::goIntoObserverMode(int nplyrs,
-                                      const std::vector<std::string> &player_names)
+                                      const std::vector<UTF8String> &player_names)
 {
     dungeon_view.clear();
     mini_map.clear();
@@ -377,7 +380,7 @@ void LocalDisplay::goIntoObserverMode(int nplyrs,
     initialize(nplyrs, player_names, 0, 0, 0, speech_bubble);
 }
 
-void LocalDisplay::initialize(int nplyrs, const std::vector<std::string> &player_names,
+void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_names,
                               const Graphic *menu_gfx_centre,
                               const Graphic *menu_gfx_empty,
                               const Graphic *menu_gfx_highlight,
@@ -418,8 +421,8 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<std::string> &player
 
     if (tutorial_mode && controller1 && !controller1->usingActionBar()) {
         TutorialWindow win;
-        win.title = "NOTE";
-        win.msg = "You have selected old-style controls (keyboard only).\n\n"
+        win.title_latin1 = "NOTE";
+        win.msg_latin1 = "You have selected old-style controls (keyboard only).\n\n"
             "This tutorial is written for people who use the new-style controls (mouse "
             "and keyboard). However, it is perfectly playable using either set of controls.\n\n"
             "During the tutorial, both sets of controls will be available and you can use "
@@ -1047,8 +1050,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             have_sent_end_msg = true;
             TutorialWindow win;
             win.popup = true;
-            win.title = "Quest Complete";
-            win.msg = "Congratulations! You have completed your quest."
+            win.title_latin1 = "Quest Complete";
+            win.msg_latin1 = "Congratulations! You have completed your quest."
                 "^If you now want to play a proper game of Knights, you have the following options:"
                 "^* Multiplayer mode. Knights is designed first and foremost as a multiplayer game, and you can "
                 "play online, on a LAN, or in two-player split screen mode."
@@ -1089,13 +1092,13 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             if (winner_image) {
                 image = winner_image;
             } else {
-                gc.drawText(vp_x + 10, 50, *gm.getFont(), "WINNER", Coercri::Color(255,255,255));
+                gc.drawText(vp_x + 10, 50, *gm.getFont(), UTF8String::fromUTF8("WINNER"), Coercri::Color(255,255,255));
             }
         } else {
             if (loser_image) {
                 image = loser_image;
             } else {
-                gc.drawText(vp_x + 10, 50, *gm.getFont(), "LOSER", Coercri::Color(255,255,255));
+                gc.drawText(vp_x + 10, 50, *gm.getFont(), UTF8String::fromUTF8("LOSER"), Coercri::Color(255,255,255));
             }
         }
 
@@ -1112,7 +1115,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                                       my_colour_change ? *my_colour_change : ColourChange());
 
             if (!ready_msg_sent && !observer_mode && !tutorial_mode) {
-                const std::string msg = config_map.getString("game_over_msg");
+                const UTF8String msg = UTF8String::fromLatin1(config_map.getString("game_over_msg"));
                 const int x = vp_x + vp_width/2 - gm.getFont()->getTextWidth(msg)/2;
                 gc.drawText(x,
                             image_y + new_height + 2*th,
@@ -1164,7 +1167,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                 const int mos = mouse_over_slot[player_num];
                 if (mos >= 0 && mos < NUM_ACTION_BAR_SLOTS) {
                     const UserControl *ctrl = slot_controls[player_num][mos];
-                    const std::string & name = ctrl ? ctrl->getName() : "";
+                    const UTF8String name = UTF8String::fromLatin1(ctrl ? ctrl->getName() : "");
                     gc.drawText(action_bar_x, action_bar_y + pixels_per_square + 2, *txt_font, name, Coercri::Color(255,255,255));
                 }
             }
@@ -1182,27 +1185,27 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         const TutorialWindow& win = tutorial_popups.front();
 
         // replace 'control characters' in the message
-        std::string msg = replaceSpecialChars(win.msg);
-        msg += "\n\nPress SPACE to continue.";
+        std::string msg_latin1 = replaceSpecialChars(win.msg_latin1);
+        msg_latin1 += "\n\nPress SPACE to continue.";
 
         // figure out size/position of the window
         const int text_height = gm.getFont()->getTextHeight();
         const int title_height = std::max(text_height, pixels_per_square);
         const int title_yofs = pixels_per_square / 4;
-        const int msg_margin = gm.getFont()->getTextWidth("n");
+        const int msg_margin = gm.getFont()->getTextWidth(UTF8String::fromUTF8("n"));
         const int bottom_margin = text_height;
 
         int t_x, t_y, t_w, t_h;
 
         for (int i = 0; i < 2; ++i) {
             t_w = std::max(int(gc.getWidth() * (i==0 ? 0.45f : 0.9f)),
-                           gm.getFont()->getTextWidth("nCongratulations! You have completed your quest.n"));
+                           gm.getFont()->getTextWidth(UTF8String::fromUTF8("nCongratulations! You have completed your quest.n")));
             if (t_w > gc.getWidth()-6) t_w = gc.getWidth()-6;
             t_x = (gc.getWidth() - t_w)/2;
 
             CountingPrinter counter(*gm.getFont());
             TextFormatter tf2(counter, t_w - msg_margin*2, false);
-            tf2.printString(msg);
+            tf2.printString(msg_latin1);
 
             t_h = title_yofs + title_height + text_height + text_height * counter.count + bottom_margin;
             t_y = (gc.getHeight() - t_h)/2;
@@ -1218,8 +1221,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         gc.drawRectangle(t_rect, col3);
 
         // draw the title block
-        const std::string title = win.title;
-        const int title_width = gm.getFont()->getTextWidth(title + "9/9");
+        const UTF8String title = UTF8String::fromLatin1(win.title_latin1);
+        const int title_width = gm.getFont()->getTextWidth(title + UTF8String::fromUTF8("9/9"));
         const int x_margin = 20;
         const int title_xofs = std::max(0, (t_w - title_width)/2);
         const int title_txt_yofs = title_yofs + std::max(0, title_height - text_height)/2;
@@ -1228,7 +1231,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         // draw the message
         MyPrinter pr(gc, *gm.getFont(), col3, t_x + msg_margin, t_y + title_yofs + title_height + text_height);
         TextFormatter tf(pr, t_w - msg_margin*2, false);
-        tf.printString(msg);
+        tf.printString(msg_latin1);
     }
 
     // Handle fade to black if necessary.
@@ -1286,13 +1289,13 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     int pause_height = (9*th/2) + (menu_strings ? menu_strings->size() : 0)*th;
 
     // work out width
-    int maxw1 = gm.getFont()->getTextWidth("ESC:");
-    int maxw2 = gm.getFont()->getTextWidth("Return to game");
+    int maxw1 = gm.getFont()->getTextWidth(UTF8String::fromUTF8("ESC:"));
+    int maxw2 = gm.getFont()->getTextWidth(UTF8String::fromUTF8("Return to game"));
     if (menu_strings) {
         for (int i = 0; i < menu_strings->size(); ++i) {
-            const pair<string, string> & p = (*menu_strings)[i];
-            maxw1 = std::max(maxw1, gm.getFont()->getTextWidth(p.first + ":"));
-            maxw2 = std::max(maxw2, gm.getFont()->getTextWidth(p.second));
+            const std::pair<std::string, std::string> & p = (*menu_strings)[i];
+            maxw1 = std::max(maxw1, gm.getFont()->getTextWidth(UTF8String::fromLatin1(p.first + ":")));
+            maxw2 = std::max(maxw2, gm.getFont()->getTextWidth(UTF8String::fromLatin1(p.second)));
         }
     }
 
@@ -1320,7 +1323,7 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     }
 
     // draw "header" lines
-    const string pstr = is_paused ? "GAME PAUSED" : "KNIGHTS";
+    const UTF8String pstr = UTF8String::fromUTF8(is_paused ? "GAME PAUSED" : "KNIGHTS");
     const int pwidth = gm.getFont()->getTextWidth(pstr);
     
     gc.drawText(vp_x + vp_width/2 - pwidth/2, y, *gm.getFont(), pstr, col1);
@@ -1336,11 +1339,11 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     if (menu_strings) {
 
         for (int i = 0; i < menu_strings->size(); ++i) {
-            pair<string, string> p = (*menu_strings)[i];
+            std::pair<std::string, std::string> p = (*menu_strings)[i];
             if (!p.first.empty()) p.first += ":";
 
-            const int w1 = gm.getFont()->getTextWidth(p.first);
-            const int w2 = gm.getFont()->getTextWidth(p.second);
+            const int w1 = gm.getFont()->getTextWidth(UTF8String::fromLatin1(p.first));
+            const int w2 = gm.getFont()->getTextWidth(UTF8String::fromLatin1(p.second));
 
             const int left_bound = w1 + horiz_gap;
             const int right_bound = pause_width - w2;
@@ -1350,8 +1353,8 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
             // Move right if necessary, so as not to overlap left-hand text.
             if (x < left_bound) x = left_bound;
                 
-            gc.drawText(x0,     y, *gm.getFont(), p.first, col3);
-            gc.drawText(x0 + x, y, *gm.getFont(), p.second, col4);
+            gc.drawText(x0,     y, *gm.getFont(), UTF8String::fromLatin1(p.first), col3);
+            gc.drawText(x0 + x, y, *gm.getFont(), UTF8String::fromLatin1(p.second), col4);
             y += th;
         }
     }
@@ -1924,8 +1927,8 @@ void LocalDisplay::updateTutorialWidget()
         setWidgetEnabled(*tutorial_right, false);
     } else {
         const TutorialWindow &win = tutorial_windows[tutorial_selected_window];
-        tutorial_widget->setTitle(win.title);
-        tutorial_widget->setText(replaceSpecialChars(win.msg));
+        tutorial_widget->setTitle(win.title_latin1);
+        tutorial_widget->setText(replaceSpecialChars(win.msg_latin1));
         tutorial_widget->setGfx(win.gfx, win.cc);
 
         std::ostringstream str;

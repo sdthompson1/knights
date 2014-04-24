@@ -60,6 +60,8 @@
 extern "C" void InitControls() { }
 #endif
 
+using std::vector;
+
 namespace {
     void DoStun(shared_ptr<Creature> actor, int gvt) 
     {
@@ -597,7 +599,7 @@ namespace {
 
 bool A_PickLock::possible(const ActionData &ad) const
 {
-    return GetLockPickTarget(ad);
+    return bool(GetLockPickTarget(ad));
 }
 
 void A_PickLock::execute(const ActionData &ad) const

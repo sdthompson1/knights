@@ -123,7 +123,7 @@ void KnightsConfig::initializeGame(HomeManager &home_manager,
                                    EventManager &event_manager,
                                    TaskManager &task_manager,
                                    const std::vector<int> &hse_cols,
-                                   const std::vector<std::string> &player_names) const
+                                   const std::vector<UTF8String> &player_names) const
 {
     pimpl->initializeGame(home_manager,
                           players,

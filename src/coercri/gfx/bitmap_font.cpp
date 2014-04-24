@@ -6,7 +6,7 @@
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2014.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -42,10 +42,24 @@
 #include "gfx_context.hpp"
 #include "kern_table.hpp"
 #include "pixel_array.hpp"
+#include "../core/coercri_error.hpp"
+#include "../core/utf8string.hpp"
+#include "../external/utf8.h"
 
 #include <cstring>
 
 namespace Coercri {
+
+    namespace {
+        int BringCharIntoRange(int c)
+        {
+            if (c < 0 || c > 255) {
+                return '?';
+            } else {
+                return c;
+            }
+        }
+    }
 
     BitmapFont::BitmapFont(boost::shared_ptr<PixelArray> pixels)
     {
@@ -112,9 +126,11 @@ namespace Coercri {
         std::memset(&characters[0], 0, sizeof(characters));
     }
 
-    void BitmapFont::setupCharacter(char c, int width, int height, int xofs, int yofs, int xadvance)
+    void BitmapFont::setupCharacter(int ch, int width, int height, int xofs, int yofs, int xadvance)
     {
-        int ch = static_cast<int>(static_cast<unsigned char>(c));
+        if (ch < 0 || ch > 255) {
+            throw CoercriError("BitmapFont: unsupported character");
+        }
         if (ch == 32) {
             characters[ch] = static_cast<Character*>(std::malloc(sizeof(Character)));
         } else {
@@ -127,9 +143,11 @@ namespace Coercri {
         characters[ch]->xadvance = xadvance;
     }
 
-    void BitmapFont::plotPixel(char c, int x, int y, unsigned char alpha)
+    void BitmapFont::plotPixel(int ch, int x, int y, unsigned char alpha)
     {
-        int ch = static_cast<int>(static_cast<unsigned char>(c));
+        if (ch < 0 || ch > 255) {
+            throw CoercriError("BitmapFont: unsupported character");
+        }
 
         if (ch == 0 || ch == 32) return;
         if (x < 0 || x >= characters[ch]->width) return;
@@ -148,54 +166,58 @@ namespace Coercri {
         }
     }
     
-    void BitmapFont::drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const
+    void BitmapFont::drawText(GfxContext &dest, int x, int y, const UTF8String &txt, Color col) const
     {
+        const std::string &text = txt.asUTF8();
+        
         bool use_input_alpha = (col.a != 255);
         int input_alpha = col.a;
         
-        char previous = 0;
+        int previous = 0;
 
         static std::vector<Pixel> pixel_buf;
         pixel_buf.clear();
         
-        for (std::string::const_iterator it = text.begin(); it != text.end(); ++it) {
+        utf8::iterator<std::string::const_iterator>
+            begin(text.begin(), text.begin(), text.end()),
+            end(text.end(), text.begin(), text.end()),
+            it;
 
-            const char c = *it;
+        for (it = begin; it != end; ++it) {
 
-            if (c > 0 && c < 256) {
+            int c = BringCharIntoRange(*it);
 
-                // apply kerning if required
-                if (previous && kern_table) {
-                    x += kern_table->getKern(previous, c);
-                }
+            // apply kerning if required
+            if (previous && kern_table) {
+                x += kern_table->getKern(previous, c);
+            }
                 
-                if (c != 32) {  // non-space character
+            if (c != 32) {  // non-space character
 
-                    const int width = characters[c]->width;
-                    const int height = characters[c]->height;
-                    const int xofs = characters[c]->xofs;
-                    const int yofs = characters[c]->yofs;                    
+                const int width = characters[c]->width;
+                const int height = characters[c]->height;
+                const int xofs = characters[c]->xofs;
+                const int yofs = characters[c]->yofs;                    
                     
-                    for (int j = 0; j < height; ++j) {
-                        for (int i = 0; i < width; ++i) {
-                            unsigned char font_alpha = characters[c]->pixels[j * width + i];
-                            if (font_alpha > 0) {
+                for (int j = 0; j < height; ++j) {
+                    for (int i = 0; i < width; ++i) {
+                        unsigned char font_alpha = characters[c]->pixels[j * width + i];
+                        if (font_alpha > 0) {
                             
-                                if (use_input_alpha) {
-                                    col.a = static_cast<unsigned char>(int(font_alpha) * input_alpha / 255);
-                                } else {
-                                    col.a = font_alpha;
-                                }
-
-                                pixel_buf.push_back(Pixel(x + xofs + i, y + yofs + j, col));
+                            if (use_input_alpha) {
+                                col.a = static_cast<unsigned char>(int(font_alpha) * input_alpha / 255);
+                            } else {
+                                col.a = font_alpha;
                             }
+
+                            pixel_buf.push_back(Pixel(x + xofs + i, y + yofs + j, col));
                         }
                     }
                 }
-                
-                x += characters[c]->xadvance;
-                previous = c;
             }
+                
+            x += characters[c]->xadvance;
+            previous = c;
         }
 
         if (!pixel_buf.empty()) {
@@ -203,19 +225,25 @@ namespace Coercri {
         }
     }
 
-    void BitmapFont::getTextSize(const std::string &text, int &w, int &h) const
+    void BitmapFont::getTextSize(const UTF8String &txt, int &w, int &h) const
     {
+        const std::string & text = txt.asUTF8();
+        
+        utf8::iterator<std::string::const_iterator>
+            begin(text.begin(), text.begin(), text.end()),
+            end(text.end(), text.begin(), text.end()),
+            it;
+
         w = 0;
-        char previous = 0;
-        for (std::string::const_iterator it = text.begin(); it != text.end(); ++it) {
-            const char c = *it;
-            if (c > 0 && c < 256) {
-                if (previous && kern_table) {
-                    w += kern_table->getKern(previous, c);
-                }
-                w += characters[*it]->xadvance;
-                previous = c;
+        int previous = 0;
+
+        for (it = begin; it != end; ++it) {
+            int c = BringCharIntoRange(*it);
+            if (previous && kern_table) {
+                w += kern_table->getKern(previous, c);
             }
+            w += characters[c]->xadvance;
+            previous = c;
         }
         h = text_height;
     }

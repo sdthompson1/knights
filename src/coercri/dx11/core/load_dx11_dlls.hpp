@@ -49,7 +49,6 @@
 #define COERCRI_LOAD_DX11_DLLS_HPP
 
 #include <d3d11.h>
-#include <d3dcompiler.h>
 
 namespace Coercri {
 
@@ -79,18 +78,6 @@ namespace Coercri {
                                       ID3D11Device **ppDevice,
                                       D3D_FEATURE_LEVEL *pFeatureLevel,
                                       ID3D11DeviceContext **ppImmediateContext);
-    
-    HRESULT D3DCompile_Wrapper(LPCVOID pSrcData,
-                               SIZE_T SrcDataSize,
-                               LPCSTR pSourceName,
-                               const D3D_SHADER_MACRO *pDefines,
-                               ID3DInclude *pInclude,
-                               LPCSTR pEntryPoint,
-                               LPCSTR pTarget,
-                               UINT Flags1,
-                               UINT Flags2,
-                               ID3DBlob **ppCode,
-                               ID3DBlob **ppErrorMsgs);
 }
 
 #endif

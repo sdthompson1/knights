@@ -72,7 +72,7 @@ bool LoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gc
     return false;
 }
 
-LoadingScreen::LoadingScreen(int port, const std::string &name, bool single_player, bool menu_strict,
+LoadingScreen::LoadingScreen(int port, const UTF8String &name, bool single_player, bool menu_strict,
                              bool tutorial, bool autostart)
     : knights_app(0), server_port(port), player_name(name), single_player_mode(single_player), 
       menu_strict_mode(menu_strict),
@@ -113,13 +113,13 @@ void LoadingScreen::update()
         server->startNewGame(loader->knights_config, "#SplitScreenGame");
 
         // set dummy player name.
-        std::string dummy_player_name;
+        UTF8String dummy_player_name;
         bool action_bar_controls;
         if (single_player_mode || tutorial_mode) {
-            dummy_player_name = "Player 1";
+            dummy_player_name = UTF8String::fromUTF8("Player 1");
             action_bar_controls = knights_app->getOptions().new_control_system || tutorial_mode;
         } else {
-            dummy_player_name = "#SplitScreenPlayer";
+            dummy_player_name = UTF8String::fromUTF8("#SplitScreenPlayer");
             action_bar_controls = false;
         }
 
@@ -166,5 +166,5 @@ void LoadingScreen::update()
 void LoadingScreen::draw(Coercri::GfxContext &gc)
 {
     if (!knights_app) return;
-    XCentre(gc, *knights_app->getFont(), knights_app->getFont()->getTextHeight() + 15, "LOADING");
+    XCentre(gc, *knights_app->getFont(), knights_app->getFont()->getTextHeight() + 15, UTF8String::fromUTF8("LOADING"));
 }

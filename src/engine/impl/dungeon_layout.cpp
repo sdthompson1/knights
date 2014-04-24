@@ -30,6 +30,8 @@
 
 #include "lua.hpp"
 
+using std::string;
+
 namespace {
     void MakeLowerCase(std::string &s) {
         for (int i=0; i<s.size(); ++i) {

@@ -35,6 +35,8 @@
 #include "rng.hpp"
 #include "trap.hpp"
 
+using std::max;
+
 //
 // constructor
 //

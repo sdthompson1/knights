@@ -27,11 +27,10 @@
 #include "guichan.hpp"
 
 #include <string>
-using namespace std;
 
 class GuiButton : public gcn::Button {
 public:
-    explicit GuiButton(const string &txt) : gcn::Button(txt) { }
+    explicit GuiButton(const std::string &txt) : gcn::Button(txt) { }
     void draw(gcn::Graphics *graphics);
     void drawFrame(gcn::Graphics *graphics) { }
 };

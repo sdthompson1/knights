@@ -60,6 +60,7 @@
 #include "gcn/cg_font.hpp"
 #include "gcn/cg_listener.hpp"
 #include "gfx/freetype_ttf_loader.hpp"
+#include "gfx/load_bmp.hpp"
 #include "gfx/window_listener.hpp"
 #include "network/network_connection.hpp"
 #include "network/udp_socket.hpp"
@@ -95,7 +96,6 @@
 
 #ifdef WIN32
 #include <shlobj.h>
-#include "SDL_syswm.h"
 #endif
 
 #ifdef min
@@ -203,7 +203,7 @@ public:
     boost::shared_ptr<Coercri::CGListener> cg_listener;
 
     // we do not want these shared, we want to be sure there is only one copy of each:
-    auto_ptr<Screen> current_screen, requested_screen;
+    std::auto_ptr<Screen> current_screen, requested_screen;
     
     unsigned int last_time;  // last time update() was called
     unsigned int update_interval;
@@ -238,7 +238,7 @@ public:
 
     
     // server object.
-    string server_config_filename;
+    std::string server_config_filename;
     boost::scoped_ptr<KnightsServer> knights_server;
 
     // incoming network connections (to the knights_server above)
@@ -272,10 +272,10 @@ public:
 
     // autostart mode
     bool autostart;
-
+    
     // are we using DX11 or SDL
     bool using_dx11;
-    
+
     // functions
     KnightsAppImpl() : last_time(0), update_interval(0), running(true), player_name_changed(false) { }
 
@@ -294,7 +294,7 @@ public:
 // Constructor (One-Time Initialization)
 /////////////////////////////////////////////////////
 
-KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &resource_dir, const string &config_filename,
+KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &resource_dir, const std::string &config_filename,
                        bool autostart)
     : pimpl(new KnightsAppImpl)
 {
@@ -370,7 +370,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     }
     
     // Set up Coercri
-    // -- Use DX11 if available, but fall back to SDL if that fails.
+    //  -- Use DX11 if available, but fall back to SDL if that fails.
     try {
 
 #ifdef WIN32
@@ -379,7 +379,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
 #ifndef NDEBUG
         flags = D3D11_CREATE_DEVICE_DEBUG;
 #endif
-        pimpl->gfx_driver.reset(new Coercri::DX11GfxDriver(D3D_DRIVER_TYPE_HARDWARE, 
+        pimpl->gfx_driver.reset(new Coercri::DX11GfxDriver(D3D_DRIVER_TYPE_HARDWARE,
                                                            flags,
                                                            D3D_FEATURE_LEVEL_9_1));
         pimpl->using_dx11 = true;
@@ -388,7 +388,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
         throw Coercri::CoercriError("This platform does not support DirectX");
 #endif // WIN32
 
-    } catch (Coercri::CoercriError &) {
+    } catch (const Coercri::CoercriError &) {
         pimpl->gfx_driver.reset(new Coercri::SDLGfxDriver);
         pimpl->using_dx11 = false;
     }
@@ -412,16 +412,14 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
     curl_global_init(CURL_GLOBAL_NOTHING);
     
-    // Set the Windows resource number for the window icon
-    pimpl->gfx_driver->setWindowsIcon(1);
-    
     // Open the game window.
     bool fullscreen = pimpl->options->fullscreen;
     if (display_type == DT_WINDOWED) fullscreen = false;
     if (display_type == DT_FULLSCREEN) fullscreen = true;
     int width, height;
     if (fullscreen) {
-        getDesktopResolution(width, height);
+        // width, height are not needed to create a fullscreen window. just set them to zero.
+        width = height = 0;
     } else {
         getWindowedModeSize(width, height);
     }
@@ -440,21 +438,40 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
             throw;
         }
     }
-    
+
+    // Set the window icon
+    {
+        RStream str("client/knights_icon_48.bmp");
+        boost::shared_ptr<Coercri::PixelArray> parr = Coercri::LoadBMP(str);
+        // do color keying
+        for (int j = 0; j < parr->getHeight(); ++j) {
+            for (int i = 0; i < parr->getWidth(); ++i) {
+                if ((*parr)(i, j) == Coercri::Color(255, 0, 255, 255)) {
+                    (*parr)(i, j) = Coercri::Color(0, 0, 0, 0);
+                }
+            }
+        }
+        try {
+            pimpl->window->setIcon(*parr);
+        } catch (const Coercri::CoercriError &) {
+            // ignore
+        }
+    }
+
     // Get the font names.
     // NOTE: we always try to load TTF before bitmap fonts, irrespective of the order they are in the file.
-    vector<string> ttf_font_names, bitmap_font_names;
+    std::vector<std::string> ttf_font_names, bitmap_font_names;
     {
         RStream str("client/fonts.txt");
 
         while (str) {
-            string x;
+            std::string x;
             getline(str, x);
         
             // Left trim
-            x.erase(x.begin(), find_if(x.begin(), x.end(), not1(ptr_fun<char,bool>(IsSpace))));
+            x.erase(x.begin(), find_if(x.begin(), x.end(), std::not1(std::ptr_fun<char,bool>(IsSpace))));
             // Right trim
-            x.erase(find_if(x.rbegin(), x.rend(), not1(ptr_fun<char,bool>(IsSpace))).base(), x.end());
+            x.erase(find_if(x.rbegin(), x.rend(), std::not1(std::ptr_fun<char,bool>(IsSpace))).base(), x.end());
             
             if (x.empty()) continue;
         
@@ -466,7 +483,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     // Font for the gui
     pimpl->font = LoadFont(*pimpl->ttf_loader,
                            ttf_font_names, 
-                           bitmap_font_names, 
+                           bitmap_font_names,
                            pimpl->config_map.getInt("font_size"));
 
     // Setup gfx & sound managers
@@ -504,9 +521,8 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
 
 void KnightsApp::getWindowedModeSize(int &width, int &height)
 {
-    getDesktopResolution(width, height);
-    width = std::min(width, std::max(100, pimpl->options->window_width));
-    height = std::min(height, std::max(100, pimpl->options->window_height));
+    width = std::max(100, pimpl->options->window_width);
+    height = std::max(100, pimpl->options->window_height);
 }
 
 
@@ -514,7 +530,7 @@ void KnightsApp::getWindowedModeSize(int &width, int &height)
 // Screen handling
 //////////////////////////////////////////////
 
-void KnightsApp::requestScreenChange(auto_ptr<Screen> screen)
+void KnightsApp::requestScreenChange(std::auto_ptr<Screen> screen)
 {
     pimpl->requested_screen = screen;
 }
@@ -562,12 +578,12 @@ void KnightsApp::repeatLastMouseInput()
     pimpl->cg_listener->repeatLastMouseInput();
 }
 
-const std::string & KnightsApp::getPlayerName() const
+const UTF8String & KnightsApp::getPlayerName() const
 {
     return pimpl->options->player_name;
 }
 
-void KnightsApp::setPlayerName(const std::string &name) 
+void KnightsApp::setPlayerName(const UTF8String &name) 
 {
     if (name != pimpl->options->player_name) {
         pimpl->options->player_name = name;
@@ -708,13 +724,6 @@ FileCache & KnightsApp::getFileCache() const
     return pimpl->file_cache;
 }
 
-void KnightsApp::getDesktopResolution(int &w, int &h) const
-{
-    Coercri::GfxDriver::DisplayMode mode = pimpl->gfx_driver->getDesktopMode();
-    w = mode.width;
-    h = mode.height;
-}
-
 const Graphic * KnightsApp::getLoserImage() const
 {
     return pimpl->loser_image;
@@ -786,7 +795,7 @@ void KnightsApp::setAndSaveOptions(const Options &opts)
 void KnightsAppImpl::saveOptions()
 {
     if (!options_filename.empty()) {
-        ofstream str(options_filename.c_str(), std::ios_base::out | std::ios_base::trunc);
+        std::ofstream str(options_filename.c_str(), std::ios_base::out | std::ios_base::trunc);
         SaveOptions(*options, str);
         player_name_changed = false;
     }
@@ -878,10 +887,10 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
 
 void KnightsApp::runKnights()
 {
-    auto_ptr<Screen> initial_screen;
+    std::auto_ptr<Screen> initial_screen;
 
     if (pimpl->autostart) {
-        initial_screen.reset(new LoadingScreen(-1, "", true, true, false, true));  // single player on, menu-strict on, tutorial off, autostart on
+        initial_screen.reset(new LoadingScreen(-1, UTF8String(), true, true, false, true));  // single player on, menu-strict on, tutorial off, autostart on
     } else {
         // Go to title screen.
         if (pimpl->options->first_time) {
@@ -896,7 +905,7 @@ void KnightsApp::runKnights()
     executeScreenChange();
 
     // Error Handling system.
-    string error;
+    std::string error;
     int num_errors = 0;
     
     // Main Loop
@@ -915,7 +924,7 @@ void KnightsApp::runKnights()
                 // Error detected: try to go to ErrorScreen.
                 // (If going to ErrorScreen itself throws an error, then num_errors will keep increasing
                 // and eventually we will abort, see above.)
-                auto_ptr<Screen> screen;
+                std::auto_ptr<Screen> screen;
                 screen.reset(new ErrorScreen(error));
                 requestScreenChange(screen);
                 executeScreenChange();
@@ -995,9 +1004,9 @@ void KnightsApp::runKnights()
             // These are big and better displayed on stdout than in a guichan dialog box:
             throw;
         } catch (std::exception &e) {
-            error = string("ERROR: ") + e.what();
+            error = std::string("ERROR: ") + e.what();
         } catch (gcn::Exception &e) {
-            error = string("Guichan Error: ") + e.getMessage();
+            error = std::string("Guichan Error: ") + e.getMessage();
         } catch (...) {
             error = "Unknown Error";
         }
@@ -1005,33 +1014,33 @@ void KnightsApp::runKnights()
 
     bool save_options_required = false;
 
-#ifdef WIN32
     if (pimpl->options) {
-        // Get our HWND from SDL.
-        SDL_SysWMinfo inf = {0};
-        SDL_VERSION(&inf.version);
-        if (SDL_GetWMInfo(&inf)) {
+        // If the window is maximized then don't try to save the size
+        // as it then looks weird when we next start up the program.
+        // Ditto if we are in full screen mode.
 
-            // If the window is maximized then don't try to save the size
-            // as it then looks weird when we next start up the program.
-            // Ditto if we are in full screen mode.
-            if (!IsZoomed(inf.window) && !pimpl->window->isFullScreen()) {
+        bool is_maximized = false;
+        try {
+            is_maximized = pimpl->window->isMaximized();
+        } catch (const Coercri::CoercriError &) {
+            // empty
+        }
+
+        if (!is_maximized && !pimpl->window->isFullScreen()) {
             
-                // Get current window size
-                int width = 0, height = 0;
-                pimpl->window->getSize(width, height);
-
-                // If it differs from the saved window size, then update the
-                // saved window size and re-save the options file.
-                if (width != pimpl->options->window_width || height != pimpl->options->window_height) {
-                    pimpl->options->window_width = width;
-                    pimpl->options->window_height = height;
-                    save_options_required = true;
-                }
+            // Get current window size
+            int width = 0, height = 0;
+            pimpl->window->getSize(width, height);
+            
+            // If it differs from the saved window size, then update the
+            // saved window size and re-save the options file.
+            if (width != pimpl->options->window_width || height != pimpl->options->window_height) {
+                pimpl->options->window_width = width;
+                pimpl->options->window_height = height;
+                save_options_required = true;
             }
         }
     }
-#endif
 
     // If player name has been changed then we need to save options
     if (pimpl->player_name_changed) save_options_required = true;
@@ -1348,7 +1357,7 @@ bool KnightsAppImpl::processBroadcastMsgs()
 //////////////////////////////////////////////
 
 void KnightsApp::createGameManager(boost::shared_ptr<KnightsClient> knights_client, bool single_player, 
-                                   bool tutorial_mode, bool autostart_mode, const std::string &my_player_name)
+                                   bool tutorial_mode, bool autostart_mode, const UTF8String &my_player_name)
 {
     if (pimpl->game_manager) throw UnexpectedError("GameManager created twice");
     pimpl->game_manager.reset(new GameManager(*this, knights_client, pimpl->timer, single_player, tutorial_mode,

@@ -73,6 +73,8 @@ namespace Coercri {
         virtual void drawGraphic(int x, int y, const Graphic &graphic);
         virtual void fillRectangle(const Rectangle &rect, Color col);
 
+        virtual boost::shared_ptr<PixelArray> takeScreenshot();
+        
         // for those who want more low-level access:
         void lock();    // ensures surface is locked
         void unlock();  // ensures surface is unlocked

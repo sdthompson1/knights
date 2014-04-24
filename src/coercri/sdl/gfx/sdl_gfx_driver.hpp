@@ -55,19 +55,18 @@ namespace Coercri {
         SDLGfxDriver();
 
         // Functions overridden from GfxDriver
-        virtual DisplayModeVector getFullScreenModes();
-        virtual DisplayMode getDesktopMode();
         virtual boost::shared_ptr<Window> createWindow(int width, int height,
                                                        bool resizable, bool fullscreen,
                                                        const std::string &title);
         virtual boost::shared_ptr<Graphic> createGraphic(boost::shared_ptr<const PixelArray> pixels, int hx = 0, int hy = 0);
         virtual bool pollEvents();
-        virtual void setWindowsIcon(int resource_id);
         
     private:
         SDLSubSystemHandle video_subsystem;
-        int icon_id;
-        DisplayMode desktop_mode;
+        int desktop_width;
+        int desktop_height;
+        
+        int surrogate_pair_start;
     };
     
 }

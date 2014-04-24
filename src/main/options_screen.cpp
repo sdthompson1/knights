@@ -106,7 +106,7 @@ public:
     void action(const gcn::ActionEvent &event);
     void keyPressed(gcn::KeyEvent &ke);
     void keyReleased(gcn::KeyEvent &ke);
-    void onRawKey(bool pressed, Coercri::RawKey rk);
+    void onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier);
 
     void transferToGui();
     void setupChangeControls(int);
@@ -146,7 +146,6 @@ private:
     int change_key;
     int change_player;
 
-    int desktop_width, desktop_height;
     bool previous_fullscreen;
 
     std::string bad_key_msg;
@@ -155,7 +154,6 @@ private:
 OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     : knights_app(app), current_opts(app.getOptions()), change_active(false)
 {
-    app.getDesktopResolution(desktop_width, desktop_height);
     previous_fullscreen = current_opts.fullscreen;
     
     container.reset(new gcn::Container);
@@ -291,7 +289,7 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     gfx_driver_label.reset(new gcn::Label(gfx_str));
     container->add(gfx_driver_label.get(), pad, y);
     y += gfx_driver_label->getHeight() + 15;
-    
+
     restore_button.reset(new GuiButton("Restore Defaults"));
     restore_button->addActionListener(this);
     container->add(restore_button.get(), overall_width/2 - restore_button->getWidth()/2, y);
@@ -325,14 +323,14 @@ void OptionsScreenImpl::action(const gcn::ActionEvent &event)
             // Note: Save the options FIRST, because switchToFullScreen or switchToWindowed could throw.
             knights_app.setAndSaveOptions(current_opts);
             if (current_opts.fullscreen && !previous_fullscreen) {
-                window->switchToFullScreen(desktop_width, desktop_height);
+                window->switchToFullScreen();
             } else if (!current_opts.fullscreen && previous_fullscreen) {
                 int w, h;
                 knights_app.getWindowedModeSize(w, h);
                 window->switchToWindowed(w, h);
             }
         }
-        auto_ptr<Screen> new_screen(new TitleScreen);
+        std::auto_ptr<Screen> new_screen(new TitleScreen);
         knights_app.requestScreenChange(new_screen);
         return;
     }
@@ -411,7 +409,7 @@ void OptionsScreenImpl::transferToGui()
                     control_setting[which_label][j]->setCaption("");
                 }
             } else {
-                control_setting[which_label][j]->setCaption(Coercri::RawKeyName(current_opts.ctrls[i][j]));
+                control_setting[which_label][j]->setCaption(Coercri::KeyCodeToKeyName(current_opts.ctrls[i][j]));
             }
             control_setting[which_label][j]->adjustSize();
         }
@@ -420,14 +418,14 @@ void OptionsScreenImpl::transferToGui()
     // now the chat keys (overrides the above)
     if (!split_screen) {
         // global chat key setting
-        control_setting[1][0]->setCaption(Coercri::RawKeyName(current_opts.global_chat_key));
+        control_setting[1][0]->setCaption(Coercri::KeyCodeToKeyName(current_opts.global_chat_key));
         if (change_active && change_player == 3 && change_key == 0) {
             control_setting[1][0]->setCaption("<Press>");
         }
         control_setting[1][0]->adjustSize();
 
         // team chat key setting
-        control_setting[1][1]->setCaption(Coercri::RawKeyName(current_opts.team_chat_key));
+        control_setting[1][1]->setCaption(Coercri::KeyCodeToKeyName(current_opts.team_chat_key));
         if (change_active && change_player == 3) {
             if (change_key == 1) {
                 control_setting[1][1]->setCaption("<Press>");
@@ -515,11 +513,11 @@ void OptionsScreenImpl::setupChangeControls(int i)
     transferToGui();
 }
 
-void OptionsScreenImpl::onRawKey(bool pressed, Coercri::RawKey rk)
+void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier)
 {
-    if (pressed && change_active) {
+    if (type == Coercri::KEY_PRESSED && change_active) {
 
-        if (rk == Coercri::RK_ESCAPE) {
+        if (kc == Coercri::KC_ESCAPE) {
             // cancel!
             change_active = false;
             bad_key_msg = "";
@@ -530,13 +528,13 @@ void OptionsScreenImpl::onRawKey(bool pressed, Coercri::RawKey rk)
             // Check for duplicate control keys
             if (change_player == 3) {
                 // special case: changing chat keys
-                if (change_key == 1 && rk == current_opts.global_chat_key) {
+                if (change_key == 1 && kc == current_opts.global_chat_key) {
                     allowed = false;
                 }
             } else {
                 // normal case: changing player controls
                 for (int i = 0; i < change_key; ++i) {
-                    if (current_opts.ctrls[change_player][i] == rk) {
+                    if (current_opts.ctrls[change_player][i] == kc) {
                         allowed = false;
                         break;
                     }
@@ -551,16 +549,16 @@ void OptionsScreenImpl::onRawKey(bool pressed, Coercri::RawKey rk)
                 if (change_player == 3) {
                     // special case: changing chat keys
                     if (change_key == 0) {
-                        current_opts.global_chat_key = rk;
+                        current_opts.global_chat_key = kc;
                         change_key = 1;
                     } else {
-                        current_opts.team_chat_key = rk;
+                        current_opts.team_chat_key = kc;
                         change_active = false;
                     }
                 } else {
                     // normal case: changing player controls
                     
-                    current_opts.ctrls[change_player][change_key] = rk;
+                    current_opts.ctrls[change_player][change_key] = kc;
                     ++change_key;
                     
                     const bool four_key_mode = 

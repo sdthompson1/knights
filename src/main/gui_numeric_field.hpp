@@ -27,7 +27,6 @@
 #include "guichan.hpp"
 
 #include <string>
-using namespace std;
 
 //
 // Like a gcn::TextField, except:

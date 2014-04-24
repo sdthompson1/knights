@@ -32,6 +32,7 @@
 #define CLIENT_CALLBACKS_HPP
 
 #include "game_info.hpp"
+#include "utf8string.hpp"
 
 #include "gfx/color.hpp" // coercri
 
@@ -44,7 +45,7 @@ class Graphic;
 class Sound;
 
 struct ClientPlayerInfo {
-    std::string name;
+    UTF8String name;
     Coercri::Color house_colour;
     int kills;
     int deaths;
@@ -77,10 +78,10 @@ public:
     // NOTE: The returned ClientConfig will remain valid for as long as we are connected to the game
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                   int my_house_colour,
-                                  const std::vector<std::string> &player_names,
+                                  const std::vector<UTF8String> &player_names,
                                   const std::vector<bool> &ready_flags,
                                   const std::vector<int> &house_cols,
-                                  const std::vector<std::string> &observers) = 0;
+                                  const std::vector<UTF8String> &observers) = 0;
     virtual void joinGameDenied(const std::string &reason) = 0;
 
     // loading of gfx/sounds from the server.
@@ -91,8 +92,8 @@ public:
     virtual void passwordRequested(bool first_attempt) = 0;
     
     // called when other players connect to or disconnect from the server.
-    virtual void playerConnected(const std::string &name) = 0;
-    virtual void playerDisconnected(const std::string &name) = 0;
+    virtual void playerConnected(const UTF8String &name) = 0;
+    virtual void playerDisconnected(const UTF8String &name) = 0;
 
 
     //
@@ -101,10 +102,10 @@ public:
     
     virtual void updateGame(const std::string &game_name, int num_players, int num_observers, GameStatus status) = 0;
     virtual void dropGame(const std::string &game_name) = 0;
-    virtual void updatePlayer(const std::string &player, const std::string &game, bool obs_flag) = 0;
+    virtual void updatePlayer(const UTF8String &player, const std::string &game, bool obs_flag) = 0;
     virtual void playerList(const std::vector<ClientPlayerInfo> &player_list) = 0;
     virtual void setTimeRemaining(int milliseconds) = 0;
-    virtual void playerIsReadyToEnd(const std::string &player) = 0;
+    virtual void playerIsReadyToEnd(const UTF8String &player) = 0;
     
     //
     // "Post-join-game" callbacks
@@ -118,23 +119,23 @@ public:
     virtual void setQuestDescription(const std::string &quest_descr) = 0;
 
     // switching between menu and in-game states
-    virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<std::string> &player_names, bool already_started) = 0;
+    virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<UTF8String> &player_names, bool already_started) = 0;
     virtual void gotoMenu() = 0;
     
     // called when players join/leave my current game, or change state.
     // player_num is 0 or 1 for active players, or -1 for observers.
-    virtual void playerJoinedThisGame(const std::string &name, bool obs_flag, int house_col) = 0;
-    virtual void playerLeftThisGame(const std::string &name, bool obs_flag) = 0;
-    virtual void setPlayerHouseColour(const std::string &name, int house_col) = 0;
+    virtual void playerJoinedThisGame(const UTF8String &name, bool obs_flag, int house_col) = 0;
+    virtual void playerLeftThisGame(const UTF8String &name, bool obs_flag) = 0;
+    virtual void setPlayerHouseColour(const UTF8String &name, int house_col) = 0;
     virtual void setAvailableHouseColours(const std::vector<Coercri::Color> &cols) = 0;
-    virtual void setReady(const std::string &name, bool ready) = 0;
+    virtual void setReady(const UTF8String &name, bool ready) = 0;
     virtual void deactivateReadyFlags() = 0;
 
     // called when a player, in the current game, changes from observer to player or vice versa
-    virtual void setObsFlag(const std::string &name, bool new_obs_flag) = 0;
+    virtual void setObsFlag(const UTF8String &name, bool new_obs_flag) = 0;
     
     // chat, and "announcements".
-    virtual void chat(const std::string &whofrom, bool observer, bool team, const std::string &msg) = 0;
+    virtual void chat(const UTF8String &whofrom, bool observer, bool team, const std::string &msg) = 0;
     virtual void announcement(const std::string &msg, bool is_err) = 0;
 };
 

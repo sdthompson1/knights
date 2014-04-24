@@ -64,6 +64,10 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
                             bool show_own_name,
                             int &room_tl_x, int &room_tl_y)
 {
+    using std::list;
+    using std::map;
+    using std::vector;
+
     static const ColourChange empty_cc;
 
     // Clear out expired icons
@@ -193,8 +197,8 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
             const int msg_off_time = config_map.getInt("message_off_time");
             const int nmsgs = messages.size() + cts_messages.size();
             int mphase = (mtime / (msg_on_time + msg_off_time)) % nmsgs;
-            const string &the_msg(mphase < messages.size() ? messages[mphase].message
-                                  : cts_messages[mphase - messages.size()]);
+            const UTF8String &the_msg(mphase < messages.size() ? messages[mphase].message
+                                       : cts_messages[mphase - messages.size()]);
             if (mtime % (msg_on_time + msg_off_time) <= msg_on_time) {
                 std::map<int,RoomData>::iterator ri = rooms.find(current_room);
                 if (ri != rooms.end()) {
@@ -233,7 +237,7 @@ void LocalDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight 
                                  const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                                  bool ainvis, bool ainvuln,
                                  int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                                 const std::string &name)
+                                 const UTF8String &name)
 {
     entity_map.addEntity(time, id, x, y, ht, facing, anim, ovr, af, atz_diff ? atz_diff + time : 0, 
                          ainvis, ainvuln,
@@ -306,10 +310,10 @@ void LocalDungeonView::setSpeechBubble(unsigned short int id, bool show)
 
 void LocalDungeonView::clearTiles(int x, int y, bool)
 {
-    map<int,RoomData>::iterator ri = rooms.find(current_room);
+    std::map<int,RoomData>::iterator ri = rooms.find(current_room);
     if (ri == rooms.end()) return;
     if (!ri->second.valid(x,y)) return;
-    list<RoomData::GfxEntry> &gfx(ri->second.lookupGfx(x, y));
+    std::list<RoomData::GfxEntry> &gfx(ri->second.lookupGfx(x, y));
     // We know that the tiles come before items or other stuff like that.
     while (!gfx.empty() && gfx.front().depth != item_depth) gfx.pop_front();
 }
@@ -367,10 +371,10 @@ void LocalDungeonView::placeIcon(int x, int y, const Graphic *g, int dur)
     icons.push(ic);
 }
 
-void LocalDungeonView::flashMessage(const std::string &s, int ntimes)
+void LocalDungeonView::flashMessage(const std::string &s_latin1, int ntimes)
 {
     Message m;
-    m.message = s;
+    m.message = UTF8String::fromLatin1(s_latin1);
     m.start_time = time;
     m.stop_time = time + (config_map.getInt("message_on_time") + config_map.getInt("message_off_time"))*ntimes;
     messages.push_back(m);
@@ -381,7 +385,7 @@ void LocalDungeonView::cancelContinuousMessages()
     cts_messages.clear();
 }
 
-void LocalDungeonView::addContinuousMessage(const std::string &s)
+void LocalDungeonView::addContinuousMessage(const std::string &s_latin1)
 {
-    cts_messages.push_back(s);
+    cts_messages.push_back(UTF8String::fromLatin1(s_latin1));
 }

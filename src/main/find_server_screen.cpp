@@ -37,6 +37,7 @@
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
 #include "start_game_screen.hpp"
+#include "utf8string.hpp"
 
 // coercri
 #include "core/coercri_error.hpp"
@@ -742,7 +743,7 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     name_field.reset(new gcn::TextField);
     name_field->adjustSize();
     name_field->setWidth(width - name_label->getWidth());
-    name_field->setText(knights_app.getPlayerName());
+    name_field->setText(knights_app.getPlayerName().asLatin1());
     container->add(name_label.get(), pad, y + 1);
     container->add(name_field.get(), pad + name_label->getWidth(), y);
     y += name_field->getHeight() + pad*3/2;
@@ -889,7 +890,7 @@ void FindServerScreenImpl::initiateConnection(const std::string &address, int po
 {
     if (!allow_conn) return;
     
-    std::string player_name = name_field ? name_field->getText() : "";
+    UTF8String player_name = name_field ? UTF8String::fromLatin1(name_field->getText()) : UTF8String();
 
     if (player_name.empty()) {
         gotoErrorDialog("You must enter a player name");

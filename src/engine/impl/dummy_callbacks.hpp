@@ -33,7 +33,7 @@ class DummyDungeonView : public DungeonView {
 public:
     virtual void setCurrentRoom(int,int,int) { }
     virtual void addEntity(unsigned short int, int, int, MapHeight, MapDirection,
-        const Anim *, const Overlay *, int, int, bool, bool, int, MotionType, int, const std::string &) { }
+        const Anim *, const Overlay *, int, int, bool, bool, int, MotionType, int, const UTF8String &) { }
     virtual void rmEntity(unsigned short int) { }
     virtual void repositionEntity(unsigned short int, int, int) { }
     virtual void moveEntity(unsigned short int, MotionType, int, bool) { }
@@ -83,7 +83,7 @@ public:
     virtual void popUpWindow(const std::vector<TutorialWindow> &) { }
     virtual void onElimination(int) { }
     virtual void disableView(int) { }
-    virtual void goIntoObserverMode(int, const std::vector<std::string>&) { }
+    virtual void goIntoObserverMode(int, const std::vector<UTF8String>&) { }
 private:
     DummyDungeonView dummy_dungeon_view;
     DummyMiniMap dummy_mini_map;

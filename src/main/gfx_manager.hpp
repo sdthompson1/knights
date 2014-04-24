@@ -51,7 +51,6 @@
 
 #include <list>
 #include <map>
-using namespace std;
 
 class ColourChange;
 class FileCache;
@@ -62,8 +61,8 @@ class GfxManager {
 public:
     GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
-               const vector<string> &ttf_font_names_,
-               const vector<string> &bmp_font_names_,
+               const std::vector<std::string> &ttf_font_names_,
+               const std::vector<std::string> &bmp_font_names_,
                unsigned char invis_alpha_,
                FileCache &fc);
     ~GfxManager();
@@ -97,7 +96,7 @@ private:
         boost::shared_ptr<Coercri::Graphic> gfx;
         bool permanent;
     };
-    typedef map<const Graphic *, GfxPtrWithFlag> GfxMap;
+    typedef std::map<const Graphic *, GfxPtrWithFlag> GfxMap;
 
     struct GraphicKey {
         const Coercri::Graphic * original;
@@ -120,14 +119,14 @@ private:
         }
     };
 
-    typedef list<GraphicKey> RecentList;  // MRU at front, LRU at back
+    typedef std::list<GraphicKey> RecentList;  // MRU at front, LRU at back
 
     struct GraphicData {
         boost::shared_ptr<Coercri::Graphic> new_graphic;
         RecentList::iterator list_position;
     };
 
-    typedef map<GraphicKey, GraphicData> CachedGfxMap;
+    typedef std::map<GraphicKey, GraphicData> CachedGfxMap;
         
 private:
     // Private methods
@@ -147,7 +146,7 @@ private:
     
     // Font data
     boost::shared_ptr<Coercri::TTFLoader> ttf_loader;
-    vector<string> ttf_font_names, bmp_font_names;
+    std::vector<std::string> ttf_font_names, bmp_font_names;
     int font_size;
     boost::shared_ptr<Coercri::Font> font;
 

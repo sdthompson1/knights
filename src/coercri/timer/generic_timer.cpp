@@ -9,7 +9,7 @@
  *   21-Oct-2011
  *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2013.
+ *   Copyright (C) Stephen Thompson, 2008 - 2014.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -60,27 +60,55 @@
 
 namespace Coercri {
 
+#ifdef WIN32
+    namespace {
+        int g_timer_use_count = 0;
+        bool g_use_perf_counter;
+        LARGE_INTEGER g_perf_freq;
+    }
+#endif
+    
     GenericTimer::GenericTimer()
     {
 #ifdef WIN32
-        // Apparently there are problems with QueryPerformanceCounter on some systems,
-        // so we use timeBeginPeriod / timeGetTime / timeEndTime instead.
-        // Request 1ms resolution.
-        timeBeginPeriod(1);
+        if (g_timer_use_count == 0) {
+            // use QueryPerformanceCounter if available, timeGetTime
+            // otherwise.
+            g_use_perf_counter = (QueryPerformanceFrequency(&g_perf_freq) != 0);
+            if (!g_use_perf_counter) {
+                timeBeginPeriod(1);
+            }
+            ++g_timer_use_count;
+        }
 #endif
     }
 
     GenericTimer::~GenericTimer()
     {
 #ifdef WIN32
-        timeEndPeriod(1);
+        --g_timer_use_count;
+        if (g_timer_use_count == 0 && !g_use_perf_counter) {
+            timeEndPeriod(1);
+        }
 #endif        
     }
 
     unsigned int GenericTimer::getMsec()
     {
 #ifdef WIN32
-        return timeGetTime();
+        if (g_use_perf_counter) {
+            LARGE_INTEGER perf_count;
+            QueryPerformanceCounter(&perf_count);
+
+            // convert to milliseconds
+            perf_count.QuadPart *= 1000;
+            perf_count.QuadPart /= g_perf_freq.QuadPart;
+            
+            return (unsigned int) perf_count.QuadPart;
+            
+        } else {
+            return timeGetTime();
+        }
 
 #elif defined(__linux__)
         struct timespec now;

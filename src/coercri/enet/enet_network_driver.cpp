@@ -72,14 +72,19 @@ namespace Coercri {
         is_enet_initialized = true;
 
         // create the outgoing_host. (incoming_host only created as needed.)
+#ifdef COERCRI_USE_ENET_1_3
+        // enet 1.3.x
+        outgoing_host = enet_host_create(0, max_outgoing, 0, 0, 0);
+        if (use_compression && outgoing_host) {
+            enet_host_compress_with_range_coder(outgoing_host);
+        }
+#else
+        // enet 1.2.x (note this does not support compression)
         outgoing_host = enet_host_create(0, max_outgoing, 0, 0);
+#endif
         if (!outgoing_host) {
             throw CoercriError("EnetNetworkDriver: enet_host_create failed");
         }
-        // compression is an enet 1.3 feature, we have not upgraded to enet 1.3 yet
-        //if (use_compression) {
-        //    enet_host_compress_with_range_coder(outgoing_host);
-        //}
     }
 
     EnetNetworkDriver::~EnetNetworkDriver()
@@ -122,14 +127,19 @@ namespace Coercri {
             ENetAddress address;
             address.host = ENET_HOST_ANY;
             address.port = server_port;
+#ifdef COERCRI_USE_ENET_1_3
+            // enet 1.3.x
+            incoming_host = enet_host_create(&address, max_incoming, 0, 0, 0);
+            if (use_compression && incoming_host) {
+                enet_host_compress_with_range_coder(incoming_host);
+            }
+#else
+            // enet 1.2.x
             incoming_host = enet_host_create(&address, max_incoming, 0, 0);
+#endif
             if (!incoming_host) {
                 throw CoercriError("EnetNetworkDriver: enet_host_create failed");
             }
-            // compression is an enet 1.3 feature, we have not upgraded to 1.3 yet
-            //if (use_compression) {
-            //    enet_host_compress_with_range_coder(incoming_host);
-            //}
         }
     }
 

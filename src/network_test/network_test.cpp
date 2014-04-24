@@ -40,11 +40,12 @@
 // coercri includes
 #include "network/network_connection.hpp"
 #include "enet/enet_network_driver.hpp"
-#include "sdl/timer/sdl_timer.hpp"
+#include "timer/generic_timer.hpp"
 
 // standard libraries
 #include <cstdarg>
 #include <cstdio>
+#include <ctime>
 #include <iostream>
 
 
@@ -86,10 +87,10 @@ public:
 
     void joinGameAccepted(boost::shared_ptr<const ClientConfig> config,
                           int my_house_colour,
-                          const std::vector<std::string> &player_names,
+                          const std::vector<UTF8String> &player_names,
                           const std::vector<bool> &ready_flags,
                           const std::vector<int> &house_cols,
-                          const std::vector<std::string> &observers)
+                          const std::vector<UTF8String> &observers)
     {
         Log("Join game accepted");
         join_game_accepted = true;
@@ -100,8 +101,8 @@ public:
 
     void passwordRequested(bool first_attempt) { Log("Please enter password"); }
 
-    void playerConnected(const std::string &name) { Log("Player connected. Name = %s", name.c_str()); }
-    void playerDisconnected(const std::string &name) { Log("Player disconnected. Name = %s", name.c_str()); }
+    void playerConnected(const UTF8String &name) { Log("Player connected. Name = %s", name.asUTF8().c_str()); }
+    void playerDisconnected(const UTF8String &name) { Log("Player disconnected. Name = %s", name.asUTF8().c_str()); }
 
     void updateGame(const std::string &game_name, int num_players, int num_observers, GameStatus status)
     {
@@ -111,9 +112,9 @@ public:
     {
         Log("Drop game. Game name = %s", game_name.c_str());
     }
-    void updatePlayer(const std::string &player, const std::string &game, bool obs_flag)
+    void updatePlayer(const UTF8String &player, const std::string &game, bool obs_flag)
     {
-        Log("Update player. Player name = %s", player.c_str());
+        Log("Update player. Player name = %s", player.asUTF8().c_str());
     }
     void playerList(const std::vector<ClientPlayerInfo> &player_list)
     {
@@ -123,9 +124,9 @@ public:
     {
         Log("Set time remaining. Milliseconds = %d", milliseconds);
     }
-    void playerIsReadyToEnd(const std::string &player)
+    void playerIsReadyToEnd(const UTF8String &player)
     {
-        Log("Player is ready to end. Player name = %s", player.c_str());
+        Log("Player is ready to end. Player name = %s", player.asUTF8().c_str());
     }
 
     void leaveGame() { Log("Leave game"); }
@@ -138,46 +139,46 @@ public:
         Log("Set quest description. Descr = %s", quest_descr.c_str());
     }
 
-    void startGame(int ndisplays, bool deathmatch_mode, const std::vector<std::string> &player_names, bool already_started)
+    void startGame(int ndisplays, bool deathmatch_mode, const std::vector<UTF8String> &player_names, bool already_started)
     {
         Log("Start game. Ndisplays = %d", ndisplays);
         game_started = true;
     }
     void gotoMenu() { Log("Goto menu"); }
 
-    void playerJoinedThisGame(const std::string &name, bool obs_flag, int house_col)
+    void playerJoinedThisGame(const UTF8String &name, bool obs_flag, int house_col)
     {
-        Log("Player joined this game. Name = %s", name.c_str());
+        Log("Player joined this game. Name = %s", name.asUTF8().c_str());
     }
-    void playerLeftThisGame(const std::string &name, bool obs_flag)
+    void playerLeftThisGame(const UTF8String &name, bool obs_flag)
     {
-        Log("Player left this game. Name = %s", name.c_str());
+        Log("Player left this game. Name = %s", name.asUTF8().c_str());
     }
-    void setPlayerHouseColour(const std::string &name, int house_col)
+    void setPlayerHouseColour(const UTF8String &name, int house_col)
     {
-        Log("Set player house colour. Name = %s", name.c_str());
+        Log("Set player house colour. Name = %s", name.asUTF8().c_str());
     }
     void setAvailableHouseColours(const std::vector<Coercri::Color> &cols)
     {
         Log("Set available house colours");
     }
-    void setReady(const std::string &name, bool ready)
+    void setReady(const UTF8String &name, bool ready)
     {
-        Log("Set ready. Name = %s, val = %d", name.c_str(), ready ? 1 : 0);
+        Log("Set ready. Name = %s, val = %d", name.asUTF8().c_str(), ready ? 1 : 0);
     }
     void deactivateReadyFlags()
     {
         Log("Deactivate ready flags.");
     }
 
-    void setObsFlag(const std::string &name, bool new_obs_flag)
+    void setObsFlag(const UTF8String &name, bool new_obs_flag)
     {
-        Log("Set obs flag. Name = %s, val = %d", name.c_str(), new_obs_flag ? 1 : 0);
+        Log("Set obs flag. Name = %s, val = %d", name.asUTF8().c_str(), new_obs_flag ? 1 : 0);
     }
     
-    void chat(const std::string &whofrom, bool observer, bool team, const std::string &msg)
+    void chat(const UTF8String &whofrom, bool observer, bool team, const std::string &msg)
     {
-        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.c_str(), observer ? 1 : 0, team ? 1 : 0, msg.c_str());
+        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.asUTF8().c_str(), observer ? 1 : 0, team ? 1 : 0, msg.c_str());
     }
     void announcement(const std::string &msg, bool is_err)
     {
@@ -196,7 +197,7 @@ public:
                    const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                    bool ainvis, bool ainvuln, // (anim data)
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                   const std::string &name)
+                   const UTF8String &name)
     {
         Log("dview: Add entity");
     }
@@ -282,7 +283,7 @@ public:
     void popUpWindow(const std::vector<TutorialWindow> &windows) { Log("Pop up window"); }
     void onElimination(int player_num) { Log("On elimination, player = %d", player_num); }
     void disableView(int player_num) { Log("Disable view, player = %d", player_num); }
-    void goIntoObserverMode(int nplayers, const std::vector<std::string> &names) { Log("Go into observer mode"); }
+    void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names) { Log("Go into observer mode"); }
 
 private:
     TestDungeonView dungeon_view;
@@ -363,7 +364,7 @@ void SendMessagesIfRequired()
 
     // First message must always be "set player name"
     if (!set_player_name_sent) {
-        g_client->setPlayerNameAndControls("Network Testing Bot", true);
+        g_client->setPlayerNameAndControls(UTF8String::fromUTF8("Network Testing Bot"), true);
         g_client->joinGame("Game 1");
         set_player_name_sent = true;
         return;
@@ -396,8 +397,7 @@ int main(int argc, const char **argv)
     std::cout << "Connecting to host: " << hostname << ", port: " << port << std::endl;
 
     // Create a timer
-    // TODO: See if we can use a non-SDL timer
-    g_timer.reset(new Coercri::SDLTimer);
+    g_timer.reset(new Coercri::GenericTimer);
     
     // Create the callback objects and the KnightsClient
     g_knights_callbacks.reset(new TestKnightsCallbacks);

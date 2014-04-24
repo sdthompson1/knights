@@ -35,7 +35,6 @@
 #include <list>
 #include <map>
 #include <vector>
-using namespace std;
 
 class Anim;
 class ConfigMap;
@@ -49,7 +48,7 @@ public:
     void addEntity(int time, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
                    const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvis, bool ainvuln,
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                   const std::string &name);
+                   const UTF8String &name);
     void rmEntity(unsigned short int key);
     void moveEntity(int time, unsigned short int key, MotionType motion_type, int motion_duration, bool missile_mode);
     void flipEntityMotion(int time, unsigned short int key, int initial_delay, int motion_duration);
@@ -67,8 +66,8 @@ public:
     // Results will be _added_ to "gfx_buffer" (previous contents of "gfx_buffer" will be
     // retained as well).
     void getEntityGfx(int time, int bl_x, int bl_y, int pixels_per_square, int entity_depth,
-                      map<int, vector<GraphicElement> > &gfx_buffer,
-                      vector<TextElement> &txt_buffer, bool show_own_name,
+                      std::map<int, std::vector<GraphicElement> > &gfx_buffer,
+                      std::vector<TextElement> &txt_buffer, bool show_own_name,
                       const Graphic *speech_bubble, int speech_depth);
 
 private:
@@ -112,12 +111,12 @@ private:
         MapDirection facing;
         bool approached;          // true if currently "approached" (and not moving)
         bool show_speech_bubble;
-        std::string name;
+        UTF8String name;
         
         int start_time;   // time at which the cmd block was started
         int finish_time;  // time at which the cmd block should be completed
         int tnt;          // total natural time (over all cmds)
-        list<Command> cmds;  // the command block itself
+        std::list<Command> cmds;  // the command block itself
     };
 
     int getFinalOffset(MotionType);
@@ -127,14 +126,14 @@ private:
     void update(int);
     void addGraphic(const Data &ent, int time, int bl_x, int bl_y,
                     int entity_depth,
-                    map<int, vector<GraphicElement> > &gfx_buffer,
-                    vector<TextElement> &txt_buffer,
+                    std::map<int, std::vector<GraphicElement> > &gfx_buffer,
+                    std::vector<TextElement> &txt_buffer,
                     int pixels_per_square,
                     bool add_entity_name,
                     const Graphic *speech_bubble,
                     int speech_depth);
 
-    void recomputeEntityMotion(map<unsigned short int,Data>::iterator it, int time);
+    void recomputeEntityMotion(std::map<unsigned short int,Data>::iterator it, int time);
 
     const Graphic * chooseGraphic(const Anim *anim, MapDirection facing, int frame, int x, int y, int time);
 
@@ -144,7 +143,7 @@ private:
     // info (anim, overlay, facing etc) as well as "command block"
     // showing future changes to position and appearance that have not
     // yet been applied.
-    map<unsigned short int, Data> entities;
+    std::map<unsigned short int, Data> entities;
 
     const int bat_anim_timescale;
     const int approach_offset;

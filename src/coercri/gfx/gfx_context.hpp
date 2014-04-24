@@ -46,13 +46,17 @@
 
 #include "color.hpp"
 
+#include "boost/shared_ptr.hpp"
+
 #include <string>
 
 namespace Coercri {
 
     class Font;
     class Graphic;
+    class PixelArray;
     class Rectangle;
+    class UTF8String;
 
     // This struct is used in plotPixelBatch.
     struct Pixel {
@@ -86,7 +90,7 @@ namespace Coercri {
         virtual void drawGraphic(int x, int y, const Graphic &graphic) = 0;
 
         // this just calls through to font.drawText.
-        void drawText(int x, int y, const Font &font, const std::string &text, Color col);
+        void drawText(int x, int y, const Font &font, const UTF8String &text, Color col);
 
         // The following have default implementations but can be
         // overridden if more efficient implementations are available.
@@ -94,6 +98,12 @@ namespace Coercri {
         virtual void drawRectangle(const Rectangle &rect, Color col);  // draws outline only.
         virtual void fillRectangle(const Rectangle &rect, Color col);  // draws a solid rectangle.
         virtual void plotPixelBatch(const Pixel *buf_start, int num_pixels);
+
+        // Take a screenshot. Captures what has been drawn so far
+        // into a PixelArray.
+        // NOTE: This is a slow operation, it is mostly useful for testing.
+        // NOTE: "alpha" values will be set to 255.
+        virtual boost::shared_ptr<PixelArray> takeScreenshot() = 0;
     };
 
 }

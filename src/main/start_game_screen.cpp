@@ -128,11 +128,11 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
 
 void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 {
-    auto_ptr<Screen> new_screen;
+    std::auto_ptr<Screen> new_screen;
 
     if (event.getSource() == split_screen_mode.get()) {
         // Go to LoadingScreen in split-screen mode
-        new_screen.reset(new LoadingScreen(-1, "", false, true, false, false));
+        new_screen.reset(new LoadingScreen(-1, UTF8String(), false, true, false, false));
         
     } else if (event.getSource() == host_lan_game.get()) {
         // Go to HostLanScreen
@@ -148,7 +148,7 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 
     } else if (event.getSource() == single_player_mode.get()) {
         // Go to LoadingScreen in single player mode
-        new_screen.reset(new LoadingScreen(-1, "", true, true, false, false));
+        new_screen.reset(new LoadingScreen(-1, UTF8String(), true, true, false, false));
         
     } else if (event.getSource() == exit.get()) {
         // Go back to title screen

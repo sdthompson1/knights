@@ -93,9 +93,9 @@ void MissileTask::execute(TaskManager &tm)
         // Decrease range (taking stairs into account)
         MapCoord mc_ahead = DisplaceCoord(m->getPos(), m->getFacing());
         --(m->range_left);
-        vector<shared_ptr<Tile> > tiles;
+        std::vector<shared_ptr<Tile> > tiles;
         m->getMap()->getTiles(mc_ahead, tiles);
-        for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
+        for (std::vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
             if ((*it)->isStair()) {
                 MapDirection dn = (*it)->stairsDownDirection();
                 if (dn == m->getFacing()) {
@@ -156,8 +156,8 @@ void MissileTask::execute(TaskManager &tm)
 
         // Reschedule. We check for collisions every "missile_check_interval" but make sure
         // to run the missile task at arrival_time+1 if that is sooner.
-        const int new_time = min(tm.getGVT() + Mediator::instance().cfgInt("missile_check_interval"),
-                                 m->getArrivalTime() + 1);
+        const int new_time = std::min(tm.getGVT() + Mediator::instance().cfgInt("missile_check_interval"),
+                                      m->getArrivalTime() + 1);
         tm.addTask(shared_from_this(), TP_NORMAL, new_time);
     }
 }
@@ -186,8 +186,8 @@ bool CreateMissile(DungeonMap &dmap, const MapCoord &mc, MapDirection dir,
     m->addToMap(&dmap, mc);
     m->move(MT_MOVE, true);  // start it forward half a square
     shared_ptr<MissileTask> mt(new MissileTask(m));
-    const int new_time = min(mediator.getGVT() + mediator.cfgInt("missile_check_interval"),
-                              m->getArrivalTime() + 1);
+    const int new_time = std::min(mediator.getGVT() + mediator.cfgInt("missile_check_interval"),
+                                  m->getArrivalTime() + 1);
     mediator.getTaskManager().addTask(mt, TP_NORMAL, new_time);
     return true;
 }

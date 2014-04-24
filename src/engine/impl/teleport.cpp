@@ -134,6 +134,8 @@ void TeleportToRoom(shared_ptr<Entity> from, shared_ptr<Entity> to)
 
 shared_ptr<Knight> FindNearestOtherKnight(const DungeonMap &dmap, const MapCoord &mypos)
 {
+    using std::vector;
+
     // Search through all players, looking for the closest.
     const vector<Player*> & players(Mediator::instance().getPlayers());
     int dist = 99999;
@@ -160,7 +162,7 @@ shared_ptr<Knight> FindNearestOtherKnight(const DungeonMap &dmap, const MapCoord
 
 shared_ptr<Knight> FindRandomOtherKnight(shared_ptr<Knight> me)
 {
-    const vector<Player*> & players(Mediator::instance().getPlayers());
+    const std::vector<Player*> & players(Mediator::instance().getPlayers());
     
     std::vector<int> search_order(players.size());
     for (int i = 0; i < players.size(); ++i) search_order[i] = i;

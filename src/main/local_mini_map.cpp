@@ -26,6 +26,8 @@
 #include "config_map.hpp"
 #include "local_mini_map.hpp"
 
+#include <algorithm>
+
 namespace {
     const Coercri::Color col[] = {
         Coercri::Color(255,0,0),     // highlight
@@ -44,6 +46,8 @@ namespace {
 void LocalMiniMap::draw(Coercri::GfxContext &gc, int left, int top, int npx, int npy, int t) const
 {
     using Coercri::Pixel;
+    using std::min;
+    using std::max;
 
     static std::vector<Pixel> pixel_buf;
     pixel_buf.clear();
@@ -238,7 +242,7 @@ void LocalMiniMap::setHighlight(int x, int y, int id)
     // slightly.
     
     // Erase the old highlight first (if any)
-    map<int,Highlight>::iterator it = highlights.find(id);
+    std::map<int,Highlight>::iterator it = highlights.find(id);
     if (it != highlights.end()) {
         highlights.erase(it);
     }
@@ -248,7 +252,7 @@ void LocalMiniMap::setHighlight(int x, int y, int id)
         Highlight h;
         h.x = x;
         h.y = y;
-        highlights.insert(make_pair(id, h));
+        highlights.insert(std::make_pair(id, h));
     }
 }
 

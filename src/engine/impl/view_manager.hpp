@@ -30,7 +30,6 @@
 using namespace boost;
 
 #include <vector>
-using namespace std;
 
 class ColourChange;
 class DungeonMap;
@@ -111,22 +110,22 @@ private:
 
     
 private:
-    vector<Player*> players;
+    std::vector<Player*> players;
 
-    typedef map<int, vector<bool> > SquaresInvalidMap;
-    typedef map<const Player *, SquaresInvalidMap> SquaresInvalidCache;
+    typedef std::map<int, std::vector<bool> > SquaresInvalidMap;
+    typedef std::map<const Player *, SquaresInvalidMap> SquaresInvalidCache;
     SquaresInvalidCache squares_invalid_cache;
     
     // Entity IDs
     // Sorted into player order.
-    vector<unsigned short int> next_id;
-    vector<set<unsigned short int> > active_ids;
-    vector<map<weak_ptr<Entity>, unsigned short int> > id_map;
+    std::vector<unsigned short int> next_id;
+    std::vector<std::set<unsigned short int> > active_ids;
+    std::vector<std::map<weak_ptr<Entity>, unsigned short int> > id_map;
 
     // Look up entity id
     // If found, then result.second will be true, and result.first will be the ID number
     // If not found, then result.second will be false.
-    pair<unsigned short int, bool> fetchID(int plyr, weak_ptr<Entity> ent);
+    std::pair<unsigned short int, bool> fetchID(int plyr, weak_ptr<Entity> ent);
 
     // Creates a new ID for the given entity
     // It is assumed that the entity does not already have an id (ie

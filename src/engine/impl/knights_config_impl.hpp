@@ -29,6 +29,7 @@
 #include "lua_func.hpp"
 #include "map_support.hpp"
 #include "overlay.hpp"       // needed for N_OVERLAY_FRAME
+#include "utf8string.hpp"
 
 // coercri
 #include "gfx/color.hpp"
@@ -92,7 +93,7 @@ public:
                         EventManager &event_manager,
                         TaskManager &task_manager,
                         const std::vector<int> &hse_cols,
-                        const std::vector<std::string> &player_names);
+                        const std::vector<UTF8String> &player_names);
     const Menu & getMenu() const;
     MenuWrapper & getMenuWrapper() { return *menu_wrapper; }
     void resetMenu();
@@ -115,13 +116,13 @@ public:
     //
 
     Anim * addLuaAnim(lua_State *lua, int idx);
-    Control * addLuaControl(auto_ptr<Control> p);  // first NUM_STANDARD_CONTROLS assumed to be the std ctrls
-    void addLuaGraphic(auto_ptr<Graphic> p);
-    ItemType * addLuaItemType(auto_ptr<ItemType> p);
-    MonsterType * addLuaMonsterType(auto_ptr<MonsterType> p,
+    Control * addLuaControl(std::auto_ptr<Control> p);  // first NUM_STANDARD_CONTROLS assumed to be the std ctrls
+    void addLuaGraphic(std::auto_ptr<Graphic> p);
+    ItemType * addLuaItemType(std::auto_ptr<ItemType> p);
+    MonsterType * addLuaMonsterType(std::auto_ptr<MonsterType> p,
                                     std::vector<boost::shared_ptr<Tile> > &corpse_tiles);
-    Overlay * addLuaOverlay(auto_ptr<Overlay> p);
-    Segment * addLuaSegment(auto_ptr<Segment> p);
+    Overlay * addLuaOverlay(std::auto_ptr<Overlay> p);
+    Segment * addLuaSegment(std::auto_ptr<Segment> p);
     Sound * addLuaSound(const FileInfo &fi);  // creates the sound and adds it.
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...

@@ -30,6 +30,8 @@
 #ifndef KNIGHTS_APP_HPP
 #define KNIGHTS_APP_HPP
 
+#include "utf8string.hpp"
+
 // coercri
 #include "gfx/font.hpp"
 #include "gfx/key_code.hpp"
@@ -42,7 +44,6 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
-using namespace std;
 
 class ConfigMap;
 class Controller;
@@ -67,14 +68,14 @@ enum DisplayType {
 
 class KnightsApp {
 public:
-    explicit KnightsApp(DisplayType dt, const boost::filesystem::path &resource_dir, const string &config_filename,
+    explicit KnightsApp(DisplayType dt, const boost::filesystem::path &resource_dir, const std::string &config_filename,
                         bool autostart);
 
     // Start the main loop
     void runKnights();
 
     // Screen change and Quit requests
-    void requestScreenChange(auto_ptr<Screen> screen);
+    void requestScreenChange(std::auto_ptr<Screen> screen);
     void requestQuit();
 
     // Pop window to front
@@ -95,7 +96,6 @@ public:
     GfxManager & getGfxManager() const;
     SoundManager & getSoundManager() const;
     FileCache & getFileCache() const;
-    void getDesktopResolution(int &w, int &h) const;
     const Graphic * getWinnerImage() const;
     const Graphic * getLoserImage() const;
     const Graphic * getMenuGfxCentre() const;
@@ -120,12 +120,12 @@ public:
     void repeatLastMouseInput();
 
     // used for saving/loading the player name.
-    const std::string & getPlayerName() const;
-    void setPlayerName(const std::string &name);
+    const UTF8String & getPlayerName() const;
+    void setPlayerName(const UTF8String &name);
 
     // which gfx driver are we using? true=dx11, false=sdl
     bool usingDX11() const;
-    
+
 
     //
     // GameManager methods
@@ -133,7 +133,7 @@ public:
 
     // single player means PAUSE requests will be sent to server, and chat will be blocked.
     void createGameManager(boost::shared_ptr<KnightsClient> knights_client, bool single_player, bool tutorial_mode,
-                           bool autostart_mode, const std::string &my_player_name);
+                           bool autostart_mode, const UTF8String &my_player_name);
     void destroyGameManager();
     GameManager & getGameManager();
     

@@ -104,7 +104,7 @@ enum ServerMessageCode {
     SERVER_DEACTIVATE_READY_FLAGS = 26,         // no additional data
     
     SERVER_CHAT = 30,                // followed by string (sender), ubyte (0=lobby 1=player 2=observer 3=team), string (msg)
-    SERVER_ANNOUNCEMENT = 31,        // followed by string (msg)
+    SERVER_ANNOUNCEMENT = 31,        // followed by string (msg_latin1)
     SERVER_POP_UP_WINDOW = 32,       // complex. only used in 1-player games.
     
     SERVER_REQUEST_PASSWORD = 35,    // followed by ubyte (first_attempt)

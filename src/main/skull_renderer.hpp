@@ -32,7 +32,6 @@
 #include "gfx/gfx_context.hpp" // from coercri
 
 #include <vector>
-using namespace std;
 
 class SkullRenderer {
 public:
@@ -60,8 +59,8 @@ public:
     void draw(Coercri::GfxContext &gc, GfxManager &gm, int no_skulls, int left, int top, float scale) const;
    
 private:
-    vector<const Graphic *> gfx;
-    vector<int> rows, columns;
+    std::vector<const Graphic *> gfx;
+    std::vector<int> rows, columns;
 };
 
 #endif

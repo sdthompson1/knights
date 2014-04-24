@@ -43,6 +43,8 @@
 
 #include <string>
 
+using std::auto_ptr;
+
 namespace {
 
     //

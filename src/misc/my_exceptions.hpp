@@ -36,31 +36,30 @@
 #include "exception_base.hpp"
 
 #include <string>
-using namespace std;
 
 // error during game initialization (eg: sdl font could not be loaded)
 class InitError : public ExceptionBase {
 public:
-    InitError(const string &s) : ExceptionBase(s) { }
+    InitError(const std::string &s) : ExceptionBase(s) { }
 };
 
 // failed to load graphic (or other resource!)
 class GraphicLoadFailed : public ExceptionBase {
 public:
-    GraphicLoadFailed(const string &s) : ExceptionBase(s) { }
+    GraphicLoadFailed(const std::string &s) : ExceptionBase(s) { }
 };
 
 // error when loading or running a Lua script file
 class LuaError : public ExceptionBase {
 public:
-    LuaError(const string &s) : ExceptionBase(s) { }
+    LuaError(const std::string &s) : ExceptionBase(s) { }
 };
 
 // lua panic (lua error in unprotected context).
 // (this should be treated as a fatal error and lua_State should be closed as soon as possible)
 class LuaPanic : public ExceptionBase {
 public:
-    LuaPanic(const string &s) : ExceptionBase(s) { }
+    LuaPanic(const std::string &s) : ExceptionBase(s) { }
 };
 
 // something unexpected happened (throwing this indicates a bug or not-yet-implemented
@@ -68,7 +67,7 @@ public:
 
 class UnexpectedError : public ExceptionBase {
 public:
-    UnexpectedError(const string &s) : ExceptionBase(s) { }
+    UnexpectedError(const std::string &s) : ExceptionBase(s) { }
 };
 
 

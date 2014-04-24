@@ -47,6 +47,7 @@
 
 #include "rectangle.hpp"
 #include "region.hpp"
+#include "../core/coercri_error.hpp"
 
 #include "boost/shared_ptr.hpp"
 #include <vector>
@@ -54,11 +55,12 @@
 namespace Coercri {
 
     class GfxContext;
+    class PixelArray;
     class WindowListener;
     
     class Window {
     public:
-        Window() { }
+        Window() : for_each_idx(NULL_FOR_EACH_IDX) { }
         virtual ~Window() { }
 
         //
@@ -79,21 +81,32 @@ namespace Coercri {
 
         // Capture the mouse. This allows mouse messages to be received even
         // if the mouse is outside the window
-        virtual void captureMouse(bool captured) { }
+        virtual void captureMouse(bool captured) {
+            // (subclasses will override if they implement this)
+            throw CoercriError("captureMouse: not implemented");
+        }
         
         // Switch between windowed and full screen
         virtual void switchToWindowed(int w, int h) = 0;
-        virtual void switchToFullScreen(int w, int h) = 0;
+        virtual void switchToFullScreen() = 0;
 
-        // Determine whether the window is currently in full-screen mode
+        // Determine whether the window is currently maximized or in
+        // full-screen mode
+        virtual bool isMaximized() const = 0;
         virtual bool isFullScreen() const = 0;
 
         // Get a GfxContext for drawing.
         // Notes:
         // 1) only one GfxContext should exist at any given time
         // 2) a GfxContext should not exist across a call to GfxDriver::pollEvents.
+        // 3) the window should not be destroyed while there is an outstanding GfxContext.
         virtual std::auto_ptr<GfxContext> createGfxContext() = 0;
         
+        // Set the icon for this window. (Only some backends actually implement this.)
+        virtual void setIcon(const PixelArray &) = 0;
+
+        
+
         //
         // Non-virtual functions
         //
@@ -101,7 +114,23 @@ namespace Coercri {
         // WindowListeners for this window
         void addWindowListener(WindowListener *);
         void rmWindowListener(WindowListener *);
-        const std::vector<WindowListener*> & getListeners() const { return listeners; }
+
+        template<class Func>
+        void forEachListener(Func func) {
+            // take some care here because the listeners may remove
+            // themselves (or other listeners) from the list during
+            // the iteration.
+            
+            if (for_each_idx != NULL_FOR_EACH_IDX) {
+                throw CoercriError("Recursive call to forEachWindowListener");
+            }
+
+            for (for_each_idx = 0; for_each_idx < int(listeners.size()); ++for_each_idx) {
+                func(listeners[for_each_idx]);
+            }
+
+            for_each_idx = NULL_FOR_EACH_IDX;
+        }
 
         // Invalid region handling
         void invalidateRectangle(const Rectangle &rect) { invalid_region.addRectangle(rect); }
@@ -110,9 +139,12 @@ namespace Coercri {
         void cancelInvalidRegion() { invalid_region.clear(); }
         const Region & getInvalidRegion() const { return invalid_region; }
         bool needsRepaint() const { return !invalid_region.isEmpty(); }
+
         
     protected:
         std::vector<WindowListener*> listeners;
+        int for_each_idx;
+        enum { NULL_FOR_EACH_IDX = -999 };
         Region invalid_region;
         
     private:

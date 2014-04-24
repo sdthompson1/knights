@@ -29,27 +29,31 @@
 class KeyboardListener : public Coercri::WindowListener {
 public:
     explicit KeyboardListener(KeyboardController &c) : ctrlr(c) { }
-    virtual void onRawKey(bool pressed, Coercri::RawKey rk);
+    virtual void onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier);
+    virtual void onLoseFocus();
 
 private:
     KeyboardController &ctrlr;
 };
 
 KeyboardController::KeyboardController(bool using_action_bar_,
-                                       Coercri::RawKey u, Coercri::RawKey r, Coercri::RawKey d,
-                                       Coercri::RawKey l, Coercri::RawKey f, Coercri::RawKey s,
+                                       Coercri::KeyCode u, Coercri::KeyCode r, Coercri::KeyCode d,
+                                       Coercri::KeyCode l, Coercri::KeyCode f, Coercri::KeyCode s,
                                        boost::shared_ptr<Coercri::Window> w)
     : kbd_listener(new KeyboardListener(*this)), win(w),
       up_key(u), right_key(r), down_key(d), left_key(l), fire_key(f), suicide_key(s),
       up(false), right(false), down(false), left(false), fire(false), suicide(false),
       using_action_bar(using_action_bar_)
 {
-    win->addWindowListener(kbd_listener.get());
+    w->addWindowListener(kbd_listener.get());
 }
 
 KeyboardController::~KeyboardController()
 {
-    win->rmWindowListener(kbd_listener.get());
+    boost::shared_ptr<Coercri::Window> w = win.lock();
+    if (w) {
+        w->rmWindowListener(kbd_listener.get());
+    }
 }
 
 void KeyboardController::get(ControllerState &state) const
@@ -71,12 +75,20 @@ void KeyboardController::get(ControllerState &state) const
     }
 }
 
-void KeyboardListener::onRawKey(bool p, Coercri::RawKey rk)
+void KeyboardListener::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier)
 {
-    if (rk == ctrlr.up_key) { ctrlr.up = p; }
-    else if (rk == ctrlr.right_key) { ctrlr.right = p; }
-    else if (rk == ctrlr.down_key) { ctrlr.down = p; }
-    else if (rk == ctrlr.left_key) { ctrlr.left = p; }
-    else if (rk == ctrlr.fire_key) { ctrlr.fire = p; }
-    else if (rk == ctrlr.suicide_key) { ctrlr.suicide = p; }
+    if (type == Coercri::KEY_AUTO_REPEAT) return;  // we are not interested in auto-repeat events
+    const bool p = (type == Coercri::KEY_PRESSED);
+    if (kc == ctrlr.up_key) { ctrlr.up = p; }
+    else if (kc == ctrlr.right_key) { ctrlr.right = p; }
+    else if (kc == ctrlr.down_key) { ctrlr.down = p; }
+    else if (kc == ctrlr.left_key) { ctrlr.left = p; }
+    else if (kc == ctrlr.fire_key) { ctrlr.fire = p; }
+    else if (kc == ctrlr.suicide_key) { ctrlr.suicide = p; }
+}
+
+void KeyboardListener::onLoseFocus()
+{
+    // when focus is lost, disengage all control keys.
+    ctrlr.up = ctrlr.right = ctrlr.down = ctrlr.left = ctrlr.fire = ctrlr.suicide = false;
 }

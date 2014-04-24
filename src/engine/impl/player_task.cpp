@@ -66,12 +66,12 @@ void PlayerTask::execute(TaskManager &tm)
             // entities within a room.
             // NOTE: Knights on the same team as me do not count as "creatures in the room" for this purpose (Trac #126).
             bool found_creature = false;
-            vector<shared_ptr<Entity> > entities;
+            std::vector<shared_ptr<Entity> > entities;
             for (int i=0; i<w; ++i) {
                 for (int j=0; j<h; ++j) {
                     MapCoord mc(top_left.getX() + i, top_left.getY() + j);
                     dmap->getEntities(mc, entities);
-                    for (vector<shared_ptr<Entity> >::iterator it = entities.begin();
+                    for (std::vector<shared_ptr<Entity> >::iterator it = entities.begin();
                     it != entities.end(); ++it) {
 
                         Creature * cr = dynamic_cast<Creature*>(it->get());

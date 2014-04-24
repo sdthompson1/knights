@@ -35,6 +35,11 @@
 #include "stuff_bag.hpp"
 #include "task_manager.hpp"
 
+using std::list;
+using std::make_pair;
+using std::map;
+using std::min;
+
 Knight::Knight(Player &pl, const map<const ItemType *, int> * b,
                int health, MapHeight height, ItemType * di, const Anim * anim,
                int speed)

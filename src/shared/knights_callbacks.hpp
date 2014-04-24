@@ -32,6 +32,7 @@
 #define KNIGHTS_CALLBACKS_HPP
 
 #include "tutorial_window.hpp"
+#include "utf8string.hpp"
 
 #include <string>
 #include <vector>
@@ -84,7 +85,7 @@ public:
     // NOTE: If player_num < 0 then the message will be broadcast to all players.
     // (If is_err is set, the total no of msgs will be limited to 100 per game. Used 
     // for Lua errors.)
-    virtual void gameMsg(int player_num, const std::string &msg, bool is_err = false) = 0;
+    virtual void gameMsg(int player_num, const std::string &msg_latin1, bool is_err = false) = 0;
 
     // Tutorial pop-up windows
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows) = 0;
@@ -93,7 +94,7 @@ public:
     // And also #165 -- Disabling the observer window for players who are eliminated.
     virtual void onElimination(int player_num) = 0;
     virtual void disableView(int player_num) = 0;
-    virtual void goIntoObserverMode(int nplayers, const std::vector<std::string> &names) = 0;
+    virtual void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names) = 0;
 };
 
 #endif

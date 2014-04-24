@@ -39,7 +39,7 @@ void MonsterTask::execute(TaskManager &tm)
     int left = 999999, right = 0,
         bottom = 999999, top = 0;
     Mediator &med(mediator);
-    for (vector<Player*>::const_iterator it = med.getPlayers().begin();
+    for (std::vector<Player*>::const_iterator it = med.getPlayers().begin();
     it != med.getPlayers().end(); ++it) {
         shared_ptr<Knight> kt = (*it)->getKnight();
         if (kt && kt->getMap()) {

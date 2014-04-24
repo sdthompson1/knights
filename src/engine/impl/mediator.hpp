@@ -58,7 +58,6 @@ using namespace boost;
 
 #include <set>
 #include <vector>
-using namespace std;
 
 class ConfigMap;
 class CoordTransform;
@@ -187,8 +186,8 @@ public:
     void onChangeTile(const DungeonMap &, const MapCoord &, const Tile &);
 
     // Generic Event Hooks (Usually used for sound effects.)
-    void runHook(const string &hook_name, shared_ptr<Creature> cr);
-    void runHook(const string &hook_name, DungeonMap *dmap, const MapCoord &mc);
+    void runHook(const std::string &hook_name, shared_ptr<Creature> cr);
+    void runHook(const std::string &hook_name, DungeonMap *dmap, const MapCoord &mc);
     
     // Gore effects.
     // (These just call into GoreManager at present.)
@@ -233,7 +232,7 @@ public:
     // Various accessor functions.
     shared_ptr<DungeonMap> getMap() const { return dmap; }
     shared_ptr<CoordTransform> getCoordTransform() const { return coord_transform; }
-    const vector<Player*> &getPlayers() const { return players; }
+    const std::vector<Player*> &getPlayers() const { return players; }
     MonsterManager & getMonsterManager() const { return monster_manager; }
     StuffManager & getStuffManager() const { return stuff_manager; }
     HomeManager & getHomeManager() const { return home_manager; }
@@ -281,7 +280,7 @@ private:
     Mediator(const Mediator &);              // not defined
 
 
-    void endGame(const std::vector<const Player*> &, std::string msg);
+    void endGame(const std::vector<const Player*> &, std::string msg_latin1);
     
 private:
 
@@ -304,8 +303,8 @@ private:
     // Other variables
     shared_ptr<DungeonMap> dmap;
     shared_ptr<CoordTransform> coord_transform;
-    vector<Player*> players;
-    set<const Player*> remaining_players;
+    std::vector<Player*> players;
+    std::set<const Player*> remaining_players;
     bool game_running;
 
     // KnightsCallbacks.

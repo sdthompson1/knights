@@ -149,10 +149,10 @@ void RespawnTask::execute(TaskManager &tm)
 //
 
 Player::Player(int plyr_num,
-               const Anim *a, ItemType * di, 
-               const vector<const Control*> &cs, 
+               const Anim *a, ItemType * di,
+               const std::vector<const Control*> &cs,
                shared_ptr<const ColourChange> sec_home_cc,
-               const std::string &name_,
+               const UTF8String &name_,
                int team_num_)
     : player_num(plyr_num), control(0),
       current_room(-1), current_room_width(0), current_room_height(0),
@@ -168,12 +168,12 @@ Player::Player(int plyr_num,
 }
 
 
-void Player::addStartingGear(ItemType &itype, const vector<int> &numbers)
+void Player::addStartingGear(ItemType &itype, const std::vector<int> &numbers)
 {
     if (gears.size() < numbers.size()) gears.resize(numbers.size());
 
     for (int i=0; i<numbers.size(); ++i) {
-        gears[i].push_back(make_pair(&itype, numbers[i]));
+        gears[i].push_back(std::make_pair(&itype, numbers[i]));
     }
 }
 
@@ -394,9 +394,9 @@ void Player::scheduleRespawn(int delay)
 // respawn
 //
 
-void Player::giveStartingGear(shared_ptr<Knight> knight, const vector<pair<ItemType *, int> > &items)
+void Player::giveStartingGear(shared_ptr<Knight> knight, const std::vector<std::pair<ItemType *, int> > &items)
 {
-    for (vector<pair<ItemType *, int> >::const_iterator it = items.begin(); it != items.end(); ++it) {
+    for (std::vector<std::pair<ItemType *, int> >::const_iterator it = items.begin(); it != items.end(); ++it) {
         knight->addToBackpack(*it->first, it->second);
     }
 }
@@ -424,13 +424,13 @@ bool Player::respawn()
             // the external code is assumed to have already sent a "has quit" or "has left" type 
             // message, so we don't send further messages here. (Trac #36.)
 
-            std::ostringstream str;
-            str << getName() << " has been eliminated.";
+            std::ostringstream str_latin1;
+            str_latin1 << getName().asLatin1() << " has been eliminated.";
             const int nleft = mediator.getNumPlayersRemaining() - 1;
             if (nleft > 1) {
-                str << " " << nleft << " players are left.";
+                str_latin1 << " " << nleft << " players are left.";
             }
-            mediator.getCallbacks().gameMsg(-1, str.str());
+            mediator.getCallbacks().gameMsg(-1, str_latin1.str());
 
             // Now eliminate the player.
             mediator.eliminatePlayer(*this);
@@ -563,7 +563,7 @@ void Player::findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &fa
 void Player::getControlInfo(const Control *ctrl_in, ItemType *& itype_out,
                             weak_ptr<Tile> &tile_out, MapCoord &tile_mc_out) const
 {
-    map<const Control *, ControlInfo>::const_iterator it;
+    std::map<const Control *, ControlInfo>::const_iterator it;
     it = current_controls.find(ctrl_in);
     if (it != current_controls.end()) {
         // Note: Item controls always refer to an item in the knight's
@@ -587,11 +587,11 @@ void Player::computeAvailableControls()
 {
     shared_ptr<Knight> kt = knight.lock();
 
-    map<const Control *, ControlInfo> new_controls;
+    std::map<const Control *, ControlInfo> new_controls;
     
     if (kt && kt->getMap()) {
         // "Generic" controls
-        vector<const Control *>::const_iterator it;
+        std::vector<const Control *>::const_iterator it;
         for (it = control_set.begin(); it != control_set.end(); ++it) {
             if (*it) {
                 // check if the control is currently possible
@@ -603,7 +603,7 @@ void Player::computeAvailableControls()
                 ad.setOriginator(Originator(OT_Player(), this));
                 if ((*it)->getExecuteFunc().hasValue() && (*it)->checkPossible(ad)
                 && (getApproachBasedControls() || ((*it)->getMenuSpecial() & UserControl::MS_APPR_BASED) == 0 )) {
-                    new_controls.insert(make_pair(*it, ControlInfo()));
+                    new_controls.insert(std::make_pair(*it, ControlInfo()));
                 }
             }
         }
@@ -628,10 +628,10 @@ void Player::computeAvailableControls()
 
     if (new_controls != current_controls) {
         current_controls.swap(new_controls);
-        vector<pair<const UserControl *, bool> > ctrl_vec;
-        for (map<const Control *, ControlInfo>::const_iterator it = current_controls.begin();
+        std::vector<std::pair<const UserControl *, bool> > ctrl_vec;
+        for (std::map<const Control *, ControlInfo>::const_iterator it = current_controls.begin();
         it != current_controls.end(); ++it) {
-            ctrl_vec.push_back(make_pair(it->first, it->second.primary));
+            ctrl_vec.push_back(std::make_pair(it->first, it->second.primary));
         }
         Mediator::instance().getCallbacks().setAvailableControls(getPlayerNum(), ctrl_vec);
     }
@@ -639,7 +639,7 @@ void Player::computeAvailableControls()
 
 
 void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
-                             map<const Control *, ControlInfo> &cmap,
+                             std::map<const Control *, ControlInfo> &cmap,
                              bool ahead,
                              bool approaching, 
                              bool approach_based,
@@ -648,15 +648,15 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
     if (!dmap) return;
     if (!ahead && approaching) return;  // can't do current square if approaching the square ahead.
 
-    vector<shared_ptr<Tile> > tiles;
+    std::vector<shared_ptr<Tile> > tiles;
     dmap->getTiles(mc, tiles);
 
     MapAccess acc = A_CLEAR;
-    for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+    for (std::vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
         acc = std::min(acc, (*it)->getAccess(ht));
     }
 
-    for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end();
+    for (std::vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end();
     ++it) {
         const Control *ctrl = (*it)->getControl(mc);
         if (ctrl) {
@@ -665,7 +665,7 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
             if (ahead) {
                 // square-ahead is ok if there are no entities there.
                 // (This prevents us from shutting doors on other knights, or monsters.)
-                vector<shared_ptr<Entity> > entities;
+                std::vector<shared_ptr<Entity> > entities;
                 dmap->getEntities(mc, entities);
                 ok = (entities.empty());
 
@@ -691,14 +691,14 @@ void Player::addTileControls(DungeonMap *dmap, const MapCoord &mc,
                     ci.tile = *it;
                     ci.tile_mc = mc;
                     ci.primary = primary;
-                    cmap.insert(make_pair(ctrl, ci));
+                    cmap.insert(std::make_pair(ctrl, ci));
                 }
             }
         }
     }
 }
 
-void Player::addItemControls(ItemType &itype, map<const Control *, ControlInfo> &cmap,
+void Player::addItemControls(ItemType &itype, std::map<const Control *, ControlInfo> &cmap,
                              shared_ptr<Creature> cr)
 {
     if (!cr) return;
@@ -712,7 +712,7 @@ void Player::addItemControls(ItemType &itype, map<const Control *, ControlInfo> 
         if (ctrl->getExecuteFunc().hasValue() && ctrl->checkPossible(ad)) {
             ControlInfo ci;
             ci.item_type = &itype;
-            cmap.insert(make_pair(ctrl, ci));
+            cmap.insert(std::make_pair(ctrl, ci));
         }
     }
 }

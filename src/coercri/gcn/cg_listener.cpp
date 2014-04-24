@@ -41,12 +41,28 @@
 #include "cg_graphics.hpp"
 #include "cg_input.hpp"
 #include "cg_listener.hpp"
+#include "../core/utf8string.hpp"
 #include "../gfx/window.hpp"
 #include "../timer/timer.hpp"
 
 #include "guichan.hpp"
 
 namespace Coercri {
+
+    namespace {
+        void SendKeyToGuichan(CGInput &input, gcn::Key k, KeyModifier mods)
+        {
+            // create two Guichan events: one pressed, and one released.
+            gcn::KeyInput key_input(k, gcn::KeyInput::PRESSED);
+            key_input.setAltPressed((mods & KM_ALT) != 0);
+            key_input.setControlPressed((mods & KM_CONTROL) != 0);
+            key_input.setShiftPressed((mods & KM_SHIFT) != 0);
+            // note: we don't support guichan's "meta" modifer and "numeric pad" flag.
+            input.addKeyInput(key_input);
+            key_input.setType(gcn::KeyInput::RELEASED);
+            input.addKeyInput(key_input);
+        }
+    }
 
     class CGListenerImpl {
     public:
@@ -65,7 +81,7 @@ namespace Coercri {
         bool gui_enabled;
         int last_mouse_x, last_mouse_y;
     };
-
+    
     CGListener::CGListener(boost::shared_ptr<Window> window, boost::shared_ptr<gcn::Gui> gui, boost::shared_ptr<Timer> timer)
         : pimpl(new CGListenerImpl(window, gui, timer))
     {
@@ -128,70 +144,72 @@ namespace Coercri {
         }
     }
 
-    void CGListener::onCookedKey(CookedKey ck, int character, KeyModifier mods)
+    void CGListener::onKey(KeyEventType type, KeyCode kc, KeyModifier mods)
     {
-        gcn::Key k;
+        // only process PRESSED and AUTO_REPEAT events here.
+        if (type == KEY_RELEASED) return;
 
-        // gcn::Key values from 32 to 999 represent printable characters
-        // 1000 upwards represent special characters.
-        if (ck == CK_CHARACTER && character >= 32 && character < 1000) {
-            k = character;
-        } else {
-            switch (ck) {
-            case CK_BACKSPACE: k = gcn::Key::BACKSPACE; break;
-            case CK_DELETE: k = gcn::Key::DELETE; break;
-            case CK_DOWN: k = gcn::Key::DOWN; break;
-            case CK_END: k = gcn::Key::END; break;
-            case CK_ESCAPE: k = gcn::Key::ESCAPE; break;
-            case CK_F1: k = gcn::Key::F1; break;
-            case CK_F2: k = gcn::Key::F2; break;
-            case CK_F3: k = gcn::Key::F3; break;
-            case CK_F4: k = gcn::Key::F4; break;
-            case CK_F5: k = gcn::Key::F5; break;
-            case CK_F6: k = gcn::Key::F6; break;
-            case CK_F7: k = gcn::Key::F7; break;
-            case CK_F8: k = gcn::Key::F8; break;
-            case CK_F9: k = gcn::Key::F9; break;
-            case CK_F10: k = gcn::Key::F10; break;
-            case CK_F11: k = gcn::Key::F11; break;
-            case CK_F12: k = gcn::Key::F12; break;
-            case CK_F13: k = gcn::Key::F13; break;
-            case CK_F14: k = gcn::Key::F14; break;
-            case CK_F15: k = gcn::Key::F15; break;
-            case CK_HOME: k = gcn::Key::HOME; break;
-            case CK_INSERT: k = gcn::Key::INSERT; break;
-            case CK_LEFT: k = gcn::Key::LEFT; break;
-            case CK_LEFT_WINDOWS: k = gcn::Key::LEFT_SUPER; break;
-            case CK_PAGE_DOWN: k = gcn::Key::PAGE_DOWN; break;
-            case CK_PAGE_UP: k = gcn::Key::PAGE_UP; break;
-            case CK_PAUSE: k = gcn::Key::PAUSE; break;
-            case CK_PRINT_SCREEN: k = gcn::Key::PRINT_SCREEN; break;
-            case CK_RETURN: k = gcn::Key::ENTER; break;
-            case CK_RIGHT: k = gcn::Key::RIGHT; break;
-            case CK_RIGHT_WINDOWS: k = gcn::Key::RIGHT_SUPER; break;
-            case CK_TAB: k = gcn::Key::TAB; break;
-            case CK_UP: k = gcn::Key::UP; break;
-            default: return;    // Unknown key
-            }
+        // only process 'special' keys. (the normal "text" keys will be
+        // processed by onTextInput.)
+
+        // note: this does mean guichan will not get keypresses such as ctrl+c currently 
+        // (because these are neither a special key nor do they generate a text event.)
+        // but guichan doesn't do anything with such keypresses (afaik) so hopefully 
+        // this won't matter.
+       
+        gcn::Key k = 0;
+        switch (kc) {
+        case KC_BACKSPACE: k = gcn::Key::BACKSPACE; break;
+        case KC_DELETE: k = gcn::Key::DELETE; break;
+        case KC_DOWN: k = gcn::Key::DOWN; break;
+        case KC_END: k = gcn::Key::END; break;
+        case KC_ESCAPE: k = gcn::Key::ESCAPE; break;
+        case KC_F1: k = gcn::Key::F1; break;
+        case KC_F2: k = gcn::Key::F2; break;
+        case KC_F3: k = gcn::Key::F3; break;
+        case KC_F4: k = gcn::Key::F4; break;
+        case KC_F5: k = gcn::Key::F5; break;
+        case KC_F6: k = gcn::Key::F6; break;
+        case KC_F7: k = gcn::Key::F7; break;
+        case KC_F8: k = gcn::Key::F8; break;
+        case KC_F9: k = gcn::Key::F9; break;
+        case KC_F10: k = gcn::Key::F10; break;
+        case KC_F11: k = gcn::Key::F11; break;
+        case KC_F12: k = gcn::Key::F12; break;
+        case KC_F13: k = gcn::Key::F13; break;
+        case KC_F14: k = gcn::Key::F14; break;
+        case KC_F15: k = gcn::Key::F15; break;
+        case KC_HOME: k = gcn::Key::HOME; break;
+        case KC_INSERT: k = gcn::Key::INSERT; break;
+        case KC_LEFT: k = gcn::Key::LEFT; break;
+        case KC_LEFT_WINDOWS: k = gcn::Key::LEFT_SUPER; break;
+        case KC_PAGE_DOWN: k = gcn::Key::PAGE_DOWN; break;
+        case KC_PAGE_UP: k = gcn::Key::PAGE_UP; break;
+        case KC_PAUSE: k = gcn::Key::PAUSE; break;
+        case KC_PRINT_SCREEN: k = gcn::Key::PRINT_SCREEN; break;
+        case KC_RETURN: k = gcn::Key::ENTER; break;
+        case KC_RIGHT: k = gcn::Key::RIGHT; break;
+        case KC_RIGHT_WINDOWS: k = gcn::Key::RIGHT_SUPER; break;
+        case KC_TAB: k = gcn::Key::TAB; break;
+        case KC_UP: k = gcn::Key::UP; break;
+        default: return;    // Unknown key
         }
 
-        // Guichan uses a different input model to Coercri (Guichan's
-        // model is a sort of mixture of raw and cooked keys). To
-        // handle this, we create two Guichan events for each Coercri
-        // cooked key event -- one for a press, and one for a release
-        // -- and ignore the Coercri raw key events.
-        
-        gcn::KeyInput key_input(k, gcn::KeyInput::PRESSED);
-        key_input.setAltPressed((mods & KM_ALT) != 0);
-        key_input.setControlPressed((mods & KM_CONTROL) != 0);
-        key_input.setShiftPressed((mods & KM_SHIFT) != 0);
-        // guichan also supports "meta" modifier, and a "numeric pad" flag, but Coercri doesn't support these (for cooked key events).
-        pimpl->input.addKeyInput(key_input);
-
-        key_input.setType(gcn::KeyInput::RELEASED);
-        pimpl->input.addKeyInput(key_input);
+        SendKeyToGuichan(pimpl->input, k, mods);
     }
 
+    void CGListener::onTextInput(const UTF8String &txt_in)
+    {
+        // realistically, guichan only works with Latin-1 chars at the moment.
+        const std::string & txt = txt_in.asLatin1();
+        
+        for (std::string::const_iterator it = txt.begin(); it != txt.end(); ++it) {
+            SendKeyToGuichan(pimpl->input,
+                                gcn::Key(static_cast<unsigned char>(*it)),
+                                KeyModifier(0));
+        }
+    }
+    
     void CGListener::onMouseDown(int x, int y, MouseButton button)
     {
         if (!pimpl->gui_enabled) return;

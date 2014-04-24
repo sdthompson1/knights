@@ -32,7 +32,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-using namespace std;
 
 struct lua_State;
 
@@ -58,9 +57,9 @@ public:
 
 private:
     int width, height;
-    vector<BlockType> data;
-    vector<bool> horiz_exits;
-    vector<bool> vert_exits;
+    std::vector<BlockType> data;
+    std::vector<bool> horiz_exits;
+    std::vector<bool> vert_exits;
 };
 
 #endif

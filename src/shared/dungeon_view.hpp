@@ -31,6 +31,7 @@
 
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
+#include "utf8string.hpp"
 
 #include <string>
 
@@ -74,7 +75,7 @@ public:
                            const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                            bool ainvis, bool ainvuln, // (anim data)
                            int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                           const std::string &name) = 0;
+                           const UTF8String &name) = 0;
     virtual void rmEntity(unsigned short int id) = 0;
 
     // move entity to a new square (instantaneously)
@@ -118,7 +119,7 @@ public:
     // Messages
     //
 
-    virtual void flashMessage(const std::string &msg, int ntimes) = 0;
+    virtual void flashMessage(const std::string &msg_latin1, int ntimes) = 0;
     virtual void cancelContinuousMessages() = 0;
     virtual void addContinuousMessage(const std::string &msg) = 0;
 };

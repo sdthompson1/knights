@@ -108,7 +108,7 @@ public:
 
 KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
-                             const std::vector<std::string> &player_names,
+                             const std::vector<UTF8String> &player_names,
                              bool &deathmatch_mode,
                              std::vector<std::string> &messages)
 {

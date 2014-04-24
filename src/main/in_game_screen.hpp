@@ -53,7 +53,7 @@ public:
     InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> knights_client, 
                  boost::shared_ptr<const ClientConfig> config, int nplayers_,
                  bool deathmatch_mode,
-                 const std::vector<std::string> &player_names,
+                 const std::vector<UTF8String> &player_names,
                  bool single_player_, bool tutorial);
     virtual bool start(KnightsApp &, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     virtual ~InGameScreen();
@@ -64,9 +64,9 @@ public:
     virtual void onMouseMove(int new_x, int new_y);
     virtual void onMouseDown(int x, int y, Coercri::MouseButton m);
     virtual void onMouseUp(int x, int y, Coercri::MouseButton m);
-    virtual void onRawKey(bool pressed, Coercri::RawKey rk);
-    virtual void onActivate();
-    virtual void onDeactivate();
+    virtual void onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier);
+    virtual void onMinimize();
+    virtual void onUnminimize();
     virtual void onGainFocus();
     virtual void onLoseFocus();
 
@@ -95,7 +95,7 @@ private:
     boost::scoped_ptr<gcn::Container> container;
 
     // held across initialization only:
-    std::vector<std::string> init_player_names;
+    std::vector<UTF8String> init_player_names;
     int init_nplayers;
     bool deathmatch_mode;
 
@@ -106,7 +106,7 @@ private:
     unsigned int focus_timer;
 
     // chat keys
-    Coercri::RawKey global_chat_key, team_chat_key;
+    Coercri::KeyCode global_chat_key, team_chat_key;
     bool waiting_to_focus_chat;
     bool waiting_to_chat_all;
     std::string stored_chat_field_contents;

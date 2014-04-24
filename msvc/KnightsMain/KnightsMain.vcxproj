@@ -1,0 +1,288 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\openssl.1.0.1.24\build\native\openssl.props" Condition="Exists('..\packages\openssl.1.0.1.24\build\native\openssl.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ABE943FA-D9BE-45D9-94FC-7401C2A6F20F}</ProjectGuid>
+    <RootNamespace>KnightsMain</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\misc;..\..\src\rstream;..\..\src\server;..\..\src\shared;..\..;..\..\curl\include;..\..\src\external\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;libcurl.lib;freetype246_D.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Debug\dynamic;..\packages\freetype.2.4.2.1\build\native\lib\Win32\v110\dynamic\Debug;..\packages\SDL.1.2.15.15\build\native\lib\v110\Win32\Debug\dynamic</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <SubSystem>
+      </SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)\packages\curl.redist.7.30.0.2\build\native\bin\v110\Win32\Debug\dynamic\libcurl.dll $(OutDir)
+copy $(SolutionDir)\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\Debug\dynamic\cdecl\libssh2.dll $(OutDir)
+copy $(SolutionDir)\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Debug\dynamic\cdecl\zlib.dll $(OutDir)
+copy $(SolutionDir)\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Debug\freetype246_D.dll $(OutDir)
+copy $(SolutionDir)\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Debug\dynamic\SDL.dll $(OutDir)
+</Command>
+    </PostBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\misc;..\..\src\rstream;..\..\src\server;..\..\src\shared;..\..;..\..\curl\include;..\..\src\external\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;libcurl.lib;freetype246.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Release\dynamic;..\packages\freetype.2.4.2.1\build\native\lib\Win32\v110\dynamic\Release;..\packages\SDL.1.2.15.15\build\native\lib\v110\Win32\Release\dynamic</AdditionalLibraryDirectories>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)\packages\curl.redist.7.30.0.2\build\native\bin\v110\Win32\Release\dynamic\libcurl.dll $(OutDir)
+copy $(SolutionDir)\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\Release\dynamic\cdecl\libssh2.dll $(OutDir)
+copy $(SolutionDir)\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Release\dynamic\cdecl\zlib.dll $(OutDir)
+copy $(SolutionDir)\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Release\freetype246.dll $(OutDir)
+copy $(SolutionDir)\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Release\dynamic\SDL.dll $(OutDir)
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\main\action_bar.cpp" />
+    <ClCompile Include="..\..\src\main\adjust_list_box_size.cpp" />
+    <ClCompile Include="..\..\src\main\connecting_screen.cpp" />
+    <ClCompile Include="..\..\src\main\credits_screen.cpp" />
+    <ClCompile Include="..\..\src\main\draw.cpp" />
+    <ClCompile Include="..\..\src\main\entity_map.cpp" />
+    <ClCompile Include="..\..\src\main\error_screen.cpp" />
+    <ClCompile Include="..\..\src\main\file_cache.cpp" />
+    <ClCompile Include="..\..\src\main\find_server_screen.cpp" />
+    <ClCompile Include="..\..\src\main\game_manager.cpp" />
+    <ClCompile Include="..\..\src\main\gfx_manager.cpp" />
+    <ClCompile Include="..\..\src\main\gfx_resizer_compose.cpp" />
+    <ClCompile Include="..\..\src\main\gfx_resizer_nearest_nbr.cpp" />
+    <ClCompile Include="..\..\src\main\gfx_resizer_scale2x.cpp" />
+    <ClCompile Include="..\..\src\main\graphic_transform.cpp" />
+    <ClCompile Include="..\..\src\main\gui_button.cpp" />
+    <ClCompile Include="..\..\src\main\gui_centre.cpp" />
+    <ClCompile Include="..\..\src\main\gui_draw_box.cpp" />
+    <ClCompile Include="..\..\src\main\gui_numeric_field.cpp" />
+    <ClCompile Include="..\..\src\main\gui_panel.cpp" />
+    <ClCompile Include="..\..\src\main\gui_simple_container.cpp" />
+    <ClCompile Include="..\..\src\main\gui_text_wrap.cpp" />
+    <ClCompile Include="..\..\src\main\host_lan_screen.cpp" />
+    <ClCompile Include="..\..\src\main\house_colour_font.cpp" />
+    <ClCompile Include="..\..\src\main\in_game_screen.cpp" />
+    <ClCompile Include="..\..\src\main\keyboard_controller.cpp" />
+    <ClCompile Include="..\..\src\main\knights_app.cpp" />
+    <ClCompile Include="..\..\src\main\load_font.cpp" />
+    <ClCompile Include="..\..\src\main\loading_screen.cpp" />
+    <ClCompile Include="..\..\src\main\lobby_screen.cpp" />
+    <ClCompile Include="..\..\src\main\local_display.cpp" />
+    <ClCompile Include="..\..\src\main\local_dungeon_view.cpp" />
+    <ClCompile Include="..\..\src\main\local_mini_map.cpp" />
+    <ClCompile Include="..\..\src\main\local_status_display.cpp" />
+    <ClCompile Include="..\..\src\main\main.cpp" />
+    <ClCompile Include="..\..\src\main\make_scroll_area.cpp" />
+    <ClCompile Include="..\..\src\main\menu_screen.cpp" />
+    <ClCompile Include="..\..\src\main\options.cpp" />
+    <ClCompile Include="..\..\src\main\options_screen.cpp" />
+    <ClCompile Include="..\..\src\main\password_screen.cpp" />
+    <ClCompile Include="..\..\src\main\potion_renderer.cpp" />
+    <ClCompile Include="..\..\src\main\skull_renderer.cpp" />
+    <ClCompile Include="..\..\src\main\sound_manager.cpp" />
+    <ClCompile Include="..\..\src\main\start_game_screen.cpp" />
+    <ClCompile Include="..\..\src\main\tab_font.cpp" />
+    <ClCompile Include="..\..\src\main\text_formatter.cpp" />
+    <ClCompile Include="..\..\src\main\title_block.cpp" />
+    <ClCompile Include="..\..\src\main\title_screen.cpp" />
+    <ClCompile Include="..\..\src\main\x_centre.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\main\action_bar.hpp" />
+    <ClInclude Include="..\..\src\main\adjust_list_box_size.hpp" />
+    <ClInclude Include="..\..\src\main\connecting_screen.hpp" />
+    <ClInclude Include="..\..\src\main\controller.hpp" />
+    <ClInclude Include="..\..\src\main\credits_screen.hpp" />
+    <ClInclude Include="..\..\src\main\draw.hpp" />
+    <ClInclude Include="..\..\src\main\entity_map.hpp" />
+    <ClInclude Include="..\..\src\main\error_screen.hpp" />
+    <ClInclude Include="..\..\src\main\file_cache.hpp" />
+    <ClInclude Include="..\..\src\main\find_server_screen.hpp" />
+    <ClInclude Include="..\..\src\main\game_manager.hpp" />
+    <ClInclude Include="..\..\src\main\gfx_manager.hpp" />
+    <ClInclude Include="..\..\src\main\gfx_resizer.hpp" />
+    <ClInclude Include="..\..\src\main\gfx_resizer_compose.hpp" />
+    <ClInclude Include="..\..\src\main\gfx_resizer_nearest_nbr.hpp" />
+    <ClInclude Include="..\..\src\main\gfx_resizer_scale2x.hpp" />
+    <ClInclude Include="..\..\src\main\graphic_element.hpp" />
+    <ClInclude Include="..\..\src\main\graphic_transform.hpp" />
+    <ClInclude Include="..\..\src\main\gui_button.hpp" />
+    <ClInclude Include="..\..\src\main\gui_centre.hpp" />
+    <ClInclude Include="..\..\src\main\gui_draw_box.hpp" />
+    <ClInclude Include="..\..\src\main\gui_numeric_field.hpp" />
+    <ClInclude Include="..\..\src\main\gui_panel.hpp" />
+    <ClInclude Include="..\..\src\main\gui_simple_container.hpp" />
+    <ClInclude Include="..\..\src\main\gui_text_wrap.hpp" />
+    <ClInclude Include="..\..\src\main\host_lan_screen.hpp" />
+    <ClInclude Include="..\..\src\main\house_colour_font.hpp" />
+    <ClInclude Include="..\..\src\main\in_game_screen.hpp" />
+    <ClInclude Include="..\..\src\main\keyboard_controller.hpp" />
+    <ClInclude Include="..\..\src\main\knights_app.hpp" />
+    <ClInclude Include="..\..\src\main\load_font.hpp" />
+    <ClInclude Include="..\..\src\main\loading_screen.hpp" />
+    <ClInclude Include="..\..\src\main\lobby_screen.hpp" />
+    <ClInclude Include="..\..\src\main\local_display.hpp" />
+    <ClInclude Include="..\..\src\main\local_dungeon_view.hpp" />
+    <ClInclude Include="..\..\src\main\local_mini_map.hpp" />
+    <ClInclude Include="..\..\src\main\local_status_display.hpp" />
+    <ClInclude Include="..\..\src\main\make_scroll_area.hpp" />
+    <ClInclude Include="..\..\src\main\menu_screen.hpp" />
+    <ClInclude Include="..\..\src\main\options.hpp" />
+    <ClInclude Include="..\..\src\main\options_screen.hpp" />
+    <ClInclude Include="..\..\src\main\password_screen.hpp" />
+    <ClInclude Include="..\..\src\main\potion_renderer.hpp" />
+    <ClInclude Include="..\..\src\main\screen.hpp" />
+    <ClInclude Include="..\..\src\main\skull_renderer.hpp" />
+    <ClInclude Include="..\..\src\main\sound_manager.hpp" />
+    <ClInclude Include="..\..\src\main\start_game_screen.hpp" />
+    <ClInclude Include="..\..\src\main\tab_font.hpp" />
+    <ClInclude Include="..\..\src\main\text_formatter.hpp" />
+    <ClInclude Include="..\..\src\main\title_block.hpp" />
+    <ClInclude Include="..\..\src\main\title_screen.hpp" />
+    <ClInclude Include="..\..\src\main\x_centre.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Coercri\Coercri.vcxproj">
+      <Project>{97a898fe-d684-42b1-9f9b-b8706436f78c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ENet\ENet.vcxproj">
+      <Project>{f75537ff-1112-469b-9cb5-e1d6bf28a419}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\guichan\guichan.vcxproj">
+      <Project>{bda2ef81-e5fa-4215-90b8-84eff005bdb1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\KnightsClient\KnightsClient.vcxproj">
+      <Project>{39cc8adb-5d60-430d-8a2f-e8546049ac5a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\KnightsEngine\KnightsEngine.vcxproj">
+      <Project>{88beee97-63e6-4949-886f-580ac6035687}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\KnightsServer\KnightsServer.vcxproj">
+      <Project>{b4bd454e-b242-456c-93a8-0160b6604614}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\KnightsShared\KnightsShared.vcxproj">
+      <Project>{ae365d55-9853-4336-af95-222e286ebe61}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\lua\lua.vcxproj">
+      <Project>{a6acd79e-030b-4ec4-81fa-93a7e3a933d7}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Misc\Misc.vcxproj">
+      <Project>{bc217bea-9135-4266-b150-75f0450b2366}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\RStream\RStream.vcxproj">
+      <Project>{013a3a7a-553c-4d09-9be8-08b533577e32}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\src\icon.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
+    <Import Project="..\packages\SDL.1.2.15.15\build\native\SDL.targets" Condition="Exists('..\packages\SDL.1.2.15.15\build\native\SDL.targets')" />
+    <Import Project="..\packages\zlib.redist.1.2.8.6\build\native\zlib.redist.targets" Condition="Exists('..\packages\zlib.redist.1.2.8.6\build\native\zlib.redist.targets')" />
+    <Import Project="..\packages\zlib.1.2.8.6\build\native\zlib.targets" Condition="Exists('..\packages\zlib.1.2.8.6\build\native\zlib.targets')" />
+    <Import Project="..\packages\openssl.redist.1.0.1.24\build\native\openssl.redist.targets" Condition="Exists('..\packages\openssl.redist.1.0.1.24\build\native\openssl.redist.targets')" />
+    <Import Project="..\packages\openssl.1.0.1.24\build\native\openssl.targets" Condition="Exists('..\packages\openssl.1.0.1.24\build\native\openssl.targets')" />
+    <Import Project="..\packages\libssh2.redist.1.4.3.3\build\native\libssh2.redist.targets" Condition="Exists('..\packages\libssh2.redist.1.4.3.3\build\native\libssh2.redist.targets')" />
+    <Import Project="..\packages\libssh2.1.4.3.3\build\native\libssh2.targets" Condition="Exists('..\packages\libssh2.1.4.3.3\build\native\libssh2.targets')" />
+    <Import Project="..\packages\curl.redist.7.30.0.2\build\native\curl.redist.targets" Condition="Exists('..\packages\curl.redist.7.30.0.2\build\native\curl.redist.targets')" />
+    <Import Project="..\packages\curl.7.30.0.2\build\native\curl.targets" Condition="Exists('..\packages\curl.7.30.0.2\build\native\curl.targets')" />
+    <Import Project="..\packages\boost.1.55.0.16\build\native\boost.targets" Condition="Exists('..\packages\boost.1.55.0.16\build\native\boost.targets')" />
+    <Import Project="..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets" Condition="Exists('..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets')" />
+    <Import Project="..\packages\boost_system.1.55.0.16\build\native\boost_system.targets" Condition="Exists('..\packages\boost_system.1.55.0.16\build\native\boost_system.targets')" />
+    <Import Project="..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets" Condition="Exists('..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets')" />
+    <Import Project="..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets" Condition="Exists('..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets')" />
+    <Import Project="..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets" Condition="Exists('..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets')" />
+  </ImportGroup>
+</Project>

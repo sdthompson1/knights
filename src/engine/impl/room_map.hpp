@@ -36,7 +36,6 @@
 #include "map_support.hpp"
 
 #include <vector>
-using namespace std;
 
 class RoomMap {
 public:
@@ -66,7 +65,7 @@ private:
         MapCoord pos;
         int w, h;
     };
-    vector<RoomInfo> rooms;
+    std::vector<RoomInfo> rooms;
     bool ready; // set once "doneAddingRooms" has been called.
 };
 

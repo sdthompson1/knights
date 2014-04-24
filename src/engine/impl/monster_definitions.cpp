@@ -137,7 +137,7 @@ void FlyingMonsterAI::execute(TaskManager &tm)
     if (!bat || !bat->getMap()) return;  // the bat has died
 
     // These vars store whether we should move (and in which dir) and whether we should bite
-    pair<MapDirection,bool> p;
+    std::pair<MapDirection,bool> p;
     p.second = false;
     bool bite = false;
 
@@ -351,9 +351,9 @@ namespace {
             if (dmap.getAccess(mc, H_WALKING) != A_CLEAR) return false;
             
             // If a tile is on the "avoid" list then we may not walk into this square
-            vector<shared_ptr<Tile> > tiles;
+            std::vector<shared_ptr<Tile> > tiles;
             dmap.getTiles(mc, tiles);
-            for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
+            for (std::vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
             ++it) {
                 if (find(avoid_tiles.begin(), avoid_tiles.end(), (*it)->getOriginalTile()) != avoid_tiles.end()) {
                     return false;
@@ -389,9 +389,9 @@ namespace {
             
             // A walking monster can also try to smash furniture tiles (as long as they're
             // not doors).
-            vector<shared_ptr<Tile> > tiles;
+            std::vector<shared_ptr<Tile> > tiles;
             dmap.getTiles(mc, tiles);
-            for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
+            for (std::vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end();
             ++it) {
                 if ((*it)->destructible() && !dynamic_cast<Door*>(it->get())) {
                     return true;
@@ -427,7 +427,7 @@ void WalkingMonsterAI::execute(TaskManager &tm)
 
     Mediator &mediator = Mediator::instance();
 
-    pair<MapDirection,bool> p;
+    std::pair<MapDirection,bool> p;
     p.second = false;
     
     // Find a target (or something to run away from!)

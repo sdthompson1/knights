@@ -44,7 +44,7 @@
 InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, 
                            boost::shared_ptr<const ClientConfig> cfg, int nplayers_,
                            bool deathmatch_mode_,
-                           const std::vector<std::string> &names,
+                           const std::vector<UTF8String> &names,
                            bool sgl_plyr, bool tut)
     : single_player(sgl_plyr),
       tutorial_mode(tut),
@@ -69,7 +69,7 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
 InGameScreen::~InGameScreen()
 {
     // reset 'guiparams' of the chat list
-    knights_app.getGameManager().getChatList().setGuiParams((Coercri::Font*)0, 999);
+    knights_app.getGameManager().getChatList().setGuiParams(0, 999);
 
     // Delete LocalDisplay and remove it from the callback mechanism
     knights_client->setKnightsCallbacks(0);
@@ -90,6 +90,10 @@ unsigned int InGameScreen::getUpdateInterval()
 
 void InGameScreen::setupDisplay()
 {
+    using std::pair;
+    using std::string;
+    using std::vector;
+
     // Set up menu strings.
     boost::shared_ptr<vector<pair<string, string> > > menu_strings(new vector<pair<string, string> >);
     knights_app.getGameManager().getMenuStrings(*menu_strings);
@@ -109,9 +113,9 @@ void InGameScreen::setupDisplay()
     const Options & options = knights_app.getOptions();
     
     const std::string chat_keys = 
-        Coercri::RawKeyName(options.global_chat_key)
+        Coercri::KeyCodeToKeyName(options.global_chat_key)
         + " or " +
-        Coercri::RawKeyName(options.team_chat_key);
+        Coercri::KeyCodeToKeyName(options.team_chat_key);
 
     display.reset(new LocalDisplay(knights_app.getConfigMap(),
                                    client_config->approach_offset,
@@ -136,9 +140,12 @@ void InGameScreen::setupDisplay()
                                    knights_app.getGameManager().getQuestRequirementsList(),
                                    *knights_client,
                                    *container,
-                                   Coercri::RawKeyName(options.ctrls[2][0]), Coercri::RawKeyName(options.ctrls[2][1]),
-                                   Coercri::RawKeyName(options.ctrls[2][2]), Coercri::RawKeyName(options.ctrls[2][3]),
-                                   Coercri::RawKeyName(options.ctrls[2][4]), Coercri::RawKeyName(options.ctrls[2][5]),
+                                   Coercri::KeyCodeToKeyName(options.ctrls[2][0]), 
+                                   Coercri::KeyCodeToKeyName(options.ctrls[2][1]),
+                                   Coercri::KeyCodeToKeyName(options.ctrls[2][2]),
+                                   Coercri::KeyCodeToKeyName(options.ctrls[2][3]),
+                                   Coercri::KeyCodeToKeyName(options.ctrls[2][4]),
+                                   Coercri::KeyCodeToKeyName(options.ctrls[2][5]),
                                    single_player,
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips,
@@ -172,7 +179,7 @@ void InGameScreen::draw(Coercri::GfxContext &gc)
 {
     checkChatFocus();
     
-    const std::vector<std::string> & player_names = display->getPlayerNamesForObsMode();
+    const std::vector<UTF8String> & player_names = display->getPlayerNamesForObsMode();
     const int nplayers = display->getNPlayers();
     
     GfxManager &gm = knights_app.getGfxManager();
@@ -234,7 +241,7 @@ void InGameScreen::update()
 
     if (prevent_drawing) return;
 
-    const std::vector<std::string> & player_names = display->getPlayerNamesForObsMode();
+    const std::vector<UTF8String> & player_names = display->getPlayerNamesForObsMode();
     const int nplayers = display->getNPlayers();    
 
     // Read controllers
@@ -261,7 +268,9 @@ void InGameScreen::update()
     }
     
     // force a repaint
-    window->invalidateAll();
+    if (!window_minimized) {
+        window->invalidateAll();
+    }
 
     if (knights_app.getGameManager().getChatList().isUpdated()) {
         display->setChatUpdated();
@@ -300,7 +309,7 @@ void InGameScreen::onMouseUp(int x, int y, Coercri::MouseButton b)
     else if (b == Coercri::MB_RIGHT) mright = false;
 }
 
-void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
+void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier)
 {
     if (auto_mouse) window->showMousePointer(false);
 
@@ -309,15 +318,16 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
 
     checkChatFocus();
 
-    const std::vector<std::string> & player_names = display->getPlayerNamesForObsMode();
+    const std::vector<UTF8String> & player_names = display->getPlayerNamesForObsMode();
     const int nplayers = display->getNPlayers();
     
+    const bool pressed = (type == Coercri::KEY_PRESSED);
     const bool is_game_over = display->isGameOver();
-    const bool escape_pressed = pressed && rk == Coercri::RK_ESCAPE;
-    const bool space_pressed = pressed && rk == Coercri::RK_SPACE;
-    const bool q_pressed = pressed && rk == Coercri::RK_Q;
-    const bool tab_pressed = pressed && rk == global_chat_key;
-    const bool backtick_pressed = pressed && rk == team_chat_key;
+    const bool escape_pressed = pressed && kc == Coercri::KC_ESCAPE;
+    const bool space_pressed = pressed && kc == Coercri::KC_SPACE;
+    const bool q_pressed = pressed && kc == Coercri::KC_Q;
+    const bool tab_pressed = pressed && kc == global_chat_key;
+    const bool backtick_pressed = pressed && kc == team_chat_key;
 
     // TAB or ` => toggle chat mode
     if (tab_pressed || backtick_pressed) {
@@ -352,7 +362,7 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
         pause_mode = !pause_mode;
         if (nplayers == 2 && player_names.empty()  // split screen mode
         || single_player) {                        // single player mode
-            knights_client->setPauseMode(pause_mode || window_minimized); // tell server to pause gameplay
+            knights_client->setPauseMode(pause_mode);   // tell server to pause gameplay
         }
         window->invalidateAll();   // make sure screen gets redrawn!
         return;
@@ -377,42 +387,34 @@ void InGameScreen::onRawKey(bool pressed, Coercri::RawKey rk)
     // Left/Right in Observe mode => change currently observed player (window 1)
     // Up/Down => the same, but for window 2 (#164)
     if (player_names.size() > 2 && pressed) {
-        switch (rk) {
-        case Coercri::RK_LEFT:
+        switch (kc) {
+        case Coercri::KC_LEFT:
             display->cycleObsPlayer(0, -1);
             break;
 
-        case Coercri::RK_RIGHT:
+        case Coercri::KC_RIGHT:
             display->cycleObsPlayer(0, 1);
             break;
 
-        case Coercri::RK_UP:
+        case Coercri::KC_UP:
             display->cycleObsPlayer(1, -1);
             break;
 
-        case Coercri::RK_DOWN:
+        case Coercri::KC_DOWN:
             display->cycleObsPlayer(1, 1);
             break;
         }
     }
 }
 
-void InGameScreen::onActivate()
+void InGameScreen::onUnminimize()
 {
-    const std::vector<std::string> & player_names = display->getPlayerNamesForObsMode();
-    const int nplayers = display->getNPlayers();
-
     window_minimized = false;
-    if (nplayers == 2 && player_names.empty()) knights_client->setPauseMode(pause_mode || window_minimized);
 }
 
-void InGameScreen::onDeactivate()
+void InGameScreen::onMinimize()
 {
-    const std::vector<std::string> & player_names = display->getPlayerNamesForObsMode();
-    const int nplayers = display->getNPlayers();
-    
     window_minimized = true;
-    if (nplayers == 2 && player_names.empty()) knights_client->setPauseMode(pause_mode || window_minimized);
 }
 
 void InGameScreen::onGainFocus()

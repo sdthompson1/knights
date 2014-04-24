@@ -48,14 +48,21 @@
 #define COERCRI_DX11_WINDOW_HPP
 
 #include "dx11_gfx_driver.hpp"
+#include "../../gfx/key_code.hpp"
 #include "../../gfx/window.hpp"
+#include "../../shared/win32_set_icon.hpp"
+
+#include "boost/shared_ptr.hpp"
+
+#include <deque>
+#include <memory>
 
 namespace Coercri {
 
     class DX11Window : public Window {
     public:
         // ctor not intended to be called directly by the user; use DX11GfxDriver::createWindow()
-        DX11Window(int width, int height, bool resizable, bool fullscreen, const std::string &title, int icon_id,
+        DX11Window(int width, int height, bool resizable, bool fullscreen, const std::string &title,
                    DX11GfxDriver &driver);
         ~DX11Window();
 
@@ -66,9 +73,14 @@ namespace Coercri {
         virtual void showMousePointer(bool shown);
         virtual void captureMouse(bool captured);
         virtual void switchToWindowed(int w, int h);
-        virtual void switchToFullScreen(int w, int h);
+        virtual void switchToFullScreen();
         virtual bool isFullScreen() const;
+        virtual bool isMaximized() const;
         virtual std::auto_ptr<GfxContext> createGfxContext();
+        virtual void setIcon(const PixelArray &);
+
+        // Called by DX11GfxDriver
+        bool pollEvents();
 
         // Functions for accessing Direct3D objects
         IDXGISwapChain * getSwapChain() { return m_psSwapChain.get(); }
@@ -84,6 +96,34 @@ namespace Coercri {
         void createRenderTargetView();
         static LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
         void handleWindowResize();
+        bool checkShiftKeys();
+        KeyModifier currentKeyModifiers() const;
+
+        class EventBase {
+        public:
+            virtual void dispatch(Window &win) const = 0;
+        };
+
+        template<class T>
+        class Event : public EventBase {
+        public:
+            Event(const T& e_) : e(e_) { }
+            virtual ~Event() { }
+
+            virtual void dispatch(Window &win) const {
+                win.forEachListener(e);
+            }
+
+        private:
+            const T e;
+        };
+        
+        template<class T>
+        void addEvent(const T &e)
+        {
+            boost::shared_ptr<EventBase> evt(new Event<T>(e));
+            events.push_back(evt);
+        }
         
     private:
         DX11GfxDriver &gfx_driver;
@@ -93,6 +133,16 @@ namespace Coercri {
 
         ComPtrWrapper<IDXGISwapChain> m_psSwapChain;
         ComPtrWrapper<ID3D11RenderTargetView> m_psRenderTargetView;
+
+        std::deque<boost::shared_ptr<EventBase> > events;
+
+        bool left_shift_state, right_shift_state,
+            left_control_state, right_control_state,
+            left_alt_state, right_alt_state;
+
+        std::auto_ptr<Win32SetIcon> set_icon;
+
+        unsigned short int wm_char_surrogate;
     };
 
 }

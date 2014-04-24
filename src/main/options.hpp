@@ -29,6 +29,8 @@
 #ifndef OPTIONS_HPP
 #define OPTIONS_HPP
 
+#include "utf8string.hpp"
+
 #include "gfx/key_code.hpp"  // from coercri
 
 #include <iostream>
@@ -44,7 +46,7 @@ public:
     
     // Controls for 3 players (P1/P2/Network games) and in order up/down/left/right/action/suicide.
     // 3rd player added in v011 of Knights.
-    Coercri::RawKey ctrls[3][6];
+    Coercri::KeyCode ctrls[3][6];
     
     // Display settings
     bool use_scale2x;
@@ -56,14 +58,14 @@ public:
     int window_height;
 
     // added in version 3 of options file (version 011 of Knights)
-    std::string player_name;
+    UTF8String player_name;
 
     // added in version 4 of options file (version 016 of Knights)
     bool new_control_system;   // whether to use action bar
     bool action_bar_tool_tips;
 
     // added in version 5 of options file (version 020 of Knights)
-    Coercri::RawKey global_chat_key, team_chat_key;
+    Coercri::KeyCode global_chat_key, team_chat_key;
 };
 
 Options LoadOptions(std::istream &);

@@ -69,6 +69,10 @@
 #undef lst2
 #endif
 
+using std::auto_ptr;
+using std::string;
+using std::vector;
+
 namespace {
     template<class T> struct Delete {
         void operator()(T*p) { delete p; }
@@ -497,7 +501,7 @@ void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
                                        EventManager &event_manager,
                                        TaskManager &task_manager,
                                        const std::vector<int> &hse_cols,
-                                       const std::vector<std::string> &player_names)
+                                       const std::vector<UTF8String> &player_names)
 {
     // Add players
     players.clear();

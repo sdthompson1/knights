@@ -64,7 +64,8 @@ namespace Coercri {
     class DX11GfxContext : public GfxContext {
     public:
         // ctor not intended to be called directly. Use Window::createGfxContext.
-        DX11GfxContext(ID3D11DeviceContext *pDeviceContext,
+        DX11GfxContext(ID3D11Device *pDevice,
+                       ID3D11DeviceContext *pDeviceContext,
                        ID3D11RenderTargetView *pRenderTargetView,
                        IDXGISwapChain *pSwapChain,
                        PrimitiveBatch &prim_batch);
@@ -88,7 +89,10 @@ namespace Coercri {
 
         void plotPixelBatch(const Pixel *buf, int num);
         
+        virtual boost::shared_ptr<PixelArray> takeScreenshot();
+
     private:
+        ID3D11Device *device;
         ID3D11DeviceContext *device_context;
         ID3D11RenderTargetView *render_target_view;
         IDXGISwapChain *swap_chain;

@@ -900,7 +900,7 @@ namespace {
     int GetPlayerName(lua_State *lua)
     {
         Player & plyr = GetPlayerOrKnight(lua, 1);
-        lua_pushstring(lua, plyr.getName().c_str());
+        lua_pushstring(lua, plyr.getName().asLatin1().c_str());
         return 1;
     }
 
@@ -1089,14 +1089,15 @@ namespace {
     int PopUpWindow(lua_State *lua)
     {
         // Read out the table
+        // Note: we interpret the lua-strings as Latin1 for now.
         TutorialWindow win;
         
         lua_getfield(lua, 1, "title");  // [title]
-        if (lua_isstring(lua, -1)) win.title = lua_tostring(lua, -1);
+        if (lua_isstring(lua, -1)) win.title_latin1 = lua_tostring(lua, -1);
         lua_pop(lua, 1);  // []
 
         lua_getfield(lua, 1, "body");  // [body]
-        if (lua_isstring(lua, -1)) win.msg = lua_tostring(lua, -1);
+        if (lua_isstring(lua, -1)) win.msg_latin1 = lua_tostring(lua, -1);
         lua_pop(lua, 1); // []
 
         lua_getfield(lua, 1, "popup");  // [popup]

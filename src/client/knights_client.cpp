@@ -158,21 +158,21 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
                 const int n_plyrs = buf.readVarInt();
                 if (n_plyrs < 0) throw ProtocolError("n_players incorrect");
-                std::vector<std::string> players;
+                std::vector<UTF8String> players;
                 std::vector<bool> ready_flags;
                 std::vector<int> hse_cols;
                 for (int i = 0; i < n_plyrs; ++i) {
-                    players.push_back(buf.readString());
+                    players.push_back(UTF8String::fromUTF8Safe(buf.readString()));
                     ready_flags.push_back(buf.readUbyte() != 0);
                     hse_cols.push_back(buf.readUbyte());
                 }
                 
                 const int n_obs = buf.readVarInt();
-                std::vector<std::string> observers;
+                std::vector<UTF8String> observers;
                 if (n_obs < 0) throw ProtocolError("n_observers incorrect");
                 observers.reserve(n_obs);
                 for (int i = 0; i < n_obs; ++i) {
-                    observers.push_back(buf.readString());
+                    observers.push_back(UTF8String::fromUTF8Safe(buf.readString()));
                 }
                 if (client_cb) client_cb->joinGameAccepted(pimpl->client_config,
                                                            my_house_colour,
@@ -194,14 +194,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             
         case SERVER_PLAYER_CONNECTED:
             {
-                const std::string name = buf.readString();
+                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 if (client_cb) client_cb->playerConnected(name);
             }
             break;
 
         case SERVER_PLAYER_DISCONNECTED:
             {
-                const std::string name = buf.readString();
+                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 if (client_cb) client_cb->playerDisconnected(name);
             }
             break;
@@ -238,7 +238,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 pimpl->player = 0;
                 if (client_cb) {
                     client_cb->startGame(pimpl->ndisplays, deathmatch_mode,
-                                         std::vector<std::string>(), false);
+                                         std::vector<UTF8String>(), false);
                 }
             }
             break;
@@ -248,10 +248,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 pimpl->ndisplays = buf.readUbyte();
                 const bool deathmatch_mode = buf.readUbyte() != 0;
                 pimpl->player = 0;
-                std::vector<std::string> player_names;
+                std::vector<UTF8String> player_names;
                 player_names.reserve(pimpl->ndisplays);
                 for (int i = 0; i < pimpl->ndisplays; ++i) {
-                    player_names.push_back(buf.readString());
+                    player_names.push_back(UTF8String::fromUTF8Safe(buf.readString()));
                 }
                 const bool already_started = buf.readUbyte() != 0;
                 if (client_cb) {
@@ -265,10 +265,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             {
                 pimpl->ndisplays = buf.readUbyte();
                 pimpl->player = 0;
-                std::vector<std::string> player_names;
+                std::vector<UTF8String> player_names;
                 player_names.reserve(pimpl->ndisplays);
                 for (int i = 0; i < pimpl->ndisplays; ++i) {
-                    player_names.push_back(buf.readString());
+                    player_names.push_back(UTF8String::fromUTF8Safe(buf.readString()));
                 }
                 if (knights_cb) knights_cb->goIntoObserverMode(pimpl->ndisplays, player_names);
                 if (client_cb) client_cb->announcement("** You have been eliminated from this game. You are now in observer mode. Use arrow keys (left/right/up/down) to switch between players.", false);
@@ -281,7 +281,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_PLAYER_JOINED_THIS_GAME:
             {
-                const std::string name = buf.readString();
+                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 const bool obs_flag = buf.readUbyte() != 0;
                 const int house_col = buf.readUbyte();
                 if (client_cb) client_cb->playerJoinedThisGame(name, obs_flag, house_col);
@@ -290,7 +290,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_PLAYER_LEFT_THIS_GAME:
             {
-                const std::string name = buf.readString();
+                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 const bool obs_flag = buf.readUbyte() != 0;
                 if (client_cb) client_cb->playerLeftThisGame(name, obs_flag);
             }
@@ -298,7 +298,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_READY:
             {
-                const std::string name = buf.readString();
+                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 const int ready = buf.readUbyte();
                 if (client_cb) client_cb->setReady(name, ready != 0);
             }
@@ -306,7 +306,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_HOUSE_COLOUR:
             {
-                const std::string name = buf.readString();
+                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 const int x = buf.readUbyte();
                 if (client_cb) client_cb->setPlayerHouseColour(name, x);
             }
@@ -329,7 +329,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_OBS_FLAG:
             {
-                const std::string player = buf.readString();
+                const UTF8String player = UTF8String::fromUTF8Safe(buf.readString());
                 const bool new_obs_flag = (buf.readUbyte() != 0);
                 if (client_cb) client_cb->setObsFlag(player, new_obs_flag);
             }
@@ -341,7 +341,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_CHAT:
             {
-                const std::string whofrom = buf.readString();
+                const UTF8String whofrom = UTF8String::fromUTF8Safe(buf.readString());
 
                 // we currently don't parse all the chat codes, we only look for 2 (Observer)
                 // and use this to print "(Observer)" after the player's name...
@@ -369,8 +369,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 windows.reserve(n);
                 for (int i = 0; i < n; ++i) {
                     TutorialWindow win;
-                    win.title = buf.readString();
-                    win.msg = buf.readString();
+                    win.title_latin1 = buf.readString();
+                    win.msg_latin1 = buf.readString();
                     win.popup = buf.readVarInt() != 0;
                     const int ngfx = buf.readVarInt();
                     win.gfx.reserve(ngfx);
@@ -411,7 +411,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_UPDATE_PLAYER:
             {
-                const std::string player_name = buf.readString();
+                const UTF8String player_name = UTF8String::fromUTF8Safe(buf.readString());
                 const std::string game_name = buf.readString();
                 const bool obs_flag = buf.readUbyte() != 0;
                 if (client_cb) client_cb->updatePlayer(player_name, game_name, obs_flag);
@@ -425,7 +425,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 player_list.reserve(nplayers);
                 for (int i = 0; i < nplayers; ++i) {
                     ClientPlayerInfo inf;
-                    inf.name = buf.readString();
+                    inf.name = UTF8String::fromUTF8Safe(buf.readString());
                     inf.house_colour.r = buf.readUbyte();
                     inf.house_colour.g = buf.readUbyte();
                     inf.house_colour.b = buf.readUbyte();
@@ -510,7 +510,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const int atz_diff = af == 0 ? 0 : buf.readShort();
                 const int cur_ofs = buf.readUshort();
                 const int motion_time_remaining = motion_type == MT_NOT_MOVING ? 0 : buf.readUshort();
-                const std::string name = buf.readString();
+                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 if (dungeon_view) dungeon_view->addEntity(id, x, y, MapHeight(ht), MapDirection(facing),
                                                           anim, overlay, af, atz_diff, ainvis, ainvuln,
                                                           cur_ofs, motion_type, motion_time_remaining, name);
@@ -772,7 +772,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_READY_TO_END:
             {
-                const std::string player = buf.readString();
+                const UTF8String player = UTF8String::fromUTF8Safe(buf.readString());
                 if (client_cb) client_cb->playerIsReadyToEnd(player);
             }
             break;
@@ -847,11 +847,11 @@ void KnightsClient::connectionFailed()
     if (pimpl->client_callbacks) pimpl->client_callbacks->connectionFailed();
 }
 
-void KnightsClient::setPlayerNameAndControls(const std::string &name, bool action_bar_ctrls)
+void KnightsClient::setPlayerNameAndControls(const UTF8String &name, bool action_bar_ctrls)
 {
     Coercri::OutputByteBuf buf(pimpl->out);
     buf.writeUbyte(CLIENT_SET_PLAYER_NAME);
-    buf.writeString(name);
+    buf.writeString(name.asUTF8());
     buf.writeUbyte(CLIENT_SET_ACTION_BAR_CONTROLS);
     buf.writeUbyte(action_bar_ctrls ? 1 : 0);
 }

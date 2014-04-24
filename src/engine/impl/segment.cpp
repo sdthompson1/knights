@@ -233,7 +233,7 @@ bool Segment::readLine(std::istream &str, lua_State *lua, std::string &key, std:
     if (s == "end") return true;
 
     size_t pos = s.find(':');
-    if (pos == string::npos) luaL_error(lua, "Error while loading segment: ':' expected");
+    if (pos == std::string::npos) luaL_error(lua, "Error while loading segment: ':' expected");
     key = s.substr(0,pos);
     value = s.substr(pos+1);
 
@@ -335,6 +335,7 @@ void Segment::copyToMap(DungeonMap &dmap, MonsterManager &monster_manager,
                         bool x_reflect, int nrot) const
 {
     using boost::shared_ptr;
+    using std::list; 
     using std::vector;
     
     // If transformations are applied then the segment must be square

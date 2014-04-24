@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AE365D55-9853-4336-AF95-222E286EBE61}</ProjectGuid>
+    <RootNamespace>KnightsShared</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\boost_1_55_0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\boost_1_55_0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\coercri;..\..\src\kconfig;..\..\src\misc;..\..\src\protocol;..\..\src\shared;..\..\src\external\lua;..\..\src\rstream;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\src\coercri;..\..\src\kconfig;..\..\src\misc;..\..\src\protocol;..\..\src\shared;..\..\src\external\lua;..\..\src\rstream;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\shared\impl\anim.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\colour_change.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\file_info.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\graphic.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_exec.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_func_wrapper.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_load_from_rstream.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_module.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_ref.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_sandbox.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_traceback.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\map_support.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\menu.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\menu_item.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\overlay.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\sound.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\trim.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\user_control.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\shared\anim.hpp" />
+    <ClInclude Include="..\..\src\shared\colour_change.hpp" />
+    <ClInclude Include="..\..\src\shared\dungeon_view.hpp" />
+    <ClInclude Include="..\..\src\shared\file_info.hpp" />
+    <ClInclude Include="..\..\src\shared\game_info.hpp" />
+    <ClInclude Include="..\..\src\shared\graphic.hpp" />
+    <ClInclude Include="..\..\src\shared\knights_callbacks.hpp" />
+    <ClInclude Include="..\..\src\shared\lua_exec.hpp" />
+    <ClInclude Include="..\..\src\shared\lua_func_wrapper.hpp" />
+    <ClInclude Include="..\..\src\shared\lua_load_from_rstream.hpp" />
+    <ClInclude Include="..\..\src\shared\impl\lua_module.hpp" />
+    <ClInclude Include="..\..\src\shared\lua_ref.hpp" />
+    <ClInclude Include="..\..\src\shared\lua_sandbox.hpp" />
+    <ClInclude Include="..\..\src\shared\lua_traceback.hpp" />
+    <ClInclude Include="..\..\src\shared\map_support.hpp" />
+    <ClInclude Include="..\..\src\shared\menu.hpp" />
+    <ClInclude Include="..\..\src\shared\menu_item.hpp" />
+    <ClInclude Include="..\..\src\shared\mini_map.hpp" />
+    <ClInclude Include="..\..\src\shared\mini_map_colour.hpp" />
+    <ClInclude Include="..\..\src\shared\overlay.hpp" />
+    <ClInclude Include="..\..\src\shared\potion_magic.hpp" />
+    <ClInclude Include="..\..\src\protocol\protocol.hpp" />
+    <ClInclude Include="..\..\src\shared\sound.hpp" />
+    <ClInclude Include="..\..\src\shared\status_display.hpp" />
+    <ClInclude Include="..\..\src\shared\trim.hpp" />
+    <ClInclude Include="..\..\src\shared\tutorial_window.hpp" />
+    <ClInclude Include="..\..\src\shared\user_control.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
+    <Import Project="..\packages\SDL.1.2.15.15\build\native\SDL.targets" Condition="Exists('..\packages\SDL.1.2.15.15\build\native\SDL.targets')" />
+    <Import Project="..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets" Condition="Exists('..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets')" />
+    <Import Project="..\packages\freetype.2.4.2.1\build\native\freetype.targets" Condition="Exists('..\packages\freetype.2.4.2.1\build\native\freetype.targets')" />
+    <Import Project="..\packages\boost.1.55.0.16\build\native\boost.targets" Condition="Exists('..\packages\boost.1.55.0.16\build\native\boost.targets')" />
+    <Import Project="..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets" Condition="Exists('..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets')" />
+    <Import Project="..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets" Condition="Exists('..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets')" />
+    <Import Project="..\packages\boost_system.1.55.0.16\build\native\boost_system.targets" Condition="Exists('..\packages\boost_system.1.55.0.16\build\native\boost_system.targets')" />
+    <Import Project="..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets" Condition="Exists('..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets')" />
+    <Import Project="..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets" Condition="Exists('..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets')" />
+  </ImportGroup>
+</Project>

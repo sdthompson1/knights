@@ -163,7 +163,7 @@ public:
     // getPlacedItem: access the placed item directly...
     virtual bool canPlaceItem() const { return false; }
     virtual shared_ptr<Item> getPlacedItem() const { return shared_ptr<Item>(); }
-    bool itemPlacedAlready() const { return getPlacedItem(); }
+    bool itemPlacedAlready() const { return bool(getPlacedItem()); }
     virtual void placeItem(shared_ptr<Item>) { }
 
     // Override the standard connectivity checks

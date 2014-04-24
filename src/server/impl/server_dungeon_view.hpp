@@ -47,7 +47,7 @@ public:
                            const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                            bool ainvis, bool ainvuln, // (anim data)
                            int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                           const std::string &name);
+                           const UTF8String &name);
     virtual void rmEntity(unsigned short int id);
     virtual void repositionEntity(unsigned short int id, int new_x, int new_y);
     virtual void moveEntity(unsigned short int id, MotionType motion_type,

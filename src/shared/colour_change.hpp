@@ -35,7 +35,6 @@
 #include "network/byte_buf.hpp" // coercri
 
 #include <vector>
-using namespace std;
 
 struct Colour {
     unsigned char r, g, b, a;
@@ -89,7 +88,7 @@ public:
     
 private:
     // Vector of (old,new) pairs. This is kept sorted (on "old" values) at all times.
-    vector<pair<Colour,Colour> > mappings;
+    std::vector<std::pair<Colour,Colour> > mappings;
 };
 
 #endif

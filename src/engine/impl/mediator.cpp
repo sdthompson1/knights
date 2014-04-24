@@ -48,6 +48,8 @@
 #include <sstream>
 #include <stdexcept>
 
+using std::string;
+
 namespace {
     // Thread-local storage for the mediator.
     boost::thread_specific_ptr<Mediator> g_mediator_ptr;
@@ -409,7 +411,7 @@ void Mediator::timeLimitExpired()
     endGame(winners, msg);
 }
 
-void Mediator::endGame(const std::vector<const Player *> &winners, std::string msg)
+void Mediator::endGame(const std::vector<const Player *> &winners, std::string msg_latin1)
 {
     game_running = false;
 
@@ -425,20 +427,20 @@ void Mediator::endGame(const std::vector<const Player *> &winners, std::string m
     // Send the message saying who has won.
 
     if (winners.empty()) {
-        msg += "All players lose!";
+        msg_latin1 += "All players lose!";
         
     } else if (winners.size() == 1) {
-        msg += winners.front()->getName() + " is the winner!";
+        msg_latin1 += winners.front()->getName().asLatin1() + " is the winner!";
         
     } else {
         for (int i = 0; i < int(winners.size()) - 2; ++i) {
-            msg += winners[i]->getName() + ", ";
+            msg_latin1 += winners[i]->getName().asLatin1() + ", ";
         }
-        msg += winners[winners.size()-2]->getName() + " and ";
-        msg += winners[winners.size()-1]->getName() + " are the winners!";
+        msg_latin1 += winners[winners.size()-2]->getName().asLatin1() + " and ";
+        msg_latin1 += winners[winners.size()-1]->getName().asLatin1() + " are the winners!";
     }
     
-    Mediator::getCallbacks().gameMsg(-1, msg);
+    Mediator::getCallbacks().gameMsg(-1, msg_latin1);
 
     // print length of game, in mins and seconds
     const int time = getGVT()/1000;

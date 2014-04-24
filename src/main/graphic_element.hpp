@@ -29,6 +29,8 @@
 #ifndef GRAPHIC_ELEMENT_HPP
 #define GRAPHIC_ELEMENT_HPP
 
+#include "utf8string.hpp"
+
 class ColourChange;
 class Graphic;
 
@@ -43,7 +45,7 @@ public:
 class TextElement {
 public:
     int sx, sy;  // Centre point of the entity (not necessarily where text should go!)
-    std::string text;
+    UTF8String text;
 };
 
 #endif

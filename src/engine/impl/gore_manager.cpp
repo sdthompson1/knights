@@ -29,6 +29,9 @@
 #include "originator.hpp"
 #include "tile.hpp"
 
+using std::map;
+using std::vector;
+
 GoreManager::GoreManager()
     : blood_icon(0)
 { }

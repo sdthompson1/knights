@@ -69,7 +69,7 @@ public:
 
     void action(const gcn::ActionEvent &event)
     {
-        auto_ptr<Screen> title_screen(new TitleScreen);
+        std::auto_ptr<Screen> title_screen(new TitleScreen);
         knights_app.requestScreenChange(title_screen);
     }
 

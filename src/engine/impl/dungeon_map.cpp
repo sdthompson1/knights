@@ -39,6 +39,10 @@
 
 #include <stdexcept>
 
+using std::list;
+using std::make_pair;
+using std::pair;
+using std::vector;
 
 /////////////////
 //  MapHelper  //
@@ -174,7 +178,7 @@ void DungeonMap::doEntity(const MapCoord &mc, MapDirection facing,
     if (valid(mc)) {
         vector<shared_ptr<Entity> > ents;
         getEntities(mc, ents);
-        copy_if(ents.begin(), ents.end(), back_inserter(results), ApproachTest(facing));
+        ::copy_if(ents.begin(), ents.end(), back_inserter(results), ApproachTest(facing));
     }
 }
 

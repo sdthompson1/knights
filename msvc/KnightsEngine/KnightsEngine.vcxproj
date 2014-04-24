@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{88BEEE97-63E6-4949-886F-580AC6035687}</ProjectGuid>
+    <RootNamespace>KnightsEngine</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\boost_1_55_0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\boost_1_55_0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\coercri;..\..\src\engine;..\..\src\kconfig;..\..\src\misc;..\..\src\rstream;..\..\src\shared;..\..;..\..\src\external\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\src\coercri;..\..\src\engine;..\..\src\kconfig;..\..\src\misc;..\..\src\rstream;..\..\src\shared;..\..;..\..\src\external\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\engine\impl\action_data.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\anim_lua_ctor.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\concrete_traps.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\control.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\control_actions.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\coord_transform.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\create_monster_type.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\create_tile.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\creature.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\dispel_magic.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\dungeon_generator.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\dungeon_layout.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\dungeon_map.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\entity.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\event_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\gore_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\healing_task.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\home_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\item.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\item_check_task.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\item_generator.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\item_respawn_task.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\item_type.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\knight.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\knight_task.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\knights_config.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\knights_config_impl.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\knights_engine.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\legacy_action.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\load_segments.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lockable.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lua_check.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lua_exec_coroutine.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lua_func.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lua_game_setup.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lua_ingame.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lua_setup.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\lua_userdata.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\magic_actions.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\magic_map.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\mediator.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\menu_wrapper.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\missile.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\monster.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\monster_definitions.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\monster_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\monster_support.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\monster_task.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\monster_type.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\overlay_lua_ctor.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\player.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\player_task.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\quest_hint_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\random_int.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\room_map.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\script_actions.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\segment.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\segment_set.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\special_tiles.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\stuff_bag.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\sweep.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\task_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\teleport.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\tile.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\time_limit_task.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\tutorial_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\user_control_lua_ctor.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\view_manager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\engine\impl\action_data.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\concrete_traps.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\control.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\control_actions.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\coord_transform.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\create_monster_type.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\create_tile.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\creature.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\dispel_magic.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\dummy_callbacks.hpp" />
+    <ClInclude Include="..\..\src\engine\dungeon_generation_failed.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\dungeon_generator.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\dungeon_layout.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\dungeon_map.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\entity.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\event_manager.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\gore_manager.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\healing_task.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\home_manager.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\item.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\item_check_task.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\item_generator.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\item_respawn_task.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\item_type.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\knight.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\knight_task.hpp" />
+    <ClInclude Include="..\..\src\engine\knights_config.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\knights_config_impl.hpp" />
+    <ClInclude Include="..\..\src\engine\knights_engine.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\legacy_action.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\load_segments.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lockable.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_check.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_exec_coroutine.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_func.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_game_setup.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_ingame.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_setup.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_traits.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\lua_userdata.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\magic_actions.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\magic_map.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\map_helper.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\mediator.hpp" />
+    <ClInclude Include="..\..\src\engine\menu_listener.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\menu_wrapper.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\missile.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\monster.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\monster_definitions.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\monster_manager.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\monster_support.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\monster_task.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\monster_type.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\originator.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\player.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\player_task.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\quest_hint_manager.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\random_int.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\room_map.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\script_actions.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\segment.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\segment_set.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\special_tiles.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\stuff_bag.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\sweep.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\task.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\task_manager.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\teleport.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\tile.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\time_limit_task.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\trap.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\tutorial_manager.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\view_manager.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
+    <Import Project="..\packages\SDL.1.2.15.15\build\native\SDL.targets" Condition="Exists('..\packages\SDL.1.2.15.15\build\native\SDL.targets')" />
+    <Import Project="..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets" Condition="Exists('..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets')" />
+    <Import Project="..\packages\freetype.2.4.2.1\build\native\freetype.targets" Condition="Exists('..\packages\freetype.2.4.2.1\build\native\freetype.targets')" />
+    <Import Project="..\packages\boost.1.55.0.16\build\native\boost.targets" Condition="Exists('..\packages\boost.1.55.0.16\build\native\boost.targets')" />
+    <Import Project="..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets" Condition="Exists('..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets')" />
+    <Import Project="..\packages\boost_system.1.55.0.16\build\native\boost_system.targets" Condition="Exists('..\packages\boost_system.1.55.0.16\build\native\boost_system.targets')" />
+    <Import Project="..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets" Condition="Exists('..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets')" />
+    <Import Project="..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets" Condition="Exists('..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets')" />
+    <Import Project="..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets" Condition="Exists('..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets')" />
+  </ImportGroup>
+</Project>

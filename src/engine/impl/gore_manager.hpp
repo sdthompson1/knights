@@ -45,7 +45,6 @@ using namespace boost;
 
 #include <map>
 #include <vector>
-using namespace std;
 
 class GoreManager {
 public:
@@ -86,12 +85,12 @@ public:
     
 private:
     void placeNextTile(DungeonMap &dmap, const MapCoord &mc,
-                       const vector<shared_ptr<Tile> > &tiles);
+                       const std::vector<shared_ptr<Tile> > &tiles);
     void placeTile(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Tile> new_tile);
 
 private:
     // blood tiles
-    vector<shared_ptr<Tile> > blood_tiles;
+    std::vector<shared_ptr<Tile> > blood_tiles;
     const Graphic *blood_icon;
 
     // knight corpses
@@ -99,10 +98,10 @@ private:
         shared_ptr<Tile> with_blood;
         shared_ptr<Tile> without_blood;
     };
-    map<const Player*, KnightCorpse> knight_corpses;
+    std::map<const Player*, KnightCorpse> knight_corpses;
 
     // monster corpses
-    map<const MonsterType *, vector<shared_ptr<Tile> > > monster_corpses;
+    std::map<const MonsterType *, std::vector<shared_ptr<Tile> > > monster_corpses;
 };
 
 #endif

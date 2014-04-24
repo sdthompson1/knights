@@ -50,7 +50,7 @@ public:
     unsigned int wait_until;   // don't send output before this time. used for password checking. 0 = disabled.
 
     // player name
-    std::string player_name;
+    UTF8String player_name;
     
     // connection to game
     // INVARIANT: either game and game_conn are both null, or they are both non-null.
@@ -130,13 +130,13 @@ namespace {
         buf.writeString(error);
 
         if (impl.knights_log) {
-            impl.knights_log->logMessage(conn.game_name + "\terror\tplayer=" + conn.player_name + ", error=" + error);
+            impl.knights_log->logMessage(conn.game_name + "\terror\tplayer=" + conn.player_name.asUTF8() + ", error=" + error);
         }
 
         conn.error_sent = true;
     }
 
-    bool IsNameAvailable(const connection_vector &connections, const std::string &name)
+    bool IsNameAvailable(const connection_vector &connections, const UTF8String &name)
     {
         for (connection_vector::const_iterator it = connections.begin(); it != connections.end(); ++it) {
             if ((*it)->player_name == name) return false;
@@ -150,7 +150,7 @@ namespace {
         for (connection_vector::iterator it = connections.begin(); it != connections.end(); ++it) {
             if ((*it)->connection_accepted || it->get() == &conn) {
                 out.writeUbyte(SERVER_UPDATE_PLAYER);
-                out.writeString((*it)->player_name);
+                out.writeString((*it)->player_name.asUTF8());
                 out.writeString((*it)->game_name);
                 bool is_obs = false;
                 if ((*it)->game) {
@@ -178,7 +178,7 @@ namespace {
             if (it->get() != &conn) {
                 Coercri::OutputByteBuf out_other((*it)->output_data);
                 out_other.writeUbyte(SERVER_PLAYER_CONNECTED);
-                out_other.writeString(conn.player_name);
+                out_other.writeString(conn.player_name.asUTF8());
             }
         }
 
@@ -220,7 +220,7 @@ namespace {
         for (connection_vector::iterator it = connections.begin(); it != connections.end(); ++it) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_UPDATE_PLAYER);
-            out.writeString(conn.player_name);
+            out.writeString(conn.player_name.asUTF8());
             out.writeString("");
             out.writeUbyte(0);
         }
@@ -352,21 +352,21 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
             case CLIENT_SET_PLAYER_NAME:
                 {
-                    const std::string new_name = buf.readString();
+                    const UTF8String new_name = UTF8String::fromUTF8Safe(buf.readString());
                     Coercri::OutputByteBuf out(conn.output_data);
                     if (!conn.player_name.empty()) {
                         SendError(conn, "Player name already set", *pimpl);
                     } else if (new_name.empty()) {
                         SendError(conn, "Bad player name", *pimpl);
                     } else if (!IsNameAvailable(pimpl->connections, new_name)) {
-                        SendError(conn, "A player with the name \"" + new_name + "\" is already connected.", *pimpl);
+                        SendError(conn, "A player with the name \"" + new_name.asUTF8() + "\" is already connected.", *pimpl);
                     } else {
                         // set the player name
                         conn.player_name = new_name;
 
                         // write a log message
                         if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tplayer connected\taddr=" + conn.ip_addr + ", player=" + new_name);
+                            pimpl->knights_log->logMessage("\tplayer connected\taddr=" + conn.ip_addr + ", player=" + new_name.asUTF8());
                         }
 
                         // If the server has a password then request the password. Otherwise proceed as if the
@@ -394,7 +394,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         Coercri::OutputByteBuf(conn.output_data);
                         SendStartupMessages(out, conn, pimpl->connections, pimpl->games);
                         if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tpassword accepted\tplayer=" + conn.player_name);
+                            pimpl->knights_log->logMessage("\tpassword accepted\tplayer=" + conn.player_name.asUTF8());
                         }
                     } else {
                         ++conn.failed_password_attempts;
@@ -402,7 +402,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         out.writeUbyte(SERVER_REQUEST_PASSWORD);
                         out.writeUbyte(0);
                         if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tpassword rejected\tplayer=" + conn.player_name);
+                            pimpl->knights_log->logMessage("\tpassword rejected\tplayer=" + conn.player_name.asUTF8());
                         }
                     }
                 }
@@ -425,12 +425,12 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         SendJoinGameDenied(conn, "Cannot join split-screen if other players are already connected");
                     } else {
 
-                        std::string client_name, client_name_2;
+                        UTF8String client_name, client_name_2;
                     
                         if (split_screen) {
                             // dummy player names for the split screen mode
-                            client_name = "Player 1";
-                            client_name_2 = "Player 2";
+                            client_name = UTF8String::fromUTF8("Player 1");
+                            client_name_2 = UTF8String::fromUTF8("Player 2");
                         } else {
                             // name 1 comes from the connection object. name 2 is unset.
                             client_name = conn.player_name;
@@ -450,7 +450,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         for (connection_vector::iterator it2 = pimpl->connections.begin(); it2 != pimpl->connections.end(); ++it2) {
                             Coercri::OutputByteBuf out((*it2)->output_data);
                             out.writeUbyte(SERVER_UPDATE_PLAYER);
-                            out.writeString(client_name);
+                            out.writeString(client_name.asUTF8());
                             out.writeString(game_name);
                             out.writeUbyte(conn.game->getObsFlag(*conn.game_conn));
                             // NOTE: don't bother with supporting the split screen mode here, so no msg for client_name_2.
@@ -483,7 +483,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                             if (!(*it)->game) {
                                 Coercri::OutputByteBuf out_other((*it)->output_data);
                                 out_other.writeUbyte(SERVER_CHAT);
-                                out_other.writeString(conn.player_name);
+                                out_other.writeString(conn.player_name.asUTF8());
                                 out_other.writeUbyte(0);
                                 out_other.writeString(msg);
                             }
@@ -493,7 +493,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                     // log it
                     if (pimpl->knights_log) {
                         std::string log_msg = conn.game_name + "\tchat\t";
-                        log_msg += conn.player_name + ": " + msg;
+                        log_msg += conn.player_name.asUTF8() + ": " + msg;
                         pimpl->knights_log->logMessage(log_msg);
                     }
                 }
@@ -608,7 +608,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                                 for (connection_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
                                     Coercri::OutputByteBuf out(conn.output_data);
                                     out.writeUbyte(SERVER_UPDATE_PLAYER);
-                                    out.writeString(conn.player_name);
+                                    out.writeString(conn.player_name.asUTF8());
                                     out.writeString(conn.game_name);
                                     out.writeUbyte(new_flag ? 1 : 0);
                                 }
@@ -721,7 +721,7 @@ void KnightsServer::getOutputData(ServerConnection &conn,
 void KnightsServer::connectionClosed(ServerConnection &conn)
 {
     // save the player's name & ip.
-    const std::string name = conn.player_name;
+    const UTF8String name = conn.player_name;
     const std::string ip = conn.ip_addr;
     const std::string game_name = conn.game_name;
     boost::shared_ptr<KnightsGame> game = conn.game;
@@ -749,7 +749,7 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
         for (connection_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
             buf.writeUbyte(SERVER_PLAYER_DISCONNECTED);
-            buf.writeString(name);
+            buf.writeString(name.asUTF8());
         }
         if (game) {
             SendGameUpdate(pimpl->connections, game_name, game->getNumPlayers(), game->getNumObservers(), game->getStatus());
@@ -758,7 +758,7 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
 
     // log a message
     if (pimpl->knights_log) {
-        pimpl->knights_log->logMessage(game_name + "\tplayer disconnected\taddr=" + ip + ", player=" + name);
+        pimpl->knights_log->logMessage(game_name + "\tplayer disconnected\taddr=" + ip + ", player=" + name.asUTF8());
 
         // binary log
         pimpl->knights_log->logBinary("CCC", unique_id, 0, 0);

@@ -40,12 +40,13 @@
 
 #include "cg_font.hpp"
 #include "cg_graphics.hpp"
+#include "../core/utf8string.hpp"
 #include "../gfx/font.hpp"
 #include "../gfx/gfx_context.hpp"
 
 namespace Coercri {
 
-    void CGFont::drawString(gcn::Graphics *graphics, const std::string &text, int x, int y)
+    void CGFont::drawString(gcn::Graphics *graphics, const std::string &text_latin1, int x, int y)
     {
         CGGraphics * cg_gfx = dynamic_cast<CGGraphics*>(graphics);
         if (!cg_gfx) {
@@ -61,8 +62,12 @@ namespace Coercri {
 
         const gcn::Color &col = graphics->getColor();
         Coercri::Color coercri_col(col.r, col.g, col.b, col.a);
-        
-        gfx_context->drawText(clip_area.xOffset + x, clip_area.yOffset + y, *font, text, coercri_col);
+
+        gfx_context->drawText(clip_area.xOffset + x,
+                              clip_area.yOffset + y,
+                              *font,
+                              UTF8String::fromLatin1(text_latin1),
+                              coercri_col);
     }
 
     int CGFont::getHeight() const
@@ -70,9 +75,8 @@ namespace Coercri {
         return font->getTextHeight();
     }
 
-    int CGFont::getWidth(const std::string &text) const
+    int CGFont::getWidth(const std::string &text_latin1) const
     {
-        return font->getTextWidth(text);
+        return font->getTextWidth(UTF8String::fromLatin1(text_latin1));
     }
-
 }

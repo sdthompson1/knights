@@ -56,8 +56,6 @@ public:
     // draw: Draw the screen
     // NOTE: Main loop will call cg_listener->draw() so this is only needed for non-Guichan drawing.
     virtual void draw(Coercri::GfxContext &gc) { }
-
-    virtual unsigned int getMaxLag() { return getUpdateInterval() * 5; }
 };
 
 #endif

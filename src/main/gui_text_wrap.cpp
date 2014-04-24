@@ -30,16 +30,16 @@ namespace {
     struct ActualPrinter : Printer {
         ActualPrinter(int w, gcn::Font &f, gcn::Graphics *g) : width(w), font(f), graphics(g) { }
 
-        int getTextWidth(const std::string &t) { return font.getWidth(t) + 2*pad; }
+        int getTextWidth(const std::string &t_latin1) { return font.getWidth(t_latin1) + 2*pad; }
         int getTextHeight() { return font.getHeight(); }
 
-        void printLine(const std::string &text, int y, bool do_centre)
+        void printLine(const std::string &text_latin1, int y, bool do_centre)
         {
             if (graphics) {
                 if (do_centre) {
-                    graphics->drawText(text, width/2, y, gcn::Graphics::CENTER);
+                    graphics->drawText(text_latin1, width/2, y, gcn::Graphics::CENTER);
                 } else {
-                    graphics->drawText(text, pad, y);
+                    graphics->drawText(text_latin1, pad, y);
                 }
             }
         }

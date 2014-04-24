@@ -41,6 +41,8 @@
 #include "segment_set.hpp"
 #include "tile.hpp"
 
+using std::vector;
+
 namespace {
 
     // ----------------------------------------------------------------------------------

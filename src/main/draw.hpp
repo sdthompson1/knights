@@ -31,6 +31,7 @@
 
 #include "graphic_element.hpp"
 #include "map_support.hpp"
+#include "utf8string.hpp"
 
 // coercri
 #include "gfx/font.hpp"
@@ -41,7 +42,6 @@
 
 #include <map>
 #include <vector>
-using namespace std;
 
 class ColourChange;
 class ConfigMap;
@@ -69,7 +69,7 @@ public:
     static void drawMessage(const ConfigMap &config_map,
                             Coercri::GfxContext &gc, int d_left, int d_top, int d_width, int d_height,
                             GfxManager &gm, int sq_rel_x, int sq_rel_y,
-                            int w, int h, int pixels_per_square, const string &message);
+                            int w, int h, int pixels_per_square, const UTF8String &message);
 
     
     // Draw the menu

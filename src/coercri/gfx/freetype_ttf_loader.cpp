@@ -139,7 +139,7 @@ namespace {
 
 
     // This function copies an FT_Bitmap into a given glyph of a Coercri::BitmapFont
-    void CopyBitmapToFont(const FT_Bitmap &bitmap, Coercri::BitmapFont &dest, char ch)
+    void CopyBitmapToFont(const FT_Bitmap &bitmap, Coercri::BitmapFont &dest, int ch)
     {
         const unsigned char * ptr = bitmap.buffer;
         for (int y = 0; y < bitmap.rows; ++y) {

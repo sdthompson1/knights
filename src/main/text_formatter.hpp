@@ -33,9 +33,9 @@
 #include <string>
 
 struct Printer {
-    virtual int getTextWidth(const std::string &text) = 0;
+    virtual int getTextWidth(const std::string &text_latin1) = 0;
     virtual int getTextHeight() = 0;
-    virtual void printLine(const std::string &text, int y, bool do_centre) = 0;
+    virtual void printLine(const std::string &text_latin1, int y, bool do_centre) = 0;
 };
 
 class TextFormatter {
@@ -44,7 +44,7 @@ public:
 
     // print a string, breaking into separate lines if necessary
     // returns the total height printed.
-    int printString(const std::string &msg);
+    int printString(const std::string &msg_latin1);
 
 private:
     Printer &printer;

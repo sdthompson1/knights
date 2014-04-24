@@ -9,7 +9,7 @@
  *   Stephen Thompson
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2014.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -58,10 +58,12 @@ namespace Coercri {
         explicit CGFont(boost::shared_ptr<Coercri::Font> f)
             : font(f) { }
 
-        // overridden from gcn::Font:
-        virtual void drawString(gcn::Graphics *graphics, const std::string &text, int x, int y);
+        // overridden from gcn::Font
+        // NOTE: Guichan uses Latin-1 encoding, so all string
+        // arguments are interpreted as Latin-1 here.
+        virtual void drawString(gcn::Graphics *graphics, const std::string &text_latin1, int x, int y);
         virtual int getHeight() const;
-        virtual int getWidth(const std::string &text) const;
+        virtual int getWidth(const std::string &text_latin1) const;
 
     private:
         boost::shared_ptr<Coercri::Font> font;

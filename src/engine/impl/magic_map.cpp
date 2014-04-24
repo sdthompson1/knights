@@ -36,6 +36,8 @@
 #include "task_manager.hpp"
 #include "tile.hpp"
 
+using std::vector;
+
 void MagicMapping(boost::shared_ptr<Knight> kt)
 {
     if (!kt || !kt->getMap() || !kt->getPlayer()) return;

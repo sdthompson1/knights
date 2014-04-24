@@ -70,7 +70,7 @@ HostLanScreenImpl::HostLanScreenImpl(KnightsApp &ka, gcn::Gui &gui)
     name_field.reset(new gcn::TextField);
     name_field->adjustSize();
     name_field->setWidth(250);
-    name_field->setText(knights_app.getPlayerName());
+    name_field->setText(knights_app.getPlayerName().asLatin1());
     name_field->addActionListener(this);
     
     const int total_width = 2*pad + name_label->getWidth() + name_field->getWidth();
@@ -107,9 +107,9 @@ void HostLanScreenImpl::action(const gcn::ActionEvent &event)
         knights_app.requestScreenChange(start_screen);
         
     } else if (event.getSource() == name_field.get() || event.getSource() == ok_button.get()) {
-        std::string name = "Player 1";
+        UTF8String name = UTF8String::fromUTF8("Player 1");
         if (!name_field->getText().empty()) {
-            name = name_field->getText();
+            name = UTF8String::fromLatin1(name_field->getText());
             knights_app.setPlayerName(name);  // make sure the name gets saved when we exit
         }
 

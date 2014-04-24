@@ -375,7 +375,7 @@ void Creature::adjustImpactTimeIfMoving()
         const int gvt = Mediator::instance().getTaskManager().getGVT();
         const int base_time_to_impact = this->impact_time - gvt;
         const int earliest_impact = getArrivalTime() + 
-            max(0, base_time_to_impact - Mediator::instance().cfgInt("att_mov_delay_time"));
+            std::max(0, base_time_to_impact - Mediator::instance().cfgInt("att_mov_delay_time"));
         if (this->impact_time < earliest_impact) this->impact_time = earliest_impact;
     }
 }

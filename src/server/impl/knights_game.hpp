@@ -38,6 +38,7 @@ class KnightsGameImpl;
 class GameConnection;
 
 #include "game_info.hpp"  // for GameStatus
+#include "utf8string.hpp"
 
 #include "gfx/color.hpp" // coercri
 #include "network/byte_buf.hpp" // coercri
@@ -71,7 +72,7 @@ public:
     // add players/observers.
     // will throw an exception if the same player is added twice.
     // (if client_name_2 is non-empty will create a split-screen 2-player connection, if allowed.)
-    GameConnection & newClientConnection(const std::string &client_name, const std::string &client_name_2, 
+    GameConnection & newClientConnection(const UTF8String &client_name, const UTF8String &client_name_2, 
                                          int client_version, bool approach_based_controls, bool action_bar_controls);
 
     // remove a player/observer.

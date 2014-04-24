@@ -237,8 +237,8 @@ void TutorialManager::clearCurrentTrigger()
 
 void TutorialManager::setupTutorialWindow(int key, TutorialWindow &win)
 {
-    win.title = titles[key];
-    win.msg = messages[key];
+    win.title_latin1 = titles[key];
+    win.msg_latin1 = messages[key];
     win.popup = false;
     win.gfx.clear();
     win.cc.clear();

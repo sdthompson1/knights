@@ -32,8 +32,8 @@
 #include "gfx/load_system_ttf.hpp"  // coercri
 
 boost::shared_ptr<Coercri::Font> LoadFont(Coercri::TTFLoader &ttf_loader,
-                                          const vector<string> &ttf_font_names,
-                                          const vector<string> &bitmap_font_names, int size)
+                                          const std::vector<std::string> &ttf_font_names,
+                                          const std::vector<std::string> &bitmap_font_names, int size)
 {
     try {
         if (!ttf_font_names.empty()) {
@@ -41,7 +41,7 @@ boost::shared_ptr<Coercri::Font> LoadFont(Coercri::TTFLoader &ttf_loader,
         }
     } catch (...) { }
     
-    for (vector<string>::const_iterator it = bitmap_font_names.begin(); it != bitmap_font_names.end(); ++it) {
+    for (std::vector<std::string>::const_iterator it = bitmap_font_names.begin(); it != bitmap_font_names.end(); ++it) {
         try {
             RStream str(*it);
             boost::shared_ptr<Coercri::PixelArray> pix = Coercri::LoadBMP(str);

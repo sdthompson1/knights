@@ -31,6 +31,11 @@
 #include "round.hpp"
 #include "rng.hpp"
 
+using std::list;
+using std::make_pair;
+using std::map;
+using std::vector;
+
 EntityMap::EntityMap(const ConfigMap &cfg, int approach_offset_)
  : bat_anim_timescale(cfg.getInt("bat_anim_timescale")),
    approach_offset(approach_offset_),
@@ -66,7 +71,7 @@ int EntityMap::getFinalOffset(MotionType type)
 void EntityMap::addEntity(int time, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
                           const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvis, bool ainvuln,
                           int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                          const std::string &name)
+                          const UTF8String &name)
 {
     Data d;
     d.x = x;
@@ -553,7 +558,7 @@ void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int en
                 gfx_buffer[speech_depth].push_back(ge);
             }
             
-            if (!ent.name.empty() && add_entity_name) {
+            if (!ent.name.asUTF8().empty() && add_entity_name) {
                 TextElement te;
                 te.sx = entity_x + (pixels_per_square/2);
                 te.sy = entity_y + (pixels_per_square/2);

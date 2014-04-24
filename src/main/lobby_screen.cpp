@@ -34,6 +34,7 @@
 #include "make_scroll_area.hpp"
 #include "tab_font.hpp"
 #include "title_screen.hpp"
+#include "utf8string.hpp"
 
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
@@ -196,10 +197,10 @@ void LobbyScreenImpl::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window> w
 
     const char * plyr_string = "Players";
     const char * obs_string = "Observers";
-    const int plyr_width = knights_app->getFont()->getTextWidth(plyr_string);
-    const int obs_width = knights_app->getFont()->getTextWidth(obs_string);
-    const int status_width = std::max(knights_app->getFont()->getTextWidth("Waiting for 2 players"),
-                                      knights_app->getFont()->getTextWidth("Selecting Quest"));
+    const int plyr_width = knights_app->getFont()->getTextWidth(UTF8String::fromUTF8(plyr_string));
+    const int obs_width = knights_app->getFont()->getTextWidth(UTF8String::fromUTF8(obs_string));
+    const int status_width = std::max(knights_app->getFont()->getTextWidth(UTF8String::fromUTF8("Waiting for 2 players")),
+                                      knights_app->getFont()->getTextWidth(UTF8String::fromUTF8("Selecting Quest")));
     
     std::vector<int> widths;
     widths.push_back(150);
@@ -328,7 +329,7 @@ void LobbyScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == disconnect_button.get() || event.getSource() == join_disconn_button.get()) {
         // Go back to title screen
-        auto_ptr<Screen> title_screen(new TitleScreen);
+        std::auto_ptr<Screen> title_screen(new TitleScreen);
         knights_app->requestScreenChange(title_screen);
     } else if (event.getSource() == chat_field.get()) {
         client->sendChatMessage(chat_field->getText());

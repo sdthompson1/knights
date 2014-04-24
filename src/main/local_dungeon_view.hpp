@@ -31,6 +31,7 @@
 
 #include "dungeon_view.hpp"
 #include "entity_map.hpp"
+#include "utf8string.hpp"
 
 #include "gfx/gfx_context.hpp" // coercri
 
@@ -70,7 +71,7 @@ public:
                    const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                    bool ainvis, bool ainvuln, // (anim data)
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                   const std::string &name);
+                   const UTF8String &name);
     void rmEntity(unsigned short int id);
     void repositionEntity(unsigned short int id, int new_x, int new_y);
     void moveEntity(unsigned short int id, MotionType motion_type, int motion_duration, bool missile_mode);
@@ -86,7 +87,7 @@ public:
 
     void placeIcon(int x, int y, const Graphic *gfx, int dur);
 
-    void flashMessage(const std::string &msg, int ntimes);
+    void flashMessage(const std::string &msg_latin1, int ntimes);
     void cancelContinuousMessages();
     void addContinuousMessage(const std::string &msg);
 
@@ -149,12 +150,12 @@ private:
 
     // messages
     struct Message {
-        std::string message;
+        UTF8String message;
         int start_time;
         int stop_time;
     };
     std::deque<Message> messages;  // sorted by start_time
-    std::vector<std::string> cts_messages;
+    std::vector<UTF8String> cts_messages;
     int last_mtime;
 
     // gfx buffer

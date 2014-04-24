@@ -62,15 +62,9 @@ namespace Coercri {
     public:
         virtual ~GfxDriver() { }
 
-        // Find available display sizes for full screen
-        struct DisplayMode {
-            int width, height;
-        };
-        typedef std::vector<DisplayMode> DisplayModeVector;
-        virtual DisplayModeVector getFullScreenModes() = 0;
-        virtual DisplayMode getDesktopMode() = 0;
-        
         // Create a new Window
+        // NOTE: the given width, height will be IGNORED if fullscreen is true. (In that case
+        // the desktop width and height will be used instead.)
         virtual boost::shared_ptr<Window> createWindow(int width, int height,
                                                        bool resizable, bool fullscreen,
                                                        const std::string &title) = 0;
@@ -81,11 +75,10 @@ namespace Coercri {
                                                          int hy = 0) = 0;
 
         // Poll for events, runs any WindowListeners that have been attached to windows
-        // Returns TRUE if any events were processed.
+        // Returns TRUE if an event was processed.
+        // Note: This polls only one event at a time; call multiple times if you want to
+        // empty out the event queue.
         virtual bool pollEvents() = 0;
-
-        // MS Windows only -- sets icon for creation of new windows
-        virtual void setWindowsIcon(int resource_id) { }
     };
 
 }

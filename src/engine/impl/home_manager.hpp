@@ -32,7 +32,6 @@
 #include "map_support.hpp"
 
 #include <map>
-using namespace std;
 
 class Player;
 class Tile;
@@ -95,7 +94,7 @@ private:
     // secured_by == 0 means the home is unsecured
     // secured_by != 0 means the home is secured by that player
     // Home not in map at all == The home was secured by both players.
-    typedef map<HomeLocation, Player *> HomeMap;
+    typedef std::map<HomeLocation, Player *> HomeMap;
     HomeMap homes;
 };
 

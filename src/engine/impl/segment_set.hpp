@@ -34,7 +34,6 @@ class Segment;
 #include "boost/noncopyable.hpp"
 
 #include <vector>
-using namespace std;
 
 class SegmentSet : boost::noncopyable {
 public:

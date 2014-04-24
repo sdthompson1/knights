@@ -44,40 +44,40 @@ private:
 
 class A_DispelMagic : public LegacyAction {
 public:
-    explicit A_DispelMagic(const string &m) : msg(m) { }
+    explicit A_DispelMagic(const std::string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("DispelMagic");
-    string msg;
+    std::string msg;
 };
 
 class A_Healing : public LegacyAction {
 public:
-    explicit A_Healing(const string &m) : msg(m) { }
+    explicit A_Healing(const std::string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Healing");
-    string msg;
+    std::string msg;
 };
 
 class A_Invisibility : public LegacyAction {
 public:
-    explicit A_Invisibility(int i, const string &m) : dur(i), msg(m) { }
+    explicit A_Invisibility(int i, const std::string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Invisibility");
     int dur;
-    string msg;
+    std::string msg;
 };
 
 class A_Invulnerability : public LegacyAction {
 public:
-    explicit A_Invulnerability(int i, const string &m) : dur(i), msg(m) { }
+    explicit A_Invulnerability(int i, const std::string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Invulnerability");
     int dur;
-    string msg;
+    std::string msg;
 };
 
 class A_MagicMapping : public LegacyAction {
@@ -105,41 +105,41 @@ private:
 
 class A_Poison : public LegacyAction {
 public:
-    explicit A_Poison(const string &m) : msg(m) { }
+    explicit A_Poison(const std::string &m) : msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Poison");
-    string msg;
+    std::string msg;
 };
 
 class A_PoisonImmunity : public LegacyAction {
 public:
-    explicit A_PoisonImmunity(int i, const string &m) : dur(i), msg(m) { }
+    explicit A_PoisonImmunity(int i, const std::string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("PoisonImmunity");
     int dur;
-    string msg;
+    std::string msg;
 };
 
 class A_Quickness : public LegacyAction {
 public:
-    explicit A_Quickness(int i, const string &m) : dur(i), msg(m) { }    
+    explicit A_Quickness(int i, const std::string &m) : dur(i), msg(m) { }    
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Quickness");
     int dur;
-    string msg;
+    std::string msg;
 };
 
 class A_Regeneration : public LegacyAction {
 public:
-    explicit A_Regeneration(int i, const string &m) : dur(i), msg(m) { }
+    explicit A_Regeneration(int i, const std::string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Regeneration");
     int dur;
-    string msg;
+    std::string msg;
 };
 
 class A_RevealLocation : public LegacyAction {
@@ -171,22 +171,22 @@ private:
 
 class A_Strength : public LegacyAction {
 public:
-    explicit A_Strength(int i, const string &m) : dur(i), msg(m) { }
+    explicit A_Strength(int i, const std::string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Strength");
     int dur;
-    string msg;
+    std::string msg;
 };
 
 class A_Super : public LegacyAction {
 public:
-    explicit A_Super(int i, const string &m) : dur(i), msg(m) { }
+    explicit A_Super(int i, const std::string &m) : dur(i), msg(m) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Super");
     int dur;
-    string msg;
+    std::string msg;
 };
 
 class A_TeleportRandom : public LegacyAction {

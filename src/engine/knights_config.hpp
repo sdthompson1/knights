@@ -44,6 +44,8 @@
 #ifndef KNIGHTS_CONFIG_HPP
 #define KNIGHTS_CONFIG_HPP
 
+#include "utf8string.hpp"
+
 #include "gfx/color.hpp"
 
 #include "boost/shared_ptr.hpp"
@@ -138,7 +140,7 @@ public:
                         EventManager &event_manager,
                         TaskManager &task_manager,
                         const std::vector<int> &hse_cols,
-                        const std::vector<std::string> &player_names) const;
+                        const std::vector<UTF8String> &player_names) const;
     boost::shared_ptr<const ConfigMap> getConfigMap() const;
     boost::shared_ptr<lua_State> getLuaState();  // This will live for as long as the KnightsConfig lives.
 

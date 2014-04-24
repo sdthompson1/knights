@@ -25,6 +25,7 @@
 #define CONNECTING_SCREEN_HPP
 
 #include "screen.hpp"
+#include "utf8string.hpp"
 
 #include "boost/shared_ptr.hpp"
 #include <string>
@@ -33,7 +34,7 @@ class ConnectingScreenImpl;
 
 class ConnectingScreen : public Screen {
 public:
-    ConnectingScreen(const std::string &address, int port, bool join_lan_game, const std::string &player_name);
+    ConnectingScreen(const std::string &address, int port, bool join_lan_game, const UTF8String &player_name);
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
     virtual unsigned int getUpdateInterval() { return 50; }

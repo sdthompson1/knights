@@ -190,7 +190,7 @@ const Coercri::Graphic & GfxManager::getGraphic(const GraphicKey &key)
         GraphicData gd;
         gd.new_graphic = new_graphic;
         gd.list_position = recent_list.begin();
-        cached_gfx_map.insert(make_pair(key, gd));
+        cached_gfx_map.insert(std::make_pair(key, gd));
 
         // Increase npix
         npix += key.new_width * key.new_height;

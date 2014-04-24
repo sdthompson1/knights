@@ -36,7 +36,10 @@
 
 #include <deque>
 #include <set>
-using namespace std;
+
+using std::deque;
+using std::set;
+using std::vector;
 
 namespace {
 

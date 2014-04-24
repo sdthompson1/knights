@@ -38,9 +38,12 @@
 
 #include <sstream>
 
+using std::auto_ptr;
+using std::string;
+
 class ConnectingScreenImpl : public gcn::ActionListener {
 public:
-    ConnectingScreenImpl(const std::string &addr, int port, bool join_lan, const std::string &pname);
+    ConnectingScreenImpl(const std::string &addr, int port, bool join_lan, const UTF8String &pname);
     void setupGui(KnightsApp &ka, gcn::Gui &gui);
     void setupConnection();
     void action(const gcn::ActionEvent &event);
@@ -49,7 +52,7 @@ private:
     std::string address;
     int port;
     bool join_lan_game;
-    std::string player_name;
+    UTF8String player_name;
     
     bool setup_done;
 
@@ -62,7 +65,7 @@ private:
     boost::scoped_ptr<gcn::Button> cancel_button;
 };
 
-ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr, int port_, bool join_lan, const std::string &pname)
+ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr, int port_, bool join_lan, const UTF8String &pname)
     : address(addr), port(port_), join_lan_game(join_lan), player_name(pname), setup_done(false), knights_app(0)
 { }
 
@@ -124,7 +127,7 @@ void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
 
-ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, const std::string &pname)
+ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, const UTF8String &pname)
      : pimpl(new ConnectingScreenImpl(addr, port, join_lan, pname))
 {
 }

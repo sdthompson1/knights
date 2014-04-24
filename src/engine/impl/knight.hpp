@@ -35,7 +35,6 @@
 #include <list>
 #include <map>
 #include <vector>
-using namespace std;
 
 class DispelObserver;
 class DungeonView;
@@ -50,7 +49,7 @@ public:
     // giving the maximum number for each itemtype. (if an itemtype is
     // not in the map then the number held is assumed to be
     // unlimited.) (the map is not copied!)
-    Knight(Player &pl, const map<const ItemType *, int> * backpack_capacities,
+    Knight(Player &pl, const std::map<const ItemType *, int> * backpack_capacities,
            int health, MapHeight height, ItemType * default_item,
            const Anim * lower_anim, int spd);
     virtual ~Knight();
@@ -157,10 +156,10 @@ private:
     friend class ResetMagicTask;
     
 private:
-    typedef vector<pair<ItemType *, int> > BackpackType;
+    typedef std::vector<std::pair<ItemType *, int> > BackpackType;
     BackpackType backpack;
     ItemType * default_item;
-    const map<const ItemType*, int> * b_capacity;
+    const std::map<const ItemType*, int> * b_capacity;
     Player & player;
     PotionMagic potion_magic; int potion_stop_time;
     int invuln_stop_time;
@@ -170,7 +169,7 @@ private:
     int reveal_2;
     int crystal_ball_count;
     shared_ptr<Task> regeneration_task, home_healing_task;
-    list<weak_ptr<DispelObserver> > dispel_list;
+    std::list<weak_ptr<DispelObserver> > dispel_list;
     int dagger_time;
 };
 

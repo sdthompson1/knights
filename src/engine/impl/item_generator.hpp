@@ -27,7 +27,6 @@
 #include "lua_ref.hpp"
 
 #include <vector>
-using namespace std;
 
 class ItemType;
 

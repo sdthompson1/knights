@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{97A898FE-D684-42B1-9F9B-B8706436F78C}</ProjectGuid>
+    <RootNamespace>Coercri</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\external;..\..\src\external\guichan\include;..\..\freetype\include;..\..\SDL\include;..\..\;$(SolutionDir)\Coercri\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\src\external;..\..\src\external\guichan\include;..\..\freetype\include;..\..\SDL\include;..\..\;$(SolutionDir)\Coercri\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\coercri\core\utf8string.cpp" />
+    <ClCompile Include="..\..\src\coercri\dx11\core\dx_error.cpp" />
+    <ClCompile Include="..\..\src\coercri\dx11\core\load_dx11_dlls.cpp" />
+    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_gfx_context.cpp" />
+    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.cpp" />
+    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_graphic.cpp" />
+    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_window.cpp" />
+    <ClCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\bitmap_font.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\freetype_ttf_loader.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\load_system_ttf.cpp" />
+    <ClCompile Include="..\..\src\coercri\network\byte_buf.cpp" />
+    <ClCompile Include="..\..\src\coercri\gcn\cg_font.cpp" />
+    <ClCompile Include="..\..\src\coercri\gcn\cg_graphics.cpp" />
+    <ClCompile Include="..\..\src\coercri\gcn\cg_image.cpp" />
+    <ClCompile Include="..\..\src\coercri\gcn\cg_input.cpp" />
+    <ClCompile Include="..\..\src\coercri\gcn\cg_listener.cpp" />
+    <ClCompile Include="..\..\src\coercri\enet\enet_network_connection.cpp" />
+    <ClCompile Include="..\..\src\coercri\enet\enet_network_driver.cpp" />
+    <ClCompile Include="..\..\src\coercri\enet\enet_udp_socket.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\core\istream_rwops.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\core\sdl_error.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\pixels.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_context.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_graphic.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_window.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\sound\sdl_sound_driver.cpp" />
+    <ClCompile Include="..\..\src\coercri\shared\win32_set_icon.cpp" />
+    <ClCompile Include="..\..\src\coercri\timer\generic_timer.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\gfx_context.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\key_name.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\load_bmp.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\region.cpp" />
+    <ClCompile Include="..\..\src\coercri\gfx\window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\coercri\core\utf8string.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\core\com_ptr_wrapper.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\core\dx_error.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\core\load_dx11_dlls.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_gfx_context.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_graphic.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_window.hpp" />
+    <ClInclude Include="..\..\src\coercri\dx11\gfx\primitive_batch.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\bitmap_font.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\freetype_ttf_loader.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\load_system_ttf.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\ttf_loader.hpp" />
+    <ClInclude Include="..\..\src\coercri\network\byte_buf.hpp" />
+    <ClInclude Include="..\..\src\coercri\gcn\cg_font.hpp" />
+    <ClInclude Include="..\..\src\coercri\gcn\cg_graphics.hpp" />
+    <ClInclude Include="..\..\src\coercri\gcn\cg_image.hpp" />
+    <ClInclude Include="..\..\src\coercri\gcn\cg_input.hpp" />
+    <ClInclude Include="..\..\src\coercri\gcn\cg_listener.hpp" />
+    <ClInclude Include="..\..\src\coercri\core\coercri_error.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\color.hpp" />
+    <ClInclude Include="..\..\src\coercri\enet\enet_network_connection.hpp" />
+    <ClInclude Include="..\..\src\coercri\enet\enet_network_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\enet\enet_udp_socket.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\font.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\core\istream_rwops.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\core\sdl_error.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\delete_sdl_surface.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\pixels.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_gfx_context.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_graphic.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_window.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\sound\sdl_sound_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\shared\win32_set_icon.hpp" />
+    <ClInclude Include="..\..\src\coercri\timer\generic_timer.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\gfx_context.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\gfx_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\graphic.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\key_code.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\load_bmp.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\mouse_button.hpp" />
+    <ClInclude Include="..\..\src\coercri\network\network_connection.hpp" />
+    <ClInclude Include="..\..\src\coercri\network\network_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\pixel_array.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\rectangle.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\region.hpp" />
+    <ClInclude Include="..\..\src\coercri\sound\sound.hpp" />
+    <ClInclude Include="..\..\src\coercri\sound\sound_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\timer\timer.hpp" />
+    <ClInclude Include="..\..\src\coercri\network\udp_socket.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\window.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\window_listener.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_common.hlsl">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_ps.hlsl">
+      <FileType>Document</FileType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">primitive_batch_ps</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)primitive_batch_ps.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">primitive_batch_ps</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)primitive_batch_ps.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_ps_tex.hlsl">
+      <FileType>Document</FileType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Tex</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PS_Tex</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">primitive_batch_ps_tex</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)primitive_batch_ps_tex.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">primitive_batch_ps_tex</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)primitive_batch_ps_tex.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_vs.hlsl">
+      <FileType>Document</FileType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">primitive_batch_vs</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)primitive_batch_vs.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">primitive_batch_vs</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)primitive_batch_vs.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ObjectFileOutput>
+    </FxCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
+    <Import Project="..\packages\SDL.1.2.15.15\build\native\SDL.targets" Condition="Exists('..\packages\SDL.1.2.15.15\build\native\SDL.targets')" />
+    <Import Project="..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets" Condition="Exists('..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets')" />
+    <Import Project="..\packages\freetype.2.4.2.1\build\native\freetype.targets" Condition="Exists('..\packages\freetype.2.4.2.1\build\native\freetype.targets')" />
+    <Import Project="..\packages\boost.1.55.0.16\build\native\boost.targets" Condition="Exists('..\packages\boost.1.55.0.16\build\native\boost.targets')" />
+  </ImportGroup>
+</Project>

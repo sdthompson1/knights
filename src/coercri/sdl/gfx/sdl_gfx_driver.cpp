@@ -6,7 +6,7 @@
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2009.
+ *   Copyright (C) Stephen Thompson, 2008 - 2014.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -46,7 +46,7 @@
 #include "../../gfx/mouse_button.hpp"
 #include "../../gfx/rectangle.hpp"
 #include "../../gfx/region.hpp"
-#include "../../gfx/window_listener.hpp"
+#include "../../gfx/window_listener_funcs.hpp"
 
 #include "SDL.h"
 #include "boost/weak_ptr.hpp"
@@ -67,190 +67,153 @@ namespace Coercri {
     boost::weak_ptr<SDLWindow> g_sdl_window;
     unsigned int g_sdl_required_flags;
     bool g_sdl_has_focus;
+    bool g_sdl_is_minimized;
 
     namespace {
 
         // Global key tables
-        std::map<SDLKey, RawKey> g_keytable;
-        std::map<SDLKey, CookedKey> g_cooked_keytable;
+        std::map<SDLKey, KeyCode> g_keytable;
         std::map<SDLKey, bool> g_keystate;  // true if key down, false if up.
 
         void InitKeyTable()
         {
             if (!g_keytable.empty()) return;  // already initialized
 
-            g_keytable[SDLK_BACKSPACE] = RK_BACKSPACE;
-            g_keytable[SDLK_TAB] = RK_TAB;
-            g_keytable[SDLK_CLEAR] = RK_CLEAR;
-            g_keytable[SDLK_RETURN] = RK_RETURN;
-            g_keytable[SDLK_PAUSE] = RK_PAUSE;
-            g_keytable[SDLK_ESCAPE] = RK_ESCAPE;
-            g_keytable[SDLK_SPACE] = RK_SPACE;
-            g_keytable[SDLK_EXCLAIM] = RK_EXCLAIM;
-            g_keytable[SDLK_QUOTEDBL] = RK_DOUBLE_QUOTE;
-            g_keytable[SDLK_HASH] = RK_HASH;
-            g_keytable[SDLK_DOLLAR] = RK_DOLLAR;
-            g_keytable[SDLK_AMPERSAND] = RK_AMPERSAND;
-            g_keytable[SDLK_QUOTE] = RK_SINGLE_QUOTE;
-            g_keytable[SDLK_LEFTPAREN] = RK_LEFT_PAREN;
-            g_keytable[SDLK_RIGHTPAREN] = RK_RIGHT_PAREN;
-            g_keytable[SDLK_ASTERISK] = RK_ASTERISK;
-            g_keytable[SDLK_PLUS] = RK_PLUS;
-            g_keytable[SDLK_COMMA] = RK_COMMA;
-            g_keytable[SDLK_MINUS] = RK_MINUS;
-            g_keytable[SDLK_PERIOD] = RK_PERIOD;
-            g_keytable[SDLK_SLASH] = RK_SLASH;
-            g_keytable[SDLK_0] = RK_0;
-            g_keytable[SDLK_1] = RK_1;
-            g_keytable[SDLK_2] = RK_2;
-            g_keytable[SDLK_3] = RK_3;
-            g_keytable[SDLK_4] = RK_4;
-            g_keytable[SDLK_5] = RK_5;
-            g_keytable[SDLK_6] = RK_6;
-            g_keytable[SDLK_7] = RK_7;
-            g_keytable[SDLK_8] = RK_8;
-            g_keytable[SDLK_9] = RK_9;
-            g_keytable[SDLK_COLON] = RK_COLON;
-            g_keytable[SDLK_SEMICOLON] = RK_SEMICOLON;
-            g_keytable[SDLK_LESS] = RK_LESS;
-            g_keytable[SDLK_EQUALS] = RK_EQUALS;
-            g_keytable[SDLK_GREATER] = RK_GREATER;
-            g_keytable[SDLK_QUESTION] = RK_QUESTION;
-            g_keytable[SDLK_AT] = RK_AT;
-            g_keytable[SDLK_LEFTBRACKET] = RK_LEFT_BRACKET;
-            g_keytable[SDLK_BACKSLASH] = RK_BACKSLASH;
-            g_keytable[SDLK_RIGHTBRACKET] = RK_RIGHT_BRACKET;
-            g_keytable[SDLK_CARET] = RK_CARET;
-            g_keytable[SDLK_UNDERSCORE] = RK_UNDERSCORE;
-            g_keytable[SDLK_BACKQUOTE] = RK_BACKQUOTE;
-            g_keytable[SDLK_a] = RK_A;
-            g_keytable[SDLK_b] = RK_B;
-            g_keytable[SDLK_c] = RK_C;
-            g_keytable[SDLK_d] = RK_D;
-            g_keytable[SDLK_e] = RK_E;
-            g_keytable[SDLK_f] = RK_F;
-            g_keytable[SDLK_g] = RK_G;
-            g_keytable[SDLK_h] = RK_H;
-            g_keytable[SDLK_i] = RK_I;
-            g_keytable[SDLK_j] = RK_J;
-            g_keytable[SDLK_k] = RK_K;
-            g_keytable[SDLK_l] = RK_L;
-            g_keytable[SDLK_m] = RK_M;
-            g_keytable[SDLK_n] = RK_N;
-            g_keytable[SDLK_o] = RK_O;
-            g_keytable[SDLK_p] = RK_P;
-            g_keytable[SDLK_q] = RK_Q;
-            g_keytable[SDLK_r] = RK_R;
-            g_keytable[SDLK_s] = RK_S;
-            g_keytable[SDLK_t] = RK_T;
-            g_keytable[SDLK_u] = RK_U;
-            g_keytable[SDLK_v] = RK_V;
-            g_keytable[SDLK_w] = RK_W;
-            g_keytable[SDLK_x] = RK_X;
-            g_keytable[SDLK_y] = RK_Y;
-            g_keytable[SDLK_z] = RK_Z;
-            g_keytable[SDLK_DELETE] = RK_DELETE;
-            g_keytable[SDLK_KP0] = RK_KP_0;
-            g_keytable[SDLK_KP1] = RK_KP_1;
-            g_keytable[SDLK_KP2] = RK_KP_2;
-            g_keytable[SDLK_KP3] = RK_KP_3;
-            g_keytable[SDLK_KP4] = RK_KP_4;
-            g_keytable[SDLK_KP5] = RK_KP_5;
-            g_keytable[SDLK_KP6] = RK_KP_6;
-            g_keytable[SDLK_KP7] = RK_KP_7;
-            g_keytable[SDLK_KP8] = RK_KP_8;
-            g_keytable[SDLK_KP9] = RK_KP_9;
-            g_keytable[SDLK_KP_PERIOD] = RK_KP_PERIOD;
-            g_keytable[SDLK_KP_DIVIDE] = RK_KP_DIVIDE;
-            g_keytable[SDLK_KP_MULTIPLY] = RK_KP_MULTIPLY;
-            g_keytable[SDLK_KP_MINUS] = RK_KP_MINUS;
-            g_keytable[SDLK_KP_PLUS] = RK_KP_PLUS;
-            g_keytable[SDLK_KP_ENTER] = RK_KP_ENTER;
-            g_keytable[SDLK_KP_EQUALS] = RK_KP_EQUALS;
-            g_keytable[SDLK_UP] = RK_UP;
-            g_keytable[SDLK_DOWN] = RK_DOWN;
-            g_keytable[SDLK_RIGHT] = RK_RIGHT;
-            g_keytable[SDLK_LEFT] = RK_LEFT;
-            g_keytable[SDLK_INSERT] = RK_INSERT;
-            g_keytable[SDLK_HOME] = RK_HOME;
-            g_keytable[SDLK_END] = RK_END;
-            g_keytable[SDLK_PAGEUP] = RK_PAGE_UP;
-            g_keytable[SDLK_PAGEDOWN] = RK_PAGE_DOWN;
-            g_keytable[SDLK_F1] = RK_F1;
-            g_keytable[SDLK_F2] = RK_F2;
-            g_keytable[SDLK_F3] = RK_F3;
-            g_keytable[SDLK_F4] = RK_F4;
-            g_keytable[SDLK_F5] = RK_F5;
-            g_keytable[SDLK_F6] = RK_F6;
-            g_keytable[SDLK_F7] = RK_F7;
-            g_keytable[SDLK_F8] = RK_F8;
-            g_keytable[SDLK_F9] = RK_F9;
-            g_keytable[SDLK_F10] = RK_F10;
-            g_keytable[SDLK_F11] = RK_F11;
-            g_keytable[SDLK_F12] = RK_F12;
-            g_keytable[SDLK_F13] = RK_F13;
-            g_keytable[SDLK_F14] = RK_F14;
-            g_keytable[SDLK_F15] = RK_F15;
-            g_keytable[SDLK_NUMLOCK] = RK_NUM_LOCK;
-            g_keytable[SDLK_CAPSLOCK] = RK_CAPS_LOCK;
-            g_keytable[SDLK_SCROLLOCK] = RK_SCROLL_LOCK;
-            g_keytable[SDLK_RSHIFT] = RK_RIGHT_SHIFT;
-            g_keytable[SDLK_LSHIFT] = RK_LEFT_SHIFT;
-            g_keytable[SDLK_RCTRL] = RK_RIGHT_CONTROL;
-            g_keytable[SDLK_LCTRL] = RK_LEFT_CONTROL;
-            g_keytable[SDLK_RALT] = RK_RIGHT_ALT;            
-            g_keytable[SDLK_LALT] = RK_LEFT_ALT;
-            g_keytable[SDLK_RMETA] = RK_RIGHT_META;
-            g_keytable[SDLK_LMETA] = RK_LEFT_META;
-            g_keytable[SDLK_LSUPER] = RK_LEFT_WINDOWS;
-            g_keytable[SDLK_RSUPER] = RK_RIGHT_WINDOWS;
-            g_keytable[SDLK_MODE] = RK_MODE;
-            g_keytable[SDLK_COMPOSE] = RK_COMPOSE;
-            g_keytable[SDLK_HELP] = RK_HELP;
-            g_keytable[SDLK_PRINT] = RK_PRINT_SCREEN;
-            g_keytable[SDLK_SYSREQ] = RK_SYSREQ;
-            g_keytable[SDLK_BREAK] = RK_BREAK;
-            g_keytable[SDLK_MENU] = RK_MENU;
-            g_keytable[SDLK_POWER] = RK_POWER;
-            g_keytable[SDLK_EURO] = RK_EURO;
-            g_keytable[SDLK_UNDO] = RK_UNDO;
-
-            g_cooked_keytable[SDLK_BACKSPACE] = CK_BACKSPACE;
-            g_cooked_keytable[SDLK_DELETE] = CK_DELETE;
-            g_cooked_keytable[SDLK_DOWN] = CK_DOWN;
-            g_cooked_keytable[SDLK_END] = CK_END;
-            g_cooked_keytable[SDLK_ESCAPE] = CK_ESCAPE;
-            g_cooked_keytable[SDLK_F1] = CK_F1;
-            g_cooked_keytable[SDLK_F2] = CK_F2;
-            g_cooked_keytable[SDLK_F3] = CK_F3;
-            g_cooked_keytable[SDLK_F4] = CK_F4;
-            g_cooked_keytable[SDLK_F5] = CK_F5;
-            g_cooked_keytable[SDLK_F6] = CK_F6;
-            g_cooked_keytable[SDLK_F7] = CK_F7;
-            g_cooked_keytable[SDLK_F8] = CK_F8;
-            g_cooked_keytable[SDLK_F9] = CK_F9;
-            g_cooked_keytable[SDLK_F10] = CK_F10;
-            g_cooked_keytable[SDLK_F11] = CK_F11;
-            g_cooked_keytable[SDLK_F12] = CK_F12;
-            g_cooked_keytable[SDLK_F13] = CK_F13;
-            g_cooked_keytable[SDLK_F14] = CK_F14;
-            g_cooked_keytable[SDLK_F15] = CK_F15;
-            g_cooked_keytable[SDLK_HELP] = CK_HELP;
-            g_cooked_keytable[SDLK_HOME] = CK_HOME;
-            g_cooked_keytable[SDLK_INSERT] = CK_INSERT;
-            g_cooked_keytable[SDLK_LEFT] = CK_LEFT;
-            g_cooked_keytable[SDLK_LSUPER] = CK_LEFT_WINDOWS;
-            g_cooked_keytable[SDLK_MENU] = CK_MENU;
-            g_cooked_keytable[SDLK_PAGEUP] = CK_PAGE_UP;
-            g_cooked_keytable[SDLK_PAGEDOWN] = CK_PAGE_DOWN;
-            g_cooked_keytable[SDLK_PAUSE] = CK_PAUSE;
-            g_cooked_keytable[SDLK_PRINT] = CK_PRINT_SCREEN;
-            g_cooked_keytable[SDLK_RETURN] = CK_RETURN;
-            g_cooked_keytable[SDLK_KP_ENTER] = CK_RETURN;
-            g_cooked_keytable[SDLK_RIGHT] = CK_RIGHT;
-            g_cooked_keytable[SDLK_RSUPER] = CK_RIGHT_WINDOWS;
-            g_cooked_keytable[SDLK_TAB] = CK_TAB;
-            g_cooked_keytable[SDLK_UP] = CK_UP;
+            g_keytable[SDLK_BACKSPACE] = KC_BACKSPACE;
+            g_keytable[SDLK_TAB] = KC_TAB;
+            g_keytable[SDLK_CLEAR] = KC_CLEAR;
+            g_keytable[SDLK_RETURN] = KC_RETURN;
+            g_keytable[SDLK_PAUSE] = KC_PAUSE;
+            g_keytable[SDLK_ESCAPE] = KC_ESCAPE;
+            g_keytable[SDLK_SPACE] = KC_SPACE;
+            g_keytable[SDLK_EXCLAIM] = KC_EXCLAIM;
+            g_keytable[SDLK_QUOTEDBL] = KC_DOUBLE_QUOTE;
+            g_keytable[SDLK_HASH] = KC_HASH;
+            g_keytable[SDLK_DOLLAR] = KC_DOLLAR;
+            g_keytable[SDLK_AMPERSAND] = KC_AMPERSAND;
+            g_keytable[SDLK_QUOTE] = KC_SINGLE_QUOTE;
+            g_keytable[SDLK_LEFTPAREN] = KC_LEFT_PAREN;
+            g_keytable[SDLK_RIGHTPAREN] = KC_RIGHT_PAREN;
+            g_keytable[SDLK_ASTERISK] = KC_ASTERISK;
+            g_keytable[SDLK_PLUS] = KC_PLUS;
+            g_keytable[SDLK_COMMA] = KC_COMMA;
+            g_keytable[SDLK_MINUS] = KC_MINUS;
+            g_keytable[SDLK_PERIOD] = KC_PERIOD;
+            g_keytable[SDLK_SLASH] = KC_SLASH;
+            g_keytable[SDLK_0] = KC_0;
+            g_keytable[SDLK_1] = KC_1;
+            g_keytable[SDLK_2] = KC_2;
+            g_keytable[SDLK_3] = KC_3;
+            g_keytable[SDLK_4] = KC_4;
+            g_keytable[SDLK_5] = KC_5;
+            g_keytable[SDLK_6] = KC_6;
+            g_keytable[SDLK_7] = KC_7;
+            g_keytable[SDLK_8] = KC_8;
+            g_keytable[SDLK_9] = KC_9;
+            g_keytable[SDLK_COLON] = KC_COLON;
+            g_keytable[SDLK_SEMICOLON] = KC_SEMICOLON;
+            g_keytable[SDLK_LESS] = KC_LESS;
+            g_keytable[SDLK_EQUALS] = KC_EQUALS;
+            g_keytable[SDLK_GREATER] = KC_GREATER;
+            g_keytable[SDLK_QUESTION] = KC_QUESTION;
+            g_keytable[SDLK_AT] = KC_AT;
+            g_keytable[SDLK_LEFTBRACKET] = KC_LEFT_BRACKET;
+            g_keytable[SDLK_BACKSLASH] = KC_BACKSLASH;
+            g_keytable[SDLK_RIGHTBRACKET] = KC_RIGHT_BRACKET;
+            g_keytable[SDLK_CARET] = KC_CARET;
+            g_keytable[SDLK_UNDERSCORE] = KC_UNDERSCORE;
+            g_keytable[SDLK_BACKQUOTE] = KC_BACKQUOTE;
+            g_keytable[SDLK_a] = KC_A;
+            g_keytable[SDLK_b] = KC_B;
+            g_keytable[SDLK_c] = KC_C;
+            g_keytable[SDLK_d] = KC_D;
+            g_keytable[SDLK_e] = KC_E;
+            g_keytable[SDLK_f] = KC_F;
+            g_keytable[SDLK_g] = KC_G;
+            g_keytable[SDLK_h] = KC_H;
+            g_keytable[SDLK_i] = KC_I;
+            g_keytable[SDLK_j] = KC_J;
+            g_keytable[SDLK_k] = KC_K;
+            g_keytable[SDLK_l] = KC_L;
+            g_keytable[SDLK_m] = KC_M;
+            g_keytable[SDLK_n] = KC_N;
+            g_keytable[SDLK_o] = KC_O;
+            g_keytable[SDLK_p] = KC_P;
+            g_keytable[SDLK_q] = KC_Q;
+            g_keytable[SDLK_r] = KC_R;
+            g_keytable[SDLK_s] = KC_S;
+            g_keytable[SDLK_t] = KC_T;
+            g_keytable[SDLK_u] = KC_U;
+            g_keytable[SDLK_v] = KC_V;
+            g_keytable[SDLK_w] = KC_W;
+            g_keytable[SDLK_x] = KC_X;
+            g_keytable[SDLK_y] = KC_Y;
+            g_keytable[SDLK_z] = KC_Z;
+            g_keytable[SDLK_DELETE] = KC_DELETE;
+            g_keytable[SDLK_KP0] = KC_KP_0;
+            g_keytable[SDLK_KP1] = KC_KP_1;
+            g_keytable[SDLK_KP2] = KC_KP_2;
+            g_keytable[SDLK_KP3] = KC_KP_3;
+            g_keytable[SDLK_KP4] = KC_KP_4;
+            g_keytable[SDLK_KP5] = KC_KP_5;
+            g_keytable[SDLK_KP6] = KC_KP_6;
+            g_keytable[SDLK_KP7] = KC_KP_7;
+            g_keytable[SDLK_KP8] = KC_KP_8;
+            g_keytable[SDLK_KP9] = KC_KP_9;
+            g_keytable[SDLK_KP_PERIOD] = KC_KP_PERIOD;
+            g_keytable[SDLK_KP_DIVIDE] = KC_KP_DIVIDE;
+            g_keytable[SDLK_KP_MULTIPLY] = KC_KP_MULTIPLY;
+            g_keytable[SDLK_KP_MINUS] = KC_KP_MINUS;
+            g_keytable[SDLK_KP_PLUS] = KC_KP_PLUS;
+            g_keytable[SDLK_KP_ENTER] = KC_KP_ENTER;
+            g_keytable[SDLK_KP_EQUALS] = KC_KP_EQUALS;
+            g_keytable[SDLK_UP] = KC_UP;
+            g_keytable[SDLK_DOWN] = KC_DOWN;
+            g_keytable[SDLK_RIGHT] = KC_RIGHT;
+            g_keytable[SDLK_LEFT] = KC_LEFT;
+            g_keytable[SDLK_INSERT] = KC_INSERT;
+            g_keytable[SDLK_HOME] = KC_HOME;
+            g_keytable[SDLK_END] = KC_END;
+            g_keytable[SDLK_PAGEUP] = KC_PAGE_UP;
+            g_keytable[SDLK_PAGEDOWN] = KC_PAGE_DOWN;
+            g_keytable[SDLK_F1] = KC_F1;
+            g_keytable[SDLK_F2] = KC_F2;
+            g_keytable[SDLK_F3] = KC_F3;
+            g_keytable[SDLK_F4] = KC_F4;
+            g_keytable[SDLK_F5] = KC_F5;
+            g_keytable[SDLK_F6] = KC_F6;
+            g_keytable[SDLK_F7] = KC_F7;
+            g_keytable[SDLK_F8] = KC_F8;
+            g_keytable[SDLK_F9] = KC_F9;
+            g_keytable[SDLK_F10] = KC_F10;
+            g_keytable[SDLK_F11] = KC_F11;
+            g_keytable[SDLK_F12] = KC_F12;
+            g_keytable[SDLK_F13] = KC_F13;
+            g_keytable[SDLK_F14] = KC_F14;
+            g_keytable[SDLK_F15] = KC_F15;
+            g_keytable[SDLK_NUMLOCK] = KC_NUM_LOCK;
+            g_keytable[SDLK_CAPSLOCK] = KC_CAPS_LOCK;
+            g_keytable[SDLK_SCROLLOCK] = KC_SCROLL_LOCK;
+            g_keytable[SDLK_RSHIFT] = KC_RIGHT_SHIFT;
+            g_keytable[SDLK_LSHIFT] = KC_LEFT_SHIFT;
+            g_keytable[SDLK_RCTRL] = KC_RIGHT_CONTROL;
+            g_keytable[SDLK_LCTRL] = KC_LEFT_CONTROL;
+            g_keytable[SDLK_RALT] = KC_RIGHT_ALT;            
+            g_keytable[SDLK_LALT] = KC_LEFT_ALT;
+            g_keytable[SDLK_RMETA] = KC_RIGHT_META;
+            g_keytable[SDLK_LMETA] = KC_LEFT_META;
+            g_keytable[SDLK_LSUPER] = KC_LEFT_WINDOWS;
+            g_keytable[SDLK_RSUPER] = KC_RIGHT_WINDOWS;
+            g_keytable[SDLK_MODE] = KC_MODE;
+            g_keytable[SDLK_COMPOSE] = KC_COMPOSE;
+            g_keytable[SDLK_HELP] = KC_HELP;
+            g_keytable[SDLK_PRINT] = KC_PRINT_SCREEN;
+            g_keytable[SDLK_SYSREQ] = KC_SYSREQ;
+            g_keytable[SDLK_BREAK] = KC_BREAK;
+            g_keytable[SDLK_MENU] = KC_MENU;
+            g_keytable[SDLK_POWER] = KC_POWER;
+            g_keytable[SDLK_EURO] = KC_EURO;
+            g_keytable[SDLK_UNDO] = KC_UNDO;
         }
 
         int GetModifiers(unsigned int sdl_mod)
@@ -278,20 +241,17 @@ namespace Coercri {
         // Handle SDL events.
         //
 
-        void DoEvent(const SDL_Event &event)
+        void DoEvent(const SDL_Event &event, int & surrogate_pair_start)
         {
-            typedef std::vector<WindowListener*> wl_vec;
-            typedef wl_vec::const_iterator iter;
-            
             boost::shared_ptr<SDLWindow> window(g_sdl_window.lock());
             if (!window) return;
-            const wl_vec & wls = window->getListeners();
 
             switch (event.type) {
             case SDL_VIDEOEXPOSE:
                 {
-                    // Invalidate the entire screen
-                    // TODO: Better tracking of the invalid region (does SDL tell us an invalid region?)
+                    // Invalidate the entire screen (I don't think SDL
+                    // gives more detailed info about the invalid
+                    // rectangle?)
                     SDL_Surface * vid_surf = SDL_GetVideoSurface();
                     Rectangle rectangle(0, 0, vid_surf->w, vid_surf->h);
                     window->invalidateRectangle(rectangle);
@@ -299,9 +259,7 @@ namespace Coercri {
                 break;
 
             case SDL_QUIT:
-                for (iter it = wls.begin(); it != wls.end(); ++it) {
-                    (*it)->onClose();
-                }
+                window->forEachListener(OnClose());
                 break;
 
             case SDL_ACTIVEEVENT:
@@ -309,14 +267,12 @@ namespace Coercri {
                     // Window focus gained or lost.
                     if (event.active.gain) {
                         g_sdl_has_focus = true;
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onGainFocus();
-                        }
+                        window->forEachListener(OnGainFocus());
+
                     } else {
                         g_sdl_has_focus = false;
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onLoseFocus();
-                        }
+                        window->forEachListener(OnLoseFocus());
+                            
                         // reset all keys to "up" state when window loses focus.
                         // this prevents a KE_PRESSED being misinterpreted as a KE_AUTO_REPEAT
                         // because we missed the keyup event.
@@ -326,13 +282,17 @@ namespace Coercri {
                 if ((event.active.state & SDL_APPACTIVE) != 0) {
                     // Activation/deactivation (i.e. minimization or un-minimization).
                     if (event.active.gain) {
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onActivate();
+                        // sometimes we get an "active" event even when the app
+                        // is already non-minimized, so filter those out
+                        if (g_sdl_is_minimized) {
+                            window->forEachListener(OnUnminimize());
                         }
+                        g_sdl_is_minimized = false;
                     } else {
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onDeactivate();
+                        if (!g_sdl_is_minimized) {
+                            window->forEachListener(OnMinimize());
                         }
+                        g_sdl_is_minimized = true;
                     }
                 }
                 break;
@@ -344,9 +304,7 @@ namespace Coercri {
                     window->invalidateAll();
                     
                     // 2) Inform the WindowListeners of the resize.
-                    for (iter it = wls.begin(); it != wls.end(); ++it) {
-                        (*it)->onResize(event.resize.w, event.resize.h);
-                    }
+                    window->forEachListener(OnResize(event.resize.w, event.resize.h));
                 }
                 break;
 
@@ -355,59 +313,58 @@ namespace Coercri {
                 {
                     // Find out what kind of key event this is.
                     const SDLKey keysym = event.key.keysym.sym;
-                    bool is_auto_repeat = false;
-                    bool is_key_down = false;
+                    KeyEventType type;
                     if (event.type == SDL_KEYDOWN) {
-                        is_key_down = true;
                         if (g_keystate[keysym]) {
-                            is_auto_repeat = true;
+                            type = KEY_AUTO_REPEAT;
                         } else {
                             g_keystate[keysym] = true;
+                            type = KEY_PRESSED;
                         }
                     } else {
                         g_keystate[keysym] = false;
+                        type = KEY_RELEASED;
                     }
                     
-                    // Find the corresponding RawKey.
-                    RawKey rk = RK_UNKNOWN;
-                    std::map<SDLKey, RawKey>::const_iterator key_it = g_keytable.find(keysym);
-                    if (key_it != g_keytable.end()) rk = key_it->second;
+                    // Find the corresponding KeyCode.
+                    KeyCode kc = KC_UNKNOWN;
+                    std::map<SDLKey, KeyCode>::const_iterator key_it = g_keytable.find(keysym);
+                    if (key_it != g_keytable.end()) kc = key_it->second;
                    
-                    // Find the corresponding CookedKey.
-                    CookedKey ck = CK_UNKNOWN;
+                    // Find whether SDL has provided a Unicode character for us
+                    // (filtering out unwanted control characters).
                     int unicode = 0;
-                    if (is_key_down) {
+                    if (type != KEY_RELEASED) {
 
-                        // Find whether SDL has provided a Unicode character for us
-                        // (filtering out unwanted control characters).
-                        // Otherwise, look up in g_cooked_keytable.
                         unicode = event.key.keysym.unicode;
-                        if (unicode < 32 || unicode == 127) unicode = 0;                   
-                        
-                        if (unicode != 0) {
-                            ck = CK_CHARACTER;
-                        } else {
-                            std::map<SDLKey, CookedKey>::const_iterator key_it_2 = g_cooked_keytable.find(keysym);
-                            if (key_it_2 != g_cooked_keytable.end()) ck = key_it_2->second;
+                        if (unicode < 32 || unicode == 127) unicode = 0;
+
+                        if (unicode >= 0xd800 && unicode <= 0xdbff) {
+                            // first half of surrogate pair
+                            surrogate_pair_start = unicode;
+                            unicode = 0;
+                        } else if (unicode >= 0xdc00 && unicode <= 0xdfff) {
+                            // second half of surrogate pair
+                            unicode = (surrogate_pair_start << 10)
+                                + unicode
+                                + 0x10000 - (0xd800 << 10) - 0xdc00;
                         }
                     }
 
-                    // Find the modifiers (for the cooked key event).
+                    // Find the modifiers.
                     const int modifiers = GetModifiers(event.key.keysym.mod);
                     
-                    // Send the raw key event, if required.
-                    if (rk != RK_UNKNOWN && !is_auto_repeat) {
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onRawKey(is_key_down, rk);
-                        }
+                    // Send the key event, if required.
+                    if (kc != KC_UNKNOWN) {
+                        window->forEachListener(OnKey(type, kc, KeyModifier(modifiers)));
                     }
 
-                    // Send the cooked key event, if required.
-                    if (ck != CK_UNKNOWN) {
+                    // Send the text input event, if required.
+                    if (unicode != 0 && (modifiers & KM_CONTROL) == 0) {
+                        OnTextInput oti;
+                        oti.str = UTF8String::fromCodePoint(unicode);
                         // Send the event.
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onCookedKey(ck, unicode, KeyModifier(modifiers));
-                        }
+                        window->forEachListener(oti);
                     }
                 }
                 break;
@@ -417,9 +374,7 @@ namespace Coercri {
                     bool err = false;
                     const MouseButton mb = MouseButtonFromSDL(event.button.button, err);
                     if (!err) {
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onMouseDown(event.button.x, event.button.y, mb);
-                        }
+                        window->forEachListener(OnMouseDown(event.button.x, event.button.y, mb));
                     }
                 }
                 break;
@@ -429,17 +384,13 @@ namespace Coercri {
                     bool err = false;
                     const MouseButton mb = MouseButtonFromSDL(event.button.button, err);
                     if (!err) {
-                        for (iter it = wls.begin(); it != wls.end(); ++it) {
-                            (*it)->onMouseUp(event.button.x, event.button.y, mb);
-                        }
+                        window->forEachListener(OnMouseUp(event.button.x, event.button.y, mb));
                     }
                 }
                 break;
 
             case SDL_MOUSEMOTION:
-                for (iter it = wls.begin(); it != wls.end(); ++it) {
-                    (*it)->onMouseMove(event.motion.x, event.motion.y);
-                }
+                window->forEachListener(OnMouseMove(event.motion.x, event.motion.y));
                 break;
             }
         }
@@ -452,64 +403,28 @@ namespace Coercri {
     //
     
     SDLGfxDriver::SDLGfxDriver()
-        : video_subsystem(SDL_INIT_VIDEO), icon_id(-1)
+        : video_subsystem(SDL_INIT_VIDEO)
     {
         const SDL_VideoInfo* info = SDL_GetVideoInfo();
-        desktop_mode.width = info->current_w;
-        desktop_mode.height = info->current_h;
+        desktop_width = info->current_w;
+        desktop_height = info->current_h;
         
         InitKeyTable();
         SDL_EnableUNICODE(1);
     }
 
-    SDLGfxDriver::DisplayModeVector SDLGfxDriver::getFullScreenModes()
-    {
-        SDL_Rect ** modes = SDL_ListModes(0, SDL_ANYFORMAT | SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
-
-        if (modes == 0 || modes == reinterpret_cast<SDL_Rect**>(-1)) {
-            return DisplayModeVector();
-        } else {
-            DisplayModeVector result;
-            for (int i = 0; modes[i]; ++i) {
-                DisplayMode m;
-                m.width = modes[i]->w;
-                m.height = modes[i]->h;
-                result.push_back(m);
-            }
-            return result;
-        }
-    }
-
-    SDLGfxDriver::DisplayMode SDLGfxDriver::getDesktopMode()
-    {
-        return desktop_mode;
-    }
-    
     boost::shared_ptr<Window> SDLGfxDriver::createWindow(int width, int height,
                                                          bool resizable, bool fullscreen,
                                                          const std::string &title)
     {
         if (g_sdl_window.lock()) {
-            throw CoercriError("SDL only supports one window at a time");
+            throw CoercriError("SDL 1 only supports one window at a time");
         }
 
-#ifdef WIN32
-        // Set window icon from the given resource
-        // This has to be done after SDL_Init, but before SDL_SetVideoMode.
-        if (icon_id != -1) {
-            const HINSTANCE handle = ::GetModuleHandle(NULL);
-            const HICON icon = ::LoadIcon(handle, MAKEINTRESOURCE(icon_id));
-
-            SDL_SysWMinfo wminfo;
-            SDL_VERSION(&wminfo.version);
-            if (SDL_GetWMInfo(&wminfo) != 1) {
-                // error: wrong SDL version
-            } else {
-                const HWND hwnd = wminfo.window;
-                ::SetClassLong(hwnd, GCL_HICON, (LONG) icon);
-            }
+        if (fullscreen) {
+            width = desktop_width;
+            height = desktop_height;
         }
-#endif
         
         g_sdl_required_flags = SDL_ANYFORMAT | SDL_HWSURFACE | SDL_DOUBLEBUF;
         if (fullscreen) g_sdl_required_flags |= SDL_FULLSCREEN;
@@ -528,7 +443,7 @@ namespace Coercri {
         SDL_EnableUNICODE(1);
         SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
         
-        boost::shared_ptr<SDLWindow> result(new SDLWindow);
+        boost::shared_ptr<SDLWindow> result(new SDLWindow(desktop_width, desktop_height));
         g_sdl_window = result;
         return result;
     }
@@ -543,27 +458,19 @@ namespace Coercri {
         boost::shared_ptr<SDLWindow> window(g_sdl_window.lock());
         if (window && window->need_window_resize) {
             // process this first.
-            const std::vector<WindowListener*> & wls = window->getListeners();
             int w,h;
             window->getSize(w,h);
-            for (std::vector<WindowListener*>::const_iterator it = wls.begin(); it != wls.end(); ++it) {
-                (*it)->onResize(w,h);
-            }
+            window->forEachListener(OnResize(w, h));
             window->need_window_resize = false;
             return true;
         }
         
         SDL_Event event;
         if (SDL_PollEvent(&event)) {
-            DoEvent(event);
+            DoEvent(event, surrogate_pair_start);
             return true;
         } else {
             return false;
         }
-    }
-
-    void SDLGfxDriver::setWindowsIcon(int resource_id)
-    {
-        icon_id = resource_id;
     }
 }

@@ -50,6 +50,7 @@
 #include "../../gfx/pixel_array.hpp"
 
 #include "boost/scoped_array.hpp"
+#include "boost/weak_ptr.hpp"
 
 #include <map>
 
@@ -61,26 +62,6 @@
 namespace Coercri {
 
     extern std::string g_win_proc_error_msg;
-
-    namespace {
-        struct CmpDisplayMode {
-            bool operator()(const GfxDriver::DisplayMode &lhs, const GfxDriver::DisplayMode &rhs) const
-            {
-                return
-                    lhs.width < rhs.width ? true :
-                    lhs.width > rhs.width ? false :
-                    lhs.height < rhs.height;
-            }
-        };
-
-        struct EqDisplayMode {
-            bool operator()(const GfxDriver::DisplayMode &lhs, const GfxDriver::DisplayMode &rhs) const
-            {
-                return lhs.width == rhs.width
-                    && lhs.height == rhs.height;
-            }
-        };
-    }
     
     //
     // Constructor (and related functions)
@@ -89,7 +70,6 @@ namespace Coercri {
     DX11GfxDriver::DX11GfxDriver(D3D_DRIVER_TYPE driver_type,
                                  UINT flags,
                                  D3D_FEATURE_LEVEL feature_level)
-        : icon_id(-1)
     {        
         // Open DirectX
         if (!LoadDX11()) {
@@ -167,19 +147,6 @@ namespace Coercri {
         m_psFactory.reset(pFactory);
     }
 
-    DX11GfxDriver::DisplayMode DX11GfxDriver::getDesktopMode()
-    {
-        DXGI_OUTPUT_DESC output_desc;
-        HRESULT hr = m_psOutput->GetDesc(&output_desc);
-        if (FAILED(hr)) {
-            throw DXError("IDXGIOutput::GetDesc failed", hr);
-        }
-        DisplayMode dm;
-        dm.width = output_desc.DesktopCoordinates.right - output_desc.DesktopCoordinates.left;
-        dm.height = output_desc.DesktopCoordinates.bottom - output_desc.DesktopCoordinates.top;
-        return dm;
-    }
-
 
     //
     // Destructor
@@ -199,7 +166,8 @@ namespace Coercri {
                                                           bool resizable, bool fullscreen,
                                                           const std::string &title)
     {
-        boost::shared_ptr<Window> win(new DX11Window(width, height, resizable, fullscreen, title, icon_id, *this));
+        boost::shared_ptr<DX11Window> win(new DX11Window(width, height, resizable, fullscreen, title, *this));
+        all_windows.push_back(win);
         return win;
     }
 
@@ -228,13 +196,13 @@ namespace Coercri {
     {
         bool did_something = false;
         
-        // Process all available messages
+        // Empty out the windows event queue
         MSG msg;
-        while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+        while (PeekMessageW(&msg, 0, 0, 0, PM_REMOVE)) {
             did_something = true;
 
             TranslateMessage(&msg);
-            DispatchMessage(&msg);  // this will call the window proc, and from there, window listeners will be called.
+            DispatchMessageW(&msg);  // this will call the window proc, and from there, window listeners will be called.
 
             std::string err_msg = g_win_proc_error_msg;
             g_win_proc_error_msg.clear();
@@ -245,17 +213,18 @@ namespace Coercri {
             }
         }
 
+        // Send the windows events on to the program itself.
+        for (std::list<boost::weak_ptr<DX11Window> >::iterator it = all_windows.begin(); it != all_windows.end(); ) {
+            boost::shared_ptr<DX11Window> ptr = it->lock();
+            if (!ptr) {
+                it = all_windows.erase(it);
+            } else {
+                did_something = ptr->pollEvents() || did_something;
+                ++it;
+            }
+        }
+        
         return did_something;
     }
-
-
-    //
-    // Windows icon handling
-    //
-
-    void DX11GfxDriver::setWindowsIcon(int resource_id)
-    {
-        icon_id = resource_id;
-    }
-        
+    
 }

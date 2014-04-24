@@ -181,7 +181,7 @@ void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight
                                   const Anim *anim, const Overlay *ovr, int af, int atz_diff,
                                   bool ainvis, bool ainvuln,
                                   int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                                  const std::string &name)
+                                  const UTF8String &name)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_ADD_ENTITY);
@@ -194,7 +194,7 @@ void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight
     if (af != 0) buf.writeShort(ClampToShort(atz_diff));
     buf.writeUshort(ClampToUshort(cur_ofs));
     if (motion_type != MT_NOT_MOVING) buf.writeUshort(ClampToUshort(motion_time_remaining));
-    buf.writeString(name);
+    buf.writeString(name.asUTF8());
 }
 
 void ServerDungeonView::rmEntity(unsigned short int id)

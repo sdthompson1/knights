@@ -33,6 +33,8 @@
 
 #include "lua.hpp"
 
+using std::auto_ptr;
+
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
                   const char *filename, const boost::filesystem::path &cwd)
 {

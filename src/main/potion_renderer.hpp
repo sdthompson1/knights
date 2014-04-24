@@ -35,7 +35,6 @@
 #include "gfx/gfx_context.hpp"
 
 #include <vector>
-using namespace std;
 
 class ConfigMap;
 class GfxManager;
@@ -66,8 +65,8 @@ private:
     const ConfigMap &config_map;
     bool def_set;
     Colour def_col;
-    vector<const Graphic *> gfx;
-    vector<ColourChange> colours;
+    std::vector<const Graphic *> gfx;
+    std::vector<ColourChange> colours;
 };
 
 #endif

@@ -98,7 +98,7 @@ void DrawUI::drawBackpackEntry(Coercri::GfxContext &gc,
         } else {
             // use supplied spacing; extra ones are just dropped.
             const int jmax = (height - rescaled_gem_height - rescaled_height) / rescaled_spacing;
-            for (int j = min(no_carried-1, jmax); j >= 0; --j) {
+            for (int j = std::min(no_carried-1, jmax); j >= 0; --j) {
                 gm.drawTransformedGraphic(gc, x, top + j*rescaled_spacing, j ? *overdraw : *gfx, width_of_each,
                                           j ? rescaled_overdraw_height : rescaled_height);
             }
@@ -130,7 +130,7 @@ void DrawUI::drawBackpackEntry(Coercri::GfxContext &gc,
 void DrawUI::drawMessage(const ConfigMap &config_map, Coercri::GfxContext &gc,
                          int d_left, int d_top, int d_width, int d_height,
                          GfxManager &gm, int sq_rel_x, int sq_rel_y,
-                         int w, int h, int pixels_per_square, const string &message)
+                         int w, int h, int pixels_per_square, const UTF8String &message)
 {
     const int room_bl_x = d_left + (d_width - w*pixels_per_square)/2;
     const int room_bl_y = d_top + (d_height - h*pixels_per_square)/2;

@@ -33,7 +33,10 @@
 #include "tile.hpp"
 
 #include <algorithm>
-using namespace std;
+
+using std::make_pair;
+using std::map;
+using std::vector;
 
 MonsterManager::MonsterManager()
     : total_current_monsters(0), total_monster_limit(-1), zombie_chance(0),

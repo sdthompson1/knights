@@ -37,7 +37,6 @@
 using namespace boost;
 
 #include <functional>
-using namespace std;
 
 class Anim;
 class ColourChange;
@@ -180,13 +179,13 @@ private:
 // function objects to compare entities by height
 //
 
-struct HeightCompare : binary_function<shared_ptr<Entity>, shared_ptr<Entity>, bool> {
+struct HeightCompare : std::binary_function<shared_ptr<Entity>, shared_ptr<Entity>, bool> {
     bool operator()(const shared_ptr<Entity> &lhs, const shared_ptr<Entity> &rhs) const {
         return lhs->getHeight() < rhs->getHeight();
     }
 };
 
-struct HeightReverseCompare : binary_function<shared_ptr<Entity>, shared_ptr<Entity>, bool> {
+struct HeightReverseCompare : std::binary_function<shared_ptr<Entity>, shared_ptr<Entity>, bool> {
     bool operator()(const shared_ptr<Entity> &lhs, const shared_ptr<Entity> &rhs) const {
         return lhs->getHeight() > rhs->getHeight(); 
     }

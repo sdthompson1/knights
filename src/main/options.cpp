@@ -33,26 +33,26 @@ Options::Options()
 {
     first_time = true;
     
-    ctrls[0][0] = Coercri::RK_W;
-    ctrls[0][1] = Coercri::RK_S;
-    ctrls[0][2] = Coercri::RK_A;
-    ctrls[0][3] = Coercri::RK_D;
-    ctrls[0][4] = Coercri::RK_Q;
-    ctrls[0][5] = Coercri::RK_F1;
+    ctrls[0][0] = Coercri::KC_W;
+    ctrls[0][1] = Coercri::KC_S;
+    ctrls[0][2] = Coercri::KC_A;
+    ctrls[0][3] = Coercri::KC_D;
+    ctrls[0][4] = Coercri::KC_Q;
+    ctrls[0][5] = Coercri::KC_F1;
 
-    ctrls[1][0] = Coercri::RK_UP;
-    ctrls[1][1] = Coercri::RK_DOWN;
-    ctrls[1][2] = Coercri::RK_LEFT;
-    ctrls[1][3] = Coercri::RK_RIGHT;
-    ctrls[1][4] = Coercri::RK_RIGHT_CONTROL;
-    ctrls[1][5] = Coercri::RK_F12;
+    ctrls[1][0] = Coercri::KC_UP;
+    ctrls[1][1] = Coercri::KC_DOWN;
+    ctrls[1][2] = Coercri::KC_LEFT;
+    ctrls[1][3] = Coercri::KC_RIGHT;
+    ctrls[1][4] = Coercri::KC_RIGHT_CONTROL;
+    ctrls[1][5] = Coercri::KC_F12;
 
-    ctrls[2][0] = Coercri::RK_W;
-    ctrls[2][1] = Coercri::RK_S;
-    ctrls[2][2] = Coercri::RK_A;
-    ctrls[2][3] = Coercri::RK_D;
-    ctrls[2][4] = Coercri::RK_Q;
-    ctrls[2][5] = Coercri::RK_F1;
+    ctrls[2][0] = Coercri::KC_W;
+    ctrls[2][1] = Coercri::KC_S;
+    ctrls[2][2] = Coercri::KC_A;
+    ctrls[2][3] = Coercri::KC_D;
+    ctrls[2][4] = Coercri::KC_Q;
+    ctrls[2][5] = Coercri::KC_F1;
 
     // New control system is the default for new players.
     new_control_system = true;
@@ -65,8 +65,8 @@ Options::Options()
     window_width = 1000;
     window_height = 780;
 
-    global_chat_key = Coercri::RK_TAB;
-    team_chat_key = Coercri::RK_BACKQUOTE;
+    global_chat_key = Coercri::KC_TAB;
+    team_chat_key = Coercri::KC_BACKQUOTE;
 }
 
 Options LoadOptions(std::istream &str)
@@ -97,7 +97,7 @@ Options LoadOptions(std::istream &str)
                 // Read from file.
                 int x;
                 str >> x;
-                o.ctrls[i][j] = Coercri::RawKey(x);
+                o.ctrls[i][j] = Coercri::KeyCode(x);
             } else {
                 // Versions prior to 3 only have 2 sets of controls in the file.
                 // Copy the "network games" controls from the P2 controls.
@@ -129,10 +129,10 @@ Options LoadOptions(std::istream &str)
     if (version >= 5) {
         int x;
         str >> x;
-        o.global_chat_key = Coercri::RawKey(x);
+        o.global_chat_key = Coercri::KeyCode(x);
 
         str >> x;
-        o.team_chat_key = Coercri::RawKey(x);
+        o.team_chat_key = Coercri::KeyCode(x);
     }
     // (for versions < 5, Options::Options() will have set up default
     // chat keys, which are fine for us.)
@@ -154,7 +154,9 @@ Options LoadOptions(std::istream &str)
             }
         }
         
-        std::getline(str, o.player_name);
+        std::string player_name_utf8;
+        std::getline(str, player_name_utf8);
+        o.player_name = UTF8String::fromUTF8Safe(player_name_utf8);
     }
 
     if (!str && !load_ok) return Options();  // In case of load failure, return default options
@@ -176,5 +178,5 @@ void SaveOptions(const Options &o, std::ostream &str)
     str << o.window_width << " " << o.window_height << "\n";
     str << o.new_control_system << " " << o.action_bar_tool_tips << "\n";
     str << o.global_chat_key << " " << o.team_chat_key << "\n";
-    str << o.player_name << "\n";
+    str << o.player_name.asUTF8() << "\n";
 }

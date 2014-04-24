@@ -33,6 +33,8 @@
 
 #include <string>
 
+using std::auto_ptr;
+
 MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
 {
     // [... t]

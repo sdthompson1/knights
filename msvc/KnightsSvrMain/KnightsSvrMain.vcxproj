@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\openssl.1.0.1.24\build\native\openssl.props" Condition="Exists('..\packages\openssl.1.0.1.24\build\native\openssl.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AAD7A2D3-F662-4369-8912-0D2DBD06206F}</ProjectGuid>
+    <RootNamespace>KnightsSvrMain</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <Linkage-curl>
+    </Linkage-curl>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\misc;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\rstream;..\..\src\server;..\..\src\shared;..\..\curl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Debug\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\src\misc;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\rstream;..\..\src\server;..\..\src\shared;..\..\curl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Release\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\svr_main\config.cpp" />
+    <ClCompile Include="..\..\src\svr_main\replay_file.cpp" />
+    <ClCompile Include="..\..\src\svr_main\server_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\svr_main\config.hpp" />
+    <ClInclude Include="..\..\src\svr_main\replay_file.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Coercri\Coercri.vcxproj">
+      <Project>{97a898fe-d684-42b1-9f9b-b8706436f78c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ENet\ENet.vcxproj">
+      <Project>{f75537ff-1112-469b-9cb5-e1d6bf28a419}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\KnightsEngine\KnightsEngine.vcxproj">
+      <Project>{88beee97-63e6-4949-886f-580ac6035687}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\KnightsServer\KnightsServer.vcxproj">
+      <Project>{b4bd454e-b242-456c-93a8-0160b6604614}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\KnightsShared\KnightsShared.vcxproj">
+      <Project>{ae365d55-9853-4336-af95-222e286ebe61}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\lua\lua.vcxproj">
+      <Project>{a6acd79e-030b-4ec4-81fa-93a7e3a933d7}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Misc\Misc.vcxproj">
+      <Project>{bc217bea-9135-4266-b150-75f0450b2366}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\RStream\RStream.vcxproj">
+      <Project>{013a3a7a-553c-4d09-9be8-08b533577e32}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
+    <Import Project="..\packages\SDL.1.2.15.15\build\native\SDL.targets" Condition="Exists('..\packages\SDL.1.2.15.15\build\native\SDL.targets')" />
+    <Import Project="..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets" Condition="Exists('..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets')" />
+    <Import Project="..\packages\freetype.2.4.2.1\build\native\freetype.targets" Condition="Exists('..\packages\freetype.2.4.2.1\build\native\freetype.targets')" />
+    <Import Project="..\packages\zlib.redist.1.2.8.6\build\native\zlib.redist.targets" Condition="Exists('..\packages\zlib.redist.1.2.8.6\build\native\zlib.redist.targets')" />
+    <Import Project="..\packages\zlib.1.2.8.6\build\native\zlib.targets" Condition="Exists('..\packages\zlib.1.2.8.6\build\native\zlib.targets')" />
+    <Import Project="..\packages\openssl.redist.1.0.1.24\build\native\openssl.redist.targets" Condition="Exists('..\packages\openssl.redist.1.0.1.24\build\native\openssl.redist.targets')" />
+    <Import Project="..\packages\openssl.1.0.1.24\build\native\openssl.targets" Condition="Exists('..\packages\openssl.1.0.1.24\build\native\openssl.targets')" />
+    <Import Project="..\packages\libssh2.redist.1.4.3.3\build\native\libssh2.redist.targets" Condition="Exists('..\packages\libssh2.redist.1.4.3.3\build\native\libssh2.redist.targets')" />
+    <Import Project="..\packages\libssh2.1.4.3.3\build\native\libssh2.targets" Condition="Exists('..\packages\libssh2.1.4.3.3\build\native\libssh2.targets')" />
+    <Import Project="..\packages\curl.redist.7.30.0.2\build\native\curl.redist.targets" Condition="Exists('..\packages\curl.redist.7.30.0.2\build\native\curl.redist.targets')" />
+    <Import Project="..\packages\curl.7.30.0.2\build\native\curl.targets" Condition="Exists('..\packages\curl.7.30.0.2\build\native\curl.targets')" />
+    <Import Project="..\packages\boost.1.55.0.16\build\native\boost.targets" Condition="Exists('..\packages\boost.1.55.0.16\build\native\boost.targets')" />
+    <Import Project="..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets" Condition="Exists('..\packages\boost_thread.1.55.0.16\build\native\boost_thread.targets')" />
+    <Import Project="..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets" Condition="Exists('..\packages\boost_date_time.1.55.0.16\build\native\boost_date_time.targets')" />
+    <Import Project="..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets" Condition="Exists('..\packages\boost_chrono.1.55.0.16\build\native\boost_chrono.targets')" />
+    <Import Project="..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets" Condition="Exists('..\packages\boost_filesystem.1.55.0.16\build\native\boost_filesystem.targets')" />
+    <Import Project="..\packages\boost_system.1.55.0.16\build\native\boost_system.targets" Condition="Exists('..\packages\boost_system.1.55.0.16\build\native\boost_system.targets')" />
+  </ImportGroup>
+</Project>

@@ -45,19 +45,25 @@
 #include "dx11_window.hpp"
 #include "../core/dx_error.hpp"
 #include "../../gfx/key_code.hpp"
-#include "../../gfx/window_listener.hpp"
+#include "../../gfx/window_listener_funcs.hpp"
 
 #include <cctype>
 #include <map>
 #include <sstream>
 
-#include <windows.h>
+#include <windowsx.h>
 #ifdef MB_RIGHT
 #undef MB_RIGHT
+#endif
+#ifdef FindWindow
+#undef FindWindow
 #endif
 
 namespace Coercri {
 
+    // Event queueing.
+    
+    
     // This holds errors generated during the window procedure.
     // (We cannot throw exceptions through the Win32 API so we store an error message here,
     // then re-throw it on return from the window procedure.)
@@ -65,246 +71,175 @@ namespace Coercri {
 
     namespace {        
 
-        // Global key table
-        std::map<int, RawKey> g_vk_to_rk;
-        std::map<UINT, RawKey> g_char_to_rk;
-        std::map<int, CookedKey> g_vk_to_ck;
-
         int scancode_left_shift;
 
-        void InitKeyTable()
+        KeyCode VK_to_KC(int vk)
         {
-            if (!g_vk_to_rk.empty()) return;   // Already initialized
-
-            g_vk_to_rk[VK_BACK] = RK_BACKSPACE;
-            g_vk_to_rk[VK_CAPITAL] = RK_CAPS_LOCK;
-            g_vk_to_rk[VK_CLEAR] = RK_CLEAR;
-            g_vk_to_rk[VK_DELETE] = RK_DELETE;
-            g_vk_to_rk[VK_DOWN] = RK_DOWN;
-            g_vk_to_rk[VK_END] = RK_END;
-            g_vk_to_rk[VK_ESCAPE] = RK_ESCAPE;
-            g_vk_to_rk[VK_F1] = RK_F1;
-            g_vk_to_rk[VK_F2] = RK_F2;
-            g_vk_to_rk[VK_F3] = RK_F3;
-            g_vk_to_rk[VK_F4] = RK_F4;
-            g_vk_to_rk[VK_F5] = RK_F5;
-            g_vk_to_rk[VK_F6] = RK_F6;
-            g_vk_to_rk[VK_F7] = RK_F7;
-            g_vk_to_rk[VK_F8] = RK_F8;
-            g_vk_to_rk[VK_F9] = RK_F9;
-            g_vk_to_rk[VK_F10] = RK_F10;
-            g_vk_to_rk[VK_F11] = RK_F11;
-            g_vk_to_rk[VK_F12] = RK_F12;
-            g_vk_to_rk[VK_F13] = RK_F13;
-            g_vk_to_rk[VK_F14] = RK_F14;
-            g_vk_to_rk[VK_F15] = RK_F15;
-            g_vk_to_rk[VK_HELP] = RK_HELP;
-            g_vk_to_rk[VK_HOME] = RK_HOME;
-            g_vk_to_rk[VK_INSERT] = RK_INSERT;
-            g_vk_to_rk[VK_NUMPAD0] = RK_KP_0;
-            g_vk_to_rk[VK_NUMPAD1] = RK_KP_1;
-            g_vk_to_rk[VK_NUMPAD2] = RK_KP_2;
-            g_vk_to_rk[VK_NUMPAD3] = RK_KP_3;
-            g_vk_to_rk[VK_NUMPAD4] = RK_KP_4;
-            g_vk_to_rk[VK_NUMPAD5] = RK_KP_5;
-            g_vk_to_rk[VK_NUMPAD6] = RK_KP_6;
-            g_vk_to_rk[VK_NUMPAD7] = RK_KP_7;
-            g_vk_to_rk[VK_NUMPAD8] = RK_KP_8;
-            g_vk_to_rk[VK_NUMPAD9] = RK_KP_9;
-            g_vk_to_rk[VK_DIVIDE] = RK_KP_DIVIDE;
-            g_vk_to_rk[VK_SUBTRACT] = RK_KP_MINUS;
-            g_vk_to_rk[VK_MULTIPLY] = RK_KP_MULTIPLY;
-            g_vk_to_rk[VK_DECIMAL] = RK_KP_PERIOD;
-            g_vk_to_rk[VK_ADD] = RK_KP_PLUS;
-            g_vk_to_rk[VK_LEFT] = RK_LEFT;
-            g_vk_to_rk[VK_LMENU] = RK_LEFT_ALT;
-            g_vk_to_rk[VK_LCONTROL] = RK_LEFT_CONTROL;
-            g_vk_to_rk[VK_LSHIFT] = RK_LEFT_SHIFT;
-            g_vk_to_rk[VK_LWIN] = RK_LEFT_WINDOWS;
-            g_vk_to_rk[VK_APPS] = RK_MENU;
-            g_vk_to_rk[VK_MODECHANGE] = RK_MODE;
-            g_vk_to_rk[VK_NUMLOCK] = RK_NUM_LOCK;
-            g_vk_to_rk[VK_NEXT] = RK_PAGE_DOWN;
-            g_vk_to_rk[VK_PRIOR] = RK_PAGE_UP;
-            g_vk_to_rk[VK_PAUSE] = RK_PAUSE;
-            g_vk_to_rk[VK_SNAPSHOT] = RK_PRINT_SCREEN;
-            g_vk_to_rk[VK_RIGHT] = RK_RIGHT;
-            g_vk_to_rk[VK_RMENU] = RK_RIGHT_ALT;
-            g_vk_to_rk[VK_RCONTROL] = RK_RIGHT_CONTROL;
-            g_vk_to_rk[VK_RSHIFT] = RK_RIGHT_SHIFT;
-            g_vk_to_rk[VK_RWIN] = RK_RIGHT_WINDOWS;
-            g_vk_to_rk[VK_SCROLL] = RK_SCROLL_LOCK;
-            g_vk_to_rk[VK_TAB] = RK_TAB;
-            g_vk_to_rk[VK_UP] = RK_UP;
-            
-            g_char_to_rk['0'] = RK_0;
-            g_char_to_rk['1'] = RK_1;
-            g_char_to_rk['2'] = RK_2;
-            g_char_to_rk['3'] = RK_3;
-            g_char_to_rk['4'] = RK_4;
-            g_char_to_rk['5'] = RK_5;
-            g_char_to_rk['6'] = RK_6;
-            g_char_to_rk['7'] = RK_7;
-            g_char_to_rk['8'] = RK_8;
-            g_char_to_rk['9'] = RK_9;
-            g_char_to_rk['a'] = RK_A;
-            g_char_to_rk['&'] = RK_AMPERSAND;
-            g_char_to_rk['*'] = RK_ASTERISK;
-            g_char_to_rk['@'] = RK_AT;
-            g_char_to_rk['b'] = RK_B;
-            g_char_to_rk['`'] = RK_BACKQUOTE;
-            g_char_to_rk['\\'] = RK_BACKSLASH;
-            g_char_to_rk['c'] = RK_C;
-            g_char_to_rk['^'] = RK_CARET;
-            g_char_to_rk[':'] = RK_COLON;
-            g_char_to_rk[','] = RK_COMMA;
-            g_char_to_rk['d'] = RK_D;
-            g_char_to_rk['$'] = RK_DOLLAR;
-            g_char_to_rk['"'] = RK_DOUBLE_QUOTE;
-            g_char_to_rk['e'] = RK_E;
-            g_char_to_rk['='] = RK_EQUALS;
-            g_char_to_rk['!'] = RK_EXCLAIM;
-            g_char_to_rk['f'] = RK_F;
-            g_char_to_rk['g'] = RK_G;
-            g_char_to_rk['>'] = RK_GREATER;
-            g_char_to_rk['h'] = RK_H;
-            g_char_to_rk['#'] = RK_HASH;
-            g_char_to_rk['i'] = RK_I;
-            g_char_to_rk['j'] = RK_J;
-            g_char_to_rk['k'] = RK_K;
-            g_char_to_rk['l'] = RK_L;
-            g_char_to_rk['['] = RK_LEFT_BRACKET;
-            g_char_to_rk['('] = RK_LEFT_PAREN;
-            g_char_to_rk['<'] = RK_LESS;
-            g_char_to_rk['m'] = RK_M;
-            g_char_to_rk['-'] = RK_MINUS;
-            g_char_to_rk['n'] = RK_N;
-            g_char_to_rk['o'] = RK_O;
-            g_char_to_rk['p'] = RK_P;
-            g_char_to_rk['.'] = RK_PERIOD;
-            g_char_to_rk['+'] = RK_PLUS;
-            g_char_to_rk['q'] = RK_Q;
-            g_char_to_rk['?'] = RK_QUESTION;
-            g_char_to_rk['r'] = RK_R;
-            g_char_to_rk[']'] = RK_RIGHT_BRACKET;
-            g_char_to_rk[')'] = RK_RIGHT_PAREN;
-            g_char_to_rk['s'] = RK_S;
-            g_char_to_rk[';'] = RK_SEMICOLON;
-            g_char_to_rk['\''] = RK_SINGLE_QUOTE;
-            g_char_to_rk['/'] = RK_SLASH;
-            g_char_to_rk[' '] = RK_SPACE;
-            g_char_to_rk['t'] = RK_T;
-            g_char_to_rk['u'] = RK_U;
-            g_char_to_rk['_'] = RK_UNDERSCORE;
-            g_char_to_rk['v'] = RK_V;
-            g_char_to_rk['w'] = RK_W;
-            g_char_to_rk['x'] = RK_X;
-            g_char_to_rk['y'] = RK_Y;
-            g_char_to_rk['z'] = RK_Z;
-
-            g_vk_to_ck[VK_BACK] = CK_BACKSPACE;
-            g_vk_to_ck[VK_DELETE] = CK_DELETE;
-            g_vk_to_ck[VK_DOWN] = CK_DOWN;
-            g_vk_to_ck[VK_END] = CK_END;
-            g_vk_to_ck[VK_ESCAPE] = CK_ESCAPE;
-            g_vk_to_ck[VK_F1] = CK_F1;
-            g_vk_to_ck[VK_F2] = CK_F2;
-            g_vk_to_ck[VK_F3] = CK_F3;
-            g_vk_to_ck[VK_F4] = CK_F4;
-            g_vk_to_ck[VK_F5] = CK_F5;
-            g_vk_to_ck[VK_F6] = CK_F6;
-            g_vk_to_ck[VK_F7] = CK_F7;
-            g_vk_to_ck[VK_F8] = CK_F8;
-            g_vk_to_ck[VK_F9] = CK_F9;
-            g_vk_to_ck[VK_F10] = CK_F10;
-            g_vk_to_ck[VK_F11] = CK_F11;
-            g_vk_to_ck[VK_F12] = CK_F12;
-            g_vk_to_ck[VK_F13] = CK_F13;
-            g_vk_to_ck[VK_F14] = CK_F14;
-            g_vk_to_ck[VK_F15] = CK_F15;
-            g_vk_to_ck[VK_HELP] = CK_HELP;
-            g_vk_to_ck[VK_HOME] = CK_HOME;
-            g_vk_to_ck[VK_INSERT] = CK_INSERT;
-            g_vk_to_ck[VK_LEFT] = CK_LEFT;
-            g_vk_to_ck[VK_LWIN] = CK_LEFT_WINDOWS;
-            g_vk_to_ck[VK_APPS] = CK_MENU;
-            g_vk_to_ck[VK_MODECHANGE] = CK_MODE;
-            g_vk_to_ck[VK_NEXT] = CK_PAGE_DOWN;
-            g_vk_to_ck[VK_PRIOR] = CK_PAGE_UP;
-            g_vk_to_ck[VK_PAUSE] = CK_PAUSE;
-            g_vk_to_ck[VK_SNAPSHOT] = CK_PRINT_SCREEN;
-            g_vk_to_ck[VK_RETURN] = CK_RETURN;  // this will catch keypad enter as well
-            g_vk_to_ck[VK_RIGHT] = CK_RIGHT;
-            g_vk_to_ck[VK_RWIN] = CK_RIGHT_WINDOWS;
-            g_vk_to_ck[VK_TAB] = CK_TAB;
-            g_vk_to_ck[VK_UP] = CK_UP;
-
-            // store the scancode corresponding to left shift, this will allow
-            // us to disambiguate left vs right shift below.
-            scancode_left_shift = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
+            switch (vk) {
+            case VK_BACK: return KC_BACKSPACE;
+            case VK_CAPITAL: return KC_CAPS_LOCK;
+            case VK_CLEAR: return KC_CLEAR;
+            case VK_DELETE: return KC_DELETE;
+            case VK_DOWN: return KC_DOWN;
+            case VK_END: return KC_END;
+            case VK_ESCAPE: return KC_ESCAPE;
+            case VK_F1: return KC_F1;
+            case VK_F2: return KC_F2;
+            case VK_F3: return KC_F3;
+            case VK_F4: return KC_F4;
+            case VK_F5: return KC_F5;
+            case VK_F6: return KC_F6;
+            case VK_F7: return KC_F7;
+            case VK_F8: return KC_F8;
+            case VK_F9: return KC_F9;
+            case VK_F10: return KC_F10;
+            case VK_F11: return KC_F11;
+            case VK_F12: return KC_F12;
+            case VK_F13: return KC_F13;
+            case VK_F14: return KC_F14;
+            case VK_F15: return KC_F15;
+            case VK_HELP: return KC_HELP;
+            case VK_HOME: return KC_HOME;
+            case VK_INSERT: return KC_INSERT;
+            case VK_NUMPAD0: return KC_KP_0;
+            case VK_NUMPAD1: return KC_KP_1;
+            case VK_NUMPAD2: return KC_KP_2;
+            case VK_NUMPAD3: return KC_KP_3;
+            case VK_NUMPAD4: return KC_KP_4;
+            case VK_NUMPAD5: return KC_KP_5;
+            case VK_NUMPAD6: return KC_KP_6;
+            case VK_NUMPAD7: return KC_KP_7;
+            case VK_NUMPAD8: return KC_KP_8;
+            case VK_NUMPAD9: return KC_KP_9;
+            case VK_DIVIDE: return KC_KP_DIVIDE;
+            case VK_SUBTRACT: return KC_KP_MINUS;
+            case VK_MULTIPLY: return KC_KP_MULTIPLY;
+            case VK_DECIMAL: return KC_KP_PERIOD;
+            case VK_ADD: return KC_KP_PLUS;
+            case VK_LEFT: return KC_LEFT;
+            case VK_LMENU: return KC_LEFT_ALT;
+            case VK_LCONTROL: return KC_LEFT_CONTROL;
+            case VK_LSHIFT: return KC_LEFT_SHIFT;
+            case VK_LWIN: return KC_LEFT_WINDOWS;
+            case VK_APPS: return KC_MENU;
+            case VK_MODECHANGE: return KC_MODE;
+            case VK_NUMLOCK: return KC_NUM_LOCK;
+            case VK_NEXT: return KC_PAGE_DOWN;
+            case VK_PRIOR: return KC_PAGE_UP;
+            case VK_PAUSE: return KC_PAUSE;
+            case VK_SNAPSHOT: return KC_PRINT_SCREEN;
+            case VK_RIGHT: return KC_RIGHT;
+            case VK_RMENU: return KC_RIGHT_ALT;
+            case VK_RCONTROL: return KC_RIGHT_CONTROL;
+            case VK_RSHIFT: return KC_RIGHT_SHIFT;
+            case VK_RWIN: return KC_RIGHT_WINDOWS;
+            case VK_SCROLL: return KC_SCROLL_LOCK;
+            case VK_TAB: return KC_TAB;
+            case VK_UP: return KC_UP;
+            default: return KC_UNKNOWN;
+            }
         }
 
-        // Global state of modifier keys.
-        bool g_shift = false;
-        bool g_control = false;
-        bool g_alt = false;
-
-        KeyModifier CurrentKeyModifiers()
+        KeyCode Char_to_KC(UINT ch)
         {
-            unsigned int mod = 0;
-            if (g_alt) mod |= KM_ALT;
-            if (g_control) mod |= KM_CONTROL;
-            if (g_shift) mod |= KM_SHIFT;
-            return KeyModifier(mod);
+            switch (ch) {
+            case '0': return KC_0;
+            case '1': return KC_1;
+            case '2': return KC_2;
+            case '3': return KC_3;
+            case '4': return KC_4;
+            case '5': return KC_5;
+            case '6': return KC_6;
+            case '7': return KC_7;
+            case '8': return KC_8;
+            case '9': return KC_9;
+            case 'a': return KC_A;
+            case '&': return KC_AMPERSAND;
+            case '*': return KC_ASTERISK;
+            case '@': return KC_AT;
+            case 'b': return KC_B;
+            case '`': return KC_BACKQUOTE;
+            case '\\': return KC_BACKSLASH;
+            case 'c': return KC_C;
+            case '^': return KC_CARET;
+            case ':': return KC_COLON;
+            case ',': return KC_COMMA;
+            case 'd': return KC_D;
+            case '$': return KC_DOLLAR;
+            case '"': return KC_DOUBLE_QUOTE;
+            case 'e': return KC_E;
+            case '=': return KC_EQUALS;
+            case '!': return KC_EXCLAIM;
+            case 'f': return KC_F;
+            case 'g': return KC_G;
+            case '>': return KC_GREATER;
+            case 'h': return KC_H;
+            case '#': return KC_HASH;
+            case 'i': return KC_I;
+            case 'j': return KC_J;
+            case 'k': return KC_K;
+            case 'l': return KC_L;
+            case '[': return KC_LEFT_BRACKET;
+            case '(': return KC_LEFT_PAREN;
+            case '<': return KC_LESS;
+            case 'm': return KC_M;
+            case '-': return KC_MINUS;
+            case 'n': return KC_N;
+            case 'o': return KC_O;
+            case 'p': return KC_P;
+            case '%': return KC_PERCENT;
+            case '.': return KC_PERIOD;
+            case '+': return KC_PLUS;
+            case 'q': return KC_Q;
+            case '?': return KC_QUESTION;
+            case 'r': return KC_R;
+            case ']': return KC_RIGHT_BRACKET;
+            case ')': return KC_RIGHT_PAREN;
+            case 's': return KC_S;
+            case ';': return KC_SEMICOLON;
+            case '\'': return KC_SINGLE_QUOTE;
+            case '/': return KC_SLASH;
+            case ' ': return KC_SPACE;
+            case 't': return KC_T;
+            case 'u': return KC_U;
+            case '_': return KC_UNDERSCORE;
+            case 'v': return KC_V;
+            case 'w': return KC_W;
+            case 'x': return KC_X;
+            case 'y': return KC_Y;
+            case 'z': return KC_Z;
+            default: return KC_UNKNOWN;
+            }
         }
-
         
-        // Global window class table
-        // (we need to create one window class for each icon used)
-        std::map<int, std::string> g_icon_id_to_window_class;
+        const wchar_t * COERCRI_WINDOW_CLASS_NAME = L"CoercriWindowClass";
 
         typedef LRESULT (CALLBACK *WindowProcedure)(HWND, UINT, WPARAM, LPARAM);
 
-        std::string RegisterWindowClass(int icon_id, WindowProcedure wndProc)
+        void RegisterWindowClass(WindowProcedure wndProc)
         {
-            std::map<int, std::string>::const_iterator it = g_icon_id_to_window_class.find(icon_id);
-            if (it == g_icon_id_to_window_class.end()) {
+            // this should only be called once.
+            static bool window_class_registered = false;
+            if (window_class_registered) return;
+            window_class_registered = true;
 
-                std::ostringstream str;
-                str << "CoercriWindowClass";
-                str << icon_id;
-            
-                std::string class_name = str.str();
+            // Register a new class
+            WNDCLASSW wc;
+            wc.style = CS_HREDRAW | CS_VREDRAW;  // redraw if window size changes
+            wc.lpfnWndProc = wndProc;
+            wc.cbClsExtra = 0;
+            wc.cbWndExtra = 0;
+            wc.hInstance = GetModuleHandle(0);
+            wc.hIcon = 0;
+            wc.hCursor = LoadCursor(0, IDC_ARROW);
+            wc.hbrBackground = HBRUSH(COLOR_WINDOW + 1);
+            wc.lpszMenuName = 0;
+            wc.lpszClassName = COERCRI_WINDOW_CLASS_NAME;
 
-                // Find the icon resource (if applicable)
-                HICON hicon = 0;
-                if (icon_id != -1) {
-                    const HINSTANCE handle = GetModuleHandle(0);
-                    hicon = LoadIcon(handle, MAKEINTRESOURCE(icon_id));
-                }
-
-                // Register a new class
-                WNDCLASS wc;
-                wc.style = CS_HREDRAW | CS_VREDRAW;  // redraw if window size changes
-                wc.lpfnWndProc = wndProc;
-                wc.cbClsExtra = 0;
-                wc.cbWndExtra = 0;
-                wc.hInstance = GetModuleHandle(0);
-                wc.hIcon = hicon;
-                wc.hCursor = LoadCursor(0, IDC_ARROW);
-                wc.hbrBackground = HBRUSH(COLOR_WINDOW + 1);
-                wc.lpszMenuName = 0;
-                wc.lpszClassName = class_name.c_str();
-
-                if (!RegisterClass(&wc)) {
-                    throw DXError("Failed to register window class",
-                                  HRESULT_FROM_WIN32(GetLastError()));
-                }
-
-                it = g_icon_id_to_window_class.insert(std::make_pair(icon_id, class_name)).first;
+            if (!RegisterClassW(&wc)) {
+                throw DXError("Failed to register window class",
+                                HRESULT_FROM_WIN32(GetLastError()));
             }
-
-            return it->second;
         }
 
         // Global mapping of HWND to DX11Window*
@@ -331,17 +266,37 @@ namespace Coercri {
     // Construction and destruction
     //
     
-    DX11Window::DX11Window(int width, int height, bool resizable, bool fullscreen, const std::string &title, int icon_id,
+    DX11Window::DX11Window(int width, int height,
+                           bool resizable, bool fullscreen,
+                           const std::string &title,
                            DX11GfxDriver &gfx_driver_)
         : gfx_driver(gfx_driver_), hwnd(0), 
-          inhibit_back_buffer_resize(false), is_minimized(false)
+          inhibit_back_buffer_resize(false), is_minimized(false),
+          left_shift_state(false), right_shift_state(false),
+          left_control_state(false), right_control_state(false),
+          left_alt_state(false), right_alt_state(false)
     {
-        // Make sure the window procedure is ready to run
-        InitKeyTable();
+        if (fullscreen) {
+            // input width/height are meaningless if fullscreen is true
+            // so just set them to some reasonable "dummy" values
+            width = 200;
+            height = 200;
+        }
+
+        // Store the left shift scancode if we haven't already.
+        // (This will allow us to disambiguate left vs right shift below)
+        scancode_left_shift = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
 
         // Register the window class if required
-        const std::string class_name = RegisterWindowClass(icon_id, &windowProc);
+        RegisterWindowClass(&windowProc);
         
+        // convert the title to UTF-16 for windows...
+        // note: we assume Latin-1 input encoding for now.
+        std::wstring wtitle;
+        for (std::string::const_iterator it = title.begin(); it != title.end(); ++it) {
+            wtitle.push_back(static_cast<unsigned char>(*it));
+        }
+
         // Create the window
         RECT rc;
         SetRect(&rc, 0, 0, width, height);
@@ -350,21 +305,23 @@ namespace Coercri {
         DWORD styles = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
         if (resizable) styles |= WS_THICKFRAME | WS_MAXIMIZEBOX;
         
-        hwnd = CreateWindow(class_name.c_str(),
-                            title.c_str(),
-                            styles,
-                            CW_USEDEFAULT,  // or x
-                            CW_USEDEFAULT,  // or y
-                            (rc.right - rc.left),
-                            (rc.bottom - rc.top),
-                            0,    // no parent window
-                            0,    // no menu
-                            GetModuleHandle(0),
-                            0);   // no parameter to WM_CREATE message
+        hwnd = CreateWindowW(COERCRI_WINDOW_CLASS_NAME,
+                             wtitle.c_str(),
+                             styles,
+                             CW_USEDEFAULT,  // or x
+                             CW_USEDEFAULT,  // or y
+                             (rc.right - rc.left),
+                             (rc.bottom - rc.top),
+                             0,    // no parent window
+                             0,    // no menu
+                             GetModuleHandle(0),
+                             0);   // no parameter to WM_CREATE message
         if (!hwnd) {
             throw DXError("Failed to create window",
                           HRESULT_FROM_WIN32(GetLastError()));
         }
+
+        set_icon.reset(new Win32SetIcon(hwnd));
 
         // We need to ensure that hwnd gets destroyed if there is an exception
         try {
@@ -406,10 +363,8 @@ namespace Coercri {
             ShowWindow(hwnd, SW_SHOWNORMAL);
             
             // Go into fullscreen mode if requested
-            // (Note width, height are ignored in the current
-            // implementation, and it just uses the desktop mode)
             if (fullscreen) {
-                switchToFullScreen(width, height);
+                switchToFullScreen();
             }
 
         } catch (...) {
@@ -503,6 +458,10 @@ namespace Coercri {
         return is_full_screen != 0;
     }
     
+    bool DX11Window::isMaximized() const
+    {
+        return IsZoomed(hwnd) != 0;
+    }
 
     //
     // Window popup
@@ -570,16 +529,9 @@ namespace Coercri {
         }
     }
         
-    void DX11Window::switchToFullScreen(int w, int h)
+    void DX11Window::switchToFullScreen()
     {
         // Go into full screen mode
-        //
-        // Note: The w, h parameters are for the caller to set the
-        // display mode. However, I had some difficulty getting this
-        // to work with DX11, so currently I just ignore the w, h
-        // parameters and just use the desktop mode. None of my
-        // programs currently require a custom display mode so this
-        // should be ok for now.
         
         IDXGIOutput * pOutput = gfx_driver.getPrimaryOutput();
         HRESULT hr = m_psSwapChain->SetFullscreenState(true, pOutput);
@@ -597,7 +549,8 @@ namespace Coercri {
     {
         // note: only one GfxContext should be created at a time.
         // this is enforced by PrimitiveBatch.
-        std::auto_ptr<GfxContext> gc(new DX11GfxContext(gfx_driver.getDeviceContext(),
+        std::auto_ptr<GfxContext> gc(new DX11GfxContext(gfx_driver.getDevice(),
+                                                        gfx_driver.getDeviceContext(),
                                                         m_psRenderTargetView.get(),
                                                         m_psSwapChain.get(),
                                                         gfx_driver.getPrimitiveBatch()));
@@ -605,6 +558,15 @@ namespace Coercri {
     }
 
 
+    //
+    // Set window icon
+    //
+
+    void DX11Window::setIcon(const PixelArray &pixels)
+    {
+        set_icon->setIcon(pixels);
+    }
+    
 
     //
     // Private methods
@@ -615,47 +577,34 @@ namespace Coercri {
     {
         // we don't want exceptions propagating through into Win32 API
         // so enclose this fn in a try/catch block
-        try {
-        
-            typedef std::vector<WindowListener*> wl_vec;
-            typedef wl_vec::const_iterator iter;
-            
+        try {            
             // Process the message.
             // If there are any callbacks, we call them directly from this WndProc
             switch (msg) {
 
             case WM_SETFOCUS:
-                {
-                    // Window has gained input focus
-                    const wl_vec listeners = FindWindow(hwnd).getListeners();
-                    for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                        (*it)->onGainFocus();
-                    }
-                }
+                // Window has gained input focus
+                FindWindow(hwnd).addEvent(OnGainFocus());
                 break;
 
             case WM_KILLFOCUS:
                 {
                     // Window has lost input focus
-                    const wl_vec listeners = FindWindow(hwnd).getListeners();
-                    for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                        (*it)->onLoseFocus();
-                    }
-                
+                    DX11Window& window = FindWindow(hwnd);
+                    window.addEvent(OnLoseFocus());
+                    
                     // Reset modifier state when window is deselected
                     // (as we won't necessarily get the KEYDOWN messages).
-                    g_alt = g_control = g_shift = false;
+                    window.left_alt_state = window.right_alt_state = 
+                        window.left_control_state = window.right_control_state = 
+                        window.left_shift_state = window.right_shift_state = false;
                 }
                 break;
             
             case WM_CLOSE:
                 {
                     // Notify listeners that the window has been destroyed
-                    DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
-                    for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                        (*it)->onClose();
-                    }
+                    FindWindow(hwnd).addEvent(OnClose());
 
                     // Return 0 to prevent DefWindowProc from destroying the window immediately
                     return 0;
@@ -673,26 +622,21 @@ namespace Coercri {
             case WM_SIZE:
                 {
                     DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
                     
                     // resize the back-buffer if necessary
                     if (!window.inhibit_back_buffer_resize) {
                         window.handleWindowResize();
                     }
 
-                    // send the onActivate / onDeactivate msgs on maximization / restore.
+                    // send minimization / un-minimization messages
                     if (wparam == SIZE_MINIMIZED) {
                         if (!window.is_minimized) {
-                            for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                                (*it)->onDeactivate();
-                            }
+                            window.addEvent(OnMinimize());
                             window.is_minimized = true;
                         }
                     } else {
                         if (window.is_minimized) {
-                            for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                                (*it)->onActivate();
-                            }
+                            window.addEvent(OnUnminimize());
                             window.is_minimized = false;
                         }
                     }
@@ -718,108 +662,163 @@ namespace Coercri {
             case WM_KEYUP:
                 {
                     DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
 
                     // lparam holds a few flags; decode the ones we are interested in.
                     const bool extended   = (lparam & 0x01000000) != 0;
-                    const bool prev_state = (lparam & 0x40000000) != 0;  // true if key was previously down
+                    bool prev_state = (lparam & 0x40000000) != 0;  // true if key was previously down
                     const bool new_state  = (msg == WM_SYSKEYDOWN || msg == WM_KEYDOWN);   // true if key is now down
                     const int scancode = (lparam & 0x00FF0000) >> 16;
                     
                     // wparam holds the windows virtual key code.
-                    // convert this to a coercri RawKey.
+                    // convert this to a coercri KeyCode.
                     // also update our global modifier flags if required.
                     
-                    RawKey rk = RK_UNKNOWN;
+                    KeyCode kc = KC_UNKNOWN;
                     
+                    // make sure numpad always returns correct keys even if NUMLOCK is off.
+                    // source: http://www.swissdelphicenter.ch/en/showcode.php?id=953
+                    if (GetKeyState(VK_NUMLOCK) >= 0          // numlock is disabled
+                    && !extended) {                           // not an extended key
+                        switch (wparam) {
+                        case VK_HOME: wparam = VK_NUMPAD7; break;
+                        case VK_UP: wparam = VK_NUMPAD8; break;
+                        case VK_PRIOR: wparam = VK_NUMPAD9; break;
+                        case VK_LEFT: wparam = VK_NUMPAD4; break;
+                        case VK_CLEAR: wparam = VK_NUMPAD5; break;
+                        case VK_RIGHT: wparam = VK_NUMPAD6; break;
+                        case VK_END: wparam = VK_NUMPAD1; break;
+                        case VK_DOWN: wparam = VK_NUMPAD2; break;
+                        case VK_NEXT: wparam = VK_NUMPAD3; break;
+                        case VK_INSERT: wparam = VK_NUMPAD0; break;
+                        case VK_DELETE: wparam = VK_DECIMAL; break;
+                        }
+                    }
+
                     if (wparam == VK_RETURN) {
-                        rk = extended ? RK_KP_ENTER : RK_RETURN;
+                        kc = extended ? KC_KP_ENTER : KC_RETURN;
                         
                     } else if (wparam == VK_MENU) {   // alt
-                        rk = extended ? RK_RIGHT_ALT : RK_LEFT_ALT;
-                        g_alt = new_state;
+                        if (extended) {
+                            kc = KC_RIGHT_ALT;
+                            prev_state = window.right_alt_state;
+                            window.right_alt_state = new_state;
+                        } else {
+                            kc = KC_LEFT_ALT;
+                            prev_state = window.left_alt_state;
+                            window.left_alt_state = new_state;
+                        }
                             
                     } else if (wparam == VK_CONTROL) {
-                        rk = extended ? RK_RIGHT_CONTROL : RK_LEFT_CONTROL;
-                        g_control = new_state;
+                        if (extended) {
+                            kc = KC_RIGHT_CONTROL;
+                            prev_state = window.right_control_state;
+                            window.right_control_state = new_state;
+                        } else {
+                            kc = KC_LEFT_CONTROL;
+                            prev_state = window.left_control_state;
+                            window.left_control_state = new_state;
+                        }
 
                     } else if (wparam == VK_SHIFT) {
                         // "extended" flag does not apply to shift, so
                         // we have to check the scancodes
                         if (scancode == scancode_left_shift) {
-                            rk = RK_LEFT_SHIFT;
+                            kc = KC_LEFT_SHIFT;
+                            prev_state = window.left_shift_state;
+                            window.left_shift_state = new_state;
                         } else {
-                            rk = RK_RIGHT_SHIFT;
+                            kc = KC_RIGHT_SHIFT;
+                            prev_state = window.right_shift_state;
+                            window.right_shift_state = new_state;
                         }
-                        g_shift = new_state;
 
                     } else {
-                        // Try looking up in g_vk_to_rk
-                        const std::map<int, RawKey>::const_iterator it = g_vk_to_rk.find(wparam);
-                        if (it != g_vk_to_rk.end()) {
-                            // Found it
-                            rk = it->second;
-                            
-                        } else {
+                        // Try mapping vk to kc
+                        kc = VK_to_KC(wparam);
+                        if (kc == KC_UNKNOWN) {
                             // Use MapVirtualKey to obtain a Unicode character,
-                            // then look this up in g_char_to_rk
+                            // then look this up using Char_to_KC
                             UINT ch = MapVirtualKey(wparam, MAPVK_VK_TO_CHAR) & 0xffff;
                             if (ch != 0) {
                                 UINT new_ch;
                                 if (ch <= 0xff) new_ch = std::tolower(ch);
                                 else new_ch = ch;
-                                const std::map<UINT, RawKey>::const_iterator it2 = g_char_to_rk.find(new_ch);
-                                if (it2 != g_char_to_rk.end()) {
-                                    // Found it
-                                    rk = it2->second;
-                                }
+                                kc = Char_to_KC(new_ch);
                             }
                         }
                     }
 
-                    // Okay, now we have enough info to send a RawKey message
-                    // NOTE: Filter out key repeat events
-                    if (new_state != prev_state && rk != RK_UNKNOWN) {
-                        for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                            (*it)->onRawKey(new_state, rk);
+                    // Okay, now we have enough info to send a Key message.
+                    bool send_msg = false;
+                    KeyEventType type;
+                    if (new_state == prev_state) {
+                        if (new_state) {
+                            send_msg = true;
+                            type = KEY_AUTO_REPEAT;
+                        }
+                    } else {
+                        send_msg = true;
+                        if (new_state) {
+                            type = KEY_PRESSED;
+                        } else {
+                            type = KEY_RELEASED;
                         }
                     }
+                    if (send_msg) {
+                        window.addEvent(OnKey(type, kc, window.currentKeyModifiers()));
+                    }
 
-                    // Now for cooked key events. These only occur for keydown (i.e. new_state == true),
-                    // but repeats are allowed this time.
-                    if (new_state) {
-                        const std::map<int, CookedKey>::const_iterator it = g_vk_to_ck.find(wparam);
-                        if (it != g_vk_to_ck.end()) {
-                            const CookedKey ck = it->second;
-                            const KeyModifier mod = CurrentKeyModifiers();
-                            for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                                (*it)->onCookedKey(ck, 0, mod);
-                            }
+                    // special case: if windows sends us a "shift key up" message, this should disengage
+                    // BOTH shift keys.
+                    if ((kc == KC_LEFT_SHIFT || kc == KC_RIGHT_SHIFT) && new_state == false) {
+                        if (window.left_shift_state) {
+                            window.left_shift_state = false;
+                            window.addEvent(OnKey(KEY_RELEASED, KC_LEFT_SHIFT, window.currentKeyModifiers()));
+                        }
+                        if (window.right_shift_state) {
+                            window.right_shift_state = false;
+                            window.addEvent(OnKey(KEY_RELEASED, KC_RIGHT_SHIFT, window.currentKeyModifiers()));
                         }
                     }
                 }
                 break;
 
+            case WM_UNICHAR:
+                if (wparam == UNICODE_NOCHAR) {
+                    // tell Windows that we can handle unicode char events
+                    return 1;
+                }
+                // Fall through
+                
             case WM_CHAR:
                 {
                     DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
 
                     // wparam contains the Unicode character code.
-                    // 
-                    // (Technically this is UTF-16, rather than straight
-                    // Unicode, so 'extraplanar' characters will come out
-                    // as surrogate pairs rather than single code points.
-                    // This is acceptable for now though.)
+
+                    // Check for surrogate pairs. Note we assume Windows follows the correct
+                    // protocol and does not e.g. send us a lone trailing surrogate.
+                    if (wparam >= 0xd800 && wparam <= 0xdbff) {
+                        // First half of a surrogate pair
+                        window.wm_char_surrogate = wparam;
+                        break;  // skip processing
+
+                    } else if (wparam >= 0xdc00 && wparam <= 0xdfff) {
+                        // Second half of a surrogate pair
+                        wparam = (window.wm_char_surrogate << 10)
+                            + wparam
+                            + 0x10000 - (0xd800 << 10) - 0xdc00;
+                        // continue processing
+                    }
 
                     // We filter out unwanted control characters: 0 to 31 and 127.
                     // (This could probably be made more robust using
                     // some Unicode "is printable" function.)
                     if (wparam >= 32 && wparam != 127) {
-                        const KeyModifier mods = CurrentKeyModifiers();
-                        for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                            (*it)->onCookedKey(CK_CHARACTER, wparam, mods);
-                        }
+                        const KeyModifier mods = window.currentKeyModifiers();
+                        OnTextInput oti;
+                        oti.str = UTF8String::fromCodePoint(wparam);
+                        window.addEvent(oti);
                     }
                 }
                 break;
@@ -827,13 +826,10 @@ namespace Coercri {
             case WM_MOUSEMOVE:
                 {
                     DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
 
-                    const int x = (int)(short int)(LOWORD(lparam));
-                    const int y = (int)(short int)(HIWORD(lparam));
-                    for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                        (*it)->onMouseMove(x, y);
-                    }
+                    const int x = GET_X_LPARAM(lparam);
+                    const int y = GET_Y_LPARAM(lparam);
+                    window.addEvent(OnMouseMove(x, y));
                 }
                 break;
 
@@ -842,17 +838,14 @@ namespace Coercri {
             case WM_MBUTTONDOWN:
                 {
                     DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
 
-                    const int x = LOWORD(lparam);
-                    const int y = HIWORD(lparam);
+                    const int x = GET_X_LPARAM(lparam);
+                    const int y = GET_Y_LPARAM(lparam);
                     MouseButton mb;
                     if (msg == WM_LBUTTONDOWN) mb = MB_LEFT;
                     else if (msg == WM_RBUTTONDOWN) mb = MB_RIGHT;
                     else mb = MB_MIDDLE;
-                    for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                        (*it)->onMouseDown(x, y, mb);
-                    }
+                    window.addEvent(OnMouseDown(x, y, mb));
                 }
                 break;
 
@@ -861,27 +854,28 @@ namespace Coercri {
             case WM_MBUTTONUP:
                 {
                     DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
 
-                    const int x = LOWORD(lparam);
-                    const int y = HIWORD(lparam);
+                    const int x = GET_X_LPARAM(lparam);
+                    const int y = GET_Y_LPARAM(lparam);
                     MouseButton mb;
                     if (msg == WM_LBUTTONUP) mb = MB_LEFT;
                     else if (msg == WM_RBUTTONUP) mb = MB_RIGHT;
                     else mb = MB_MIDDLE;
-                    for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                        (*it)->onMouseUp(x, y, mb);
-                    }
+                    window.addEvent(OnMouseUp(x, y, mb));
                 }
                 break;
 
             case WM_MOUSEWHEEL:
                 {
                     DX11Window &window = FindWindow(hwnd);
-                    const wl_vec &listeners = window.getListeners();
 
-                    const int x = LOWORD(lparam);
-                    const int y = HIWORD(lparam);
+                    // WM_MOUSEWHEEL returns screen coords, we need to convert
+                    // these to client coords.
+                    POINT p;
+                    p.x = GET_X_LPARAM(lparam);
+                    p.y = GET_Y_LPARAM(lparam);
+                    ScreenToClient(hwnd, &p);
+                    
                     short int motion = ((short int)HIWORD(wparam)) / (short int)WHEEL_DELTA;
                     MouseButton mb;
                     if (motion < 0) {
@@ -891,12 +885,8 @@ namespace Coercri {
                         mb = MB_WHEEL_UP;
                     }
                     for (short int i = 0; i < motion; ++i) {
-                        for (iter it = listeners.begin(); it != listeners.end(); ++it) {
-                            (*it)->onMouseDown(x, y, mb);
-                        }
-                        for (iter it = listeners.begin(); it != listeners.end(); ++it) {                    
-                            (*it)->onMouseUp(x, y, mb);
-                        }
+                        window.addEvent(OnMouseDown(p.x, p.y, mb));
+                        window.addEvent(OnMouseUp(p.x, p.y, mb));
                     }
                 }
                 break;
@@ -907,7 +897,7 @@ namespace Coercri {
                 break;
             }
 
-            return DefWindowProc(hwnd, msg, wparam, lparam);
+            return DefWindowProcW(hwnd, msg, wparam, lparam);
 
         } catch (std::exception &e) {
             g_win_proc_error_msg = e.what();
@@ -918,6 +908,42 @@ namespace Coercri {
             return -1;
         }
     }
+
+    bool DX11Window::checkShiftKeys()
+    {
+        // A "feature" of windows messages is that if both shift keys are held down, and then one is 
+        // released (while still holding the other), we do not get a WM_KEYUP message. (We only get 
+        // the message after both shift keys are released.) 
+        // We can work around this by manually checking the shift key state
+        // every time events are polled...
+        
+        bool did_something = false;
+
+        if (left_shift_state && right_shift_state) {
+            if ((GetAsyncKeyState(VK_LSHIFT) & 0x8000) == 0) {
+                left_shift_state = false;
+                addEvent(OnKey(KEY_RELEASED, KC_LEFT_SHIFT, currentKeyModifiers()));
+                did_something = true;
+            }
+            if ((GetAsyncKeyState(VK_RSHIFT) & 0x8000) == 0) {
+                right_shift_state = false;
+                addEvent(OnKey(KEY_RELEASED, KC_RIGHT_SHIFT, currentKeyModifiers()));
+                did_something = true;
+            }
+        }
+
+        return did_something;
+    }
+
+    KeyModifier DX11Window::currentKeyModifiers() const
+    {
+        unsigned int mod = 0;
+        if (left_alt_state || right_alt_state) mod |= KM_ALT;
+        if (left_control_state || right_control_state) mod |= KM_CONTROL;
+        if (left_shift_state || right_shift_state) mod |= KM_SHIFT;
+        return KeyModifier(mod);
+    }
+
 
     void DX11Window::handleWindowResize()
     {
@@ -955,5 +981,16 @@ namespace Coercri {
         // Invalidate the whole window after a resize (forces everything to repaint).
         invalid_region.clear();
         invalid_region.addRectangle(Rectangle(0,0,width,height));
+    }
+
+    bool DX11Window::pollEvents()
+    {
+        if (events.empty()) {
+            return checkShiftKeys();
+        } else {
+            events.front()->dispatch(*this);
+            events.pop_front();
+            return true;
+        }
     }
 }

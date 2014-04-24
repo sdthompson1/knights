@@ -121,7 +121,7 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, gcn::Gui &gui)
 
 void TitleScreenImpl::action(const gcn::ActionEvent &event)
 {
-    auto_ptr<Screen> new_screen;
+    std::auto_ptr<Screen> new_screen;
 
     if (event.getSource() == start_game.get()) {
         // Go to Start Game sub-menu
@@ -129,7 +129,7 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
         
     } else if (event.getSource() == tutorial.get()) {
         // Go to LoadingScreen in tutorial mode
-        new_screen.reset(new LoadingScreen(-1, "", true, true, true, true));
+        new_screen.reset(new LoadingScreen(-1, UTF8String(), true, true, true, true));
 
     } else if (event.getSource() == options.get()) {
         new_screen.reset(new OptionsScreen);

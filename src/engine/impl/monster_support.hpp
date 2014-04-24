@@ -58,9 +58,9 @@ template<class T>
 shared_ptr<Knight> FindClosestKnight(shared_ptr<Entity> ent, T predicate)
 {
     if (!ent->getMap()) return shared_ptr<Knight>();
-    const vector<Player*> &players(Mediator::instance().getPlayers());
+    const std::vector<Player*> &players(Mediator::instance().getPlayers());
 
-    vector<shared_ptr<Knight> > best_so_far;
+    std::vector<shared_ptr<Knight> > best_so_far;
     best_so_far.reserve(2);
     int dist = 99999;  // we use a simple Manhattan distance.
     
@@ -95,10 +95,10 @@ shared_ptr<Knight> FindClosestKnight(shared_ptr<Entity> ent, T predicate)
 // Choose a direction for a monster to move in
 //
 template<class T>
-pair<MapDirection,bool> ChooseDirection(shared_ptr<Entity> ent, const MapCoord &target_pos,
-                                        bool afraid, T can_walk_into_predicate)
+std::pair<MapDirection,bool> ChooseDirection(shared_ptr<Entity> ent, const MapCoord &target_pos,
+                                             bool afraid, T can_walk_into_predicate)
 {
-    if (!ent) return make_pair(D_NORTH,false);
+    if (!ent) return std::make_pair(D_NORTH,false);
 
     // Work out vector to target
     int d[2];
@@ -157,12 +157,12 @@ pair<MapDirection,bool> ChooseDirection(shared_ptr<Entity> ent, const MapCoord &
     // Try each direction in turn
     for (int i=0; i<4; ++i) {
         if (can_walk_into_predicate(*ent->getMap(), DisplaceCoord(ent->getPos(), dir[i]))) {
-            return make_pair(dir[i],true);
+            return std::make_pair(dir[i],true);
         }
     }
 
     // Failed (looks like we can't walk in any direction at all!)
-    return make_pair(D_NORTH,false);
+    return std::make_pair(D_NORTH,false);
 }
 
 #endif

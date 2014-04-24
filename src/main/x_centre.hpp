@@ -35,6 +35,6 @@
 
 #include <string>
 
-void XCentre(Coercri::GfxContext &gc, const Coercri::Font &font, int y, const std::string &text);
+void XCentre(Coercri::GfxContext &gc, const Coercri::Font &font, int y, const Coercri::UTF8String &text);
 
 #endif

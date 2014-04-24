@@ -33,6 +33,8 @@
 
 #include "lua.hpp"
 
+using std::vector;
+
 void HomeManager::addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing)
 {
     ASSERT(!pos.isNull());

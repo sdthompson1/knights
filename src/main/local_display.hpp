@@ -80,7 +80,7 @@ public:
                  const Controller *ctrlr2,
                  int nplyrs,
                  bool deathmatch_mode,
-                 const std::vector<std::string> &player_names_,
+                 const std::vector<UTF8String> &player_names_,
                  Coercri::Timer &timer,
                  ChatList &chat_list_,
                  ChatList &ingame_player_list_,
@@ -169,7 +169,7 @@ public:
     void clearAllTutorialWindows() { while (tutorialActive()) clearTutorialWindow(); }
 
     int getNPlayers() const { return nplayers; }
-    const std::vector<std::string> & getPlayerNamesForObsMode() const { return names; }
+    const std::vector<UTF8String> & getPlayerNamesForObsMode() const { return names; }
 
     std::string getChatFieldContents() const;
     bool chatFieldSelected() const;
@@ -199,10 +199,10 @@ public:
     void popUpWindow(const std::vector<TutorialWindow> &windows);
     void onElimination(int) { }
     void disableView(int player_num);
-    void goIntoObserverMode(int nplayers, const std::vector<std::string> &names);
+    void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names);
     
 private:
-    void initialize(int nplayers, const std::vector<std::string> &names, 
+    void initialize(int nplayers, const std::vector<UTF8String> &names, 
                     const Graphic *, const Graphic *, const Graphic *, const Graphic *);
     void setMenuControl(int plyr, MapDirection d, const UserControl *ctrl, const UserControl *prev);
     void setupGui(int chat_area_x, int chat_area_y, int chat_area_width, int chat_area_height,
@@ -348,7 +348,7 @@ private:
     std::string time_limit_string;
     
     // player names. used in "observer" mode.
-    std::vector<std::string> names;
+    std::vector<UTF8String> names;
     int nplayers;
     int curr_obs_player[2];
     std::vector<bool> obs_visible;

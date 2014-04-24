@@ -44,6 +44,8 @@
 #include "../../core/coercri_error.hpp"
 #include "load_dx11_dlls.hpp"
 
+#include <tchar.h>
+
 typedef HRESULT (WINAPI * D3D11CreateDevice_FnPtr) (IDXGIAdapter* pAdapter,
                                                     D3D_DRIVER_TYPE DriverType,
                                                     HMODULE Software,
@@ -55,28 +57,12 @@ typedef HRESULT (WINAPI * D3D11CreateDevice_FnPtr) (IDXGIAdapter* pAdapter,
                                                     D3D_FEATURE_LEVEL *pFeatureLevel,
                                                     ID3D11DeviceContext **ppImmediateContext);
 
-typedef HRESULT (WINAPI * D3DCompile_FnPtr) (LPCVOID pSrcData,
-                                             SIZE_T SrcDataSize,
-                                             LPCSTR pSourceName,
-                                             const D3D_SHADER_MACRO *pDefines,
-                                             ID3DInclude *pInclude,
-                                             LPCSTR pEntryPoint,
-                                             LPCSTR pTarget,
-                                             UINT Flags1,
-                                             UINT Flags2,
-                                             ID3DBlob **ppCode,
-                                             ID3DBlob **ppErrorMsgs);
-
 namespace {
-
     bool success = false;
     bool failed = false;
     
     HMODULE d3d11_module;
     D3D11CreateDevice_FnPtr d3d11_create_device;
-
-    HMODULE d3dcompiler_module;
-    D3DCompile_FnPtr d3d_compile;
 }
 
 bool Coercri::LoadDX11()
@@ -84,9 +70,8 @@ bool Coercri::LoadDX11()
     if (success) return true;
     if (failed) return false;
 
-    
     // Load D3D11.DLL
-    d3d11_module = LoadLibrary("d3d11.dll");
+    d3d11_module = LoadLibrary(_T("d3d11.dll"));
     if (d3d11_module == NULL) {
         failed = true;
         return false;
@@ -94,19 +79,6 @@ bool Coercri::LoadDX11()
 
     d3d11_create_device = (D3D11CreateDevice_FnPtr) GetProcAddress(d3d11_module, "D3D11CreateDevice");
     if (d3d11_create_device == NULL) {
-        failed = true;
-        return false;
-    }
-
-    // Load D3DCOMPILER_43.DLL
-    d3dcompiler_module = LoadLibrary("d3dcompiler_43.dll");
-    if (d3dcompiler_module == NULL) {
-        failed = true;
-        return false;
-    }
-
-    d3d_compile = (D3DCompile_FnPtr) GetProcAddress(d3dcompiler_module, "D3DCompile");
-    if (d3d_compile == NULL) {
         failed = true;
         return false;
     }
@@ -130,22 +102,4 @@ HRESULT Coercri::D3D11CreateDevice_Wrapper(IDXGIAdapter* pAdapter,
 
     return (*d3d11_create_device)(pAdapter, DriverType, Software, Flags, pFeatureLevels,
                                   FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
-}
-
-HRESULT Coercri::D3DCompile_Wrapper(LPCVOID pSrcData,
-                                    SIZE_T SrcDataSize,
-                                    LPCSTR pSourceName,
-                                    const D3D_SHADER_MACRO *pDefines,
-                                    ID3DInclude *pInclude,
-                                    LPCSTR pEntryPoint,
-                                    LPCSTR pTarget,
-                                    UINT Flags1,
-                                    UINT Flags2,
-                                    ID3DBlob **ppCode,
-                                    ID3DBlob **ppErrorMsgs)
-{
-    if (!success) throw CoercriError("DirectX not loaded");
-
-    return (*d3d_compile)(pSrcData, SrcDataSize, pSourceName, pDefines, pInclude, pEntryPoint, pTarget,
-                          Flags1, Flags2, ppCode, ppErrorMsgs);
 }

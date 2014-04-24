@@ -37,7 +37,6 @@ using namespace boost;
 
 #include <map>
 #include <vector>
-using namespace std;
 
 class DungeonMap;
 class Knight;
@@ -50,7 +49,7 @@ class StuffContents {
 public:
     // Get/Set the list of items
     void addItem(shared_ptr<Item> i);
-    const vector<shared_ptr<Item> > & getItems() const { return contents; }
+    const std::vector<shared_ptr<Item> > & getItems() const { return contents; }
 
     // remove items from bag and give to kt (as far as poss); also run pickup events:
     void giveToKnight(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Knight> kt);
@@ -68,7 +67,7 @@ public:
     bool isEmpty() const { return contents.empty(); }
         
 private:
-    vector<shared_ptr<Item> > contents;
+    std::vector<shared_ptr<Item> > contents;
 };
 
 
@@ -97,7 +96,7 @@ public:
 
     // Get the Items contained within a given stuff bag.
     // (returns NULL if no stuff could be found here.)
-    const vector<shared_ptr<Item> > * getItems(DungeonMap *dmap, const MapCoord &mc) const;
+    const std::vector<shared_ptr<Item> > * getItems(DungeonMap *dmap, const MapCoord &mc) const;
     
     // Pickup and Drop functions for stuff bags. (Only defined for Knights, not general
     // Creatures)
@@ -131,9 +130,9 @@ private:
 
     // NOTE: stuff_map may contain "stale" entries for squares where the stuff bag no longer exists.
     // These should be treated as bogus, and ignored.
-    map<Location, StuffContents> stuff_map;
+    std::map<Location, StuffContents> stuff_map;
     
-    auto_ptr<ItemType> stuff_bag_item_type;
+    std::auto_ptr<ItemType> stuff_bag_item_type;
 };
 
 #endif

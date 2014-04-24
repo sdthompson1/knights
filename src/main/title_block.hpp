@@ -33,7 +33,6 @@
 
 #include <string>
 #include <vector>
-using namespace std;
 
 class TitleBlock : public gcn::Widget {
 public:

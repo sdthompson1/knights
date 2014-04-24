@@ -27,6 +27,8 @@
 #include "knight.hpp"
 #include "player.hpp"
 
+using std::vector;
+
 void DispelMagic(const vector<Player*> &players)
 {
     for (vector<Player*>::const_iterator it = players.begin(); it != players.end(); ++it) {

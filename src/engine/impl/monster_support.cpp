@@ -28,9 +28,9 @@
 
 bool KnightAt(DungeonMap &dmap, const MapCoord &mc, const std::vector<ItemType *> &fear)
 {
-    vector<shared_ptr<Entity> > ents;
+    std::vector<shared_ptr<Entity> > ents;
     dmap.getEntities(mc, ents);
-    for (vector<shared_ptr<Entity> >::iterator it = ents.begin(); it != ents.end(); ++it) {
+    for (std::vector<shared_ptr<Entity> >::iterator it = ents.begin(); it != ents.end(); ++it) {
         Knight * kt = dynamic_cast<Knight*>(it->get());
         if (kt && (std::find(fear.begin(), fear.end(), kt->getItemInHand()) == fear.end())) {
             return true;

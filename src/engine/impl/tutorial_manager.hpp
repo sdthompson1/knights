@@ -70,7 +70,7 @@ private:
     MapCoord current_window_pos;
     int current_window_room;
     std::set<int> known_triggers;
-    std::map<int, std::string> titles, messages;
+    std::map<int, std::string> titles, messages;   // latin1 (for now!)
     bool sent_first_msg;
     bool curr_is_pickup;
 };

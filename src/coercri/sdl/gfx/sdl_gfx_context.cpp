@@ -40,86 +40,12 @@
 
 #include "sdl_gfx_context.hpp"
 #include "sdl_graphic.hpp"
+#include "pixels.hpp"
 
+#include "../../core/coercri_error.hpp"
 #include "../../gfx/font.hpp"
 
 namespace {
-    // Low level SDL pixel routines
-    // Parts of these are taken from the SDL introduction,
-    // http://www.libsdl.org/intro.en/usingvideo.html
-
-    void ReadPixel(SDL_Surface *surface, int x, int y, Uint8 &r, Uint8 &g, Uint8 &b)
-    {
-        switch (surface->format->BytesPerPixel) {
-        case 1:
-            {
-                const Uint8 *bufp = (Uint8*)surface->pixels + y * surface->pitch + x;
-                SDL_GetRGB(*bufp, surface->format, &r, &g, &b);
-            }
-            break;
-            
-        case 2:
-            {
-                const Uint16 *bufp = (Uint16*)surface->pixels + y * surface->pitch/2 + x;
-                SDL_GetRGB(*bufp, surface->format, &r, &g, &b);
-            }
-            break;
-            
-        case 3:
-            {
-                const Uint8 *bufp = (Uint8*)surface->pixels + y * surface->pitch + x*3;
-                r = *(bufp + surface->format->Rshift/8);
-                g = *(bufp + surface->format->Gshift/8);
-                b = *(bufp + surface->format->Bshift/8);
-            }
-            break;
-            
-        case 4:
-            {
-                const Uint32 *bufp = (Uint32*)surface->pixels + y * surface->pitch/4 + x;
-                SDL_GetRGB(*bufp, surface->format, &r, &g, &b);
-            }
-            break;
-        }
-    }
-    
-    void PlotPixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b)
-    {
-        const Uint32 color = SDL_MapRGB(surface->format, r, g, b);
-
-        switch (surface->format->BytesPerPixel) {
-        case 1:
-            {
-                Uint8 *bufp = (Uint8 *)surface->pixels + y * surface->pitch + x;
-                *bufp = color;
-            }
-            break;
-            
-        case 2:
-            {
-                Uint16 *bufp = (Uint16 *)surface->pixels + y * surface->pitch/2 + x;
-                *bufp = color;
-            }
-            break;
-
-        case 3:
-            {
-                Uint8 *bufp = (Uint8 *)surface->pixels + y * surface->pitch + x*3;
-                *(bufp+surface->format->Rshift/8) = r;
-                *(bufp+surface->format->Gshift/8) = g;
-                *(bufp+surface->format->Bshift/8) = b;
-            }
-            break;
-
-        case 4:
-            {
-                Uint32 *bufp = (Uint32 *)surface->pixels + y*surface->pitch/4 + x;
-                *bufp = color;
-            }
-            break;
-        }
-    }
-
     // Alpha Blending
     inline Uint8 AlphaBlend(Uint8 input, Uint8 screen, Uint8 alpha)
     {
@@ -242,6 +168,24 @@ namespace Coercri {
             SDL_FreeSurface(temp_surface);
         }
     }
+
+    boost::shared_ptr<PixelArray> SDLGfxContext::takeScreenshot()
+    {
+        lock();
+
+        boost::shared_ptr<PixelArray> pixels(new PixelArray(surface->w, surface->h));
+        
+        for (int y = 0; y < surface->h; ++y) {
+            for (int x = 0; x < surface->w; ++x) {
+                Color col;
+                ReadPixel(surface, x, y, col.r, col.g, col.b);
+                col.a = 255;
+                (*pixels)(x,y) = col;
+            }
+        }
+
+        return pixels;
+    }
     
     bool SDLGfxContext::pointInClipRectangle(int x, int y) const
     {
@@ -251,7 +195,9 @@ namespace Coercri {
     void SDLGfxContext::lock()
     {
         if (!locked) {
-            SDL_LockSurface(surface);
+            if (SDL_LockSurface(surface) < 0) {
+                throw CoercriError("SDLGfxContext::lock() failed");
+            }
             locked = true;
         }
     }

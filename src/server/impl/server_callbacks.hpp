@@ -82,7 +82,7 @@ public:
 
     virtual void onElimination(int player_num);
     virtual void disableView(int player_num);
-    virtual void goIntoObserverMode(int nplayers, const std::vector<std::string> &names) { }
+    virtual void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names) { }
 
 private:
     void doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num, bool include_private) const;

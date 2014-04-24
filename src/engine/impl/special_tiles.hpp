@@ -33,7 +33,6 @@
 #include "lua_func.hpp"
 
 #include <vector>
-using namespace std;
 
 class ItemType;
 

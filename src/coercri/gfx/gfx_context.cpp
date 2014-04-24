@@ -112,7 +112,7 @@ namespace Coercri {
         }
     }
 
-    void GfxContext::drawText(int x, int y, const Font &font, const std::string &text, Color col)
+    void GfxContext::drawText(int x, int y, const Font &font, const UTF8String &text, Color col)
     {
         font.drawText(*this, x, y, text, col);
     }

@@ -57,12 +57,16 @@
 #undef max
 #endif
 
+using std::ios_base;
+using std::string;
+using std::vector;
+
 // This is a hack for FastForwardUntil
 bool g_hack_fast_forward_flag = false;
 
 class GameConnection {
 public:
-    GameConnection(const std::string &n, const std::string &n2, bool new_obs_flag, int ver,
+    GameConnection(const UTF8String &n, const UTF8String &n2, bool new_obs_flag, int ver,
                    bool approach_based_ctrls, bool action_bar_ctrls)
         : name(n), name2(n2),
           is_ready(false), finished_loading(false), ready_to_end(false), 
@@ -75,7 +79,7 @@ public:
           action_bar_controls(action_bar_ctrls)
     { }
     
-    std::string name, name2;  // if name2.empty() then normal connection, else split screen connection.
+    UTF8String name, name2;  // if name2.empty() then normal connection, else split screen connection.
     
     bool is_ready;    // true=ready to start game, false=want to stay in lobby
     bool finished_loading;   // true=ready to play, false=still loading
@@ -131,7 +135,7 @@ public:
 
     std::vector<int> delete_observer_nums;
     std::vector<int> players_to_eliminate;
-    std::vector<std::string> all_player_names;
+    std::vector<UTF8String> all_player_names;
 
     // used during game startup
     volatile bool startup_signal;
@@ -191,7 +195,7 @@ namespace {
         }
     }
     
-    void Announcement(KnightsGameImpl &kg, const std::string &msg, bool is_err = false)
+    void Announcement(KnightsGameImpl &kg, const std::string &msg_latin1, bool is_err = false)
     {
         for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
@@ -203,7 +207,7 @@ namespace {
             }
 
             buf.writeUbyte(SERVER_ANNOUNCEMENT);
-            buf.writeString(msg);
+            buf.writeString(msg_latin1);
         }
     }
 
@@ -328,11 +332,11 @@ namespace {
 
         for (game_conn_vector::const_iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
             if (!(*it)->obs_flag) {
-                buf.writeString((*it)->name);
+                buf.writeString((*it)->name.asUTF8());
                 buf.writeUbyte((*it)->is_ready ? 1 : 0);
                 buf.writeUbyte((*it)->house_colour);
                 if (!(*it)->name2.empty()) {
-                    buf.writeString((*it)->name2);
+                    buf.writeString((*it)->name2.asUTF8());
                     buf.writeUbyte((*it)->is_ready ? 1 : 0);
                     buf.writeUbyte((*it)->house_colour + 1);
                 }
@@ -345,7 +349,7 @@ namespace {
         for (game_conn_vector::const_iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
             if ((*it)->obs_flag) {
                 ASSERT((*it)->name2.empty());
-                buf.writeString((*it)->name);
+                buf.writeString((*it)->name.asUTF8());
             }
         }
         
@@ -472,7 +476,7 @@ namespace {
                 // Setup house colours and player names
                 // Also count how many players on each team.
                 std::vector<int> hse_cols;
-                std::vector<std::string> player_names;
+                std::vector<UTF8String> player_names;
                 std::map<int, int> team_counts;
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     if (!(*it)->obs_flag) {
@@ -495,7 +499,7 @@ namespace {
                 if (player_names.size() == 2 && kg.connections.size() == 1) {
                     // Split screen game.
                     // Disable the player names in this case.
-                    for (size_t i = 0; i < player_names.size(); ++i) player_names[i].clear();
+                    for (size_t i = 0; i < player_names.size(); ++i) { player_names[i] = UTF8String(); }
                 }
 
                 nplayers = player_names.size();
@@ -703,8 +707,8 @@ namespace {
                             Coercri::OutputByteBuf buf((*c)->output_data);
                             buf.writeUbyte(SERVER_GO_INTO_OBS_MODE);
                             buf.writeUbyte(kg.all_player_names.size());
-                            for (std::vector<std::string>::const_iterator it = kg.all_player_names.begin(); it != kg.all_player_names.end(); ++it) {
-                                buf.writeString(*it);
+                            for (std::vector<UTF8String>::const_iterator it = kg.all_player_names.begin(); it != kg.all_player_names.end(); ++it) {
+                                buf.writeString(it->asUTF8());
                             }
 
                             // Set his obs_num to zero (which means "observer num not allocated yet")
@@ -896,7 +900,7 @@ namespace {
                 // any eliminated player should have (Eliminated) after their name
                 for (size_t idx = 0; idx < player_list.size(); ++idx) {
                     if (player_list[idx].eliminated) {
-                        player_list[idx].name += " (Eliminated)";
+                        player_list[idx].name += UTF8String::fromUTF8(" (Eliminated)");
                     }
                 }
 
@@ -905,7 +909,7 @@ namespace {
                     if ((*it)->player_num == -1) {
                         ASSERT((*it)->obs_flag);  // when game is running, player_num == -1 implies obs_flag
                         PlayerInfo pi;
-                        pi.name = (*it)->name + " (Observer)";
+                        pi.name = (*it)->name + UTF8String::fromUTF8(" (Observer)");
                         pi.house_colour = Coercri::Color(0,0,0);
                         pi.player_num = -1;
                         pi.kills = -1;
@@ -926,7 +930,7 @@ namespace {
                     buf.writeUbyte(SERVER_PLAYER_LIST);
                     buf.writeVarInt(player_list.size());
                     for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                        buf.writeString(player_list[idx].name);
+                        buf.writeString(player_list[idx].name.asUTF8());
                         buf.writeUbyte(player_list[idx].house_colour.r);
                         buf.writeUbyte(player_list[idx].house_colour.g);
                         buf.writeUbyte(player_list[idx].house_colour.b);
@@ -955,8 +959,8 @@ namespace {
                 time_to_force_quit = 60000;
                 
                 // find names of all players, and the winner
-                std::vector<std::string> loser_names;
-                std::string winner_name;
+                std::vector<UTF8String> loser_names;
+                UTF8String winner_name;
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     if (!(*it)->obs_flag) {
                         if ((*it)->player_num == callbacks->getWinnerNum()) {
@@ -973,9 +977,9 @@ namespace {
                     msg = kg.game_name + "\tgame won\t";
                     // the first name printed is the winner, then we list the losers (of which there will be
                     // only one at the moment).
-                    msg += "winner=" + winner_name;
-                    for (std::vector<string>::const_iterator it = loser_names.begin(); it != loser_names.end(); ++it) {
-                        msg += std::string(", loser=") + *it;
+                    msg += "winner=" + winner_name.asUTF8();
+                    for (std::vector<UTF8String>::const_iterator it = loser_names.begin(); it != loser_names.end(); ++it) {
+                        msg += std::string(", loser=") + it->asUTF8();
                     }
                     kg.knights_log->logMessage(msg);
                 }
@@ -999,7 +1003,7 @@ namespace {
         boost::shared_ptr<Coercri::Timer> timer;
         boost::shared_ptr<ServerCallbacks> callbacks;
         boost::shared_ptr<KnightsEngine> engine;
-        std::map<std::string, int> pings;
+        std::map<UTF8String, int> pings;
         int nplayers;
         bool game_over_sent;
         int time_to_player_list_update;
@@ -1015,11 +1019,11 @@ namespace {
         for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_SET_READY);
-            out.writeString(conn.name);
+            out.writeString(conn.name.asUTF8());
             out.writeUbyte(ready ? 1 : 0);
             if (!conn.name2.empty()) {
                 out.writeUbyte(SERVER_SET_READY);
-                out.writeString(conn.name2);
+                out.writeString(conn.name2.asUTF8());
                 out.writeUbyte(ready ? 1 : 0);
             }
         }
@@ -1029,15 +1033,7 @@ namespace {
         bool operator()(const boost::shared_ptr<GameConnection> &lhs,
                         const boost::shared_ptr<GameConnection> &rhs) const
         {
-            return ToUpper(lhs->name) < ToUpper(rhs->name);
-        }
-        static std::string ToUpper(const std::string &input)
-        {
-            std::string result;
-            for (std::string::const_iterator it = input.begin(); it != input.end(); ++it) {
-                result += ::ToUpper(*it);
-            }
-            return result;
+            return lhs->name.toUpper() < rhs->name.toUpper();
         }
     };
 
@@ -1049,7 +1045,7 @@ namespace {
 
         // game thread definitely not running at this point... so it is safe to access kg
         
-        std::vector<std::string> names;
+        std::vector<UTF8String> names;
         
         // count how many players are ready to leave the lobby, and how many there are total
         int nready = 0;
@@ -1166,7 +1162,7 @@ namespace {
                         buf.writeUbyte(num_displays);
                         buf.writeUbyte(kg.deathmatch_mode);
                         for (int i = 0; i < num_displays; ++i) {
-                            buf.writeString(names[i]);
+                            buf.writeString(names[i].asUTF8());
                         }
                         buf.writeUbyte(0);  // already_started flag (false)
                     }
@@ -1176,9 +1172,9 @@ namespace {
                 if (kg.knights_log) {
                     std::ostringstream str;
                     str << kg.game_name << "\tgame started\t";
-                    for (std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
+                    for (std::vector<UTF8String>::const_iterator it = names.begin(); it != names.end(); ++it) {
                         if (it != names.begin()) str << ", ";
-                        str << *it;
+                        str << it->asUTF8();
                     }
 
                     LogMenuListener listener(str);
@@ -1319,7 +1315,7 @@ bool KnightsGame::getObsFlag(GameConnection &conn) const
     return conn.obs_flag;
 }
 
-GameConnection & KnightsGame::newClientConnection(const std::string &client_name, const std::string &client_name_2, 
+GameConnection & KnightsGame::newClientConnection(const UTF8String &client_name, const UTF8String &client_name_2, 
                                                   int client_version, bool approach_based_controls, bool action_bar_controls)
 {
     WaitForMsgCounter(*pimpl);
@@ -1381,12 +1377,12 @@ GameConnection & KnightsGame::newClientConnection(const std::string &client_name
         if (*it != conn) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
-            out.writeString(client_name);
+            out.writeString(client_name.asUTF8());
             out.writeUbyte(new_obs_flag);
             out.writeUbyte(conn->house_colour);
             if (!client_name_2.empty()) {
                 out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
-                out.writeString(client_name_2);
+                out.writeString(client_name_2.asUTF8());
                 out.writeUbyte(new_obs_flag);
                 out.writeUbyte(conn->house_colour);
             }
@@ -1400,8 +1396,8 @@ GameConnection & KnightsGame::newClientConnection(const std::string &client_name
         buf.writeUbyte(SERVER_START_GAME_OBS);
         buf.writeUbyte(pimpl->all_player_names.size());
         buf.writeUbyte(pimpl->deathmatch_mode);
-        for (std::vector<std::string>::const_iterator it = pimpl->all_player_names.begin(); it != pimpl->all_player_names.end(); ++it) {
-            buf.writeString(*it);
+        for (std::vector<UTF8String>::const_iterator it = pimpl->all_player_names.begin(); it != pimpl->all_player_names.end(); ++it) {
+            buf.writeString(it->asUTF8());
         }
         buf.writeUbyte(1);  // already_started flag (true)
     }
@@ -1422,7 +1418,7 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
 
     bool is_player = false;
     
-    std::string name, name2;
+    UTF8String name, name2;
     int player_num = 0;
     int num_player_connections = 0;
 
@@ -1476,11 +1472,11 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
         for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
             buf.writeUbyte(SERVER_PLAYER_LEFT_THIS_GAME);
-            buf.writeString(name);
+            buf.writeString(name.asUTF8());
             buf.writeUbyte(is_player ? 0 : 1);
             if (!name2.empty()) {
                 buf.writeUbyte(SERVER_PLAYER_LEFT_THIS_GAME);
-                buf.writeString(name2);
+                buf.writeString(name2.asUTF8());
                 buf.writeUbyte(is_player ? 0 : 1);
             }
         }
@@ -1527,7 +1523,7 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_o
 
         Coercri::OutputByteBuf buf((*it)->output_data);
         buf.writeUbyte(SERVER_CHAT);
-        buf.writeString(conn.name);
+        buf.writeString(conn.name.asUTF8());
 
         if (is_team) {
             buf.writeUbyte(3);  // Team Message
@@ -1575,7 +1571,7 @@ void KnightsGame::setHouseColour(GameConnection &conn, int hse_col)
             out.writeUbyte(SERVER_SET_HOUSE_COLOUR);
             // note we don't support house colours in split screen mode at the moment. we assume it's the first player
             // on the connection who is having the house colours set.
-            out.writeString(conn.name);
+            out.writeString(conn.name.asUTF8());
             out.writeUbyte(hse_col);
         }
 
@@ -1620,7 +1616,7 @@ void KnightsGame::readyToEnd(GameConnection &conn)
         for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_READY_TO_END);
-            out.writeString(conn.name);
+            out.writeString(conn.name.asUTF8());
         }
     }
 }
@@ -1640,7 +1636,7 @@ bool KnightsGame::requestQuit(GameConnection &conn)
     if (!obs_flag) {
 
         if (pimpl->knights_log) {
-            pimpl->knights_log->logMessage(pimpl->game_name + "\tquit requested\t" + conn.name);
+            pimpl->knights_log->logMessage(pimpl->game_name + "\tquit requested\t" + conn.name.asUTF8());
         }
 
         // If there are only two players then stop the game (with appropriate message), 
@@ -1652,7 +1648,7 @@ bool KnightsGame::requestQuit(GameConnection &conn)
         } else {
             {
                 boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-                Announcement(*pimpl, conn.name + " quit the game.");
+                Announcement(*pimpl, conn.name.asLatin1() + " quit the game.");
             }
             StopGameAndReturnToMenu(*pimpl);
             return false;
@@ -1707,7 +1703,7 @@ void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int c
         // send announcement to all players
         const MenuItem & item = pimpl->knights_config->getMenu().getItem(item_num);
         std::ostringstream str;
-        str << conn->name << " set \"" << item.getTitleString() << "\" to ";
+        str << conn->name.asLatin1() << " set \"" << item.getTitleString() << "\" to ";
         
         if (item.isNumeric()) {
             str << choice_num;
@@ -1739,7 +1735,7 @@ void KnightsGame::randomQuest(GameConnection &conn)
     pimpl->knights_config->randomQuest(listener);
 
     // send announcement to all players
-    Announcement(*pimpl, conn.name + " selected a Random Quest.");    
+    Announcement(*pimpl, conn.name.asLatin1() + " selected a Random Quest.");    
 
     // deactivate all ready flags
     DeactivateReadyFlags(*pimpl);
@@ -1868,7 +1864,7 @@ void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
     }
     
     // changing obs_flag does not apply to split screen games, so we can ignore name2 and just use name.
-    const std::string & my_name = conn.name;
+    const UTF8String & my_name = conn.name;
 
     // If he is a player then assign him a house colour.
     int new_col = 0;
@@ -1896,12 +1892,12 @@ void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
         Coercri::OutputByteBuf buf((*it)->output_data);
 
         buf.writeUbyte(SERVER_SET_OBS_FLAG);
-        buf.writeString(my_name);
+        buf.writeString(my_name.asUTF8());
         buf.writeUbyte(new_obs_flag ? 1 : 0);
         
         if (!new_obs_flag) {
             buf.writeUbyte(SERVER_SET_HOUSE_COLOUR);
-            buf.writeString(my_name);
+            buf.writeString(my_name.asUTF8());
             buf.writeUbyte(new_col);
         }
     }

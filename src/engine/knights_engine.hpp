@@ -33,6 +33,8 @@
 #ifndef KNIGHTS_ENGINE_HPP
 #define KNIGHTS_ENGINE_HPP
 
+#include "utf8string.hpp"
+
 #include "gfx/color.hpp"
 
 #include "boost/shared_ptr.hpp"
@@ -49,7 +51,7 @@ class StatusDisplay;
 class UserControl;
 
 struct PlayerInfo {
-    std::string name;
+    UTF8String name;
     Coercri::Color house_colour;
     int player_num;
     int kills;
@@ -64,7 +66,7 @@ public:
     // Note that each KnightsGame should have a unique KnightsConfig.
     KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                   const std::vector<int> &hse_cols,
-                  const std::vector<std::string> &player_names,
+                  const std::vector<UTF8String> &player_names,
                   bool &deathmatch_mode,   // output.
                   std::vector<std::string> &msgs);  // output.
     ~KnightsEngine();

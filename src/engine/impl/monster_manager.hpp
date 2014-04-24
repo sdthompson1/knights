@@ -36,7 +36,6 @@ using namespace boost;
 
 #include <map>
 #include <vector>
-using namespace std;
 
 class ItemType;
 class Tile;
@@ -159,23 +158,23 @@ private:
     void addZombieActivityCounter(const MapCoord &mc);
                                   
 private:
-    map<shared_ptr<Tile>, shared_ptr<Tile> > decay_sequence;
+    std::map<shared_ptr<Tile>, shared_ptr<Tile> > decay_sequence;
     struct MonsterInfo {
         const MonsterType * monster_type;
         bool zombie_mode;
         float chance;  // only used for zombie_mode == false
     };
-    map<shared_ptr<Tile>, MonsterInfo> monster_map;
+    std::map<shared_ptr<Tile>, MonsterInfo> monster_map;
 
-    map<const MonsterType *, int> current_monsters;
+    std::map<const MonsterType *, int> current_monsters;
     int total_current_monsters;
-    map<const MonsterType *, int> monster_limit;
+    std::map<const MonsterType *, int> monster_limit;
     int total_monster_limit;
     float zombie_chance;
     int necronomicon_counter;  // if +ve, should act as if zombie_chance was 100%.
     bool necromancy_flag;  // set true when doNecromancy is called.
 
-    map<MapCoord, int> zombie_activity_counters;  // Force wait before zombie can respawn (#152)
+    std::map<MapCoord, int> zombie_activity_counters;  // Force wait before zombie can respawn (#152)
     int monster_respawn_wait;
 };
 

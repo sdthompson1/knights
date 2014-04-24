@@ -51,18 +51,19 @@
 namespace Coercri {
 
     class GfxContext;
+    class UTF8String;
     
     class Font {
     public:
         virtual ~Font() { }
 
         // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const std::string &text, Color col) const = 0;
+        virtual void drawText(GfxContext &dest, int x, int y, const UTF8String &text, Color col) const = 0;
         virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const std::string &text, int &w, int &h) const = 0;
+        virtual void getTextSize(const UTF8String &text, int &w, int &h) const = 0;
 
         // Convenience function, if only width is required
-        int getTextWidth(const std::string &text) const {
+        int getTextWidth(const UTF8String &text) const {
             int w,h;
             getTextSize(text,w,h);
             return w;

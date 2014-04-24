@@ -164,7 +164,7 @@ void ViewManager::uploadRoomSquares(const Player &p)
 
     // create the cache entry if necessary
     SquaresInvalidMap &s(squares_invalid_cache[&p]);
-    vector<bool> &cache(s[current_room]);
+    std::vector<bool> &cache(s[current_room]);
     if (cache.empty()) cache.resize(width*height);
     ASSERT(cache.size()==width*height);    
     
@@ -201,9 +201,9 @@ void ViewManager::uploadSquare(DungeonView &dview, const DungeonMap &dmap, const
     
     // Tiles
     dview.clearTiles(relx, rely, force);
-    vector<shared_ptr<Tile> > tiles;
+    std::vector<shared_ptr<Tile> > tiles;
     dmap.getTiles(mc, tiles);
-    for (vector<shared_ptr<Tile> >::const_iterator t = tiles.begin(); t != tiles.end(); ++t) {
+    for (std::vector<shared_ptr<Tile> >::const_iterator t = tiles.begin(); t != tiles.end(); ++t) {
         dview.setTile(relx, rely, (*t)->getDepth(), (*t)->getGraphic(), (*t)->getColourChange(), force);
     }
 }
@@ -222,6 +222,8 @@ void ViewManager::uploadSquare(DungeonView &dview, const DungeonMap &dmap, const
 
 bool ViewManager::updateRoom(int plyr)
 {
+    using std::vector;
+
     // First, work out which room the DungeonView should be set to.
     shared_ptr<Knight> kt(players[plyr]->getKnight());
     if (!kt) return false;
@@ -335,7 +337,7 @@ void ViewManager::reallyAddEntity(int plyr, shared_ptr<Entity> ent, unsigned sho
     int motion_time_remaining = ent->getArrivalTime() - gvt;
     if (motion_time_remaining < 0) motion_time_remaining = 0;
 
-    std::string name;
+    UTF8String name;
     bool show_speech_bubble = false;
     Knight *kt = dynamic_cast<Knight*>(ent.get());
     if (kt) {
@@ -397,7 +399,7 @@ void ViewManager::onRmEntity(shared_ptr<Entity> ent)
     ASSERT(ent);
     for (int p=0; p<players.size(); ++p) {
         // Check if player p can see entity ent leaving the dungeon
-        pair<unsigned short int, bool> id = fetchID(p, ent);
+        std::pair<unsigned short int, bool> id = fetchID(p, ent);
         if (id.second) {
             doRmEntity(p, ent, id.first);
         }
@@ -413,7 +415,7 @@ void ViewManager::onRepositionEntity(shared_ptr<Entity> ent)
     ASSERT(ent && ent->getMap());
     for (int p=0; p<players.size(); ++p) {
         shared_ptr<Knight> kt = players[p]->getKnight();
-        pair<unsigned short int, bool> id = fetchID(p, ent);
+        std::pair<unsigned short int, bool> id = fetchID(p, ent);
         if (id.second) {
             if (ent == kt) {
                 // Change room if necessary
@@ -467,7 +469,7 @@ void ViewManager::onChangeEntityMotion(shared_ptr<Entity> ent, bool missile_mode
                 // (Note entities can only come into view as a result of moves; they cannot go
                 // out of view until the following reposition. So we never need to do a
                 // rmEntity in this routine.)
-                pair<unsigned short int, bool> id = fetchID(p, ent);
+                std::pair<unsigned short int, bool> id = fetchID(p, ent);
                 if (!id.second) {
                     doAddEntity(p, ent, false);
                 } else {
@@ -492,7 +494,7 @@ void ViewManager::onFlipEntityMotion(shared_ptr<Entity> ent)
             // Entity is currently visible to p
             // For a flip-motion, it should therefore have previously
             // been visible to p as well.
-            pair<unsigned short int, bool> id = fetchID(p, ent);
+            std::pair<unsigned short int, bool> id = fetchID(p, ent);
             ASSERT(id.second);
             if (id.second) {
                 const int start_time = ent->getStartTime();
@@ -527,7 +529,7 @@ void ViewManager::sendAnimChange(int p, const Entity &ent, unsigned short int id
 void ViewManager::onChangeEntityAnim(shared_ptr<Entity> ent)
 {
     for (int p=0; p<players.size(); ++p) {
-        pair<unsigned short int, bool> id = fetchID(p, ent);
+        std::pair<unsigned short int, bool> id = fetchID(p, ent);
         if (id.second) {
             ASSERT(ent && ent->getMap());
             sendAnimChange(p, *ent, id.first);
@@ -538,7 +540,7 @@ void ViewManager::onChangeEntityAnim(shared_ptr<Entity> ent)
 void ViewManager::onChangeSpeechBubble(shared_ptr<Knight> ent)
 {
     for (int p = 0; p < players.size(); ++p) {
-        pair<unsigned short int, bool> id = fetchID(p, ent);
+        std::pair<unsigned short int, bool> id = fetchID(p, ent);
         if (id.second) {
             ASSERT(ent && ent->getMap());
             players[p]->getDungeonView().setSpeechBubble(id.first, ent->getPlayer()->getSpeechBubble());
@@ -557,7 +559,7 @@ void ViewManager::onChangeEntityFacing(shared_ptr<Entity> ent)
             if (update_done) continue;
         }
         // Otherwise, if the entity is on-screen, then change the facing
-        pair<unsigned short int, bool> id = fetchID(p, ent);
+        std::pair<unsigned short int, bool> id = fetchID(p, ent);
         if (id.second) {
             players[p]->getDungeonView().setFacing(id.first, ent->getFacing());
         }
@@ -572,7 +574,7 @@ void ViewManager::onChangeEntityVisible(shared_ptr<Entity> ent)
     for (int p=0; p<players.size(); ++p) {
 
         // is the entity currently displayed on this player's screen?
-        pair<unsigned short int, bool> id = fetchID(p, ent);
+        std::pair<unsigned short int, bool> id = fetchID(p, ent);
         const bool on_screen_now = id.second;
         const bool should_be_on_screen = 
             ent->getMap() && entityVisibleToPlayer(*ent, *players[p], false);
@@ -626,18 +628,18 @@ unsigned short int ViewManager::fetchNewID(int plyr, weak_ptr<Entity> ent, bool 
     }
 
     // Add the new ID to the id_map and the active_ids
-    id_map[plyr].insert(make_pair(ent, new_id_number));
+    id_map[plyr].insert(std::make_pair(ent, new_id_number));
     active_ids[plyr].insert(new_id_number);
     return new_id_number;
 }
 
-pair<unsigned short int, bool> ViewManager::fetchID(int plyr, weak_ptr<Entity> ent)
+std::pair<unsigned short int, bool> ViewManager::fetchID(int plyr, weak_ptr<Entity> ent)
 {
-    map<weak_ptr<Entity>, unsigned short int>::const_iterator it = id_map[plyr].find(ent);
+    std::map<weak_ptr<Entity>, unsigned short int>::const_iterator it = id_map[plyr].find(ent);
     if (it == id_map[plyr].end()) {
-        return make_pair(0, false);
+        return std::make_pair(0, false);
     } else {
-        return make_pair(it->second, true);
+        return std::make_pair(it->second, true);
     }
 }
                 
@@ -658,7 +660,7 @@ void ViewManager::setItemIfVisible(const DungeonMap &dmap, const MapCoord &mc,
     //     Mark the square as invalid on that player / dungeonview.
 
     if (!dmap.getRoomMap()) return;
-    for (vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
+    for (std::vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
         invalidateSquare(**p, *dmap.getRoomMap(), mc);
         if (squareVisibleToPlayer(dmap, mc, **p)) {
             int x, y;
@@ -673,7 +675,7 @@ void ViewManager::setTileIfVisible(const DungeonMap &dmap, const MapCoord &mc, i
                                    MiniMapColour col)
 {
     if (!dmap.getRoomMap()) return;
-    for (vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
+    for (std::vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
         invalidateSquare(**p, *dmap.getRoomMap(), mc);
         if (squareVisibleToPlayer(dmap, mc, **p)) {
             int x, y;
@@ -726,7 +728,7 @@ void ViewManager::onChangeTile(const DungeonMap &dm, const MapCoord &mc, const T
 void ViewManager::placeIcon(const DungeonMap &dm, const MapCoord &mc, const Graphic *g,
                             int dur)
 {
-    for (vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
+    for (std::vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
         if (squareVisibleToPlayer(dm, mc, **p)) {
             int x, y;
             getRelativePos(**p, &dm, mc, x, y);
@@ -737,7 +739,7 @@ void ViewManager::placeIcon(const DungeonMap &dm, const MapCoord &mc, const Grap
 
 void ViewManager::flashScreen(shared_ptr<Entity> ent, int delay)
 {
-    for (vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
+    for (std::vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
         if (entityVisibleToPlayer(*ent, **p, true)) {
             // NB using trueview in the above, because even invisible knights
             // in the same room should cause the screen to flash!
@@ -748,7 +750,7 @@ void ViewManager::flashScreen(shared_ptr<Entity> ent, int delay)
 
 void ViewManager::playSound(DungeonMap &dm, const MapCoord &mc, const Sound &sound, int frequency, bool all)
 {
-    for (vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
+    for (std::vector<Player*>::iterator p = players.begin(); p != players.end(); ++p) {
         if (all || squareVisibleToPlayer(dm, mc, **p)) {
             Mediator::instance().getCallbacks().playSound((*p)->getPlayerNum(), sound, frequency);
         }
@@ -775,7 +777,7 @@ void ViewManager::sendCurrentRoom(int player, DungeonView &dview)
             dview.setCurrentRoom(current_room, width, height);
 
             // Entities
-            for (map<weak_ptr<Entity>, unsigned short int>::const_iterator it = id_map[player].begin(); 
+            for (std::map<weak_ptr<Entity>, unsigned short int>::const_iterator it = id_map[player].begin(); 
             it != id_map[player].end(); ++it) {
                 shared_ptr<Entity> ent = it->first.lock();
                 if (ent) {

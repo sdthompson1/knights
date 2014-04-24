@@ -30,6 +30,10 @@
 #include "item.hpp"
 #include "tile.hpp"
 
+using std::map;
+using std::string;
+using std::vector;
+
 void EventManager::onAddCreature(Creature &cr)
 {
     // Do on_walk_over

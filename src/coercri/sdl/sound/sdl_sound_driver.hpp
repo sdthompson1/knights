@@ -52,7 +52,7 @@
 
 namespace Coercri {
 
-    class Voice;
+    struct Voice;
     
     class SDLSoundDriver : public SoundDriver {
     public:

@@ -25,7 +25,7 @@
 
 #include "x_centre.hpp"
 
-void XCentre(Coercri::GfxContext &gc, const Coercri::Font &font, int y, const std::string &text)
+void XCentre(Coercri::GfxContext &gc, const Coercri::Font &font, int y, const Coercri::UTF8String &text)
 {
     const int w = font.getTextWidth(text);
     const int x = (gc.getWidth() - w) / 2;

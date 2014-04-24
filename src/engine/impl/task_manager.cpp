@@ -27,11 +27,10 @@
 #include "task_manager.hpp"
 
 #include <utility>
-using namespace std;
 
-TaskManager::QueueType::iterator TaskManager::findTask(shared_ptr<Task> t)
+TaskManager::QueueType::iterator TaskManager::findTask(boost::shared_ptr<Task> t)
 {
-    pair<QueueType::iterator,QueueType::iterator> p = task_queue[t->pri].equal_range(t); // compare with CompareTime
+    std::pair<QueueType::iterator,QueueType::iterator> p = task_queue[t->pri].equal_range(t); // compare with CompareTime
     for (QueueType::iterator it = p.first; it != p.second; ++it) {
         if (*it == t) {   // compare by pointer
             return it;
@@ -40,7 +39,7 @@ TaskManager::QueueType::iterator TaskManager::findTask(shared_ptr<Task> t)
     return task_queue[t->pri].end();
 }
 
-void TaskManager::addTask(shared_ptr<Task> t, TaskPri pri, int exec_time)
+void TaskManager::addTask(boost::shared_ptr<Task> t, TaskPri pri, int exec_time)
 {
     ASSERT(t->time == -1); // same task must never be added twice.
     t->pri = pri;
@@ -48,7 +47,7 @@ void TaskManager::addTask(shared_ptr<Task> t, TaskPri pri, int exec_time)
     task_queue[pri].insert(t);
 }
 
-void TaskManager::changeTaskPri(shared_ptr<Task> t, TaskPri new_pri)
+void TaskManager::changeTaskPri(boost::shared_ptr<Task> t, TaskPri new_pri)
 {
     if (t->pri == new_pri) return;
     QueueType::iterator it = findTask(t);
@@ -58,7 +57,7 @@ void TaskManager::changeTaskPri(shared_ptr<Task> t, TaskPri new_pri)
     task_queue[new_pri].insert(t);
 }
 
-void TaskManager::changeExecTime(shared_ptr<Task> t, int new_exec_time)
+void TaskManager::changeExecTime(boost::shared_ptr<Task> t, int new_exec_time)
 {
     if (t->time == new_exec_time) return;
     QueueType::iterator it = findTask(t);
@@ -68,7 +67,7 @@ void TaskManager::changeExecTime(shared_ptr<Task> t, int new_exec_time)
     task_queue[t->pri].insert(t);
 }
 
-void TaskManager::rmTask(shared_ptr<Task> t)
+void TaskManager::rmTask(boost::shared_ptr<Task> t)
 {
     if (!t) return;
     QueueType::iterator it = findTask(t);

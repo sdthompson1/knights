@@ -46,6 +46,8 @@ void SweepItems(DungeonMap &dmap, const MapCoord &mc)
 
 void SweepCreatures(DungeonMap &dmap, const MapCoord &mc, bool use_height, MapHeight ht, const Originator &originator)
 {
+    using std::vector;
+    
     vector<shared_ptr<Entity> > ents;
     dmap.getEntities(mc, ents);
 

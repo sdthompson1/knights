@@ -29,7 +29,6 @@
 #include "user_control.hpp"
 
 #include <vector>
-using namespace std;
 
 
 //

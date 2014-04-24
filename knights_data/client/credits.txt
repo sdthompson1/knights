@@ -52,6 +52,7 @@ Boost (www.boost.org), licensed under the Boost Software Licence.
 ENet (enet.bespin.org), by Lee Salzman. Licensed under a BSD-style licence.
 libcurl (curl.haxx.se), by Daniel Stenberg and others. Licensed under a BSD-style licence.
 Lua (www.lua.org), a scripting language, licensed under the MIT licence.
+UTF8-CPP by Nemanja Trifunovic.
 Please refer to the "docs" directory for further details.
 
 

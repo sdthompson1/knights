@@ -49,7 +49,7 @@ void SkullRenderer::draw(Coercri::GfxContext &gc, GfxManager &gm, int nsk, int l
     while (nsk > 0) {
         const int x = Round(float(columns[c])*scale_factor) + left;
         const int y = Round(float(rows[r])*scale_factor) + top;
-        const int n = min(nsk, int(gfx.size()));
+        const int n = std::min(nsk, int(gfx.size()));
 
         int w, h;
         gm.getGraphicSize(*gfx[n-1], w, h);

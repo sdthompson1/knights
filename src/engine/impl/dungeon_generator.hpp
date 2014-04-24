@@ -32,7 +32,6 @@ using namespace boost;
 #include <map>
 #include <memory>
 #include <vector>
-using namespace std;
 
 class CoordTransform;
 class DungeonLayout;

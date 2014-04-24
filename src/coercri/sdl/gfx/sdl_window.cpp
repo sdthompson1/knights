@@ -40,13 +40,19 @@
 
 #include "sdl_gfx_context.hpp"
 #include "sdl_window.hpp"
+#include "pixels.hpp"
 #include "../../core/coercri_error.hpp"
+#include "../../gfx/pixel_array.hpp"
 
 #include "SDL.h"
+#include "SDL_syswm.h"
 
 #ifdef WIN32
-#include "SDL_syswm.h"
 #include <windows.h>
+#else
+// assume X11 if not WIN32
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #endif
 
 namespace Coercri {
@@ -54,10 +60,31 @@ namespace Coercri {
     extern unsigned int g_sdl_required_flags;
     extern bool g_sdl_has_focus;
 
-    SDLWindow::SDLWindow()
+#ifdef WIN32
+    namespace {
+        HWND GetHwnd()
+        {
+            SDL_SysWMinfo wminfo;
+            SDL_VERSION(&wminfo.version);
+            if (SDL_GetWMInfo(&wminfo) != 1) {
+                throw CoercriError("SDL_GetWMInfo failed");
+            } else {
+                return wminfo.window;
+            }
+        }
+    }
+#endif
+    
+    SDLWindow::SDLWindow(int fsw, int fsh)
         : need_window_resize(false)
+        , fullscreen_width(fsw)
+        , fullscreen_height(fsh)
+#ifdef WIN32
+        , set_icon(GetHwnd())
+#endif
     {
         g_sdl_has_focus = true;
+        invalidateAll(); // make sure the window gets painted initially.
     }
 
     void SDLWindow::getSize(int &w, int &h) const
@@ -79,20 +106,37 @@ namespace Coercri {
     void SDLWindow::popToFront()
     {
 #ifdef WIN32
+        const HWND hwnd = GetHwnd();
+
+        // Restore it if it was minimized
+        if (IsIconic(hwnd)) {
+            ShowWindow(hwnd, SW_RESTORE);
+        }
+        
+        // Focus the window / bring it to front (if possible)
+        SetForegroundWindow(hwnd);
+#else
+        // assume X11
         SDL_SysWMinfo wminfo;
         SDL_VERSION(&wminfo.version);
         if (SDL_GetWMInfo(&wminfo) != 1) {
-            // error
+            throw CoercriError("SDL_GetWMInfo failed");
         } else {
-            const HWND hwnd = wminfo.window;
+            Display *display = wminfo.info.x11.display;
+            ::Window window = wminfo.info.x11.window;
 
-            // Restore it if it was minimized
-            if (IsIconic(hwnd)) {
-                ShowWindow(hwnd, SW_RESTORE);
+            // might need to look for window-manager parent window
+            ::Window root, parent;
+            ::Window *childlist;
+            unsigned int ujunk;
+            const int status = XQueryTree(display, window, &root, &parent, &childlist, &ujunk);
+            if (status && parent && parent != root) {
+                // found frame window
+                window = parent;
             }
 
-            // Focus the window / bring it to front (if possible)
-            SetForegroundWindow(hwnd);
+            // call XRaiseWindow to bring it to the front.
+            XRaiseWindow(display, window);
         }
 #endif
     }
@@ -121,10 +165,10 @@ namespace Coercri {
         need_window_resize = true;
     }
 
-    void SDLWindow::switchToFullScreen(int w, int h)
+    void SDLWindow::switchToFullScreen()
     {
         g_sdl_required_flags |= SDL_FULLSCREEN;
-        SDL_Surface * result = SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
+        SDL_Surface * result = SDL_SetVideoMode(fullscreen_width, fullscreen_height, 0, g_sdl_required_flags);
         if (!result) {
             throw CoercriError("SDL_SetVideoMode failed");
         }
@@ -141,9 +185,28 @@ namespace Coercri {
         }
     }
 
+    bool SDLWindow::isMaximized() const
+    {
+#ifdef WIN32
+        const HWND hwnd = GetHwnd();
+        return IsZoomed(hwnd) != 0;
+#else
+        throw CoercriError("Window::isMaximized: Not Implemented");
+#endif
+    }
+
     std::auto_ptr<GfxContext> SDLWindow::createGfxContext()
     {
         std::auto_ptr<GfxContext> p(new SDLGfxContext(*SDL_GetVideoSurface()));
         return p;
+    }
+
+    void SDLWindow::setIcon(const PixelArray &pixels)
+    {
+#ifdef WIN32
+        set_icon.setIcon(pixels);
+#else
+        throw CoercriError("SDLWindow::setIcon: Not Implemented");
+#endif
     }
 }

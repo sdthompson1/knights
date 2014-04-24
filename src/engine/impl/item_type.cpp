@@ -33,6 +33,8 @@
 #include "task_manager.hpp"
 #include "tile.hpp"
 
+using std::vector;
+
 //
 // ctors
 //
