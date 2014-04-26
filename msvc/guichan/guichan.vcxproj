@@ -178,15 +178,11 @@
     <ClInclude Include="..\..\src\external\guichan\include\guichan\widgetlistener.hpp" />
     <ClInclude Include="..\..\src\external\guichan\include\guichan\widgets\window.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
     <Import Project="..\packages\SDL.1.2.15.15\build\native\SDL.targets" Condition="Exists('..\packages\SDL.1.2.15.15\build\native\SDL.targets')" />
     <Import Project="..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets" Condition="Exists('..\packages\freetype.redist.2.4.2.1\build\native\freetype.redist.targets')" />
     <Import Project="..\packages\freetype.2.4.2.1\build\native\freetype.targets" Condition="Exists('..\packages\freetype.2.4.2.1\build\native\freetype.targets')" />
-    <Import Project="..\packages\boost.1.55.0.16\build\native\boost.targets" Condition="Exists('..\packages\boost.1.55.0.16\build\native\boost.targets')" />
   </ImportGroup>
 </Project>

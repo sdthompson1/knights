@@ -226,6 +226,9 @@ copy $(SolutionDir)\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Re
     <ProjectReference Include="..\Coercri\Coercri.vcxproj">
       <Project>{97a898fe-d684-42b1-9f9b-b8706436f78c}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Coercri_DX11\Coercri_DX11.vcxproj">
+      <Project>{8255a6c0-27b4-43c4-aab7-94b0e54009ee}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ENet\ENet.vcxproj">
       <Project>{f75537ff-1112-469b-9cb5-e1d6bf28a419}</Project>
     </ProjectReference>

@@ -81,13 +81,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\coercri\core\utf8string.cpp" />
-    <ClCompile Include="..\..\src\coercri\dx11\core\dx_error.cpp" />
-    <ClCompile Include="..\..\src\coercri\dx11\core\load_dx11_dlls.cpp" />
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_gfx_context.cpp" />
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.cpp" />
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_graphic.cpp" />
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_window.cpp" />
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\bitmap_font.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\freetype_ttf_loader.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\load_system_ttf.cpp" />
@@ -119,14 +112,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\coercri\core\utf8string.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\core\com_ptr_wrapper.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\core\dx_error.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\core\load_dx11_dlls.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_gfx_context.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_graphic.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_window.hpp" />
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\primitive_batch.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\bitmap_font.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\freetype_ttf_loader.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\load_system_ttf.hpp" />
@@ -175,62 +160,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_common.hlsl">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ObjectFileOutput>
-    </FxCompile>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_ps.hlsl">
-      <FileType>Document</FileType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PS</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">primitive_batch_ps</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)primitive_batch_ps.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">primitive_batch_ps</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)primitive_batch_ps.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ObjectFileOutput>
-    </FxCompile>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_ps_tex.hlsl">
-      <FileType>Document</FileType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Tex</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PS_Tex</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">primitive_batch_ps_tex</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)primitive_batch_ps_tex.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">primitive_batch_ps_tex</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)primitive_batch_ps_tex.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ObjectFileOutput>
-    </FxCompile>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_vs.hlsl">
-      <FileType>Document</FileType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VS</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VS</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">primitive_batch_vs</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)primitive_batch_vs.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">primitive_batch_vs</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)primitive_batch_vs.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ObjectFileOutput>
-    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

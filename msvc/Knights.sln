@@ -34,6 +34,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua", "lua\lua.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetworkTest", "NetworkTest\NetworkTest.vcxproj", "{39F03EC5-5C29-4033-AEB6-156808E0D72F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Coercri_DX11", "Coercri_DX11\Coercri_DX11.vcxproj", "{8255A6C0-27B4-43C4-AAB7-94B0E54009EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -121,6 +123,12 @@ Global
 		{39F03EC5-5C29-4033-AEB6-156808E0D72F}.Release|Win32.ActiveCfg = Release|Win32
 		{39F03EC5-5C29-4033-AEB6-156808E0D72F}.Release|Win32.Build.0 = Release|Win32
 		{39F03EC5-5C29-4033-AEB6-156808E0D72F}.Release|x64.ActiveCfg = Release|Win32
+		{8255A6C0-27B4-43C4-AAB7-94B0E54009EE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8255A6C0-27B4-43C4-AAB7-94B0E54009EE}.Debug|Win32.Build.0 = Debug|Win32
+		{8255A6C0-27B4-43C4-AAB7-94B0E54009EE}.Debug|x64.ActiveCfg = Debug|Win32
+		{8255A6C0-27B4-43C4-AAB7-94B0E54009EE}.Release|Win32.ActiveCfg = Release|Win32
+		{8255A6C0-27B4-43C4-AAB7-94B0E54009EE}.Release|Win32.Build.0 = Release|Win32
+		{8255A6C0-27B4-43C4-AAB7-94B0E54009EE}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

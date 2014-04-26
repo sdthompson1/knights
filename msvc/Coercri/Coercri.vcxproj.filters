@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="HLSL Files">
-      <UniqueIdentifier>{91dc9fcf-d454-4136-910e-ad69d7dc24e4}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\coercri\gfx\bitmap_font.cpp">
@@ -100,27 +97,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\coercri\shared\win32_set_icon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\coercri\dx11\core\dx_error.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\coercri\dx11\core\load_dx11_dlls.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_gfx_context.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_graphic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\dx11_window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\coercri\core\utf8string.cpp">
@@ -263,49 +239,11 @@
     <ClInclude Include="..\..\src\coercri\shared\win32_set_icon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\core\com_ptr_wrapper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\core\dx_error.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\core\load_dx11_dlls.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_gfx_context.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_gfx_driver.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_graphic.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\dx11_window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\dx11\gfx\primitive_batch.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\coercri\core\utf8string.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_common.hlsl">
-      <Filter>HLSL Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_ps.hlsl">
-      <Filter>HLSL Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_ps_tex.hlsl">
-      <Filter>HLSL Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\src\coercri\dx11\gfx\primitive_batch_vs.hlsl">
-      <Filter>HLSL Files</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

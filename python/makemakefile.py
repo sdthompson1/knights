@@ -12,15 +12,17 @@ import os
 import os.path
 import re
 
-PROJECTS_MAIN = ['Coercri', 'ENet', 'guichan', 'KnightsClient', 'KnightsEngine', 'KnightsMain',
-                'KnightsServer', 'KnightsShared', 'lua', 'Misc', 'RStream']
+PROJECTS_MAIN = ['Coercri', 'ENet', 'guichan', 'KnightsClient', 'KnightsEngine',
+                 'KnightsMain', 'KnightsServer', 'KnightsShared', 
+                 'lua', 'Misc', 'RStream']
 PROJECTS_SERVER = ['ENet', 'KnightsEngine', 'KnightsServer', 'KnightsShared',
                    'KnightsSvrMain', 'lua', 'Misc', 'RStream']
 EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o', 
                      'src/coercri/enet/enet_network_driver.o',
                      'src/coercri/enet/enet_network_connection.o',
                      'src/coercri/enet/enet_udp_socket.o',
-                     'src/coercri/timer/generic_timer.o']
+                     'src/coercri/timer/generic_timer.o',
+                     'src/coercri/core/utf8string.o']
 
 PROJECTS_ALL = list(set(PROJECTS_MAIN + PROJECTS_SERVER))
 
@@ -37,21 +39,21 @@ def add_proj_path(proj, p):
 def find_srcs(proj):
     incdirs = []
     srcfiles = []
-    projfile = "msvc/" + proj + "/" + proj + ".vcproj"
+    projfile = "msvc/" + proj + "/" + proj + ".vcxproj"
     L = file(projfile, "r").readlines()
     # find the include files
     for x in L:
         y = x.strip()
-        if (y.startswith("AdditionalIncludeDirectories")):
-            idxstart = y.find('"') + 1
-            idxstop = y.find('"', idxstart)
+        if (y.startswith("<AdditionalIncludeDirectories")):
+            idxstart = y.find('>') + 1
+            idxstop = y.find('<', idxstart)
             incdirs = y[idxstart:idxstop].split(";")
             incdirs = map(lambda x: add_proj_path(proj,x), incdirs)
             break
     # find the source files
     for x in L:
         y = x.strip()
-        if (y.startswith("RelativePath=")):
+        if (y.startswith("<ClCompile Include=")):
             idxstart = y.find('"') + 1
             idxstop = y.find('"', idxstart)
             srcfile = y[idxstart:idxstop]
@@ -64,7 +66,8 @@ def make_include_flags(dirs):
     result = ""
     for d in dirs:
         # filter out freetype, SDL include dirs:
-        if not (d.startswith("SDL") or d.startswith("freetype")):
+        if not (d.startswith("SDL") or d.startswith("freetype")
+                or d.find("$")>-1 or d.find("%")>-1):
             result += ("-I" + d + " ")
     return result
 
@@ -109,7 +112,6 @@ SERVER_BINARY_NAME = knights_server
 
 CC = gcc
 CXX = g++
-STRIP = strip
 
 CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG
 CFLAGS = -O3 -ffast-math
@@ -169,15 +171,13 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
 # Print target for Knights binary
 print """
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `sdl-config --libs` `freetype-config --libs` `curl-config --libs` -lfontconfig $(BOOST_LIBS)
-\t$(STRIP) $@
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `sdl-config --libs` `freetype-config --libs` `curl-config --libs` -lfontconfig -lX11 $(BOOST_LIBS)
 """
 
 # Print target for Server binary
 print """
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
 \t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `curl-config --libs` $(BOOST_LIBS)
-\t$(STRIP) $@
 """
 
 

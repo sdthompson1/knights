@@ -94,7 +94,7 @@
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Release\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
