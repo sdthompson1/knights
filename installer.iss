@@ -22,8 +22,17 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "Knights.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "SDL.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\Release\KnightsMain.exe"; DestDir: "{app}"; DestName: "Knights.exe"; Flags: ignoreversion
+Source: "msvc\packages\curl.redist.7.30.0.2\build\native\bin\v110\Win32\Release\dynamic\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Release\freetype246.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\Release\dynamic\cdecl\libssh2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\libeay32.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\ssleay32.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Release\dynamic\SDL.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Release\dynamic\cdecl\zlib.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\x86\Microsoft.VC120.CRT\msvcp120.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\x86\Microsoft.VC120.CRT\msvcr120.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "c:\Windows\System32\msvcr110.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "COPYRIGHT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README-SDL.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "knights_data\client\*"; DestDir: "{app}\knights_data\client"; Flags: ignoreversion
