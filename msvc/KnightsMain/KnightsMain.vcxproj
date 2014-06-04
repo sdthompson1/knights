@@ -79,7 +79,8 @@ copy $(SolutionDir)\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\
 copy $(SolutionDir)\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Debug\dynamic\cdecl\zlib.dll $(OutDir)
 copy $(SolutionDir)\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Debug\freetype246_D.dll $(OutDir)
 copy $(SolutionDir)\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Debug\dynamic\SDL.dll $(OutDir)
-</Command>
+copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Debug\dynamic\libeay32.dll $(OutDir)
+copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Debug\dynamic\ssleay32.dll $(OutDir)</Command>
     </PostBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -114,7 +115,8 @@ copy $(SolutionDir)\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\
 copy $(SolutionDir)\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Release\dynamic\cdecl\zlib.dll $(OutDir)
 copy $(SolutionDir)\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Release\freetype246.dll $(OutDir)
 copy $(SolutionDir)\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Release\dynamic\SDL.dll $(OutDir)
-</Command>
+copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\libeay32.dll $(OutDir)
+copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\ssleay32.dll $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
