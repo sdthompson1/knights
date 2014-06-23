@@ -79,11 +79,10 @@ void KeyboardListener::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Co
 {
     if (type == Coercri::KEY_AUTO_REPEAT) return;  // we are not interested in auto-repeat events
     const bool p = (type == Coercri::KEY_PRESSED);
-	if (!p) return;
-    if (kc == ctrlr.up_key) { ctrlr.up = !ctrlr.up; }
-    else if (kc == ctrlr.right_key) { ctrlr.right = !ctrlr.right; }
-    else if (kc == ctrlr.down_key) { ctrlr.down = !ctrlr.down; }
-	else if (kc == ctrlr.left_key) { ctrlr.left = !ctrlr.left; }
+    if (kc == ctrlr.up_key) { ctrlr.up = p; }
+    else if (kc == ctrlr.right_key) { ctrlr.right = p; }
+    else if (kc == ctrlr.down_key) { ctrlr.down = p; }
+    else if (kc == ctrlr.left_key) { ctrlr.left = p; }
     else if (kc == ctrlr.fire_key) { ctrlr.fire = p; }
     else if (kc == ctrlr.suicide_key) { ctrlr.suicide = p; }
 }
@@ -91,5 +90,5 @@ void KeyboardListener::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Co
 void KeyboardListener::onLoseFocus()
 {
     // when focus is lost, disengage all control keys.
-    //ctrlr.up = ctrlr.right = ctrlr.down = ctrlr.left = ctrlr.fire = ctrlr.suicide = false;
+    ctrlr.up = ctrlr.right = ctrlr.down = ctrlr.left = ctrlr.fire = ctrlr.suicide = false;
 }
