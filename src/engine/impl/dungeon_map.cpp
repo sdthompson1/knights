@@ -371,7 +371,17 @@ bool DungeonMap::addTile(const MapCoord &mc, shared_ptr<Tile> t, const Originato
             need_sweep_items = true;
         }
     }
-    
+
+	// ensure closing a gate does damage to knights and other creatures (#194)
+	bool need_sweep_creatures[H_MISSILES] = { false };  // we assume all creature heights are from 0 to H_MISSILES-1
+	for (int h = 0; h < H_MISSILES; ++h) {
+		if (t->getAccess(MapHeight(h)) < A_CLEAR) {
+			// the new tile is A_APPROACH or A_BLOCKED, therefore it will 'squish' any creature 
+			// that is currently on the square (at that height)
+			need_sweep_creatures[h] = true;
+		}
+	}
+
     // make the change
     for (it = tiles[idx].begin();
          it != tiles[idx].end() && (*it)->getDepth() >= tdepth;
@@ -385,6 +395,14 @@ bool DungeonMap::addTile(const MapCoord &mc, shared_ptr<Tile> t, const Originato
     } else if (need_sweep_items) {
         SweepItems(*this, mc);
     }
+
+	// gate squishing (#194)
+	for (int h = 0; h < H_MISSILES; ++h) {
+		if (need_sweep_creatures[MapHeight(h)]) {
+			SweepCreatures(*this, mc, true, MapHeight(h), originator);
+		}
+	}
+
     return true;
 }
 

@@ -46,7 +46,7 @@ melee_delay_time = 140;     -- waiting time after an attack finishes
 att_mov_delay_time = 40;    -- controls timing of attack-while-moving (higher=less delay)
 att_mov_anim_time = 250;    -- max time to show backswing anim while moving
 parry_delay = 140;          -- How long knights are stunned after parrying.
-door_closed_damage = 1;     -- Amount of damage done when a door is closed on top of a knight.
+door_closed_damage = 1000;  -- Amount of damage done when a door is closed on top of a creature.
 knight_hitpoints = 4;       -- Total number of hitpoints that knights have.
 
 -- Item check task
