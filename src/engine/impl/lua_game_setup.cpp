@@ -37,9 +37,15 @@
 
 #include "lua.hpp"
 
-#include <iostream>     // used by DebugPrint
 #include <cstring>
 #include <vector>
+
+// stuff required by DebugPrint
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <iostream>
+#endif
 
 namespace {
 
@@ -586,7 +592,26 @@ namespace {
     int DebugPrint(lua_State *lua)
     {
         const char * msg = luaL_checkstring(lua, 1);
+
+#ifdef WIN32
+        // Find our stdout handle
+        HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (handle == NULL) {
+            // If stdout does not exist, try to create a new console window
+            // (this will assign the new console as the new stdout)
+            // and try to print to that
+            AllocConsole();
+            handle = GetStdHandle(STD_OUTPUT_HANDLE);
+        }
+        if (handle != NULL) {
+            DWORD dummy;
+            WriteFile(handle, msg, strlen(msg), &dummy, NULL);
+            WriteFile(handle, "\n", 1, &dummy, NULL);
+        }
+#else
+        // on Linux, just write to stdout!
         std::cout << msg << std::endl;
+#endif
         return 0;
     }
 }
