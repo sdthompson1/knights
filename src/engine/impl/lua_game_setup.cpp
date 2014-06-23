@@ -37,6 +37,7 @@
 
 #include "lua.hpp"
 
+#include <iostream>     // used by DebugPrint
 #include <cstring>
 #include <vector>
 
@@ -581,6 +582,13 @@ namespace {
         GetKnightsEngine(lua).setTimeLimit(seconds * 1000);
         return 0;
     }
+
+    int DebugPrint(lua_State *lua)
+    {
+        const char * msg = luaL_checkstring(lua, 1);
+        std::cout << msg << std::endl;
+        return 0;
+    }
 }
 
 // Setup function.
@@ -661,6 +669,13 @@ void AddLuaGameSetupFunctions(lua_State *lua)
 
     PushCFunction(lua, &SetTimeLimit);
     lua_setfield(lua, -2, "SetTimeLimit");
+
+    
+    // Debugging
+
+    PushCFunction(lua, &DebugPrint);
+    lua_setfield(lua, -2, "DebugPrint");
+    
 
     lua_pop(lua, 2);
 }

@@ -74,15 +74,6 @@ private:
     ACTION_MAKER("Damage");
 };
 
-class A_DebugPrint : public LegacyAction {
-public:
-    explicit A_DebugPrint(const std::string &m) : msg(m) { }
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("DebugPrint");
-    std::string msg;
-};
-
 class A_FlashMessage : public LegacyAction {
 public:
     explicit A_FlashMessage(const std::string &m, int nt) : msg(m), num_times(nt) { }

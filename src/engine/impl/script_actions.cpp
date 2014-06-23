@@ -42,8 +42,6 @@
 #include "teleport.hpp"
 #include "tile.hpp"
 
-#include <iostream> // used for A_DebugPrint
-
 #ifdef _MSC_VER
     // fix "bug" with MSVC static libraries and global constructors
     extern "C" void InitScriptActions()
@@ -159,26 +157,6 @@ LegacyAction * A_Damage::Maker::make(ActionPars &pars) const
     pars.require(2, 3);
     bool inhibit_squelch = (pars.getSize() == 3 && pars.getInt(2));
     return new A_Damage(pars.getInt(0), pars.getInt(1), inhibit_squelch);
-}
-
-
-
-//
-// A_DebugPrint
-// print a message to cout
-//
-
-void A_DebugPrint::execute(const ActionData &ad) const
-{
-    std::cout << msg << std::endl;
-}
-
-A_DebugPrint::Maker A_DebugPrint::Maker::register_me;
-
-LegacyAction * A_DebugPrint::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_DebugPrint(pars.getString(0));
 }
 
 
