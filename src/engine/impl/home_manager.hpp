@@ -80,10 +80,11 @@ private:
 
         bool operator<(const HomeLocation &other) const
         {
-            // Dmap/mc are enough to disambiguate different homes,
-            // so no need to compare facing
+            // compare both position and facing (#209)
             return mc < other.mc ? true
                 : other.mc < mc ? false
+                : facing < other.facing ? true
+                : facing > other.facing ? false
                 : dmap < other.dmap;
         }
     };
