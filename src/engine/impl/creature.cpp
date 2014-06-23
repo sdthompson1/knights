@@ -246,9 +246,9 @@ void ThrowingTask::execute(TaskManager &tm)
     Mediator &mediator(Mediator::instance());
     const int qf = me->hasQuickness() ? mediator.cfgInt("quickness_factor") : 100;
     const int ds_time = itype.getMissileDownswingTime();
-    const int wt_time = ds_time + mediator.cfgInt("melee_delay_time");
-    me->setAnimFrame(AF_THROW_DOWN, gvt + ds_time * 100 / qf);
-    me->stunUntil(gvt + wt_time * 100 / qf);
+    const int wait_until = gvt + ds_time * 100 / qf;
+    me->setAnimFrame(AF_THROW_DOWN, wait_until);
+    me->stunUntil(wait_until);
 
     // get rid of the item - if throw was unsuccessful then drop at feet
     // (Note: we don't check if the drop succeeded or not. If there is nowhere

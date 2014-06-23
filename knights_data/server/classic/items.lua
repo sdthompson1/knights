@@ -132,8 +132,8 @@ i_dagger = kts.ItemType {
     missile_speed     = 350,
     missile_hit_multiplier = 1,
     missile_access_chance = 0.5,
-    missile_backswing_time = ts,
-    missile_downswing_time = ts,
+    missile_backswing_time = 2*ts,
+    missile_downswing_time = 2*ts,
     missile_damage    = 1,
     missile_stun_time = rng_time_range(2, 3),
 
