@@ -196,6 +196,7 @@ public:
     void addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                    const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                    bool ainvis, bool ainvuln, // (anim data)
+                   bool approached,
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
                    const UTF8String &name)
     {

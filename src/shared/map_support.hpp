@@ -118,9 +118,6 @@ enum MapAccess {
 //
 
 enum MotionType {
-    // NOTE: In the messages SERVER_SET_ANIM_DATA and SERVER_ADD_ENTITY,
-    // only 2 bits are reserved for MotionType. Therefore, be careful if adding
-    // any new entries to this enum.
     MT_NOT_MOVING,
     MT_MOVE,
     MT_APPROACH,

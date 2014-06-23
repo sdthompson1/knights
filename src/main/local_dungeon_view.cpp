@@ -236,6 +236,7 @@ void LocalDungeonView::setCurrentRoom(int r, int w, int h)
 void LocalDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                                  const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                                  bool ainvis, bool ainvuln,
+                                 bool approached,
                                  int cur_ofs, MotionType motion_type, int motion_time_remaining,
                                  const UTF8String &name)
 {
@@ -250,7 +251,7 @@ void LocalDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight 
             last_known_x = my_x;
             last_known_y = my_y;
         }
-        my_approached = false;
+        my_approached = approached;
         if (!my_colour_change && anim) {
             my_colour_change.reset(new ColourChange(anim->getColourChange(false)));
         }

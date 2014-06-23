@@ -346,7 +346,8 @@ void ViewManager::reallyAddEntity(int plyr, shared_ptr<Entity> ent, unsigned sho
     }
     dungeon_view.addEntity(id, x, y, ent->getHeight(), ent->getFacing(), anim, ovr, af,
                            atz ? atz - gvt : 0, 
-                           ainvis, ainvuln, 
+                           ainvis, ainvuln,
+                           ent->isApproaching(),
                            ent->getOffset(), ent->getMotionType(), motion_time_remaining,
                            name);
     if (show_speech_bubble) dungeon_view.setSpeechBubble(id, true);

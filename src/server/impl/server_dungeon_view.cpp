@@ -180,6 +180,7 @@ void ServerDungeonView::setCurrentRoom(int r, int width, int height)
 void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                                   const Anim *anim, const Overlay *ovr, int af, int atz_diff,
                                   bool ainvis, bool ainvuln,
+                                  bool approached,
                                   int cur_ofs, MotionType motion_type, int motion_time_remaining,
                                   const UTF8String &name)
 {
@@ -190,7 +191,8 @@ void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight
     buf.writeNibbles(int(ht), facing);
     buf.writeVarInt(anim ? anim->getID() : 0);
     buf.writeVarInt(ovr ? ovr->getID() : 0);
-    buf.writeNibbles(af, (int(motion_type)<<2) + (int(ainvis)<<1) + int(ainvuln));
+    buf.writeNibbles(af, (int(approached)<<2) + (int(ainvis)<<1) + int(ainvuln));
+    buf.writeUbyte(int(motion_type));
     if (af != 0) buf.writeShort(ClampToShort(atz_diff));
     buf.writeUshort(ClampToUshort(cur_ofs));
     if (motion_type != MT_NOT_MOVING) buf.writeUshort(ClampToUshort(motion_time_remaining));

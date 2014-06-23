@@ -504,15 +504,19 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const Overlay *overlay = pimpl->readOverlay(buf);
                 int af, z;
                 buf.readNibbles(af, z);
-                const MotionType motion_type = MotionType(z >> 2);
+                const bool approached = ((z & 4) != 0);
                 const bool ainvis = ((z & 2) != 0);
                 const bool ainvuln = ((z & 1) != 0);
+				
+                MotionType motion_type = MotionType(buf.readUbyte());
+				
                 const int atz_diff = af == 0 ? 0 : buf.readShort();
                 const int cur_ofs = buf.readUshort();
                 const int motion_time_remaining = motion_type == MT_NOT_MOVING ? 0 : buf.readUshort();
                 const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
                 if (dungeon_view) dungeon_view->addEntity(id, x, y, MapHeight(ht), MapDirection(facing),
                                                           anim, overlay, af, atz_diff, ainvis, ainvuln,
+                                                          approached,
                                                           cur_ofs, motion_type, motion_time_remaining, name);
             }
             break;
