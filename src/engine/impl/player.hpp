@@ -213,7 +213,6 @@ private:
                          std::map<const Control *, ControlInfo> &cmap,
                          shared_ptr<Creature>);
     static void giveStartingGear(shared_ptr<Knight> knight, const std::vector<std::pair<ItemType*, int> > &items);
-    void findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &facing);
     
 private:
     friend class RespawnTask;

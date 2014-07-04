@@ -408,79 +408,15 @@ bool Player::respawn()
     // If knight is still alive, then respawn will fail.
     if (knight.lock()) return false;
 
-    // If we do not have a home, then it's game over
-    // (Exceptions: respawn_func is set, or RANDOM_SQUARE respawn type)
-    if (!respawn_func.hasValue()
-    && getRespawnType() != R_RANDOM_SQUARE
-    && (!home_dmap || home_location.isNull())) {
 
-        const bool already_eliminated = getElimFlag();
-        
-        if (!already_eliminated) {
-            // Send "PlayerName has been eliminated" to all players.
+    //
+    // Find out where to respawn:
+    //
 
-            // NOTE: These messages ONLY get sent if the player is eliminated by dying in-game.
-            // If they are eliminated "externally" (i.e. by quitting or leaving the game) then 
-            // the external code is assumed to have already sent a "has quit" or "has left" type 
-            // message, so we don't send further messages here. (Trac #36.)
+    DungeonMap *dmap = 0;
+    MapCoord mc;
+    MapDirection facing;
 
-            std::ostringstream str_latin1;
-            str_latin1 << getName().asLatin1() << " has been eliminated.";
-            const int nleft = mediator.getNumPlayersRemaining() - 1;
-            if (nleft > 1) {
-                str_latin1 << " " << nleft << " players are left.";
-            }
-            mediator.getCallbacks().gameMsg(-1, str_latin1.str());
-
-            // Now eliminate the player.
-            mediator.eliminatePlayer(*this);
-        }
-        return true;  // this counts as a "success" -- we do not want the respawn task to keep retrying.
-    }
-
-    // Find out where we should respawn
-    DungeonMap *respawn_map = 0;
-    MapCoord respawn_point;
-    MapDirection respawn_facing;
-    findRespawnPoint(respawn_map, respawn_point, respawn_facing);
-    if (!respawn_map || respawn_point.isNull()) return false;
-
-    // Respawn successful -- Create a new knight.
-    shared_ptr<Knight> my_knight(new Knight(*this, backpack_capacities,
-        mediator.cfgInt("knight_hitpoints"), H_WALKING, default_item, anim, 100));
-    knight = my_knight;
-
-    // Move the knight into the map.
-    // NB This is done AFTER setting "knight" because we want getKnight to respond with 
-    // the current knight, even before that knight is added to the map. (Otherwise Game
-    // won't correctly process the onAddEntity event.)
-    my_knight->addToMap(respawn_map, respawn_point);
-    my_knight->setFacing(respawn_facing);
-
-    // Add starting gear
-    if (!gears.empty()) {
-        giveStartingGear(my_knight, gears.front());
-        gears.pop_front();
-    }
-
-    // Clear the teleported-recently flag
-    setTeleportFlag(false);
-
-    // Cancel any respawn task that might still be in progress.
-    respawn_task = shared_ptr<RespawnTask>();
-
-    // Create a KnightTask so that the knight can be controlled.
-    shared_ptr<KnightTask> ktsk(new KnightTask(*this));
-    TaskManager &tm(mediator.getTaskManager());
-    tm.addTask(ktsk, TP_NORMAL, tm.getGVT() + 1);
-    
-    return true;
-}
-
-void Player::findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &facing)
-{
-    dmap = 0;
-    
     // First run the respawn_func (if there is one).
     if (respawn_func.hasValue()) {
         // Call the respawn func, with "this" as argument.
@@ -492,11 +428,14 @@ void Player::findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &fa
             MapCoord &mc;
             MapDirection &facing;
             Player *plyr;
+            bool want_retry;
             static int run(lua_State *lua) {
                 Pcall *p = static_cast<Pcall*>(lua_touserdata(lua, 1));
                 NewLuaPtr<Player>(lua, p->plyr);  // [plyr]
-                p->plyr->respawn_func.run(lua, 1, 3);   // [x y dir] or [nil nil nil]
-                if (!lua_isnil(lua, -3)) {
+                p->plyr->respawn_func.run(lua, 1, 3);   // [x y dir] or [nil nil nil] or ["retry" nil nil]
+                if (lua_tostring(lua, -3) == "retry") {
+                    p->want_retry = true;
+                } else if (!lua_isnil(lua, -3)) {
                     p->dmap = Mediator::instance().getMap().get();
                     p->mc.setX(lua_tointeger(lua, -3));
                     p->mc.setY(lua_tointeger(lua, -2));
@@ -504,20 +443,32 @@ void Player::findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &fa
                 }
                 return 0;
             }
-        } pc = { dmap, mc, facing, this };
+        } pc = { dmap, mc, facing, this, false };
 
         PushCFunction(lua, &Pcall::run);   // [func]
         lua_pushlightuserdata(lua, &pc);   // [func arg]
         int err = lua_pcall(lua, 1, 0, 0);
-        if (err) {
-            // [errmsg]
-            Mediator::instance().gameMsg(-1,
-                                         std::string("(Error in respawn function) ") + lua_tostring(lua, -1),
-                                         true);
+        if (pc.want_retry) {
+            // the lua code returned "retry", so we should abort the respawn and return false
+            // (which means "please try the respawn again later")
+            return false;
+
+        } else if (err) {
+            // the lua code raised an error!
+            // in this case we should print an error message and then fall through to the 
+            // "normal" respawn logic (i.e. as if lua respawn func was not set).
+
+            // lua stack = [errmsg]
+
+            Mediator::instance().gameMsg(
+                -1,
+                std::string("(Error in respawn function) ") + lua_tostring(lua, -1),
+                true);
             lua_pop(lua, 1); // []
+
         } else {
             // []
-            // copy back results
+            // Lua returned a suggested respawn point. Copy this into the dmap, mc, facing variables.
             dmap = pc.dmap;
             mc = pc.mc;
             facing = pc.facing;
@@ -527,30 +478,105 @@ void Player::findRespawnPoint(DungeonMap *& dmap, MapCoord &mc, MapDirection &fa
     if (!dmap) {
         // There was no respawn function, or, it failed to run.
         // Use the normal "respawn type" logic instead.
-        
+
         // If respawn type is R_RANDOM_SQUARE then set the spawn point to
         // somewhere completely random
         if (respawn_type == R_RANDOM_SQUARE) {
             dmap = Mediator::instance().getMap().get();
-            mc = MapCoord(g_rng.getInt(1, dmap->getWidth()-1),
-                          g_rng.getInt(1, dmap->getHeight()-1));
+            mc = MapCoord(g_rng.getInt(1, dmap->getWidth() - 1),
+                g_rng.getInt(1, dmap->getHeight() - 1));
             facing = MapDirection(g_rng.getInt(0, 4));
-            
+
         } else {
-            // For R_NORMAL we use the home location as respawn point.
-            // For R_DIFFERENT_EVERY_TIME we also use the home location
-            //   (HomeManager is responsible for reassigning the home, not us).
-            dmap = home_dmap;
-            mc = home_location;
-            facing = Opposite(home_facing);
+
+            // The respawn type is either R_NORMAL or R_DIFFERENT_EVERY_TIME
+            // In these cases:
+            //  -- If the player has a home location, use that as the respawn point.
+            //  -- Otherwise, it's game over for that player.
+
+            // (Note: With R_DIFFERENT_EVERY_TIME, HomeManager is responsible for reassigning the 
+            // home on each respawn, not us.)
+
+            // First check whether they have a spawn point.
+            if (!this->home_dmap || this->home_location.isNull()) {
+
+                // They don't have one -- Game Over
+
+                const bool already_eliminated = getElimFlag();
+                if (!already_eliminated) {
+                    // Send "PlayerName has been eliminated" to all players.
+
+                    // NOTE: These messages ONLY get sent if the player is eliminated by dying in-game.
+                    // If they are eliminated "externally" (i.e. by quitting or leaving the game) then 
+                    // the external code is assumed to have already sent a "has quit" or "has left" type 
+                    // message, so we don't send further messages here. (Trac #36.)
+
+                    std::ostringstream str_latin1;
+                    str_latin1 << getName().asLatin1() << " has been eliminated.";
+                    const int nleft = mediator.getNumPlayersRemaining() - 1;
+                    if (nleft > 1) {
+                        str_latin1 << " " << nleft << " players are left.";
+                    }
+                    mediator.getCallbacks().gameMsg(-1, str_latin1.str());
+
+                    // Now eliminate the player.
+                    mediator.eliminatePlayer(*this);
+                }
+                return true;  // this counts as a "success" -- we do not want the respawn task to keep retrying.
+            
+            } else {
+
+                // They do have a home. Use it as the respawn point.
+                dmap = home_dmap;
+                mc = home_location;
+                facing = Opposite(home_facing);
+            }
         }
     }
-    
-    // If the chosen spawn point is occupied then this will find a
-    // nearby empty square to use:
-    mc = FindRespawnPoint(dmap, mc);
-}
 
+    // OK so if we get to here, a respawn point has been chosen and put into the 
+    // "dmap", "mc" and "facing" variables.
+    // Note: these might be "null" (if the respawn is to be temporarily delayed).
+    
+    // If the chosen spawn point is blocked this will move it to a nearby unblocked point
+    // (or set mc to null if no unblocked point is available).
+    mc = FindRespawnPoint(dmap, mc);
+
+    // If we get to here and either dmap or mc is null, then return false which means "try again later".
+    if (!dmap || mc.isNull()) return false;
+
+    // Respawn successful -- Create a new knight.
+    shared_ptr<Knight> my_knight(new Knight(*this, backpack_capacities,
+        mediator.cfgInt("knight_hitpoints"), H_WALKING, default_item, anim, 100));
+    this->knight = my_knight;
+
+    // Move the knight into the map.
+    // NB This is done AFTER setting "this->knight" because we want getKnight to respond with 
+    // the current knight, even before that knight is added to the map. (Otherwise Game
+    // won't correctly process the onAddEntity event.)
+    my_knight->addToMap(dmap, mc);
+    my_knight->setFacing(facing);
+
+    // Add starting gear
+    if (!gears.empty()) {
+        giveStartingGear(my_knight, gears.front());
+        gears.pop_front();
+    }
+
+    // Clear the teleported-recently flag
+    setTeleportFlag(false);
+
+    // Cancel any respawn task that might still be in progress.
+    this->respawn_task = shared_ptr<RespawnTask>();
+
+    // Create a KnightTask so that the knight can be controlled.
+    shared_ptr<KnightTask> ktsk(new KnightTask(*this));
+    TaskManager &tm(mediator.getTaskManager());
+    tm.addTask(ktsk, TP_NORMAL, tm.getGVT() + 1);
+    
+    // Respawn was successful!
+    return true;
+}
 
 
 //
