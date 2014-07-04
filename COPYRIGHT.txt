@@ -1,7 +1,7 @@
 KNIGHTS
 -------
 
-Copyright (C) Stephen Thompson, 2006 - 2013.
+Copyright (C) Stephen Thompson, 2006 - 2014.
 Copyright (C) Kalle Marjola, 1994.
 
 
