@@ -89,7 +89,7 @@ private:
         }
     };
 
-    static void pushHome(lua_State *lua, const std::pair<HomeLocation, Player *> &home);
+    static void pushHome(lua_State *lua, const HomeLocation &loc, Player * secured_by);
 
     // This map stores info about each home.
     // secured_by == 0 means the home is unsecured

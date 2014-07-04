@@ -176,31 +176,40 @@ void HomeManager::onKnightDeath(Player &pl) const
     }
 }
 
-void HomeManager::pushHome(lua_State *lua, const std::pair<HomeLocation, Player *> &home)
+void HomeManager::pushHome(lua_State *lua,
+                           const HomeLocation &loc,
+                           Player * secured_by) 
 {
-    lua_newtable(lua);  // [home]
+    if (loc.dmap == 0 || loc.mc.isNull()) {
+        // The home position is not valid.
+        // This means the player does not currently have a home.
+        // Return a "nil" value to lua.
+        lua_pushnil(lua);
 
-    ASSERT(home.first.dmap);
-    ASSERT(!home.first.mc.isNull());
-    lua_pushinteger(lua, home.first.mc.getX());   // [home x]
-    lua_setfield(lua, -2, "x");             // [home]
-    lua_pushinteger(lua, home.first.mc.getY());
-    lua_setfield(lua, -2, "y");
-    PushMapDirection(lua, home.first.facing);
-    lua_setfield(lua, -2, "facing");
-    if (home.second) {
-        NewLuaPtr<Player>(lua, home.second);   // [home plyr]
-        lua_setfield(lua, -2, "secured_by");  // [home]
-    }
+    } else {
 
-    // find the home tile itself, makes it easier for lua to inspect it if required.
-    vector<shared_ptr<Tile> > tiles;
-    home.first.dmap->getTiles(DisplaceCoord(home.first.mc, home.first.facing), tiles);
-    for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
-        Home *home = dynamic_cast<Home*>(it->get());
-        if (home) {
-            NewLuaSharedPtr<Tile>(lua, *it);
-            lua_setfield(lua, -2, "tile");
+        lua_newtable(lua);  // [home]
+
+        lua_pushinteger(lua, loc.mc.getX());   // [home x]
+        lua_setfield(lua, -2, "x");            // [home]
+        lua_pushinteger(lua, loc.mc.getY());
+        lua_setfield(lua, -2, "y");
+        PushMapDirection(lua, loc.facing);
+        lua_setfield(lua, -2, "facing");
+        if (secured_by) {
+            NewLuaPtr<Player>(lua, secured_by);   // [home plyr]
+            lua_setfield(lua, -2, "secured_by");  // [home]
+        }
+
+        // find the home tile itself, makes it easier for lua to inspect it if required.
+        vector<shared_ptr<Tile> > tiles;
+        loc.dmap->getTiles(DisplaceCoord(loc.mc, loc.facing), tiles);
+        for (vector<shared_ptr<Tile> >::const_iterator it = tiles.begin(); it != tiles.end(); ++it) {
+            Home *home = dynamic_cast<Home*>(it->get());
+            if (home) {
+                NewLuaSharedPtr<Tile>(lua, *it);
+                lua_setfield(lua, -2, "tile");
+            }
         }
     }
 }
@@ -210,7 +219,7 @@ void HomeManager::pushAllHomes(lua_State *lua) const
     lua_createtable(lua, homes.size(), 0);   // [homes]
     int n = 1;
     for (HomeMap::const_iterator it = homes.begin(); it != homes.end(); ++it) {
-        pushHome(lua, *it);   // [homes home]
+        pushHome(lua, it->first, it->second);   // [homes home]
         lua_rawseti(lua, -2, n++);  // [homes]
     }
 }
@@ -225,16 +234,8 @@ void HomeManager::pushHomeFor(lua_State *lua, Player &player) const
     HomeMap::const_iterator it = homes.find(loc);
 
     if (it == homes.end()) {
-        // just give the position/facing
-        lua_newtable(lua);
-        lua_pushinteger(lua, loc.mc.getX());
-        lua_setfield(lua, -2, "x");
-        lua_pushinteger(lua, loc.mc.getY());
-        lua_setfield(lua, -2, "y");
-        PushMapDirection(lua, loc.facing);
-        lua_setfield(lua, -2, "facing");
+        pushHome(lua, loc, 0);
     } else {
-        // push all info about the home (including tile and secured_by)
-        pushHome(lua, *it);
+        pushHome(lua, loc, it->second);
     }
 }
