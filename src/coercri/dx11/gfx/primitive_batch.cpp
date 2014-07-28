@@ -56,12 +56,11 @@
 #include <cmath>
 #include <string>
 
-#include <DirectXMath.h>
 
 namespace Coercri {
 
     struct PrimitiveBatchVertex {
-        DirectX::XMFLOAT2 pos;
+        float pos_x, pos_y;
         unsigned char r;
         unsigned char g;
         unsigned char b;
@@ -579,8 +578,8 @@ namespace Coercri {
     void PrimitiveBatch::addVertex(float x, float y, Color col)
     {
         PrimitiveBatchVertex &vert = vb_ptr[end_vertex];
-        vert.pos.x = x;
-        vert.pos.y = y;
+        vert.pos_x = x;
+        vert.pos_y = y;
         vert.r = col.r;
         vert.g = col.g;
         vert.b = col.b;
@@ -591,8 +590,8 @@ namespace Coercri {
     void PrimitiveBatch::addTexVertex(float x, float y, unsigned char tx, unsigned char ty)
     {
         PrimitiveBatchVertex &vert = vb_ptr[end_vertex];
-        vert.pos.x = x;
-        vert.pos.y = y;
+        vert.pos_x = x;
+        vert.pos_y = y;
         vert.r = tx;
         vert.g = ty;
         ++end_vertex;

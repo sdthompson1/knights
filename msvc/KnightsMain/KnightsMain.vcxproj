@@ -19,7 +19,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
@@ -108,6 +108,7 @@ copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32
       <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Release\dynamic;..\packages\freetype.2.4.2.1\build\native\lib\Win32\v110\dynamic\Release;..\packages\SDL.1.2.15.15\build\native\lib\v110\Win32\Release\dynamic</AdditionalLibraryDirectories>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
       <Command>copy $(SolutionDir)\packages\curl.redist.7.30.0.2\build\native\bin\v110\Win32\Release\dynamic\libcurl.dll $(OutDir)
