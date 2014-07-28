@@ -141,7 +141,7 @@ i_dagger = kts.ItemType {
        else
           return 1
        end
-    end
+    end,
     missile_stun_time = rng_time_range(2, 3),
 
     control = kts.Control {
