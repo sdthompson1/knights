@@ -424,10 +424,22 @@ bool Creature::canThrow(bool strict) const
     // Can never throw while approaching
     if (isApproaching()) return false;
     
-    // Check if the square ahead allows missiles
-    // Note: If non-strict then we check tiles only - not actual entities.
+    // Cannot throw if a creature is in the square ahead of us.
+    // (Requested by KnightRider)
     const MapDirection facing = getFacing();
     const MapCoord pos = DisplaceCoord(getDestinationPos(), facing);
+    std::vector<shared_ptr<Entity> > ents;
+    getMap()->getEntities(pos, ents);
+    for (std::vector<shared_ptr<Entity> >::const_iterator it = ents.begin(); it != ents.end(); ++it) {
+        if (it->get() != this && dynamic_cast<Creature*>(it->get())) {
+            // there is a creature (other than myself) in the square ahead.
+            // the throw is blocked.
+            return false;
+        }
+    }
+
+    // Check if the square ahead allows missiles
+    // Note: If non-strict then we check tiles only - not actual entities.
     const MapHeight height = MapHeight(H_MISSILES + facing);
     MapAccess access;
     if (strict) {
