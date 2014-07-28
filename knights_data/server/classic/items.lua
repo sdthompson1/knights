@@ -134,7 +134,14 @@ i_dagger = kts.ItemType {
     missile_access_chance = 0.5,
     missile_backswing_time = 2*ts,
     missile_downswing_time = 2*ts,
-    missile_damage    = 1,
+    missile_damage    = function()
+       -- dagger has 1 in 3 chance of "missing" (doing zero damage).
+       if kts.RandomChance(0.3333) then
+          return 0
+       else
+          return 1
+       end
+    end
     missile_stun_time = rng_time_range(2, 3),
 
     control = kts.Control {
