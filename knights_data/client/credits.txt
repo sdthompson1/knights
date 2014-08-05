@@ -3,7 +3,7 @@
 KNIGHTS
 
 Release 025
-Released ??-???-????
+Released 05-Aug-2014
 
 
 Programmed by 

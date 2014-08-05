@@ -25,4 +25,4 @@ Instructions for building can be found in docs/building.html.
 -----
 Stephen Thompson
 stephen@solarflare.org.uk
-July 2014
+August 2014
