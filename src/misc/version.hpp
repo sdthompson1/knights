@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2013.
+ * Copyright (C) Stephen Thompson, 2006 - 2014.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -24,8 +24,8 @@
 #ifndef VERSION_HPP
 #define VERSION_HPP
 
-#define KNIGHTS_VERSION "025"
-#define KNIGHTS_VERSION_NUM 25
+#define KNIGHTS_VERSION "026"
+#define KNIGHTS_VERSION_NUM 26
 #define COMPATIBLE_VERSION_NUM 24   // Lowest client version that can connect to this server
 
 #ifdef WIN32

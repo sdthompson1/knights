@@ -11,7 +11,7 @@ AppUpdatesURL=http://www.knightsgame.org.uk/
 DefaultDirName={pf}\Knights
 DefaultGroupName=Knights
 LicenseFile=COPYRIGHT.txt
-OutputBaseFilename=knights_025_installer
+OutputBaseFilename=knights_026_installer
 Compression=lzma
 SolidCompression=yes
 
