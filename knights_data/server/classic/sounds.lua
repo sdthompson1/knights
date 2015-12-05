@@ -82,8 +82,17 @@ function snd_squelch()
    kts.PlaySound(cxt.pos, s_squelch, 15000)   -- Knight takes weapon damage, or monster killed by weapon
 end
 
-function snd_teleport()
-   kts.PlaySound(cxt.pos, s_squelch, 4000)    -- Teleportation
+function snd_teleport(pos)
+   -- this function now takes an optional "pos" argument, because for teleports
+   -- cxt.pos is not always the position you want to play the sound at...
+   -- See bug #208.
+
+   -- if they don't specify a pos, then default to "cxt.pos"
+   if pos == nil then
+      pos = cxt.pos
+   end
+   
+   kts.PlaySound(pos, s_squelch, 4000)    -- Teleportation sound
 end
 
 function snd_tile_bash()

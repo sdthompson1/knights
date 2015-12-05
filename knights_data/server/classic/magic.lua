@@ -77,13 +77,13 @@ end
 function my_teleport()
    snd_teleport()
    kts.TeleportRandom()
-   snd_teleport()
+   snd_teleport(kts.GetPos(cxt.actor))  -- play sound at new position not old!
 end
 
 function my_attractor()
    snd_teleport()
    kts.Attractor()
-   snd_teleport()
+   snd_teleport(kts.GetPos(cxt.actor))  -- play sound at new position not old!
 end
 
 function my_zombify()
