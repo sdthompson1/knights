@@ -183,9 +183,12 @@ void DungeonMap::doEntity(const MapCoord &mc, MapDirection facing,
 }
 
 shared_ptr<Creature> DungeonMap::getTargetCreatureHelper(const Entity &attacker,
-                                                         const MapCoord &mc) const
+                                                         const MapCoord &mc,
+                                                         bool sloppy) const
 {
-    const int halfway_point = 500;
+    // "sloppy" is a fix for #158
+    const int halfway_point_upper = sloppy ? 600 : 500;
+    const int halfway_point_lower = sloppy ? 400 : 500;
     
     vector<shared_ptr<Entity> > ents;
     shared_ptr<Creature> result;
@@ -201,8 +204,8 @@ shared_ptr<Creature> DungeonMap::getTargetCreatureHelper(const Entity &attacker,
         it->get() != &attacker
             
         // Check that the target obeys the "50% rule"
-        && (    ((*it)->getPos() == mc && (*it)->getOffset() < halfway_point)
-             || ((*it)->getPos() != mc && (*it)->getOffset() >= halfway_point)
+        && (    ((*it)->getPos() == mc && (*it)->getOffset() < halfway_point_upper)
+             || ((*it)->getPos() != mc && (*it)->getOffset() >= halfway_point_lower)
            )
 
         // We want the *highest* of all possible target creatures
@@ -230,13 +233,16 @@ shared_ptr<Creature> DungeonMap::getTargetCreature(const Entity & attacker,
     const int attacker_offset = attacker.getOffset();
     bool attacker_more_than_halfway = attacker_offset >= halfway_point;
     
+    const bool sloppy = !allow_both_sqs;  // if allow_both_sqs is false, use sloppy check (#158)
+
     if (allow_both_sqs || attacker_more_than_halfway) {
         shared_ptr<Creature> result = getTargetCreatureHelper(attacker,
-                DisplaceCoord(attacker.getPos(), attacker.getFacing()));
+                DisplaceCoord(attacker.getPos(), attacker.getFacing()),
+                sloppy);
         if (result) return result;
     }
     if (allow_both_sqs || !attacker_more_than_halfway) {
-        shared_ptr<Creature> result = getTargetCreatureHelper(attacker, attacker.getPos());
+        shared_ptr<Creature> result = getTargetCreatureHelper(attacker, attacker.getPos(), sloppy);
         if (result) return result;
     }
     return shared_ptr<Creature>();

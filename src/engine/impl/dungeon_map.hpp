@@ -126,6 +126,8 @@ public:
     // allow_both_sqs: if true, can target attacker's sq or the sq one ahead of the attacker.
     // if false, can target the sq. that the attacker is mainly on (either his sq or the
     // sq ahead, depending on whether offset < or > 50%).
+    //  Update 29-Dec-2015: if allow_both_sqs=false we now allow a slight "overlap" between
+    //  the two squares. Fixes #158.
     shared_ptr<Creature> getTargetCreature(const Entity & attacker, bool allow_both_sqs) const;
     
     // get item at a given square
@@ -156,7 +158,7 @@ private:
                   std::vector<boost::shared_ptr<Entity> > &results) const;
 
     // helper for getTargetCreature
-    shared_ptr<Creature> getTargetCreatureHelper(const Entity &, const MapCoord &) const;
+    shared_ptr<Creature> getTargetCreatureHelper(const Entity &, const MapCoord &, bool) const;
     
     // get index corresponding to a mapcoord
     int index(const MapCoord &mc) const
