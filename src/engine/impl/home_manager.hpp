@@ -32,6 +32,7 @@
 #include "map_support.hpp"
 
 #include <map>
+#include <set>
 
 class Player;
 class Tile;
@@ -42,9 +43,9 @@ public:
     // The pos is the tile one outside the home, and the facing must point towards
     // the home.
     // NOTE: we assume all homes are in the same DungeonMap at present. 
-    void addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing);
+    void addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing, bool is_special_exit);
 
-    void clear() { homes.clear(); }  // remove all added homes
+    void clear() { homes.clear(); special_exits.clear(); }  // remove all added homes
     
     // Secure a home by a given player
     // (This does nothing if the given tile is not a home.)
@@ -62,7 +63,7 @@ public:
     void onKnightDeath(Player &pl) const;
 
     // Push home(s) to Lua stack
-    void pushAllHomes(lua_State *lua) const;
+    void pushAllHomes(lua_State *lua) const;  // including special exits
     void pushHomeFor(lua_State *lua, Player &player) const;
     
 private:
@@ -94,9 +95,13 @@ private:
     // This map stores info about each home.
     // secured_by == 0 means the home is unsecured
     // secured_by != 0 means the home is secured by that player
-    // Home not in map at all == The home was secured by both players.
+    // Home not in map at all == The home was secured by both players, or is the guarded exit (special exit).
     typedef std::map<HomeLocation, Player *> HomeMap;
     HomeMap homes;
+
+    // This set contains all "special exits" (= guarded exit points).
+    typedef std::set<HomeLocation> HomeSet;
+    HomeSet special_exits;
 };
 
 #endif

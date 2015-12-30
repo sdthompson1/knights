@@ -1134,7 +1134,7 @@ void DungeonGenerator(DungeonMap &dmap,
         MapCoord pos(it->x, it->y);  // home square itself
         MapDirection facing = it->facing;  // points towards home
         pos = DisplaceCoord(pos, Opposite(facing));
-        home_manager.addHome(dmap, pos, facing);
+        home_manager.addHome(dmap, pos, facing, it->special_exit);
     }
 
     // Give players their homes

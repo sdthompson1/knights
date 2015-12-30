@@ -35,14 +35,18 @@
 
 using std::vector;
 
-void HomeManager::addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing)
+void HomeManager::addHome(DungeonMap &dmap, const MapCoord &pos, MapDirection facing, bool is_special_exit)
 {
     ASSERT(!pos.isNull());
     HomeLocation loc;
     loc.dmap = &dmap;
     loc.mc = pos;
     loc.facing = facing;
-    homes[loc] = 0;
+    if (is_special_exit) {
+        special_exits.insert(loc);
+    } else {
+        homes[loc] = 0;
+    }
 }
 
 bool HomeManager::isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &pos, MapDirection facing) const
@@ -221,6 +225,10 @@ void HomeManager::pushAllHomes(lua_State *lua) const
     for (HomeMap::const_iterator it = homes.begin(); it != homes.end(); ++it) {
         pushHome(lua, it->first, it->second);   // [homes home]
         lua_rawseti(lua, -2, n++);  // [homes]
+    }
+    for (HomeSet::const_iterator it = special_exits.begin(); it != special_exits.end(); ++it) {
+        pushHome(lua, *it, 0);
+        lua_rawseti(lua, -2, n++);
     }
 }
 
