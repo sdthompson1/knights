@@ -361,43 +361,6 @@ LegacyAction * A_RevealStop::Maker::make(ActionPars &pars) const
 
 
 //
-// A_Secure
-//
-
-bool A_Secure::possible(const ActionData &ad) const
-{
-    shared_ptr<Creature> cr = ad.getActor();
-    const Player * player = cr->getPlayer();
-    if (cr && cr->getMap() && player) {
-        return Mediator::instance().isSecurableHome(*player, cr->getMap(), cr->getPos(), cr->getFacing());
-    } else {
-        return false;
-    }
-}
-
-bool A_Secure::executeWithResult(const ActionData &ad) const
-{
-    shared_ptr<Creature> cr = ad.getActor();
-    Player * player = cr->getPlayer();
-    if (cr && cr->getMap() && player) {
-        return Mediator::instance().secureHome(*player,
-                   *cr->getMap(), cr->getPos(), cr->getFacing(), plain_wall_tile);
-    } else {
-        return false;
-    }
-}
-
-A_Secure::Maker A_Secure::Maker::register_me;
-
-LegacyAction * A_Secure::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    shared_ptr<Tile> wall = pars.getTile(0);
-    return new A_Secure(wall);
-}
-
-
-//
 // A_ZombieKill
 //
 

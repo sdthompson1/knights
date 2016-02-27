@@ -30,6 +30,7 @@
 #define HOME_MANAGER_HPP
 
 #include "map_support.hpp"
+#include "secure_result.hpp"
 
 #include <map>
 #include <set>
@@ -51,9 +52,9 @@ public:
     // (This does nothing if the given tile is not a home.)
     // Returns true if a home was secured
     // (The secured_wall_tile is cloned if necessary.)
-    bool secureHome(Player &pl,
-                    DungeonMap &dmap, const MapCoord &pos, MapDirection facing,
-                    shared_ptr<Tile> secured_wall_tile);
+    SecureResult secureHome(Player &pl,
+                            DungeonMap &dmap, const MapCoord &pos, MapDirection facing,
+                            shared_ptr<Tile> secured_wall_tile);
 
     // is this a securable home
     bool isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &pos, MapDirection facing) const;

@@ -975,6 +975,63 @@ namespace {
         return 0;
     }
 
+    // input: wall tile
+    // cxt: actor
+    // output: bool to say whether securing succeeded or not
+    //         if failed, also returns a string giving reason for the failure
+    int Secure(lua_State *lua)
+    {
+        bool result = false;
+        std::string reason;
+        
+        shared_ptr<Tile> wall = ReadLuaSharedPtr<Tile>(lua, 1);
+        if (!wall) {
+            return luaL_error(lua, "Secure: parameter 1 must be a tile");
+        }
+
+        lua_getglobal(lua, "cxt");        // [arg cxt]
+        lua_getfield(lua, -1, "actor");   // [arg cxt cr]
+        boost::shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, -1);
+        if (cr) {
+            Player *player = cr->getPlayer();
+            if (player && cr->getMap()) {
+                SecureResult sr = Mediator::instance().secureHome(*player,
+                    *cr->getMap(), cr->getPos(), cr->getFacing(), wall);
+                switch (sr) {
+                case SECURE_SUCCEEDED:
+                    result = true;
+                    break;
+                case SECURE_FAILED_NOT_A_HOME:
+                    result = false;
+                    reason = "not_a_home";
+                    break;
+                case SECURE_FAILED_ALREADY_SECURE:
+                    result = false;
+                    reason = "already_secure";
+                    break;
+                case SECURE_FAILED_SPECIAL_EXIT:
+                    result = false;
+                    reason = "special_exit";
+                }
+            } else {
+                result = false;
+                reason = "invalid";
+            }
+        } else {
+            result = false;
+            reason = "invalid";
+        }
+
+        if (result) {
+            lua_pushboolean(lua, result);
+            return 1;
+        } else {
+            lua_pushboolean(lua, result);
+            lua_pushstring(lua, reason.c_str());
+            return 2;
+        }
+    }
+
 
     //
     // Quests
@@ -1265,6 +1322,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &RotateDirection);
     lua_setfield(lua, -2, "RotateDirection");
+
+    PushCFunction(lua, &Secure);
+    lua_setfield(lua, -2, "Secure");
 
     // Now we want to add all the LegacyActions as Lua functions.
     {

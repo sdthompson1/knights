@@ -263,8 +263,12 @@ i_wand_of_securing = kts.ItemType(
     end,
     melee_stun_time = ts,
     melee_action = function()
-       local success = kts.Secure(t_wall_normal) 
-       if success then wandzap() end
+       local success, reason = kts.Secure(t_wall_normal)
+       if success then
+         wandzap()
+       elseif reason == "special_exit" then
+         kts.FlashMessage("This exit cannot be secured.")
+       end
     end
   }
 )

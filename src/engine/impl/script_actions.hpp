@@ -145,16 +145,6 @@ private:
     ACTION_MAKER("RevealStop");
 };
 
-class A_Secure : public LegacyAction {
-public:
-    explicit A_Secure(shared_ptr<Tile> pwt) : plain_wall_tile(pwt) { }
-    virtual bool possible(const ActionData &) const;
-    virtual bool executeWithResult(const ActionData &) const;
-private:
-    ACTION_MAKER("Secure");
-    shared_ptr<Tile> plain_wall_tile;
-};
-
 class A_Shoot : public LegacyAction {
 public:
     A_Shoot(int dx_, int dy_, MapDirection dir_, ItemType &it)

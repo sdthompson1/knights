@@ -52,6 +52,7 @@
 
 #include "exception_base.hpp"
 #include "map_support.hpp"
+#include "secure_result.hpp"
 
 #include "boost/shared_ptr.hpp"
 using namespace boost;
@@ -212,8 +213,8 @@ public:
     
     // Home manager (wand of securing)
     bool isSecurableHome(const Player &pl, DungeonMap *dmap, const MapCoord &pos, MapDirection facing) const;
-    bool secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
-                    MapDirection facing, shared_ptr<Tile> secured_wall_tile);
+    SecureResult secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
+                            MapDirection facing, shared_ptr<Tile> secured_wall_tile);
 
     
     // End-of-Game handling

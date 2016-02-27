@@ -61,19 +61,25 @@ bool HomeManager::isSecurableHome(const Player &pl, DungeonMap *dmap, const MapC
     return true;
 }
 
-bool HomeManager::secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
-                             MapDirection facing, shared_ptr<Tile> secured_wall_tile)
+SecureResult HomeManager::secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
+                                     MapDirection facing, shared_ptr<Tile> secured_wall_tile)
 {
     HomeLocation loc;
     loc.dmap = &dmap;
     loc.mc = pos;
     loc.facing = facing;
     HomeMap::iterator it = homes.find(loc);
-    if (it == homes.end()) return false;
-    if (it->second == &pl) return false; // don't secure homes twice ...
+    if (it == homes.end()) {
+        if (special_exits.find(loc) == special_exits.end()) {
+            return SECURE_FAILED_NOT_A_HOME;
+        } else {
+            return SECURE_FAILED_SPECIAL_EXIT;
+        }
+    }
+    if (it->second == &pl) return SECURE_FAILED_ALREADY_SECURE;
 
     // Also: don't secure homes twice by different members of the same team.
-    if (it->second && it->second->getTeamNum() == pl.getTeamNum()) return false;
+    if (it->second && it->second->getTeamNum() == pl.getTeamNum()) return SECURE_FAILED_ALREADY_SECURE;
     
     // We have to secure the home
     // First find the home tile
@@ -130,7 +136,7 @@ bool HomeManager::secureHome(Player &pl, DungeonMap &dmap, const MapCoord &pos,
         }
     }
 
-    return true;
+    return SECURE_SUCCEEDED;
 }
 
 void HomeManager::getRandomHomeFor(Player &pl, 
