@@ -1,4 +1,4 @@
-<?
+<?php
 
 define ("DATABASE_HOST", "localhost");
 define ("DATABASE_NAME", "insert_database_name_here");
