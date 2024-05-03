@@ -81,17 +81,17 @@ public:
     boost::scoped_ptr<GuiButton> random_quest_button;
     boost::scoped_ptr<gcn::Label> label, title, observer_label;
     boost::scoped_ptr<GuiTextWrap> quest_description_box;
-    std::auto_ptr<gcn::ScrollArea> quest_description_scroll_area;
+    std::unique_ptr<gcn::ScrollArea> quest_description_scroll_area;
     
     boost::scoped_ptr<gcn::Label> house_colour_label, team_label;
     boost::scoped_ptr<gcn::DropDown> house_colour_dropdown;
     boost::scoped_ptr<HouseColourListModel> house_colour_list_model;
     boost::scoped_ptr<GuiButton> join_button;
     boost::scoped_ptr<gcn::ListBox> players_listbox;
-    std::auto_ptr<gcn::ScrollArea> players_scrollarea;
+    std::unique_ptr<gcn::ScrollArea> players_scrollarea;
     boost::scoped_ptr<gcn::Label> players_title;
     boost::scoped_ptr<gcn::ListBox> chat_listbox;
-    std::auto_ptr<gcn::ScrollArea> chat_scrollarea;
+    std::unique_ptr<gcn::ScrollArea> chat_scrollarea;
     boost::scoped_ptr<gcn::Label> chat_field_title;
     boost::scoped_ptr<gcn::TextField> chat_field;
 

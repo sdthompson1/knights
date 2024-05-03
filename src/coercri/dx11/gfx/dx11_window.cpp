@@ -545,11 +545,11 @@ namespace Coercri {
     // Gfx context handling
     //
 
-    std::auto_ptr<GfxContext> DX11Window::createGfxContext()
+    std::unique_ptr<GfxContext> DX11Window::createGfxContext()
     {
         // note: only one GfxContext should be created at a time.
         // this is enforced by PrimitiveBatch.
-        std::auto_ptr<GfxContext> gc(new DX11GfxContext(gfx_driver.getDevice(),
+        std::unique_ptr<GfxContext> gc(new DX11GfxContext(gfx_driver.getDevice(),
                                                         gfx_driver.getDeviceContext(),
                                                         m_psRenderTargetView.get(),
                                                         m_psSwapChain.get(),

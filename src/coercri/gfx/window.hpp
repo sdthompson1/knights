@@ -100,7 +100,7 @@ namespace Coercri {
         // 1) only one GfxContext should exist at any given time
         // 2) a GfxContext should not exist across a call to GfxDriver::pollEvents.
         // 3) the window should not be destroyed while there is an outstanding GfxContext.
-        virtual std::auto_ptr<GfxContext> createGfxContext() = 0;
+        virtual std::unique_ptr<GfxContext> createGfxContext() = 0;
         
         // Set the icon for this window. (Only some backends actually implement this.)
         virtual void setIcon(const PixelArray &) = 0;

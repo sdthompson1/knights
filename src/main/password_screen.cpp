@@ -141,8 +141,8 @@ void PasswordScreenImpl::action(const gcn::ActionEvent &event)
         gui->logic();
         window->invalidateAll();
     } else if (event.getSource() == cancel_button.get() && knights_app) {
-        std::auto_ptr<Screen> title_screen(new TitleScreen);
-        knights_app->requestScreenChange(title_screen);
+        std::unique_ptr<Screen> title_screen(new TitleScreen);
+        knights_app->requestScreenChange(std::move(title_screen));
     }
 }
 

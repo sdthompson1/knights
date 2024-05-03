@@ -83,10 +83,10 @@ private:
     int r, g, b;
     int size_hint_num, size_hint_denom;  // stored as numerator/denominator to avoid complication of having to serialize floats.
     int id;
-    std::auto_ptr<ColourChange> colour_change;  // most tiles don't use this. only used for the dead knight tiles currently.
+    std::unique_ptr<ColourChange> colour_change;  // most tiles don't use this. only used for the dead knight tiles currently.
 };
 
 // NOTE: The following may call lua_error
-std::auto_ptr<Graphic> CreateGraphicFromLua(lua_State *lua);
+std::unique_ptr<Graphic> CreateGraphicFromLua(lua_State *lua);
 
 #endif

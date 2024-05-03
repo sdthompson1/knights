@@ -665,7 +665,7 @@ private:
     boost::scoped_ptr<gcn::Label> name_label;
     boost::scoped_ptr<gcn::TextField> name_field;
     boost::scoped_ptr<gcn::Label> label1;
-    std::auto_ptr<gcn::ScrollArea> scroll_area;
+    std::unique_ptr<gcn::ScrollArea> scroll_area;
     boost::scoped_ptr<gcn::ListBox> listbox;
     boost::scoped_ptr<gcn::Label> address_label, port_label;
     boost::scoped_ptr<gcn::TextField> address_field, port_field;
@@ -830,8 +830,8 @@ void FindServerScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == cancel_button.get()) {
         // Go back to start game screen
-        std::auto_ptr<Screen> start_screen(new StartGameScreen);
-        knights_app.requestScreenChange(start_screen);
+        std::unique_ptr<Screen> start_screen(new StartGameScreen);
+        knights_app.requestScreenChange(std::move(start_screen));
 
     } else if (event.getSource() == connect_button.get()) {
         // Initiate connection
@@ -843,8 +843,8 @@ void FindServerScreenImpl::action(const gcn::ActionEvent &event)
             std::istringstream str(port_field->getText());
             str >> port;
             if (!str) {
-                std::auto_ptr<Screen> error_screen(new ErrorScreen("Bad port number"));
-                knights_app.requestScreenChange(error_screen);
+                std::unique_ptr<Screen> error_screen(new ErrorScreen("Bad port number"));
+                knights_app.requestScreenChange(std::move(error_screen));
                 return;
             }
         }
@@ -901,8 +901,8 @@ void FindServerScreenImpl::initiateConnection(const std::string &address, int po
         previous_address[internet?1:0] = address;
         previous_port[internet?1:0] = port;
 
-        std::auto_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, player_name));
-        knights_app.requestScreenChange(connecting_screen);
+        std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, player_name));
+        knights_app.requestScreenChange(std::move(connecting_screen));
     }
 }
 

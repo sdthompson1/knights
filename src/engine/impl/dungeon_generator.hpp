@@ -63,7 +63,7 @@ enum HomeType { H_NONE, H_CLOSE, H_AWAY, H_RANDOM };
 // Settings used by DungeonGenerator
 
 struct DungeonSettings {
-    std::auto_ptr<DungeonLayout> layout;
+    std::unique_ptr<DungeonLayout> layout;
     std::vector<boost::shared_ptr<Tile> > wall_tiles, hdoor_tiles, vdoor_tiles;
     std::vector<const Segment*> normal_segments, required_segments;
     HomeType home_type;

@@ -131,7 +131,7 @@ namespace {
         GfxVector *gfx_vector = static_cast<GfxVector*>(lua_touserdata(lua, lua_upvalueindex(2)));
         const unsigned int old_size = gfx_vector->size();
 
-        std::auto_ptr<Graphic> gfx(CreateGraphicFromLua(lua));
+        std::unique_ptr<Graphic> gfx(CreateGraphicFromLua(lua));
 
         if (!gfx->getFileInfo().isStandardFile()) {
             throw std::runtime_error("Error in client config, non-local filename '" + 
@@ -203,7 +203,7 @@ public:
     boost::shared_ptr<Coercri::CGListener> cg_listener;
 
     // we do not want these shared, we want to be sure there is only one copy of each:
-    std::auto_ptr<Screen> current_screen, requested_screen;
+    std::unique_ptr<Screen> current_screen, requested_screen;
     
     unsigned int last_time;  // last time update() was called
     unsigned int update_interval;
@@ -229,8 +229,8 @@ public:
     Graphic *loser_image;
     Graphic *menu_gfx_centre, *menu_gfx_empty, *menu_gfx_highlight;
     Graphic *speech_bubble;
-    std::auto_ptr<PotionRenderer> potion_renderer;
-    std::auto_ptr<SkullRenderer> skull_renderer;
+    std::unique_ptr<PotionRenderer> potion_renderer;
+    std::unique_ptr<SkullRenderer> skull_renderer;
 
 
     // network driver
@@ -530,9 +530,9 @@ void KnightsApp::getWindowedModeSize(int &width, int &height)
 // Screen handling
 //////////////////////////////////////////////
 
-void KnightsApp::requestScreenChange(std::auto_ptr<Screen> screen)
+void KnightsApp::requestScreenChange(std::unique_ptr<Screen> screen)
 {
-    pimpl->requested_screen = screen;
+    pimpl->requested_screen = std::move(screen);
 }
 
 void KnightsApp::executeScreenChange()
@@ -548,7 +548,7 @@ void KnightsApp::executeScreenChange()
         pimpl->cg_listener->disableGui();
         
         // Swap screens
-        pimpl->current_screen = pimpl->requested_screen;   // clears requested_screen
+        pimpl->current_screen = std::move(pimpl->requested_screen);   // clears requested_screen
 
         // Initialize the new screen, and bring up the gui if required
         const bool requires_gui = pimpl->current_screen->start(*this, pimpl->window, *pimpl->gui);
@@ -887,7 +887,7 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
 
 void KnightsApp::runKnights()
 {
-    std::auto_ptr<Screen> initial_screen;
+    std::unique_ptr<Screen> initial_screen;
 
     if (pimpl->autostart) {
         initial_screen.reset(new LoadingScreen(-1, UTF8String(), true, true, false, true));  // single player on, menu-strict on, tutorial off, autostart on
@@ -901,7 +901,7 @@ void KnightsApp::runKnights()
         }
     }
 
-    requestScreenChange(initial_screen);
+    requestScreenChange(std::move(initial_screen));
     executeScreenChange();
 
     // Error Handling system.
@@ -924,9 +924,9 @@ void KnightsApp::runKnights()
                 // Error detected: try to go to ErrorScreen.
                 // (If going to ErrorScreen itself throws an error, then num_errors will keep increasing
                 // and eventually we will abort, see above.)
-                std::auto_ptr<Screen> screen;
+                std::unique_ptr<Screen> screen;
                 screen.reset(new ErrorScreen(error));
-                requestScreenChange(screen);
+                requestScreenChange(std::move(screen));
                 executeScreenChange();
                 error.clear();
                 ++num_errors;
@@ -974,7 +974,7 @@ void KnightsApp::runKnights()
             const bool screen_change_imminent = pimpl->requested_screen.get() != pimpl->current_screen.get() 
                    && pimpl->requested_screen.get();
             if (pimpl->window->needsRepaint() && !screen_change_imminent) {
-                std::auto_ptr<Coercri::GfxContext> gc = pimpl->window->createGfxContext();
+                std::unique_ptr<Coercri::GfxContext> gc = pimpl->window->createGfxContext();
                 gc->clearClipRectangle();
                 gc->clearScreen(Coercri::Color(0,0,0));
                 pimpl->cg_listener->draw(*gc);

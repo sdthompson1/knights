@@ -401,9 +401,9 @@ bool ProcessReplayFile(ReplayFile & file, std::vector<UpdateStruct*> & update_st
     } else if (msg == "NGM") {
         // New game (game name in extra_bytes)
 
-        std::auto_ptr<std::deque<int> > update_counts;
-        std::auto_ptr<std::deque<int> > time_deltas;
-        std::auto_ptr<std::deque<unsigned int> > random_seeds;
+        std::unique_ptr<std::deque<int> > update_counts;
+        std::unique_ptr<std::deque<int> > time_deltas;
+        std::unique_ptr<std::deque<unsigned int> > random_seeds;
         
         // Look for the game in update_structs
         for (std::vector<UpdateStruct*>::iterator it = update_structs.begin(); it != update_structs.end(); ++it) {
@@ -416,7 +416,7 @@ bool ProcessReplayFile(ReplayFile & file, std::vector<UpdateStruct*> & update_st
             }
         }
         
-        g_knights_server->startNewGame(LoadKnightsConfig(), extra_bytes, update_counts, time_deltas, random_seeds);
+        g_knights_server->startNewGame(LoadKnightsConfig(), extra_bytes, std::move(update_counts), std::move(time_deltas), std::move(random_seeds));
     } else if (msg == "CGM") {
         // Close game (game name in extra_bytes)
         g_knights_server->closeGame(extra_bytes);
@@ -832,7 +832,7 @@ int main(int argc, char **argv)
     }
 
     // Open log file if necessary
-    std::auto_ptr<std::ostream> log_file_stream;
+    std::unique_ptr<std::ostream> log_file_stream;
     if (!g_config->getLogFile().empty()) {
         log_file_stream.reset(new std::ofstream(g_config->getLogFile().c_str(), std::ios::out | std::ios::app));
         if (!*log_file_stream) {
@@ -856,7 +856,7 @@ int main(int argc, char **argv)
     
     // Open binary log file if necessary
     // Open for append so that we don't trash any existing log data.
-    std::auto_ptr<std::ostream> binary_log_stream;
+    std::unique_ptr<std::ostream> binary_log_stream;
     if (!g_config->getBinaryLogFile().empty()) {
         binary_log_stream.reset(new std::ofstream(g_config->getBinaryLogFile().c_str(), std::ios::out | std::ios::binary | std::ios::app));
         if (!*binary_log_stream) {
@@ -867,7 +867,7 @@ int main(int argc, char **argv)
 
     // If replay mode then do first pass through replay file (to get the update times)
     // then open file ready for second pass.
-    std::auto_ptr<ReplayFile> replay_file;
+    std::unique_ptr<ReplayFile> replay_file;
     std::vector<UpdateStruct*> update_structs;
     if (!g_config->getReplayFile().empty()) {
 

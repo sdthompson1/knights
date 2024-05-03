@@ -23,9 +23,9 @@
 
 #include "make_scroll_area.hpp"
 
-std::auto_ptr<gcn::ScrollArea> MakeScrollArea(gcn::Widget &content, int width, int height, int scrollbar_width)
+std::unique_ptr<gcn::ScrollArea> MakeScrollArea(gcn::Widget &content, int width, int height, int scrollbar_width)
 {
-    std::auto_ptr<gcn::ScrollArea> scroll_area(new gcn::ScrollArea);
+    std::unique_ptr<gcn::ScrollArea> scroll_area(new gcn::ScrollArea);
     scroll_area->setContent(&content);
     scroll_area->setBackgroundColor(gcn::Color(255,255,255));
     scroll_area->setOpaque(true);

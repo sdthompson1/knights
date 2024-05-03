@@ -732,22 +732,22 @@ bool GameManager::setSavedChat(const std::string &s)
 void GameManager::connectionLost()
 {
     // Go to ErrorScreen
-    std::auto_ptr<Screen> error_screen(new ErrorScreen("The network connection has been lost"));
-    pimpl->knights_app.requestScreenChange(error_screen);
+    std::unique_ptr<Screen> error_screen(new ErrorScreen("The network connection has been lost"));
+    pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
 void GameManager::connectionFailed()
 {
     // Go to ErrorScreen
-    std::auto_ptr<Screen> error_screen(new ErrorScreen("Connection failed"));
-    pimpl->knights_app.requestScreenChange(error_screen);
+    std::unique_ptr<Screen> error_screen(new ErrorScreen("Connection failed"));
+    pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
 void GameManager::serverError(const std::string &error)
 {
     // Go to ErrorScreen
-    std::auto_ptr<Screen> error_screen(new ErrorScreen("Error: " + error));
-    pimpl->knights_app.requestScreenChange(error_screen);
+    std::unique_ptr<Screen> error_screen(new ErrorScreen("Error: " + error));
+    pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
 void GameManager::connectionAccepted(int server_version)
@@ -757,8 +757,8 @@ void GameManager::connectionAccepted(int server_version)
 
     if (!pimpl->is_split_screen && !pimpl->is_lan_game) {
         // Go to LobbyScreen
-        std::auto_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
-        pimpl->knights_app.requestScreenChange(lobby_screen);
+        std::unique_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
+        pimpl->knights_app.requestScreenChange(std::move(lobby_screen));
     }
 }
 
@@ -829,8 +829,8 @@ void GameManager::gotoMenuIfAllDownloaded()
     if (pimpl->download_count == 0    // wait until all files are downloaded
     && !pimpl->tutorial_mode          // tutorial should never go into menu screen
     && !pimpl->game_in_progress) {    // don't go to menu screen if observation of a game is in progress (#214)
-        std::auto_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen));
-        pimpl->knights_app.requestScreenChange(menu_screen);
+        std::unique_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen));
+        pimpl->knights_app.requestScreenChange(std::move(menu_screen));
     }
 }
 
@@ -871,8 +871,8 @@ namespace {
 void GameManager::passwordRequested(bool first_attempt)
 {
     // Go to PasswordScreen
-    std::auto_ptr<Screen> password_screen(new PasswordScreen(pimpl->knights_client, first_attempt));
-    pimpl->knights_app.requestScreenChange(password_screen);
+    std::unique_ptr<Screen> password_screen(new PasswordScreen(pimpl->knights_client, first_attempt));
+    pimpl->knights_app.requestScreenChange(std::move(password_screen));
 }
 
 void GameManager::playerConnected(const UTF8String &name)
@@ -1012,11 +1012,11 @@ void GameManager::leaveGame()
     
     // go to lobby (for internet games) or title (for split screen and lan games)
     if (pimpl->is_split_screen || pimpl->is_lan_game) {
-        std::auto_ptr<Screen> title_screen(new TitleScreen);
-        pimpl->knights_app.requestScreenChange(title_screen);
+        std::unique_ptr<Screen> title_screen(new TitleScreen);
+        pimpl->knights_app.requestScreenChange(std::move(title_screen));
     } else {
-        std::auto_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
-        pimpl->knights_app.requestScreenChange(lobby_screen);
+        std::unique_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
+        pimpl->knights_app.requestScreenChange(std::move(lobby_screen));
     }
 
     // unload gfx/sounds
@@ -1061,7 +1061,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     pimpl->time_remaining = -1;
 
     // Go to InGameScreen
-    std::auto_ptr<Screen> in_game_screen(new InGameScreen(pimpl->knights_app, 
+    std::unique_ptr<Screen> in_game_screen(new InGameScreen(pimpl->knights_app,
                                                           pimpl->knights_client, 
                                                           pimpl->client_config,
                                                           ndisplays,
@@ -1069,7 +1069,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
                                                           player_names,
                                                           pimpl->single_player,
                                                           pimpl->tutorial_mode));
-    pimpl->knights_app.requestScreenChange(in_game_screen);
+    pimpl->knights_app.requestScreenChange(std::move(in_game_screen));
     pimpl->deathmatch_mode = deathmatch_mode;
 
     // add separator lines to chat (or clear it, if single player mode)
@@ -1115,15 +1115,15 @@ void GameManager::gotoMenu()
 {
     if (pimpl->tutorial_mode) {
         // In tutorial, just quit back to the title screen, as there is no menu screen for tutorial games.
-        std::auto_ptr<Screen> title_screen(new TitleScreen);
-        pimpl->knights_app.requestScreenChange(title_screen);
+        std::unique_ptr<Screen> title_screen(new TitleScreen);
+        pimpl->knights_app.requestScreenChange(std::move(title_screen));
     } else if (pimpl->autostart_mode) {
         // In autostart mode we quit once the first game has finished
         pimpl->knights_app.requestQuit();        
     } else {
         // Normal game. Go back to the quest selection menu
-        std::auto_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen, pimpl->saved_chat));
-        pimpl->knights_app.requestScreenChange(menu_screen);
+        std::unique_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen, pimpl->saved_chat));
+        pimpl->knights_app.requestScreenChange(std::move(menu_screen));
 
         // add separator lines to chat list.
         pimpl->chat_list.add("\n");

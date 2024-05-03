@@ -33,7 +33,7 @@
 
 #include "lua.hpp"
 
-using std::auto_ptr;
+using std::unique_ptr;
 
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
                   const char *filename, const boost::filesystem::path &cwd)
@@ -56,8 +56,8 @@ void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
         x = Trim(x);
 
         if (x == "segment") {
-            auto_ptr<Segment> segment(new Segment(str, lua)); // reads tiletbl (doesn't pop)
-            Segment *result = kc->addLuaSegment(segment); // hands over 'segment'
+            unique_ptr<Segment> segment(new Segment(str, lua)); // reads tiletbl (doesn't pop)
+            Segment *result = kc->addLuaSegment(std::move(segment));
             NewLuaPtr<Segment>(lua, result);  // [result tiletbl newseg]
             lua_rawseti(lua, -3, idx++);      // [result tiletbl]
 

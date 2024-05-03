@@ -7,6 +7,7 @@
 # This uses gcc to automatically generate the header file dependencies
 # and store them in .P files.
 
+# Note: This script must be run under Python2, not Python3 !
 
 import os
 import os.path
@@ -158,9 +159,9 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     incflags = make_include_flags(incdirs)
     print get_obj_file(srcfile) + ": " + srcfile
     if (srcfile.endswith(".cpp") or srcfile.startswith("src/external/lua")):
-        print "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) `sdl-config --cflags` `curl-config --cflags` `freetype-config --cflags` " + incflags + " -MD -c -o $@ $<"
+        print "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config sdl --cflags` `pkg-config libcurl --cflags` `pkg-config freetype2 --cflags` " + incflags + " -MD -c -o $@ $<"
     elif (srcfile.endswith("SDL_ttf.c")):
-        print "\t$(CC) $(CPPFLAGS) $(CFLAGS) `sdl-config --cflags` `freetype-config --cflags` " + incflags + " -MD -c -o $@ $<"
+        print "\t$(CC) $(CPPFLAGS) $(CFLAGS) `pkg-config sdl --cflags` `pkg-config freetype2 --cflags` " + incflags + " -MD -c -o $@ $<"
     else:  # enet .c files
         print "\t$(CC) $(CPPFLAGS) $(CFLAGS) " + incflags + " -MD -c -o $@ $<"
     print "\t@cp $*.d $*.P; \\"
@@ -171,13 +172,13 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
 # Print target for Knights binary
 print """
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `sdl-config --libs` `freetype-config --libs` `curl-config --libs` -lfontconfig -lX11 $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config sdl --libs` `pkg-config freetype2 --libs` `pkg-config libcurl --libs` -lfontconfig -lX11 $(BOOST_LIBS)
 """
 
 # Print target for Server binary
 print """
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `curl-config --libs` $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config libcurl --libs` $(BOOST_LIBS)
 """
 
 

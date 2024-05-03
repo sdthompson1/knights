@@ -774,9 +774,9 @@ void KnightsServer::setPingTime(ServerConnection &conn, int ping)
 
 void KnightsServer::startNewGame(boost::shared_ptr<KnightsConfig> config,
                                  const std::string &game_name,
-                                 std::auto_ptr<std::deque<int> > update_counts,
-                                 std::auto_ptr<std::deque<int> > time_deltas,
-                                 std::auto_ptr<std::deque<unsigned int> > random_seeds)
+                                 std::unique_ptr<std::deque<int> > update_counts,
+                                 std::unique_ptr<std::deque<int> > time_deltas,
+                                 std::unique_ptr<std::deque<unsigned int> > random_seeds)
 {
     if (game_name.empty()) throw UnexpectedError("Game name not set");
     
@@ -789,7 +789,7 @@ void KnightsServer::startNewGame(boost::shared_ptr<KnightsConfig> config,
                                                             pimpl->allow_split_screen,
                                                             pimpl->knights_log,
                                                             game_name,
-                                                            update_counts, time_deltas, random_seeds));
+                                                            std::move(update_counts), std::move(time_deltas), std::move(random_seeds)));
         pimpl->games.insert(std::make_pair(game_name, game));
 
         // Notify players about the new game.

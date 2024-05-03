@@ -131,7 +131,7 @@ public:
     boost::scoped_ptr<gcn::Button> disconnect_button;
     boost::scoped_ptr<gcn::ListBox> games_listbox, players_listbox, chat_listbox;
     boost::scoped_ptr<TitleBlock> games_titleblock;
-    std::auto_ptr<gcn::ScrollArea> games_scrollarea, players_scrollarea, chat_scrollarea;
+    std::unique_ptr<gcn::ScrollArea> games_scrollarea, players_scrollarea, chat_scrollarea;
     boost::scoped_ptr<gcn::TextField> chat_field;
 
     boost::scoped_ptr<GuiCentre> join_centre;
@@ -329,8 +329,8 @@ void LobbyScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == disconnect_button.get() || event.getSource() == join_disconn_button.get()) {
         // Go back to title screen
-        std::auto_ptr<Screen> title_screen(new TitleScreen);
-        knights_app->requestScreenChange(title_screen);
+        std::unique_ptr<Screen> title_screen(new TitleScreen);
+        knights_app->requestScreenChange(std::move(title_screen));
     } else if (event.getSource() == chat_field.get()) {
         client->sendChatMessage(chat_field->getText());
         chat_field->setText("");

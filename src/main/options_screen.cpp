@@ -330,8 +330,8 @@ void OptionsScreenImpl::action(const gcn::ActionEvent &event)
                 window->switchToWindowed(w, h);
             }
         }
-        std::auto_ptr<Screen> new_screen(new TitleScreen);
-        knights_app.requestScreenChange(new_screen);
+        std::unique_ptr<Screen> new_screen(new TitleScreen);
+        knights_app.requestScreenChange(std::move(new_screen));
         return;
     }
 

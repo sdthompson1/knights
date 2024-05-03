@@ -102,8 +102,8 @@ void LoadingScreen::update()
         throw *loader->lua_error;
     }
     if (!loader->error_msg.empty()) {
-        std::auto_ptr<Screen> error_screen(new ErrorScreen("Loading Failed: " + loader->error_msg));
-        knights_app->requestScreenChange(error_screen);
+        std::unique_ptr<Screen> error_screen(new ErrorScreen("Loading Failed: " + loader->error_msg));
+        knights_app->requestScreenChange(std::move(error_screen));
         return;
     }
     

@@ -195,9 +195,9 @@ namespace Coercri {
 #endif
     }
 
-    std::auto_ptr<GfxContext> SDLWindow::createGfxContext()
+    std::unique_ptr<GfxContext> SDLWindow::createGfxContext()
     {
-        std::auto_ptr<GfxContext> p(new SDLGfxContext(*SDL_GetVideoSurface()));
+        std::unique_ptr<GfxContext> p(new SDLGfxContext(*SDL_GetVideoSurface()));
         return p;
     }
 

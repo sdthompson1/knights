@@ -52,7 +52,7 @@ private:
         void operator()();
         
         std::string error_msg;
-        std::auto_ptr<LuaError> lua_error;
+        std::unique_ptr<LuaError> lua_error;
 
         std::string knights_config_filename;
         bool menu_strict;

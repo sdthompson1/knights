@@ -89,8 +89,8 @@ void CreditsScreenImpl::mouseClicked(gcn::MouseEvent &event)
 {
     if (event.getX() < scroll_area->getChildrenArea().width) {
         // click is not within the actual scrollbar
-        std::auto_ptr<Screen> scr(new TitleScreen);
-        knights_app.requestScreenChange(scr);
+        std::unique_ptr<Screen> scr(new TitleScreen);
+        knights_app.requestScreenChange(std::move(scr));
     }
 }
 

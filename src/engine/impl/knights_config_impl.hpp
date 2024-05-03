@@ -116,13 +116,13 @@ public:
     //
 
     Anim * addLuaAnim(lua_State *lua, int idx);
-    Control * addLuaControl(std::auto_ptr<Control> p);  // first NUM_STANDARD_CONTROLS assumed to be the std ctrls
-    void addLuaGraphic(std::auto_ptr<Graphic> p);
-    ItemType * addLuaItemType(std::auto_ptr<ItemType> p);
-    MonsterType * addLuaMonsterType(std::auto_ptr<MonsterType> p,
+    Control * addLuaControl(std::unique_ptr<Control> p);  // first NUM_STANDARD_CONTROLS assumed to be the std ctrls
+    void addLuaGraphic(std::unique_ptr<Graphic> p);
+    ItemType * addLuaItemType(std::unique_ptr<ItemType> p);
+    MonsterType * addLuaMonsterType(std::unique_ptr<MonsterType> p,
                                     std::vector<boost::shared_ptr<Tile> > &corpse_tiles);
-    Overlay * addLuaOverlay(std::auto_ptr<Overlay> p);
-    Segment * addLuaSegment(std::auto_ptr<Segment> p);
+    Overlay * addLuaOverlay(std::unique_ptr<Overlay> p);
+    Segment * addLuaSegment(std::unique_ptr<Segment> p);
     Sound * addLuaSound(const FileInfo &fi);  // creates the sound and adds it.
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
@@ -159,7 +159,7 @@ private:
     std::vector<ItemType *> special_item_types;  // used for loaded crossbows
     
     // Menu
-    std::auto_ptr<MenuWrapper> menu_wrapper;
+    std::unique_ptr<MenuWrapper> menu_wrapper;
 
     // Various things
     std::vector<ColourChange> house_colours_normal, house_colours_invulnerable;  // One entry per House

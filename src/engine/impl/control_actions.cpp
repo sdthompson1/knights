@@ -186,8 +186,8 @@ namespace {
         PushCClosure(lua, &StdActionPossible, 1);
         LuaFunc poss_func(lua);
 
-        std::auto_ptr<Control> p(new Control(cts, exec_func, poss_func, wm, ws));
-        kc->addLuaControl(p);
+        std::unique_ptr<Control> p(new Control(cts, exec_func, poss_func, wm, ws));
+        kc->addLuaControl(std::move(p));
     }
 }
 

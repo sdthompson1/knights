@@ -74,7 +74,7 @@ void Graphic::serialize(Coercri::OutputByteBuf &buf) const
     }
 }
 
-std::auto_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
+std::unique_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
 {
     const int nargs = lua_gettop(lua);
     const char * filename = luaL_checkstring(lua, 1);
@@ -101,7 +101,7 @@ std::auto_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
 
     lua_getglobal(lua, "_CWD");  // [_CWD]
     const char *cwd = lua_tostring(lua, -1);
-    std::auto_ptr<Graphic> gfx(new Graphic(FileInfo(filename, cwd), x, y, r, g, b, size_hint_num, size_hint_denom));
+    std::unique_ptr<Graphic> gfx(new Graphic(FileInfo(filename, cwd), x, y, r, g, b, size_hint_num, size_hint_denom));
     lua_pop(lua, 1);  // []
     
     return gfx;

@@ -350,7 +350,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
 
 LocalDisplay::~LocalDisplay()
 {
-    // empty dtor - needed because of auto_ptrs in the header file.
+    // empty dtor - needed because of unique_ptrs in the header file.
 }
 
 void LocalDisplay::disableView(int p)

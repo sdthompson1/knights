@@ -132,7 +132,7 @@ private:
     // These should be treated as bogus, and ignored.
     std::map<Location, StuffContents> stuff_map;
     
-    std::auto_ptr<ItemType> stuff_bag_item_type;
+    std::unique_ptr<ItemType> stuff_bag_item_type;
 };
 
 #endif

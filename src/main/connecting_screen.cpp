@@ -38,7 +38,7 @@
 
 #include <sstream>
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class ConnectingScreenImpl : public gcn::ActionListener {
@@ -122,8 +122,8 @@ void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == cancel_button.get()) {
         // Go back to 'start game' screen
-        auto_ptr<Screen> start_screen(new StartGameScreen);
-        knights_app->requestScreenChange(start_screen);
+        unique_ptr<Screen> start_screen(new StartGameScreen);
+        knights_app->requestScreenChange(std::move(start_screen));
     }
 }
 

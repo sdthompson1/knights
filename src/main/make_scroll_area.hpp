@@ -29,7 +29,7 @@
 
 const int DEFAULT_SCROLLBAR_WIDTH = 16;
 
-std::auto_ptr<gcn::ScrollArea> MakeScrollArea(gcn::Widget &content, int width, int height, 
+std::unique_ptr<gcn::ScrollArea> MakeScrollArea(gcn::Widget &content, int width, int height,
                                               int scrollbar_width = DEFAULT_SCROLLBAR_WIDTH);
 
 #endif

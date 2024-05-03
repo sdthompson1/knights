@@ -75,7 +75,7 @@ public:
     void runKnights();
 
     // Screen change and Quit requests
-    void requestScreenChange(std::auto_ptr<Screen> screen);
+    void requestScreenChange(std::unique_ptr<Screen> screen);
     void requestQuit();
 
     // Pop window to front

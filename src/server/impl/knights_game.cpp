@@ -142,9 +142,9 @@ public:
     std::string startup_err_msg;
 
     int msg_counter;  // used for logging when 'update' events occur.
-    std::auto_ptr<std::deque<int> > update_counts;   // used for playback.
-    std::auto_ptr<std::deque<int> > time_deltas;     // ditto
-    std::auto_ptr<std::deque<unsigned int> > random_seeds; // ditto
+    std::unique_ptr<std::deque<int> > update_counts;   // used for playback.
+    std::unique_ptr<std::deque<int> > time_deltas;     // ditto
+    std::unique_ptr<std::deque<unsigned int> > random_seeds; // ditto
     bool msg_count_update_flag;
 
     // Condition variable used to wake up the update thread when a control comes in
@@ -1237,9 +1237,9 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
                          bool allow_split_screen,
                          KnightsLog *knights_log,
                          const std::string &game_name,
-                         std::auto_ptr<std::deque<int> > update_counts,
-                         std::auto_ptr<std::deque<int> > time_deltas,
-                         std::auto_ptr<std::deque<unsigned int> > random_seeds)
+                         std::unique_ptr<std::deque<int> > update_counts,
+                         std::unique_ptr<std::deque<int> > time_deltas,
+                         std::unique_ptr<std::deque<unsigned int> > random_seeds)
     : pimpl(new KnightsGameImpl)
 {
     pimpl->knights_config = config;
@@ -1261,9 +1261,9 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
     pimpl->game_name = game_name;
 
     pimpl->msg_counter = 0;
-    if (update_counts.get()) pimpl->update_counts = update_counts;
-    if (time_deltas.get()) pimpl->time_deltas = time_deltas;
-    if (random_seeds.get()) pimpl->random_seeds = random_seeds;
+    if (update_counts.get()) pimpl->update_counts = std::move(update_counts);
+    if (time_deltas.get()) pimpl->time_deltas = std::move(time_deltas);
+    if (random_seeds.get()) pimpl->random_seeds = std::move(random_seeds);
     pimpl->msg_count_update_flag = true;
 
     pimpl->wake_up_flag = false;

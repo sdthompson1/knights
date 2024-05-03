@@ -76,7 +76,7 @@ namespace Coercri {
         virtual void switchToFullScreen();
         virtual bool isFullScreen() const;
         virtual bool isMaximized() const;
-        virtual std::auto_ptr<GfxContext> createGfxContext();
+        virtual std::unique_ptr<GfxContext> createGfxContext();
         virtual void setIcon(const PixelArray &);
 
         // Called by DX11GfxDriver
@@ -140,7 +140,7 @@ namespace Coercri {
             left_control_state, right_control_state,
             left_alt_state, right_alt_state;
 
-        std::auto_ptr<Win32SetIcon> set_icon;
+        std::unique_ptr<Win32SetIcon> set_icon;
 
         unsigned short int wm_char_surrogate;
     };

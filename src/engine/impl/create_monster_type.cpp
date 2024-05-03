@@ -33,7 +33,7 @@
 
 #include <string>
 
-using std::auto_ptr;
+using std::unique_ptr;
 
 MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
 {
@@ -49,7 +49,7 @@ MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
         *it = ToLower(*it);
     }
 
-    auto_ptr<MonsterType> result;
+    unique_ptr<MonsterType> result;
 
     if (s == "walking") {
         result.reset(new WalkingMonsterType(lua));
@@ -62,5 +62,5 @@ MonsterType * CreateMonsterType(lua_State *lua, KnightsConfigImpl *kc)
     std::vector<boost::shared_ptr<Tile> > corpse_tiles;
     LuaGetTileList(lua, -1, "corpse_tiles", corpse_tiles);
         
-    return kc->addLuaMonsterType(result, corpse_tiles);
+    return kc->addLuaMonsterType(std::move(result), corpse_tiles);
 }

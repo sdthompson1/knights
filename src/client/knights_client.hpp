@@ -127,7 +127,7 @@ public:
     void requestSounds(const std::vector<int> &ids);
     
 private:
-    std::auto_ptr<KnightsClientImpl> pimpl;
+    std::unique_ptr<KnightsClientImpl> pimpl;
 };
 
 #endif

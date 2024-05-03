@@ -121,7 +121,7 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, gcn::Gui &gui)
 
 void TitleScreenImpl::action(const gcn::ActionEvent &event)
 {
-    std::auto_ptr<Screen> new_screen;
+    std::unique_ptr<Screen> new_screen;
 
     if (event.getSource() == start_game.get()) {
         // Go to Start Game sub-menu
@@ -140,7 +140,7 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
     }
     
     if (new_screen.get()) {
-        knights_app.requestScreenChange(new_screen);
+        knights_app.requestScreenChange(std::move(new_screen));
     }
 }        
 

@@ -48,7 +48,7 @@ public:
 private:
     // At the moment the cache stores only one file at a time, and
     // stores it in RAM only.
-    std::auto_ptr<FileInfo> stored_fi;
+    std::unique_ptr<FileInfo> stored_fi;
     std::string stored_contents;
 };
 

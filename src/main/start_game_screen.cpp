@@ -128,7 +128,7 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
 
 void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 {
-    std::auto_ptr<Screen> new_screen;
+    std::unique_ptr<Screen> new_screen;
 
     if (event.getSource() == split_screen_mode.get()) {
         // Go to LoadingScreen in split-screen mode
@@ -156,7 +156,7 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
     }
     
     if (new_screen.get()) {
-        knights_app.requestScreenChange(new_screen);
+        knights_app.requestScreenChange(std::move(new_screen));
     }
 }        
 

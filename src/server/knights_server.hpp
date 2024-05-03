@@ -91,9 +91,9 @@ public:
     // Start a new game
     void startNewGame(boost::shared_ptr<KnightsConfig> config,
                       const std::string &game_name,
-                      std::auto_ptr<std::deque<int> > update_counts = std::auto_ptr<std::deque<int> >(),
-                      std::auto_ptr<std::deque<int> > time_deltas = std::auto_ptr<std::deque<int> >(),
-                      std::auto_ptr<std::deque<unsigned int> > random_seeds = std::auto_ptr<std::deque<unsigned int> >() );
+                      std::unique_ptr<std::deque<int> > update_counts = std::unique_ptr<std::deque<int> >(),
+                      std::unique_ptr<std::deque<int> > time_deltas = std::unique_ptr<std::deque<int> >(),
+                      std::unique_ptr<std::deque<unsigned int> > random_seeds = std::unique_ptr<std::deque<unsigned int> >() );
     
     // Destroy an empty game. This will fail if anyone is currently connected to the game.
     // Returns true if successful.
@@ -127,7 +127,7 @@ public:
     void setMsgCountUpdateFlag(bool on);
     
 private:
-    std::auto_ptr<KnightsServerImpl> pimpl;
+    std::unique_ptr<KnightsServerImpl> pimpl;
 };
 
 #endif

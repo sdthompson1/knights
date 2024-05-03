@@ -61,7 +61,7 @@ namespace Coercri {
         virtual void switchToFullScreen();
         virtual bool isFullScreen() const;
         virtual bool isMaximized() const;
-        virtual std::auto_ptr<GfxContext> createGfxContext();
+        virtual std::unique_ptr<GfxContext> createGfxContext();
         virtual void setIcon(const PixelArray &);
         
         bool need_window_resize;  // see SDLGfxDriver::pollEvents.

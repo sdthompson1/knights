@@ -69,7 +69,7 @@
 #undef lst2
 #endif
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -592,7 +592,7 @@ Anim * KnightsConfigImpl::addLuaAnim(lua_State *lua, int idx)
     return q;
 }
 
-Control * KnightsConfigImpl::addLuaControl(auto_ptr<Control> p)
+Control * KnightsConfigImpl::addLuaControl(unique_ptr<Control> p)
 {
     const int new_id = lua_controls.size() + 1;
     p->setID(new_id);
@@ -602,7 +602,7 @@ Control * KnightsConfigImpl::addLuaControl(auto_ptr<Control> p)
     return q;
 }
    
-void KnightsConfigImpl::addLuaGraphic(auto_ptr<Graphic> p)
+void KnightsConfigImpl::addLuaGraphic(unique_ptr<Graphic> p)
 {
     ASSERT(dead_knight_graphics.empty());
     
@@ -612,7 +612,7 @@ void KnightsConfigImpl::addLuaGraphic(auto_ptr<Graphic> p)
     lua_graphics.push_back(p.release());
 }
 
-ItemType * KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)
+ItemType * KnightsConfigImpl::addLuaItemType(unique_ptr<ItemType> p)
 {
     // If a crossbow, then also set up a second itemtype for the loaded version.
     if (p->canLoad()) {
@@ -626,7 +626,7 @@ ItemType * KnightsConfigImpl::addLuaItemType(auto_ptr<ItemType> p)
     return lua_item_types.back();
 }
 
-MonsterType * KnightsConfigImpl::addLuaMonsterType(auto_ptr<MonsterType> p,
+MonsterType * KnightsConfigImpl::addLuaMonsterType(unique_ptr<MonsterType> p,
                                                    std::vector<boost::shared_ptr<Tile> > &corpse_tiles)
 {
     monster_corpse_tiles.insert(std::make_pair(p.get(), corpse_tiles));
@@ -636,7 +636,7 @@ MonsterType * KnightsConfigImpl::addLuaMonsterType(auto_ptr<MonsterType> p,
     return q;
 }
 
-Overlay * KnightsConfigImpl::addLuaOverlay(auto_ptr<Overlay> p)
+Overlay * KnightsConfigImpl::addLuaOverlay(unique_ptr<Overlay> p)
 {
     const int id = lua_overlays.size() + 1;
     p->setID(id);
@@ -656,7 +656,7 @@ Overlay * KnightsConfigImpl::addLuaOverlay(auto_ptr<Overlay> p)
     return q;
 }
 
-Segment * KnightsConfigImpl::addLuaSegment(auto_ptr<Segment> p)
+Segment * KnightsConfigImpl::addLuaSegment(unique_ptr<Segment> p)
 {
     Segment *q = p.release();
     lua_segments.push_back(q);

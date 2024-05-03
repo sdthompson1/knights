@@ -103,7 +103,7 @@ namespace Coercri {
         ComPtrWrapper<IDXGIFactory> m_psFactory;
         ComPtrWrapper<IDXGIOutput> m_psOutput;
 
-        std::auto_ptr<PrimitiveBatch> m_psPrimitiveBatch;
+        std::unique_ptr<PrimitiveBatch> m_psPrimitiveBatch;
 
         std::list<boost::weak_ptr<DX11Window> > all_windows;
     };

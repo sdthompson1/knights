@@ -43,7 +43,7 @@
 
 #include <string>
 
-using std::auto_ptr;
+using std::unique_ptr;
 
 namespace {
 
@@ -65,8 +65,8 @@ namespace {
     int MakeControl(lua_State *lua)
     {
         KnightsConfigImpl * kc = GetKC(lua, "Controls");
-        auto_ptr<Control> ctrl(new Control(lua, 1));
-        Control *c = kc->addLuaControl(ctrl); // transfers ownership (also sets control's ID)
+        unique_ptr<Control> ctrl(new Control(lua, 1));
+        Control *c = kc->addLuaControl(std::move(ctrl)); // transfers ownership (also sets control's ID)
         NewLuaPtr<Control>(lua, c);
         return 1;
     }
@@ -77,9 +77,9 @@ namespace {
     int MakeGraphic(lua_State *lua)
     {
         KnightsConfigImpl *kc = GetKC(lua, "Graphics");
-        std::auto_ptr<Graphic> gfx(CreateGraphicFromLua(lua));
+        std::unique_ptr<Graphic> gfx(CreateGraphicFromLua(lua));
         NewLuaPtr<Graphic>(lua, gfx.get());
-        kc->addLuaGraphic(gfx);
+        kc->addLuaGraphic(std::move(gfx));
         return 1;
     }
     
@@ -89,8 +89,8 @@ namespace {
     int MakeItemType(lua_State *lua)
     {
         KnightsConfigImpl * kc = GetKC(lua, "ItemTypes");
-        auto_ptr<ItemType> it(new ItemType(lua, 1));
-        ItemType * lua_item_type = kc->addLuaItemType(it); // transfers ownership.
+        unique_ptr<ItemType> it(new ItemType(lua, 1));
+        ItemType * lua_item_type = kc->addLuaItemType(std::move(it)); // transfers ownership.
         NewLuaPtr<ItemType>(lua, lua_item_type);
         return 1;
     }
@@ -108,8 +108,8 @@ namespace {
             luaL_error(lua, "kts.Overlay expects exactly one argument (a table)");
         }
 
-        auto_ptr<Overlay> result(new Overlay(lua, 1));
-        Overlay *r = kc->addLuaOverlay(result);  // transfers ownership
+        unique_ptr<Overlay> result(new Overlay(lua, 1));
+        Overlay *r = kc->addLuaOverlay(std::move(result));  // transfers ownership
         NewLuaPtr<Overlay>(lua, r);
         return 1;
     }
