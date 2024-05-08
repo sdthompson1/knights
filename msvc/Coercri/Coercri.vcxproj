@@ -96,10 +96,10 @@
     <ClCompile Include="..\..\src\coercri\sdl\core\istream_rwops.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_error.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.cpp" />
-    <ClCompile Include="..\..\src\coercri\sdl\gfx\pixels.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_context.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_graphic.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_surface_from_pixels.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_window.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\sound\sdl_sound_driver.cpp" />
     <ClCompile Include="..\..\src\coercri\shared\win32_set_icon.cpp" />

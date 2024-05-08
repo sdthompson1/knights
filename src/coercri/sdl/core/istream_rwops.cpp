@@ -46,7 +46,7 @@ namespace {
 
     typedef boost::shared_ptr<std::istream> *stream_ptr;
     
-    int Rseek(SDL_RWops *context, int offset, int whence)
+    Sint64 Rseek(SDL_RWops *context, Sint64 offset, int whence)
     {
         stream_ptr str = static_cast<stream_ptr>(context->hidden.unknown.data1);
         switch (whence) {
@@ -66,17 +66,17 @@ namespace {
         else return (*str)->tellg();
     }
     
-    int Rread(SDL_RWops *context, void *ptr, int size, int maxnum)
+    size_t Rread(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     {
         stream_ptr str = static_cast<stream_ptr>(context->hidden.unknown.data1);
         (*str)->read(static_cast<char*>(ptr), size*maxnum);
-        if (!(*str)) return -1;
+        if (!(*str)) return 0;
         else return (*str)->gcount() / size;
     }
     
-    int Rwrite(SDL_RWops *context, const void *ptr, int size, int maxnum)
+    size_t Rwrite(SDL_RWops *context, const void *ptr, size_t size, size_t maxnum)
     {
-        return -1; // read only!
+        return 0; // read only!
     }
     
     int Rclose(SDL_RWops *context)

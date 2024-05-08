@@ -48,32 +48,17 @@
 #include "../../gfx/region.hpp"
 #include "../../gfx/window_listener_funcs.hpp"
 
-#include "SDL.h"
 #include "boost/weak_ptr.hpp"
 #include <map>
 
-#ifdef WIN32
-#include "SDL_syswm.h"
-#include <windows.h>
-#ifdef MB_RIGHT
-#undef MB_RIGHT
-#endif
-#endif
+#include <SDL2/SDL.h>
 
 namespace Coercri {
-
-    // SDL only supports one window at a time - we store a global
-    // pointer to this Window here.
-    boost::weak_ptr<SDLWindow> g_sdl_window;
-    unsigned int g_sdl_required_flags;
-    bool g_sdl_has_focus;
-    bool g_sdl_is_minimized;
 
     namespace {
 
         // Global key tables
-        std::map<SDLKey, KeyCode> g_keytable;
-        std::map<SDLKey, bool> g_keystate;  // true if key down, false if up.
+        std::map<SDL_Keycode, KeyCode> g_keytable;
 
         void InitKeyTable()
         {
@@ -150,16 +135,16 @@ namespace Coercri {
             g_keytable[SDLK_y] = KC_Y;
             g_keytable[SDLK_z] = KC_Z;
             g_keytable[SDLK_DELETE] = KC_DELETE;
-            g_keytable[SDLK_KP0] = KC_KP_0;
-            g_keytable[SDLK_KP1] = KC_KP_1;
-            g_keytable[SDLK_KP2] = KC_KP_2;
-            g_keytable[SDLK_KP3] = KC_KP_3;
-            g_keytable[SDLK_KP4] = KC_KP_4;
-            g_keytable[SDLK_KP5] = KC_KP_5;
-            g_keytable[SDLK_KP6] = KC_KP_6;
-            g_keytable[SDLK_KP7] = KC_KP_7;
-            g_keytable[SDLK_KP8] = KC_KP_8;
-            g_keytable[SDLK_KP9] = KC_KP_9;
+            g_keytable[SDLK_KP_0] = KC_KP_0;
+            g_keytable[SDLK_KP_1] = KC_KP_1;
+            g_keytable[SDLK_KP_2] = KC_KP_2;
+            g_keytable[SDLK_KP_3] = KC_KP_3;
+            g_keytable[SDLK_KP_4] = KC_KP_4;
+            g_keytable[SDLK_KP_5] = KC_KP_5;
+            g_keytable[SDLK_KP_6] = KC_KP_6;
+            g_keytable[SDLK_KP_7] = KC_KP_7;
+            g_keytable[SDLK_KP_8] = KC_KP_8;
+            g_keytable[SDLK_KP_9] = KC_KP_9;
             g_keytable[SDLK_KP_PERIOD] = KC_KP_PERIOD;
             g_keytable[SDLK_KP_DIVIDE] = KC_KP_DIVIDE;
             g_keytable[SDLK_KP_MULTIPLY] = KC_KP_MULTIPLY;
@@ -191,28 +176,24 @@ namespace Coercri {
             g_keytable[SDLK_F13] = KC_F13;
             g_keytable[SDLK_F14] = KC_F14;
             g_keytable[SDLK_F15] = KC_F15;
-            g_keytable[SDLK_NUMLOCK] = KC_NUM_LOCK;
+            g_keytable[SDLK_NUMLOCKCLEAR] = KC_NUM_LOCK;
             g_keytable[SDLK_CAPSLOCK] = KC_CAPS_LOCK;
-            g_keytable[SDLK_SCROLLOCK] = KC_SCROLL_LOCK;
+            g_keytable[SDLK_SCROLLLOCK] = KC_SCROLL_LOCK;
             g_keytable[SDLK_RSHIFT] = KC_RIGHT_SHIFT;
             g_keytable[SDLK_LSHIFT] = KC_LEFT_SHIFT;
             g_keytable[SDLK_RCTRL] = KC_RIGHT_CONTROL;
             g_keytable[SDLK_LCTRL] = KC_LEFT_CONTROL;
             g_keytable[SDLK_RALT] = KC_RIGHT_ALT;            
             g_keytable[SDLK_LALT] = KC_LEFT_ALT;
-            g_keytable[SDLK_RMETA] = KC_RIGHT_META;
-            g_keytable[SDLK_LMETA] = KC_LEFT_META;
-            g_keytable[SDLK_LSUPER] = KC_LEFT_WINDOWS;
-            g_keytable[SDLK_RSUPER] = KC_RIGHT_WINDOWS;
+            g_keytable[SDLK_LGUI] = KC_LEFT_WINDOWS;
+            g_keytable[SDLK_RGUI] = KC_RIGHT_WINDOWS;
             g_keytable[SDLK_MODE] = KC_MODE;
-            g_keytable[SDLK_COMPOSE] = KC_COMPOSE;
             g_keytable[SDLK_HELP] = KC_HELP;
-            g_keytable[SDLK_PRINT] = KC_PRINT_SCREEN;
+            g_keytable[SDLK_PRINTSCREEN] = KC_PRINT_SCREEN;
             g_keytable[SDLK_SYSREQ] = KC_SYSREQ;
-            g_keytable[SDLK_BREAK] = KC_BREAK;
             g_keytable[SDLK_MENU] = KC_MENU;
             g_keytable[SDLK_POWER] = KC_POWER;
-            g_keytable[SDLK_EURO] = KC_EURO;
+            g_keytable[SDLK_CURRENCYUNIT] = KC_EURO;
             g_keytable[SDLK_UNDO] = KC_UNDO;
         }
 
@@ -231,8 +212,6 @@ namespace Coercri {
             case SDL_BUTTON_LEFT: return MB_LEFT;
             case SDL_BUTTON_RIGHT: return MB_RIGHT;
             case SDL_BUTTON_MIDDLE: return MB_MIDDLE;
-            case SDL_BUTTON_WHEELUP: return MB_WHEEL_UP;
-            case SDL_BUTTON_WHEELDOWN: return MB_WHEEL_DOWN;
             default: error = true; return MB_LEFT;
             }
         }
@@ -241,70 +220,54 @@ namespace Coercri {
         // Handle SDL events.
         //
 
-        void DoEvent(const SDL_Event &event, int & surrogate_pair_start)
+        void DoEvent(SDLWindow *focus_window, const SDL_Event &event)
         {
-            boost::shared_ptr<SDLWindow> window(g_sdl_window.lock());
-            if (!window) return;
-
             switch (event.type) {
-            case SDL_VIDEOEXPOSE:
-                {
-                    // Invalidate the entire screen (I don't think SDL
-                    // gives more detailed info about the invalid
-                    // rectangle?)
-                    SDL_Surface * vid_surf = SDL_GetVideoSurface();
-                    Rectangle rectangle(0, 0, vid_surf->w, vid_surf->h);
-                    window->invalidateRectangle(rectangle);
-                }
-                break;
-
             case SDL_QUIT:
-                window->forEachListener(OnClose());
-                break;
-
-            case SDL_ACTIVEEVENT:
-                if ((event.active.state & SDL_APPINPUTFOCUS) != 0) {
-                    // Window focus gained or lost.
-                    if (event.active.gain) {
-                        g_sdl_has_focus = true;
-                        window->forEachListener(OnGainFocus());
-
-                    } else {
-                        g_sdl_has_focus = false;
-                        window->forEachListener(OnLoseFocus());
-                            
-                        // reset all keys to "up" state when window loses focus.
-                        // this prevents a KE_PRESSED being misinterpreted as a KE_AUTO_REPEAT
-                        // because we missed the keyup event.
-                        g_keystate.clear();
-                    }
-                }
-                if ((event.active.state & SDL_APPACTIVE) != 0) {
-                    // Activation/deactivation (i.e. minimization or un-minimization).
-                    if (event.active.gain) {
-                        // sometimes we get an "active" event even when the app
-                        // is already non-minimized, so filter those out
-                        if (g_sdl_is_minimized) {
-                            window->forEachListener(OnUnminimize());
-                        }
-                        g_sdl_is_minimized = false;
-                    } else {
-                        if (!g_sdl_is_minimized) {
-                            window->forEachListener(OnMinimize());
-                        }
-                        g_sdl_is_minimized = true;
-                    }
+                if (focus_window) {
+                    focus_window->forEachListener(OnClose());
                 }
                 break;
 
-            case SDL_VIDEORESIZE:
+            case SDL_WINDOWEVENT:
                 {
-                    // 1) Must reset the video mode. (This will also trigger a repaint.)
-                    SDL_SetVideoMode(event.resize.w, event.resize.h, 0, g_sdl_required_flags);
-                    window->invalidateAll();
-                    
-                    // 2) Inform the WindowListeners of the resize.
-                    window->forEachListener(OnResize(event.resize.w, event.resize.h));
+                    SDL_Window *sdl_window = SDL_GetWindowFromID(event.window.windowID);
+                    if (sdl_window) {
+                        SDLWindow *window = static_cast<SDLWindow*>(SDL_GetWindowData(sdl_window, "coercri"));
+                        switch (event.window.event) {
+                        case SDL_WINDOWEVENT_EXPOSED:
+                            {
+                                // Invalidate the entire screen (I don't think SDL
+                                // gives more detailed info about the invalid
+                                // rectangle?)
+                                int w, h;
+                                SDL_GetWindowSize(sdl_window, &w, &h);
+                                Rectangle rectangle(0, 0, w, h);
+                                window->invalidateRectangle(rectangle);
+                            }
+                            break;
+
+                        case SDL_WINDOWEVENT_FOCUS_GAINED:
+                            window->forEachListener(OnGainFocus());
+                            break;
+
+                        case SDL_WINDOWEVENT_FOCUS_LOST:
+                            window->forEachListener(OnLoseFocus());
+                            break;
+
+                        case SDL_WINDOWEVENT_SHOWN:
+                            window->forEachListener(OnUnminimize());
+                            break;
+
+                        case SDL_WINDOWEVENT_HIDDEN:
+                            window->forEachListener(OnMinimize());
+                            break;
+
+                        case SDL_WINDOWEVENT_SIZE_CHANGED:
+                            window->forEachListener(OnResize(event.window.data1, event.window.data2));
+                            break;
+                        }
+                    }
                 }
                 break;
 
@@ -312,60 +275,38 @@ namespace Coercri {
             case SDL_KEYUP:
                 {
                     // Find out what kind of key event this is.
-                    const SDLKey keysym = event.key.keysym.sym;
+                    const SDL_Keycode keysym = event.key.keysym.sym;
                     KeyEventType type;
                     if (event.type == SDL_KEYDOWN) {
-                        if (g_keystate[keysym]) {
+                        if (event.key.repeat) {
                             type = KEY_AUTO_REPEAT;
                         } else {
-                            g_keystate[keysym] = true;
                             type = KEY_PRESSED;
                         }
                     } else {
-                        g_keystate[keysym] = false;
                         type = KEY_RELEASED;
                     }
                     
                     // Find the corresponding KeyCode.
                     KeyCode kc = KC_UNKNOWN;
-                    std::map<SDLKey, KeyCode>::const_iterator key_it = g_keytable.find(keysym);
+                    std::map<SDL_Keycode, KeyCode>::const_iterator key_it = g_keytable.find(keysym);
                     if (key_it != g_keytable.end()) kc = key_it->second;
-                   
-                    // Find whether SDL has provided a Unicode character for us
-                    // (filtering out unwanted control characters).
-                    int unicode = 0;
-                    if (type != KEY_RELEASED) {
-
-                        unicode = event.key.keysym.unicode;
-                        if (unicode < 32 || unicode == 127) unicode = 0;
-
-                        if (unicode >= 0xd800 && unicode <= 0xdbff) {
-                            // first half of surrogate pair
-                            surrogate_pair_start = unicode;
-                            unicode = 0;
-                        } else if (unicode >= 0xdc00 && unicode <= 0xdfff) {
-                            // second half of surrogate pair
-                            unicode = (surrogate_pair_start << 10)
-                                + unicode
-                                + 0x10000 - (0xd800 << 10) - 0xdc00;
-                        }
-                    }
 
                     // Find the modifiers.
                     const int modifiers = GetModifiers(event.key.keysym.mod);
                     
                     // Send the key event, if required.
-                    if (kc != KC_UNKNOWN) {
-                        window->forEachListener(OnKey(type, kc, KeyModifier(modifiers)));
+                    if (kc != KC_UNKNOWN && focus_window) {
+                        focus_window->forEachListener(OnKey(type, kc, KeyModifier(modifiers)));
                     }
+                }
+                break;
 
-                    // Send the text input event, if required.
-                    if (unicode != 0 && (modifiers & KM_CONTROL) == 0) {
-                        OnTextInput oti;
-                        oti.str = UTF8String::fromCodePoint(unicode);
-                        // Send the event.
-                        window->forEachListener(oti);
-                    }
+            case SDL_TEXTINPUT:
+                {
+                    OnTextInput oti;
+                    oti.str = UTF8String::fromUTF8Safe(event.text.text);
+                    if (focus_window) focus_window->forEachListener(oti);
                 }
                 break;
 
@@ -373,8 +314,8 @@ namespace Coercri {
                 {
                     bool err = false;
                     const MouseButton mb = MouseButtonFromSDL(event.button.button, err);
-                    if (!err) {
-                        window->forEachListener(OnMouseDown(event.button.x, event.button.y, mb));
+                    if (!err && focus_window) {
+                        focus_window->forEachListener(OnMouseDown(event.button.x, event.button.y, mb));
                     }
                 }
                 break;
@@ -383,14 +324,35 @@ namespace Coercri {
                 {
                     bool err = false;
                     const MouseButton mb = MouseButtonFromSDL(event.button.button, err);
-                    if (!err) {
-                        window->forEachListener(OnMouseUp(event.button.x, event.button.y, mb));
+                    if (!err && focus_window) {
+                        focus_window->forEachListener(OnMouseUp(event.button.x, event.button.y, mb));
                     }
                 }
                 break;
 
             case SDL_MOUSEMOTION:
-                window->forEachListener(OnMouseMove(event.motion.x, event.motion.y));
+                if (focus_window) {
+                    focus_window->forEachListener(OnMouseMove(event.motion.x, event.motion.y));
+                }
+                break;
+
+            case SDL_MOUSEWHEEL:
+                if (focus_window) {
+                    int dy = event.wheel.y;
+                    if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+                        dy = -dy;
+                    }
+                    const MouseButton mb = dy > 0 ? MB_WHEEL_DOWN : MB_WHEEL_UP;
+
+                    // note: can't use event.wheel.mouseX/Y here,
+                    // because not all linux distributions will have
+                    // SDL 2.26 or later yet.
+                    int x, y;
+                    SDL_GetMouseState(&x, &y);
+
+                    focus_window->forEachListener(OnMouseDown(x, y, mb));
+                    focus_window->forEachListener(OnMouseUp(x, y, mb));
+                }
                 break;
             }
         }
@@ -405,46 +367,41 @@ namespace Coercri {
     SDLGfxDriver::SDLGfxDriver()
         : video_subsystem(SDL_INIT_VIDEO)
     {
-        const SDL_VideoInfo* info = SDL_GetVideoInfo();
-        desktop_width = info->current_w;
-        desktop_height = info->current_h;
-        
         InitKeyTable();
-        SDL_EnableUNICODE(1);
     }
 
     boost::shared_ptr<Window> SDLGfxDriver::createWindow(int width, int height,
                                                          bool resizable, bool fullscreen,
                                                          const std::string &title)
     {
-        if (g_sdl_window.lock()) {
-            throw CoercriError("SDL 1 only supports one window at a time");
-        }
-
         if (fullscreen) {
-            width = desktop_width;
-            height = desktop_height;
+            SDL_DisplayMode mode;
+            int err = SDL_GetDesktopDisplayMode(0, &mode);
+            if (err) {
+                width = height = 600;
+            } else {
+                width = mode.w;
+                height = mode.h;
+            }
         }
-        
-        g_sdl_required_flags = SDL_ANYFORMAT | SDL_HWSURFACE | SDL_DOUBLEBUF;
-        if (fullscreen) g_sdl_required_flags |= SDL_FULLSCREEN;
-        if (resizable) g_sdl_required_flags |= SDL_RESIZABLE;
 
-        // In windowed mode we call SetVideoMode twice. This is a workaround for a bug when SDL is used with xmonad.
-        SDL_Surface * sdl_surf = SDL_SetVideoMode(width, height, 0, g_sdl_required_flags);
-        if (!fullscreen) sdl_surf = SDL_SetVideoMode(width, height, 0, g_sdl_required_flags);
+        Uint32 flags = 0;
+        if (fullscreen) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        if (resizable) flags |= SDL_WINDOW_RESIZABLE;
 
-        if (!sdl_surf) {
-            throw CoercriError("SDL_SetVideoMode failed");
+        SDL_Window *sdl_window = SDL_CreateWindow(title.c_str(),
+                                                  SDL_WINDOWPOS_UNDEFINED,
+                                                  SDL_WINDOWPOS_UNDEFINED,
+                                                  width,
+                                                  height,
+                                                  flags);
+
+        if (sdl_window == NULL) {
+            throw CoercriError("SDL_CreateWindow failed");
         }
-        
-        SDL_WM_SetCaption(title.c_str(), title.c_str());
 
-        SDL_EnableUNICODE(1);
-        SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-        
-        boost::shared_ptr<SDLWindow> result(new SDLWindow(desktop_width, desktop_height));
-        g_sdl_window = result;
+        boost::shared_ptr<SDLWindow> result(new SDLWindow(sdl_window, width, height));
+        windows.push_back(boost::weak_ptr<SDLWindow>(result));
         return result;
     }
 
@@ -455,19 +412,41 @@ namespace Coercri {
 
     bool SDLGfxDriver::pollEvents()
     {
-        boost::shared_ptr<SDLWindow> window(g_sdl_window.lock());
-        if (window && window->need_window_resize) {
-            // process this first.
-            int w,h;
-            window->getSize(w,h);
-            window->forEachListener(OnResize(w, h));
-            window->need_window_resize = false;
-            return true;
+        // Remove expired weak ptrs from this->windows
+        for (auto iter = windows.begin(); iter != windows.end(); ) {
+            if (iter->expired()) {
+                windows.erase(iter);
+            } else {
+                ++iter;
+            }
         }
-        
+
+        // Check for windows that need resizing
+        for (auto iter = windows.begin(); iter != windows.end(); ++iter) {
+            boost::shared_ptr<SDLWindow> window = iter->lock();
+            if (window && window->need_window_resize) {
+                // process this first.
+                int w,h;
+                window->getSize(w,h);
+                window->forEachListener(OnResize(w, h));
+                window->need_window_resize = false;
+                return true;
+            }
+        }
+
+        // Check for an SDL event
         SDL_Event event;
         if (SDL_PollEvent(&event)) {
-            DoEvent(event, surrogate_pair_start);
+
+            // TODO: We should probably distinguish better between keyboard and mouse focus?
+            SDL_Window *sdl_win = SDL_GetKeyboardFocus();
+            if (!sdl_win) {
+                sdl_win = SDL_GetMouseFocus();
+            }
+
+            SDLWindow *win = sdl_win ? static_cast<SDLWindow*>(SDL_GetWindowData(sdl_win, "coercri")) : nullptr;
+
+            DoEvent(win, event);
             return true;
         } else {
             return false;

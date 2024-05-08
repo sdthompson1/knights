@@ -47,11 +47,14 @@
 #include "../../gfx/window.hpp"
 #include "../../shared/win32_set_icon.hpp"
 
+#include <SDL2/SDL.h>
+
 namespace Coercri {
 
     class SDLWindow : public Window {
     public:
-        explicit SDLWindow(int fullscreen_width, int fullscreen_height);
+        explicit SDLWindow(SDL_Window *win, int fullscreen_width, int fullscreen_height);
+        ~SDLWindow();
 
         virtual void getSize(int &w, int &h) const;
         virtual bool hasFocus() const;
@@ -65,18 +68,14 @@ namespace Coercri {
         virtual void setIcon(const PixelArray &);
         
         bool need_window_resize;  // see SDLGfxDriver::pollEvents.
-        
+
     private:
         // prevent copying
         SDLWindow(const SDLWindow&);
         void operator=(const SDLWindow&);
 
-        // these are needed to allow the new switchToFullScreen method (that doesn't require w,h arguments) to work
-        int fullscreen_width, fullscreen_height;
-
-#ifdef WIN32
-        Win32SetIcon set_icon;
-#endif
+        SDL_Window *sdl_window;
+        SDL_Renderer *sdl_renderer;
     };
 
 }

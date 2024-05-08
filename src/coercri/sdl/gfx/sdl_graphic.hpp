@@ -49,7 +49,7 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 namespace Coercri {
 
@@ -57,23 +57,24 @@ namespace Coercri {
     public:
         SDLGraphic(boost::shared_ptr<const PixelArray> pixels, int hx, int hy);
 
-        void blit(SDL_Surface &dest, int x, int y) const;
+        void blit(SDL_Renderer *renderer, int x, int y) const;
 
         // overridden from Graphic:
         int getWidth() const;
         int getHeight() const;
         void getHandle(int &x, int &y) const;
         boost::shared_ptr<const PixelArray> getPixels() const;
-        
+
     private:
-        bool loadSurface() const;
-        
+        void createTexture(SDL_Renderer *renderer) const;
+
     private:
         boost::shared_ptr<const PixelArray> pixels;
         int hx, hy;
 
-        mutable boost::shared_ptr<SDL_Surface> surface;  // Constructed with DeleteSDLSurface
-        mutable bool need_reload;
+        // cached values:
+        mutable SDL_Renderer *used_renderer;
+        mutable boost::shared_ptr<SDL_Texture> texture;  // Constructed with DeleteSDLTexture
     };
 
 }

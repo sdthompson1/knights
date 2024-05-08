@@ -45,6 +45,7 @@
 #define COERCRI_SDL_GFX_DRIVER_HPP
 
 #include "../../gfx/gfx_driver.hpp"
+#include "sdl_window.hpp"
 #include "../core/sdl_subsystem_handle.hpp"
 
 namespace Coercri {
@@ -63,10 +64,7 @@ namespace Coercri {
         
     private:
         SDLSubSystemHandle video_subsystem;
-        int desktop_width;
-        int desktop_height;
-        
-        int surrogate_pair_start;
+        std::vector<boost::weak_ptr<SDLWindow> > windows;
     };
     
 }

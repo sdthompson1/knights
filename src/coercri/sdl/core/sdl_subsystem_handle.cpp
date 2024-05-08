@@ -41,7 +41,7 @@
 #include "sdl_subsystem_handle.hpp"
 #include "sdl_error.hpp"
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #include <map>
 
 namespace Coercri {
@@ -54,14 +54,6 @@ namespace Coercri {
     SDLSubSystemHandle::SDLSubSystemHandle(unsigned int s)
         : subsys(s), ref_count(0)
     {        
-        // Initialize SDL if necessary
-        if (g_sdl_count == 0) {
-            int err = SDL_Init(SDL_INIT_NOPARACHUTE);
-            if (err == -1) {
-                throw SDLError("SDL_Init failed");
-            }
-        }
-
         ++g_sdl_count;
 
         // If no subsystem was requested then we are done
@@ -80,7 +72,7 @@ namespace Coercri {
         // Initialize the subsystem if necessary, and setup ref_count ptr.
         ref_count = &(g_subsys_counts[subsys]);
         if (*ref_count == 0) {
-            int err = SDL_InitSubSystem(subsys | SDL_INIT_NOPARACHUTE);
+            int err = SDL_InitSubSystem(subsys);
             if (err == -1) {
                 throw SDLError("SDL_InitSubSystem failed");
             }

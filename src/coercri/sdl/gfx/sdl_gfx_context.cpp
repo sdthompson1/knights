@@ -40,47 +40,36 @@
 
 #include "sdl_gfx_context.hpp"
 #include "sdl_graphic.hpp"
-#include "pixels.hpp"
 
 #include "../../core/coercri_error.hpp"
 #include "../../gfx/font.hpp"
 
-namespace {
-    // Alpha Blending
-    inline Uint8 AlphaBlend(Uint8 input, Uint8 screen, Uint8 alpha)
-    {
-        // alpha*input + (1-alpha)*screen
-        // = alpha*(input - screen) + screen
-        const int blend = int(alpha) * (int(input) - int(screen));
-        const int result = (blend >> 8) + int(screen);
-        return Uint8(result);
-    }
-}
-    
-
 namespace Coercri {
 
-    SDLGfxContext::SDLGfxContext(SDL_Surface &surf)
-        : surface(&surf), locked(false)
+    SDLGfxContext::SDLGfxContext(SDL_Renderer *rend)
+        : renderer(rend)
     {
         clearClipRectangle();
     }
 
     SDLGfxContext::~SDLGfxContext()
     {
-        unlock();
-        SDL_Flip(surface);
+        SDL_RenderPresent(renderer);
     }
 
     void SDLGfxContext::setClipRectangle(const Rectangle &rect)
     {
-        clip_rectangle = IntersectRects(rect, Rectangle(0, 0, surface->w, surface->h));
+        int w = 0, h = 0;
+        SDL_GetRendererOutputSize(renderer, &w, &h);
+        clip_rectangle = IntersectRects(rect, Rectangle(0, 0, w, h));
         loadClipRectangle();
     }
 
     void SDLGfxContext::clearClipRectangle()
     {
-        clip_rectangle = Rectangle(0, 0, surface->w, surface->h);
+        int w = 0, h = 0;
+        SDL_GetRendererOutputSize(renderer, &w, &h);
+        clip_rectangle = Rectangle(0, 0, w, h);
         loadClipRectangle();
     }
 
@@ -91,7 +80,7 @@ namespace Coercri {
         sdl_rect.y = clip_rectangle.getTop();
         sdl_rect.w = clip_rectangle.getWidth();
         sdl_rect.h = clip_rectangle.getHeight();
-        SDL_SetClipRect(surface, &sdl_rect);
+        SDL_RenderSetClipRect(renderer, &sdl_rect);
     }
 
     Rectangle SDLGfxContext::getClipRectangle() const
@@ -101,112 +90,70 @@ namespace Coercri {
         
     int SDLGfxContext::getWidth() const
     {
-        return surface->w;
+        int w = 0, h = 0;
+        SDL_GetRendererOutputSize(renderer, &w, &h);
+        return w;
     }
 
     int SDLGfxContext::getHeight() const
     {
-        return surface->h;
+        int w = 0, h = 0;
+        SDL_GetRendererOutputSize(renderer, &w, &h);
+        return h;
     }
     
     void SDLGfxContext::clearScreen(Color colour)
     {
-        unlock();
-        SDL_FillRect(surface, 0, SDL_MapRGB(surface->format, colour.r, colour.g, colour.b));
+        SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);
+        SDL_RenderClear(renderer);
     }
 
-    void SDLGfxContext::plotPixel(int x, int y, Color input_col)
+    void SDLGfxContext::plotPixel(int x, int y, Color colour)
     {
-        lock();
-
-        if (!pointInClipRectangle(x, y)) return;
-
-        Uint8 r = input_col.r, g = input_col.g, b = input_col.b;
-        
-        if (input_col.a < 255) {
-            // Read the current contents of the pixel and do the alpha blending.
-            Uint8 screen_r, screen_g, screen_b;
-            ReadPixel(surface, x, y, screen_r, screen_g, screen_b);
-            r = AlphaBlend(input_col.r, screen_r, input_col.a);
-            g = AlphaBlend(input_col.g, screen_g, input_col.a);
-            b = AlphaBlend(input_col.b, screen_b, input_col.a);
-        }
-
-        PlotPixel(surface, x, y, r, g, b);
+        SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);
+        SDL_RenderDrawPoint(renderer, x, y);
     }
 
     void SDLGfxContext::drawGraphic(int x, int y, const Graphic &graphic)
     {
-        unlock();
         const SDLGraphic *sdl_graphic = dynamic_cast<const SDLGraphic*>(&graphic);
         if (sdl_graphic) {
-            sdl_graphic->blit(*surface, x, y);
+            sdl_graphic->blit(renderer, x, y);
         }
     }
 
-    void SDLGfxContext::fillRectangle(const Rectangle &rect, Color col)
+    void SDLGfxContext::drawLine(int x1, int y1, int x2, int y2, Color col)
     {
-        unlock();
-        
+        SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
+        SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+    }
+
+    void SDLGfxContext::drawRectangle(const Rectangle &rect, Color col)
+    {
         SDL_Rect sdl_rect;
         sdl_rect.x = rect.getLeft();
         sdl_rect.y = rect.getTop();
         sdl_rect.w = rect.getWidth();
         sdl_rect.h = rect.getHeight();
 
-        if (col.a == 255) {
-            // Non-blended case -- we can just use SDL_FillRect
-            SDL_FillRect(surface, &sdl_rect, SDL_MapRGB(surface->format, col.r, col.g, col.b));
-        } else {
-            // Blended case -- create a temporary surface (filled with the requested colour) and blit it.
-            SDL_Color sdl_col = {col.r, col.g, col.b};
-            SDL_Surface * temp_surface = SDL_CreateRGBSurface(SDL_SRCALPHA, rect.getWidth(), rect.getHeight(), 8, 0, 0, 0, 0);
-            SDL_SetColors(temp_surface, &sdl_col, 0, 1);
-            SDL_FillRect(temp_surface, 0, 0); // clear the surface to zero.
-            SDL_SetAlpha(temp_surface, SDL_SRCALPHA, col.a);
-            SDL_BlitSurface(temp_surface, 0, surface, &sdl_rect);
-            SDL_FreeSurface(temp_surface);
-        }
+        SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
+        SDL_RenderDrawRect(renderer, &sdl_rect);
+    }
+
+    void SDLGfxContext::fillRectangle(const Rectangle &rect, Color col)
+    {
+        SDL_Rect sdl_rect;
+        sdl_rect.x = rect.getLeft();
+        sdl_rect.y = rect.getTop();
+        sdl_rect.w = rect.getWidth();
+        sdl_rect.h = rect.getHeight();
+
+        SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
+        SDL_RenderFillRect(renderer, &sdl_rect);
     }
 
     boost::shared_ptr<PixelArray> SDLGfxContext::takeScreenshot()
     {
-        lock();
-
-        boost::shared_ptr<PixelArray> pixels(new PixelArray(surface->w, surface->h));
-        
-        for (int y = 0; y < surface->h; ++y) {
-            for (int x = 0; x < surface->w; ++x) {
-                Color col;
-                ReadPixel(surface, x, y, col.r, col.g, col.b);
-                col.a = 255;
-                (*pixels)(x,y) = col;
-            }
-        }
-
-        return pixels;
-    }
-    
-    bool SDLGfxContext::pointInClipRectangle(int x, int y) const
-    {
-        return PointInRect(clip_rectangle, x, y);
-    }
-    
-    void SDLGfxContext::lock()
-    {
-        if (!locked) {
-            if (SDL_LockSurface(surface) < 0) {
-                throw CoercriError("SDLGfxContext::lock() failed");
-            }
-            locked = true;
-        }
-    }
-
-    void SDLGfxContext::unlock()
-    {
-        if (locked) {
-            SDL_UnlockSurface(surface);
-            locked = false;
-        }
+        throw CoercriError("SDLGfxContext::takeScreenshot not implemented, sorry");
     }
 }

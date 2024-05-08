@@ -1,9 +1,6 @@
 /*
  * FILE:
- *   pixels.hpp
- *
- * PURPOSE:
- *   Low level pixel reading/writing routines.
+ *   sdl_surface_from_pixels.cpp
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
@@ -12,7 +9,7 @@
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
- *   is permitted under the terms of the Boost Software License, Version 1.0, 
+ *   is permitted under the terms of the Boost Software License, Version 1.0,
  *   the text of which is displayed below.
  *
  *   Boost Software License - Version 1.0 - August 17th, 2003
@@ -41,16 +38,35 @@
  *
  */
 
-#ifndef COERCRI_SDL_PIXELS_HPP
-#define COERCRI_SDL_PIXELS_HPP
+#include "delete_sdl_surface.hpp"
+#include "sdl_surface_from_pixels.hpp"
 
-#include "SDL.h"
+#include "../../gfx/pixel_array.hpp"
 
-namespace Coercri {
+boost::shared_ptr<SDL_Surface> Coercri::sdl_surface_from_pixels(const Coercri::PixelArray &pixels)
+{
+    boost::shared_ptr<SDL_Surface> surf(
+        SDL_CreateRGBSurface(0,
+                             pixels.getWidth(),
+                             pixels.getHeight(),
+                             32,
+                             0xff000000,
+                             0xff0000,
+                             0xff00,
+                             0xff),
+        DeleteSDLSurface());
 
-    void ReadPixel(SDL_Surface *surface, int x, int y, Uint8 &r, Uint8 &g, Uint8 &b);
-    void PlotPixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b);
-    
+    SDL_LockSurface(surf.get());
+
+    for (int y = 0; y < pixels.getHeight(); ++y) {
+        for (int x = 0; x < pixels.getWidth(); ++x) {
+            const Color &col = pixels(x, y);
+            *((Uint32*)(surf->pixels) + y * surf->pitch / 4 + x) =
+                SDL_MapRGBA(surf->format, col.r, col.g, col.b, col.a);
+        }
+    }
+
+    SDL_UnlockSurface(surf.get());
+
+    return surf;
 }
-
-#endif

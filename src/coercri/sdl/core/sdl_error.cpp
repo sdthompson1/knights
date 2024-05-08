@@ -40,7 +40,7 @@
 
 #include "sdl_error.hpp"
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 namespace Coercri {
 
@@ -49,5 +49,3 @@ namespace Coercri {
     { }
 
 }
-
-                   

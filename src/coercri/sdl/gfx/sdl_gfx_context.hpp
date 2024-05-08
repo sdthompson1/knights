@@ -47,7 +47,7 @@
 #include "../../gfx/gfx_context.hpp"
 #include "../../gfx/rectangle.hpp"
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 #include <stack>
 
@@ -55,10 +55,7 @@ namespace Coercri {
 
     class SDLGfxContext : public GfxContext {
     public:
-        // Notes:
-        // 1. Caller should ensure that the surface lives longer than the GfxContext
-        // 2. Surface should be unlocked
-        explicit SDLGfxContext(SDL_Surface &surf);
+        explicit SDLGfxContext(SDL_Renderer *renderer);
         virtual ~SDLGfxContext();
 
         virtual void setClipRectangle(const Rectangle &rect);
@@ -71,22 +68,18 @@ namespace Coercri {
         virtual void clearScreen(Color col);
         virtual void plotPixel(int x, int y, Color col);
         virtual void drawGraphic(int x, int y, const Graphic &graphic);
+
+        virtual void drawLine(int x1, int y1, int x2, int y2, Color col);
+        virtual void drawRectangle(const Rectangle &rect, Color col);
         virtual void fillRectangle(const Rectangle &rect, Color col);
 
         virtual boost::shared_ptr<PixelArray> takeScreenshot();
-        
-        // for those who want more low-level access:
-        void lock();    // ensures surface is locked
-        void unlock();  // ensures surface is unlocked
-        SDL_Surface * getSurface() { return surface; }
 
     private:
         void loadClipRectangle();
-        bool pointInClipRectangle(int x, int y) const;
-        
+
     private:
-        SDL_Surface *surface;
-        bool locked;
+        SDL_Renderer *renderer;
         Rectangle clip_rectangle;
     };
 

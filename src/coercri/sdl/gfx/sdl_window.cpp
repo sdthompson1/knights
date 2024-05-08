@@ -39,174 +39,90 @@
  */
 
 #include "sdl_gfx_context.hpp"
+#include "sdl_surface_from_pixels.hpp"
 #include "sdl_window.hpp"
-#include "pixels.hpp"
 #include "../../core/coercri_error.hpp"
 #include "../../gfx/pixel_array.hpp"
 
-#include "SDL.h"
-#include "SDL_syswm.h"
-
-#ifdef WIN32
-#include <windows.h>
-#else
-// assume X11 if not WIN32
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#endif
+#include <SDL2/SDL.h>
 
 namespace Coercri {
 
-    extern unsigned int g_sdl_required_flags;
-    extern bool g_sdl_has_focus;
-
-#ifdef WIN32
-    namespace {
-        HWND GetHwnd()
-        {
-            SDL_SysWMinfo wminfo;
-            SDL_VERSION(&wminfo.version);
-            if (SDL_GetWMInfo(&wminfo) != 1) {
-                throw CoercriError("SDL_GetWMInfo failed");
-            } else {
-                return wminfo.window;
-            }
-        }
-    }
-#endif
-    
-    SDLWindow::SDLWindow(int fsw, int fsh)
+    SDLWindow::SDLWindow(SDL_Window *win, int fsw, int fsh)
         : need_window_resize(false)
-        , fullscreen_width(fsw)
-        , fullscreen_height(fsh)
-#ifdef WIN32
-        , set_icon(GetHwnd())
-#endif
+        , sdl_window(win)
+        , sdl_renderer(nullptr)
     {
-        g_sdl_has_focus = true;
         invalidateAll(); // make sure the window gets painted initially.
+
+        sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
+        if (sdl_renderer == NULL) {
+            SDL_DestroyWindow(sdl_window);
+            throw CoercriError("SDL_CreateRenderer failed");
+        }
+
+        SDL_SetRenderDrawBlendMode(sdl_renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetWindowData(sdl_window, "coercri", this);
+    }
+
+    SDLWindow::~SDLWindow()
+    {
+        SDL_DestroyWindow(sdl_window);
     }
 
     void SDLWindow::getSize(int &w, int &h) const
     {
-        SDL_Surface *surf = SDL_GetVideoSurface();
-        if (surf) {
-            w = surf->w;
-            h = surf->h;
-        } else {
-            w = h = 0;
-        }
+        SDL_GetWindowSize(sdl_window, &w, &h);
     }
 
     bool SDLWindow::hasFocus() const
     {
-        return g_sdl_has_focus;
+        const Uint32 focus_flags = SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
+        return (SDL_GetWindowFlags(sdl_window) & focus_flags) != 0;
     }
 
     void SDLWindow::popToFront()
     {
-#ifdef WIN32
-        const HWND hwnd = GetHwnd();
-
-        // Restore it if it was minimized
-        if (IsIconic(hwnd)) {
-            ShowWindow(hwnd, SW_RESTORE);
-        }
-        
-        // Focus the window / bring it to front (if possible)
-        SetForegroundWindow(hwnd);
-#else
-        // assume X11
-        SDL_SysWMinfo wminfo;
-        SDL_VERSION(&wminfo.version);
-        if (SDL_GetWMInfo(&wminfo) != 1) {
-            throw CoercriError("SDL_GetWMInfo failed");
-        } else {
-            Display *display = wminfo.info.x11.display;
-            ::Window window = wminfo.info.x11.window;
-
-            // might need to look for window-manager parent window
-            ::Window root, parent;
-            ::Window *childlist;
-            unsigned int ujunk;
-            const int status = XQueryTree(display, window, &root, &parent, &childlist, &ujunk);
-            if (status && parent && parent != root) {
-                // found frame window
-                window = parent;
-            }
-
-            // call XRaiseWindow to bring it to the front.
-            XRaiseWindow(display, window);
-        }
-#endif
+        SDL_RaiseWindow(sdl_window);
     }
-    
+
     void SDLWindow::showMousePointer(bool shown)
     {
         SDL_ShowCursor(shown ? SDL_ENABLE : SDL_DISABLE);
     }
-    
+
     void SDLWindow::switchToWindowed(int w, int h)
     {
-        bool currently_full_screen = ((g_sdl_required_flags & SDL_FULLSCREEN) != 0);
-        g_sdl_required_flags &= (~SDL_FULLSCREEN);
-
-        SDL_Surface * result = SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
-
-        if (currently_full_screen) {
-            // Need two calls to SetVideoMode to work around a bug when SDL is used with xmonad
-            result = SDL_SetVideoMode(w, h, 0, g_sdl_required_flags);
-        }
-        
-        if (!result) {
-            throw CoercriError("SDL_SetVideoMode failed");
-        }
-
+        SDL_SetWindowFullscreen(sdl_window, 0);
+        SDL_SetWindowSize(sdl_window, w, h);
         need_window_resize = true;
     }
 
     void SDLWindow::switchToFullScreen()
     {
-        g_sdl_required_flags |= SDL_FULLSCREEN;
-        SDL_Surface * result = SDL_SetVideoMode(fullscreen_width, fullscreen_height, 0, g_sdl_required_flags);
-        if (!result) {
-            throw CoercriError("SDL_SetVideoMode failed");
-        }
+        SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
         need_window_resize = true;
     }
 
     bool SDLWindow::isFullScreen() const
     {
-        SDL_Surface *surf = SDL_GetVideoSurface();
-        if (surf) {
-            return ((surf->flags & SDL_FULLSCREEN) != 0);
-        } else {
-            return false;
-        }
+        return (SDL_GetWindowFlags(sdl_window) & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0;
     }
 
     bool SDLWindow::isMaximized() const
     {
-#ifdef WIN32
-        const HWND hwnd = GetHwnd();
-        return IsZoomed(hwnd) != 0;
-#else
-        throw CoercriError("Window::isMaximized: Not Implemented");
-#endif
+        return (SDL_GetWindowFlags(sdl_window) & SDL_WINDOW_MAXIMIZED) != 0;
     }
 
     std::unique_ptr<GfxContext> SDLWindow::createGfxContext()
     {
-        std::unique_ptr<GfxContext> p(new SDLGfxContext(*SDL_GetVideoSurface()));
+        std::unique_ptr<GfxContext> p(new SDLGfxContext(sdl_renderer));
         return p;
     }
 
     void SDLWindow::setIcon(const PixelArray &pixels)
     {
-#ifdef WIN32
-        set_icon.setIcon(pixels);
-#else
-        throw CoercriError("SDLWindow::setIcon: Not Implemented");
-#endif
+        boost::shared_ptr<SDL_Surface> surf = sdl_surface_from_pixels(pixels);
+        SDL_SetWindowIcon(sdl_window, surf.get());
     }
 }

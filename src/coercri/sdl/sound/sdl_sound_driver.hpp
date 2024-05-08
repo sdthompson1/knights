@@ -47,7 +47,7 @@
 #include "../../sound/sound_driver.hpp"
 #include "../core/sdl_subsystem_handle.hpp"
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #include <list>
 
 namespace Coercri {

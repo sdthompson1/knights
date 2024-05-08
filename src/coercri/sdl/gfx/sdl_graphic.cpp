@@ -40,71 +40,39 @@
 
 #include "delete_sdl_surface.hpp"
 #include "sdl_graphic.hpp"
+#include "sdl_surface_from_pixels.hpp"
 #include "../../core/coercri_error.hpp"
 
 namespace Coercri {
 
     SDLGraphic::SDLGraphic(boost::shared_ptr<const PixelArray> p, int hx_, int hy_)
-        : pixels(p), hx(hx_), hy(hy_), need_reload(false)
+        : pixels(p), hx(hx_), hy(hy_), used_renderer(nullptr)
     {
         if (!pixels) throw CoercriError("Null pixel_array used for graphic");
     }
 
-    bool SDLGraphic::loadSurface() const
+    void SDLGraphic::createTexture(SDL_Renderer *renderer) const
     {
-        if (need_reload) {
-            // Must reload the surface after it was lost
-            const int result = SDL_LockSurface(surface.get());
-            if (result != 0) {
-                // Can't yet reload
-                return false;
-            } else {
-                // Can reload. Delete the existing surface
-                need_reload = false;
-                SDL_UnlockSurface(surface.get());
-                surface.reset();
-            }
+        if (used_renderer != renderer) {
+            boost::shared_ptr<SDL_Surface> surface = sdl_surface_from_pixels(*pixels);
+            texture.reset( SDL_CreateTextureFromSurface( renderer,
+                                                         surface.get() ),
+                           DeleteSDLTexture() );
+            used_renderer = renderer;
         }
-
-        if (!surface) {
-            boost::shared_ptr<SDL_Surface> temp(
-               SDL_CreateRGBSurface(SDL_SWSURFACE | SDL_SRCALPHA,
-                                    pixels->getWidth(),
-                                    pixels->getHeight(),
-                                    32,
-                                    0xff000000,
-                                    0xff0000,
-                                    0xff00,
-                                    0xff),
-               DeleteSDLSurface());
-            SDL_LockSurface(temp.get());
-            for (int y = 0; y < temp->h; ++y) {
-                for (int x = 0; x < temp->w; ++x) {
-                    const Color& col = (*pixels)(x,y);
-                    *((Uint32*)(temp->pixels) + y*temp->pitch/4 + x) = SDL_MapRGBA(temp->format, col.r, col.g, col.b, col.a);
-                }
-            }
-            SDL_UnlockSurface(temp.get());
-            surface.reset(SDL_DisplayFormatAlpha(temp.get()), DeleteSDLSurface());
-        }
-        return true;
     }
     
-    void SDLGraphic::blit(SDL_Surface &dest, int x, int y) const
+    void SDLGraphic::blit(SDL_Renderer *renderer, int x, int y) const
     {
-        if (!loadSurface()) return;
+        createTexture(renderer);
 
-        // Set up dest_rect (SDL ignores the width and height parts, we only need to set x & y)
         SDL_Rect dest_rect;
         dest_rect.x = x - hx;
         dest_rect.y = y - hy;
+        dest_rect.w = pixels->getWidth();
+        dest_rect.h = pixels->getHeight();
 
-        // Do the blit
-        const int result = SDL_BlitSurface(surface.get(), 0, &dest, &dest_rect);
-        if (result == -2) {
-            // This means the surface was lost
-            need_reload = true;
-        }
+        SDL_RenderCopy(renderer, texture.get(), NULL, &dest_rect);
     }
 
     int SDLGraphic::getWidth() const
@@ -119,7 +87,8 @@ namespace Coercri {
 
     void SDLGraphic::getHandle(int &x, int &y) const
     {
-        x = hx; y = hy;
+        x = hx;
+        y = hy;
     }
 
     boost::shared_ptr<const PixelArray> SDLGraphic::getPixels() const

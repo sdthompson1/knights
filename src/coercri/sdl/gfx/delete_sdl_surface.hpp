@@ -3,7 +3,8 @@
  *   delete_sdl_surface.hpp
  *
  * PURPOSE:
- *   Deleter for SDL_Surface - suitable for use with boost::shared_ptr
+ *   Deleters for SDL_Surface and SDL_Texture - suitable for use with
+ *   boost::shared_ptr
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
@@ -44,12 +45,18 @@
 #ifndef COERCRI_DELETE_SDL_SURFACE_HPP
 #define COERCRI_DELETE_SDL_SURFACE_HPP
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 namespace Coercri {
     struct DeleteSDLSurface {
         void operator()(SDL_Surface *surf) {
             SDL_FreeSurface(surf);
+        }
+    };
+
+    struct DeleteSDLTexture {
+        void operator()(SDL_Texture *texture) {
+            SDL_DestroyTexture(texture);
         }
     };
 }

@@ -49,11 +49,12 @@ namespace Coercri {
 
     namespace {
         bool g_sound_open;   // Can only open the audio device once!
-        
+
         void FlipEndian(Uint8 *data, int nbytes)
         {
             while (nbytes > 0) {
                 std::swap(*data, *(data+1));
+                data += 2;
                 nbytes -= 2;
             }
         }
@@ -65,7 +66,7 @@ namespace Coercri {
         SDLSound(Uint16 *d, Uint32 l) : data(d), len(l) { }
         ~SDLSound() { SDL_FreeWAV(reinterpret_cast<Uint8*>(data)); }
     };
-    
+
     struct Voice {
         float pos;
         boost::shared_ptr<SDLSound> sound;
@@ -104,7 +105,7 @@ namespace Coercri {
         SDL_CloseAudio();
         g_sound_open = false;
     }
-    
+
     boost::shared_ptr<Sound> SDLSoundDriver::loadSound(boost::shared_ptr<std::istream> str)
     {
         SDL_AudioSpec spec;
@@ -149,13 +150,15 @@ namespace Coercri {
     {
         SDLSoundDriver* snd_drv = static_cast<SDLSoundDriver*>(userdata);
         Sint16 *buf = reinterpret_cast<Sint16*>(stream);
-        
+
         // Zero out the buffer
-        memset(buf, 0, len/2);
-        
+        memset(buf, 0, len);
+
         // For each voice currently playing
         for (std::list<Voice>::iterator it = snd_drv->voices.begin(); it != snd_drv->voices.end(); ) {
+
             bool erase = false;
+
             // For each data point
             for (int n = 0; n < len/2; ++n) {
                 if (it->pos >= (it->sound->len - 2)) {
@@ -177,7 +180,7 @@ namespace Coercri {
                     } else {
                         buf[n] = new_val;
                     }
-                        
+
                     it->pos += (float(it->freq) / snd_drv->spec.freq);
                 }
             }

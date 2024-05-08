@@ -1,9 +1,9 @@
 /*
  * FILE:
- *   sdl_ttf_loader.hpp
+ *   sdl_surface_from_pixels.hpp
  *
  * PURPOSE:
- *   Implementation of TTFLoader for SDL
+ *   Create an SDL_Surface from a Coercri::PixelArray
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
@@ -12,7 +12,7 @@
  *   Copyright (C) Stephen Thompson, 2008 - 2009.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
- *   is permitted under the terms of the Boost Software License, Version 1.0, 
+ *   is permitted under the terms of the Boost Software License, Version 1.0,
  *   the text of which is displayed below.
  *
  *   Boost Software License - Version 1.0 - August 17th, 2003
@@ -41,18 +41,21 @@
  *
  */
 
-#ifndef COERCRI_SDL_TTF_LOADER_HPP
-#define COERCRI_SDL_TTF_LOADER_HPP
+#ifndef COERCRI_SDL_SURFACE_FROM_PIXELS_HPP
+#define COERCRI_SDL_SURFACE_FROM_PIXELS_HPP
 
-#include "../../gfx/ttf_loader.hpp"
+#include "boost/shared_ptr.hpp"
+
+#include <SDL2/SDL.h>
 
 namespace Coercri {
 
-    class SDLTTFLoader : public TTFLoader {
-    public:
-        virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str, int size);
-    };
+    class PixelArray;
 
+    // Note: The PixelArray data is copied, so the caller can free the
+    // PixelArray whenever they want after the call. The returned
+    // shared_ptr uses DeleteSDLSurface.
+    boost::shared_ptr<SDL_Surface> sdl_surface_from_pixels(const PixelArray &pixels);
 }
 
 #endif

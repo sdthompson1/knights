@@ -36,7 +36,7 @@
 
 #ifdef WIN32
 #include "windows.h"
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #endif
 
 #include <sstream>
