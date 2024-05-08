@@ -42,6 +42,8 @@
 
 #include "../core/coercri_error.hpp"
 
+#include <iterator>
+
 namespace Coercri {
 
     EnetNetworkConnection::EnetNetworkConnection(ENetHost *host, const std::string &hostname, int port)

@@ -47,7 +47,7 @@
 #include "../../gfx/gfx_context.hpp"
 #include "../../gfx/rectangle.hpp"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <stack>
 

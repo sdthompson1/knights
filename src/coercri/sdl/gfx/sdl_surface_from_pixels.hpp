@@ -46,7 +46,7 @@
 
 #include "boost/shared_ptr.hpp"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 namespace Coercri {
 

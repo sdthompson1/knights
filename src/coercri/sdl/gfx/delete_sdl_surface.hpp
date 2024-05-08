@@ -45,7 +45,7 @@
 #ifndef COERCRI_DELETE_SDL_SURFACE_HPP
 #define COERCRI_DELETE_SDL_SURFACE_HPP
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 namespace Coercri {
     struct DeleteSDLSurface {

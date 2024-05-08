@@ -44,7 +44,7 @@
 #ifndef COERCRI_ISTREAM_RWOPS_HPP
 #define COERCRI_ISTREAM_RWOPS_HPP
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "boost/shared_ptr.hpp"
 #include <iosfwd>
 

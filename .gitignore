@@ -2,4 +2,5 @@ knights
 knights_server
 *.o
 *.P
+.vs
 

@@ -38,6 +38,9 @@
 #include "boost/shared_ptr.hpp"
 using namespace boost;
 
+#include <utility>
+
+
 //
 // Check if there is a knight at a given square
 // The knight must not be holding one of the "fear" items (if any)
@@ -120,8 +123,8 @@ std::pair<MapDirection,bool> ChooseDirection(shared_ptr<Entity> ent, const MapCo
 
     // If 50% chance, then swap order of x and y
     if (g_rng.getBool(0.5f)) {
-        swap(d[0],d[1]);
-        swap(basedir[0],basedir[1]);
+        std::swap(d[0],d[1]);
+        std::swap(basedir[0],basedir[1]);
     }   
     
     // Build up a list of directions

@@ -40,7 +40,7 @@
 
 #include "sdl_error.hpp"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 namespace Coercri {
 

@@ -28,6 +28,8 @@
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/locks.hpp"
 
+#include <map>
+
 // definition copied from ldo.c
 struct lua_longjmp {
   struct lua_longjmp *previous;

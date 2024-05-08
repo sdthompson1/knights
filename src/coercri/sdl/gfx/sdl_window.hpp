@@ -47,7 +47,7 @@
 #include "../../gfx/window.hpp"
 #include "../../shared/win32_set_icon.hpp"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 namespace Coercri {
 
