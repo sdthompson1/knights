@@ -305,9 +305,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     g_rng.setSeed(static_cast<unsigned int>(std::time(0)));
 
     // initialize resource lib
-#ifndef WIN32
     std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";
-#endif
     RStream::Initialize(resource_dir);
 
     // read the client config
