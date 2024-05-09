@@ -44,7 +44,7 @@
 #include "../../core/coercri_error.hpp"
 #include "../../gfx/pixel_array.hpp"
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 namespace Coercri {
 

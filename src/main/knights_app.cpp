@@ -272,9 +272,6 @@ public:
 
     // autostart mode
     bool autostart;
-    
-    // are we using DX11 or SDL
-    bool using_dx11;
 
     // functions
     KnightsAppImpl() : last_time(0), update_interval(0), running(true), player_name_changed(false) { }
@@ -308,7 +305,9 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     g_rng.setSeed(static_cast<unsigned int>(std::time(0)));
 
     // initialize resource lib
+#ifndef WIN32
     std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";
+#endif
     RStream::Initialize(resource_dir);
 
     // read the client config
@@ -370,28 +369,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     }
     
     // Set up Coercri
-    //  -- Use DX11 if available, but fall back to SDL if that fails.
-    try {
-
-#ifdef WIN32
-        unsigned int flags = 0;
-
-#ifndef NDEBUG
-        flags = D3D11_CREATE_DEVICE_DEBUG;
-#endif
-        pimpl->gfx_driver.reset(new Coercri::DX11GfxDriver(D3D_DRIVER_TYPE_HARDWARE,
-                                                           flags,
-                                                           D3D_FEATURE_LEVEL_9_1));
-        pimpl->using_dx11 = true;
-
-#else // WIN32
-        throw Coercri::CoercriError("This platform does not support DirectX");
-#endif // WIN32
-
-    } catch (const Coercri::CoercriError &) {
-        pimpl->gfx_driver.reset(new Coercri::SDLGfxDriver);
-        pimpl->using_dx11 = false;
-    }
+    pimpl->gfx_driver.reset(new Coercri::SDLGfxDriver);
 
 #ifndef DISABLE_SOUND
     try {
@@ -591,10 +569,6 @@ void KnightsApp::setPlayerName(const UTF8String &name)
     }
 }
 
-bool KnightsApp::usingDX11() const
-{
-    return pimpl->using_dx11;
-}
 
 //////////////////////////////////////////////
 // Game state handling

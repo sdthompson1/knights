@@ -36,7 +36,7 @@
 
 #ifdef WIN32
 #include "windows.h"
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #endif
 
 #include <sstream>
@@ -103,16 +103,28 @@ namespace {
 }
 
 
-extern "C" {  // needed for SDL I think
+extern "C" {  // needed for SDL I think (?)
+
+int main(int argc, char * argv[])
+{
+#ifdef WIN32
+    // This is needed for audio to work in SDL2 on Windows apparently
+    putenv("SDL_AUDIODRIVER=directsound");
+#endif
 
 #ifdef WIN32
-int KnightsMain(int argc, char **argv, const boost::filesystem::path &default_data_dir)  // On Windows this is called from WinMain below
-#else
-int main(int argc, char **argv)   // On other systems this is our real main function
-#endif
-{
+    // Find path to the application
+    wchar_t app_path[MAX_PATH];
+    DWORD pathlen = GetModuleFileNameW(NULL, app_path, MAX_PATH);
+    while (pathlen > 0 && app_path[pathlen] != '\\') --pathlen;
+    app_path[pathlen] = 0;
 
-#ifndef WIN32
+    // Figure out the path to the 'knights_data' directory.
+    std::wstring rdir(app_path, pathlen);
+    rdir += L"\\knights_data";
+
+    const boost::filesystem::path default_data_dir = rdir;
+#else
     const boost::filesystem::path default_data_dir = FindKnightsDataDir();
 #endif
 
@@ -209,59 +221,11 @@ void boost::assertion_failed(char const * expr, char const * function, char cons
 
 #endif
 
-
-#ifdef WIN32
-
-// WinMain
-int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
-{
-    // Start DDHELP.exe - this is some kind of hack to prevent files being kept open, see 
-    // SDL_win32_main.c in the SDL source code
-    HMODULE handle = LoadLibrary("DDRAW.DLL");
-    if (handle) FreeLibrary(handle);
-
-    // Find path to the application
-    char app_path[MAX_PATH];
-    DWORD pathlen = GetModuleFileName(NULL, app_path, MAX_PATH);
-    while (pathlen > 0 && app_path[pathlen] != '\\') --pathlen;
-    app_path[pathlen] = '\0';
-
-    // SDL requires this:
-    SDL_SetModuleHandle(GetModuleHandle(NULL));
-
-    // Figure out the path to the 'knights_data' directory.
-    std::string rdir(app_path, pathlen);
-    rdir += "\\knights_data";
-    
-    // Parse the cmd line string into argc and argv
-    std::vector<char*> arg_vec;
-    arg_vec.push_back(&app_path[pathlen+1]); // program name
-    char * arg = szCmdLine;
-    while (arg[0]) {
-        while (arg[0] && IsSpace(arg[0])) ++arg;
-        if (arg[0]) {
-            arg_vec.push_back(arg);
-            while (arg[0] && !IsSpace(arg[0])) ++arg;
-            if (arg[0]) {
-                arg[0] = 0;
-                ++arg;
-            }
-        }
-    }
-    
-    // Call KnightsMain.
-    KnightsMain(arg_vec.size(), &arg_vec[0], rdir);
-
-    return 0;
-}
-
-#endif
-
 // ---------------------------------
 
 // Fix "bug" with MSVC static libs + global object constructors.
 #ifdef _MSC_VER
-#pragma comment (linker, "/include:_InitMagicActions")
-#pragma comment (linker, "/include:_InitScriptActions")
-#pragma comment (linker, "/include:_InitControls")
+#pragma comment (linker, "/include:InitMagicActions")
+#pragma comment (linker, "/include:InitScriptActions")
+#pragma comment (linker, "/include:InitControls")
 #endif

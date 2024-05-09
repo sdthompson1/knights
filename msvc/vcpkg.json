@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "boost",
+    "curl",
+    "sdl2",
+    "freetype"
+  ]
+}

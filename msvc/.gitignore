@@ -1,4 +1,3 @@
 *.user
-packages
 x64
-
+vcpkg_installed

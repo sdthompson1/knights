@@ -123,9 +123,6 @@ public:
     const UTF8String & getPlayerName() const;
     void setPlayerName(const UTF8String &name);
 
-    // which gfx driver are we using? true=dx11, false=sdl
-    bool usingDX11() const;
-
 
     //
     // GameManager methods

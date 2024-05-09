@@ -138,7 +138,6 @@ private:
     boost::scoped_ptr<gcn::Button> restore_button;
     boost::scoped_ptr<GuiTextWrap> bad_key_area;
     boost::scoped_ptr<gcn::CheckBox> tooltip_checkbox;
-    boost::scoped_ptr<gcn::Label> gfx_driver_label;
 
     Options current_opts;
 
@@ -279,16 +278,6 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     non_integer_checkbox->addActionListener(this);
     container->add(non_integer_checkbox.get(), pad, y);
     y += non_integer_checkbox->getHeight() + 40;
-
-    const char * gfx_str;
-    if (knights_app.usingDX11()) {
-        gfx_str = "Using DirectX 11 graphics.";
-    } else {
-        gfx_str = "Using SDL graphics.";
-    }
-    gfx_driver_label.reset(new gcn::Label(gfx_str));
-    container->add(gfx_driver_label.get(), pad, y);
-    y += gfx_driver_label->getHeight() + 15;
 
     restore_button.reset(new GuiButton("Restore Defaults"));
     restore_button->addActionListener(this);

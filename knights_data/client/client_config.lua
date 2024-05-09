@@ -43,7 +43,7 @@ menu_delay = 500;            -- delay between pressing fire and menu appearing
 death_draw_map_time = 1500; -- how long to show the map after death
 
 -- Sound settings 
-sound_volume = 35;          -- 0 to 100. NB too high may cause 'crackling'
+sound_volume = 12;          -- 0 to 100. NB too high may cause 'crackling'
 
 -- Main game FPS (maximum)
 fps = 120;

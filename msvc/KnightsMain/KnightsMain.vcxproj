@@ -42,6 +42,13 @@
     <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
@@ -58,23 +65,18 @@
       <DisableSpecificWarnings>4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;winmm.lib;libcurl.lib;freetype246_D.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;SDL2maind.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>false</OptimizeReferences>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Debug\dynamic;..\packages\freetype.2.4.2.1\build\native\lib\Win32\v110\dynamic\Debug;..\packages\SDL.1.2.15.15\build\native\lib\v110\Win32\Debug\dynamic</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <SubSystem>
-      </SubSystem>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)\packages\curl.redist.7.30.0.2\build\native\bin\v110\Win32\Debug\dynamic\libcurl.dll $(OutDir)
-copy $(SolutionDir)\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\Debug\dynamic\cdecl\libssh2.dll $(OutDir)
-copy $(SolutionDir)\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Debug\dynamic\cdecl\zlib.dll $(OutDir)
-copy $(SolutionDir)\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Debug\freetype246_D.dll $(OutDir)
-copy $(SolutionDir)\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Debug\dynamic\SDL.dll $(OutDir)
-copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Debug\dynamic\libeay32.dll $(OutDir)
-copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Debug\dynamic\ssleay32.dll $(OutDir)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -97,22 +99,18 @@ copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32
       <DisableSpecificWarnings>4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;winmm.lib;libcurl.lib;freetype246.lib;SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>..\packages\curl.7.30.0.2\build\native\lib\v110\Win32\Release\dynamic;..\packages\freetype.2.4.2.1\build\native\lib\Win32\v110\dynamic\Release;..\packages\SDL.1.2.15.15\build\native\lib\v110\Win32\Release\dynamic</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)\packages\curl.redist.7.30.0.2\build\native\bin\v110\Win32\Release\dynamic\libcurl.dll $(OutDir)
-copy $(SolutionDir)\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\Release\dynamic\cdecl\libssh2.dll $(OutDir)
-copy $(SolutionDir)\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Release\dynamic\cdecl\zlib.dll $(OutDir)
-copy $(SolutionDir)\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Release\freetype246.dll $(OutDir)
-copy $(SolutionDir)\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Release\dynamic\SDL.dll $(OutDir)
-copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\libeay32.dll $(OutDir)
-copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\ssleay32.dll $(OutDir)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -224,9 +222,6 @@ copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32
     <ProjectReference Include="..\Coercri\Coercri.vcxproj">
       <Project>{97a898fe-d684-42b1-9f9b-b8706436f78c}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Coercri_DX11\Coercri_DX11.vcxproj">
-      <Project>{8255a6c0-27b4-43c4-aab7-94b0e54009ee}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\ENet\ENet.vcxproj">
       <Project>{f75537ff-1112-469b-9cb5-e1d6bf28a419}</Project>
     </ProjectReference>
@@ -262,25 +257,11 @@ copy $(SolutionDir)\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="..\..\src\icon.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
     <Import Project="..\packages\SDL.1.2.15.15\build\native\SDL.targets" Condition="Exists('..\packages\SDL.1.2.15.15\build\native\SDL.targets')" />
-    <Import Project="..\packages\boost.1.85.0\build\boost.targets" Condition="Exists('..\packages\boost.1.85.0\build\boost.targets')" />
-    <Import Project="..\packages\sdl2.nuget.redist.2.30.2\build\native\sdl2.nuget.redist.targets" Condition="Exists('..\packages\sdl2.nuget.redist.2.30.2\build\native\sdl2.nuget.redist.targets')" />
-    <Import Project="..\packages\sdl2.nuget.2.30.2\build\native\sdl2.nuget.targets" Condition="Exists('..\packages\sdl2.nuget.2.30.2\build\native\sdl2.nuget.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\boost.1.85.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.85.0\build\boost.targets'))" />
-    <Error Condition="!Exists('..\packages\sdl2.nuget.redist.2.30.2\build\native\sdl2.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.nuget.redist.2.30.2\build\native\sdl2.nuget.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\sdl2.nuget.2.30.2\build\native\sdl2.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.nuget.2.30.2\build\native\sdl2.nuget.targets'))" />
-  </Target>
 </Project>

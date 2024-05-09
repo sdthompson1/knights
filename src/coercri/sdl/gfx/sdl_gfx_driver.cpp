@@ -51,7 +51,7 @@
 #include "boost/weak_ptr.hpp"
 #include <map>
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 namespace Coercri {
 
