@@ -204,10 +204,9 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 \t$(INSTALL) -m 755 -d $(DATA_DIR)"""
 
 for root, dirs, files in os.walk('knights_data'):
-    if root.find(".svn") == -1:
-        for f in files:
-            f2 = os.path.join(root, f)
-            print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
+    for f in files:
+        f2 = os.path.join(root, f)
+        print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
 
 print """
 install_server: $(SERVER_BINARY_NAME)
@@ -216,10 +215,9 @@ install_server: $(SERVER_BINARY_NAME)
 \t$(INSTALL) -m 755 -d $(DATA_DIR)"""
 
 for root, dirs, files in os.walk('knights_data/server'):
-    if root.find(".svn") == -1:
-        for f in files:
-            f2 = os.path.join(root, f)
-            print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
+    for f in files:
+        f2 = os.path.join(root, f)
+        print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
 
 print
 print "install_docs:"
@@ -237,16 +235,15 @@ print "\trm -f $(DOC_DIR)/quests.txt"
 print "\trm -f $(DOC_DIR)/manual.html"
 
 for root, dirs, files in os.walk('docs'):
-    if root.find(".svn") == -1:
-        for f in files:
-            if (f.endswith(".png")):  # slightly crude test but it works for now!
-                print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual/images"
-            elif (root.find("third_party_licences") != -1):
-                print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/third_party_licences"
-            elif (root.find("manual") != -1):
-                print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual"
-            else:
-                print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)"
+    for f in files:
+        if (f.endswith(".png")):  # slightly crude test but it works for now!
+            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual/images"
+        elif (root.find("third_party_licences") != -1):
+            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/third_party_licences"
+        elif (root.find("manual") != -1):
+            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual"
+        else:
+            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)"
 
 print
 
@@ -257,22 +254,20 @@ uninstall:
 \trm -f $(BIN_DIR)/$(SERVER_BINARY_NAME)"""
 
 for root, dirs, files in os.walk('knights_data'):
-    if root.find(".svn") == -1:
-        for f in files:
-            f2 = os.path.join(root, f)
-            print "\trm -f $(DATA_DIR)" + f2[12:]
+    for f in files:
+        f2 = os.path.join(root, f)
+        print "\trm -f $(DATA_DIR)" + f2[12:]
 
 for root, dirs, files in os.walk('docs'):
-    if root.find(".svn") == -1:
-        for f in files:
-            if (f.endswith(".png")):  # see comment above
-                print "\trm -f $(DOC_DIR)/manual/images/" + os.path.basename(f)
-            elif (root.find("third_party_licences") != -1):
-                print "\trm -f $(DOC_DIR)/third_party_licences/" + os.path.basename(f)
-            elif (root.find("manual") != -1):
-                print "\trm -f $(DOC_DIR)/manual/" + os.path.basename(f)
-            else:
-                print "\trm -f $(DOC_DIR)/" + os.path.basename(f)
+    for f in files:
+        if (f.endswith(".png")):  # see comment above
+            print "\trm -f $(DOC_DIR)/manual/images/" + os.path.basename(f)
+        elif (root.find("third_party_licences") != -1):
+            print "\trm -f $(DOC_DIR)/third_party_licences/" + os.path.basename(f)
+        elif (root.find("manual") != -1):
+            print "\trm -f $(DOC_DIR)/manual/" + os.path.basename(f)
+        else:
+            print "\trm -f $(DOC_DIR)/" + os.path.basename(f)
 
 print
 print "-include $(OFILES_MAIN:.o=.P) $(OFILES_SERVER:.o=.P)"
