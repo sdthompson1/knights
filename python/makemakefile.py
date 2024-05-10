@@ -157,9 +157,16 @@ build: $(KNIGHTS_BINARY_NAME) $(SERVER_BINARY_NAME)
 # Print targets for all source files.
 for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     incflags = make_include_flags(incdirs)
+
+    pkgflags = "`pkg-config libcurl --cflags`"
+    if srcfile.startswith("src/coercri/sdl/") or srcfile.startswith("src/main/") or srcfile.startswith("src/rstream/rstream_rwops"):
+        pkgflags += " `pkg-config sdl2 --cflags`"
+    if srcfile.startswith("src/coercri/gfx/"):
+        pkgflags += " `pkg-config freetype2 --cflags`"
+
     print get_obj_file(srcfile) + ": " + srcfile
     if (srcfile.endswith(".cpp") or srcfile.startswith("src/external/lua")):
-        print "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config sdl2 --cflags` `pkg-config libcurl --cflags` `pkg-config freetype2 --cflags` " + incflags + " -MD -c -o $@ $<"
+        print "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) " + pkgflags + " " + incflags + " -MD -c -o $@ $<"
     else:  # enet .c files
         print "\t$(CC) $(CPPFLAGS) $(CFLAGS) " + incflags + " -MD -c -o $@ $<"
     print "\t@cp $*.d $*.P; \\"
