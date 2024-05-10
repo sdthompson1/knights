@@ -41,7 +41,7 @@ def find_srcs(proj):
     incdirs = []
     srcfiles = []
     projfile = "msvc/" + proj + "/" + proj + ".vcxproj"
-    L = file(projfile, "r").readlines()
+    L = open(projfile, "r").readlines()
     # find the include files
     for x in L:
         y = x.strip()
@@ -49,7 +49,7 @@ def find_srcs(proj):
             idxstart = y.find('>') + 1
             idxstop = y.find('<', idxstart)
             incdirs = y[idxstart:idxstop].split(";")
-            incdirs = map(lambda x: add_proj_path(proj,x), incdirs)
+            incdirs = [add_proj_path(proj,x) for x in incdirs]
             break
     # find the source files
     for x in L:
@@ -84,14 +84,14 @@ def get_srcs_with_inc_dirs(projects):
     for proj in projects:
         (srcfiles, incdirs) = find_srcs(proj)
         for s in srcfiles:
-            srcs_with_inc_dirs.append((s, incdirs))    
-    return srcs_with_inc_dirs
+            srcs_with_inc_dirs.append((s, incdirs))
+    return sorted(srcs_with_inc_dirs)
 
 
 # Main program
 
 # Start printing the Makefile.
-print """# Makefile for Knights
+print ("""# Makefile for Knights
 # This file is generated automatically by makemakefile.py
 
 # NOTE: Audio can be disabled by adding -DDISABLE_SOUND to the CPPFLAGS.
@@ -124,7 +124,7 @@ INSTALL = install
 
 ########################################################################
 
-"""
+""")
 
 
 # Get all source files / include dirs
@@ -133,26 +133,26 @@ srcs_with_inc_dirs_server = get_srcs_with_inc_dirs(PROJECTS_SERVER)
 srcs_with_inc_dirs_all = get_srcs_with_inc_dirs(PROJECTS_ALL)
 
 # Print the lists of object files for main program & server program.
-print "OFILES_MAIN =",
+print ("OFILES_MAIN =", end=" ")
 for (sfile, incdirs) in srcs_with_inc_dirs_main:
-    print get_obj_file(sfile),
-print
-print
+    print (get_obj_file(sfile), end=" ")
+print()
+print()
 
-print "OFILES_SERVER =",
+print ("OFILES_SERVER =", end=" ")
 for (sfile, incdirs) in srcs_with_inc_dirs_server:
-    print get_obj_file(sfile),
+    print (get_obj_file(sfile), end=" ")
 for sfile in EXTRA_OBJS_SERVER:
-    print sfile,
-print
-print
+    print (sfile, end=" ")
+print()
+print()
 
 # Print "build" target
-print """
+print ("""
 
 build: $(KNIGHTS_BINARY_NAME) $(SERVER_BINARY_NAME)
 
-"""
+""")
 
 # Print targets for all source files.
 for (srcfile, incdirs) in srcs_with_inc_dirs_all:
@@ -164,32 +164,32 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     if srcfile.startswith("src/coercri/gfx/"):
         pkgflags += " `pkg-config freetype2 --cflags`"
 
-    print get_obj_file(srcfile) + ": " + srcfile
+    print (get_obj_file(srcfile) + ": " + srcfile)
     if (srcfile.endswith(".cpp") or srcfile.startswith("src/external/lua")):
-        print "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) " + pkgflags + " " + incflags + " -MD -c -o $@ $<"
+        print ("\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) " + pkgflags + " " + incflags + " -MD -c -o $@ $<")
     else:  # enet .c files
-        print "\t$(CC) $(CPPFLAGS) $(CFLAGS) " + incflags + " -MD -c -o $@ $<"
-    print "\t@cp $*.d $*.P; \\"
-    print "\t  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\\\$$//' \\"
-    print "\t      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \\"
-    print "\t  rm -f $*.d"
+        print ("\t$(CC) $(CPPFLAGS) $(CFLAGS) " + incflags + " -MD -c -o $@ $<")
+    print ("\t@cp $*.d $*.P; \\")
+    print ("\t  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\\\$$//' \\")
+    print ("\t      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \\")
+    print ("\t  rm -f $*.d")
 
 # Print target for Knights binary
-print """
+print ("""
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
 \t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` `pkg-config libcurl --libs` -lfontconfig -lX11 $(BOOST_LIBS)
-"""
+""")
 
 # Print target for Server binary
-print """
+print ("""
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
 \t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config libcurl --libs` $(BOOST_LIBS)
-"""
+""")
 
 
 # Print "clean" target
 
-print """
+print ("""
 clean:
 \trm -f $(OFILES_MAIN)
 \trm -f $(OFILES_MAIN:.o=.d)
@@ -199,82 +199,82 @@ clean:
 \trm -f $(OFILES_SERVER:.o=.P)
 \trm -f $(KNIGHTS_BINARY_NAME)
 \trm -f $(SERVER_BINARY_NAME)
-"""
+""")
 
 # Print the 'install' target.
-print """
+print ("""
 install: install_knights install_server install_docs
 
 install_knights: $(KNIGHTS_BINARY_NAME)
 \t$(INSTALL) -m 755 -d $(BIN_DIR)
 \t$(INSTALL) -m 755 $(KNIGHTS_BINARY_NAME) $(BIN_DIR)
-\t$(INSTALL) -m 755 -d $(DATA_DIR)"""
+\t$(INSTALL) -m 755 -d $(DATA_DIR)""")
 
 for root, dirs, files in os.walk('knights_data'):
     for f in files:
         f2 = os.path.join(root, f)
-        print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
+        print ("\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:])
 
-print """
+print ("""
 install_server: $(SERVER_BINARY_NAME)
 \t$(INSTALL) -m 755 -d $(BIN_DIR)
 \t$(INSTALL) -m 755 $(SERVER_BINARY_NAME) $(BIN_DIR)
-\t$(INSTALL) -m 755 -d $(DATA_DIR)"""
+\t$(INSTALL) -m 755 -d $(DATA_DIR)""")
 
 for root, dirs, files in os.walk('knights_data/server'):
     for f in files:
         f2 = os.path.join(root, f)
-        print "\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:]
+        print ("\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:])
 
-print
-print "install_docs:"
-print "\t$(INSTALL) -m 755 -d $(DOC_DIR)"
-print "\t$(INSTALL) -m 755 -d $(DOC_DIR)/third_party_licences"
-print "\t$(INSTALL) -m 755 -d $(DOC_DIR)/manual"
-print "\t$(INSTALL) -m 755 -d $(DOC_DIR)/manual/images"
+print()
+print ("install_docs:")
+print ("\t$(INSTALL) -m 755 -d $(DOC_DIR)")
+print ("\t$(INSTALL) -m 755 -d $(DOC_DIR)/third_party_licences")
+print ("\t$(INSTALL) -m 755 -d $(DOC_DIR)/manual")
+print ("\t$(INSTALL) -m 755 -d $(DOC_DIR)/manual/images")
 
 # delete some files that were present in older versions of knights
 # but should be removed for this version:
-print "\trm -f $(DOC_DIR)/FTL.txt"
-print "\trm -f $(DOC_DIR)/GPL.txt"
-print "\trm -f $(DOC_DIR)/LGPL.txt"
-print "\trm -f $(DOC_DIR)/quests.txt"
-print "\trm -f $(DOC_DIR)/manual.html"
+print ("\trm -f $(DOC_DIR)/FTL.txt")
+print ("\trm -f $(DOC_DIR)/GPL.txt")
+print ("\trm -f $(DOC_DIR)/LGPL.txt")
+print ("\trm -f $(DOC_DIR)/quests.txt")
+print ("\trm -f $(DOC_DIR)/manual.html")
 
 for root, dirs, files in os.walk('docs'):
     for f in files:
         if (f.endswith(".png")):  # slightly crude test but it works for now!
-            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual/images"
+            print ("\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual/images")
         elif (root.find("third_party_licences") != -1):
-            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/third_party_licences"
+            print ("\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/third_party_licences")
         elif (root.find("manual") != -1):
-            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual"
+            print ("\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual")
         else:
-            print "\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)"
+            print ("\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)")
 
-print
+print()
 
 # Print the 'uninstall' target
-print """
+print ("""
 uninstall:
 \trm -f $(BIN_DIR)/$(KNIGHTS_BINARY_NAME)
-\trm -f $(BIN_DIR)/$(SERVER_BINARY_NAME)"""
+\trm -f $(BIN_DIR)/$(SERVER_BINARY_NAME)""")
 
 for root, dirs, files in os.walk('knights_data'):
     for f in files:
         f2 = os.path.join(root, f)
-        print "\trm -f $(DATA_DIR)" + f2[12:]
+        print ("\trm -f $(DATA_DIR)" + f2[12:])
 
 for root, dirs, files in os.walk('docs'):
     for f in files:
         if (f.endswith(".png")):  # see comment above
-            print "\trm -f $(DOC_DIR)/manual/images/" + os.path.basename(f)
+            print ("\trm -f $(DOC_DIR)/manual/images/" + os.path.basename(f))
         elif (root.find("third_party_licences") != -1):
-            print "\trm -f $(DOC_DIR)/third_party_licences/" + os.path.basename(f)
+            print ("\trm -f $(DOC_DIR)/third_party_licences/" + os.path.basename(f))
         elif (root.find("manual") != -1):
-            print "\trm -f $(DOC_DIR)/manual/" + os.path.basename(f)
+            print ("\trm -f $(DOC_DIR)/manual/" + os.path.basename(f))
         else:
-            print "\trm -f $(DOC_DIR)/" + os.path.basename(f)
+            print ("\trm -f $(DOC_DIR)/" + os.path.basename(f))
 
-print
-print "-include $(OFILES_MAIN:.o=.P) $(OFILES_SERVER:.o=.P)"
+print()
+print ("-include $(OFILES_MAIN:.o=.P) $(OFILES_SERVER:.o=.P)")
