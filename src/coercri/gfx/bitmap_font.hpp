@@ -57,9 +57,7 @@
 #include "boost/noncopyable.hpp"
 #include "boost/shared_ptr.hpp"
 
-#ifdef _MSC_VER
-#pragma warning (disable:4200)
-#endif
+#include <vector>
 
 namespace Coercri {
 
