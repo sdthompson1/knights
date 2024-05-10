@@ -19,8 +19,8 @@ amiga_knights/ks_disclaimer.txt for details.
 This software includes a copy of the Simple DirectMedia Layer (SDL)
 library. This is a cross-platform multimedia library, providing access
 to graphics, sounds and so on. It is made available under the terms of
-the GNU Lesser General Public Licence (LGPL), the full text of which
-is included separately (see third_party_licences/LGPL.txt).
+the zlib licence, the full text of which is included separately (see
+third_party_licences/zlib.txt).
 
 The latest version of SDL is always available from
 http://www.libsdl.org/. 
@@ -31,17 +31,10 @@ directory.)
 
 
 
-===== SDL_TTF and FreeType =====
+===== FreeType =====
 
-This software uses SDL_TTF, which in turn uses FreeType, which is
-copyright (C) 2007 The FreeType project (http://www.freetype.org/).
-See third_party_licences/FTL.txt.
-
-Note that I have included the SDL_TTF .c and .h files into the project
-directly, rather than linking to them as an external library. (I have
-also made a small modification to my copy of SDL_ttf.c, see
-src/platform/SDL_ttf.c.) Please be aware of this if you are swapping
-in a new version of SDL_TTF for any reason.
+This software uses FreeType, which is copyright (C) 2007 The FreeType
+project (http://www.freetype.org/). See third_party_licences/FTL.txt.
 
 
 
@@ -222,8 +215,8 @@ Here is a list:
   did not use any of the 'engines' available from the GOLD site -- I
   found the C++ ones to be somewhat unreliable, so I wrote my own!
 
-  [Note this will likely disappear in a future release as I am
-  switching to Lua for configuration files...]
+  [This is no longer used as I have now switched to Lua for
+  configuration files.]
 
 
 * Inno Setup
@@ -260,6 +253,9 @@ Here is a list:
   A make replacement -- Describes itself as a "software construction
   tool".
 
+  [No longer used as I now have a "makemakefile" script written in
+  Python instead.]
+
 
 * AMOS Professional 
 
@@ -280,5 +276,11 @@ Here is a list:
 * GCC/G++, for compiling the code.
 
 
-Development was done both on Linux and on Windows (the latter using
-Cygwin and, more recently, Microsoft Visual C++ Express Edition).
+* SDL_TTF, a font rendering library, which was used in previous
+  versions of Knights but has now been removed (in favour of just
+  directly using FreeType).
+
+
+Development was done both on Linux and on Windows (the latter using --
+at various times -- Cygwin, Microsoft Visual C++ Express Edition,
+Microsoft Visual Studio Community Edition, nuget, and vcpkg).
