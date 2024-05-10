@@ -66,6 +66,25 @@ namespace Coercri {
     {
         createTexture(renderer);
 
+        SDL_SetTextureColorMod(texture.get(), 255, 255, 255);
+        SDL_SetTextureAlphaMod(texture.get(), 255);
+
+        SDL_Rect dest_rect;
+        dest_rect.x = x - hx;
+        dest_rect.y = y - hy;
+        dest_rect.w = pixels->getWidth();
+        dest_rect.h = pixels->getHeight();
+
+        SDL_RenderCopy(renderer, texture.get(), NULL, &dest_rect);
+    }
+
+    void SDLGraphic::blitModulated(SDL_Renderer *renderer, int x, int y, Color col) const
+    {
+        createTexture(renderer);
+
+        SDL_SetTextureColorMod(texture.get(), col.r, col.g, col.b);
+        SDL_SetTextureAlphaMod(texture.get(), col.a);
+
         SDL_Rect dest_rect;
         dest_rect.x = x - hx;
         dest_rect.y = y - hy;

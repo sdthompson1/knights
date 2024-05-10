@@ -58,6 +58,7 @@ namespace Coercri {
         SDLGraphic(boost::shared_ptr<const PixelArray> pixels, int hx, int hy);
 
         void blit(SDL_Renderer *renderer, int x, int y) const;
+        void blitModulated(SDL_Renderer *renderer, int x, int y, Color col) const;
 
         // overridden from Graphic:
         int getWidth() const;

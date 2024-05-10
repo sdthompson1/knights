@@ -122,6 +122,14 @@ namespace Coercri {
         }
     }
 
+    void SDLGfxContext::drawGraphicModulated(int x, int y, const Graphic &graphic, Color col)
+    {
+        const SDLGraphic *sdl_graphic = dynamic_cast<const SDLGraphic*>(&graphic);
+        if (sdl_graphic) {
+            sdl_graphic->blitModulated(renderer, x, y, col);
+        }
+    }
+
     void SDLGfxContext::drawLine(int x1, int y1, int x2, int y2, Color col)
     {
         SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);

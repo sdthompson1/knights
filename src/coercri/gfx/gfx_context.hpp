@@ -88,6 +88,7 @@ namespace Coercri {
         virtual void clearScreen(Color col) = 0;   // (col.a is ignored)
         virtual void plotPixel(int x, int y, Color col) = 0;
         virtual void drawGraphic(int x, int y, const Graphic &graphic) = 0;
+        virtual void drawGraphicModulated(int x, int y, const Graphic &graphic, Color col) = 0;
 
         // this just calls through to font.drawText.
         void drawText(int x, int y, const Font &font, const UTF8String &text, Color col);

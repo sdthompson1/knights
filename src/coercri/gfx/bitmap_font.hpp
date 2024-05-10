@@ -63,6 +63,8 @@
 
 namespace Coercri {
 
+    class GfxDriver;
+    class Graphic;
     class KernTable;
     class PixelArray;
     
@@ -86,7 +88,8 @@ namespace Coercri {
         //
         // There is no kerning when this ctor is used.
         //
-        explicit BitmapFont(boost::shared_ptr<PixelArray> pix);
+        explicit BitmapFont(boost::shared_ptr<GfxDriver> driver,
+                            boost::shared_ptr<PixelArray> pix);
 
         
         // New constructor. Ctor takes a kern table and the (uniform)
@@ -94,7 +97,8 @@ namespace Coercri {
         // plotPixel() methods are used to define the actual
         // characters. (setupCharacter "creates" a character and
         // initializes alpha to zero; plotPixel sets the alpha for one
-        // pixel at a time.)
+        // pixel at a time.) Once all chars are setup, setupDone()
+        // should be called.
         //
         // Note char 32 is a special case, it is always completely
         // blank and plotPixel has no effect for this character. Also,
@@ -104,13 +108,12 @@ namespace Coercri {
         // with "out of range" x,y values. However, it crashes if
         // called on a "c" that hasn't been set up by setupChar.
         //
-        BitmapFont(boost::shared_ptr<KernTable> kern_table, int height_);
+        BitmapFont(boost::shared_ptr<GfxDriver> driver,
+                   boost::shared_ptr<KernTable> kern_table,
+                   int height_);
         void setupCharacter(int c, int width, int height, int xofs, int yofs, int xadvance);
         void plotPixel(int c, int x, int y, unsigned char alpha);
-
-        
-        // destructor
-        ~BitmapFont();
+        void setupDone();
 
         
         // Overridden from Font:
@@ -123,11 +126,13 @@ namespace Coercri {
             int width, height;  // width and height of pixels[] array
             int xofs, yofs;     // offset from "pen position" (top left of character) to top left of pixels[] array.
             int xadvance;       // amount to move right after drawing this character.
-            unsigned char pixels[];      // Variable sized array, row major, contains alpha values from 0-255.
+            std::vector<unsigned char> pixels;      // Row major, contains alpha values from 0-255. Cleared after graphic created.
+            boost::shared_ptr<Graphic> graphic;     // For now, we create one texture per character, instead of using a texture atlas (which would be a good future optimisation!).
         };
 
     private:
-        Character * characters[256];
+        boost::shared_ptr<GfxDriver> gfx_driver;
+        std::unique_ptr<Character> characters[256];
         boost::shared_ptr<KernTable> kern_table;
         int text_height;
     };

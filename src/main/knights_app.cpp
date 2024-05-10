@@ -379,7 +379,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
 #endif
     
     pimpl->timer.reset(new Coercri::GenericTimer);
-    pimpl->ttf_loader.reset(new Coercri::FreetypeTTFLoader);
+    pimpl->ttf_loader.reset(new Coercri::FreetypeTTFLoader(pimpl->gfx_driver));
 
     // use the enet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
@@ -455,9 +455,10 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
             else if (x[0] != '#') ttf_font_names.push_back(x);
         }
     }
-    
+
     // Font for the gui
-    pimpl->font = LoadFont(*pimpl->ttf_loader,
+    pimpl->font = LoadFont(pimpl->gfx_driver,
+                           *pimpl->ttf_loader,
                            ttf_font_names, 
                            bitmap_font_names,
                            pimpl->config_map.getInt("font_size"));

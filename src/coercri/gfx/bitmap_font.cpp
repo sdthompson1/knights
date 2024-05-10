@@ -40,6 +40,7 @@
 
 #include "bitmap_font.hpp"
 #include "gfx_context.hpp"
+#include "gfx_driver.hpp"
 #include "kern_table.hpp"
 #include "pixel_array.hpp"
 #include "../core/coercri_error.hpp"
@@ -61,10 +62,10 @@ namespace Coercri {
         }
     }
 
-    BitmapFont::BitmapFont(boost::shared_ptr<PixelArray> pixels)
+    BitmapFont::BitmapFont(boost::shared_ptr<GfxDriver> driver,
+                           boost::shared_ptr<PixelArray> pixels)
+        : gfx_driver(driver)
     {
-        std::memset(&characters[0], 0, sizeof(characters));
-        
         const int w = pixels->getWidth();
         text_height = pixels->getHeight() - 1; // top row is not part of the font proper.
 
@@ -78,12 +79,8 @@ namespace Coercri {
                 if (ch != 32) {
                     // Normal (non-space) character
                     const int width = i - ofs;
-                
-                    characters[ch] = static_cast<Character*>(std::malloc(sizeof(Character) + width*text_height));
-                    characters[ch]->width = width;
-                    characters[ch]->height = text_height;
-                    characters[ch]->xofs = characters[ch]->yofs = 0;
-                    characters[ch]->xadvance = width;
+
+                    setupCharacter(ch, width, text_height, 0, 0, width);
                 
                     for (int y = 0; y < text_height; ++y) {
                         for (int x = 0; x < width; ++x) {
@@ -92,7 +89,7 @@ namespace Coercri {
                             if (col.r == 0 && col.g == 0 && col.b == 0) {
                                 a = 0;
                             }
-                            characters[ch]->pixels[y * width + x] = a;
+                            plotPixel(ch, x, y, a);
                         }
                     }
                 }
@@ -103,8 +100,7 @@ namespace Coercri {
                     // from the offset of character 33, and no data is
                     // stored
                     
-                    characters[32] = static_cast<Character*>(std::malloc(sizeof(Character)));
-                    characters[32]->xadvance = ofs;
+                    setupCharacter(32, 0, 0, 0, 0, ofs);
                 }
 
                 // Advance to next character
@@ -118,12 +114,17 @@ namespace Coercri {
                 }
             }
         }
+
+        setupDone();
     }
 
-    BitmapFont::BitmapFont(boost::shared_ptr<KernTable> kern, int height)
-        : kern_table(kern), text_height(height)
+    BitmapFont::BitmapFont(boost::shared_ptr<GfxDriver> driver,
+                           boost::shared_ptr<KernTable> kern,
+                           int height)
+        : gfx_driver(driver),
+          kern_table(kern),
+          text_height(height)
     {
-        std::memset(&characters[0], 0, sizeof(characters));
     }
 
     void BitmapFont::setupCharacter(int ch, int width, int height, int xofs, int yofs, int xadvance)
@@ -131,16 +132,15 @@ namespace Coercri {
         if (ch < 0 || ch > 255) {
             throw CoercriError("BitmapFont: unsupported character");
         }
-        if (ch == 32) {
-            characters[ch] = static_cast<Character*>(std::malloc(sizeof(Character)));
-        } else {
-            characters[ch] = static_cast<Character*>(std::calloc(sizeof(Character) + width*height, 1));
-        }
+        characters[ch].reset(new Character);
         characters[ch]->width = width;
         characters[ch]->height = height;
         characters[ch]->xofs = xofs;
         characters[ch]->yofs = yofs;
         characters[ch]->xadvance = xadvance;
+        if (ch != 32) {
+            characters[ch]->pixels.resize(width * height);
+        }
     }
 
     void BitmapFont::plotPixel(int ch, int x, int y, unsigned char alpha)
@@ -156,12 +156,23 @@ namespace Coercri {
         int idx = y * characters[ch]->width + x;
         characters[ch]->pixels[idx] = alpha;
     }
-    
-    BitmapFont::~BitmapFont()
+
+    void BitmapFont::setupDone()
     {
-        for (int i = 0; i < 256; ++i) {
-            if (characters[i]) {
-                free(characters[i]);
+        // Turn the 'pixels' array into a Graphic for each character.
+        for (int ch = 0; ch <= 255; ++ch) {
+            if (characters[ch]) {
+                boost::shared_ptr<PixelArray> pixels(new PixelArray(characters[ch]->width, characters[ch]->height));
+                int idx = 0;
+                for (int y = 0; y < characters[ch]->height; ++y) {
+                    for (int x = 0; x < characters[ch]->width; ++x) {
+                        (*pixels)(x, y) = Color(255, 255, 255, characters[ch]->pixels[idx]);
+                        idx++;
+                    }
+                }
+                characters[ch]->graphic = gfx_driver->createGraphic(pixels);
+                std::vector<unsigned char> empty;
+                empty.swap(characters[ch]->pixels);
             }
         }
     }
@@ -169,15 +180,9 @@ namespace Coercri {
     void BitmapFont::drawText(GfxContext &dest, int x, int y, const UTF8String &txt, Color col) const
     {
         const std::string &text = txt.asUTF8();
-        
-        bool use_input_alpha = (col.a != 255);
-        int input_alpha = col.a;
-        
+
         int previous = 0;
 
-        static std::vector<Pixel> pixel_buf;
-        pixel_buf.clear();
-        
         utf8::iterator<std::string::const_iterator>
             begin(text.begin(), text.begin(), text.end()),
             end(text.end(), text.begin(), text.end()),
@@ -191,37 +196,17 @@ namespace Coercri {
             if (previous && kern_table) {
                 x += kern_table->getKern(previous, c);
             }
-                
+
             if (c != 32) {  // non-space character
 
-                const int width = characters[c]->width;
-                const int height = characters[c]->height;
                 const int xofs = characters[c]->xofs;
-                const int yofs = characters[c]->yofs;                    
-                    
-                for (int j = 0; j < height; ++j) {
-                    for (int i = 0; i < width; ++i) {
-                        unsigned char font_alpha = characters[c]->pixels[j * width + i];
-                        if (font_alpha > 0) {
-                            
-                            if (use_input_alpha) {
-                                col.a = static_cast<unsigned char>(int(font_alpha) * input_alpha / 255);
-                            } else {
-                                col.a = font_alpha;
-                            }
+                const int yofs = characters[c]->yofs;
 
-                            pixel_buf.push_back(Pixel(x + xofs + i, y + yofs + j, col));
-                        }
-                    }
-                }
+                dest.drawGraphicModulated(x + xofs, y + yofs, *characters[c]->graphic, col);
             }
                 
             x += characters[c]->xadvance;
             previous = c;
-        }
-
-        if (!pixel_buf.empty()) {
-            dest.plotPixelBatch(&pixel_buf[0], pixel_buf.size());
         }
     }
 

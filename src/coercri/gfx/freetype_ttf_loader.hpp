@@ -53,10 +53,16 @@
 #include "ttf_loader.hpp"
 
 namespace Coercri {
-    
+
+    class GfxDriver;
+
     class FreetypeTTFLoader : public TTFLoader {
     public:
+        explicit FreetypeTTFLoader(boost::shared_ptr<GfxDriver> driver);
         virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str, int size);
+
+    private:
+        boost::shared_ptr<Coercri::GfxDriver> gfx_driver;
     };
 
 }

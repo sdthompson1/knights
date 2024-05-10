@@ -30,7 +30,12 @@
 #include <string>
 #include <vector>
 
-boost::shared_ptr<Coercri::Font> LoadFont(Coercri::TTFLoader &loader,
+namespace Coercri {
+    class GfxDriver;
+}
+
+boost::shared_ptr<Coercri::Font> LoadFont(boost::shared_ptr<Coercri::GfxDriver> driver,
+                                          Coercri::TTFLoader &loader,
                                           const std::vector<std::string> &ttf_font_names,
                                           const std::vector<std::string> &bmp_font_names, int size);
 

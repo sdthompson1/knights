@@ -152,7 +152,12 @@ namespace {
 }
 
 
-boost::shared_ptr<Coercri::Font> Coercri::FreetypeTTFLoader::loadFont(boost::shared_ptr<std::istream> str, int size)
+Coercri::FreetypeTTFLoader::FreetypeTTFLoader(boost::shared_ptr<Coercri::GfxDriver> driver)
+    : gfx_driver(driver)
+{}
+
+boost::shared_ptr<Coercri::Font> Coercri::FreetypeTTFLoader::loadFont(boost::shared_ptr<std::istream> str,
+                                                                      int size)
 {
     // Initialize Freetype library if required
     if (!g_initialized) {
@@ -199,7 +204,7 @@ boost::shared_ptr<Coercri::Font> Coercri::FreetypeTTFLoader::loadFont(boost::sha
         // Create the BitmapFont
         boost::shared_ptr<FreetypeKernTable> kern_table(new FreetypeKernTable);
         boost::shared_ptr<Coercri::BitmapFont> bitmap_font(new Coercri::BitmapFont(
-            kern_table, height));
+            gfx_driver, kern_table, height));
 
         // Render each character glyph in turn.
         for (int ch = 0; ch < 256; ++ch) {
@@ -224,6 +229,8 @@ boost::shared_ptr<Coercri::Font> Coercri::FreetypeTTFLoader::loadFont(boost::sha
             // Now draw to the target surface
             CopyBitmapToFont(face->glyph->bitmap, *bitmap_font, ch);
         }
+
+        bitmap_font->setupDone();
 
         // Kerning
         for (int c1 = 1; c1 < 256; ++c1) {

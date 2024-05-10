@@ -62,7 +62,8 @@ namespace Coercri {
         // appears to work this way.) Therefore we pass the istream as
         // a shared_ptr, rather than simply an istream&.
         
-        virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str, int size) = 0;
+        virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str,
+                                                 int size) = 0;
     };
 }
 
