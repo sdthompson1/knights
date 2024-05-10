@@ -357,6 +357,34 @@ namespace Coercri {
             }
         }
 
+        SDLWindow * FindCurrentWindow(const std::vector<boost::weak_ptr<SDLWindow> > & windows)
+        {
+            // Look for a window with current keyboard or mouse focus; we will send the
+            // event to this window.
+            // TODO: We should probably distinguish between keyboard and mouse events and
+            // look for the appropriate focus type?
+            SDL_Window * sdl_win = SDL_GetKeyboardFocus();
+            if (!sdl_win) {
+                sdl_win = SDL_GetMouseFocus();
+            }
+
+            if (sdl_win) {
+                return static_cast<SDLWindow*>(SDL_GetWindowData(sdl_win, "coercri"));
+            }
+
+            // If no window currently has focus then just return the first valid window in
+            // our list of windows, if possible.
+            for (auto it = windows.begin(); it != windows.end(); ++it) {
+                boost::shared_ptr<SDLWindow> win = it->lock();
+                if (win) {
+                    return win.get();
+                }
+            }
+
+            // As a last resort, return null. (This will drop the event.)
+            return nullptr;
+        }
+
     } // namespace
 
 
@@ -438,13 +466,7 @@ namespace Coercri {
         SDL_Event event;
         if (SDL_PollEvent(&event)) {
 
-            // TODO: We should probably distinguish better between keyboard and mouse focus?
-            SDL_Window *sdl_win = SDL_GetKeyboardFocus();
-            if (!sdl_win) {
-                sdl_win = SDL_GetMouseFocus();
-            }
-
-            SDLWindow *win = sdl_win ? static_cast<SDLWindow*>(SDL_GetWindowData(sdl_win, "coercri")) : nullptr;
+            SDLWindow *win = FindCurrentWindow(windows);
 
             DoEvent(win, event);
             return true;
