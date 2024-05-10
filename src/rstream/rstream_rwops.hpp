@@ -26,7 +26,9 @@
  * Note that it will be read-only; the write functions will fail (returning -1).
  *
  * NB: Could easily convert this to a general "iostream_rwops" class.
- * 
+ *
+ * NB: This is not actually used currently (as at 10-May-2024).
+ *
  */
 
 #ifndef RSTREAM_RWOPS_HPP
