@@ -2,10 +2,12 @@ Knights Release 026 -- Source Code
 ----------------------------------
 
 This is the source code for KNIGHTS, a game of multi-player violent
-dungeon bashing. (Please see the docs/ directory for more about the
-game itself.) The game was originally written for the Amiga by Kalle
-Marjola; this PC version is by Stephen Thompson. (See the
-amiga_knights directory for more about the original Amiga version.)
+dungeon bashing. (For more information about the game, please visit
+https://www.knightsgame.org.uk/, or look in the docs/ directory.)
+
+The game was originally written for the Amiga by Kalle Marjola; this
+PC version is by Stephen Thompson. (See the amiga_knights directory
+for more about the original Amiga version.)
 
 
 Licence
