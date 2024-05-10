@@ -50,6 +50,8 @@ namespace Coercri {
 
     SDLWindow::SDLWindow(SDL_Window *win, int fsw, int fsh)
         : need_window_resize(false)
+        , hidden_flag(false)
+        , minimized_flag(false)
         , sdl_window(win)
         , sdl_renderer(nullptr)
     {

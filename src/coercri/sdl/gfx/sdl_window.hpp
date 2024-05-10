@@ -68,6 +68,8 @@ namespace Coercri {
         virtual void setIcon(const PixelArray &);
         
         bool need_window_resize;  // see SDLGfxDriver::pollEvents.
+        bool hidden_flag;
+        bool minimized_flag;
 
     private:
         // prevent copying

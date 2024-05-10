@@ -256,12 +256,29 @@ namespace Coercri {
                             break;
 
                         case SDL_WINDOWEVENT_SHOWN:
-                            window->forEachListener(OnUnminimize());
-                            break;
-
                         case SDL_WINDOWEVENT_HIDDEN:
-                            window->forEachListener(OnMinimize());
+                        case SDL_WINDOWEVENT_MINIMIZED:
+                        case SDL_WINDOWEVENT_MAXIMIZED:
+                        case SDL_WINDOWEVENT_RESTORED:
+                        {
+                            bool old_hidden = window->hidden_flag;
+                            bool old_minimized = window->minimized_flag;
+
+                            switch (event.window.event) {
+                            case SDL_WINDOWEVENT_HIDDEN: window->hidden_flag = true; break;
+                            case SDL_WINDOWEVENT_SHOWN: window->hidden_flag = false; break;
+                            case SDL_WINDOWEVENT_MINIMIZED: window->minimized_flag = true; break;
+                            default: window->minimized_flag = false; break;
+                            }
+
+                            bool old_min = old_hidden || old_minimized;
+                            bool new_min = window->hidden_flag || window->minimized_flag;
+
+                            if (new_min && !old_min) window->forEachListener(OnMinimize());
+                            if (!new_min && old_min) window->forEachListener(OnUnminimize());
+
                             break;
+                        }
 
                         case SDL_WINDOWEVENT_SIZE_CHANGED:
                             window->forEachListener(OnResize(event.window.data1, event.window.data2));
