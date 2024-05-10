@@ -44,8 +44,7 @@ You should have received a copy of the GNU General Public License along with Kni
 This program uses the following software libraries, which are copyright by their respective authors:
 
 Scale2x (scale2x.sourceforge.net), a graphics scaling algorithm by Andrea Mazzoleni.
-SDL (www.libsdl.org), by Sam Lantinga and others. Licensed under the LGPL.
-SDL_ttf (www.libsdl.org/projects/SDL_ttf), by Sam Lantinga (with modifications by Stephen Thompson). Licensed under the LGPL.
+SDL 2 (www.libsdl.org), by Sam Lantinga and others. Licensed under the Zlib Licence.
 FreeType (www.freetype.org), by The FreeType Project. Licensed under the FreeType Licence.
 Guichan (guichan.sourceforge.net), by Olof Naessen and Per Larsson. Licensed under a BSD-style licence.
 Boost (www.boost.org), licensed under the Boost Software Licence.
