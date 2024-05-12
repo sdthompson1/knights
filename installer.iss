@@ -5,15 +5,16 @@
 AppName=Knights
 AppVerName=Knights
 AppPublisher=Stephen Thompson
-AppPublisherURL=http://www.knightsgame.org.uk/
-AppSupportURL=http://www.knightsgame.org.uk/
-AppUpdatesURL=http://www.knightsgame.org.uk/
-DefaultDirName={pf}\Knights
+AppPublisherURL=https://www.knightsgame.org.uk/
+AppSupportURL=https://www.knightsgame.org.uk/
+AppUpdatesURL=https://www.knightsgame.org.uk/
+DefaultDirName={commonpf}\Knights
 DefaultGroupName=Knights
 LicenseFile=COPYRIGHT.txt
 OutputBaseFilename=knights_026_installer
 Compression=lzma
 SolidCompression=yes
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -22,23 +23,24 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "msvc\Release\KnightsMain.exe"; DestDir: "{app}"; DestName: "Knights.exe"; Flags: ignoreversion
-Source: "msvc\packages\curl.redist.7.30.0.2\build\native\bin\v110\Win32\Release\dynamic\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\KnightsMain.exe"; DestDir: "{app}"; DestName: "Knights.exe"; Flags: ignoreversion
+Source: "msvc\x64\Release\boost_filesystem-vc143-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\boost_thread-vc143-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\brotlicommon.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\brotlidec.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\bz2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\freetype.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\libpng16.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\SDL2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
 
-;; Source: "msvc\packages\freetype.redist.2.4.2.1\build\native\bin\Win32\v110\dynamic\Release\freetype246.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dlls\freetype246.dll"; DestDir: "{app}"; Flags: ignoreversion
+; note: the below lines might need to be updated if you have a different version of Visual Studio
+; or you have installed it in a non-standard place
+Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.38.33135\x64\Microsoft.VC143.CRT\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.38.33135\x64\Microsoft.VC143.CRT\VCRUNTIME140_1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.38.33135\x64\Microsoft.VC143.CRT\MSVCP140.dll"; DestDir: "{app}"; Flags: ignoreversion
 
-Source: "msvc\packages\libssh2.redist.1.4.3.3\build\native\bin\v110\Win32\Release\dynamic\cdecl\libssh2.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "msvc\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\libeay32.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "msvc\packages\openssl.redist.1.0.1.24\build\native\bin\v110\Win32\Release\dynamic\ssleay32.dll"; DestDir: "{app}"; Flags: ignoreversion
-
-;;Source: "msvc\packages\SDL.redist.1.2.15.15\build\native\bin\v110\Win32\Release\dynamic\SDL.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dlls\SDL.dll"; DestDir: "{app}"; Flags: ignoreversion
-
-Source: "msvc\packages\zlib.redist.1.2.8.6\build\native\bin\v110\Win32\Release\dynamic\cdecl\zlib.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\x86\Microsoft.VC120.CRT\msvcp120.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\x86\Microsoft.VC120.CRT\msvcr120.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "c:\Windows\System32\msvcr110.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "COPYRIGHT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README-SDL.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "knights_data\client\*"; DestDir: "{app}\knights_data\client"; Flags: ignoreversion
@@ -51,7 +53,9 @@ Source: "docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion
 Source: "docs\manual\*"; DestDir: "{app}\docs\manual"; Flags: ignoreversion
 Source: "docs\manual\images\*"; DestDir: "{app}\docs\manual\images"; Flags: ignoreversion
 Source: "docs\third_party_licences\*"; DestDir: "{app}\docs\third_party_licences"; Flags: ignoreversion
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
 
 [Icons]
 Name: "{group}\Knights"; Filename: "{app}\Knights.exe"; WorkingDir: "{app}"
