@@ -67,6 +67,8 @@ Options::Options()
 
     global_chat_key = Coercri::KC_TAB;
     team_chat_key = Coercri::KC_BACKQUOTE;
+
+    maximized = true;
 }
 
 Options LoadOptions(std::istream &str)
@@ -86,7 +88,7 @@ Options LoadOptions(std::istream &str)
 
     const int version = buf[4] - '0';
 
-    if (version < 1 || version > 5) return Options();
+    if (version < 1 || version > 6) return Options();
     
     bool load_ok = false;
 
@@ -136,7 +138,9 @@ Options LoadOptions(std::istream &str)
     }
     // (for versions < 5, Options::Options() will have set up default
     // chat keys, which are fine for us.)
-    
+
+    // Version 6+
+    str >> o.maximized;
     
     // Version 3+ -- Player Name
     // (Leave this to the end since we want to ignore loading errors)
@@ -165,7 +169,7 @@ Options LoadOptions(std::istream &str)
 
 void SaveOptions(const Options &o, std::ostream &str)
 {
-    str << "KOPT5\n";
+    str << "KOPT6\n";
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 6; ++j) {
             str << o.ctrls[i][j] << " ";
@@ -178,5 +182,6 @@ void SaveOptions(const Options &o, std::ostream &str)
     str << o.window_width << " " << o.window_height << "\n";
     str << o.new_control_system << " " << o.action_bar_tool_tips << "\n";
     str << o.global_chat_key << " " << o.team_chat_key << "\n";
+    str << o.maximized << "\n";
     str << o.player_name.asUTF8() << "\n";
 }

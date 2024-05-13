@@ -67,6 +67,7 @@ namespace Coercri {
         // the desktop width and height will be used instead.)
         virtual boost::shared_ptr<Window> createWindow(int width, int height,
                                                        bool resizable, bool fullscreen,
+                                                       bool maximized,
                                                        const std::string &title) = 0;
 
         // Create a Graphic from a PixelArray.

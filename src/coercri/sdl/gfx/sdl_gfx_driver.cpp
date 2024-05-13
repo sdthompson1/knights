@@ -418,6 +418,7 @@ namespace Coercri {
 
     boost::shared_ptr<Window> SDLGfxDriver::createWindow(int width, int height,
                                                          bool resizable, bool fullscreen,
+                                                         bool maximized,
                                                          const std::string &title)
     {
         if (fullscreen) {
@@ -434,6 +435,7 @@ namespace Coercri {
         Uint32 flags = 0;
         if (fullscreen) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
         if (resizable) flags |= SDL_WINDOW_RESIZABLE;
+        if (maximized) flags |= SDL_WINDOW_MAXIMIZED;
 
         SDL_Window *sdl_window = SDL_CreateWindow(title.c_str(),
                                                   SDL_WINDOWPOS_UNDEFINED,

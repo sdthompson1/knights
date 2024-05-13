@@ -66,6 +66,9 @@ public:
 
     // added in version 5 of options file (version 020 of Knights)
     Coercri::KeyCode global_chat_key, team_chat_key;
+
+    // added in version 6 of options file (version 026 of Knights)
+    bool maximized;
 };
 
 Options LoadOptions(std::istream &);

@@ -390,6 +390,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     
     // Open the game window.
     bool fullscreen = pimpl->options->fullscreen;
+    bool maximized = pimpl->options->maximized;
     if (display_type == DT_WINDOWED) fullscreen = false;
     if (display_type == DT_FULLSCREEN) fullscreen = true;
     int width, height;
@@ -401,7 +402,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     }
 
     try {
-        pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, fullscreen, game_name);
+        pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, fullscreen, maximized, game_name);
     } catch (Coercri::CoercriError &) {
         // If creation in fullscreen mode fails then try again in windowed mode (Trac #118)
         // (If it wasn't fullscreen mode then re-throw the exception)
@@ -409,7 +410,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
             // shrink the window a little bit, so it doesn't fill the entire screen
             width = std::max(width-200, 400);
             height = std::max(height-200, 400);
-            pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, false, game_name);
+            pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, false, false, game_name);
         } else {
             throw;
         }
@@ -1012,6 +1013,13 @@ void KnightsApp::runKnights()
                 pimpl->options->window_height = height;
                 save_options_required = true;
             }
+
+        }
+
+        // (Knights version 026+) Save window maximized state to the options file.
+        if (is_maximized != pimpl->options->maximized) {
+            pimpl->options->maximized = is_maximized;
+            save_options_required = true;
         }
     }
 
