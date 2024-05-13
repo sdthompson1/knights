@@ -20,21 +20,21 @@ for help with multiplayer testing.
 
 
 For further information and updates please visit the website:
-http://www.knightsgame.org.uk/
+https://www.knightsgame.org.uk/
 
 
 Visit the Knights forums:
-http://www.knightsgame.org.uk/forum/
+https://www.knightsgame.org.uk/forum/
 
 or check out the moddb profile:
-http://www.moddb.com/games/knights
+https://www.moddb.com/games/knights
 
 
 %l
 Copyright (C) Stephen Thompson, 2006 - 2024.
 Copyright (C) Kalle Marjola, 1994.
 
-Knights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Knights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
 
 Knights is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 

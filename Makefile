@@ -1997,14 +1997,15 @@ install_docs:
 	rm -f $(DOC_DIR)/quests.txt
 	rm -f $(DOC_DIR)/manual.html
 	$(INSTALL) -m 644 docs/COPYRIGHT.txt $(DOC_DIR)
-	$(INSTALL) -m 644 docs/GPL.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/README.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/ACKNOWLEDGMENTS.txt $(DOC_DIR)
+	$(INSTALL) -m 644 docs/GPL3.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/style.css $(DOC_DIR)
 	$(INSTALL) -m 644 docs/CHANGELOG.txt $(DOC_DIR)
+	$(INSTALL) -m 644 docs/GPL2.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/third_party_licences/FTL.txt $(DOC_DIR)/third_party_licences
 	$(INSTALL) -m 644 docs/third_party_licences/README.txt $(DOC_DIR)/third_party_licences
-	$(INSTALL) -m 644 docs/third_party_licences/LGPL.txt $(DOC_DIR)/third_party_licences
+	$(INSTALL) -m 644 docs/third_party_licences/zlib.txt $(DOC_DIR)/third_party_licences
 	$(INSTALL) -m 644 docs/manual/options.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/screen_layout.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/server.html $(DOC_DIR)/manual
@@ -2369,14 +2370,15 @@ uninstall:
 	rm -f $(DATA_DIR)/server/tutorial/messages.lua
 	rm -f $(DATA_DIR)/server/menu/init.lua
 	rm -f $(DOC_DIR)/COPYRIGHT.txt
-	rm -f $(DOC_DIR)/GPL.txt
 	rm -f $(DOC_DIR)/README.txt
 	rm -f $(DOC_DIR)/ACKNOWLEDGMENTS.txt
+	rm -f $(DOC_DIR)/GPL3.txt
 	rm -f $(DOC_DIR)/style.css
 	rm -f $(DOC_DIR)/CHANGELOG.txt
+	rm -f $(DOC_DIR)/GPL2.txt
 	rm -f $(DOC_DIR)/third_party_licences/FTL.txt
 	rm -f $(DOC_DIR)/third_party_licences/README.txt
-	rm -f $(DOC_DIR)/third_party_licences/LGPL.txt
+	rm -f $(DOC_DIR)/third_party_licences/zlib.txt
 	rm -f $(DOC_DIR)/manual/options.html
 	rm -f $(DOC_DIR)/manual/screen_layout.html
 	rm -f $(DOC_DIR)/manual/server.html

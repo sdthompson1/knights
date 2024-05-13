@@ -13,9 +13,11 @@ for more about the original Amiga version.)
 Licence
 -------
 
-Starting from release 011, Knights is licensed under the GNU General
-Public Licence; see COPYRIGHT.txt for full copyright details and
-docs/GPL.txt for a copy of the licence itself.
+Starting from release 026, Knights is licensed under the GNU General
+Public Licence as published by the Free Software Foundation, either
+version 2 of that Licence, or, at your option, any later version. See
+COPYRIGHT.txt for full copyright details and docs/GPL2.txt and
+docs/GPL3.txt for copies of the Licence itself.
 
 
 Building Instructions
@@ -27,4 +29,4 @@ Instructions for building can be found in docs/building.html.
 -----
 Stephen Thompson
 stephen@solarflare.org.uk
-August 2014
+May 2024

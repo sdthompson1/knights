@@ -17,11 +17,13 @@ For full instructions on how to play, please refer to the manual
 (manual.html in this directory, or
 http://www.knightsgame.org.uk/manual.html on the Web).
 
-Starting from release 011, Knights is licensed under the GNU General
-Public Licence. See COPYRIGHT.txt for full copyright information and
-GPL.txt for a copy of the licence itself.
+Starting from release 026, Knights is licensed under the GNU General
+Public Licence as published by the Free Software Foundation, either
+version 2 of the Licence, or, at your option, any later version. See
+COPYRIGHT.txt for full copyright information and GPL2.txt and/or
+GPL3.txt for copies of the Licence itself.
 
 -----
 Stephen Thompson
 stephen@solarflare.org.uk
-August 2014
+May 2024
