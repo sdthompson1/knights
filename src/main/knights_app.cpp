@@ -1000,7 +1000,9 @@ void KnightsApp::runKnights()
             // empty
         }
 
-        if (!is_maximized && !pimpl->window->isFullScreen()) {
+        bool is_fullscreen = pimpl->window->isFullScreen();
+
+        if (!is_maximized && !is_fullscreen) {
             
             // Get current window size
             int width = 0, height = 0;
@@ -1016,8 +1018,9 @@ void KnightsApp::runKnights()
 
         }
 
-        // (Knights version 026+) Save window maximized state to the options file.
-        if (is_maximized != pimpl->options->maximized) {
+        // (Knights version 026+) Save window maximized state to the
+        // options file (but only when running in windowed mode).
+        if (is_maximized != pimpl->options->maximized && !is_fullscreen) {
             pimpl->options->maximized = is_maximized;
             save_options_required = true;
         }
