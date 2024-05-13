@@ -192,6 +192,7 @@ namespace Coercri {
             g_keytable[SDLK_PRINTSCREEN] = KC_PRINT_SCREEN;
             g_keytable[SDLK_SYSREQ] = KC_SYSREQ;
             g_keytable[SDLK_MENU] = KC_MENU;
+            g_keytable[SDLK_APPLICATION] = KC_MENU;
             g_keytable[SDLK_POWER] = KC_POWER;
             g_keytable[SDLK_CURRENCYUNIT] = KC_EURO;
             g_keytable[SDLK_UNDO] = KC_UNDO;
