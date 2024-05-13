@@ -140,7 +140,9 @@ Options LoadOptions(std::istream &str)
     // chat keys, which are fine for us.)
 
     // Version 6+
-    str >> o.maximized;
+    if (version >= 6) {
+        str >> o.maximized;
+    }
     
     // Version 3+ -- Player Name
     // (Leave this to the end since we want to ignore loading errors)

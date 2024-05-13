@@ -96,7 +96,14 @@ namespace Coercri {
     void SDLWindow::switchToWindowed(int w, int h)
     {
         SDL_SetWindowFullscreen(sdl_window, 0);
+
+        SDL_RestoreWindow(sdl_window);
         SDL_SetWindowSize(sdl_window, w, h);
+
+        // SDL_SetWindowPosition is needed, on Windows at least, otherwise SDL just leaves the window at
+        // position (0,0) (so the title bar is inaccessible).
+        SDL_SetWindowPosition(sdl_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
         need_window_resize = true;
     }
 
