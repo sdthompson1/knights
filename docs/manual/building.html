@@ -1,3 +1,203 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
     "http://www.w3.org/TR/html4/strict.dtd">
-<html><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><title>Appendix A: Building/Installing from Source</title><link rel="stylesheet" type="text/css" href="../style.css"></head><body><div class="header"><table><tr><td align="left"><a href="server.html">Previous</a></td><td align="center"><a href="index.html">Contents</a></td><td align="right"><a href="copyright.html">Next</a></td></tr></table></div><h2>Appendix A: Building/Installing from Source</h2><p>This Appendix gives information on how to build and install <i>Knights</i> from the source code.</p><h3>Linux</h3><p>For Linux a Makefile is provided. Most users should just be able to type <b>make</b> followed by <b>make install</b> to build and install respectively. After installing, type <b>knights</b> to run the game.</p><p>Before compiling, make sure you have the necessary dependencies installed. The game requires Boost, SDL, libcurl, Freetype and Fontconfig. On Debian systems the following packages will satisfy the requirements:</p><ul><li>libboost-dev</li><li>libboost-filesystem-dev</li><li>libboost-system-dev</li><li>libboost-thread-dev</li><li>libsdl-dev</li><li>libcurl4-openssl-dev <i>or</i> libcurl4-gnutls-dev</li><li>libfreetype6-dev</li><li>libfontconfig-dev</li></ul><p>(If you only want to build the server, and not the game itself, then only Boost and libcurl are needed.)</p><h4>Troubleshooting</h4><ul><li>On some Linux distributions you may get undefined references to &quot;clock_gettime@@GLIBC_2.2.5&quot; or similar. To fix this, append &quot;-lrt&quot; (without the quotes) to the BOOST_LIBS line in the Knights Makefile.</li><li>If you get Boost related errors, check that you have at least version 1.48 of Boost, and that you have all the relevant Boost packages installed. Also, depending on your exact Linux distribution you might need to edit some of the Makefile options – see comments at the top of the Makefile for details.</li></ul><h4>More Details</h4><p>You can install only parts of the game by using the following:</p><ul><li>make install_knights – install only the game (and its data files)</li><li>make install_server – install only the server (and its data files)</li><li>make install_docs – install only the documentation files.</li></ul><p>By default the game installs the &quot;knights&quot; and &quot;knights_server&quot; executables to /usr/local/bin/, data files to /usr/local/share/knights/, and documentation files to /usr/local/share/doc/knights/. The default install directory can be changed by setting the PREFIX variable, e.g. to install in your home directory use &quot;make PREFIX=$HOME&quot; and &quot;make install PREFIX=$HOME&quot;. (The PREFIX should agree between the make and make install commands, otherwise the game will not work!)</p><p>For finer control of installation directories, use the following variables:</p><ul><li>BIN_DIR: location of the Knights binary (default: $(PREFIX)/bin)</li><li>DATA_DIR: location of the Knights data files (default: $(PREFIX)/share/knights)</li><li>DOC_DIR: location of the documentation files (default: $(PREFIX)/share/doc/knights)</li><li>KNIGHTS_BINARY_NAME: name of the Knights executable (default: knights)</li><li>SERVER_BINARY_NAME: name of the server executable (default: knights_server)</li></ul><p>It is possible to build a version without sound support by editing the Makefile and adding &quot;-DDISABLE_SOUND&quot; to the CPPFLAGS. This might be useful if sound doesn&#39;t work on your system for some reason.</p><p>The Makefile also supports &quot;make uninstall&quot; (but make sure you pass the correct PREFIX or DIR variables, e.g. &quot;make uninstall PREFIX=$HOME&quot;, if you changed these from their default values).</p><p>If you are developing, you may like to know that the Makefile is generated automatically from Visual Studio project files (see makemakefile.py in the python directory). The Makefile uses the &quot;Advanced Auto-Dependency Generation&quot; technique described here: <a href="http://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html">http://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html</a>.</p><h3>Windows</h3><p>Most Windows users will use the pre-packaged installer, however if you want to try building the game from source code, then read on.</p><p>I will assume that you are building with Visual Studio. (You can get the Visual Studio Express Edition for free from Microsoft.)</p><p>The first step is to download the source code archive from the Knights website and unpack it to a directory of your choice. Then navigate to the &quot;msvc&quot; folder and open the Knights.sln file. Then simply do &quot;Build Solution&quot; which will build the Knights game and server executables.</p><p>Knights uses <a href="http://www.nuget.org/">NuGet</a> for dependency management, so the first time you build, Visual Studio will automatically download all required dependencies (Boost, SDL, etc.) and install them into the solution directory. The only thing you <i>might</i> need to do is give consent for this to happen: check that &quot;Tools → Options → Package Manager → Allow NuGet to download missing packages&quot; is enabled.</p><p>To run the game from within the IDE, you will need to do the following:</p><ol><li>Right-click on KnightsMain and choose &quot;Set as Startup Project&quot;.</li><li>Right-click on KnightsMain, choose &quot;Properties&quot;, go to &quot;Configuration Properties → Debugging → Command Arguments&quot;, and enter &quot;-d $(ProjectDir)\..\..\knights_data&quot; (without the quotes).</li><li>Now you can just press F5 to run the game.</li></ol><p>You can run the command-line server by setting KnightsSvrMain as the startup project.</p><p>If you want to build the installer you must install <a href="http://www.innosetup.com/isinfo.php">Inno Setup</a>. Then open a command prompt, cd to the Knights source directory and issue the following command:</p><p><code>&quot;c:\program files (x86)\inno setup 5\iscc&quot; installer.iss</code></p><p>This will make an &quot;Output&quot; directory and build the Knights installer there.</p><h4>Known Issues</h4><p>Currently the Debug build of Knights only works on Windows 8. This is due to a problem with the zlib NuGet package and is beyond my control. The Release build works fine on all versions of Windows though.</p><div class="footer2"><table><tr><td align="left"><a href="server.html">Previous</a></td><td align="center"><a href="index.html">Contents</a></td><td align="right"><a href="copyright.html">Next</a></td></tr><tr><td align="left">Running a Server</td><td></td><td align="right">Copyright and Contact Details</td></tr></table></div></body></html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Appendix A: Building/Installing from Source</title>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="header">
+        <table>
+          <tr>
+            <td align="left"><a href="server.html">Previous</a></td>
+            <td align="center"><a href="index.html">Contents</a></td>
+            <td align="right"><a href="copyright.html">Next</a></td>
+          </tr>
+        </table>
+      </div>
+
+      <h2>Appendix A: Building/Installing from Source</h2>
+
+      <p>This Appendix gives information on how to build and
+        install <i>Knights</i> from the source code.</p>
+
+      <h3>Linux</h3>
+
+      <p>For Linux a Makefile is provided. Most users should just be
+        able to type <b>make</b> followed by <b>make install</b> to
+        build and install respectively. After installing,
+        type <b>knights</b> to run the game.</p>
+
+      <p>Before compiling, make sure you have the necessary
+        dependencies installed. The game requires Boost, SDL 2,
+        libcurl, Freetype and Fontconfig. On Debian systems the
+        following packages will satisfy the requirements:</p>
+
+      <ul>
+        <li>libboost-dev</li>
+        <li>libboost-filesystem-dev</li>
+        <li>libboost-system-dev</li>
+        <li>libboost-thread-dev</li>
+        <li>libsdl2-dev</li>
+        <li>libcurl4-openssl-dev <i>or</i> libcurl4-gnutls-dev</li>
+        <li>libfreetype6-dev</li>
+        <li>libfontconfig-dev</li>
+      </ul>
+
+      <p>(If you only want to build the server, and not the game
+        itself, then only Boost and libcurl are needed.)</p>
+
+      <h4>Troubleshooting</h4>
+
+      <ul>
+        <li>On some Linux distributions you may get undefined
+          references to &quot;clock_gettime@@GLIBC_2.2.5&quot; or
+          similar. To fix this, append &quot;-lrt&quot; (without the
+          quotes) to the BOOST_LIBS line in the Knights Makefile.</li>
+
+        <li>If you get Boost related errors, check that you have at
+          least version 1.48 of Boost, and that you have all the
+          relevant Boost packages installed. Also, depending on your
+          exact Linux distribution you might need to edit some of the
+          Makefile options – see comments at the top of the Makefile for
+          details.</li>
+      </ul>
+
+      <h4>More Details</h4>
+
+      <p>You can install only parts of the game by using the
+        following:</p>
+
+      <ul>
+        <li>make install_knights – install only the game (and its data
+          files)</li>
+        <li>make install_server – install only the server (and its
+          data files)</li>
+        <li>make install_docs – install only the documentation
+          files.</li>
+      </ul>
+
+      <p>By default the game installs the &quot;knights&quot; and
+        &quot;knights_server&quot; executables to /usr/local/bin/, data
+        files to /usr/local/share/knights/, and documentation files to
+        /usr/local/share/doc/knights/. The default install directory can
+        be changed by setting the PREFIX variable, e.g. to install in
+        your home directory use &quot;make PREFIX=$HOME&quot; and
+        &quot;make install PREFIX=$HOME&quot;. (The PREFIX should agree
+        between the make and make install commands, otherwise the game
+        will not work!)</p>
+
+      <p>For finer control of installation directories, use the
+        following variables:</p>
+
+      <ul>
+        <li>BIN_DIR: location of the Knights binary (default:
+          $(PREFIX)/bin)</li>
+        <li>DATA_DIR: location of the Knights data files (default:
+          $(PREFIX)/share/knights)</li>
+        <li>DOC_DIR: location of the documentation files (default:
+          $(PREFIX)/share/doc/knights)</li>
+        <li>KNIGHTS_BINARY_NAME: name of the Knights executable
+          (default: knights)</li>
+        <li>SERVER_BINARY_NAME: name of the server executable
+          (default: knights_server)</li>
+      </ul>
+
+      <p>It is possible to build a version without sound support by
+        editing the Makefile and adding &quot;-DDISABLE_SOUND&quot; to
+        the CPPFLAGS. This might be useful if sound doesn&#39;t work on
+        your system for some reason.</p>
+
+      <p>The Makefile also supports &quot;make uninstall&quot; (but
+        make sure you pass the correct PREFIX or DIR variables, e.g.
+        &quot;make uninstall PREFIX=$HOME&quot;, if you changed these
+        from their default values).</p>
+
+      <p>If you are developing, you may like to know that the Makefile
+        is generated automatically from Visual Studio project files (see
+        makemakefile.py in the python directory). The Makefile uses the
+        &quot;Advanced Auto-Dependency Generation&quot; technique
+        described
+        here: <a href="https://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html">https://web.archive.org/web/20080123214633/make.paulandlesley.org/autodep.html</a>.</p>
+
+      <h3>Windows</h3>
+
+      <p>Most Windows users will use the pre-packaged installer,
+        however if you want to try building the game from source code,
+        then read on.</p>
+
+      <p>I will assume that you are building with Visual Studio. (You
+        can get the Visual Studio Community Edition for free from
+        Microsoft.)</p>
+
+      <p>Before you start, note that Knights is currently
+        using <a href="https://vcpkg.io/">vcpkg</a> for dependency
+        management, so the first thing to do is install vcpkg on your
+        local machine. Follow step 1 ("Set up vcpkg") from Microsoft's
+        <a href="https://learn.microsoft.com/en-gb/vcpkg/get_started/get-started-msbuild?pivots=shell-cmd">Tutorial:
+        Install and use packages with MSBuild in Visual
+        Studio</a>.</p>
+
+      <p>Next, obtain the Knights source code, either by downloading
+        the latest source release from
+        the <a href="https://www.knightsgame.org.uk/download">download
+        page</a>, or by cloning
+        the <a href="https://github.com/sdthompson1/knights">Git
+          repository</a>.</p>
+
+      <p>Then, navigate to the &quot;msvc&quot; folder within the
+        Knights source code directory, and open Knights.sln. Then
+        simply do &quot;Build Solution&quot; which will build the
+        Knights game and server executables. (The first build might
+        take a bit longer than usual, because vcpkg will automatically
+        download and unpack all required dependencies, such as Boost,
+        SDL2 and Libcurl.) Both Release and Debug builds are
+        available.</p>
+
+      <p>To run the game from within the IDE, you will need to do the
+        following:</p>
+
+      <ol>
+        <li>Right-click on KnightsMain and choose &quot;Set as Startup
+          Project&quot;.</li>
+        <li>Right-click on KnightsMain, choose &quot;Properties&quot;,
+          go to &quot;Configuration Properties → Debugging → Command
+          Arguments&quot;, and enter &quot;-d
+          $(ProjectDir)\..\..\knights_data&quot; (without the
+          quotes).</li>
+        <li>Now you can just press F5 to run the game.</li>
+      </ol>
+
+      <p>You can run the command-line server by setting KnightsSvrMain
+        as the startup project.</p>
+
+      <p>If you want to build the installer you must
+        install <a href="https://jrsoftware.org/isinfo.php">Inno
+        Setup</a>. Then open a command prompt, cd to the Knights source
+        directory and issue the following command:</p>
+
+      <p><code>&quot;c:\program files (x86)\inno setup 6\iscc&quot;
+          installer.iss</code></p>
+
+      <p>This will make an &quot;Output&quot; directory and build the
+        Knights installer there.</p>
+
+      <div class="footer2">
+        <table>
+          <tr>
+            <td align="left"><a href="server.html">Previous</a></td>
+            <td align="center"><a href="index.html">Contents</a></td>
+            <td align="right"><a href="copyright.html">Next</a></td>
+          </tr>
+          <tr>
+            <td align="left">Running a Server</td>
+            <td></td>
+            <td align="right">Copyright and Contact Details</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
