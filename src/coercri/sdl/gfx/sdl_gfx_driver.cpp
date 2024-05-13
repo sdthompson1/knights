@@ -359,7 +359,7 @@ namespace Coercri {
                     if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
                         dy = -dy;
                     }
-                    const MouseButton mb = dy > 0 ? MB_WHEEL_DOWN : MB_WHEEL_UP;
+                    const MouseButton mb = dy > 0 ? MB_WHEEL_UP : MB_WHEEL_DOWN;
 
                     // note: can't use event.wheel.mouseX/Y here,
                     // because not all linux distributions will have
