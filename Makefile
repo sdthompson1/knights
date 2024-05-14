@@ -2001,7 +2001,6 @@ install_docs:
 	$(INSTALL) -m 644 docs/ACKNOWLEDGMENTS.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/GPL3.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/style.css $(DOC_DIR)
-	$(INSTALL) -m 644 docs/CHANGELOG.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/GPL2.txt $(DOC_DIR)
 	$(INSTALL) -m 644 docs/third_party_licences/FTL.txt $(DOC_DIR)/third_party_licences
 	$(INSTALL) -m 644 docs/third_party_licences/README.txt $(DOC_DIR)/third_party_licences
@@ -2374,7 +2373,6 @@ uninstall:
 	rm -f $(DOC_DIR)/ACKNOWLEDGMENTS.txt
 	rm -f $(DOC_DIR)/GPL3.txt
 	rm -f $(DOC_DIR)/style.css
-	rm -f $(DOC_DIR)/CHANGELOG.txt
 	rm -f $(DOC_DIR)/GPL2.txt
 	rm -f $(DOC_DIR)/third_party_licences/FTL.txt
 	rm -f $(DOC_DIR)/third_party_licences/README.txt
