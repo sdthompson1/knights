@@ -3,7 +3,7 @@
 KNIGHTS
 
 Release 026
-Released ??-???-????
+Released 14-May-2024
 
 
 Programmed by 
