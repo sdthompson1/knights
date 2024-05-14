@@ -2,11 +2,11 @@
 
 KNIGHTS
 
-Release 026
-Released 14-May-2024
+Release 027
+Released ??-???-????
 
 
-Programmed by 
+Programmed by
 Stephen Thompson
 <stephen@solarflare.org.uk>
 
