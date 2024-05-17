@@ -84,17 +84,17 @@ std::unique_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
     
     if (nargs > 1) {
         
-        r = luaL_checkint(lua, 2);
-        g = luaL_checkint(lua, 3);
-        b = luaL_checkint(lua, 4);
+        r = luaL_checkinteger(lua, 2);
+        g = luaL_checkinteger(lua, 3);
+        b = luaL_checkinteger(lua, 4);
         
         if (nargs > 4) {
-            x = luaL_checkint(lua, 5);
-            y = luaL_checkint(lua, 6);
+            x = luaL_checkinteger(lua, 5);
+            y = luaL_checkinteger(lua, 6);
 
             if (nargs > 6) {
-                size_hint_num = luaL_checkint(lua, 7);
-                size_hint_denom = luaL_checkint(lua, 8);
+                size_hint_num = luaL_checkinteger(lua, 7);
+                size_hint_denom = luaL_checkinteger(lua, 8);
             }
         }
     }

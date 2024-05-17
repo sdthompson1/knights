@@ -15,9 +15,9 @@ import re
 
 PROJECTS_MAIN = ['Coercri', 'ENet', 'guichan', 'KnightsClient', 'KnightsEngine',
                  'KnightsMain', 'KnightsServer', 'KnightsShared', 
-                 'lua', 'Misc', 'RStream']
+                 'Misc', 'RStream']
 PROJECTS_SERVER = ['ENet', 'KnightsEngine', 'KnightsServer', 'KnightsShared',
-                   'KnightsSvrMain', 'lua', 'Misc', 'RStream']
+                   'KnightsSvrMain', 'Misc', 'RStream']
 EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o', 
                      'src/coercri/enet/enet_network_driver.o',
                      'src/coercri/enet/enet_network_connection.o',
@@ -158,14 +158,14 @@ build: $(KNIGHTS_BINARY_NAME) $(SERVER_BINARY_NAME)
 for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     incflags = make_include_flags(incdirs)
 
-    pkgflags = "`pkg-config libcurl --cflags`"
+    pkgflags = "`pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags`"
     if srcfile.startswith("src/coercri/sdl/") or srcfile.startswith("src/main/") or srcfile.startswith("src/rstream/rstream_rwops"):
         pkgflags += " `pkg-config sdl2 --cflags`"
     if srcfile.startswith("src/coercri/gfx/"):
         pkgflags += " `pkg-config freetype2 --cflags`"
 
     print (get_obj_file(srcfile) + ": " + srcfile)
-    if (srcfile.endswith(".cpp") or srcfile.startswith("src/external/lua")):
+    if srcfile.endswith(".cpp"):
         print ("\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) " + pkgflags + " " + incflags + " -MD -c -o $@ $<")
     else:  # enet .c files
         print ("\t$(CC) $(CPPFLAGS) $(CFLAGS) " + incflags + " -MD -c -o $@ $<")
@@ -177,13 +177,13 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
 # Print target for Knights binary
 print ("""
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` `pkg-config libcurl --libs` -lfontconfig -lX11 $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` `pkg-config libcurl --libs` `pkg-config lua-c++ --libs` -lfontconfig -lX11 $(BOOST_LIBS)
 """)
 
 # Print target for Server binary
 print ("""
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config libcurl --libs` $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config libcurl --libs` `pkg-config lua-c++ --libs` $(BOOST_LIBS)
 """)
 
 

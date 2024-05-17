@@ -73,7 +73,6 @@ namespace {
         "_G",         // not a problem: we don't care if they have access to global environment
         "_VERSION",   // safe
         "assert",     // safe
-        "bit32",      // safe (whitelisted)
         // NOT: collectgarbage
         "coroutine",  // no problem; theoretically they could modify this table, thus affecting
                       // code outside the sandbox, but:
@@ -179,22 +178,6 @@ namespace {
         0
     };
 
-    const char * bit32_whitelist[] = {
-        "arshift",  // safe
-        "band",     // safe
-        "bnot",     // safe
-        "bor",      // safe
-        "btest",    // safe
-        "bxor",     // safe
-        "extract",  // safe
-        "lrotate",  // safe
-        "lshift",   // safe
-        "replace",  // safe
-        "rrotate",  // safe
-        "rshift",   // safe
-        0
-    };
-
     // Applies a whitelist to the table on top of stack.
     // Pops the table afterwards.
     void ApplyWhitelist(lua_State *lua, const char ** whitelist )
@@ -253,7 +236,6 @@ namespace {
           {LUA_COLIBNAME, luaopen_coroutine},
           {LUA_TABLIBNAME, luaopen_table},
           {LUA_STRLIBNAME, luaopen_string},
-          {LUA_BITLIBNAME, luaopen_bit32},
           {LUA_MATHLIBNAME, luaopen_math},
           {0, 0}
     };
@@ -282,9 +264,6 @@ boost::shared_ptr<lua_State> MakeLuaSandbox()
     // Apply our whitelists.
     lua_rawgeti(lua.get(), LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
     ApplyWhitelist(lua.get(), global_whitelist);
-
-    lua_getglobal(lua.get(), "bit32");
-    ApplyWhitelist(lua.get(), bit32_whitelist);
 
     lua_getglobal(lua.get(), "coroutine");
     ApplyWhitelist(lua.get(), coroutine_whitelist);

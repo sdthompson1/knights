@@ -123,8 +123,9 @@ bool CoroutineTask::doExec(TaskManager &tm)
     lua_setglobal(thread, "cxt");
 
     // resume the thread
-    //   0 => being called from top level (not from any particular thread)
-    const int status = lua_resume(thread, 0, nargs);
+    //   nullptr => being called from top level (not from any particular thread)
+    int nresults = 0;
+    const int status = lua_resume(thread, nullptr, nargs, &nresults);
 
     // save the context again
     lua_getglobal(thread, "cxt");
@@ -141,22 +142,25 @@ bool CoroutineTask::doExec(TaskManager &tm)
         // which in turn will remove the Lua thread from the registry,
         // the Lua GC will then destroy the thread.
         {
-            const bool result = lua_toboolean(thread, 1) != 0;
-            lua_pop(thread, lua_gettop(thread));
+            bool result = false;
+            if (nresults >= 1) {
+                result = lua_toboolean(thread, -nresults) != 0;
+            }
+            lua_settop(thread, 0);
             return result;
         }
 
     case LUA_YIELD:
         // Coroutine has yielded a value.
-        if (lua_isnumber(thread, 1)) {
-            const int time = lua_tointeger(thread, 1);
+        if (nresults >= 1 && lua_isnumber(thread, -nresults)) {
+            const int time = lua_tointeger(thread, -nresults);
             if (time >= 0) {
-                    
+
                 // reschedule the task
                 tm.addTask(shared_from_this(), TP_NORMAL, tm.getGVT() + time);
 
                 // remove yielded values from thread stack
-                lua_pop(thread, lua_gettop(thread));
+                lua_pop(thread, nresults);
 
                 return false;
             }
@@ -164,6 +168,7 @@ bool CoroutineTask::doExec(TaskManager &tm)
 
         // Otherwise: push a fake error message then fall through
         // to error case.
+        lua_settop(thread, 0);
         lua_pushstring(thread, "incorrect yield");
 
         // Fall through
@@ -174,7 +179,7 @@ bool CoroutineTask::doExec(TaskManager &tm)
             const char *p = lua_tostring(thread, -1);
             std::string err(p ? p : "<No err msg>");
             err += LuaTraceback(thread);
-            lua_pop(thread, lua_gettop(thread));  // clear its stack
+            lua_settop(thread, 0);  // clear its stack
             mediator.getCallbacks().gameMsg(-1, err, true);  // display the error message
             return false;
         }

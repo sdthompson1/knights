@@ -806,8 +806,8 @@ namespace {
             luaL_error(lua, "Can't generate random numbers during init phase");
         }
 
-        int low = luaL_checkint(lua, 1);
-        int high = luaL_checkint(lua, 2);
+        int low = luaL_checkinteger(lua, 1);
+        int high = luaL_checkinteger(lua, 2);
 
         int result = g_rng.getInt(low, high + 1);  // g_rng uses exclusive upper bound; we use inclusive; so add one.
 
