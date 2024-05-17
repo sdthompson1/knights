@@ -30,3 +30,5 @@ function table_merge(a, b)
     end
     return result
 end
+
+kts.table_merge = table_merge

@@ -24,19 +24,7 @@ dofile("messages.lua")
 
 local C = require("classic")
 
-
--- Copied from "classic" module:
-function table_merge(a, b)
-    local result = {}
-    for k, v in pairs(a) do
-        result[k] = v
-    end
-    for k, v in pairs(b) do
-        result[k] = v
-    end
-    return result
-end
-
+local table_merge = kts.table_merge
 
 ----------------------------------------------------------------------
 -- New tiles and items
