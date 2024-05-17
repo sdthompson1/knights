@@ -187,7 +187,7 @@ namespace Coercri {
         case KC_PAGE_UP: k = gcn::Key::PAGE_UP; break;
         case KC_PAUSE: k = gcn::Key::PAUSE; break;
         case KC_PRINT_SCREEN: k = gcn::Key::PRINT_SCREEN; break;
-        case KC_RETURN: k = gcn::Key::ENTER; break;
+        case KC_RETURN: case KC_KP_ENTER: k = gcn::Key::ENTER; break;
         case KC_RIGHT: k = gcn::Key::RIGHT; break;
         case KC_RIGHT_WINDOWS: k = gcn::Key::RIGHT_SUPER; break;
         case KC_TAB: k = gcn::Key::TAB; break;
