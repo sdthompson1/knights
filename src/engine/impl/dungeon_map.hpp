@@ -177,13 +177,15 @@ private:
     // entities which only get one entry, on their "base" square).
 
     template<class T>
-    struct GetPos : std::unary_function<std::pair<MapCoord,T>, MapCoord> {
+    struct GetPos {
+        typedef MapCoord result_type;
         const MapCoord & operator()(const std::pair<MapCoord, T> &p) const {
             return p.first;
         }
     };
     template<class T>
-    struct GetSecond : std::unary_function<std::pair<MapCoord,T>, T> {
+    struct GetSecond {
+        typedef MapCoord result_type;
         const T & operator()(const std::pair<MapCoord,T> &p) const {
             return p.second;
         }

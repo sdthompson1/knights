@@ -179,13 +179,13 @@ private:
 // function objects to compare entities by height
 //
 
-struct HeightCompare : std::binary_function<shared_ptr<Entity>, shared_ptr<Entity>, bool> {
+struct HeightCompare {
     bool operator()(const shared_ptr<Entity> &lhs, const shared_ptr<Entity> &rhs) const {
         return lhs->getHeight() < rhs->getHeight();
     }
 };
 
-struct HeightReverseCompare : std::binary_function<shared_ptr<Entity>, shared_ptr<Entity>, bool> {
+struct HeightReverseCompare {
     bool operator()(const shared_ptr<Entity> &lhs, const shared_ptr<Entity> &rhs) const {
         return lhs->getHeight() > rhs->getHeight(); 
     }

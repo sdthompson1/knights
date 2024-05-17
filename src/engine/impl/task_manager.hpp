@@ -35,8 +35,7 @@
 #include <functional>
 #include <set>
 
-class CompareTime : public std::binary_function<const boost::shared_ptr<Task>&,
-                                                const boost::shared_ptr<Task>&, bool> {
+class CompareTime {
 public:
     bool operator()(const boost::shared_ptr<Task> &lhs, const boost::shared_ptr<Task> &rhs) const {
         return lhs->time < rhs->time;
