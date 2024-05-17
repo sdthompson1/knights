@@ -225,15 +225,15 @@ basic_wand = {
 }
 
 i_wand_of_destruction = kts.ItemType(
-  basic_wand & {
+  table_merge( basic_wand, {
     melee_damage = 1000,
     melee_stun_time = rng_time_range(2, 3),
     melee_tile_damage = 1000
   }
-)
+))
 
 i_wand_of_undeath = kts.ItemType(
-  basic_wand & {
+  table_merge( basic_wand, {
     melee_damage = 0,
     melee_stun_time = ts,
     melee_action = function()
@@ -242,10 +242,10 @@ i_wand_of_undeath = kts.ItemType(
        kts.ZombieKill(m_zombie)
     end
   }
-)
+))
 
 i_wand_of_open_ways = kts.ItemType(
-  basic_wand & {
+  table_merge( basic_wand, {
     melee_damage = rng_range(1, 3),
     melee_stun_time = rng_time_range(2, 5),
     melee_action = function()
@@ -254,10 +254,10 @@ i_wand_of_open_ways = kts.ItemType(
     end,
     allow_strength = false  -- Prevent the usual destruction of doors/chests when knight has strength
   }
-)
+))
 
 i_wand_of_securing = kts.ItemType(
-  basic_wand & {
+  table_merge( basic_wand, {
     melee_damage = function()
        if kts.RandomChance(0.25) then return 0 else return 1 end
     end,
@@ -271,7 +271,7 @@ i_wand_of_securing = kts.ItemType(
        end
     end
   }
-)
+))
 
 all_wands = { i_wand_of_destruction, i_wand_of_undeath, i_wand_of_open_ways, i_wand_of_securing }
 
@@ -292,7 +292,7 @@ basic_book = {
 i_basic_book = kts.ItemType(basic_book)
 
 i_book_of_knowledge = kts.ItemType(
-  basic_book & {
+  table_merge( basic_book, {
     -- Ancient Book of Knowledge
     on_pick_up = function()
         kts.MagicMapping()
@@ -302,10 +302,10 @@ i_book_of_knowledge = kts.ItemType(
         kts.RevealStop()
     end
   }
-)
+))
 
 i_necronomicon = kts.ItemType(
-  basic_book & { 
+  table_merge( basic_book, {
     -- Necronomicon
     -- Note on kts.Necromancy: first number is the number of zombies to generate (I have increased
     -- this slightly compared to the original Knights), and second number is the range (in squares). 
@@ -320,7 +320,7 @@ i_necronomicon = kts.ItemType(
         kts.NormalZombieActivity()
     end
   }
-)
+))
 
 all_books = { i_basic_book, i_book_of_knowledge, i_necronomicon }
 
@@ -418,31 +418,31 @@ basic_key = {
 }
 
 i_key1 = kts.ItemType (
-  basic_key & {
+  table_merge( basic_key, {
     backpack_graphic = g_inv_key1,
     backpack_slot = 20,
     key = 1
   }
-)
+))
 
 i_key2 = kts.ItemType(
-  basic_key & {
+  table_merge( basic_key, {
     backpack_graphic = g_inv_key2,
     backpack_slot = 21,
     key = 2
   }
-)
+))
 
 i_key3 = kts.ItemType(
-  basic_key & {
+  table_merge( basic_key, {
     backpack_graphic = g_inv_key3,
     backpack_slot = 22,
     key = 3
   }
-)
+))
 
 i_lockpicks = kts.ItemType(
-  basic_key & {
+  table_merge( basic_key, {
     backpack_graphic = g_inv_lockpicks,
     backpack_slot = 23,
     key = -1,
@@ -462,7 +462,7 @@ i_lockpicks = kts.ItemType(
     },
     tutorial = TUT_LOCKPICKS
   }
-)
+))
 
 
 --

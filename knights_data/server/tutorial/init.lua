@@ -24,6 +24,20 @@ dofile("messages.lua")
 
 local C = require("classic")
 
+
+-- Copied from "classic" module:
+function table_merge(a, b)
+    local result = {}
+    for k, v in pairs(a) do
+        result[k] = v
+    end
+    for k, v in pairs(b) do
+        result[k] = v
+    end
+    return result
+end
+
+
 ----------------------------------------------------------------------
 -- New tiles and items
 ----------------------------------------------------------------------
@@ -55,12 +69,12 @@ stuff_with_gem = kts.ItemType {
 }
 
 -- Prevent bats flying over switches
-new_acc = C.switch_acc & { flying="blocked" }
+new_acc = table_merge( C.switch_acc, { flying="blocked" })
 C.t_switch_up.access = new_acc
 C.t_switch_down.access = new_acc
 
 -- A version of t_switch_up that appears as a wall on the mini map.
-switch_new = kts.Tile( C.t_switch_up.table & { map_as = "wall" })
+switch_new = kts.Tile( table_merge( C.t_switch_up.table, { map_as = "wall" }))
 
 -- Potions/scrolls with fixed effects
 function make_potion(effect, hint, set_flag)
@@ -95,7 +109,7 @@ regeneration_potion = make_potion(C.regeneration, 60)
 super_potion = make_potion(C.super, 42)
 quickness_scroll = make_scroll(C.quickness, 71)
 
-low_damage_bolt = kts.ItemType( C.i_bolts.table & { missile_damage = C.rng_range(1,2) } )
+low_damage_bolt = kts.ItemType( table_merge( C.i_bolts.table, { missile_damage = C.rng_range(1,2) } ))
 
 -- Modify the pentagram to teleport to a fixed location instead of randomly.
 -- Quickest way to do this is to modify "my_teleport" in classic module.

@@ -130,21 +130,21 @@ wall = {
     access = wall_acc
 }
 
-t_wall_normal = kts.Tile( wall & { graphic=g_wall })          -- 2
+t_wall_normal = kts.Tile( table_merge( wall, { graphic=g_wall } ) )   -- 2
 
-t_wall_pillar = kts.Tile( wall & {   -- 3
+t_wall_pillar = kts.Tile( table_merge(wall, {   -- 3
     graphic = g_pillar
-})
+}))
 
-t_wall_skull_north = kts.Tile(wall & { graphic = g_skull_up    })
-t_wall_skull_east  = kts.Tile(wall & { graphic = g_skull_right })   -- 4
-t_wall_skull_south = kts.Tile(wall & { graphic = g_skull_down  })
-t_wall_skull_west  = kts.Tile(wall & { graphic = g_skull_left  })   -- 5
+t_wall_skull_north = kts.Tile(table_merge( wall, { graphic = g_skull_up    }))
+t_wall_skull_east  = kts.Tile(table_merge( wall, { graphic = g_skull_right }))   -- 4
+t_wall_skull_south = kts.Tile(table_merge( wall, { graphic = g_skull_down  }))
+t_wall_skull_west  = kts.Tile(table_merge( wall, { graphic = g_skull_left  }))   -- 5
 
 kts.SetRotate(t_wall_skull_north, t_wall_skull_east, t_wall_skull_south, t_wall_skull_west)  -- in clockwise order.
 kts.SetReflect(t_wall_skull_east, t_wall_skull_west)
 
-t_wall_cage  = kts.Tile(wall & { graphic=g_cage })        -- 6
+t_wall_cage  = kts.Tile(table_merge(wall, { graphic=g_cage }))     -- 6
 
 
 -- Doors.
@@ -163,15 +163,15 @@ door_control_tbl = {
     menu_special = 1,
     name = "Open/Close Door"
 }
-chest_control_tbl = door_control_tbl & { name = "Open/Close Chest" }
+chest_control_tbl = table_merge(door_control_tbl, { name = "Open/Close Chest" })
 
 door_control = kts.Control (door_control_tbl)
 chest_control = kts.Control (chest_control_tbl)
 
 -- door_control_low_pri is used for open doors, because we want pickup/drop to take priority over
 -- closing a door (but we want opening a door to take priority over pickup/drop).
-door_control_low_pri = kts.Control (door_control_tbl & { tap_priority = 1 })
-chest_control_low_pri = kts.Control (chest_control_tbl & { tap_priority = 1 })
+door_control_low_pri = kts.Control (table_merge(door_control_tbl, { tap_priority = 1 }))
+chest_control_low_pri = kts.Control (table_merge(chest_control_tbl, { tap_priority = 1 }))
 
 
 function door_control_lua_func(pos)
@@ -196,45 +196,45 @@ door_base = {
     on_unlock_fail    = function() locked_msg(); snd_lock() end,
     control = door_control_lua_func
 }
-wood_door = door_base & {
+wood_door = table_merge(door_base, {
     hit_points  = tile_hit_points,
     on_hit      = snd_tile_bash,
     on_destroy  = destroy1,
     lock_chance = 0.1,
     keymax      = 3,
     tutorial = TUT_DOOR
-}
-iron_door = door_base & {
+})
+iron_door = table_merge(door_base, {
     lock_chance = 1.0,   -- always locked
     keymax      = 3,
     on_hit      = snd_tile_clunk,
     tutorial    = TUT_IRON_DOOR
-}
+})
 gate = {
     access      = gate_acc,
     on_hit      = snd_tile_clunk,
     tutorial    = TUT_PORTCULLIS,
 }
-door_horiz = wood_door & {
+door_horiz = table_merge(wood_door, {
     depth = -4, 
     graphic = g_door_hwc, 
     open_graphic = g_door_hwo
-}
-door_vert  = wood_door & {
+})
+door_vert  = table_merge(wood_door, {
     depth = -4, 
     graphic = g_door_vwc, 
     open_graphic = g_door_vwo
-}
-iron_door_horiz = iron_door & {
+})
+iron_door_horiz = table_merge(iron_door, {
     depth = -4, 
     graphic = g_door_hic, 
     open_graphic = g_door_hio
-}
-iron_door_vert = iron_door & {
+})
+iron_door_vert = table_merge(iron_door, {
     depth = -4, 
     graphic = g_door_vic, 
     open_graphic = g_door_vio
-}
+})
 
 t_door_horiz      = kts.Tile( door_horiz )      -- 7, 50
 t_door_vert       = kts.Tile( door_vert  )      -- 8, 51
@@ -249,24 +249,24 @@ kts.SetRotate(t_iron_door_horiz, t_iron_door_vert)
 -- we don't really have any way to check this so we have to be conservative and assume
 -- they can't be.)
 
-t_gate_horiz      = kts.Tile( gate & {  -- 16, 64
+t_gate_horiz      = kts.Tile( table_merge(gate, {  -- 16, 64
     depth = -4, 
     graphic = g_door_hgc, 
     connectivity_check = -1,
-})
+}))
 
-t_gate_vert       = kts.Tile( gate & {  -- 17, 65
+t_gate_vert       = kts.Tile( table_merge(gate, {  -- 17, 65
     depth = -4, 
     graphic = g_door_vgc, 
     connectivity_check = -1,
-})
+}))
 
-t_open_gate_horiz = kts.Tile( floor & { 
+t_open_gate_horiz = kts.Tile( table_merge(floor, {
     graphic = g_door_hgo, 
-})
-t_open_gate_vert  = kts.Tile( floor & { 
+}))
+t_open_gate_vert  = kts.Tile( table_merge(floor, {
     graphic=g_door_vgo,
-})
+}))
 
 kts.SetRotate(t_gate_horiz, t_gate_vert)
 kts.SetRotate(t_open_gate_horiz, t_open_gate_vert)
@@ -274,16 +274,16 @@ kts.SetRotate(t_open_gate_horiz, t_open_gate_vert)
 set_open_closed(t_open_gate_horiz, t_gate_horiz)
 set_open_closed(t_open_gate_vert, t_gate_vert)
 
-t_door_horiz_locked      = kts.Tile( door_horiz & { special_lock=1 })
-t_door_vert_locked       = kts.Tile( door_vert & { special_lock=1 })
-t_iron_door_horiz_locked = kts.Tile( iron_door_horiz & { special_lock = 1 })
-t_iron_door_vert_locked  = kts.Tile( iron_door_vert & { special_lock = 1 })
+t_door_horiz_locked      = kts.Tile( table_merge(door_horiz, { special_lock=1 }))
+t_door_vert_locked       = kts.Tile( table_merge(door_vert, { special_lock=1 }))
+t_iron_door_horiz_locked = kts.Tile( table_merge(iron_door_horiz, { special_lock = 1 }))
+t_iron_door_vert_locked  = kts.Tile( table_merge(iron_door_vert, { special_lock = 1 }))
 
 kts.SetRotate(t_door_horiz_locked, t_door_vert_locked)
 kts.SetRotate(t_iron_door_horiz_locked, t_iron_door_vert_locked)
 
-t_hdoor_background = kts.Tile( floor & { graphic = g_hdoor_background })
-t_vdoor_background = kts.Tile( floor & { graphic = g_vdoor_background })
+t_hdoor_background = kts.Tile( table_merge(floor, { graphic = g_hdoor_background }))
+t_vdoor_background = kts.Tile( table_merge(floor, { graphic = g_vdoor_background }))
 
 kts.SetRotate(t_hdoor_background, t_vdoor_background)
 
@@ -298,40 +298,40 @@ home = {
     tutorial = TUT_HOME,
     on_approach = check_escape_quest
 }
-home_south = home & {
+home_south = table_merge( home, {
     graphic = g_home_south, 
     facing = "south"
-}
-home_west = home & {
+})
+home_west = table_merge( home, {
     graphic = g_home_west,
     facing = "west"
-}
-home_north = home & {
+})
+home_north = table_merge( home, {
     graphic = g_home_north, 
     facing = "north"
-}
-home_east = home & {
+})
+home_east = table_merge( home, {
     graphic = g_home_east,
     facing="east"
-}
+})
 
 t_home_south  = kts.Tile( home_south )   -- 11
 t_home_west   = kts.Tile( home_west )    -- 12
 t_home_north  = kts.Tile( home_north )   -- 13
 t_home_east   = kts.Tile( home_east )    -- 14
 
-t_home_south_special = kts.Tile(home_south & {   -- 92
+t_home_south_special = kts.Tile(table_merge( home_south, {   -- 92
     special_exit = true
-})
-t_home_west_special  = kts.Tile(home_west  & {   -- 93
+}))
+t_home_west_special  = kts.Tile(table_merge( home_west, {   -- 93
     special_exit = true
-})
-t_home_north_special = kts.Tile(home_north & {   -- 94
+}))
+t_home_north_special = kts.Tile(table_merge( home_north, {   -- 94
     special_exit = true
-})
-t_home_east_special  = kts.Tile(home_east  & {   -- 95
+}))
+t_home_east_special  = kts.Tile(table_merge( home_east, {   -- 95
     special_exit = true
-})
+}))
 
 kts.SetRotate(t_home_south, t_home_west, t_home_north, t_home_east)
 kts.SetReflect(t_home_west, t_home_east)
@@ -357,18 +357,18 @@ set_open_closed(t_crystal_ball, t_wall_pillar)
 switch = {
     access = switch_acc,
     on_hit = function() kts.Activate(); snd_tile_bash() end,
-    control = kts.Control (door_control_tbl & { name = "Pull Lever" }),
+    control = kts.Control (table_merge( door_control_tbl, { name = "Pull Lever" })),
     items = 0,
     tutorial = TUT_SWITCH
 }
-t_switch_up   = kts.Tile( switch & {     -- 18
+t_switch_up   = kts.Tile( table_merge( switch, {     -- 18
     graphic = g_switch_up, 
     on_activate = function() kts.ChangeTile(t_switch_down); snd_door() end
-})
-t_switch_down = kts.Tile( switch & {     -- 19
+}))
+t_switch_down = kts.Tile( table_merge( switch, {     -- 19
     graphic = g_switch_down, 
     on_activate = function() kts.ChangeTile(t_switch_up); snd_door() end
-})
+}))
 
 
 
@@ -380,14 +380,14 @@ furniture = {
     on_hit     = snd_tile_bash
 }
 
-furniture4 = furniture & { on_destroy = destroy4 }
-furniture5 = furniture & { on_destroy = destroy5 }
+furniture4 = table_merge( furniture, { on_destroy = destroy4 })
+furniture5 = table_merge( furniture, { on_destroy = destroy5 })
 
-t_haystack = kts.Tile (furniture4 & {   -- 23
+t_haystack = kts.Tile (table_merge( furniture4, {   -- 23
     access  = switch_acc,
     graphic = g_haystack,
-})
-t_barrel = kts.Tile (furniture4 & {   -- 24
+}))
+t_barrel = kts.Tile (table_merge( furniture4, {   -- 24
     type = "barrel",
     access = barrel_acc,
     graphic = g_barrel,
@@ -396,7 +396,7 @@ t_barrel = kts.Tile (furniture4 & {   -- 24
     -- be possible in the current system (since setting "items" to an item generation
     -- category sets items-allowed to true as well) -- but setting the tile-type to "barrel" 
     -- automatically sets items-allowed to false (as a special case) -- see special_tiles.cpp.
-})
+}))
 
 chest = {
     type        = "chest",
@@ -423,26 +423,26 @@ chest = {
     tutorial = TUT_CHEST
 }
 
-t_chest_north = kts.Tile( chest & {  -- 25, 35
+t_chest_north = kts.Tile( table_merge( chest, {  -- 25, 35
     graphic = g_chest_north, 
     open_graphic = g_open_chest_north, 
     facing = "north"
-})
-t_chest_east  = kts.Tile( chest & {  -- 26, 36
+}))
+t_chest_east  = kts.Tile( table_merge( chest, {  -- 26, 36
     graphic = g_chest_east,  
     open_graphic = g_open_chest_east,
     facing="east"
-})
-t_chest_south = kts.Tile( chest & {  -- 27, 37
+}))
+t_chest_south = kts.Tile( table_merge( chest, {  -- 27, 37
     graphic = g_chest_south, 
     open_graphic = g_open_chest_south, 
     facing="south"
-})
-t_chest_west  = kts.Tile( chest & {  -- 28, 38
+}))
+t_chest_west  = kts.Tile( table_merge( chest, {  -- 28, 38
     graphic = g_chest_west,  
     open_graphic = g_open_chest_west,
     facing="west"
-})
+}))
 
 kts.SetRotate(t_chest_north, t_chest_east, t_chest_south, t_chest_west)
 kts.SetReflect(t_chest_east, t_chest_west)
@@ -460,30 +460,30 @@ table_base = {
     items = "table",
     on_hit = snd_tile_bash
 }
-table4 = table_base & { on_destroy = destroy4 }
-table5 = table_base & { on_destroy = destroy5 }
+table4 = table_merge( table_base, { on_destroy = destroy4 })
+table5 = table_merge( table_base, { on_destroy = destroy5 })
 
-t_table_small = kts.Tile( table5 & { graphic=g_table_small, items="small_table" })  -- 39
-t_table_north = kts.Tile( table5 & { graphic=g_table_north })  -- 40
-t_table_vert  = kts.Tile( table5 & { graphic=g_table_vert })   -- 41
-t_table_south = kts.Tile( table5 & { graphic=g_table_south })  -- 42
-t_table_west  = kts.Tile( table5 & { graphic=g_table_west })
-t_table_horiz = kts.Tile( table5 & { graphic=g_table_horiz })
-t_table_east  = kts.Tile( table5 & { graphic=g_table_east })
+t_table_small = kts.Tile( table_merge( table5, { graphic=g_table_small, items="small_table" }))  -- 39
+t_table_north = kts.Tile( table_merge( table5, { graphic=g_table_north }))  -- 40
+t_table_vert  = kts.Tile( table_merge( table5, { graphic=g_table_vert }))   -- 41
+t_table_south = kts.Tile( table_merge( table5, { graphic=g_table_south }))  -- 42
+t_table_west  = kts.Tile( table_merge( table5, { graphic=g_table_west }))
+t_table_horiz = kts.Tile( table_merge( table5, { graphic=g_table_horiz }))
+t_table_east  = kts.Tile( table_merge( table5, { graphic=g_table_east }))
 
 kts.SetRotate(t_table_north, t_table_east, t_table_south, t_table_west)
 kts.SetReflect(t_table_west, t_table_east)
 kts.SetRotate(t_table_vert, t_table_horiz)
 
-t_large_table_horiz = kts.Tile( table4 & { graphic=g_large_table_horiz })  -- 43
-t_large_table_vert  = kts.Tile( table4 & { graphic=g_large_table_vert })
+t_large_table_horiz = kts.Tile( table_merge( table4, { graphic=g_large_table_horiz }))  -- 43
+t_large_table_vert  = kts.Tile( table_merge( table4, { graphic=g_large_table_vert }))
 
 kts.SetRotate(t_large_table_horiz, t_large_table_vert)
 
-t_chair_south = kts.Tile( furniture4 & { graphic=g_chair_south })  -- 44
-t_chair_north = kts.Tile( furniture4 & { graphic=g_chair_north })  -- 45
-t_chair_west  = kts.Tile( furniture4 & { graphic=g_chair_west })
-t_chair_east  = kts.Tile( furniture4 & { graphic=g_chair_east })
+t_chair_south = kts.Tile( table_merge( furniture4, { graphic=g_chair_south }))  -- 44
+t_chair_north = kts.Tile( table_merge( furniture4, { graphic=g_chair_north }))  -- 45
+t_chair_west  = kts.Tile( table_merge( furniture4, { graphic=g_chair_west }))
+t_chair_east  = kts.Tile( table_merge( furniture4, { graphic=g_chair_east }))
 
 kts.SetRotate(t_chair_north, t_chair_east, t_chair_south, t_chair_west)
 kts.SetReflect(t_chair_west, t_chair_east)
@@ -508,41 +508,41 @@ open_pit =
         tutorial = TUT_PIT
     }
 
-t_open_pit_vert   = kts.Tile( open_pit & {     -- 47
+t_open_pit_vert   = kts.Tile( table_merge( open_pit, {     -- 47
     graphic = g_pitv_o,
     depth   = -4,
-})
-t_open_pit_horiz = kts.Tile( open_pit & {
+}))
+t_open_pit_horiz = kts.Tile( table_merge( open_pit, {
     graphic = g_pith_o,
     depth   = -4,
-})
+}))
 kts.SetRotate(t_open_pit_horiz, t_open_pit_vert)
 
-t_open_pit_wooden = kts.Tile( open_pit & {     -- 48
+t_open_pit_wooden = kts.Tile( table_merge( open_pit, {     -- 48
     graphic = g_wooden_pit,
     depth   = -4,
-})
+}))
 
-t_open_pit_normal = kts.Tile( open_pit & {     -- 49
+t_open_pit_normal = kts.Tile( table_merge( open_pit, {     -- 49
     graphic = g_pit_o,
     depth   = -4,
-})
+}))
 
-t_closed_pit_vert = kts.Tile( closed_pit & {   -- 78
+t_closed_pit_vert = kts.Tile( table_merge( closed_pit, {   -- 78
     graphic = g_pitv_c,
-})
-t_closed_pit_horiz = kts.Tile( closed_pit & {
+}))
+t_closed_pit_horiz = kts.Tile( table_merge( closed_pit, {
     graphic = g_pith_c,
-})
+}))
 kts.SetRotate(t_closed_pit_vert, t_closed_pit_horiz)
 
-t_closed_pit_wooden = kts.Tile( closed_pit & { -- 79
+t_closed_pit_wooden = kts.Tile( table_merge( closed_pit, { -- 79
     graphic = g_wooden_floor,
-})
+}))
 
-t_closed_pit_normal = kts.Tile( closed_pit & { -- 80
+t_closed_pit_normal = kts.Tile( table_merge( closed_pit, { -- 80
     graphic = g_pit_c,
-})
+}))
 
 set_open_closed(t_open_pit_normal, t_closed_pit_normal)
 set_open_closed(t_open_pit_vert, t_closed_pit_vert)
@@ -556,25 +556,25 @@ all_open_pit_tiles = {t_open_pit_horiz, t_open_pit_vert, t_open_pit_wooden, t_op
 
 -- Floor tiles of all kinds.
 
-t_broken_wood_1 = kts.Tile(floor & { graphic=g_broken_wood_1 })  -- 54
-t_broken_wood_2 = kts.Tile(floor & { graphic=g_broken_wood_2 })  -- 55
-t_broken_wood_3 = kts.Tile(floor & { graphic=g_broken_wood_3 })  -- 56
-t_broken_wood_4 = kts.Tile(floor & { graphic=g_broken_wood_4 })  -- 57
-t_broken_wood_5 = kts.Tile(floor & { graphic=g_broken_wood_5 })  -- 58
+t_broken_wood_1 = kts.Tile(table_merge( floor, { graphic=g_broken_wood_1 }))  -- 54
+t_broken_wood_2 = kts.Tile(table_merge( floor, { graphic=g_broken_wood_2 }))  -- 55
+t_broken_wood_3 = kts.Tile(table_merge( floor, { graphic=g_broken_wood_3 }))  -- 56
+t_broken_wood_4 = kts.Tile(table_merge( floor, { graphic=g_broken_wood_4 }))  -- 57
+t_broken_wood_5 = kts.Tile(table_merge( floor, { graphic=g_broken_wood_5 }))  -- 58
 
-t_floor1  = kts.Tile(floor & { graphic=g_floor1 })  -- 66
-t_floorpp = kts.Tile(floor & { graphic=g_pressure_plate })  -- 67
-t_floor2  = kts.Tile(floor & { graphic=g_floor2 })  -- 68
-t_floor3  = kts.Tile(floor & { graphic=g_floor3 })  -- 69
-t_floor4  = kts.Tile(floor & { graphic=g_floor4 })  -- 70
-t_floor5  = kts.Tile(floor & { graphic=g_floor5 })  -- 71
-t_floor6  = kts.Tile(floor & { graphic=g_floor6, depth=-1 })  -- 72
-t_floor7  = kts.Tile(floor & { graphic=g_floor7 })  -- 73
-t_floor8  = kts.Tile(floor & { graphic=g_floor8 })  -- 74
-t_floor9  = kts.Tile(floor & { graphic=g_floor9 })  -- 75
-t_floor10 = kts.Tile(floor & { graphic=g_floor10 })  -- 77
+t_floor1  = kts.Tile(table_merge( floor, { graphic=g_floor1 }))  -- 66
+t_floorpp = kts.Tile(table_merge( floor, { graphic=g_pressure_plate }))  -- 67
+t_floor2  = kts.Tile(table_merge( floor, { graphic=g_floor2 }))  -- 68
+t_floor3  = kts.Tile(table_merge( floor, { graphic=g_floor3 }))  -- 69
+t_floor4  = kts.Tile(table_merge( floor, { graphic=g_floor4 }))  -- 70
+t_floor5  = kts.Tile(table_merge( floor, { graphic=g_floor5 }))  -- 71
+t_floor6  = kts.Tile(table_merge( floor, { graphic=g_floor6, depth=-1 }))  -- 72
+t_floor7  = kts.Tile(table_merge( floor, { graphic=g_floor7 }))  -- 73
+t_floor8  = kts.Tile(table_merge( floor, { graphic=g_floor8 }))  -- 74
+t_floor9  = kts.Tile(table_merge( floor, { graphic=g_floor9 }))  -- 75
+t_floor10 = kts.Tile(table_merge( floor, { graphic=g_floor10 }))  -- 77
 
-pentagram_base = floor & {
+pentagram_base = table_merge( floor, {
     graphic      = g_pentagram,
     on_walk_over = function()
        -- zombies can walk over pentagrams with impunity, 
@@ -585,16 +585,16 @@ pentagram_base = floor & {
        end
     end,
     tutorial = TUT_PENTAGRAM
-}
+})
 
-t_dead_pentagram = kts.Tile(floor & {   -- 76
+t_dead_pentagram = kts.Tile(table_merge( floor, {   -- 76
     graphic      = g_pentagram,
     tutorial = TUT_PENTAGRAM,
-})
-t_live_pentagram = kts.Tile(pentagram_base)   -- 1 in my room tables. (76 in Knights.)
-t_special_pentagram = kts.Tile(pentagram_base & {  -- 90
+}))
+t_live_pentagram = kts.Tile(pentagram_base)   -- 1 in my room tables. (76 in original Knights.)
+t_special_pentagram = kts.Tile(table_merge( pentagram_base, {  -- 90
     on_hit = function() end   -- does nothing, but means wand will 'zap' when you hit special pentagram with it.
-})
+}))
 
 all_special_pentagrams = { t_special_pentagram }  -- needed for 'destroy book with wand' quest
 
@@ -604,12 +604,12 @@ set_open_closed(t_live_pentagram, t_dead_pentagram)
 
 -- Stairs
 
-t_stairs_top   = kts.Tile(floor & { graphic=g_stairs_top, stairs_down="special" })  -- 81
+t_stairs_top   = kts.Tile(table_merge( floor, { graphic=g_stairs_top, stairs_down="special" }))  -- 81
 
-t_stairs_south = kts.Tile(floor & { graphic=g_stairs_south, stairs_down="south" })  -- 82
-t_stairs_west  = kts.Tile(floor & { graphic=g_stairs_west,  stairs_down="west"  })  -- 83
-t_stairs_north = kts.Tile(floor & { graphic=g_stairs_north, stairs_down="north" })  -- 84
-t_stairs_east  = kts.Tile(floor & { graphic=g_stairs_east,  stairs_down="east"  })  -- 85
+t_stairs_south = kts.Tile(table_merge( floor, { graphic=g_stairs_south, stairs_down="south" }))  -- 82
+t_stairs_west  = kts.Tile(table_merge( floor, { graphic=g_stairs_west,  stairs_down="west"  }))  -- 83
+t_stairs_north = kts.Tile(table_merge( floor, { graphic=g_stairs_north, stairs_down="north" }))  -- 84
+t_stairs_east  = kts.Tile(table_merge( floor, { graphic=g_stairs_east,  stairs_down="east"  }))  -- 85
 
 kts.SetRotate(t_stairs_north, t_stairs_east, t_stairs_south, t_stairs_west)
 kts.SetReflect(t_stairs_west, t_stairs_east)
@@ -617,20 +617,20 @@ kts.SetReflect(t_stairs_west, t_stairs_east)
 
 --------------------------
 
-t_blood_1 = kts.Tile(floor & {graphic=g_blood_1, depth=-3})
-t_blood_2 = kts.Tile(floor & {graphic=g_blood_2, depth=-3})
-t_blood_3 = kts.Tile(floor & {graphic=g_blood_3, depth=-3})
+t_blood_1 = kts.Tile(table_merge( floor, {graphic=g_blood_1, depth=-3}))
+t_blood_2 = kts.Tile(table_merge( floor, {graphic=g_blood_2, depth=-3}))
+t_blood_3 = kts.Tile(table_merge( floor, {graphic=g_blood_3, depth=-3}))
 
-t_dead_knight_1 = kts.Tile(floor & { graphic = g_dead_knight_1, depth = -1 } )
-t_dead_knight_2 = kts.Tile(floor & { graphic = g_dead_knight_2, depth = -1 } )
-t_dead_knight_3 = kts.Tile(floor & { graphic = g_dead_knight_3, depth = -1 } )
-t_dead_knight_4 = kts.Tile(floor & { graphic = g_dead_knight_4, depth = -1 } )
+t_dead_knight_1 = kts.Tile(table_merge( floor, { graphic = g_dead_knight_1, depth = -1 } ))
+t_dead_knight_2 = kts.Tile(table_merge( floor, { graphic = g_dead_knight_2, depth = -1 } ))
+t_dead_knight_3 = kts.Tile(table_merge( floor, { graphic = g_dead_knight_3, depth = -1 } ))
+t_dead_knight_4 = kts.Tile(table_merge( floor, { graphic = g_dead_knight_4, depth = -1 } ))
 
-t_dead_zombie = kts.Tile(floor & { graphic=g_dead_zombie, depth = -1 })    -- 59
+t_dead_zombie = kts.Tile(table_merge( floor, { graphic=g_dead_zombie, depth = -1 }))    -- 59
 
-t_dead_vbat_1 = kts.Tile(floor & { graphic = g_dead_vbat_1, depth = -2 })
-t_dead_vbat_2 = kts.Tile(floor & { graphic = g_dead_vbat_2, depth = -2 })
-t_dead_vbat_3 = kts.Tile(floor & { graphic = g_dead_vbat_3, depth = -2 })
+t_dead_vbat_1 = kts.Tile(table_merge( floor, { graphic = g_dead_vbat_1, depth = -2 }))
+t_dead_vbat_2 = kts.Tile(table_merge( floor, { graphic = g_dead_vbat_2, depth = -2 }))
+t_dead_vbat_3 = kts.Tile(table_merge( floor, { graphic = g_dead_vbat_3, depth = -2 }))
 
 --------------------------
 

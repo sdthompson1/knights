@@ -18,27 +18,15 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
-module(...)
-use_strict()
-
-dofile("table_merge.lua")
-dofile("misc_config.lua")
-dofile("tutorial.lua")
-dofile("graphics.lua")
-dofile("sounds.lua")
-dofile("quest_funcs.lua")
-dofile("dungeon_layouts.lua")
-dofile("anims.lua")
-dofile("magic.lua")
-dofile("items.lua")
-dofile("tile_funcs.lua")
-dofile("tiles.lua")
-dofile("item_generation.lua")
-dofile("monsters.lua")
-dofile("controls.lua")
-dofile("segments.lua")
-dofile("general_stuff.lua")
-dofile("quest_description.lua")
-dofile("preset_quests.lua")
-dofile("dungeon_setup.lua")
-dofile("menus.lua")
+-- Merge two tables. Keys in table "b" will override keys in table "a"
+-- if there are any duplicates.
+function table_merge(a, b)
+    local result = {}
+    for k, v in pairs(a) do
+        result[k] = v
+    end
+    for k, v in pairs(b) do
+        result[k] = v
+    end
+    return result
+end
