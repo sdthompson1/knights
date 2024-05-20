@@ -128,10 +128,6 @@
       <Project>{ae365d55-9853-4336-af95-222e286ebe61}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\lua\lua.vcxproj">
-      <Project>{a6acd79e-030b-4ec4-81fa-93a7e3a933d7}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\Misc\Misc.vcxproj">
       <Project>{bc217bea-9135-4266-b150-75f0450b2366}</Project>
     </ProjectReference>

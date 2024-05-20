@@ -3,6 +3,7 @@
     "boost",
     "curl",
     "sdl2",
-    "freetype"
+    "freetype",
+    "lua"
   ]
 }
