@@ -32,9 +32,9 @@
 
       <p>Before compiling, make sure you have the necessary
         dependencies installed. The game requires Boost, SDL 2,
-        libcurl, Freetype and Fontconfig. Also the pkg-config utility
-        must be available (at build time). On Debian systems the
-        following packages will satisfy the requirements:</p>
+        libcurl, Lua, Freetype and Fontconfig. Also the pkg-config
+        utility must be available (at build time). On Debian systems
+        the following packages will satisfy the requirements:</p>
 
       <ul>
         <li>libboost-dev</li>
@@ -45,11 +45,13 @@
         <li>libcurl4-openssl-dev <i>or</i> libcurl4-gnutls-dev</li>
         <li>libfreetype6-dev</li>
         <li>libfontconfig-dev</li>
+        <li>liblua5.4-dev</li>
         <li>pkg-config</li>
       </ul>
 
       <p>(If you only want to build the server, and not the game
-        itself, then only Boost and libcurl are needed.)</p>
+        itself, then sdl2, freetype and fontconfig can be
+        omitted.)</p>
 
       <h4>Troubleshooting</h4>
 
