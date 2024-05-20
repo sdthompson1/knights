@@ -115,10 +115,6 @@
       <Project>{ae365d55-9853-4336-af95-222e286ebe61}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\lua\lua.vcxproj">
-      <Project>{a6acd79e-030b-4ec4-81fa-93a7e3a933d7}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\RStream\RStream.vcxproj">
       <Project>{013a3a7a-553c-4d09-9be8-08b533577e32}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

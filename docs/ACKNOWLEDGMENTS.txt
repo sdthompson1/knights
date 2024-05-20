@@ -172,10 +172,10 @@ in this Software without prior written authorization of the copyright holder.
 
 ====== Lua ======
 
-This software uses Lua version 5.1.4, available from www.lua.org. The
+This software uses Lua version 5.4.6, available from www.lua.org. The
 licence is as follows:
 
-Copyright (C) 1994–2008 Lua.org, PUC-Rio.
+Copyright (C) 1994–2023 Lua.org, PUC-Rio.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
