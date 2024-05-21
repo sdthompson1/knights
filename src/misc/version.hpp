@@ -26,7 +26,7 @@
 
 #define KNIGHTS_VERSION "027"
 #define KNIGHTS_VERSION_NUM 27
-#define COMPATIBLE_VERSION_NUM 24   // Lowest client version that can connect to this server
+#define COMPATIBLE_VERSION_NUM 27   // Lowest client version that can connect to this server
 
 #ifdef WIN32
 #define KNIGHTS_PLATFORM "Windows"

@@ -134,12 +134,13 @@ private:
 
 class A_Regeneration : public LegacyAction {
 public:
-    explicit A_Regeneration(int i, const std::string &m) : dur(i), msg(m) { }
+    explicit A_Regeneration(int i, const std::string &m, PotionMagic pm) : dur(i), msg(m), potion_magic(pm) { }
     virtual void execute(const ActionData &) const;
 private:
     ACTION_MAKER("Regeneration");
     int dur;
     std::string msg;
+    enum PotionMagic potion_magic;
 };
 
 class A_RevealLocation : public LegacyAction {

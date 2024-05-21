@@ -124,7 +124,11 @@ function quickness()
 end
 
 function regeneration()
-   kts.Regeneration(pot_dur(), "Regeneration")
+    if kts.RandomChance(0.5) then
+        kts.Regeneration(pot_dur(), "Regeneration", "slow")
+    else
+        kts.Regeneration(pot_dur(), "Regeneration", "fast")
+    end
 end
 
 function strength()
@@ -143,7 +147,7 @@ function potion_effect()
    local healer = kts.RandomRange(1,5)
    local effect = kts.RandomRange(1,8)
 
-   if effect == 1 and kts.RandomChance(0.5) then 
+   if effect == 1 and kts.RandomChance(0.5) then
       poison()
       return    -- Poison overrides all other effects.
    end

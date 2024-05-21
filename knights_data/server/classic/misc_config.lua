@@ -35,9 +35,11 @@ approach_offset = 250;      -- how far to move when approaching a chest or close
 
 healing_time = 800;         -- time between "healings" when approaching your own entry point
 healing_amount = 1;         -- amount to add to health per "healing"
-regen_time = 750;           -- ditto for regeneration 
-regen_amount = 1;           -- ditto for regeneration
-super_regen_time = 1500;    -- ditto for super
+slow_regen_time = 2100;     -- ditto for "slow" regeneration
+slow_regen_amount = 1;      -- ditto for "slow" regeneration
+fast_regen_time = 700;      -- ditto for "fast" regeneration
+fast_regen_amount = 1;      -- ditto for "fast" regeneration
+super_regen_time = 2100;    -- ditto for super
 super_regen_amount = 1;     -- ditto for super
 quickness_factor = 150;     -- quickness speed mulitplier in 100ths (e.g. 150 = 1.5x faster)
 

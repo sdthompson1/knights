@@ -32,6 +32,7 @@
 #include "magic_map.hpp"
 #include "mediator.hpp"
 #include "monster_manager.hpp"
+#include "my_exceptions.hpp"
 #include "player.hpp"
 #include "potion_magic.hpp"
 #include "task_manager.hpp"
@@ -331,15 +332,27 @@ void A_Regeneration::execute(const ActionData &ad) const
 {
     shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
     FlashMessage(kt, msg);
-    SetPotion(Mediator::instance().getGVT(), kt, REGENERATION, dur);
+    SetPotion(Mediator::instance().getGVT(), kt, potion_magic, dur);
 }
 
 A_Regeneration::Maker A_Regeneration::Maker::register_me;
 
 LegacyAction * A_Regeneration::Maker::make(ActionPars &pars) const
 {
-    pars.require(2);
-    return new A_Regeneration(pars.getInt(0), pars.getString(1));
+    pars.require(3);
+    std::string regen_type = pars.getString(2);
+
+    PotionMagic pm = NO_POTION;
+
+    if (regen_type == "fast") {
+        pm = FAST_REGENERATION;
+    } else if (regen_type == "slow") {
+        pm = SLOW_REGENERATION;
+    } else {
+        throw LuaError("invalid regeneration type, must be \"fast\" or \"slow\"");
+    }
+
+    return new A_Regeneration(pars.getInt(0), pars.getString(1), pm);
 }
 
 

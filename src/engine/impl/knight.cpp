@@ -140,19 +140,37 @@ void Knight::resetMagic()
     // quickness (entity speed)
     resetSpeed();
 
-    // regeneration (normal or SUPER)
+    // regeneration (Regeneration or Super potions)
     if (regeneration_task) {
         tm.rmTask(regeneration_task);
         regeneration_task = shared_ptr<Task>();
     }
-    if (current_potion == REGENERATION || current_potion == SUPER) {
+    if (current_potion == SLOW_REGENERATION || current_potion == FAST_REGENERATION || current_potion == SUPER) {
         Mediator &mediator = Mediator::instance();
-        const int dt = (current_potion==REGENERATION? mediator.cfgInt("regen_time")
-            : mediator.cfgInt("super_regen_time"));
-        const int amt = (current_potion==REGENERATION? mediator.cfgInt("regen_amount")
-            : mediator.cfgInt("super_regen_amount"));
+
+        int dt = 0;
+        int amt = 0;
+
+        switch (current_potion) {
+        case SLOW_REGENERATION:
+            dt = mediator.cfgInt("slow_regen_time");
+            amt = mediator.cfgInt("slow_regen_amount");
+            break;
+
+        case FAST_REGENERATION:
+            dt = mediator.cfgInt("fast_regen_time");
+            amt = mediator.cfgInt("fast_regen_amount");
+            break;
+
+        case SUPER:
+            dt = mediator.cfgInt("super_regen_time");
+            amt = mediator.cfgInt("super_regen_amount");
+            break;
+        }
+
         regeneration_task.reset(new HealingTask(static_pointer_cast<Creature>
                                                 (shared_from_this()), dt, amt));
+
         tm.addTask(regeneration_task, TP_NORMAL, tm.getGVT() + dt);
     }
 

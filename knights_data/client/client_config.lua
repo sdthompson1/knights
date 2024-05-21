@@ -168,7 +168,8 @@ POTION_SETUP = {
         {0, 0, 0};       -- Invisibility
         {0, 0, 0x77};    -- Strength
         {0x44, 0, 0x66}; -- Quickness
-        {0xEE, 0x44, 0}; -- Regeneration
+        {0xBB, 0x22, 0}; -- Slow Regeneration
+        {0xEE, 0x44, 0}; -- Fast Regeneration
         {0, 0x44, 0};    -- Paralyzation
     }
 }

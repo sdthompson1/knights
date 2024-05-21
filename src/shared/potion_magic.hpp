@@ -31,7 +31,7 @@
 
 enum PotionMagic {
     NO_POTION=0,  // this should always come first
-    INVISIBILITY, STRENGTH, QUICKNESS, REGENERATION, PARALYZATION, 
+    INVISIBILITY, STRENGTH, QUICKNESS, SLOW_REGENERATION, FAST_REGENERATION, PARALYZATION,
     SUPER  // this should always come last
 };
 
