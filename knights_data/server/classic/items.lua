@@ -74,7 +74,17 @@ i_staff = kts.ItemType {
     overlay = kts.Overlay { g_staff_north, g_staff_east, g_staff_south, g_staff_west },
     parry_chance = 0.9,
     open_traps = true,
-    tutorial = TUT_STAFF
+    tutorial = TUT_STAFF,
+
+    -- version 027: staffs can now be used as a weapon, with zero damage
+    -- (per KnightRider's request).
+    melee_backswing_time = 3*ts,
+    melee_downswing_time = 2*ts,
+    melee_damage = 0,
+    melee_stun_time = rng_time_range(3, 5),
+    melee_tile_damage = 0,
+    allow_strength = false,  -- staffs couldn't destroy furniture (even with Strength) in original Amiga Knights
+    prefer_sword = true      -- the staff cannot attack by pressing fire+direction; menu or action bar must be used
 }
 
 i_axe = kts.ItemType {

@@ -76,6 +76,7 @@ ItemType::ItemType(lua_State *lua, int idx)
     open_traps = LuaGetBool(lua, idx, "open_traps");
     overlay = LuaGetPtr<Overlay>(lua, idx, "overlay");
     parry_chance = LuaGetFloat(lua, idx, "parry_chance");
+    prefer_sword = LuaGetBool(lua, idx, "prefer_sword");
     reload_action.reset(lua, idx, "reload_action");
     reload_action_time = LuaGetInt(lua, idx, "reload_action_time", 250);
     reload_time = LuaGetInt(lua, idx, "reload_time");

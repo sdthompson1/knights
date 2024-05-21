@@ -95,6 +95,7 @@ public:
     virtual void onDeath(DeathMode, const Originator &originator);  // calls dropAllItems, also places a knight corpse
     virtual bool hasStrength() const;
     virtual bool hasQuickness() const;
+    virtual void swing();
 
     // overridden from Entity:
     virtual bool isVisibleToPlayer(const Player &p) const;

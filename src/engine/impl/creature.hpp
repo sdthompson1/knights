@@ -116,7 +116,7 @@ public:
     //
 
     bool canSwing() const;
-    void swing();  // start a melee attack, setting anim and stun_time.
+    virtual void swing();  // start a melee attack, setting anim and stun_time.
 
     // canThrow:
     //   - Could we throw an item, if we were carrying a suitable throwable item?

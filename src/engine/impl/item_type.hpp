@@ -106,7 +106,8 @@ public:
     void doTileImpact(shared_ptr<Creature> attacker, DungeonMap &dmap, const MapCoord &mc, 
                       bool with_strength);
     float getParryChance() const { return parry_chance; }
-    
+    bool preferSword() const { return prefer_sword; }
+
     // Missile properties
     bool canThrow() const { return can_throw; }
     int getMissileRange() const { return missile_range; }
@@ -186,6 +187,7 @@ private:
     int backpack_slot; 
     bool fragile;
     bool allow_strength;
+    bool prefer_sword;
     
     int melee_backswing_time;             // 0 if can't swing
     int melee_downswing_time;

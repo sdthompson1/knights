@@ -321,6 +321,36 @@ bool Knight::hasQuickness() const
     return pm == QUICKNESS || (pm == SUPER && getHealth() == getMaxHealth());
 }
 
+void Knight::swing()
+{
+    // New in version 027: "prefer_sword" weapons (e.g. staffs) can
+    // only be swung after a time delay, if the new control system is
+    // in use. (This is similar to daggers -- see also
+    // Knight::throwItem below.)
+
+    const ItemType * item_in_hand = getItemInHand();
+    const bool use_time_penalty =
+        item_in_hand
+        && item_in_hand->preferSword()
+        && getPlayer()->getActionBarControls();
+
+    if (use_time_penalty) {
+        Mediator &med = Mediator::instance();
+        const int gvt = med.getGVT();
+        if (!getDaggerThrownFlag()) {
+            dagger_time = gvt + med.cfgInt("dagger_time_delay");
+            setDaggerThrownFlag();
+        }
+        if (gvt < dagger_time) {
+            // cannot use the staff yet
+            return;
+        }
+    }
+
+    // Call the base class
+    Creature::swing();
+}
+
 bool Knight::isVisibleToPlayer(const Player &p) const
 {
     return isVisible() || (this->player.getTeamNum() == p.getTeamNum());

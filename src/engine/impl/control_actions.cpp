@@ -307,6 +307,12 @@ void A_Attack::execute(const ActionData &ad) const
         bool can_shoot = actor->getItemInHand() && actor->getItemInHand()->canShoot();
         bool missile_attack = can_throw || can_shoot;
 
+        // Respect the "prefer_sword" item property (added in Knights 027)
+        bool prefer_sword = actor->getItemInHand() && actor->getItemInHand()->preferSword();
+        if (prefer_sword) {
+            can_swing = false;
+        }
+
         if (can_swing && missile_attack) {
             // Both melee and missile attacks are possible.
             // If a creature is on my square or the square ahead,
@@ -353,7 +359,7 @@ void A_Attack::execute(const ActionData &ad) const
         } else if (can_shoot) {
             DoShoot(actor, gvt); // no need to stun
         } else if (actor->getMap() && actor->getItemInHand()
-                   && !actor->getItemInHand()->canSwing()      // .. don't drop melee weapons
+                   && (!actor->getItemInHand()->canSwing() || prefer_sword)      // .. don't drop melee weapons (except "prefer_sword" weapons)
                    && !actor->getItemInHand()->canShoot()) {   // .. don't drop loaded xbows (but drop unloaded ones)
             // The reason we can't swing is because we are holding a non-weapon item.
             // Try dropping it. (E.g. if a player holding a book tries to attack, then we 
