@@ -23,6 +23,6 @@
 
 #include "metaserver_urls.hpp"
 
-const char * g_metaserver_query_url = "http://www.knightsgame.org.uk/metaserver/query.php";
-const char * g_metaserver_update_url = "http://www.knightsgame.org.uk/metaserver/update.php";
-const char * g_metaserver_remove_url = "http://www.knightsgame.org.uk/metaserver/remove.php";
+const char * g_metaserver_query_url = "http://www.knightsgame.org.uk/metaserver/query2.php";
+const char * g_metaserver_update_url = "http://www.knightsgame.org.uk/metaserver/update2.php";
+const char * g_metaserver_remove_url = "http://www.knightsgame.org.uk/metaserver/remove2.php";
