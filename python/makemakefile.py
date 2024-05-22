@@ -13,10 +13,10 @@ import os
 import os.path
 import re
 
-PROJECTS_MAIN = ['Coercri', 'ENet', 'guichan', 'KnightsClient', 'KnightsEngine',
+PROJECTS_MAIN = ['Coercri', 'guichan', 'KnightsClient', 'KnightsEngine',
                  'KnightsMain', 'KnightsServer', 'KnightsShared', 
                  'Misc', 'RStream']
-PROJECTS_SERVER = ['ENet', 'KnightsEngine', 'KnightsServer', 'KnightsShared',
+PROJECTS_SERVER = ['KnightsEngine', 'KnightsServer', 'KnightsShared',
                    'KnightsSvrMain', 'Misc', 'RStream']
 EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o', 
                      'src/coercri/enet/enet_network_driver.o',
@@ -158,7 +158,7 @@ build: $(KNIGHTS_BINARY_NAME) $(SERVER_BINARY_NAME)
 for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     incflags = make_include_flags(incdirs)
 
-    pkgflags = "`pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags`"
+    pkgflags = "`pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags`"
     if srcfile.startswith("src/coercri/sdl/") or srcfile.startswith("src/main/") or srcfile.startswith("src/rstream/rstream_rwops"):
         pkgflags += " `pkg-config sdl2 --cflags`"
     if srcfile.startswith("src/coercri/gfx/"):
@@ -174,16 +174,18 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     print ("\t      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \\")
     print ("\t  rm -f $*.d")
 
+pkg_link_flags = "`pkg-config libcurl --libs` `pkg-config lua-c++ --libs` `pkg-config libenet --libs`"
+
 # Print target for Knights binary
 print ("""
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` `pkg-config libcurl --libs` `pkg-config lua-c++ --libs` -lfontconfig -lX11 $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` """ + pkg_link_flags + """ -lfontconfig -lX11 $(BOOST_LIBS)
 """)
 
 # Print target for Server binary
 print ("""
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config libcurl --libs` `pkg-config lua-c++ --libs` $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ """ + pkg_link_flags + """ $(BOOST_LIBS)
 """)
 
 
