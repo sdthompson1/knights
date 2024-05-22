@@ -103,10 +103,6 @@
       <Project>{97a898fe-d684-42b1-9f9b-b8706436f78c}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\ENet\ENet.vcxproj">
-      <Project>{f75537ff-1112-469b-9cb5-e1d6bf28a419}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\KnightsClient\KnightsClient.vcxproj">
       <Project>{39cc8adb-5d60-430d-8a2f-e8546049ac5a}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

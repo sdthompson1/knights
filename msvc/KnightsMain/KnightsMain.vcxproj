@@ -222,9 +222,6 @@
     <ProjectReference Include="..\Coercri\Coercri.vcxproj">
       <Project>{97a898fe-d684-42b1-9f9b-b8706436f78c}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ENet\ENet.vcxproj">
-      <Project>{f75537ff-1112-469b-9cb5-e1d6bf28a419}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\guichan\guichan.vcxproj">
       <Project>{bda2ef81-e5fa-4215-90b8-84eff005bdb1}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

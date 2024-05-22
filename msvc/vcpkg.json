@@ -4,6 +4,7 @@
     "curl",
     "sdl2",
     "freetype",
-    "lua"
+    "lua",
+    "enet"
   ]
 }

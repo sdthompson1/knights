@@ -29,6 +29,7 @@ Source: "msvc\x64\Release\boost_thread-vc143-mt-x64-1_84.dll"; DestDir: "{app}";
 Source: "msvc\x64\Release\brotlicommon.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\brotlidec.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\bz2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\enet.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\freetype.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\libpng16.dll"; DestDir: "{app}"; Flags: ignoreversion
