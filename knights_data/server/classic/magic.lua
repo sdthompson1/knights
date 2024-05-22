@@ -34,32 +34,74 @@ function wandzap()
 end
 
 
--- durations for potions and other magics
+-- Durations for potions and other magics.
+
 function pot_dur()
-   return 1000 * kts.RandomRange(11,110)           -- 11s - 1m50s, av 1m
+    -- The duration of a "normal" potion (not Poison Immunity,
+    -- Paralyzation or Invulnerability).
+
+    -- This was changed in version 027 of Knights to make the random
+    -- distribution closer to the original Amiga game. In particular,
+    -- we can now generate very low values (as low as 1 second) which
+    -- means that potions can sometimes be "duds" that last a very
+    -- short amount of time.
+
+    local choice = kts.RandomRange(1, 100)
+
+    if choice <= 37 then
+        return 1000 * kts.RandomRange(1, 90)
+    elseif choice <= 77 then
+        return 1000 * kts.RandomRange(1, 180)
+    else
+        return 1000 * kts.RandomRange(1, 360)
+    end
 end
 
 function pi_dur()
-   return 1000 * kts.RandomRange(21,160)           -- 21s - 2m40s, av 1m30s
+    -- Duration of a poison immunity potion. This hasn't been changed
+    -- since version 001 of (the remake of) Knights.
+
+    -- I think this is reasonably close to the original Amiga game, at
+    -- least in terms of the average, but I think the "spread" is
+    -- lower (i.e. we exclude the very short or very long durations
+    -- that the original game sometimes produced).
+
+    return 1000 * kts.RandomRange(21, 160)
 end
 
 function invuln_dur()
-   -- 6s - 1m, av 23s
-   local choice = kts.RandomRange(1,4)
-   if choice == 1 then return 1000 * kts.RandomRange(6, 15)
-   elseif choice == 2 then return 1000 * kts.RandomRange(9, 18)
-   elseif choice == 3 then return 1000 * kts.RandomRange(16, 30)
-   else return 1000 * kts.RandomRange(31, 60)
-   end
+    -- Duration of an invulnerability potion.
+
+    -- Again, this was reworked in version 027 of Knights to give a
+    -- distribution closer to the original Amiga game.
+
+    local choice = kts.RandomRange(100)
+
+    if choice <= 30 then
+        return 1000 * kts.RandomRange(1, 13)
+    elseif choice <= 74 then
+        return 1000 * kts.RandomRange(1, 42)
+    else
+        return 1000 * kts.RandomRange(1, 90)
+    end
 end
 
 function para_dur()
-   -- 1s  - 30s, av 10.5s
-   local choice = kts.RandomRange(1,3)
-   if choice == 1 then return 1000 * kts.RandomRange(1, 10)
-   elseif choice == 2 then return 1000 * kts.RandomRange(1, 20)
-   else return 1000 * kts.RandomRange(1, 30)
-   end
+    -- Duration of a Paralyzation potion.
+
+    -- Again, this hasn't changed since version 001, but I think it is
+    -- not a million miles from the Amiga original, and I see no real
+    -- reason to change it at this point.
+
+    -- 1s  - 30s, av 10.5s
+    local choice = kts.RandomRange(1,3)
+    if choice == 1 then
+        return 1000 * kts.RandomRange(1, 10)
+    elseif choice == 2 then
+        return 1000 * kts.RandomRange(1, 20)
+    else
+        return 1000 * kts.RandomRange(1, 30)
+    end
 end
 
 function see_kt_dur()
