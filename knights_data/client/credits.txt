@@ -3,7 +3,7 @@
 KNIGHTS
 
 Release 027
-Released ??-???-????
+Released 23-May-2024
 
 
 Programmed by
