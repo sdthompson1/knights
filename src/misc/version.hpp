@@ -24,8 +24,8 @@
 #ifndef VERSION_HPP
 #define VERSION_HPP
 
-#define KNIGHTS_VERSION "027"
-#define KNIGHTS_VERSION_NUM 27
+#define KNIGHTS_VERSION "028"
+#define KNIGHTS_VERSION_NUM 28
 #define COMPATIBLE_VERSION_NUM 27   // Lowest client version that can connect to this server
 
 #ifdef WIN32
