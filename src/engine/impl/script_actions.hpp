@@ -145,18 +145,6 @@ private:
     ACTION_MAKER("RevealStop");
 };
 
-class A_Shoot : public LegacyAction {
-public:
-    A_Shoot(int dx_, int dy_, MapDirection dir_, ItemType &it)
-        : dx(dx_), dy(dy_), dir(dir_), itype(it) { }
-    virtual void execute(const ActionData &) const;
-private:
-    ACTION_MAKER("Shoot");
-    int dx, dy;
-    MapDirection dir;
-    ItemType &itype;
-};
-
 // ZombieKill kills a monster of a particular type
 // (it doesn't have to be a zombie; the name is for historical reasons)
 class A_ZombieKill : public LegacyAction {
