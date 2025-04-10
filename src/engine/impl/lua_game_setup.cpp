@@ -281,7 +281,7 @@ namespace {
             }
         }
         if (!home_set) {
-            luaL_error(lua, "'home_type' is invalid, must be 'none', 'close', 'away' or 'random'");
+            luaL_error(lua, "'entry_type' is invalid, must be 'none', 'close', 'away' or 'random'");
         }
 
         lua_getfield(lua, 1, "allow_rotate");
