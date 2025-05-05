@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ZombieKill</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ZombieKill</h1>
+<h2>Name</h2>
+<p>kts.ZombieKill &ndash; kill target if it has a particular monster type </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.ZombieKill(monster_type)</code> </p>
+<h2>Description</h2>
+<p>If the current target (as given by <code>cxt.victim</code>) is a monster of the given <a href="MonsterType.html">MonsterType</a>, then they are instantly killed. </p>
+<p>This counts as a normal monster death (e.g. a corpse is left behind as normal). </p>
+<h2>Return Value</h2>
+<p>This function returns true if a valid target (of the correct monster type) was found and successfully killed, or false otherwise. </p>
+<h2>Notes</h2>
+<p>Even though the function is called "ZombieKill", it can actually be used to kill any given type of monster, not just zombies. </p>
+<p>Knights cannot be killed by this function (since they are not monsters). </p>
+<h2>Examples</h2>
+<p>This function is perfect for calling from within the <code>melee_action</code> of a weapon. For example, this is used by the Wand of Undeath for instantly killing zombies struck by the wand; see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L252">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="ZombifyTarget.html">kts.ZombifyTarget</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

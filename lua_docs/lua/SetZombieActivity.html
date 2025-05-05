@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetZombieActivity</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetZombieActivity</h1>
+<h2>Name</h2>
+<p>kts.SetZombieActivity &ndash; set zombie activity level </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetZombieActivity(probability, zombie_table)</code> </p>
+<h2>Description</h2>
+<p>Zombie activity is a process by which tiles are slowly transformed into other tiles and eventually into monsters. For example, corpse tiles may be transformed into varying stages of decay and eventually into zombies. </p>
+<p>The <code>zombie_table</code> argument to <code>kts.SetZombieActivity</code> sets which tiles are affected. The <code>zombie_table</code> is a list of entries. Each entry is itself a list of either two <a href="Tile.html">Tiles</a> (a "from" tile and a "to" tile), or a "from" Tile and a <a href="MonsterType.html">MonsterType</a>. </p>
+<p>On each round of zombie activity, the game searches a small number of randomly selected dungeon squares. If any of the squares contains one of the "from" tiles listed in the <code>zombie_table</code>, then a random number between 0 and 1 is "rolled"; if this is less than or equal to the <code>probability</code> value that was passed to <code>kts.SetZombieActivity</code>, then the tile is transformed either into the corresponding "to" tile, or into a new monster of the corresponding MonsterType, as applicable. Otherwise, nothing happens. </p>
+<p>Therefore, it can be seen that setting higher <code>probability</code> values makes the zombie activity faster. Note that the default Knights Lua files set the probability to be 0.04 times the square of the "Zombie Activity" level selected in the menu (therefore, the probability ranges from 0.04 at a Zombie Activity level of 1, to 1.0 at a Zombie Activity level of 5). </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors could result if the <code>zombie_table</code> is in the wrong format or if the <code>probability</code> is not a number. </p>
+<h2>Notes</h2>
+<p>Note that while "FullZombieActivity" is in effect (see <a href="FullZombieActivity.html">kts.FullZombieActivity</a> and <a href="NormalZombieActivity.html">kts.NormalZombieActivity</a>), the zombie activity <code>probability</code> is always automatically set to 1 (the highest possible value), and the <code>probability</code> value passed to <code>kts.SetZombieActivity</code> is ignored. (The "FullZombieActivity" mode is usually set by script functions associated with the Necronomicon book, although it could theoretically be set by mods as well.) </p>
+<h2>See Also</h2>
+<p><a href="MonsterType.html">kts.MonsterType</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.HOOK_SHOOT</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.HOOK_SHOOT</h1>
+<h2>Name</h2>
+<p>kts.HOOK_SHOOT &ndash; function called when a crossbow bolt is shot </p>
+<h2>Synopsis</h2>
+<p><code>kts.HOOK_SHOOT = function() ... end</code> </p>
+<h2>Description</h2>
+<p>If <code>kts.HOOK_SHOOT</code> is non-nil, then it is called as a Lua function (with no parameters) whenever a knight shoots a crossbow bolt. </p>
+<p>During the function call, the <a href="cxt.html">cxt</a> table will be available; for example, <code>cxt.pos</code> will give the position of the knight. </p>
+<h2>Examples</h2>
+<p>In the standard Knights data files, this hook is used to play the sound effect for the crossbow. The code for this is in <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/sounds.lua#L154">sounds.lua</a>. </p>
+<p>Other modules could replace the <code>kts.HOOK_SHOOT</code> function (or any of the other "hook" functions) with their own code if desired. </p>
+<h2>See Also</h2>
+<p><a href="HOOK_MISSILE_MISS.html">kts.HOOK_MISSILE_MISS</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

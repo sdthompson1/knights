@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.MENU</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.MENU</h1>
+<h2>Name</h2>
+<p>kts.MENU &ndash; defines the Dungeon Environment Customization Menu </p>
+<h2>Synopsis</h2>
+<pre>kts.MENU = {
+    text = "Menu Title",   -- e.g. "QUEST SELECTION"
+
+    initialize_func = function(S) ... end,
+    on_select = function(S) ... end,
+    describe_quest_func = function(S) ... return "quest description" end,
+    prepare_game_func = function(S) ... end,
+    start_game_func = function(S) ... end,
+
+    items = &lt;list of menu_items&gt;
+}
+
+menu_item = {
+    id = "id_string",
+    text = "Menu Item Text",
+
+    type = &lt;"numeric" or "dropdown"&gt;,   -- default is "dropdown"
+
+    digits = &lt;number&gt;,
+    suffix = "string",
+
+    choices = &lt;list of menu_choices&gt;,
+    choice_min = &lt;number&gt;,
+    choice_max = &lt;number&gt;,
+    show = function(id) ... return &lt;string or number&gt; end,
+
+    on_select = function(S) ... end,
+    constrain = function(S) ... end,
+    features = function(S) ... end,
+    randomize = function(S) ... return &lt;menu choice id&gt; end
+}
+
+-- note: a menu_item can also be the string "spacer"
+
+menu_choice = {
+    id = "id_string",
+    text = "Menu Choice Text",
+    
+    min_players = &lt;number&gt;,
+    max_players = &lt;number&gt;,
+    min_teams = &lt;number&gt;,
+    max_teams = &lt;number&gt;,
+    
+    on_select = function(S) ... end,
+    constrain = function(S) ... end,
+    features = function(S) ... end
+}
+</pre>
+<h2>Description</h2>
+<h3>Concepts</h3>
+<p>The Knights "Quest Selection" menu is a key part of the game, allowing users to customize both quest objectives and dungeon properties before play begins. </p>
+<p>This is what the menu UI looks like in-game: </p>
+<p><img src="quest_selection_menu.png" alt="Quest Selection menu" width="407" height="749" style="width: 350px; height: auto;">
+</p>
+<p>The dropdowns and text entry fields in the UI are referred to as <i>menu items</i>. Each menu item has an "id" (the string used to refer to the item internally) as well as its "text" (the actual name of the menu item as shown to the user). For example, the second menu item from the top, in the above screenshot, has id "mission" and text "Mission Type", and the sixth one from the top has id "num_gems" and text "Number of Gems". </p>
+<p>For each menu item, the different options that can be selected are referred to as <i>menu choices</i>. Each menu choice also has both an internal "id" and some external "text"; but this time, the ids are allowed to be booleans or numbers as well as just strings. For example, for the "Mission Type" menu item, the different choices have ids like "escape", "retrieve_book" and so on, with corresponding texts of "Escape from the Dungeon", "Retrieve Book and Escape", and so on. For "Number of Gems", the menu choice ids are just the numbers from 0 to 6, with the texts being strings like "1" or "3" (or the string "None" if the number of gems is zero). </p>
+<h3>"S" table</h3>
+<p>While on the menu screen, the currently selected menu choices are held in a Lua table called "S" (for "State" or "Settings"). The keys in this table are the menu item ids and the values are the selected menu choice ids. For example, in a Quest for Gems we might have <code>S.mission = "escape"</code>, <code>S.num_gems = 4</code>, <code>S.gems_needed = 3</code>, <code>S.dungeon = "basic"</code>, and so on. </p>
+<p>The "S" table also contains fields <code>num_players</code> and <code>num_teams</code> giving the current number of players and teams in the game, in case this information is needed by the Lua code at any point. </p>
+<p>Finally, "S" also contains some special fields named <code>Is</code>, <code>IsNot</code>, <code>IsAtLeast</code> and <code>IsAtMost</code>; these contain functions which can be used in the menu constraints system. This will be explained further below. </p>
+<h3>kts.MENU table</h3>
+<p>The set of available menu items, and corresponding menu choices, together with some other settings, are all defined in a Lua table named <code>kts.MENU</code>. This is set up by the standard Lua files provided with the game (see <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/menus.lua">menus.lua</a>) and mods are free to modify this table as they see fit. The following fields can be set in the <code>kts.MENU</code> table: </p>
+<ul>
+<li><code>text</code> gives the title string that will appear at the top of the menu (e.g. "QUEST SELECTION"). </li>
+<li><code>initialize_func</code> is a function that is called when the menu is first opened. This can be used to install suitable default settings into the "S" table. For example, the standard <code>initialize_func</code> sets up a Quest for Gems. </li>
+<li><code>on_select</code> is called whenever any menu setting is changed. This can be used to make any further changes required in response to the user's input. For example, the standard <code>on_select</code> function changes the "Quest" dropdown to "Custom" if any setting (other than "Quest" itself, or the time limit) is modified. </li>
+<li><code>describe_quest_func</code> should return a string containing a natural language description of the current quest. This is used to fill in the text box that appears at the bottom of the menu screen. </li>
+<li><code>prepare_game_func</code> and <code>start_game_func</code> are called when the game is started. The sequence is: first <code>prepare_game_func(S)</code> is called, then all <code>features</code> functions from all menu items (see below) are called, then all <code>features</code> functions from all <i>selected</i> menu choices (see below) are called, then finally <code>start_game(S)</code> is called. These functions should work together to configure the game as required and generate the dungeon (e.g. by calling <a href="LayoutDungeon.html">kts.LayoutDungeon</a> and related functions). </li>
+<li>Finally, <code>items</code> contains the actual list of menu items. This is just a Lua array in which each element is either the string <code>"spacer"</code> (which creates a small space between adjacent items) or else a Lua table representing an actual menu item. </li>
+</ul>
+<h3>Menu Item tables</h3>
+<p>The menu item tables can have the following fields: </p>
+<ul>
+<li><code>id</code> gives the internal identifier for this menu item. This must be a string. This is something like <code>"mission"</code>, <code>"num_keys"</code>, <code>"premapped"</code> and so on. </li>
+<li><code>text</code> gives the text that will be used to identify this menu item on-screen in the actual game. This is something like <code>"Mission Type"</code>, <code>"Number of Keys"</code>, <code>"Premapped"</code> or similar. </li>
+<li><code>type</code> can either be <code>"numeric"</code> or <code>"dropdown"</code>. A type of <code>"numeric"</code> means a field where the players have to type in an actual number (like the "Time Limit" field), whereas <code>"dropdown"</code> means a standard dropdown menu item. If <code>type</code> is omitted then it defaults to <code>"dropdown"</code>. </li>
+<li><code>digits</code> applies to numeric fields only, and specifies the max number of numeric digits that a player can enter into this field. </li>
+<li><code>suffix</code> applies to numeric fields only, and specifies a string such as <code>"mins"</code> that will appear to the right of the text-entry field in the UI. </li>
+<li><code>choices</code> gives the list of possible choices for this menu item, as an array. The elements of the array are Lua tables; see "Menu Choice tables" below for details. </li>
+<li><code>choice_min</code> and <code>choice_max</code> give an alternative way of defining menu choices. If these are used, then the menu choices are all the integers between <code>choice_min</code> and <code>choice_max</code> inclusive. The "id" of each choice is equal to this integer. The text shown on-screen (in the dropdown) will also just be that integer (converted to a string) by default, but see also the <code>show</code> function (below) for a way to override that. <ul>
+<li>Note that <code>"dropdown"</code> menu items should specify exactly one of either <code>choices</code>, or both <code>choice_min</code> and <code>choice_max</code>. Menu items of <code>"numeric"</code> type should not specify any of <code>choices</code>, <code>choice_min</code> or <code>choice_max</code> since in that case, the "choices" are just numbers entered directly into a text field, and there is no separate list of choices. </li>
+</ul>
+<li><code>show</code> is a function that is useful when <code>choice_min</code> and <code>choice_max</code> are used. This function takes a choice id (i.e. integer between <code>choice_min</code> and <code>choice_max</code>) and returns a string or number to show in the dropdown, overriding the default of just showing the choice id directly in the dropdown. The game uses this to show "None" instead of "0" for certain menu items (e.g. "Number of Gems"). </li>
+<li><code>on_select</code> is called whenever the setting for this menu item is changed. This can be used to change other menu settings in response if desired (e.g. the game uses this to implement the "Quest" dropdown, which loads one of the pre-defined quests into the menu). </li>
+<li><code>constrain</code> can be used to add "constraints" on this menu item. See "Constraints" below for details. </li>
+<li><code>features</code> is called before any game begins. (See also the description of <code>prepare_game_func</code> and <code>start_game_func</code> above.) </li>
+<li><code>randomize</code> is called when the "Random Quest" button is clicked. The <code>randomize</code> field is optional; if it is not present, then "Random Quest" will just select one of the possible choices for this menu item at random. Otherwise, <code>randomize(S)</code> will be called, and the returned value (which should be the id of one of the valid menu choices for this item) will then be used for the random quest. This can be used to limit the possible random quests; for example, while "num_wands" can be set from 0 to 8 (to accommodate games with large numbers of players), a Random Quest will never set it above <code>num_players + 2</code>. </li>
+</ul>
+<h3>Menu Choice tables</h3>
+<p>The menu choice tables (used in the <code>choices</code> field of a menu item) can have the following fields: </p>
+<ul>
+<li><code>id</code> gives the internal identifier for this menu choice. This can be a boolean, number, or string. </li>
+<li><code>text</code> gives the string that will appear in the dropdown menu for this choice. While <code>id</code> is usually a short identifier like <code>"ashur"</code>, <code>text</code> will usually be a longer string like <code>"Lost Book of Ashur"</code>. </li>
+<li><code>min_players</code> and <code>max_players</code> (if set) mean that this choice can only be selected if the number of players in the game is between the given min and max (inclusive). An example of where this is useful is in the "Exit Point" menu item; an exit point of "Other's Entry" only makes sense in a two-player game, so that particular menu choice has both <code>min_players</code> and <code>max_players</code> set to 2. </li>
+<li><code>min_teams</code> and <code>max_teams</code> are similar, but they refer to the number of teams, instead of number of players. </li>
+<li><code>on_select</code> is a function that gets called whenever a player selects this choice in the menu. </li>
+<li><code>constrain</code> is used with the "Constraints" system; see below. </li>
+<li><code>features</code> is called whenever a game is started with this menu choice in effect. See also <code>prepare_game_func</code> and <code>start_game_func</code> above. </li>
+</ul>
+<h3>Constraints</h3>
+<p>"Constraints" refer to any kind of restrictions on the available menu settings. For example, "Gems Needed" can never be set higher than "Number of Gems". As another example, if "Mission Type" is "Retrieve Book and Escape", then "Exit Point" cannot be "No Escape", and "Type of Book" cannot be "No Book in the Dungeon". </p>
+<p>To allow setting up these constraints, a <code>constrain</code> Lua function can be attached to any menu item or menu choice. If the function is attached to a menu item, then the constraints it defines are always active, and if it is attached to a menu choice, then the constraints are only active when that menu choice is selected. </p>
+<p>The constraint function is passed the "S" table and it should call one or more of the special functions <code>S.Is</code>, <code>S.IsNot</code>, <code>S.IsAtLeast</code> and <code>S.IsAtMost</code>. These do the following: </p>
+<ul>
+<li>Calling <code>S.Is(item, choice)</code> means that menu item id <code>item</code> is forced to always be set to choice id <code>choice</code>. </li>
+<li>Calling <code>S.IsNot(item, choice)</code> means that item id <code>item</code> must be any setting <i>other</i> than choice id <code>choice</code>. </li>
+<li>Calling <code>S.IsAtLeast(item, choice)</code> means that the choice id corresponding to menu item id <code>item</code> must be <i>at least</i> the given <code>choice</code> (this only makes sense for numeric choice ids). </li>
+<li>Calling <code>S.IsAtMost(item, choice)</code> is similar, except the choice id must be <i>at most</i> the given <code>choice</code>. </li>
+</ul>
+<p>The game will try to ensure that any specified constraints are satisfied at all times. For example, options that would violate a constraint will simply not be shown as part of the relevant dropdown(s), and will not be selectable. If the menu ever does get into a state where the constraints are not met, then the game will try to put it back into a valid state again (by changing menu settings as required). This might not always succeed (see "Bugs" below), but as long as the constraints are not too complex (or indeed impossible, e.g. asking for the same menu item to be both less than 1 and greater than 1 at the same time), it should work well enough. </p>
+<p>See "Examples" below for some examples of things that can be done using the constraint system. </p>
+<h2>Bugs</h2>
+<p>The constraint solver is not perfect; if the constraints are extremely complicated, then the solver might "fail" and leave the menu in an invalid state. Also, if the constraints are actually impossible to solve, then no error message will be reported; instead the menu will just be left in some inconsistent state. </p>
+<h2>Examples</h2>
+<h3>General Examples</h3>
+<p>The best way to understand the menu system is probably to study <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/menus.lua">menus.lua</a> which is where the standard <code>kts.MENU</code> is defined. See also the related files <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/preset_quests.lua">preset_quests.lua</a> and <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/quest_description.lua">quest_description.lua</a>. Finally, if you want to see how the various menu settings get converted into actual gameplay features, take a look at <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/dungeon_setup.lua">dungeon_setup.lua</a>, as well as the logic in the <code>features</code> functions and in <code>start_game_func</code> (the latter just calls through to <code>start_game</code> in <code>dungeon_setup.lua</code>). </p>
+<h3>Constraints System Examples</h3>
+<p>As promised above, here are some examples of how the "constraints" system can be used to achieve various effects: </p>
+<pre>-- This ensures that "Retrieve Book and Escape" quests always contain
+-- both a book and an exit point.
+-- It is added to the "retrieve_book" choice of the "mission" menu item.
+constrain = function(S)
+    S.IsNot("exit", "none")   -- must have exit
+    S.IsNot("book", "none")   -- must have book
+end
+
+-- This ensures that "Destroy Book with Wand" quests contain a book
+-- and a wand, but no exit point.
+-- It is added to the "destroy_book" choice of the "mission" menu item.
+constrain = function(S)
+    S.IsNot("exit", "none")
+    S.Is("book", "none")
+    S.IsAtLeast("num_wands", 1)
+end
+
+-- This ensures that Gems Needed is no more than Number of Gems.
+-- It is added to the "num_gems" menu item (although it could
+-- equally well have been added to "gems_needed", or indeed any
+-- other menu item, although attaching constraints to the menu
+-- items that they most relate to is generally the best idea).
+constrain = function(S)
+    S.IsAtMost("gems_needed", S.num_gems)
+end
+
+-- This forces the "Type of Wand" to be "None" when 0 wands are
+-- selected, or anything other than "None" when a non-zero number
+-- of wands is selected. It is added to the "num_wands" menu item.
+constrain = function(S)
+    if S.num_wands == 0 then
+        S.Is("wand", "none")
+    else
+        S.IsNot("wand", "none")
+    end
+end
+</pre>
+<h2>See Also</h2>
+<p>TODO </p>
+<div class="footer3"></div>
+</div></body>
+</html>

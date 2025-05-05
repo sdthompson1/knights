@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.WinGame</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.WinGame</h1>
+<h2>Name</h2>
+<p>kts.WinGame &ndash; instantly end the game, declaring a given player or team as the winner </p>
+<h2>Synopsis</h2>
+<p><code>kts.WinGame(player_or_knight)</code> </p>
+<h2>Description</h2>
+<p>This function is called with exactly one parameter, which is either a Player, or a Creature representing a knight. The given player (or the player controlling the given knight) will be declared the winner. If it is a team game, then all players on the same team will also be declared winners. All other players will be declared losers, and the game will end. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Examples</h2>
+<p>The Lua code is responsible for checking quest conditions and calling <code>kts.WinGame</code> when a quest is complete. Code for doing this can be seen in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/quest_funcs.lua">quest_funcs.lua</a>, which defines a couple of functions for that purpose. For example, a function <code>check_escape_quest</code> is defined which checks the conditions for an "escape from the dungeon" type quest. This function is then attached to the <code>on_approach</code> function of a dungeon exit (or "home") tile, as can be seen <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/tiles.lua#L299">here</a>; the net effect of this is that <code>kts.WinGame</code> gets called whenever a knight approaches the correct exit point while meeting all necessary conditions (for example, holding the correct number of gems). </p>
+<p>Another example is the Tutorial which calls <code>kts.WinGame</code> when the tutorial is complete: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/tutorial/init.lua#L664">tutorial/init.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="AddHint.html">kts.AddHint</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

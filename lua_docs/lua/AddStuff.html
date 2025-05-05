@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddStuff</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddStuff</h1>
+<h2>Name</h2>
+<p>kts.AddStuff &ndash; add initial items ("stuff") to the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>kts.AddStuff(stuff_list)</code> </p>
+<p>where: <code>stuff_list</code> is a list of <code>{tile_category, probability, item_function}</code> triple(s). </p>
+<h2>Description</h2>
+<p>This function adds the starting items to the dungeon. It should be called exactly once during the setup of a new game. </p>
+<p>The function takes one parameter which is an array of "stuff entries". Each "stuff entry" is itself a "triple" of the form: <code>{tile_category, probability, item_function}</code>, in which: </p>
+<ul>
+<li><code>tile_category</code> is a string, giving the name of a "tile category" (see the description of the <code>items</code> field in <a href="Tile.html">kts.Tile</a>). </li>
+<li><code>probability</code> is a number between 0.0 and 1.0. </li>
+<li><code>item_function</code> is a function that takes no parameters, and returns a (possibly randomised) <a href="ItemType.html">ItemType</a>, and also (optionally) a number of items of that type to generate. </li>
+</ul>
+<p>See below for an example. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors may be generated if the input values do not have the expected types. </p>
+<h2>Examples</h2>
+<p>The following is a simplified example of how <code>kts.AddStuff</code> might be called. </p>
+<pre>function chest_item_generator()
+    local choice = kts.RandomRange(1, 12)
+    if choice == 1 then
+        return i_poison_trap
+    elseif choice == 2 then
+        return i_blade_trap
+    elseif choice &lt;= 6 then
+        return i_potion
+    elseif choice &lt;= 10 then
+        return i_scroll
+    else
+        return i_dagger, kts.RandomRange(2, 4)
+    end
+end
+
+function floor_item_generator()
+    local choice = kts.RandomRange(1, 3)
+    if choice == 1 then
+        return i_axe
+    elseif choice == 2 then
+        return i_hammer
+    else
+        return i_staff
+    end
+end
+
+kts.AddStuff({ {"chest", 0.8, chest_item_generator},
+               {"floor", 0.1, floor_item_generator} })
+</pre>
+<p>The above means that each tile of category "chest" will have an 80% probability of containing an item, and if it does, then the item will be chosen by a call to the function <code>chest_item_generator</code>. Therefore, chests will contain a mixture of poison traps, blade traps, potions, scrolls and daggers; in the latter case, the number of daggers will be between 2 and 4. Also, each tile of category "floor" has a 10% chance of containing an item, and in this case the item will be equally likely to be an axe, hammer or staff. </p>
+<p>In the "real" config files (in folder knights_data/server/classic) a more complicated system is used, where the probabilities depend on the "Amount of Stuff" setting in the menus. </p>
+<h2>See Also</h2>
+<p><a href="AddStuff.html">kts.AddItem</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

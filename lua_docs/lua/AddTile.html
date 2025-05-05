@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddTile</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddTile</h1>
+<h2>Name</h2>
+<p>kts.AddTile &ndash; add a <a href="Tile.html">Tile</a> to the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.AddTile(pos, tile)</code> </p>
+<h2>Description</h2>
+<p>Adds a copy of tile <code>tile</code> to the dungeon at position <code>pos</code> (which should be a Lua table containing <code>x</code> and <code>y</code> fields). The <code>tile</code> should have previously been created using a call to <a href="Tile.html">kts.Tile</a>. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors will be generated if the map position or Tile given are invalid. </p>
+<h2>Notes</h2>
+<p>Remember that map squares can contain multiple Tiles (for example, a floor tile with a dead knight body tile on top of it); so if you want to replace an existing Tile (instead of just overlaying a new Tile on top) then you would need to call <a href="RemoveTile.html">kts.RemoveTile</a> first. You can also use <a href="GetTiles.html">kts.GetTiles</a> to inspect the existing tile(s) on a square if you need to. </p>
+<h2>See Also</h2>
+<p><a href="GetTiles.html">kts.GetTiles</a> </p>
+<p><a href="RemoveTile.html">kts.RemoveTile</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

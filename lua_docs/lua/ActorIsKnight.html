@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ActorIsKnight</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ActorIsKnight</h1>
+<h2>Name</h2>
+<p>kts.ActorIsKnight &ndash; return true if the current actor is a Knight </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.ActorIsKnight()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as defined by <code>cxt.actor</code>) is a Knight, this function returns <code>true</code>. </p>
+<p>If the current actor is not a Knight, or if no current actor is defined (i.e. <code>cxt.actor</code> is nil), then <code>false</code> is returned. </p>
+<h2>Errors</h2>
+<p>If <code>cxt.actor</code> is defined (non-nil) but is not a valid Creature, the error "Bad userdata" will be generated. (Note that this is not usually possible, unless Lua code has been modifying the value of <code>cxt.actor</code> directly.) </p>
+<h2>Notes</h2>
+<p>This function is equivalent to calling <code>kts.IsKnight(cxt.actor)</code>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The Context table (cxt)</a> </p>
+<p><a href="IsKnight.html">kts.IsKnight</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

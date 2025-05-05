@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.OpenDoor</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.OpenDoor</h1>
+<h2>Name</h2>
+<p>kts.OpenDoor &ndash; open a door or chest tile </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.OpenDoor(pos)</code> </p>
+<h2>Description</h2>
+<p>If there is a door or chest tile at position <code>pos</code>, then this function will open it (if it is not already open). </p>
+<p>Otherwise, this function does nothing. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>If <code>pos</code> is not a valid map position then an error is raised. </p>
+<h2>Notes</h2>
+<p>Opening a door or chest will trigger any trap that has been set on it. </p>
+<p>This function reads <code>originator</code> from the <a href="cxt.html">cxt</a> table, in order attribute any kills that result from a triggered trap. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">cxt</a> </p>
+<p><a href="MISC_CONFIG.html">kts.MISC_CONFIG</a> &ndash; <code>door_closed_damage</code> is set here </p>
+<p><a href="CloseDoor.html">kts.CloseDoor</a> </p>
+<p><a href="IsDoorOpen.html">kts.IsDoorOpen</a> </p>
+<p><a href="OpenOrCloseDoor.html">kts.OpenOrCloseDoor</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

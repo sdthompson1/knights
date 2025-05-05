@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.LockDoor</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.LockDoor</h1>
+<h2>Name</h2>
+<p>kts.LockDoor &ndash; lock a door or chest tile </p>
+<h2>Synopsis</h2>
+<p><code>kts.LockDoor(pos, lock)</code> </p>
+<h2>Description</h2>
+<p>Sets the door at position <code>pos</code> to be locked. </p>
+<p>The lock type (a number from 1 to 3) is given by the <code>lock</code> parameter. Alternatively, <code>lock</code> can be <code>"pick_only"</code> to make the door unlockable only with lockpicks, and not with keys; or <code>"special"</code> to make the door "special-locked" (this means the door can be opened only with switches, and not with either keys or lockpicks). </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>If <code>pos</code> is not a valid dungeon position then an error is reported. </p>
+<h2>Notes</h2>
+<p>This currently is only used in the Tutorial, where it sets up some locked doors, for the player to experiment with once they reach that part of the tutorial map. </p>
+<h2>Examples</h2>
+<p><code>kts.LockDoor({x=23,y=20}, 1)</code> </p>
+<p>This makes the door at position (23, 20) locked with key number 1. </p>
+<p><code>kts.LockDoor({x=3,y=11}, "pick_only")</code> </p>
+<p>This makes the door at position (3, 11) locked. No key will open it, but lockpicks will work. </p>
+<h2>See Also</h2>
+<p><a href="CloseDoor.html">kts.CloseDoor</a> </p>
+<p><a href="IsDoorOpen.html">kts.IsDoorOpen</a> </p>
+<p><a href="OpenDoor.html">kts.OpenDoor</a> </p>
+<p><a href="OpenOrCloseDoor.html">kts.OpenOrCloseDoor</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

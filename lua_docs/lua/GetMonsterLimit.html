@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetMonsterLimit</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetMonsterLimit</h1>
+<h2>Name</h2>
+<p>kts.GetMonsterLimit &ndash; get max allowed number of monsters of a given type </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetMonsterLimit(monster_type)</code> </p>
+<h2>Description</h2>
+<p>Given a MonsterType, returns the maximum number of monsters of that type allowed in the dungeon at once, or <code>nil</code> if this monster type is currently unlimited. </p>
+<h2>Return Value</h2>
+<p>A number (non-negative integer), or <code>nil</code>, is returned. </p>
+<h2>Errors</h2>
+<p>If the input is not a valid MonsterType then an error is raised. </p>
+<h2>Notes</h2>
+<p>Monster limits are set by <a href="LimitMonster.html">kts.LimitMonster</a>. </p>
+<h2>See Also</h2>
+<p><a href="LimitMonster.html">kts.LimitMonster</a> </p>
+<p><a href="LimitTotalMonsters.html">kts.LimitTotalMonsters</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

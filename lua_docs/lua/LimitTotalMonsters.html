@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.LimitTotalMonsters</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.LimitTotalMonsters</h1>
+<h2>Name</h2>
+<p>kts.LimitTotalMonsters &ndash; place a limit on the total number of monsters in the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>kts.LimitTotalMonsters(limit)</code> </p>
+<h2>Description</h2>
+<p>Sets the maximum number of monsters that can exist in the dungeon at any one time. The only argument is the limit value (as an integer). </p>
+<p>Note that if monsters are placed "manually" using <a href="AddMonster.html">kts.AddMonster</a> then it is possible to exceed the maximum; that function ignores any monster limits that are in place. However, the "automatic" monster generation (via <a href="AddMonsterGenerator.html">kts.AddMonsterGenerator</a> or <a href="SetZombieActivity.html">kts.SetZombieActivity</a>) <i>will</i> respect the limits, and will not generate further monsters if the monster limit has already been reached. </p>
+<p>This function can only be called during game setup &ndash; it is not possible to change the monster limits mid-game. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>An error results if the input parameter is not an integer. </p>
+<h2>Notes</h2>
+<p>If the limit value is set to a negative number, then that is the same as not setting a limit at all. </p>
+<h2>See Also</h2>
+<p><a href="AddMonster.html">kts.AddMonster</a> </p>
+<p><a href="AddMonsterGenerator.html">kts.AddMonsterGenerator</a> </p>
+<p><a href="AddMonsters.html">kts.AddMonsters</a> </p>
+<p><a href="LimitMonster.html">kts.LimitMonster</a> </p>
+<p><a href="MonsterType.html">kts.MonsterType</a> </p>
+<p><a href="SetZombieActivity.html">kts.SetZombieActivity</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

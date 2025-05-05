@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddTask</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddTask</h1>
+<h2>Name</h2>
+<p>kts.AddTask &ndash; run a Lua function in the background </p>
+<h2>Synopsis</h2>
+<p><code>kts.AddTask(task)</code> </p>
+<h2>Description</h2>
+<p>This function calls the Lua function <code>task</code> as a coroutine. </p>
+<p>The <code>task</code> function may call <code>coroutine.yield</code> at any time, passing a number of milliseconds as an argument; this will cause the coroutine to sleep for that number of milliseconds, before it is resumed (by the game). </p>
+<p>If the <code>task</code> function returns, then the background task terminates and it is not called again. (Any return values are ignored.) </p>
+<p><code>kts.AddTask</code> might be useful for setting up special scenarios where certain effects occur at regular intervals, or upon certain triggers. For example, in the Tutorial, the "Chamber of Bats" room (when it is active) spawns vampire bats at particular intervals; this is handled by a background task. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>An error would result if the passed value is not a function. </p>
+<h2>Notes</h2>
+<p>The coroutine function should not "block" for an extended period of time, as this would cause the game to freeze up. Instead, the coroutine should generally just do a minimal amount of work (e.g. spawning new monsters, adjusting dungeon tiles etc), before sleeping for a number of milliseconds (by calling <code>coroutine.yield</code>). This will allow the game to run for a period of time before the coroutine resumes once again. </p>
+<p>Note also that all "callback" functions (<code>on_walk_over</code>, <code>on_pick_up</code>, <code>on_activate</code> etc.) are actually implemented as coroutines, which means that they are able to call <code>coroutine.yield</code> if desired. </p>
+<h2>Examples</h2>
+<p>An example of using <code>kts.AddTask</code> can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/tutorial/init.lua">knights_data/server/tutorial/init.lua</a> (search for "AddTask" or "function bat_task"). Briefly, this works by calling <code>kts.AddTask(bat_task)</code> at the start of the tutorial. The "bat task" is then constantly running in the background. The code for function <code>bat_task</code> looks like the following: </p>
+<pre>function bat_task()
+    if bat_task_active then
+        -- Do some stuff, e.g. call kts.AddMonster to add new vampire bats.
+    end
+
+    -- Sleep for 250 milliseconds.
+    coroutine.yield(250)
+
+    -- The bat task is meant to run forever, so here we just call bat_task() again.
+    -- (This is a tail call, so it does not grow the stack endlessly.)
+    -- (Note that an alternative way of coding this would have been to use a "while" loop.)
+    return bat_task()
+end
+</pre>
+<h2>See Also</h2>
+<p><a href="https://www.lua.org/pil/9.html">Chapter on Coroutines</a> in the "Programming in Lua" book. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

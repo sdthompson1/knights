@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetPoisonTrap</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetPoisonTrap</h1>
+<h2>Name</h2>
+<p>kts.SetPoisonTrap &ndash; add a poison trap to a door or chest tile </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetPoisonTrap(position, trap_item)</code> </p>
+<h2>Description</h2>
+<p>This adds a poison needle trap to a door or chest tile. When the door or chest is opened, the trap will trigger, poisoning the creature that opened it. </p>
+<p><code>position</code> gives the position of the tile to be trapped. </p>
+<p><code>trap_item</code> is an <a href="ItemType.html">ItemType</a> that represents the trap itself; this item will be put back into the dungeon if a knight safely disarms the trap. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors will be raised if the inputs are not valid positions, item types or directions. </p>
+<p>If there is no trappable door or chest at the given position, then no error is generated; instead, the function just does nothing. </p>
+<h2>Notes</h2>
+<p>Door/chest tiles can only contain one trap at a time. If a trap already exists when this function is called, then the existing trap will be triggered, and then the new trap will replace it. </p>
+<h2>See Also</h2>
+<p><a href="SetBearTrap.html">kts.SetBearTrap</a> </p>
+<p><a href="SetBladeTrap.html">kts.SetBladeTrap</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

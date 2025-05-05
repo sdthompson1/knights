@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.MonsterType</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.MonsterType</h1>
+<h2>Name</h2>
+<p>kts.MonsterType &ndash; create a new monster type </p>
+<h2>Synopsis</h2>
+<pre>monster_type = kts.MonsterType{
+    type = &lt;"walking" or "flying"&gt;,
+
+    -- For any monster type:
+    anim = &lt;anim&gt;,
+    corpse_tiles = &lt;list of Tiles&gt;,
+    health = &lt;function or integer&gt;,
+    on_attack = &lt;function or nil&gt;,
+    on_damage = &lt;function or nil&gt;,
+    on_death = &lt;function or nil&gt;,
+    on_move = &lt;function or nil&gt;,
+    speed = &lt;integer&gt;,
+    
+    -- For walking monsters:
+    weapon = &lt;item type&gt;,
+    ai_fear = &lt;list of item types&gt;,
+    ai_hit = &lt;list of item types&gt;,
+    ai_avoid = &lt;list of tiles&gt;,
+
+    -- For flying monsters:
+    attack_damage = &lt;integer&gt;,
+    attack_stun_time = &lt;function or integer&gt;
+}
+</pre>
+<h2>Description</h2>
+<p>This function creates a new MonsterType. A MonsterType is a "category" of monsters, e.g. "vampire bat" or "zombie". </p>
+<p>The function takes one parameter which is a table with the following fields: </p>
+<p><code>type</code> must be set to either <code>"walking"</code> or <code>"flying"</code>. The type determines various properties of the monster, including which "tile access level" (walking or flying) it uses, how it attacks, and what sort of AI it uses. </p>
+<p><code>anim</code> gives the <a href="Anim.html">Anim</a> to be used for the monster. </p>
+<p><code>corpse_tiles</code> is a list of tiles that can be used to represent the monster's corpse. When a monster dies, the first tile from the list is placed in that monster's square. If a second monster dies in the same square, that tile is removed, and the second tile from the list is placed instead; and so on. (So, for example, <code>corpse_tiles</code> for vampire bats contains three entries: the first contains an image of one dead bat, the second contains two dead bats, and the third contains three.) </p>
+<p><code>health</code> is the number of hitpoints given to the monster, or a function returning a number. (In the case of a function, the function is called once every time a monster of this type is created, which is good for giving different amounts of hitpoints to different instances of this monster.) </p>
+<p><code>on_attack</code> is a Lua function called when the monster attacks. </p>
+<p><code>on_damage</code> is a Lua function called when the monster takes damage. </p>
+<p><code>on_death</code> is a Lua function called when the monster dies. </p>
+<p><code>on_move</code> is a Lua function called when the monster moves. </p>
+<p>(Each of the above four functions takes no parameters, and returns no results, but the <a href="cxt.html">cxt table</a> will be available during the execution of the function. These functions are optional, and can be omitted or set to nil if required.) </p>
+<p><code>speed</code> controls how fast the monster moves (compared to a knight's normal speed, which is 100). </p>
+<p><code>weapon</code> gives an <a href="ItemType.html">ItemType</a> used to represent the monster's weapon. This item is never dropped into the dungeon, but it does set the stats for the monster's attack. </p>
+<p><code>ai_fear</code> gives a list of <a href="ItemType.html">ItemTypes</a> that the monster will run away from. For example, zombies fear the Wand of Undeath. </p>
+<p><code>ai_hit</code> gives a list of <a href="ItemType.html">ItemTypes</a> that the monster will try to attack. For example, zombies will hit open bear trap tiles. </p>
+<p><code>ai_avoid</code> gives a list of <a href="Tile.html">Tiles</a> that the monster will not want to walk over. For example, zombies do not walk into open pit tiles. </p>
+<p><code>attack_damage</code> gives the amount of damage dealt by a flying monster's attack (flying monsters do not carry weapons, but simply attack their target when flying over them). </p>
+<p><code>attack_stun_time</code> gives the amount of time that a target will be stunned for, after suffering a flying monster's attack. This is measured in milliseconds. This can also be a function (returning an integer) if it is desired to randomise the stun time. </p>
+<h2>Return Value</h2>
+<p>A new MonsterType (a Lua userdata object) is returned. </p>
+<h2>Errors</h2>
+<p>Errors may be generated if any of the input parameters are incorrect. </p>
+<h2>Notes</h2>
+<p>Note that it is possible to store custom properties on the MonsterType userdata objects. For example, if <code>m</code> is a MonsterType, you can write to fields like <code>m.my_custom_field</code> and read the same value back again later. This might be useful for some special purposes. </p>
+<h2>Examples</h2>
+<p>In the Knights data files, vampire bats and zombies are defined as follows. </p>
+<pre>m_vampire_bat = kts.MonsterType {
+   type = "flying",
+   
+   -- general properties:
+   health = rng_range(1,2),     -- bats are not very tough
+   speed = 86,                  -- slightly slower than a knight
+   anim = a_vbat,
+   corpse_tiles = { t_dead_vbat_1, t_dead_vbat_2, t_dead_vbat_3 },
+   on_damage = snd_bat_screech,
+
+   -- properties specific to flying monsters:
+   attack_damage = 1,
+   attack_stun_time = rng_time_range(2, 3)
+}
+
+m_zombie = kts.MonsterType {
+   type = "walking",
+
+   -- general properties:
+   health = rng_range(2, 6),    -- zombies are tough (need 3 sword hits on average)
+   speed = 67,                  -- zombies are slow
+   anim = a_zombie,
+   corpse_tiles = { t_dead_zombie },
+
+   on_attack = snd_zombie,   -- called when zombie swings weapon
+   on_damage = snd_zombie,   -- called when zombie takes non-fatal damage
+   on_death = snd_zombie,    -- called when zombie dies
+   on_move = function()      -- called when zombie moves
+      -- There is a 5% chance of a zombie making a sound while it is
+      -- moving around.
+      if kts.RandomChance(0.05) then
+         snd_zombie()
+      end
+   end,
+
+   -- properties specific to walking monsters:
+   weapon = zombie_weapon,
+
+   -- list of tiles that zombies don't want to walk onto:
+   ai_avoid = all_open_pit_tiles,
+
+   -- list of items that zombies will whack with sword instead of walking onto:
+   ai_hit = {i_bear_trap_open},
+
+   -- list of items that zombies will run away from (if a knight is carrying one of them):
+   ai_fear = {i_wand_of_undeath}
+}
+</pre>
+<p>Notes: </p>
+<ul>
+<li>The code above refers to various Anims, Items, Tiles etc. (such as <code>a_vbat</code>, <code>t_dead_vbat1</code>, <code>zombie_weapon</code>, <code>i_bear_trap_open</code>) that are defined elsewhere in the Lua files. </li>
+<li><code>rng_range</code> is a Lua function, defined in items.lua, that just calls <a href="RandomRange.html">kts.RandomRange</a>. (The code doesn't just call <code>kts.RandomRange</code> directly, as that would roll the random number only once, when the MonsterType is created, but we want the random number to be re-rolled every time a new monster of the type is generated.) </li>
+<li><code>rng_time_range</code> is similar, but it multiplies the input values by a time-scale value (currently 140). </li>
+<li><code>snd_bat_screech</code> and <code>snd_zombie</code> are functions, defined elsewhere in the Lua files, that call <a href="PlaySound.html">kts.PlaySound</a> to play a sound effect. </li>
+</ul>
+<h2>See Also</h2>
+<p><a href="cxt.html">cxt</a> </p>
+<p><a href="Anim.html">kts.Anim</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

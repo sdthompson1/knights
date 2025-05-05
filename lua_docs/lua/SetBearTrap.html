@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetBearTrap</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetBearTrap</h1>
+<h2>Name</h2>
+<p>kts.SetBearTrap &ndash; set a bear trap in front of the current actor </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetBearTrap(item_type)</code> </p>
+<p><code>result = kts.Can_SetBearTrap(item_type)</code> </p>
+<h2>Description</h2>
+<p>If the actor (<code>cxt.actor</code>) is a knight, who is standing in the centre of a square (i.e. not currently approaching another square), and if the square one ahead of the knight is clear (i.e. contains no walking creature, nor any item on the ground), then calling <code>kts.SetBearTrap(item_type)</code> will remove any item that the knight is currently holding in their hands, and will place a new item of type <code>item_type</code> into the dungeon, at a position one square ahead of where the knight is currently standing. </p>
+<p>Calling <code>kts.Can_SetBearTrap(item_type)</code> will return true if all of the above is currently possible, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.SetBearTrap</code> returns nothing, and <code>kts.Can_SetBearTrap</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p><code>kts.SetBearTrap</code> and <code>kts.Can_SetBearTrap</code> are usually used as the <code>action</code> and <code>possible</code> functions (respectively) of a <a href="Control.html">Control</a>. The <code>item_type</code> is usually set to the "open bear trap" <a href="ItemType.html">ItemType</a>, although of course mods might define other item types that behave similarly to bear traps. </p>
+<h2>Examples</h2>
+<p>An example is provided by the "bear trap" item in the standard Knights data files: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L348">items.lua</a>. </p>
+<p>Observe in particular that there are two different <a href="ItemType.html">ItemTypes</a> defined: one for the open bear trap, and another for the closed. The closed bear trap can be carried by knights, and contains the <a href="Control.html">Control</a> which sets the trap. When the player activates that Control, the closed bear trap is removed from the knight's hands, and an open bear trap item is created instead, and placed in front of the knight. The open bear trap then contains an <code>on_walk_over</code> function which turns the item back into a closed bear trap again, as well as damaging the creature that walked over it. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="SetBladeTrap.html">kts.SetBladeTrap</a> </p>
+<p><a href="SetBladeTrapOld.html">kts.SetBladeTrapOld</a> </p>
+<p><a href="SetPoisonTrap.html">kts.SetPoisonTrap</a> </p>
+<p><a href="SetPoisonTrapOld.html">kts.SetPoisonTrapOld</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

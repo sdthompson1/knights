@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ZombifyTarget</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ZombifyTarget</h1>
+<h2>Name</h2>
+<p>kts.ZombifyTarget &ndash; turn target knight into a monster </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.ZombifyTarget(monster_type)</code> </p>
+<h2>Description</h2>
+<p>If the current target (as given by <code>cxt.victim</code>) is a knight, then they are turned into a monster of the given <a href="MonsterType.html">MonsterType</a>. </p>
+<p>This counts as "killing" the knight, and any items they were carrying are dropped. No corpse is created. </p>
+<p>If <code>cxt.victim</code> is a creature other than a knight, or is <code>nil</code>, then nothing happens. </p>
+<h2>Return Value</h2>
+<p>This function returns true if a valid target was found and successfully turned into the given monster type, or false otherwise. </p>
+<h2>Notes</h2>
+<p>Even though the function is called "Zombify", this can actually be used to turn knights into any kind of monster, not just zombies. </p>
+<p>Only knights can be affected by this function &ndash; other types of creatures are immune. </p>
+<p>Knights are affected even if they have Invulnerability. </p>
+<h2>Examples</h2>
+<p>This function is perfect for calling from within the <code>melee_action</code> of a weapon. For example, this is used by the Wand of Undeath for turning knights into zombies; see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L251">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="ZombifyActor.html">kts.ZombifyActor</a> </p>
+<p><a href="ZombieKill.html">kts.ZombieKill</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

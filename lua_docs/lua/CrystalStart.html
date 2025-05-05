@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.CrystalStart</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.CrystalStart</h1>
+<h2>Name</h2>
+<p>kts.CrystalStart &ndash; begin "crystal ball" effect (show location of other knights) </p>
+<h2>Synopsis</h2>
+<p><code>kts.CrystalStart()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then the player controlling that knight will now be able to see the position of all other knights in the dungeon on their mini-map. This effect lasts until <a href="CrystalStop.html">kts.CrystalStop()</a> is called (or the knight dies). </p>
+<p>If the current actor is not a knight, nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Examples</h2>
+<p>This is used as the <code>on_approach</code> function for the crystal ball tile. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="CrystalStop.html">kts.CrystalStop</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

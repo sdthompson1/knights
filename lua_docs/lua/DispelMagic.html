@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.DispelMagic</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.DispelMagic</h1>
+<h2>Name</h2>
+<p>kts.DispelMagic &ndash; trigger Dispel Magic effect </p>
+<h2>Synopsis</h2>
+<p><code>kts.DispelMagic(message)</code> </p>
+<h2>Description</h2>
+<p>This function instantly removes most magical effects from all knights currently in the dungeon. </p>
+<p>Specifically, the following effects are all cancelled: </p>
+<ul>
+<li><a href="Invisibility.html">Invisibility</a> </li>
+<li><a href="Strength.html">Strength</a> </li>
+<li><a href="Super.html">Super</a> </li>
+<li><a href="Regeneration.html">Regeneration</a> </li>
+<li><a href="Quickness.html">Quickness</a> </li>
+<li><a href="Paralyzation.html">Paralyzation</a> </li>
+<li><a href="Invulnerability.html">Invulnerability</a> </li>
+<li><a href="PoisonImmunity.html">Poison Immunity</a> </li>
+<li><a href="SenseKnight.html">Sense Knight</a> </li>
+<li><a href="RevealLocation.html">Reveal Location</a> </li>
+</ul>
+<p>The <code>message</code> string is also displayed for the current actor (<code>cxt.actor</code>), if any, as if <code>kts.FlashMessage(message)</code> had been called. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Note that magic is dispelled for <i>all</i> knights, not just the current actor! </p>
+<h2>Examples</h2>
+<p>In the standard Knights data files, this is one of the possible scroll effects: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/magic.lua#L137">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="FlashMessage.html">kts.FlashMessage</a> </p>
+<p><a href="Invisibility.html">kts.Invisibility</a> </p>
+<p><a href="Invulnerability.html">kts.Invulnerability</a> </p>
+<p><a href="Paralyzation.html">kts.Paralyzation</a> </p>
+<p><a href="PoisonImmunity.html">kts.PoisonImmunity</a> </p>
+<p><a href="Quickness.html">kts.Quickness</a> </p>
+<p><a href="Regeneration.html">kts.Regeneration</a> </p>
+<p><a href="RevealLocation.html">kts.RevealLocation</a> </p>
+<p><a href="SenseKnight.html">kts.SenseKnight</a> </p>
+<p><a href="Strength.html">kts.Strength</a> </p>
+<p><a href="Super.html">kts.Super</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

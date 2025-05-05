@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Overlay</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Overlay</h1>
+<h2>Name</h2>
+<p>kts.Overlay &ndash; create an Overlay (set of four graphics, representing an item held by a creature) </p>
+<h2>Synopsis</h2>
+<p><code>overlay = kts.Overlay{ graphic_north, graphic_east, graphic_south, graphic_west }</code> </p>
+<p>Note that the parameter is a single Lua table, containing four <a href="Graphic.html">Graphics</a>, rather than four individual Lua parameters. </p>
+<h2>Description</h2>
+<p>This function creates an Overlay. An Overlay is a collection of four individual <a href="Graphic.html">Graphics</a>, depicting an item (sword, axe, etc.) as held by a Creature. The four graphics correspond to the four directions: north, east, south and west. </p>
+<p>The basic idea is that we do not draw separate graphics for a knight holding a sword, a knight holding an axe, a knight holding a hammer, etc. Instead, there is one "base" knight graphic, and then different "overlays" that can be superimposed on top of that: one overlay represents an axe, another a sword, another a hammer, and so on. When the game draws the overlay graphic on top of the knight graphic, then a complete image of a knight holding the appropriate weapon is formed. (The same holds for other creatures that carry weapons; in the base game, only zombies fall into this category, although other weapon-carrying monsters might be added by mods.) </p>
+<p>To create an overlay, the <code>kts.Overlay</code> function is called. The four parameters are graphics representing the appropriate weapon facing in the four possible directions. As mentioned, the game will superimpose one of these graphics on top of the appropriate Creature graphic in order to draw the creature correctly. </p>
+<h2>Return Value</h2>
+<p>A new Overlay object is returned. This object can be used as the <code>overlay</code> parameter when creating an <a href="ItemType.html">ItemType</a>. </p>
+<h2>Errors</h2>
+<p>An error will result if the parameter is not a table containing four Graphics. </p>
+<h2>Notes</h2>
+<p>If you are creating new Overlays for new weapon types, it is recommended to look at the existing BMP files (such as sword_north.bmp, axe_east.bmp and so on) to see how these have been set up. Also look at the corresponding entries in <code>graphics.lua</code> (such as <code>g_sword_north</code>, <code>g_axe_east</code> etc.), paying particular attention to the "handle positions" (the 5th and 6th parameters to <code>kts.Graphic</code>). Some trial and error might be needed in order to get the handle positions correct. </p>
+<p>Note also that it is possible to store custom properties on the Overlay userdata objects. For example, if <code>o</code> is an Overlay, you can write to fields like <code>o.my_custom_field</code> and read the same value back again later. This might be useful for some special purposes. </p>
+<h2>Examples</h2>
+<p>The "Axe" overlay graphics are created as follows (see <code>graphics.lua</code>): </p>
+<pre>g_axe_north = kts.Graphic("+axe_north.bmp",0,0,0, -6,-4)
+g_axe_east  = kts.Graphic("+axe_east.bmp",0,0,0,   0,-6)
+g_axe_south = kts.Graphic("+axe_south.bmp",0,0,0, -7, 0)
+g_axe_west  = kts.Graphic("+axe_west.bmp",0,0,0,  -4,-7)
+</pre>
+<p>Then, in <code>items.lua</code>, when the <code>i_axe</code> ItemType is created, the following line is added to the <code>kts.ItemType</code> call: </p>
+<pre>overlay = kts.Overlay { g_axe_north, g_axe_east, g_axe_south, g_axe_west }
+</pre>
+<p>Other examples (e.g. wands, daggers, hammers) can be found in the standard Knights Lua files shipped with the game. </p>
+<h2>See Also</h2>
+<p><a href="Anim.html">kts.Anim</a> (sets the "base" creature graphics, which the overlays are drawn on top of) </p>
+<p><a href="Graphic.html">kts.Graphic</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> (this is where overlays are used) </p>
+<p><a href="SetOverlayOffsets.html">kts.SetOverlayOffsets</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetHomeFor</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetHomeFor</h1>
+<h2>Name</h2>
+<p>kts.SetHomeFor &ndash; set the home tile (spawn point) being used by a knight </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetHomeFor(player, position, direction)</code> </p>
+<p><code>kts.SetHomeFor(knight, position, direction)</code> </p>
+<h2>Description</h2>
+<p>The first argument can be either a Player object or a Creature representing a knight. This function will set the corresponding player's home location (entry point tile) to be at dungeon position <code>position</code> and facing direction <code>direction</code>. </p>
+<p>The position must be one square outside the actual "home" tile (i.e. it must be the square that the knight will actually spawn on), and the direction must face toward the dungeon exit. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>An error will be generated if the inputs are not of the correct types. </p>
+<h2>Notes</h2>
+<p>Note that no check is made to see if the given position actually corresponds to a dungeon entrance tile ("home" tile). If the home position is not actually outside a "home" tile then the knight will spawn normally at that position, but healing (by returning to the entry point) will not be available. </p>
+<h2>Examples</h2>
+<p>This function isn't often used in normal Knights games, because the entry points are set up automatically, but it is used in the Tutorial to select the correct entry point on the tutorial map: see <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/tutorial/init.lua#L269">tutorial/init.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="GetHomeFor.html">kts.GetHomeFor</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

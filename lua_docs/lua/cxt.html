@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>The Context table (cxt)</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>The Context table (cxt)</h1>
+<h2>Name</h2>
+<p>cxt &ndash; table of useful information regarding the current action </p>
+<h2>Synopsis</h2>
+<pre>cxt = {
+    actor = &lt;Creature&gt;,
+    actor_pos = &lt;position&gt;,
+    victim = &lt;Creature&gt;,
+    victim_pos = &lt;position&gt;,
+    item_type = &lt;ItemType&gt;,
+    item_pos = &lt;position&gt;,
+    tile = &lt;Tile&gt;,
+    tile_pos = &lt;position&gt;,
+    pos = &lt;position&gt;,
+    originator = &lt;Player&gt;
+}
+</pre>
+<h2>Description</h2>
+<p><code>cxt</code> is a global Lua variable, which is set by the game whenever Lua code is executed in response to any in-game action. </p>
+<p>Examples of situations where this would apply include item or tile "callback" functions, such as <code>on_walk_over</code>, <code>on_pick_up</code>, <code>on_drop</code>, etc., as well as "hook" functions (<code>HOOK_WEAPON_DOWNSWING</code>, <code>HOOK_WEAPON_PARRY</code>, and so on). Basically, during the execution of any of those (or similar) functions, you can rely on the <code>cxt</code> table being present and correctly set up for whatever action is currently taking place. </p>
+<p>The <code>cxt</code> table contains information associated with the current action. For example: </p>
+<ul>
+<li><code>actor</code> is the Creature carrying out the action. </li>
+<li><code>victim</code> is the Creature being targeted or otherwise affected by the action. </li>
+<li><code>item_type</code> is the ItemType being used with the action, if any. For example, with <code>on_pick_up</code>, this will be the item being picked up. </li>
+<li><code>tile</code> is the Tile associated with the action, if any. For example, with <code>on_approach</code>, this will be the tile being approached. </li>
+<li><code>pos</code> is the position at which the action is taking place. This will often (but not always) be equal to <code>actor_pos</code>. </li>
+<li><code>originator</code> is the Player who "initiated" the action. This is used for attributing any kills that result from the action. </li>
+<li>The fields ending in <code>_pos</code> give the positions of the various objects involved, for example <code>actor_pos</code> is the position of the actor, <code>item_pos</code> is the position of the item (if applicable), etc. </li>
+</ul>
+<p>Note that not all fields will be applicable for all actions. If any field is "not applicable" then it will be set to <code>nil</code>. </p>
+<h2>Notes</h2>
+<p>As usual, dungeon positions (as in the <code>pos</code>, <code>actor_pos</code>, <code>victim_pos</code>, <code>item_pos</code>, <code>tile_pos</code> fields) are always represented as a Lua table with two fields, <code>x</code> and <code>y</code>, holding the co-ordinates of the relevant dungeon square. </p>
+<h2>Bugs</h2>
+<p>The use of a global variable for this purpose, as opposed to (say) just passing some extra parameter(s) to the relevant Lua functions, could probably be considered a bug, at least by software development purists. However, it is probably too late to change this now. </p>
+<h2>Examples</h2>
+<p>Many actions will want to play a sound when they happen. For example, to make bats "screech" when they are hit, the following code is added to the <code>on_damage</code> function of the vampire bat MonsterType: </p>
+<p><code>kts.PlaySound(cxt.pos, s_screech, 15000)</code> </p>
+<p>(Note the use of <code>cxt.pos</code> to find the correct position to play the sound at.) </p>
+<p>The following code finds out how many gems the actor is holding. This might be used to implement a door that can only be opened when you are holding a certain number of gems, for example: </p>
+<p><code>local num_held = kts.GetNumHeld(cxt.actor, i_gem)</code> </p>
+<p>The following determines whether the tile associated with the action is a crystal ball tile. This might be used in the <code>melee_action</code> of a wand, to detect whether the wand is being used to hit a crystal ball: </p>
+<p><code>if cxt.tile == t_crystal_ball then ...</code> </p>
+<p>The following code calculates a position 2 squares east, and 3 squares south of the tile associated with an action (but also taking into account dungeon rotation). This might be used in a pressure plate Tile's <code>on_walk_over</code> action, to trigger some effect on a nearby tile: </p>
+<p><code>local pos = kts.RotateAddPos(cxt.tile_pos, 2, 3)</code> </p>
+<p>Many more examples can be found by looking in the <a href="https://github.com/sdthompson1/knights/tree/main/knights_data/server">Knights Lua files</a> or in existing Knights mods. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

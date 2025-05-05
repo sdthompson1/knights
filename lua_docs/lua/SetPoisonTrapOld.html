@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetPoisonTrapOld</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetPoisonTrapOld</h1>
+<h2>Name</h2>
+<p>kts.SetPoisonTrapOld &ndash; set a poison trap in front of the current actor </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetPoisonTrapOld()</code> </p>
+<p><code>result = kts.Can_SetPoisonTrapOld()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (<code>cxt.actor</code>) is approaching a door or chest tile, then calling <code>kts.SetPoisonTrapOld()</code> will add a poison needle trap to that tile. When the door or chest is opened, the trap will trigger, poisoning the creature that opened it. </p>
+<p>Also, when <code>kts.SetPoisonTrapOld()</code> is called, if the actor is a knight carrying at least one of the item type given by <code>cxt.item_type</code>, then one of that item type will be removed from the knight's inventory. This item will be put back into the dungeon if the trap is later successfully disarmed without triggering it. </p>
+<p><code>kts.Can_SetPoisonTrapOld()</code> returns true if setting a poison trap is possible for the current actor at this time, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.SetPoisonTrapOld</code> returns nothing, and <code>kts.Can_SetPoisonTrapOld</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p><code>kts.SetPoisonTrapOld</code> and <code>kts.Can_SetPoisonTrapOld</code> are usually used as the <code>action</code> and <code>possible</code> functions (respectively) of a <a href="Control.html">Control</a>. </p>
+<p>For a version that does not rely on values in the <code>cxt</code> table, see <a href="SetPoisonTrap.html">kts.SetPoisonTrap</a>. </p>
+<p>Door/chest tiles can only contain one trap at a time. If a trap already exists when this function is called, then the existing trap will be triggered, and then the new trap will replace it. </p>
+<h2>Examples</h2>
+<p>The definition of the poison trap item in the standard Knights data files can be found in <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L385">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="SetPoisonTrap.html">kts.SetPoisonTrap</a> </p>
+<p><a href="SetBladeTrap.html">kts.SetBladeTrap</a> </p>
+<p><a href="SetBladeTrapOld.html">kts.SetBladeTrapOld</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

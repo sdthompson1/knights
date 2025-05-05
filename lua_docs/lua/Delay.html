@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Delay</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Delay</h1>
+<h2>Name</h2>
+<p>kts.Delay &ndash; stun the current actor and also yield for a time </p>
+<h2>Synopsis</h2>
+<p><code>kts.Delay(milliseconds)</code> </p>
+<h2>Description</h2>
+<p>This function can be called from within a "callback" such as <code>on_pick_up</code>, <code>on_walk_over</code>, etc. </p>
+<p>The function will cause the current actor (the creature that triggered the callback) to be "stunned" for the given number of milliseconds. </p>
+<p>Then, execution of the callback function will be paused for the same number of milliseconds (as if <code>coroutine.yield</code> had been called; see also <a href="AddTask.html">kts.AddTask</a>). </p>
+<p>After the stun period has ended, execution of the callback function will resume from where it left off. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>If the parameter is not an integer, then an error is raised. </p>
+<h2>Notes</h2>
+<p>If there is no current actor (i.e. <code>cxt.actor</code> is nil) then this is not an error; in this case, execution is still paused for the given number of milliseconds (as if <code>coroutine.yield</code> had been called), but no creature gets stunned. </p>
+<h2>Examples</h2>
+<p>Potions are implemented by something like the following: </p>
+<pre>on_pick_up = function()
+    drink_sound()   -- this plays the "potion drinking" sound effect
+    kts.Delay(750)  -- stun the knight for 750 milliseconds
+    potion_effect() -- after the stun period ends, apply potion effects to the knight
+end
+</pre>
+<p>Here, it is assumed that <code>drink_sound()</code> and <code>potion_effect()</code> are separately defined functions. </p>
+<h2>See Also</h2>
+<p><a href="AddTask.html">kts.AddTask</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddMonsterGenerator</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddMonsterGenerator</h1>
+<h2>Name</h2>
+<p>kts.AddMonsterGenerator &ndash; enable random monster generation at specific tiles </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.AddMonsterGenerator(monster_type, tile_list, probability)</code> </p>
+<h2>Description</h2>
+<p>This function sets up particular tiles as "monster generators". For example, this is used for vampire bats, which are generated at open pit tiles. </p>
+<p>The <code>monster_type</code> must be a valid <a href="MonsterType.html">MonsterType</a> (this would be the vampire bat monster type in our example). </p>
+<p>The <code>tile_list</code> is a list of tiles (e.g. a list of open pit tiles). </p>
+<p><code>probability</code> is the probability that, during each monster generation cycle, a monster will be generated at the given tile type. (A monster generation cycle is run every <code>monster_interval</code> milliseconds, see <a href="MISC_CONFIG.html">kts.MISC_CONFIG</a>.) </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors may be generated if the input parameters are incorrect. </p>
+<h2>Notes</h2>
+<p>If there is a total monster limit (<a href="LimitTotalMonsters.html">kts.LimitTotalMonsters</a>), then the probability of generating a monster will automatically reduce, in proportion to how close we are to reaching the total monster limit. (Once the limit is reached, the probability becomes zero.) </p>
+<p>Monsters can only be generated within a distance of <code>monster_radius</code> of any Knight (see <a href="MISC_CONFIG.html">kts.MISC_CONFIG</a>). </p>
+<h2>See Also</h2>
+<p><a href="MISC_CONFIG.html">kts.MISC_CONFIG</a> &ndash; in particular, <code>monster_radius</code> and <code>monster_interval</code> </p>
+<p><a href="LimitMonster.html">kts.LimitMonster</a> </p>
+<p><a href="LimitTotalMonsters.html">kts.LimitTotalMonsters</a> </p>
+<p><a href="MonsterType.html">kts.MonsterType</a> </p>
+<p><a href="SetZombieActivity.html">kts.SetZombieActivity</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

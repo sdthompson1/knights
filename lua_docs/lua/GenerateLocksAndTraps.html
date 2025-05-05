@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GenerateLocksAndTraps</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GenerateLocksAndTraps</h1>
+<h2>Name</h2>
+<p>kts.GenerateLocksAndTraps &ndash; set initial locks and traps </p>
+<h2>Synopsis</h2>
+<p><code>kts.GenerateLocksAndTraps(num_keys, pretrapped)</code> </p>
+<h2>Description</h2>
+<p>When the dungeon is first generated (by <a href="LayoutDungeon.html">kts.LayoutDungeon</a>), all doors and chests are unlocked and untrapped. </p>
+<p>The function <code>kts.GenerateLocksAndTraps</code> "fixes" this, by searching for all lockable tiles (doors and chests) in the dungeon, and placing either a lock or a trap (or neither) on each, according to the given settings. </p>
+<p>The settings required are <code>num_keys</code> (the number of keys in the dungeon, usually between 1 and 3) and <code>pretrapped</code> (a boolean flag determining whether pretrapped chests are on or off). </p>
+<p>Setting <code>num_keys</code> to zero is allowed; this will mean that all doors/chests are left unlocked. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors can be raised if the parameters do not have the correct types. </p>
+<h2>Notes</h2>
+<p>This function is usually called exactly once during game setup, at some point after <a href="LayoutDungeon.html">kts.LayoutDungeon</a> has been called. Normally this is done automatically as part of <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/dungeon_setup.lua">dungeon_setup.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="LayoutDungeon.html">kts.LayoutDungeon</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

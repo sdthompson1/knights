@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Control</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Control</h1>
+<h2>Name</h2>
+<p>kts.Control &ndash; create a new Control </p>
+<h2>Synopsis</h2>
+<pre>result = kts.Control{
+    action = &lt;function&gt;,
+    action_bar_slot = &lt;integer&gt;,
+    action_bar_priority = &lt;integer&gt;,
+    can_do_while_moving = &lt;boolean&gt;,
+    can_do_while_stunned = &lt;boolean&gt;,
+    continuous = &lt;boolean&gt;,
+    menu_direction = &lt;"north", "south", "east" or "west"&gt;,
+    menu_icon = &lt;graphic&gt;,
+    menu_special = &lt;integer&gt;,
+    name = &lt;string&gt;,
+    possible = &lt;function&gt;,
+    suicide_key = &lt;boolean&gt;,
+    tap_priority = &lt;integer&gt;
+}
+</pre>
+<p>All fields are optional &ndash; if they are omitted, suitable defaults will be used (see below for details). </p>
+<h2>Description</h2>
+<p>Creates a new Control. A Control represents a possible "command" or "input" that a player can give to the game &ndash; for example, "move to the left", "open door", or "attack". </p>
+<p>This function takes one parameter which must be a table with the following fields: </p>
+<p><code>action</code> is a function to be called when the user selects this Control. The <code>action</code> function receives no arguments, and the game ignores any value returned from it. During the call, the <a href="cxt.html">cxt</a> global variable will be available. </p>
+<p><code>action_bar_slot</code> (if non-nil) specifies the position of the control on the Action Bar (in the new control system). Slots are numbered 0 to 9 (from left to right). Note that controls only appear on the action bar if they are <code>possible</code> (see below). If nil (or omitted), the control does not appear on the action bar at all. </p>
+<p><code>action_bar_priority</code> determines which control is displayed on the Action Bar, in the case where two or more controls are currently <code>possible</code>, and both are occupying the same slot. The higher priority value "wins". If this is not specified then it will be the same as <code>tap_priority</code>. </p>
+<p><code>can_do_while_moving</code> and <code>can_do_while_stunned</code> are boolean values that determine whether the control can be selected while the knight is moving, and while they are stunned, respectively. (If omitted, these default to false.) </p>
+<p>If <code>continuous</code> is true then the control can be "held down" to activate it continuously. For example, this applies to attacking with a sword, throwing daggers, or picking locks. (If omitted, this defaults to false.) </p>
+<p><code>menu_direction</code> determines where the control will appear on the Action Menu (i.e. the menu that appears when the button is held down in the original Knights control system). Note that controls only appear in the menu when they are <code>possible</code> (see below). If nil (or omitted), the default is "north". (If you don't want the control to appear on the menu at all, use <code>menu_special</code>; see below.) </p>
+<p><code>menu_icon</code> indicates the <a href="Graphic.html">Graphic</a> that will be used if the control is to be displayed on either the Action Bar or the menu. </p>
+<p><code>menu_special</code> allows finer control over the Action Menu behaviour. It can be set to one of the following values: </p>
+<ul>
+<li>0 (the default) indicates no special properties. The control appears on the Action Menu, in its preferred position (<code>menu_direction</code>) if possible, or in another empty slot otherwise. </li>
+<li>1 indicates that the control is "weak". This comes into play when two controls are contending for the same menu position, one of the controls is "weak", and the other is not. In that case, the "weak" control is not shown (it is overridden by the "stronger" control). <ul>
+<li>An example of where this is useful is with the "open door" and "use lockpicks" controls. Both want to use the north/top menu position. But if both are possible, we only want to show "use lockpicks" (we don't want to show "open door" because it is useless and will just show a "Locked" message). To achieve this, we set the "open door" control to be weak (<code>menu_special = 1</code>). </li>
+</ul>
+<li>4 indicates that the control should not appear on the Action Menu at all. (It can still appear on the Action Bar, as that is controlled by a different setting.) </li>
+</ul>
+<p><code>name</code> is a name for the control. This will appear when the control is "moused over" in the new control system. </p>
+<p><code>possible</code> is a function which the game will call to determine whether the control is usable in the current situation. The <code>possible</code> function receives no arguments, and should return <code>true</code> if the control is usable, or <code>false</code> otherwise. (The <a href="cxt.html">cxt</a> table will be available during the call.) Controls which are not currently <code>possible</code> will not be shown in the Action Bar or Action Menu. If <code>possible</code> is nil (or omitted) then the control is considered possible always. </p>
+<p>If <code>suicide_key</code> is true then this control will be activated when the player's "suicide key" is pressed. The default is false. </p>
+<p>If <code>tap_priority</code> is specified then the control can be activated simply by tapping the appropriate key. For example, doors can be opened by tapping, rather than having to use the action bar or menu. If multiple controls are available for "tapping" then the one with the highest <code>tap_priority</code> "wins". </p>
+<h2>Return Value</h2>
+<p>The new Control (a Lua userdata object) is returned. </p>
+<h2>Errors</h2>
+<p>Errors may be raised if any of the input parameters are incorrect. </p>
+<p>This function is intended to be called during setup only &ndash; if called during a game, an error will result. </p>
+<h2>Notes</h2>
+<p>When specifying directions, the strings "up", "down", "left" and "right" may be used as alternatives to "north", "south", "east" and "west". </p>
+<p>Note also that it is possible to store custom properties on the Control userdata objects. For example, if <code>c</code> is a Control, you can write to fields like <code>c.my_custom_field</code> and read the same value back again later. This might be useful for some special purposes. </p>
+<h2>Examples</h2>
+<p>Several examples of Controls can be seen in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/controls.lua">controls.lua</a>, <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/items.lua">items.lua</a> and <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/tiles.lua">tiles.lua</a> (search for <code>kts.Control</code>). </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">cxt</a> </p>
+<p><a href="Activate.html">kts.Activate</a> </p>
+<p><a href="Graphic.html">kts.Graphic</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

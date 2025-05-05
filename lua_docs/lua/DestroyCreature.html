@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.DestroyCreature</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.DestroyCreature</h1>
+<h2>Name</h2>
+<p>kts.DestroyCreature - destroy a creature, removing it from the map </p>
+<h2>Synopsis</h2>
+<p><code>kts.DestroyCreature(creature)</code> </p>
+<p><code>kts.DestroyCreature(creature, death_mode)</code> </p>
+<h2>Description</h2>
+<p>The given creature is destroyed and removed from the map. </p>
+<p>If the creature was a knight, then any items they were carrying will be dropped at their current location. </p>
+<p>Depending on the <code>death_mode</code>, one of the following will happen: </p>
+<ul>
+<li>If <code>death_mode</code> is <code>"normal"</code> (or no <code>death_mode</code> was given), the creature will leave behind a corpse, including blood. </li>
+<li>If <code>death_mode</code> is <code>"poison"</code>, a corpse will be left behind but there will be no blood. </li>
+<li>If <code>death_mode</code> is <code>"zombie"</code>, no corpse will be left behind. </li>
+<li>If <code>death_mode</code> is <code>"pit"</code>, no corpse will be left behind, and also, any items will be dropped in the square <i>behind</i> the knight, instead of on the knight's square itself. </li>
+</ul>
+<h2>Return Value</h2>
+<p>This function does not return anything. </p>
+<h2>Errors</h2>
+<p>If the <code>death_mode</code> is non-nil, but not one of the four predefined strings mentioned above, then an error is raised. </p>
+<p>Also, if the <code>creature</code> passed is non-nil, and not actually a Creature, then an error is raised. (If <code>creature</code> is nil then there is no error and the function just does nothing.) </p>
+<h2>Notes</h2>
+<p>The reason that one of the death modes is called "zombie" is that this is the death mode that is used when a knight is turned into a zombie. In that case, we want to destroy the knight, without leaving any corpse behind, and spawn a zombie in its place. The death mode "zombie" will accomplish the first part of that. </p>
+<p>The "pit" death mode is used when a knight falls down a pit. In this case we don't want the knight's items to be dropped on the pit square itself, as this would cause the items to be "floating" in mid air. Instead, the items are dropped one square behind the knight. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

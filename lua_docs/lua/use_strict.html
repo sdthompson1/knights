@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>use_strict</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>use_strict</h1>
+<h2>Name</h2>
+<p>use_strict &ndash; enable strict checking of global variable usage </p>
+<h2>Synopsis</h2>
+<pre>-- Place this at the top of init.lua
+-- (after "module(...)", if you are using that)
+use_strict()
+</pre>
+<h2>Description</h2>
+<p><code>use_strict()</code> enables a mode where all usage of Lua global variables is strictly checked. If a global variable is used before it is first assigned to, then an error message will result. </p>
+<p>The intention of this is to catch mistakes where a global variable name is misspelled. For example, if I write to a global variable named <code>floor_tile</code>, but then later refer to it as <code>floot_tile</code> (a typo), then in standard Lua, this would not result in an error message; instead, a value <code>nil</code> would be used for <code>floot_tile</code>. This might cause an error, or it might just create a subtle bug that takes a long time to debug, depending on what the code is actually doing with that variable. By enabling <code>use_strict()</code>, the typo can be found much sooner. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p><code>use_strict()</code> itself shouldn't throw errors. However, if global variables are used incorrectly (after <code>use_strict()</code> mode is enabled) then errors will be raised, as described above. </p>
+<h2>Notes</h2>
+<p>If you do actually want to use a global variable with a default value of <code>nil</code>, then you will need to explicitly assign to that variable first, before using it. This can be achieved easily enough, by writing something like <code>my_variable = nil</code> near the top of your code. Then, uses of <code>my_variable</code> will not be classed as errors, because <code>my_variable</code> has previously been assigned to (even though the assigned value was only <code>nil</code>). The <code>classic</code> module uses this technique with a variable called <code>Dsetup</code>: see <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/dungeon_setup.lua#L37">dungeon_setup.lua</a>. </p>
+<h2>Examples</h2>
+<p>The <code>classic</code> module uses <code>use_strict()</code> in its <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/init.lua#L22">init.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="module.html">module</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

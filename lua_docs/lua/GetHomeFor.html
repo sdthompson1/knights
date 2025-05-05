@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetHomeFor</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetHomeFor</h1>
+<h2>Name</h2>
+<p>kts.GetHomeFor &ndash; get the "home location" (dungeon entry point) of a player </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetHomeFor(player)</code> </p>
+<p><code>result = kts.GetHomeFor(knight)</code> </p>
+<h2>Description</h2>
+<p>This function takes one parameter, which can either be a Player object (e.g. as returned from <a href="GetPlayer.html">kts.GetPlayer</a>), or a Creature object representing a knight. Either way, the function returns the current "home" (entry point) for that player, if they have one, or <code>nil</code> otherwise. </p>
+<h2>Return Value</h2>
+<p>The return value is either <code>nil</code>, or a table with fields <code>x</code>, <code>y</code>, <code>facing</code>, <code>tile</code> and (possibly) <code>secured_by</code>. See <a href="GetAllHomes.html">kts.GetAllHomes</a> for a description of what these fields mean. </p>
+<h2>Errors</h2>
+<p>If the input is not a valid Player, nor a Creature representing a knight, then an error is raised. </p>
+<h2>See Also</h2>
+<p><a href="GetAllHomes.html">kts.GetAllHomes</a> </p>
+<p><a href="GetTiles.html">kts.GetTiles</a> </p>
+<p><a href="Secure.html">kts.Secure</a> </p>
+<p><a href="SetHomeFor.html">kts.SetHomeFor</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

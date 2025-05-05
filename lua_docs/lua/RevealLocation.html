@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.RevealLocation</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.RevealLocation</h1>
+<h2>Name</h2>
+<p>kts.RevealLocation &ndash; reveal the current actor's location to other players for a limited time </p>
+<h2>Synopsis</h2>
+<p><code>kts.RevealLocation(duration)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (<code>cxt.actor</code>) is a knight, their location will become visible on the mini-map of all players, for the next <code>duration</code> milliseconds. </p>
+<p>If the current actor already has a timed "reveal location" effect in place, then the timer is restarted (from the current time) with the new duration. </p>
+<p>If the current actor is not a knight, nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>This function works completely independently of <a href="RevealStart.html">kts.RevealStart</a> and <a href="RevealStop.html">kts.RevealStop</a>. </p>
+<p>Players are <i>not</i> told that their location is now being broadcast to other knights. This makes for more interesting gameplay because players might think they are walking around the dungeon in secret, but actually everyone else is able to see where they are! </p>
+<h2>Examples</h2>
+<p>When using the standard Knights data files, there is a one in six chance that reading a scroll will call <code>kts.RevealLocation</code>; see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/magic.lua#L223">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="DispelMagic.html">kts.DispelMagic</a> </p>
+<p><a href="SenseKnight.html">kts.SenseKnight</a> </p>
+<p><a href="RevealStart.html">kts.RevealStart</a> </p>
+<p><a href="RevealStop.html">kts.RevealStop</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ConnectivityCheck</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ConnectivityCheck</h1>
+<h2>Name</h2>
+<p>kts.ConnectivityCheck &ndash; check dungeon connectivity </p>
+<h2>Synopsis</h2>
+<p><code>kts.ConnectivityCheck(num_keys, lockpick_item_type)</code> </p>
+<h2>Description</h2>
+<p>This function is called at the final stage of dungeon generation. It scans the dungeon to check whether a situation has been created in which the dungeon cannot be fully explored, because some of the keys and/or lockpicks required have been placed behind locked iron doors, in such a way that it is impossible to reach them. (For example, this might happen if key number 1 was placed behind locked door number 2, and key number 2 and the lockpicks were both behind locked door number 1. If you are outside of both locked doors, and the doors cannot be bashed down, then there is no way to get in.) If this scenario was allowed to occur, then the quest might be impossible to complete. </p>
+<p>To prevent this, <code>kts.ConnectivityCheck</code> searches through the dungeon to try to determine whether a scenario like the above has occurred. If it detects that it has, then it will resolve the situation by spawning one or more lockpick items (i.e. items of the given <code>lockpick_item_type</code>) at accessible locations within the dungeon. This will make sure that all knights can find at least one lockpick, and therefore all knights will be able to unlock and open any doors that they encounter. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>In rare cases the <code>kts.ConnectivityCheck</code> function might not be able to place lockpicks in the required way. In these cases an error <code>"dungeon generator failure"</code> will be raised. </p>
+<h2>Notes</h2>
+<p>The connectivity check is only approximate &ndash; there are (or could be) situations where it does not place the required lockpicks correctly. However, this should be rare. Nevertheless, it is recommended to call <a href="SetLockpickSpawn.html">kts.SetLockpickSpawn</a> somewhere during dungeon setup (and this is indeed done by the standard Knights data files). Doing so means that the game will start spawning lockpicks at random locations within the dungeon after a few minutes of gameplay; this acts as a "fail-safe" and means that all knights should be able to find a set of lockpicks eventually, even if <code>kts.ConnectivityCheck</code> did not behave as expected and did not place lockpicks properly. </p>
+<h3>How the connectivity check works internally</h3>
+<p>Most readers will not need to worry about this too much, but for those wanting more details of how the connectivity check algorithm works, read on. </p>
+<p>The connectivity check is implemented as a "flood fill" algorithm. The fill starts from a player's entry point location and expands out through all "passable" squares. A square is considered "passable" if <i>all</i> of the <a href="Tile.html">Tiles</a> on that square meet the following conditions: </p>
+<ul>
+<li>The tile has <code>connectivity_check</code> set to 1 (see <a href="Tile.html">kts.Tile</a> documentation); or </li>
+<li>The tile has <code>connectivity_check</code> set to 0, and any of the following are true: <ul>
+<li>The tile has "walking" access of "clear". </li>
+<li>The tile is destructible. (Knights can always smash their way through destructible tiles if needed.) </li>
+<li>The door is locked, and requires a key to open, but that key was found in one of the squares previously visited by the flood fill. (If a knight finds a key, they then become able to open any doors locked using that key.) </li>
+<li>The door is locked, but it doesn't have a key at all (e.g. switch-operated doors). (It is assumed that the dungeon maps have been designed in such a way that knights can always reach any necessary switches!) </li>
+</ul>
+</ul>
+<p>The flood fill ends (in success) as soon as either (a) all keys have been found, or (b) the lock picks have been found (in either of these cases, knights will now have the means to open any door in the dungeon, so there is no issue). If the flood fill runs out of squares to search before either of those conditions are met, then it ends in failure. (In the failure case, lockpicks are placed on a random square, chosen from among all squares encountered during the flood fill &ndash; this ensures that the knight will indeed be able to find the lockpicks during the game.) </p>
+<p>Note that a separate flood fill is done from each player's starting point (in case some knights are cut off from the key(s) but others are not). </p>
+<h3>When does connectivity_check need to be set on a Tile?</h3>
+<p>As noted above, the flood fill algorithm is influenced by the value of <code>connectivity_check</code> that has been set on each <a href="Tile.html">Tile</a>. Most Tiles have <code>connectivity_check</code> equal to zero, but it is possible to override this when creating the Tile. Examples of when it might be desirable to set <code>connectivity_check</code> to -1 instead of 0 are as follows: </p>
+<ul>
+<li>In the default Knights data files, there are "pit" tiles which have access = clear, but walking into a pit will kill the knight. If <code>connectivity_check</code> was 0, then the above rules would mark a pit as being "passable" (on the grounds that access is clear) but this would not be accurate. Therefore, pits set <code>connectivity_check = -1</code> to make sure that the dungeon generator treats open pits the same as walls, for the purposes of connectivity checks. </li>
+<li>Another case where an override is needed is in the "closed gate" tiles. Under the final bullet point above, these would be treated as passable, on the assumption that there is a switch somewhere that opens them; however, this is not always the case &ndash; some gates are not openable at all. Therefore, gates also have <code>connectivity_check = -1</code> in the data files. </li>
+<li>A final example might be if there is a switch-controlled door somewhere in the dungeon, but the switch that opens that door is itself behind a locked iron door. In that case, the game would assume that the switch-controlled door is always openable without needing a key (according to the above rules), but this would not necessarily be the case here &ndash; a key might be needed to access the switch itself! The solution, in this case, would be to set <code>connectivity_check = -1</code> for the "locked iron door" that guards the switch, in that scenario. Luckily, I don't believe this scenario actually occurs for any of the standard Knights rooms (the rooms are all designed to put the switches "out in the open" as opposed to behind locked iron doors), so this particular case hasn't arisen yet, but it is something to bear in mind if new rooms are being designed. </li>
+</ul>
+<p>Note that, once again, it is not strictly speaking <i>required</i> to make these <code>connectivity_check</code> tweaks; after all, we are mostly talking about edge cases here, and on the rare occasions where one of these edge cases is triggered, the <a href="SetLockpickSpawn.html">kts.SetLockpickSpawn</a> fail-safe should kick in and rescue the situation. However, if you do think of a situation where setting <code>connectivity_check = -1</code> on a Tile might be required, then it is a good idea to go ahead and set it up, because relying on the fail-safe is not exactly ideal (e.g. it does take a few minutes before the lockpicks start spawning); therefore, if we can create the dungeon correctly in the first place, then it is better to do so, whenever possible. </p>
+<h2>Examples</h2>
+<p>You can see this function being used in the standard Knights data files <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/dungeon_setup.lua#L271">here</a>. </p>
+<h2>See Also</h2>
+<p><a href="LayoutDungeon.html">kts.LayoutDungeon</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

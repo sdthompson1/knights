@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.PitKill</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.PitKill</h1>
+<h2>Name</h2>
+<p>kts.PitKill &ndash; kill non-flying actor, without leaving a corpse </p>
+<h2>Synopsis</h2>
+<p><code>kts.PitKill()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as determined by <code>cxt.actor</code>) is a walking (as opposed to flying) creature, it is instantly killed. No corpse is left behind. If the creature was a knight, then any item(s) carried are dropped one square behind the knight's current position. Invulnerability does not prevent the death from occurring. </p>
+<p>Calling this when <code>cxt.actor</code> is a flying creature, or nil, does nothing. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>As the name suggests, this function is intended to be called when a creature walks into a pit. </p>
+<h2>Examples</h2>
+<p>This is used as the <code>on_walk_over</code> function for the "open pit" tile in the standard Knights data files: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/tiles.lua#L499">tiles.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Invulnerability.html">kts.Invulnerability</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

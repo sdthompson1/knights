@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ZombifyActor</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ZombifyActor</h1>
+<h2>Name</h2>
+<p>kts.ZombifyActor &ndash; turn the current actor into a monster </p>
+<h2>Synopsis</h2>
+<p><code>kts.ZombifyActor(monster_type)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, they are turned into a monster of the given <a href="MonsterType.html">MonsterType</a>. </p>
+<p>This counts as "killing" the knight, and any items they were carrying are dropped. No corpse is created. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Even though the function is called "Zombify", this can actually be used to turn knights into any kind of monster, not just zombies. </p>
+<p>Only knights can be affected by this function &ndash; other types of creatures are immune. </p>
+<p>Knights are affected even if they have Invulnerability. </p>
+<h2>Examples</h2>
+<p>This is one of the possible pentagram or scroll effects; see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/magic.lua#L133">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="ZombifyTarget.html">kts.ZombifyTarget</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

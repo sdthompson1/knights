@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Invisibility</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Invisibility</h1>
+<h2>Name</h2>
+<p>kts.Invisibility &ndash; give the current actor the Invisibility effect </p>
+<h2>Synopsis</h2>
+<p><code>kts.Invisibility(duration, message)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then that knight gains the Invisibility magical effect, for the next <code>duration</code> milliseconds. The string <code>message</code> will also flash on screen above the knight a number of times. </p>
+<p>If the knight already has a different incompatible magic effect (such as Strength or Regeneration) then the other effect is cancelled in favour of Invisibility. </p>
+<p>If the knight already has Invisibility, then the existing Invisibility timer is cancelled and replaced with the new one. </p>
+<p>If the current actor is not a knight then nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Invisibility, as the name implies, makes the knight invisible to other knights (although if opponents have an ability that allows them to see other knights on their mini-map, then invisibility will not shield a knight from this effect). The invisible knight will appear in a semi-transparent form on their own screen, and also on the screens of teammates (in team games). </p>
+<p>As far as monsters are concerned, flying monsters (such as vampire bats) are able to "see" invisible knights as normal, but walking monsters (such as zombies) will not "see" invisible knights unless they are standing right next to one. </p>
+<p>The duration (first argument to <code>kts.Invisibility</code>) is usually set to some kind of random number, to provide some unpredictability for the players. The duration value is not made visible to the player. </p>
+<h2>Bugs</h2>
+<p>Ideally, there ought to be some way to define a flying monster that cannot see invisible knights, or a walking monster that can see them. In other words, the property of whether a monster can see invisible knights or not should be separated from the property of whether a monster is flying or not. </p>
+<h2>Examples</h2>
+<p>To give a knight Invisibility for a random number of seconds between 1 and 60: </p>
+<p><code>kts.Invisibility(kts.RandomRange(1, 60) * 1000, "Invisibility")</code> </p>
+<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/magic.lua">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Paralyzation.html">kts.Paralyzation</a> </p>
+<p><a href="PoisonImmunity.html">kts.PoisonImmunity</a> </p>
+<p><a href="Quickness.html">kts.Quickness</a> </p>
+<p><a href="Regeneration.html">kts.Regeneration</a> </p>
+<p><a href="Strength.html">kts.Strength</a> </p>
+<p><a href="Super.html">kts.Super</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

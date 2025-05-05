@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>module</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>module</h1>
+<h2>Name</h2>
+<p>module &ndash; helper function for defining Knights modules </p>
+<h2>Synopsis</h2>
+<p><code>module(...)</code> </p>
+<h2>Description</h2>
+<p>Placing <code>module(...)</code> at the top of a module's <code>init.lua</code> file makes some changes to the Lua environment (<code>_ENV</code>) in order to simplify the creation of Lua modules. </p>
+<p>Basically, if <code>module(...)</code> is used, then then there is no need to explicitly return a value from your <code>init.lua</code> chunk. Instead, all global variables created by your <code>init.lua</code> (or other Lua files loaded from it using <code>dofile</code>) are automatically collected up and placed into a table. That table automatically becomes the return value from <code>init.lua</code> without you having to do anything. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>If used correctly then <code>module(...)</code> should not raise an error. </p>
+<p>If you get the error <code>'module': first argument must be module name</code>, this means you have called the <code>module</code> function incorrectly (e.g. you have called it as <code>module()</code> instead of <code>module(...)</code>, or called it from the wrong place). </p>
+<h2>Notes</h2>
+<p>Whether to use <code>module(...)</code> or not is a matter of personal preference. Some people prefer the convenience that <code>module(...)</code> provides, while others prefer the more explicit, "no magic" coding style that results when <code>module(...)</code> is avoided. </p>
+<h2>Examples</h2>
+<p>Without <code>module(...)</code>, we could write the <code>init.lua</code> code for a very simple Lua module this way: </p>
+<pre>local M = {}
+
+M.fun1 = function() print("Hello") end
+M.fun2 = function() print("Goodbye") end
+
+return M
+</pre>
+<p>This "module" just contains two functions that print different messages. (Think of it as representing a "utility" module that might be used by other modules.) </p>
+<p>With <code>module(...)</code>, the same effect could be achieved like this: </p>
+<pre>module(...)
+
+function fun1()
+    print("Hello")
+end
+
+function fun2()
+    print("Goodbye")
+end
+</pre>
+<p>Notice, in this case, there is no need to create the <code>M</code> table or use <code>return M</code> at the end of the code. Instead, all global functions created (i.e. <code>fun1</code> and <code>fun2</code> in this example) are automatically "exported" from the module. </p>
+<p>In both cases, another module could "import" this module and use its functions like this: </p>
+<pre>local M = require("message_funcs")  -- Assume the above module is called "message_funcs"
+
+M.fun1()   -- prints "Hello"
+M.fun2()   -- prints "Goodbye"
+</pre>
+<h2>See Also</h2>
+<p><a href="require.html">require</a> </p>
+<p><a href="use_strict.html">use_strict</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

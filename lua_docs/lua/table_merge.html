@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.table_merge</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.table_merge</h1>
+<h2>Name</h2>
+<p>kts.table_merge &ndash; merge two Lua tables </p>
+<h2>Synopsis</h2>
+<p><code>require("classic")</code> </p>
+<p><code>result = kts.table_merge(table1, table2)</code> </p>
+<h2>Description</h2>
+<p>This creates a new table which contains all keys from both <code>table1</code> and <code>table2</code>, together with the corresponding values. </p>
+<p>If the same key exists in both <code>table1</code> and <code>table2</code>, then the value from <code>table2</code> is preferred. </p>
+<h2>Return Value</h2>
+<p>A new table, consisting of the merged keys and their corresponding values, is returned. </p>
+<h2>Errors</h2>
+<p>If the inputs are not valid tables (or table-like objects) then errors will result. </p>
+<h2>Bugs</h2>
+<p>Unlike all other <code>kts</code> functions, <code>kts.table_merge</code> is not actually a built-in part of the <code>kts</code> table. Instead, this function is added to the <code>kts</code> table the first time the <code>classic</code> module is loaded. In other words, at least one module has to import <code>classic</code> before <code>kts.table_merge</code> becomes available. </p>
+<p>This could be seen as a bug, because it is inconsistent with how the other <code>kts</code> functions work. However, it is not normally an issue, because almost all Knights modules will (directly or indirectly) import <code>classic</code> before doing anything else, and therefore, in practice, <code>kts.table_merge</code> will always be available. (The only time this would become an issue is if someone wanted to completely replace the <code>classic</code> module with a new implementation, for some reason.) </p>
+<h2>Examples</h2>
+<p>Consider the following code: </p>
+<pre>table1 = {a=1, b=2, c=3}
+
+table2 = {c=99, d=98, e=97}
+
+table3 = kts.table_merge(table1, table2)
+</pre>
+<p>After this code runs, <code>table3</code> will be equal to <code>{a=1, b=2, c=99, d=98, e=97}</code>. </p>
+<p>The <code>kts.table_merge</code> function is often used when we want to define a "base" version of some table, and then make several "variations" of it by adding new keys. An example of this can be seen in <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/tiles.lua#L192">tiles.lua</a>, where a <code>door_base</code> table is defined, and then <code>wood_door</code> and <code>iron_door</code> tables are derived from it using <code>table_merge</code> calls. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

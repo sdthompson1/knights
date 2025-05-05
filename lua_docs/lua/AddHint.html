@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddHint</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddHint</h1>
+<h2>Name</h2>
+<p>kts.AddHint &ndash; add quest requirement strings </p>
+<h2>Synopsis</h2>
+<p><code>kts.AddHint(message, order, group)</code> </p>
+<p>Here, <code>message</code> is a string, and <code>order</code> and <code>group</code> are integers. </p>
+<h2>Description</h2>
+<p>This function adds a new line to the "Quest Requirements" in-game display. </p>
+<p>The <code>message</code> should be a quest requirement string, e.g. "Retrieve the wand" or "Place the book in the special pentagram". </p>
+<p>The <code>group</code> value allows "either/or" quests to be set up. If all messages have the same <code>group</code> value then there is only one set of requirements, and all must be fulfilled to win the quest. If there are multiple groups, then the players only have to fulfil the requirements from one of the groups to win. </p>
+<p>Within each group, the <code>order</code> value determines the order in which quest requirements will be shown (lower <code>order</code> values display first). </p>
+<p>Please see below for some examples. </p>
+<h2>Return Value</h2>
+<p>This function does not return anything. </p>
+<h2>Notes</h2>
+<p>Note that if quest requirements are changed mid-game, then <a href="ResendHints.html">kts.ResendHints</a> must be called in order to update the UI on player's screens. </p>
+<h2>Examples</h2>
+<p>A "retrieve wand and escape" quest (where the wand is <i>not</i> the wand of securing) could be set up as follows: </p>
+<pre>kts.AddHint("Escape via your entry point", 2, 1)
+kts.AddHint("Retrieve the wand", 1, 1)
+</pre>
+<p>This would result in the following Quest Requirements being displayed: </p>
+<pre>Retrieve the wand
+Escape via your entry point
+</pre>
+<p>This is because, first of all, we only have one group (group=1); and within group 1, "Retrieve the wand" has order=1 so it displays first, then "Escape via your entry point" has order=2 so it displays second. </p>
+<p>If, instead, the wand <i>was</i> the wand of securing, then there would now be two ways to win: (1) escape the dungeon with the wand, or (2) use the wand to secure all exits and then kill all enemy knights. To represent this, we would use the <code>group</code> values to set up the two different ways of winning, as follows: </p>
+<pre>kts.AddHint("Escape via your entry point", 2, 1)
+kts.AddHint("Secure all entry points using the Wand of Securing", 1, 2)
+kts.AddHint("Retrieve the wand", 1, 1)
+kts.AddHint("Destroy all enemy knights", 2, 2)
+</pre>
+<p>This results in the following Quest Requirements display: </p>
+<pre>Retrieve the wand
+Escape via your entry point
+
+--- OR ---
+
+Secure all entry points using the Wand of Securing
+Destroy all enemy knights
+</pre>
+<p>Note that the game has first displayed all requirements with <code>group=1</code>, then the string "--- OR ---", then all requirements with <code>group=2</code>. Moreover, within each group, the messages are sorted in order of the <code>order</code> values (this is why "Retrieve the wand" is first, even though it was added after "Escape via your entry point" in the code). </p>
+<h2>See Also</h2>
+<p><a href="ClearHints.html">kts.ClearHints</a> </p>
+<p><a href="ResendHints.html">kts.ResendHints</a> </p>
+<p><a href="WinGame.html">kts.WinGame</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

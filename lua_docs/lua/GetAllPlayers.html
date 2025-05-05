@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetAllPlayers</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetAllPlayers</h1>
+<h2>Name</h2>
+<p>kts.GetAllPlayers &ndash; get the list of players in the game </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetAllPlayers()</code> </p>
+<h2>Description</h2>
+<p>Returns a list of players in the game. </p>
+<p>The list includes all players, even those who were eliminated (by <a href="EliminatePlayer.html">kts.EliminatePlayer</a>, or by being permanently killed in a "wand of securing" quest). </p>
+<h2>Return Value</h2>
+<p>The return value is a Lua table/array, in which each element is a Player userdata object. (These objects can be used with functions like <a href="IsEliminated.html">kts.IsEliminated</a> or <a href="GetPlayerName.html">kts.GetPlayerName</a>, among others.) </p>
+<h2>Errors</h2>
+<p>None. </p>
+<h2>See Also</h2>
+<p><a href="EliminatePlayer.html">kts.EliminatePlayer</a> </p>
+<p><a href="IsEliminated.html">kts.IsEliminated</a> </p>
+<p><a href="GetHomeFor.html">kts.GetHomeFor</a> </p>
+<p><a href="GetPlayerName.html">kts.GetPlayerName</a> </p>
+<p><a href="SetHomeFor.html">kts.SetHomeFor</a> </p>
+<p><a href="WinGame.html">kts.WinGame</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

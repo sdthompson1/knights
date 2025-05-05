@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Strength</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Strength</h1>
+<h2>Name</h2>
+<p>kts.Strength &ndash; give the current actor the Strength effect </p>
+<h2>Synopsis</h2>
+<p><code>kts.Strength(duration, message)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then that knight gains the Strength magical effect, for the next <code>duration</code> milliseconds. The string <code>message</code> will also flash on screen above the knight a number of times. </p>
+<p>If the knight already has a different incompatible magic effect (such as Super or Regeneration) then the other effect is cancelled in favour of Strength. </p>
+<p>If the knight already has Strength in effect, then the existing Strength timer is cancelled and replaced with the new one. </p>
+<p>If the current actor is not a knight then nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Strength has various effects, including: melee blows to creatures do 1&ndash;2 extra points of damage, melee blows to tiles automatically destroy the tile (unless the knight's weapon <a href="ItemType.html">ItemType</a> has <code>allow_strength</code> set to false), and ranged attacks have double the range and a higher chance to hit. </p>
+<p>The duration (first argument to <code>kts.Strength</code>) is usually set to some kind of random number, to provide some unpredictability for the players. The duration value is not made visible to the player. </p>
+<h2>Examples</h2>
+<p>To give a knight Strength for a random number of seconds between 1 and 60: </p>
+<p><code>kts.Strength(kts.RandomRange(1, 60) * 1000, "Strength")</code> </p>
+<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/magic.lua">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Invisibility.html">kts.Invisibility</a> </p>
+<p><a href="Paralyzation.html">kts.Paralyzation</a> </p>
+<p><a href="PoisonImmunity.html">kts.PoisonImmunity</a> </p>
+<p><a href="Quickness.html">kts.Quickness</a> </p>
+<p><a href="Regeneration.html">kts.Regeneration</a> </p>
+<p><a href="Super.html">kts.Super</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

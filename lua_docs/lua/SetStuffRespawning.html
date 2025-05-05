@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetStuffRespawning</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetStuffRespawning</h1>
+<h2>Name</h2>
+<p>kts.SetStuffRespawning &ndash; set automatic item respawning </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.SetStuffRespawning(items, respawn_delay)</code> </p>
+<h2>Description</h2>
+<p>This configures "stuff respawning" for the next Knights game. </p>
+<p>The first parameter should be a list of <a href="ItemType.html">ItemTypes</a>. </p>
+<p>The second parameter is a respawn delay in milliseconds. </p>
+<p>Every time an item of one of the listed types is removed from the dungeon (e.g. a potion being drunk, or a scroll being read), a timer equal to the respawn delay, divided by the number of players in the game, is started. When the timer expires, the item is respawned at a random location. </p>
+<p>The reason for dividing by the number of players is that this ensures faster respawning when there are many knights, and therefore (presumably) potions and scrolls are being consumed more quickly. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors can be raised if the input list is not a list of ItemTypes, or the respawn delay is not an integer. </p>
+<h2>Examples</h2>
+<p>The following is a simplified version of the Lua code that runs when "Stuff Respawning: Medium" is selected in a standard Knights game: </p>
+<pre>respawn_items_list = {i_potion, i_scroll}
+kts.SetStuffRespawning(respawn_items_list, 480 * 1000)
+</pre>
+<p>In a two player game, this means that every potion and scroll will respawn (at a new, random location) exactly 4 minutes (240 seconds) after it had been consumed. </p>
+<h2>See Also</h2>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="SetLockpickSpawn.html">kts.SetLockpickSpawn</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

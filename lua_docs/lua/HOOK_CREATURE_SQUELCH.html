@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.HOOK_CREATURE_SQUELCH</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.HOOK_CREATURE_SQUELCH</h1>
+<h2>Name</h2>
+<p>kts.HOOK_CREATURE_SQUELCH &ndash; function called when a monster is killed or a knight takes damage </p>
+<h2>Synopsis</h2>
+<p><code>kts.HOOK_CREATURE_SQUELCH = function() ... end</code> </p>
+<h2>Description</h2>
+<p>If <code>kts.HOOK_CREATURE_SQUELCH</code> is non-nil, then it is called as a Lua function (with no parameters) in either of the following two cases: (a) a knight takes any non-zero amount of damage; or (b) a monster takes sufficient damage to kill it. </p>
+<p>During the function call, the <a href="cxt.html">cxt</a> table will be available; for example, <code>cxt.pos</code> will give the position of the damaged creature. </p>
+<p>An exception is that if the source of damage was a call to <a href="Damage.html">kts.Damage</a>, and the <code>inhibit_squelch</code> parameter of <code>kts.Damage</code> was <code>true</code>, then <code>kts.HOOK_CREATURE_SQUELCH</code> is not run. </p>
+<h2>Examples</h2>
+<p>In the standard Knights data files, this hook is set to a function which plays a "squelching" sound. This means that the "squelch" sound is heard whenever a monster is killed, or a knight takes any amount of damage. (Note that a knight being poisoned does not count as "damage", and hence knights dying to poison do not trigger the squelch sound.) </p>
+<p>The code that sets this up can be found in <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/sounds.lua#L151">sounds.lua</a>. </p>
+<p>Note that if a knight is damaged by a bear trap, the squelch sound does not play. This is achieved by setting the <code>inhibit_squelch</code> parameter (the third parameter) when <code>kts.Damage</code> is called from the bear trap code. This can be seen in <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/items.lua#L367">items.lua</a>. (Note that setting the third parameter to <code>1</code> is equivalent to setting it to <code>true</code>, because Lua treats any non-zero, non-false value as being equivalent to <code>true</code>.) </p>
+<p>Other modules could replace <code>kts.HOOK_CREATURE_SQUELCH</code> (or any of the other "hook" functions) with their own code if desired. </p>
+<h2>See Also</h2>
+<p><a href="HOOK_KNIGHT_DAMAGE.html">kts.HOOK_KNIGHT_DAMAGE</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

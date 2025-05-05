@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddMissile</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddMissile</h1>
+<h2>Name</h2>
+<p>kts.AddMissile &ndash; add a missile (dagger, crossbow bolt, etc.) to the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>kts.AddMissile(pos, dir, item_type, drop_after)</code> </p>
+<h2>Description</h2>
+<p>Adds a missile to the dungeon at position <code>pos</code> travelling in direction <code>dir</code>. The missile will keep going until it hits something or reaches its maximum range. </p>
+<p>The parameters of the missile (speed, range, damage, etc.) are determined by the given <code>item_type</code>. </p>
+<p>When the missile hits its target (or runs out of range), if <code>drop_after</code> is true, an item of type <code>item_type</code> will be placed into the dungeon (if there is room for it) at the final square. If <code>drop_after</code> is false, the missile will simply vanish with no item being left behind. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Invalid inputs may raise an error. </p>
+<p>If it is impossible to place a missile at position <code>pos</code> (e.g. because it is inside a wall), then no error is generated; the function just does nothing. </p>
+<h2>Notes</h2>
+<p>As usual, the dungeon position (<code>pos</code> argument) is represented by a Lua table containing two fields, <code>x</code> and <code>y</code>, for the dungeon x and y coordinates. </p>
+<p>The <code>cxt.originator</code> value (i.e. the <code>originator</code> field from the <a href="cxt.html">cxt</a> table) will be used to determine which player originally fired the missile (if any). This is used for attributing deaths and kills. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">cxt</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Knights: Lua Documentation</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><b>Lua Docs</b></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>Knights: Lua Documentation</h1>
+<h2>Introduction</h2>
+<p>Knights uses Lua scripting to customise many aspects of the game, including items, monsters, dungeon rooms, and many other things. </p>
+<p>For an introduction to the Lua scripting system, including instructions on how to create a Knights "mod", please read <a href="lua/intro.html">Knights Lua overview</a>. </p>
+<h2>Index of Lua API functions</h2>
+<p>Here is a list of all Lua API functions provided by Knights, with links to their documentation: </p>
+<ul>
+<li><a href="lua/cxt.html">The Context table (cxt)</a> </li>
+<li><a href="lua/misc_vars.html">Miscellaneous variables</a> </li>
+<li><a href="lua/dofile.html">dofile</a> </li>
+<li><a href="lua/module.html">module</a> </li>
+<li><a href="lua/print.html">print</a> </li>
+<li><a href="lua/require.html">require</a> </li>
+<li><a href="lua/use_strict.html">use_strict</a> </li>
+<li><a href="lua/Activate.html">kts.Activate</a> </li>
+<li><a href="lua/ActorIsKnight.html">kts.ActorIsKnight</a> </li>
+<li><a href="lua/AddHint.html">kts.AddHint</a> </li>
+<li><a href="lua/AddItem.html">kts.AddItem</a> </li>
+<li><a href="lua/AddMissile.html">kts.AddMissile</a> </li>
+<li><a href="lua/AddMonster.html">kts.AddMonster</a> </li>
+<li><a href="lua/AddMonsterGenerator.html">kts.AddMonsterGenerator</a> </li>
+<li><a href="lua/AddMonsters.html">kts.AddMonsters</a> </li>
+<li><a href="lua/AddStartingGear.html">kts.AddStartingGear</a> </li>
+<li><a href="lua/AddStuff.html">kts.AddStuff</a> </li>
+<li><a href="lua/AddTask.html">kts.AddTask</a> </li>
+<li><a href="lua/AddTile.html">kts.AddTile</a> </li>
+<li><a href="lua/Anim.html">kts.Anim</a> </li>
+<li><a href="lua/Attractor.html">kts.Attractor</a> </li>
+<li><a href="lua/ChangeItem.html">kts.ChangeItem</a> </li>
+<li><a href="lua/ChangeTile.html">kts.ChangeTile</a> </li>
+<li><a href="lua/ClearHints.html">kts.ClearHints</a> </li>
+<li><a href="lua/CloseDoor.html">kts.CloseDoor</a> </li>
+<li><a href="lua/ConnectivityCheck.html">kts.ConnectivityCheck</a> </li>
+<li><a href="lua/Control.html">kts.Control</a> </li>
+<li><a href="lua/CrystalStart.html">kts.CrystalStart</a> </li>
+<li><a href="lua/CrystalStop.html">kts.CrystalStop</a> </li>
+<li><a href="lua/Damage.html">kts.Damage</a> </li>
+<li><a href="lua/DebugPrint.html">kts.DebugPrint</a> </li>
+<li><a href="lua/Delay.html">kts.Delay</a> </li>
+<li><a href="lua/DestroyCreature.html">kts.DestroyCreature</a> </li>
+<li><a href="lua/DispelMagic.html">kts.DispelMagic</a> </li>
+<li><a href="lua/Drop.html">kts.Drop</a> </li>
+<li><a href="lua/DropHeld.html">kts.DropHeld</a> </li>
+<li><a href="lua/EliminatePlayer.html">kts.EliminatePlayer</a> </li>
+<li><a href="lua/FlashMessage.html">kts.FlashMessage</a> </li>
+<li><a href="lua/FlashScreen.html">kts.FlashScreen</a> </li>
+<li><a href="lua/FullZombieActivity.html">kts.FullZombieActivity</a> </li>
+<li><a href="lua/GameTime.html">kts.GameTime</a> </li>
+<li><a href="lua/GenerateLocksAndTraps.html">kts.GenerateLocksAndTraps</a> </li>
+<li><a href="lua/GetAllHomes.html">kts.GetAllHomes</a> </li>
+<li><a href="lua/GetAllPlayers.html">kts.GetAllPlayers</a> </li>
+<li><a href="lua/GetFacing.html">kts.GetFacing</a> </li>
+<li><a href="lua/GetHomeFor.html">kts.GetHomeFor</a> </li>
+<li><a href="lua/GetItemInHand.html">kts.GetItemInHand</a> </li>
+<li><a href="lua/GetMonsterCount.html">kts.GetMonsterCount</a> </li>
+<li><a href="lua/GetMonsterLimit.html">kts.GetMonsterLimit</a> </li>
+<li><a href="lua/GetNumHeld.html">kts.GetNumHeld</a> </li>
+<li><a href="lua/GetPlayer.html">kts.GetPlayer</a> </li>
+<li><a href="lua/GetPlayerName.html">kts.GetPlayerName</a> </li>
+<li><a href="lua/GetPos.html">kts.GetPos</a> </li>
+<li><a href="lua/GetRandomPos.html">kts.GetRandomPos</a> </li>
+<li><a href="lua/GetRespawnFunction.html">kts.GetRespawnFunction</a> </li>
+<li><a href="lua/GetRespawnType.html">kts.GetRespawnType</a> </li>
+<li><a href="lua/GetTiles.html">kts.GetTiles</a> </li>
+<li><a href="lua/GetTotalMonsterCount.html">kts.GetTotalMonsterCount</a> </li>
+<li><a href="lua/GetTotalMonsterLimit.html">kts.GetTotalMonsterLimit</a> </li>
+<li><a href="lua/GiveItem.html">kts.GiveItem</a> </li>
+<li><a href="lua/Graphic.html">kts.Graphic</a> </li>
+<li><a href="lua/Healing.html">kts.Healing</a> </li>
+<li><a href="lua/HOOK_CREATURE_SQUELCH.html">kts.HOOK_CREATURE_SQUELCH</a> </li>
+<li><a href="lua/HOOK_KNIGHT_DAMAGE.html">kts.HOOK_KNIGHT_DAMAGE</a> </li>
+<li><a href="lua/HOOK_MISSILE_MISS.html">kts.HOOK_MISSILE_MISS</a> </li>
+<li><a href="lua/HOOK_SHOOT.html">kts.HOOK_SHOOT</a> </li>
+<li><a href="lua/HOOK_WEAPON_DOWNSWING.html">kts.HOOK_WEAPON_DOWNSWING</a> </li>
+<li><a href="lua/HOOK_WEAPON_PARRY.html">kts.HOOK_WEAPON_PARRY</a> </li>
+<li><a href="lua/Invisibility.html">kts.Invisibility</a> </li>
+<li><a href="lua/Invulnerability.html">kts.Invulnerability</a> </li>
+<li><a href="lua/IsAlive.html">kts.IsAlive</a> </li>
+<li><a href="lua/IsDoorOpen.html">kts.IsDoorOpen</a> </li>
+<li><a href="lua/IsEliminated.html">kts.IsEliminated</a> </li>
+<li><a href="lua/IsKnight.html">kts.IsKnight</a> </li>
+<li><a href="lua/ItemType.html">kts.ItemType</a> </li>
+<li><a href="lua/LayoutDungeon.html">kts.LayoutDungeon</a> </li>
+<li><a href="lua/LimitMonster.html">kts.LimitMonster</a> </li>
+<li><a href="lua/LimitTotalMonsters.html">kts.LimitTotalMonsters</a> </li>
+<li><a href="lua/LoadSegments.html">kts.LoadSegments</a> </li>
+<li><a href="lua/LockDoor.html">kts.LockDoor</a> </li>
+<li><a href="lua/MagicMapping.html">kts.MagicMapping</a> </li>
+<li><a href="lua/MENU.html">kts.MENU</a> </li>
+<li><a href="lua/MISC_CONFIG.html">kts.MISC_CONFIG</a> </li>
+<li><a href="lua/MonsterType.html">kts.MonsterType</a> </li>
+<li><a href="lua/Necromancy.html">kts.Necromancy</a> </li>
+<li><a href="lua/Nop.html">kts.Nop</a> </li>
+<li><a href="lua/NormalZombieActivity.html">kts.NormalZombieActivity</a> </li>
+<li><a href="lua/OpenDoor.html">kts.OpenDoor</a> </li>
+<li><a href="lua/OpenOrCloseDoor.html">kts.OpenOrCloseDoor</a> </li>
+<li><a href="lua/OpenWays.html">kts.OpenWays</a> </li>
+<li><a href="lua/Overlay.html">kts.Overlay</a> </li>
+<li><a href="lua/Paralyzation.html">kts.Paralyzation</a> </li>
+<li><a href="lua/PickLock.html">kts.PickLock</a> </li>
+<li><a href="lua/PickUp.html">kts.PickUp</a> </li>
+<li><a href="lua/PitKill.html">kts.PitKill</a> </li>
+<li><a href="lua/PlaceItem.html">kts.PlaceItem</a> </li>
+<li><a href="lua/PlaySound.html">kts.PlaySound</a> </li>
+<li><a href="lua/Poison.html">kts.Poison</a> </li>
+<li><a href="lua/PoisonImmunity.html">kts.PoisonImmunity</a> </li>
+<li><a href="lua/PopUpWindow.html">kts.PopUpWindow</a> </li>
+<li><a href="lua/Quickness.html">kts.Quickness</a> </li>
+<li><a href="lua/RandomChance.html">kts.RandomChance</a> </li>
+<li><a href="lua/RandomRange.html">kts.RandomRange</a> </li>
+<li><a href="lua/Regeneration.html">kts.Regeneration</a> </li>
+<li><a href="lua/RemoveTile.html">kts.RemoveTile</a> </li>
+<li><a href="lua/ResendHints.html">kts.ResendHints</a> </li>
+<li><a href="lua/RevealLocation.html">kts.RevealLocation</a> </li>
+<li><a href="lua/RevealStart.html">kts.RevealStart</a> </li>
+<li><a href="lua/RevealStop.html">kts.RevealStop</a> </li>
+<li><a href="lua/RotateAddPos.html">kts.RotateAddPos</a> </li>
+<li><a href="lua/RotateDirection.html">kts.RotateDirection</a> </li>
+<li><a href="lua/Secure.html">kts.Secure</a> </li>
+<li><a href="lua/SenseItems.html">kts.SenseItems</a> </li>
+<li><a href="lua/SenseKnight.html">kts.SenseKnight</a> </li>
+<li><a href="lua/SetBearTrap.html">kts.SetBearTrap</a> </li>
+<li><a href="lua/SetBladeTrap.html">kts.SetBladeTrap</a> </li>
+<li><a href="lua/SetBladeTrapOld.html">kts.SetBladeTrapOld</a> </li>
+<li><a href="lua/SetDeathmatchMode.html">kts.SetDeathmatchMode</a> </li>
+<li><a href="lua/SetHomeFor.html">kts.SetHomeFor</a> </li>
+<li><a href="lua/SetLockpickSpawn.html">kts.SetLockpickSpawn</a> </li>
+<li><a href="lua/SetOverlayOffsets.html">kts.SetOverlayOffsets</a> </li>
+<li><a href="lua/SetPoisonTrap.html">kts.SetPoisonTrap</a> </li>
+<li><a href="lua/SetPoisonTrapOld.html">kts.SetPoisonTrapOld</a> </li>
+<li><a href="lua/SetPremapped.html">kts.SetPremapped</a> </li>
+<li><a href="lua/SetReflect.html">kts.SetReflect</a> </li>
+<li><a href="lua/SetRespawnFunction.html">kts.SetRespawnFunction</a> </li>
+<li><a href="lua/SetRespawnType.html">kts.SetRespawnType</a> </li>
+<li><a href="lua/SetRotate.html">kts.SetRotate</a> </li>
+<li><a href="lua/SetStuffRespawning.html">kts.SetStuffRespawning</a> </li>
+<li><a href="lua/SetTimeLimit.html">kts.SetTimeLimit</a> </li>
+<li><a href="lua/SetZombieActivity.html">kts.SetZombieActivity</a> </li>
+<li><a href="lua/Sound.html">kts.Sound</a> </li>
+<li><a href="lua/StartTutorialManager.html">kts.StartTutorialManager</a> </li>
+<li><a href="lua/Strength.html">kts.Strength</a> </li>
+<li><a href="lua/Suicide.html">kts.Suicide</a> </li>
+<li><a href="lua/Super.html">kts.Super</a> </li>
+<li><a href="lua/Swing.html">kts.Swing</a> </li>
+<li><a href="lua/SwingOrDrop.html">kts.SwingOrDrop</a> </li>
+<li><a href="lua/table_merge.html">kts.table_merge</a> </li>
+<li><a href="lua/TeleportRandom.html">kts.TeleportRandom</a> </li>
+<li><a href="lua/TeleportTo.html">kts.TeleportTo</a> </li>
+<li><a href="lua/Throw.html">kts.Throw</a> </li>
+<li><a href="lua/ThrowOrShoot.html">kts.ThrowOrShoot</a> </li>
+<li><a href="lua/Tile.html">kts.Tile</a> </li>
+<li><a href="lua/WinGame.html">kts.WinGame</a> </li>
+<li><a href="lua/WipeDungeon.html">kts.WipeDungeon</a> </li>
+<li><a href="lua/WipeMap.html">kts.WipeMap</a> </li>
+<li><a href="lua/ZombieKill.html">kts.ZombieKill</a> </li>
+<li><a href="lua/ZombifyActor.html">kts.ZombifyActor</a> </li>
+<li><a href="lua/ZombifyTarget.html">kts.ZombifyTarget</a> </li>
+</ul>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>require</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>require</h1>
+<h2>Name</h2>
+<p>require &ndash; Load a Lua module </p>
+<h2>Synopsis</h2>
+<p><code>result = require(module_name)</code> </p>
+<h2>Description</h2>
+<p>If a module with the given name has not previously been loaded, then <code>require(module_name)</code> looks for a folder named <code>module_name</code> in the <code>knights_data/server</code> directory. The <code>init.lua</code> file within that directory is loaded and executed as a Lua chunk. The value returned from that chunk is returned from the <code>require</code> call, and also stored internally for future reference. </p>
+<p>If a module with the given name <i>has</i> previously been loaded, then the stored return value from that module is just immediately returned from the <code>require</code> call, without loading the module or executing its <code>init.lua</code> code a second time. </p>
+<h2>Return Value</h2>
+<p>Whatever value was returned from the module's <code>init.lua</code> chunk becomes the return value from the <code>require</code> call. </p>
+<h2>Errors</h2>
+<p>If no module of the given name exists then an error is raised. </p>
+<p>Also, if the loaded module itself throws any error, then that error is propagated by the <code>require</code> call. </p>
+<h2>Examples</h2>
+<p>To load the "classic" module, you would do the following: </p>
+<p><code>local C = require("classic")</code> </p>
+<p>The <code>C</code> variable is now set to a table containing all the values exported from the <code>classic</code> module. For example, <code>C.g_potion</code> can be used to access the <a href="Graphic.html">Graphic</a> for the "potion" item. </p>
+<h2>See Also</h2>
+<p><a href="dofile.html">dofile</a> </p>
+<p><a href="module.html">module</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

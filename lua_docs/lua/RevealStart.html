@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.RevealStart</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.RevealStart</h1>
+<h2>Name</h2>
+<p>kts.RevealStart &ndash; start revealing the actor's location to all players </p>
+<h2>Synopsis</h2>
+<p><code>kts.RevealStart()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (<code>cxt.actor</code>) is a knight, their location will become visible on the mini-map of all players, until <code>kts.RevealStop()</code> is called. </p>
+<p>If the current actor is not a knight, nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>This function works completely independently of <a href="RevealLocation.html">kts.RevealLocation</a>. </p>
+<h2>Examples</h2>
+<p>This is used as part of the Ancient Book of Knowledge effect: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L309">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="RevealLocation.html">kts.RevealLocation</a> </p>
+<p><a href="RevealStop.html">kts.RevealStop</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

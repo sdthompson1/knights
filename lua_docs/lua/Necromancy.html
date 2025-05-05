@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Necromancy</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Necromancy</h1>
+<h2>Name</h2>
+<p>kts.Necromancy &ndash; instantly raise nearby corpses as zombies </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.Necromancy(max_zombies, max_range)</code> </p>
+<h2>Description</h2>
+<p>If this is the first time that <code>kts.Necromancy</code> has been called this game, then all nearby tiles (within the given <code>max_range</code> of <code>cxt.pos</code>) are searched to see if they are able to be reanimated as zombies (or other monsters), according to the current zombie activity settings for the dungeon (see <a href="SetZombieActivity.html">kts.SetZombieActivity</a>). If any such tiles are found, then up to <code>max_zombies</code> of them (selected at random) are instantly reanimated as the corresponding monster type (meaning that the tile is removed and a new monster of the appropriate type is created in its place). </p>
+<p>If this is the second or subsequent time that <code>kts.Necromancy</code> has been called this game, then nothing happens. </p>
+<h2>Return Value</h2>
+<p>This returns true if the necromancy effect actually took place, or false if it did not (e.g. because <code>kts.Necromancy</code> had already been called earlier this game). </p>
+<h2>Notes</h2>
+<p>"Distance" (for the purpose of <code>max_range</code>) is measured as the maximum of the horizontal or vertical distance from <code>cxt.pos</code>. For example, if <code>cxt.pos</code> is <code>{x=5, y=5}</code> and <code>max_range</code> is 2, then all tiles in the 5x5 square pattern from <code>{x=3, y=3}</code> to <code>{x=7, y=7}</code> (inclusive) will be considered for the necromancy effect. </p>
+<h2>Examples</h2>
+<p>The following call (assuming that it is the first <code>kts.Necromancy</code> call of the game) would consider all tiles within a distance of 5 from position <code>cxt.pos</code> (i.e. within the 11 x 11 square pattern centred on <code>cxt.pos</code>) and turn up to 10 of them into zombies according to the current zombie activity settings: </p>
+<p><code>kts.Necromancy(10, 5)</code> </p>
+<p>As an example, if the current "zombie table" (2nd argument to <a href="SetZombieActivity.html">kts.SetZombieActivity</a>) is defined as follows: </p>
+<pre>{
+    {tile1, tile2},
+    {tile2, tile3},
+    {tile3, m_zombie}
+}
+</pre>
+<p>(where <code>tile1</code>, <code>tile2</code> and <code>tile3</code> are tiles depicting corpses in various states of decay, and <code>m_zombie</code> is the <a href="MonsterType.html">MonsterType</a> corresponding to a zombie), then the Necromancy effect would look at that table, and conclude that any instance of <code>tile1</code>, <code>tile2</code> or <code>tile3</code> would be eligible for raising as a zombie (i.e. the <code>m_zombie</code> monster type). Up to 10 such tiles (from within the appropriate area of effect) would be randomly selected and instantly turned into zombies. </p>
+<p>Note that the actual decay sequence (e.g. <code>tile1</code> -> <code>tile2</code> -> <code>tile3</code> -> <code>m_zombie</code> in this example) is irrelevant; the Necromancy effect is only looking at the "end point" of the sequence (i.e. the monster type). So, for example, if a <code>tile1</code> is selected for necromancy, then it just gets directly turned into a monster of type <code>m_zombie</code>, without having to go through the <code>tile2</code> and <code>tile3</code> stages first. </p>
+<p>In the standard Knights Lua files, calling <code>kts.Necromancy</code> is one half of the effect of picking up the Necronomicon book; see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L323">items.lua</a>. (The other half of the effect is to set <a href="FullZombieActivity.html">kts.FullZombieActivity</a> while the book is being carried.) </p>
+<p>The Liche Tomb map layouts also typically have a large number of corpses either in the tomb itself, or just outside, meaning that any knight disturbing the Necronomicon from its resting place will likely find themselves surrounded by zombies very quickly! </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="MonsterType.html">kts.MonsterType</a> </p>
+<p><a href="FullZombieActivity.html">kts.FullZombieActivity</a> </p>
+<p><a href="NormalZombieActivity.html">kts.NormalZombieActivity</a> </p>
+<p><a href="SetZombieActivity.html">kts.SetZombieActivity</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

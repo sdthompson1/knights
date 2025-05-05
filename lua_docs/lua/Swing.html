@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Swing</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Swing</h1>
+<h2>Name</h2>
+<p>kts.Swing &ndash; attack with melee weapon </p>
+<h2>Synopsis</h2>
+<p><code>kts.Swing()</code> </p>
+<p><code>result = kts.Can_Swing()</code> </p>
+<h2>Description</h2>
+<p>If the actor (<code>cxt.actor</code>) is a creature holding a melee weapon in their hands, and is currently able to attack with that weapon, then calling <code>kts.Swing()</code> will cause the actor to begin a melee attack. </p>
+<p><code>kts.Can_Swing()</code> will return true if the actor is a creature currently able to attack as described above, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.Swing()</code> returns nothing, and <code>kts.Can_Swing()</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p>This function can only be used to initiate melee attacks with a hand-held weapon (like a sword, hammer or axe). For example, it cannot be used to make vampire bats attack, and it cannot be used to initiate ranged attacks. </p>
+<p><code>kts.Swing</code> and <code>kts.Can_Swing</code> are useful as the <code>action</code> and <code>possible</code> functions of a <a href="Control.html">Control</a>, respectively. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="SwingOrDrop.html">kts.SwingOrDrop</a> </p>
+<p><a href="Throw.html">kts.Throw</a> </p>
+<p><a href="ThrowOrShoot.html">kts.ThrowOrShoot</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

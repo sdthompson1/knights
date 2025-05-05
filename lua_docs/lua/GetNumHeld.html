@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetNumHeld</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetNumHeld</h1>
+<h2>Name</h2>
+<p>kts.GetNumHeld &ndash; count how many items of a particular type a creature is carrying </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetNumHeld(creature, item_type)</code> </p>
+<h2>Description</h2>
+<p>Given a Creature and an ItemType, returns the number of copies of the ItemType that the Creature is currently holding. </p>
+<h2>Return Value</h2>
+<p>A number (non-negative integer) is returned. </p>
+<h2>Errors</h2>
+<p>If the inputs are invalid, then an error will be generated. </p>
+<h2>Examples</h2>
+<p>The following could be used to detect whether the current actor is carrying any gems. (It is assumed that this code is being called from within an action function of some sort, for example <code>on_walk_over</code> in a <a href="Tile.html">Tile</a>, and also, that the ItemType <code>i_gem</code> is defined somewhere.) </p>
+<pre>if kts.GetNumHeld(cxt.actor, i_gem) &gt; 0 then
+    -- Do something...
+end
+</pre>
+<h2>See Also</h2>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

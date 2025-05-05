@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddItem</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddItem</h1>
+<h2>Name</h2>
+<p>kts.AddItem &ndash; add randomly generated item(s) to the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>kts.AddItem(item_type, number, weights)</code> </p>
+<h2>Description</h2>
+<p>This generates the given number of items, of the given type, and adds them at random locations within the dungeon. </p>
+<p>The table <code>weights</code> determines how the locations are decided. This must be a list of alternating tile category names, and numbers representing the weight given to that tile category. Higher weights indicate that the item will be more likely to be placed within a tile of that category. A weight of zero means that tile category will only be used if no tiles of the other categories are available. </p>
+<p>(The tile category names correspond to the "items" field of the Tile, see <a href="Tile.html">kts.Tile</a> for details.) </p>
+<p>See below for an example. </p>
+<h2>Return Value</h2>
+<p>Nothing is returned. </p>
+<h2>Errors</h2>
+<p>Errors will be generated if parameters are missing or have the wrong types, if the weights table has an odd number of entries, if any weight is negative, or if all weights in the table are zero (at least one non-zero weight is required). </p>
+<h2>Notes</h2>
+<p>This function is intended to be used during initial dungeon generation. To add items to the dungeon during gameplay, use <a href="PlaceItem.html">kts.PlaceItem</a>. </p>
+<h2>Examples</h2>
+<p>The following command: </p>
+<pre>kts.AddItem( i_gem,
+             4,
+             { "chest",       3,
+               "small_table", 1,
+               "table",       1,
+               "floor",       0  } )
+</pre>
+<p>will place four gems into the dungeon at random locations. </p>
+<p>Each gem has a 60% chance (3 out of 5) of being placed in a "chest", 20% (1 out of 5) on a "small table", and 20% on a "table". If no tiles of those types exist in the dungeon (or if they all already have items on them) then the gem(s) will be placed on floor tiles instead. </p>
+<p>This example assumes that <code>i_gem</code> was previously created by a call to <a href="ItemType.html">kts.ItemType</a>. It also assumes that suitable tiles have previously been created by calls to <a href="Tile.html">kts.Tile</a>, and that the "items" property of at least some of the tiles was set to either "chest", "small_table", "table" or "floor". </p>
+<h2>See Also</h2>
+<p><a href="AddStuff.html">kts.AddStuff</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="PlaceItem.html">kts.PlaceItem</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.PickLock</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.PickLock</h1>
+<h2>Name</h2>
+<p>kts.PickLock &ndash; attempt to pick a lock </p>
+<h2>Synopsis</h2>
+<p><code>kts.PickLock(probability, waiting_time)</code> </p>
+<p><code>kts.Can_PickLock(probability, waiting_time)</code> </p>
+<h2>Description</h2>
+<p><code>kts.PickLock</code> will try to find a locked door or chest tile in the square directly in front of the current actor (<code>cxt.actor</code>). If found, then with the given <code>probability</code> (which must be a number between 0 and 1), the door or chest will immediately be unlocked and opened; otherwise, nothing happens. </p>
+<p>Whether lock picking is successful or not, the actor will be stunned (unable to perform other actions) for the given <code>waiting_time</code>. (If the actor is a knight with Quickness, then this time will be multiplied by 100 / Q, where Q is the <code>quickness_factor</code> from the <a href="MISC_CONFIG.html">MISC_CONFIG</a> table; this means that knights with Quickness can pick locks faster than normal.) </p>
+<p><code>kts.Can_PickLock</code> returns true if a lock picking action is currently possible (e.g. this checks that <code>cxt.actor</code> is not nil and that the square ahead of the actor does contain at least one valid "pickable" door or chest tile). The <code>probability</code> and <code>waiting_time</code> arguments are ignored in this case (although they must still be valid numbers). </p>
+<h2>Return Value</h2>
+<p><code>kts.PickLock</code> returns nothing, and <code>kts.Can_PickLock</code> returns a boolean as described above. </p>
+<h2>Errors</h2>
+<p>Errors will occur if <code>probability</code> is not a number between 0 and 1 or <code>waiting_time</code> is not a valid number. </p>
+<h2>Notes</h2>
+<p>"Special-locked" doors are ignored by this function (i.e. lock-picking them will not be possible). In general, the only way to open such doors is by using switches found in the dungeon. See also the <code>special_lock</code> property of <a href="Tile.html">kts.Tile</a>. </p>
+<p><code>kts.PickLock</code> and <code>kts.Can_PickLock</code> are usually used as the <code>action</code> and <code>possible</code> functions (respectively) of a <a href="Control.html">Control</a>. </p>
+<h2>Bugs</h2>
+<p>In the standard Knights files, the <code>action</code> function of the "Use Lock Picks" control calls <code>kts.PickLock</code>, with a waiting time of 140 ms, and then plays a sound. In theory, this means the "lock picking" sound should play once every 140 ms in a regular rhythm. In practice, in network games, there are slight variations in ping times which means that the sound is played with a slightly irregular rhythm instead. This isn't a hugely serious bug, but it is annoying to listen to. Perhaps some way should be found to smooth this out on the client. </p>
+<h2>Examples</h2>
+<p>The standard Knights <code>items.lua</code> file defines lock picks <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L454">here</a>; this shows a good example of <code>kts.PickLock</code> and <code>kts.Can_PickLock</code> being used. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

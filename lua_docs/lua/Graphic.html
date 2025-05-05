@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Graphic</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Graphic</h1>
+<h2>Name</h2>
+<p>kts.Graphic &ndash; create a new Graphic </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.Graphic(filename)</code> </p>
+<p><code>result = kts.Graphic(filename, r, g, b)</code> </p>
+<p><code>result = kts.Graphic(filename, r, g, b, x, y)</code> </p>
+<p><code>result = kts.Graphic(filename, r, g, b, x, y, size_num, size_denom)</code> </p>
+<h2>Description</h2>
+<p>A "Graphic" represents a single graphic image (or sprite) used in the game. </p>
+<p>Graphics are loaded from BMP files (other formats are not currently supported). The file can either be one of the BMP files shipped with the game (in the <code>knights_data/client/std_files</code> folder), or it can be a custom image file included as part of a Knights mod. (In the latter case, the image data will automatically be downloaded to the client in network games, so there is no need to install the mod on each player's computer individually.) </p>
+<p>To create a Graphic, <code>kts.Graphic</code> is called. The first parameter is always the filename. If this begins with a "+" character, then it refers to one of the <code>std_files</code> shipped with the game, otherwise it refers to a file included as part of the current mod. </p>
+<p>If the <code>r</code>, <code>g</code> and <code>b</code> parameters are included (and set to values between 0 and 255), then the corresponding RGB colour is interpreted as a "transparency key" i.e. pixels of that exact colour will be considered transparent. (This is needed because the BMP format does not support transparency!) </p>
+<p>If <code>x</code> and <code>y</code> are included then the "handle" position for the graphic is set to that location (relative to the top-left of the image). </p>
+<p>If <code>size_num</code> and <code>size_denom</code> are included then the image will be scaled by the ratio <code>size_num / size_denom</code> before being displayed. (This is an experimental feature, and as far as I know, nothing is using it currently.) </p>
+<p>Once a Graphic is created, it can be used for things like creating <a href="ItemType.html">ItemTypes</a> or <a href="Tile.html">Tiles</a>, or several different Graphics can be assembled into an <a href="Anim.html">Anim</a> or <a href="Overlay.html">Overlay</a>. </p>
+<h2>Return Value</h2>
+<p>The return value is the newly created Graphic (a Lua userdata object). </p>
+<h2>Errors</h2>
+<p>Errors can occur if the input parameters are incorrect or invalid. </p>
+<h2>Notes</h2>
+<p>The Steam version of Knights will disable the automatic downloading of graphic files from the server, for security reasons. Instead, Steam Workshop will (most likely) be used for managing mods. Players would have to make sure they have any required mods downloaded and installed locally, before joining any game that has been configured to use mods. </p>
+<h2>Bugs</h2>
+<p>The correct values to use for the "handle position" parameters (x and y) are not particularly clear. Perhaps some kind of graphic/anim/overlay editor tool should be created. </p>
+<h2>See Also</h2>
+<p><a href="Anim.html">kts.Anim</a> </p>
+<p><a href="Overlay.html">kts.Overlay</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

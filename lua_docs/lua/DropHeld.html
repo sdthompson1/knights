@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.DropHeld</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.DropHeld</h1>
+<h2>Name</h2>
+<p>kts.DropHeld &ndash; drop the actor's held item </p>
+<h2>Synopsis</h2>
+<p><code>kts.DropHeld()</code> </p>
+<p><code>result = kts.Can_DropHeld()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (given by <code>cxt.actor</code>) is a knight, who is carrying an item in hand, then the item will be dropped. </p>
+<p>If the knight is approaching a square (such as a table or open chest), then the item will be dropped into that square if possible. If it is not possible, e.g. because there is already an item there, or because the tile is something like a closed chest or door that blocks items, then nothing happens &ndash; in particular, the item is <i>not</i> dropped into an adjacent square in this case. (This rule prevents knights from accidentally dropping their weapon when they instead intended to open a chest or something similar.) </p>
+<p>If the knight is not approaching a square, then the item will be dropped either onto the current square, or one of the four adjacent squares, as appropriate. (If none of those five squares are able to receive the item, then nothing happens and the drop fails.) </p>
+<p>The function <code>kts.Can_DropHeld()</code> returns true if the actor (given by <code>cxt.actor</code>) is a knight able to drop their currently held item, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.DropHeld()</code> returns nothing, and <code>kts.Can_DropHeld()</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p>The default item (as set by <code>kts.DEFAULT_ITEM</code>), which is usually the sword, can never be dropped; attempting to drop it using this function will fail (and <code>kts.Can_DropHeld</code> will return false in that case). </p>
+<p>To drop items that are <i>not</i> held in hand (such as gems or bolts), use <a href="Drop.html">kts.Drop</a>. </p>
+<p><code>kts.DropHeld</code> and <code>kts.Can_DropHeld</code> are usually used as the <code>action</code> and <code>possible</code> functions (respectively) of a <a href="Control.html">Control</a>. </p>
+<h2>Examples</h2>
+<p>The standard "Drop" control (which is available on the action menu, or is the default "tap button" action in many cases) uses <code>kts.DropHeld</code>; see <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/controls.lua#L40">controls.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="Drop.html">kts.Drop</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="PickUp.html">kts.PickUp</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

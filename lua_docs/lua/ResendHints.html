@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ResendHints</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ResendHints</h1>
+<h2>Name</h2>
+<p>kts.ResendHints &ndash; update the Quest Requirements display for all players </p>
+<h2>Synopsis</h2>
+<p><code>kts.ResendHints()</code> </p>
+<h2>Description</h2>
+<p>If <a href="ClearHints.html">kts.ClearHints</a> and/or <a href="AddHint.html">kts.AddHint</a> are called mid-way through a game, then the UI does not automatically update to reflect the new Quest Requirements. Instead, once all updates are done, the Lua code must call <code>kts.ResendHints()</code>. This will send all the new requirements over the network (if necessary) to all players, and then update the UI as required. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Notes</h2>
+<p>Note that the Quest Requirements UI is automatically set up correctly at the beginning of a game, so this function is only needed if the requirements actually change during gameplay. In most Knights quests, this will not be the case, however, the Tutorial is an exception, and so this function is needed there. </p>
+<h2>See Also</h2>
+<p><a href="AddHint.html">kts.AddHint</a> </p>
+<p><a href="ClearHints.html">kts.ClearHints</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

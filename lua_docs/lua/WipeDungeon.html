@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.WipeDungeon</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.WipeDungeon</h1>
+<h2>Name</h2>
+<p>kts.WipeDungeon &ndash; clear the entire dungeon </p>
+<h2>Synopsis</h2>
+<p><code>kts.WipeDungeon()</code> </p>
+<h2>Description</h2>
+<p>This completely resets the dungeon map (deleting everything in the dungeon) and also sets the global variable <code>kts.DUNGEON_ERROR</code> to <code>nil</code>. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>This cannot be called in-game, it is only used during the dungeon generation process. </p>
+<h2>Examples</h2>
+<p>To see how this is used in the standard Knights Lua files, consult <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/classic/dungeon_setup.lua#L279">dungeon_setup.lua</a>. </p>
+<p>The basic idea is that the Lua code tries, up to 25 times, to generate a random dungeon. Because dungeon generation is random, it might fail (one possible reason is that not enough entry points for the knights were generated). If failure does occur, the Lua code calls <code>kts.WipeDungeon()</code> to erase the previous dungeon, and then tries again. If dungeon generation keeps failing, the code will try to expand the dungeon to a larger layout, or eventually, give up completely. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

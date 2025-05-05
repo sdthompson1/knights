@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Secure</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Secure</h1>
+<h2>Name</h2>
+<p>kts.Secure &ndash; "secure" a Home tile, preventing other knights from using it </p>
+<h2>Synopsis</h2>
+<p><code>success, reason = kts.Secure(wall_tile)</code> </p>
+<h2>Description</h2>
+<p>This function "secures" a home, making it unusable as an entry point by any knight, other than the knight who secured it. </p>
+<p>If two different players (from different teams) secure the same home, then the home is removed, and turned into a copy of <code>wall_tile</code> (the parameter to this function), instead. The parameter must therefore be a valid <a href="Tile.html">Tile</a> object. </p>
+<p>This function does not take any parameters indicating which knight is doing the securing or which home is being secured. Instead, the game looks at the <a href="cxt.html">cxt</a> table, and specifically the <code>actor</code> field, to determine which knight is acting, and then looks at the position one square "ahead" of that knight to look for a home to secure. This function is therefore best called from one of the item or tile callback functions, such as <code>melee_action</code> in <a href="ItemType.html">ItemType</a>, as the <code>cxt</code> table will already be correctly set up in such cases. </p>
+<h2>Return Value</h2>
+<p>On success, there is exactly one return value which is <code>true</code>. </p>
+<p>On failure, two values are returned. The first value is <code>false</code> and the second value is one of the following strings: </p>
+<ul>
+<li><code>"not_a_home"</code>: There is no home tile in front of the knight currently. </li>
+<li><code>"already_secure"</code>: The home tile is already secured by this knight. </li>
+<li><code>"special_exit"</code>: The home tile is a special exit point (e.g. an exit point associated with a "Guarded" exit). These homes cannot be secured, nor can they be used as normal entry points by knights. </li>
+<li><code>"invalid"</code>: The call was invalid, e.g. the <code>cxt.actor</code> field was not set, or it was not pointing to a valid knight. </li>
+</ul>
+<h2>Errors</h2>
+<p>If the input parameter is not a tile, then a Lua error is raised. </p>
+<h2>Notes</h2>
+<p>Historical note: Earlier versions of Knights would allow players to respawn at the "special_exit" point, if their previous entry point was secured, but this led to comical situations where a player would respawn at the Guarded Exit without having the key to get out &ndash; so therefore would be stuck there forever (or at least until another player came and "released" them). This was changed at some point to the current behaviour, where "special_exits" can neither be secured, nor used as spawn points by knights. </p>
+<h2>Examples</h2>
+<p>This function is called from the <code>melee_action</code> of the Wand of Securing <a href="ItemType.html">ItemType</a>, in order to implement the special effect of that wand. See <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/classic/items.lua#L276">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="GetAllHomes.html">kts.GetAllHomes</a> </p>
+<p><a href="GetHomeFor.html">kts.GetHomeFor</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

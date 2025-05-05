@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetLockpickSpawn</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetLockpickSpawn</h1>
+<h2>Name</h2>
+<p>kts.SetLockpickSpawn &ndash; setup automatic spawning of lockpicks </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetLockpickSpawn(item_type, initial_time, interval_time)</code> </p>
+<h2>Description</h2>
+<p>This function causes lockpicks to automatically spawn at a random dungeon location every so often. The first lockpick will spawn at <code>initial_time</code> milliseconds after the game begins, and new lockpicks will spawn every <code>interval_time</code> milliseconds thereafter. </p>
+<p>The <code>item_type</code> parameter should be the ItemType corresponding to the lockpicks. </p>
+<p>The purpose of this is to provide a way out in case players get "stuck" because a certain door is locked, but the key or lockpick that will open it is not reachable. In that case, the players can wait for a random lockpick to spawn, and then use it to open the door. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors can occur if the inputs have the wrong types. </p>
+<h2>Notes</h2>
+<p>The dungeon generator does make an effort to e.g. not place keys behind the locked door that the key itself opens, but this might not always be 100% successful. Also, it is possible that keys and/or lockpicks might get destroyed during the game (e.g. by being dropped down a pit) &ndash; they should then respawn into the dungeon, but again, they might respawn in an awkward position where knights cannot get to them. In both cases, a "backup" mechanism is needed, to allow knights to be able to get through the door, and that is why the random spawning of lockpicks was implemented. </p>
+<h2>Examples</h2>
+<p><code>kts.SetLockpickSpawn(lockpicks, 1000 * 60 * 6, 1000 * 60 * 2)</code> </p>
+<p>The above code arranges for a lockpick to spawn at a random location 6 minutes after the game begins, and then an additional lockpick to spawn every 2 minutes thereafter. This code can be found in <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/classic/dungeon_setup.lua#L115">dungeon_setup.lua</a> in the standard Knights Lua files. (It assumes that <code>lockpicks</code> is a reference to the correct ItemType for the lockpicks.) </p>
+<h2>See Also</h2>
+<p><a href="ConnectivityCheck.html">kts.ConnectivityCheck</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="SetStuffRespawning.html">kts.SetStuffRespawning</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

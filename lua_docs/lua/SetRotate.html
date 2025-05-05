@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetRotate</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetRotate</h1>
+<h2>Name</h2>
+<p>kts.SetRotate &ndash; set up rotated versions of tiles </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetRotate(tile1, tile2)</code> </p>
+<p><code>kts.SetRotate(tile1, tile2, tile3, tile4)</code> </p>
+<h2>Description</h2>
+<p>This function tells the dungeon generator that the two or four tiles given are rotated versions of each other. </p>
+<p>The dungeon generator will sometimes randomly create reflected and/or rotated versions of <a href="LoadSegments.html">map segments</a> for added variety. In doing so, it may be necessary to create rotated versions of certain tiles (for example, a skull facing in one of four possible directions). This is set up by the <code>kts.SetRotate</code> function. </p>
+<p>The two versions of the function call correspond to two possible cases: </p>
+<ol>
+<li>Tiles like doors need two versions: one "horizontal" and one "vertical". </li>
+<li>More general tiles (like the skull tiles) need four versions: one for each of the four possible "facing directions" (north, east, south, west). In this case the four tiles should be listed in clockwise order in the <code>kts.SetRotate</code> call. </li>
+</ol>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>Errors may be raised if the input parameters have the wrong type. </p>
+<h2>Examples</h2>
+<p>Several of the standard Knights tiles contain reflected and rotated versions. See <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/classic/tiles.lua#L144">tiles.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="LoadSegments.html">kts.LoadSegments</a> </p>
+<p><a href="SetReflect.html">kts.SetReflect</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

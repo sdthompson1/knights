@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.FullZombieActivity</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.FullZombieActivity</h1>
+<h2>Name</h2>
+<p>kts.FullZombieActivity &ndash; temporarily set zombie activity to maximum </p>
+<h2>Synopsis</h2>
+<p><code>kts.FullZombieActivity()</code> </p>
+<h2>Description</h2>
+<p>After this function is called, the <code>probability</code> used for zombie activity (see <a href="SetZombieActivity.html">kts.SetZombieActivity</a>) is raised to its maximum possible value (i.e. 1.0). In other words, zombie activity in the dungeon is raised to the maximum level. </p>
+<p>The previous value of the <code>probability</code> will be remembered, and restored when <a href="NormalZombieActivity.html">kts.NormalZombieActivity</a> is called. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>This is used to implement the Necronomicon effect (while that book is held, zombie activity is always at maximum). Specifically, this function would be called when the book is picked up. </p>
+<h2>See Also</h2>
+<p><a href="NormalZombieActivity.html">kts.NormalZombieActivity</a> </p>
+<p><a href="SetZombieActivity.html">kts.SetZombieActivity</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

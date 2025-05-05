@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Miscellaneous variables</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>Miscellaneous variables</h1>
+<h2>Name</h2>
+<p>Miscellaneous config variables. </p>
+<h2>Synopsis</h2>
+<pre>-- Default item carried by a knight
+kts.DEFAULT_ITEM = &lt;item-type&gt;
+
+-- Anim used by knights
+kts.KNIGHT_ANIM = &lt;anim&gt;
+
+-- Knight house colours (in-game)
+kts.KNIGHT_HOUSE_COLOURS = {
+    {0x664477, 0x553366, 0x442255},   -- purple
+    {0x116622, 0x115522, 0x114422},   -- green
+    -- etc.
+}
+
+-- Knight house colours (menu dropdown)
+kts.KNIGHT_HOUSE_COLOURS_MENU = {
+    0xaa55bb,    -- purple
+    0x189933,    -- green
+    -- etc.
+}
+
+-- Stuff bag graphic
+kts.STUFF_BAG_GRAPHIC = &lt;graphic&gt;
+
+-- Miscellaneous blood effects
+kts.BLOOD_ICON = &lt;graphic&gt;
+kts.BLOOD_TILES = {&lt;tile&gt;, &lt;tile&gt;, ...}
+kts.DEAD_KNIGHT_TILES = {&lt;tile&gt;, &lt;tile&gt;, ...}
+
+-- Controls
+kts.CONTROLS = {&lt;control&gt;, &lt;control&gt;, ...}
+</pre>
+<h2>Description</h2>
+<p>This page documents some miscellaneous variables that can be set directly in the <code>kts</code> table. </p>
+<p>The following variables are available: </p>
+<ul>
+<li><code>kts.DEFAULT_ITEM</code> is the <a href="ItemType.html">ItemType</a> of the default item carried by all knights (usually a sword). </li>
+<li><code>kts.KNIGHT_ANIM</code> is the <a href="Anim.html">Anim</a> used for knights. The artwork for this should use the colours defined for the first House (the first entry in the <code>kts.KNIGHT_HOUSE_COLOURS</code> list). If a player has selected a different House for their knight, then the knight graphics are automatically re-coloured by changing pixels of any colour that shows up in the first House's colour list to pixels of the corresponding colour from the other House. </li>
+<li><code>kts.KNIGHT_HOUSE_COLOURS</code> defines the colours for the different Houses. For each <code>i</code>, <code>kts.KNIGHT_HOUSE_COLOURS[i]</code> is a list of colours for house number <code>i</code> (more specifically, it is a list of hex values representing RGB colours). All Houses should use the same number of colours; usually it is three colours per House. These entries are used for colouring the knight graphics, as described above. <ul>
+<li>The first House Colour for each House is also used as the colour of the small rectangle which represents a "secured home" in the game. As a special rule, if all three components of this colour are 0x40 or less, then the value of each component is doubled &ndash; this is to prevent homes secured by Black Knights being invisible, as they would be rendered as "black on black", effectively, otherwise. </li>
+</ul>
+<li><code>kts.KNIGHT_HOUSE_COLOURS_MENU</code> is a list of RGB colours (one per house) to be used in the "House Colours" dropdown on the quest selection menu. </li>
+<li><code>kts.STUFF_BAG_GRAPHIC</code> is a <a href="Graphic.html">Graphic</a> used to represent a "stuff bag" item (i.e. a pile of items dropped by a dead knight). </li>
+<li><code>kts.BLOOD_ICON</code> is a graphic representing a small "blood splat" which will briefly appear when a knight is struck with a weapon. </li>
+<li><code>kts.BLOOD_TILES</code> is a list of <a href="Tile.html">Tiles</a> which are superimposed over the normal dungeon tiles whenever a "blood stain" is left on the dungeon floor. Each tile should (visually) contain a little more blood than the previous one. </li>
+<li><code>kts.DEAD_KNIGHT_TILES</code> is a list of (at least) four <a href="Tile.html">Tiles</a> which are superimposed over the normal dungeon tiles whenever a dead knight corpse is left on the dungeon floor. The different tiles can contain different variants of the "dead knight" graphic. The odd-numbered entries (first, third, etc. in the list) should contain blood splats and the even-numbered entries should not (the "non-blood" versions are used when a knight dies by poison). </li>
+<li><code>kts.CONTROLS</code> is a list of in-game <a href="Control.html">Controls</a> that are always potentially available to any knight, i.e. they are not necessarily tied to the knight carrying a specific item or being near a specific tile. Examples could include the "pick up item" or "drop currently held item" controls. </li>
+</ul>
+<h2>Notes</h2>
+<p>These variables are read once, when the game boots up, and therefore cannot be modified mid-game, nor can they be modified in response to changes made by players when selecting a quest (any changes made at those times will be ignored). </p>
+<h2>Bugs</h2>
+<p>For some reason, in the default Knights data files, the "Drop Gem" control is defined in the <code>kts.CONTROLS</code> list, but it would probably make more sense to attach it to the <code>i_gem</code> item instead. </p>
+<h2>Examples</h2>
+<p>The default settings for these variables can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/general_stuff.lua">general_stuff.lua</a>, or in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/controls.lua">controls.lua</a> in the case of <code>kts.CONTROLS</code>. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

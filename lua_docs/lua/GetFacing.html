@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetFacing</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetFacing</h1>
+<h2>Name</h2>
+<p>kts.GetFacing &ndash; return the current facing direction of a creature </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetFacing(creature)</code> </p>
+<h2>Description</h2>
+<p>The input must be a Creature userdata object, or <code>nil</code>. </p>
+<p>In the former case, the output will be a string representing the current facing direction of the creature. </p>
+<p>In the latter case, the output is <code>nil</code>. </p>
+<h2>Return Value</h2>
+<p>The return value is either <code>nil</code>, or one of the strings "north", "south", "east" or "west". </p>
+<h2>Errors</h2>
+<p>If the input is neither <code>nil</code> nor a valid Creature, then an error is raised. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

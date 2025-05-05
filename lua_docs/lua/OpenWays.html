@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.OpenWays</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.OpenWays</h1>
+<h2>Name</h2>
+<p>kts.OpenWays &ndash; implements the Wand of Open Ways effect </p>
+<h2>Synopsis</h2>
+<p><code>kts.OpenWays()</code> </p>
+<h2>Description</h2>
+<p>This is intended to be called from the <code>melee_action</code> function of the Wand of Open Ways <a href="ItemType.html">ItemType</a> (or an ItemType representing a similar item). </p>
+<p>The function looks at <code>cxt.tile</code> and, if it is a door/chest tile, opens it (even if locked), disarming any traps. If it is another type of tile, then no damage is dealt, unless the actor has Strength, in which case the tile will receive a large amount of damage (most likely destroying it). </p>
+<h2>Return Value</h2>
+<p>No meaningful value is returned. </p>
+<h2>Errors</h2>
+<p>Errors may result if the <code>cxt</code> table is invalid or undefined. Otherwise there should be no errors from this function. </p>
+<h2>Examples</h2>
+<p>The definition of the Wand of Open Ways can be found in <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/classic/items.lua#L257">items.lua</a>. If you are trying to define a similar item, then that may be useful as a reference. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The Context table</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

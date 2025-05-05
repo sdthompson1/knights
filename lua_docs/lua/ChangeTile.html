@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ChangeTile</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ChangeTile</h1>
+<h2>Name</h2>
+<p>kts.ChangeTile &ndash; transform one tile into another </p>
+<h2>Synopsis</h2>
+<p><code>kts.ChangeTile(new_tile)</code> </p>
+<h2>Description</h2>
+<p>This function changes the tile <code>cxt.tile</code>, found at <code>cxt.tile_pos</code> in the dungeon, into the tile <code>new_tile</code> instead. </p>
+<p>In more detail: If any of <code>cxt.tile_pos</code> or <code>cxt.tile</code> or <code>new_tile</code> are <code>nil</code>, then nothing happens. Otherwise, if a tile equal to <code>cxt.tile</code> is present at <code>cxt.tile_pos</code>, it is removed; and then <code>new_tile</code> is added to the dungeon at that same position. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>This function raises an error in any of the following cases: </p>
+<ul>
+<li>The <code>cxt</code> global variable is undefined or invalid </li>
+<li><code>cxt.tile_pos</code> is neither a valid map position, nor <code>nil</code> (Note: a "valid map position" means a table containing fields <code>x</code> and <code>y</code> giving the co-ordinates of a particular dungeon square) </li>
+<li><code>cxt.tile</code> is neither a valid <a href="Tile.html">Tile</a> nor <code>nil</code> </li>
+<li><code>new_tile</code> is neither a valid <a href="Tile.html">Tile</a> nor <code>nil</code> </li>
+</ul>
+<h2>Notes</h2>
+<p>As an alternative to this function, you could also consider using <a href="AddTile.html">kts.AddTile</a> and <a href="RemoveTile.html">kts.RemoveTile</a> directly, to remove the old tile and add the new one in separate steps. </p>
+<h2>Examples</h2>
+<p>This function is used to implement switches. There are two tiles, <code>t_switch_up</code> and <code>t_switch_down</code>, representing switches in the "up" or "down" position respectively. The <code>on_activate</code> function for <code>t_switch_up</code> uses <code>kts.ChangeTile</code> to change the switch into <code>t_switch_down</code>, and vice versa. See <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/tiles.lua#L366">tiles.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="AddTile.html">kts.AddTile</a> </p>
+<p><a href="ChangeItem.html">kts.ChangeItem</a> </p>
+<p><a href="RemoveTile.html">kts.RemoveTile</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>print</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>print</h1>
+<h2>Name</h2>
+<p>print &ndash; print values to the game window </p>
+<h2>Synopsis</h2>
+<p><code>print(values)</code> </p>
+<p><code>print(player, values)</code> </p>
+<h2>Description</h2>
+<p>This is a replacement for the built-in Lua <code>print</code> function. </p>
+<p>The first form of <code>print</code> (without the <code>player</code> argument) functions exactly like Lua's usual <code>print</code> function, except that the output is printed in the in-game "Messages" window, instead of directly to the console/terminal. </p>
+<p>The second form of <code>print</code> allows a message to be printed just for one particular player. The <code>player</code> argument must be a "Player" object, such as is returned from <a href="GetPlayer.html">kts.GetPlayer</a> or <a href="GetAllPlayers.html">kts.GetAllPlayers</a> for example. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>All arguments (except the <code>player</code>, if applicable) must be convertible to string by calling <code>tostring</code>. If this is not the case, the error "'tostring' must return a string to 'print'" will be generated. </p>
+<h2>See Also</h2>
+<p><a href="DebugPrint.html">kts.DebugPrint</a> </p>
+<p><a href="GetAllPlayers.html">kts.GetAllPlayers</a> </p>
+<p><a href="GetPlayer.html">kts.GetPlayer</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ClearHints</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ClearHints</h1>
+<h2>Name</h2>
+<p>kts.ClearHints &ndash; clear the Quest Requirements display </p>
+<h2>Synopsis</h2>
+<p><code>kts.ClearHints()</code> </p>
+<h2>Description</h2>
+<p>This clears the "Quest Requirements" display. New quest requirements can then be added using <a href="AddHint.html">kts.AddHint</a> if desired. </p>
+<p>This is useful for scenarios where the quest requirements can dynamically change mid-game. For example, the Tutorial does this. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Note that if quest requirements are changed mid-game, then <a href="ResendHints.html">kts.ResendHints</a> must be called (after all changes are completed) in order to update the UI on player's screens. </p>
+<h2>See Also</h2>
+<p><a href="AddHint.html">kts.AddHint</a> </p>
+<p><a href="ResendHints.html">kts.ResendHints</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

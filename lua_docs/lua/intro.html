@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Knights Lua overview</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>Knights Lua overview</h1>
+<p>This page provides an introduction to working with the Knights Lua system. This will be useful to anyone wanting to create "mods" (modifications) for the game. (A basic knowledge of Lua programming is assumed.) </p>
+<h2>Modules</h2>
+<p>All Knights game data files are organised into "modules". A module is basically a collection of Lua scripts, graphics, sounds, map data, and other files, all stored together in a single folder on disk. Modules can also "import" other modules. </p>
+<p>Knights itself provides a module called <code>classic</code> which contains all the base data required to recreate the classic Amiga Knights game from 1994. Other, user-provided modules will typically import <code>classic</code> and make changes to it, e.g. adding new menu options, changing the graphics or sounds, adding new monsters and items, or whatever else the module wants to do. Alternatively, some modules (such as "toolbox" by Impassive_RUS) do not directly modify the base game, but instead provide tools for mod-makers to use. </p>
+<p>Modules are installed by copying the module's folder directly into the <a href="https://github.com/sdthompson1/knights/tree/main/knights_data/server">knights_data/server</a> folder of a Knights installation. Once installed, a module needs to be "activated" by editing <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/main.lua">knights_data/server/main.lua</a> and adding a suitable <code>require</code> line. For example, after installing a module named "spiders", the user would add <code>require("spiders")</code> to the bottom of <code>main.lua</code>. </p>
+<p>Knights itself comes with three modules pre-installed: </p>
+<ul>
+<li><a href="https://github.com/sdthompson1/knights/tree/main/knights_data/server/classic">classic</a>: As mentioned, this module contains all the data and code needed for the base game. Other modules can import this module and build upon it. </li>
+<li><a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/menu">menu</a>: This defines four helper functions for working with the quest selection menu. Unfortunately, the functions provided here are fairly basic, and in practice, many users may prefer to write their own menu manipulation functions rather than using this module. However, studying the code for this module might still be useful, as it provides a fairly minimal example of what a Knights Lua module needs to look like. </li>
+<li><a href="https://github.com/sdthompson1/knights/tree/main/knights_data/server/tutorial">tutorial</a>: This module defines the Knights Tutorial. This module is only loaded when the Tutorial is selected from the main menu; it is not used at any other time. Nevertheless, studying the code for the Tutorial can be helpful for understanding the kind of things that it is possible to do within a Knights Lua module. </li>
+</ul>
+<p>Additional modules have been provided by the community, e.g. there is a list on the old Knights Forum <a href="https://www.knightsgame.org.uk/forum/index.php?topic=227.0">here</a>. </p>
+<h2>init.lua, module, require</h2>
+<p>All modules need to contain, at minimum, a file called <code>init.lua</code>. This Lua script should return a table containing any functions or other values that the module wishes to make available to other modules. A straightforward example of this can be seen in the <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/menu/init.lua">init.lua file from the "menu" module</a>, which defines a table consisting of four Lua functions and then returns it. </p>
+<p>An alternative way to handle this is to write <code>module(...)</code> (on a single line) at the top of <code>init.lua</code>. Then, any "global" variables defined by your module will automatically be packaged up into a table and made available for other modules to use, and there is no need to write an explicit <code>return</code> statement at the bottom of your <code>init.lua</code> file. An example of this way of doing things is found in the <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/init.lua">"classic" module's init.lua file</a>. </p>
+<p>To "import" functions or data from another module, you can use the <code>require</code> Lua function. For example, writing the code: </p>
+<p><code>local M = require("menu")</code> </p>
+<p>will import the <code>menu</code> module. The four functions defined by that module will now be available for you to use, under the names <code>M.get_menu_item</code>, <code>M.get_menu_choice</code>, and so on. A similar procedure will import the <code>classic</code> module: </p>
+<p><code>local C = require("classic")</code> </p>
+<p>Your module can now refer to any (global) functions or variables defined in the <code>classic</code> module by adding the <code>C.</code> prefix. For example, <code>C.floor</code> allows you to access the <code>floor</code> table defined in <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/tiles.lua#L121">tiles.lua</a>. </p>
+<p>Your module can also import other Lua files (within the same module) by using <code>dofile</code>, if desired. </p>
+<p>Note: For those familiar with the <code>module</code> function introduced in Lua 5.1: the Knights <code>module</code> function is actually a custom implementation of this function (or a simplified version of it). It does not use the "official" implementation from Lua 5.1. Thus, the deprecation of this function in Lua 5.2 does not affect Knights. </p>
+<h2>The "kts" table</h2>
+<p>Another thing to be aware of is that Knights itself makes available a large "API" (i.e. a set of functions and other variables provided by the game) for Lua modules to use. Almost all of these are defined within a special table named <code>kts</code>. This table is always available (it is defined as part of the Knights Lua environment itself) and you don't have to do anything special to import it. </p>
+<p>For example, Lua code is free to call <code>kts</code> functions such as <a href="Tile.html">kts.Tile</a>, <a href="AddMonsters.html">kts.AddMonsters</a>, <a href="PlaySound.html">kts.PlaySound</a>, or many others, whenever it makes sense to do so. </p>
+<p>The <a href="../lua.html">main page of the Knights Lua docs</a> contains an alphabetical list of all Knights API functions and variables. </p>
+<p>Please note that most <code>kts</code> functions have restrictions on when they can be called. For example, calling <a href="AddMissile.html">kts.AddMissile</a> outside of active gameplay (e.g. calling it directly from your <code>init.lua</code> code) does not make sense, and will result in an error message. Similarly, attempting to create new graphics, tiles etc. (by calling functions such as <a href="Graphic.html">kts.Graphic</a> or <a href="Tile.html">kts.Tile</a>) during gameplay does not work &ndash; all such objects must be created during initialization, before the quest selection screen is entered. Unfortunately, there is not currently any documentation explaining when it is or is not legal to call any given <code>kts</code> function &ndash; but in most cases, it should be possible to figure this out by common sense. </p>
+<h2>Example of a Lua module</h2>
+<p>We will now give a small example of a Lua module, to help explain in more detail how modules can be created. </p>
+<p>For this example, we will use a simplified version of the "Spiders" module by Worst. The original "Spiders" module can still be found in the old <a href="https://www.knightsgame.org.uk/forum/index.php?topic=221.0">Knights forum</a>. The version found there includes many more features than the one we are about to describe, including multiple spider types, spiders hiding in barrels, and so on, so if you actually want to play with the Spiders mod, then check out that forum thread. </p>
+<p>With that out of the way, we will explain how a simplified, minimalistic version of the "Spiders" mod could be implemented from scratch. </p>
+<p>First of all, we need to create a folder named <code>spiders</code> in the <code>knights_data/server</code> folder. </p>
+<p>Next, we create a sub-folder named <code>gfx</code> containing the art assets for the spider mod. This consists of files <code>spid1e.bmp</code>, <code>spid2n.bmp</code>, etc. which contain the various animation frames for the spiders, together with <code>gfx/dead_spider.bmp</code> for the dead spider image. (If you are following along yourself, you can get these files from the original spiders zip file in the above forum thread.) </p>
+<p>(As a side note, all graphics loaded into Knights must currently be provided in the BMP format. Unfortunately the Knights codebase is quite old at this time, and has not yet been updated to be able to handle more modern image formats such as PNG.) </p>
+<p>Next, we create the Lua code. In this case, we will split the code between two files, <code>spiders.lua</code> and <code>menus.lua</code>. First of all, we create <code>spiders/init.lua</code> which just loads our two Lua files in sequence: </p>
+<pre>module(...)
+
+dofile("spiders.lua")
+dofile("menus.lua")
+</pre>
+<p>Next, in <code>spiders/spiders.lua</code> we add the following code: </p>
+<pre>-- Highly simplified version of "Spiders" by Worst,
+-- for teaching purposes.
+
+-- This file just defines the new monster type, and also defines
+-- a function "add_spiders" to actually add some spiders to the
+-- dungeon.
+
+
+-- Load the "classic" module
+local C = require("classic")
+
+-- Resource helper functions
+
+function gfx(name, ofx, ofy, s1, s2)
+   return kts.Graphic("gfx/" .. name .. ".bmp", 255,255,0, ofx,ofy, s1,s2)
+end
+
+function anim(name, of, s1, s2)
+   return kts.Anim {
+            gfx(name .. "1n",    of,    of, s1,s2), -- Normal
+            gfx(name .. "1e",    of,    of, s1,s2),
+            gfx(name .. "1s",    of,    of, s1,s2),
+            gfx(name .. "1w",    of,    of, s1,s2),
+            gfx(name .. "2n",    of,    of, s1,s2), -- Melee backswing
+            gfx(name .. "2e",    of,    of, s1,s2),
+            gfx(name .. "2s",    of,    of, s1,s2),
+            gfx(name .. "2w",    of,    of, s1,s2),
+            gfx(name .. "3n",    of, 16+of, s1,s2), -- Melee downswing
+            gfx(name .. "3e",    of,    of, s1,s2),
+            gfx(name .. "3s",    of,    of, s1,s2),
+            gfx(name .. "3w", 16+of,    of, s1,s2),
+            gfx(name .. "4n",    of,    of, s1,s2), -- Just Hit.
+            gfx(name .. "4e",    of,    of, s1,s2),
+            gfx(name .. "4s",    of,    of, s1,s2),
+            gfx(name .. "4w",    of,    of, s1,s2)
+          }
+end
+
+function tile(name, of, s1, s2)
+   local g_tile = gfx(name, of,of, s1,s2)
+   return kts.Tile(kts.table_merge(C.floor, { graphic=g_tile, depth = -1 }))
+end
+
+-- Define Anim and Tile for a spider
+
+a_spider1 = anim("spid",        -3, 4,3) -- Animation
+t_spider1 = tile("dead_spider", -3, 4,3) -- Death tile
+
+-- Define a spider's weapon (item type)
+
+spider_weapon = kts.ItemType {
+    -- Something beetween sword and axe;
+    -- Barely any tile damage.
+    type = "held",
+    melee_backswing_time = 2*C.ts,
+    melee_downswing_time = 3*C.ts,
+    melee_damage         = C.rng_range(1,2),
+    melee_stun_time      = C.rng_time_range(2,3),
+    melee_tile_damage    = 1
+}
+
+-- Define the spider monster type
+
+spider_monster = kts.MonsterType {
+    type = "walking",
+
+    -- general properties:
+    health = C.rng_range(1, 4),    -- somewhere beetween zombies and bats
+    speed = 76,                  -- faster than zombies, but slower than bats
+    anim = a_spider1,
+    corpse_tiles = { t_spider1 },
+
+    -- properties specific to walking monsters:
+    weapon = spider_weapon,
+
+    -- list of tiles that spiders don't want to walk onto:
+    ai_avoid = C.all_open_pit_tiles
+}
+
+-- Function to add some spiders to the dungeon initially
+
+function add_spiders(num)
+    C.add_initial_monsters(spider_monster, num)
+    C.add_monster_limit(spider_monster, num)
+end
+</pre>
+<p>This code: </p>
+<ul>
+<li>Imports the <code>classic</code> module (so that we can re-use some of the code from it, like the <code>C.add_initial_monsters</code> function, the <code>C.all_open_pit_tiles</code> list, and similar things). </li>
+<li>Defines some helper functions, <code>gfx</code> and <code>anim</code>, to create the required graphics. </li>
+<li>Defines the <a href="Anim.html">Anim</a> and <a href="Tile.html">Tile</a> for the spider animation and dead spider tile respectively. </li>
+<li>Defines an <a href="ItemType.html">ItemType</a> for the spider's weapon (spiders do not really carry an item, but the way the game works is that a "dummy" item needs to be defined, to represent the monster's melee attack). </li>
+<li>Defines a <a href="MonsterType.html">MonsterType</a> to represent the spider. </li>
+<li>Defines a function <code>add_spiders</code> which will be called by <code>menus.lua</code>. (Note: This function could potentially also be used by other modules that want to build on top of the Spiders module, if desired. Those other modules could do something like <code>local S = require("spiders")</code>, then they could call <code>S.add_spiders</code> as needed.) </li>
+</ul>
+<p>We can now write the code to add a "Spiders" item to the quest selection menu. The following code goes in <code>spiders/menus.lua</code>: </p>
+<pre>-- Continuation of the simplified "spiders" example based on the original
+-- Spiders mod by Worst.
+
+-- This file adds the "Number of Spiders" item to the menu.
+
+
+-- Menu helper functions
+
+function menu_item_exists(id)
+   for k,v in ipairs(kts.MENU.items) do
+      if v.id == id then
+         return true
+      end
+   end
+   return false
+end
+
+function add_menu_item_after(item_id, old_id)
+   if menu_item_exists(old_id) then
+      local pos
+      for k,v in ipairs(kts.MENU.items) do
+         if v.id == old_id then
+            pos = k
+            break
+         end
+      end
+      table.insert(kts.MENU.items, pos+1, item_id) -- Add after the specified choice
+   else
+      table.insert(kts.MENU.items, item_id)  -- Add it at the end.
+   end
+end
+
+-- Menu item for spiders
+
+spiders_menu_item = {
+    id = "spiders",
+    text = "Spiders",
+    choice_min = 0,
+    choice_max = 5,
+    features = function(S)
+        -- Add spiders to the dungeon
+        if S.spiders &gt; 0 then
+            local num_spiders = 2 * S.spiders + 1
+            add_spiders(num_spiders)
+        end
+    end
+}
+
+-- Add the new item to the menu
+
+add_menu_item_after(spiders_menu_item, "bats")
+</pre>
+<p>This code: </p>
+<ul>
+<li>Defines two functions to help with adding a new item to the Quest Selection menu, in a specific position. </li>
+<li>Defines a table representing a new menu item "Spiders" that can be set to a value between 0 and 5 inclusive. (See <a href="MENU.html">kts.MENU</a> for details on how the menu works.) </li>
+<li>Adds the new item to the menu. </li>
+</ul>
+<p>The mod is now complete! </p>
+<p>The final step is to edit <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/main.lua">knights_data/server/main.lua</a> to add the line </p>
+<pre>require("spiders")
+</pre>
+<p>at the end of the file. (Put simply, <code>main.lua</code> is the main Lua file which is executed by the Knights code when it starts up. If nothing in this file refers to the <code>spiders</code> module, then the module will not be loaded.) </p>
+<p>You should then be able to boot up the game and observe the new "Spiders" option in the menu. </p>
+<p>Once again, the "real" Spiders mod (from the Knights forum) is better than this one, so you should use that if you actually want to play a game with spiders. The above was just a simplified version to help teach how a Knights module can be built, without getting bogged down in too many details. Readers are advised to read the code for the "real" Spiders mod, as well as the other mods available from the Knights forum, if they want to see more examples of the Knights module system being used in practice. Also, of course, the <a href="../lua.html">Knights Lua reference documentation</a> provides lots of helpful info. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

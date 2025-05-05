@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GiveItem</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GiveItem</h1>
+<h2>Name</h2>
+<p>kts.GiveItem &ndash; give one or more backpack items to a knight </p>
+<h2>Synopsis</h2>
+<p><code>kts.GiveItem(knight, itemtype)</code> </p>
+<p><code>kts.GiveItem(knight, itemtype, number)</code> </p>
+<h2>Description</h2>
+<p>The first parameter (<code>knight</code>) must be a Creature representing a knight, and the second parameter (<code>itemtype</code>) must be an ItemType representing a "backpack" item (e.g. daggers or gems). The third parameter (<code>number</code>) is optional; if present it must be a non-negative integer, but if absent it defaults to 1. </p>
+<p>The effect of the function is that <code>number</code> copies of the given <code>itemtype</code> are added to the knight's backpack. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors may result if the input parameters are invalid. </p>
+<h2>Examples</h2>
+<p>This function is used in the Knights Tutorial to create a custom "stuff bag" item. When the bag is picked up, <code>kts.GiveItem</code> is called three times to give various items to the knight. See <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/tutorial/init.lua#L40">tutorial/init.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

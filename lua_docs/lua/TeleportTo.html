@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.TeleportTo</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.TeleportTo</h1>
+<h2>Name</h2>
+<p>kts.TeleportTo &ndash; teleport a creature to a given location </p>
+<h2>Synopsis</h2>
+<p><code>kts.TeleportTo(creature, pos)</code> </p>
+<h2>Description</h2>
+<p>The first parameter should be a Creature and the second parameter should be a position (that is, a table containing fields <code>x</code> and <code>y</code> giving the co-ordinates of a particular square in the dungeon). The creature will be moved to the given square. If the square is occupied, then the four adjacent squares (to the north, south, east and west) will also be tried. If all of those are occupied as well, then the creature is left at its current position. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>Errors will be reported if the parameters are not a Creature and a map position respectively. </p>
+<h2>Notes</h2>
+<p>This function just moves the creature, it does not play any sound effect or flash the screen etc.; that has to be done separately. </p>
+<h2>Examples</h2>
+<p><code>kts.TeleportTo(cxt.actor, {x=33, y=31})</code> </p>
+<h2>See Also</h2>
+<p><a href="Attractor.html">kts.Attractor</a> </p>
+<p><a href="TeleportRandom.html">kts.TeleportRandom</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

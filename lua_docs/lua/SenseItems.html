@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SenseItems</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SenseItems</h1>
+<h2>Name</h2>
+<p>kts.SenseItems &ndash; show important items on the current actor's map </p>
+<h2>Synopsis</h2>
+<p><code>kts.SenseItems(duration)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (<code>cxt.actor</code>) is a knight, then the location of all "quest-critical" items in the dungeon will be displayed on the corresponding player's mini-map, for the next <code>duration</code> milliseconds. </p>
+<p>An item is "quest-critical" if the <code>critical</code> field has been set to anything other than <code>false</code> in the corresponding <a href="ItemType.html">kts.ItemType</a>. </p>
+<p>Item locations are only revealed if they are in a room that the player has already mapped. (If we were to reveal the locations of all items, even those in not-yet-visited rooms, then that would give a huge advantage for certain quests, e.g. Quest for Gems, so this is not done.) </p>
+<p>If, during the "Sense Items" effect, one of the revealed items is picked up or otherwise moved, then the corresponding marker will instantly disappear from the player's mini-map, but it will <i>not</i> be dynamically updated to show the new location in real time (i.e. the knight "forgets" where it is as soon as it is picked up). </p>
+<p>If a "Sense Items" is already in effect for the current actor when <code>kts.SenseItems</code> is called, then the existing effect is cancelled and a new "Sense Items" effect is started. This means that the player's mini-map is updated if necessary (e.g. because new items were dropped into the dungeon, or new rooms were explored, since the previous Sense Items began); and it also means the timer is restarted (starting from the current time and lasting until <code>duration</code> milliseconds from now). </p>
+<p>When the timer runs out (or a Dispel Magic occurs) any remaining item markers are immediately removed from the player's mini-map. </p>
+<p>If the current actor is not a knight, <code>kts.SenseItem()</code> does nothing. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Examples</h2>
+<p>In the standard Knights data files, this is one of the possible scroll effects: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/magic.lua#L185">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="DispelMagic.html">kts.DispelMagic</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="SenseKnight.html">kts.SenseKnight</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

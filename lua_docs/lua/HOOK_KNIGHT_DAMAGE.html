@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.HOOK_KNIGHT_DAMAGE</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.HOOK_KNIGHT_DAMAGE</h1>
+<h2>Name</h2>
+<p>kts.HOOK_KNIGHT_DAMAGE &ndash; function called when a knight takes damage, suicides, or is poisoned </p>
+<h2>Synopsis</h2>
+<p><code>kts.HOOK_KNIGHT_DAMAGE = function() ... end</code> </p>
+<h2>Description</h2>
+<p>If <code>kts.HOOK_KNIGHT_DAMAGE</code> is non-nil, then it is called as a Lua function (with no parameters) whenever a knight takes any damage (even if it is a zero amount), commits suicide, or is poisoned. </p>
+<p>During the function call, the <a href="cxt.html">cxt</a> table will be available; for example, <code>cxt.pos</code> will give the position of the knight. </p>
+<h2>Examples</h2>
+<p>In the standard Knights data files, this hook is used to play the "ugh" sound that is heard when knights get damaged or hit. The code for this is in <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/sounds.lua#L150">sounds.lua</a>. </p>
+<p>Other modules could replace <code>kts.HOOK_KNIGHT_DAMAGE</code> (or any of the other "hook" functions) with their own code if desired. </p>
+<h2>See Also</h2>
+<p><a href="HOOK_CREATURE_SQUELCH.html">kts.HOOK_CREATURE_SQUELCH</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

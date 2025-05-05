@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ThrowOrShoot</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ThrowOrShoot</h1>
+<h2>Name</h2>
+<p>kts.ThrowOrShoot &ndash; throw or shoot held item (e.g. axe or crossbow) </p>
+<h2>Synopsis</h2>
+<p><code>kts.ThrowOrShoot()</code> </p>
+<p><code>result = kts.Can_ThrowOrShoot()</code> </p>
+<h2>Description</h2>
+<p>Calling <code>kts.ThrowOrShoot()</code> will cause the current actor (<code>cxt.actor</code>) to either throw (as in an axe) or shoot (as in a crossbow) the item currently held in their hands, if this is possible. </p>
+<p>Calling <code>kts.Can_ThrowOrShoot()</code> returns true if throwing or shooting is currently possible (i.e. the actor is carrying a suitable item and all other conditions are met), or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.ThrowOrShoot()</code> returns nothing, and <code>kts.Can_ThrowOrShoot()</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p>Throwing or shooting will not be possible if the actor is currently approaching a tile (like a door or chest tile). </p>
+<p><code>kts.ThrowOrShoot</code> and <code>kts.Can_ThrowOrShoot</code> are usually used as the <code>action</code> and <code>possible</code> functions of a <a href="Control.html">Control</a>, respectively. In particular this Control will usually be attached to the item type that is to be thrown or shot. </p>
+<h2>Examples</h2>
+<p>For examples see the definition of the <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L116">axe</a> or <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L205">crossbow</a> in items.lua. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="Throw.html">kts.Throw</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

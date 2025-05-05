@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetRespawnFunction</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetRespawnFunction</h1>
+<h2>Name</h2>
+<p>kts.SetRespawnFunction &ndash; set a function to be called whenever a knight respawns </p>
+<h2>Synopsis</h2>
+<pre>function respawn_func(player)
+    -- do stuff...
+
+    -- then either:
+    return x, y, direction
+    
+    -- or:
+    return "retry"
+
+    -- or:
+    return nil
+end
+</pre>
+<p><code>kts.SetRespawnFunction(respawn_func)</code> </p>
+<h2>Description</h2>
+<p>Sets a function to be called whenever a knight needs to respawn. </p>
+<p>The <code>respawn_func</code> will be called with one parameter which is the Player that needs to respawn. It should return one of the following three possibilities: </p>
+<ul>
+<li>Three values <code>x</code>, <code>y</code> and <code>direction</code>: The knight will respawn at the given (x,y) position and facing in the given direction (the direction is a string "north", "south", "east" or "west"). </li>
+<li>The string <code>"retry"</code>: The game will wait for a short time and then try the respawn again later. This is useful if the intended respawn position is temporarily blocked (e.g. by monsters or other knights). </li>
+<li>The value <code>nil</code> (or no value returned): In this case the system falls back to the normal respawn logic, as determined by <a href="SetRespawnType.html">kts.SetRespawnType</a>. </li>
+</ul>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>An error results if the passed parameter is neither a valid function nor <code>nil</code>. </p>
+<h2>Notes</h2>
+<p>This can only be called during game setup &ndash; the respawn function cannot be changed mid-game. </p>
+<p>If both <a href="SetRespawnType.html">SetRespawnType</a> and <code>SetRespawnFunction</code> are used, then the "respawn function" takes priority, and the "respawn type" is only used if the respawn function returned nil. </p>
+<p>If the parameter passed to <code>SetRespawnFunction</code> is <code>nil</code>, then any existing respawn function is cleared. </p>
+<h2>Examples</h2>
+<p>The Knights Tutorial uses a custom respawn function in order to perform certain actions at respawn time (e.g. turning off the "Chamber of Bats" if it is active) and also to set up custom respawn points depending on the player's progress through the tutorial (i.e. if they die half way through, then they respawn near to where they died, not all the way back at the beginning). This can be seen in <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/tutorial/init.lua#L254">tutorial/init.lua</a> (the respawn function itself is <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/tutorial/init.lua#L159">here</a>). </p>
+<h2>See Also</h2>
+<p><a href="GetRespawnFunction.html">kts.GetRespawnFunction</a> </p>
+<p><a href="GetRespawnType.html">kts.GetRespawnType</a> </p>
+<p><a href="SetRespawnType.html">kts.SetRespawnType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

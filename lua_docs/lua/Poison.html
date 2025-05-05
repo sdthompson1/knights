@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Poison</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Poison</h1>
+<h2>Name</h2>
+<p>kts.Poison &ndash; poison the current actor </p>
+<h2>Synopsis</h2>
+<p><code>kts.Poison(message)</code> </p>
+<h2>Description</h2>
+<p>The current actor (as determined by <code>cxt.actor</code>) is instantly killed and removed from the map. (A corpse is left behind, but there will be no blood in this case.) </p>
+<p>An exception is if the current actor is a knight that has either Poison Immunity or Invulnerability. In this case, the poison has no effect. </p>
+<p>If the current actor is a knight (as opposed to a monster) then, in addition to the above, the given <code>message</code> will flash on screen above the knight a number of times. The knight's Potion Bottle will also turn green for a short time to highlight the fact that they have been poisoned. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Invulnerability.html">kts.Invulnerability</a> </p>
+<p><a href="PoisonImmunity.html">kts.PoisonImmunity</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

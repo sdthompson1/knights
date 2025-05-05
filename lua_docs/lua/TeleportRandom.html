@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.TeleportRandom</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.TeleportRandom</h1>
+<h2>Name</h2>
+<p>kts.TeleportRandom &ndash; teleport the actor to a random other knight's room </p>
+<h2>Synopsis</h2>
+<p><code>kts.TeleportRandom()</code> </p>
+<h2>Description</h2>
+<p>If the actor (<code>cxt.actor</code>) is a knight, then a random other knight will be selected, and the actor will be teleported to a random square within that other knight's current room. </p>
+<p>If no other knights exist in the dungeon (e.g. in a single player game), the current actor will be teleported to a random dungeon square instead. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>No errors should be raised by this function (unless the <code>cxt</code> table is somehow invalid, perhaps). </p>
+<p>It is possible that the randomly chosen other knight is in a room that is "full", so no valid teleport destination exists. In this case, no error is raised, but the teleport fails and nothing happens. </p>
+<h2>Notes</h2>
+<p>No sound effects or visual effects are performed by this function &ndash; if those are required, they must be done separately. </p>
+<h2>Examples</h2>
+<p>Scrolls use this function (as one of their possible effects); try searching for <code>my_teleport</code> in the standard <a href="https://github.com/sdthompson1/knights/tree/main/knights_data/server">Knights Lua files</a> to see how this works. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The Context table</a> </p>
+<p><a href="Attractor.html">kts.Attractor</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

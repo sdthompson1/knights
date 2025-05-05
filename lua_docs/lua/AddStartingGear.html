@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddStartingGear</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddStartingGear</h1>
+<h2>Name</h2>
+<p>kts.AddStartingGear &ndash; set up starting gear for knights </p>
+<h2>Synopsis</h2>
+<p><code>kts.AddStartingGear(item_type, number, ...)</code> </p>
+<h2>Description</h2>
+<p>Set up starting gear for knights. </p>
+<p>Knights will receive the given <a href="ItemType.html">ItemType</a> as part of their starting gear. The item type is followed by a list of numbers, which are the number of copies of the item to be given. The first number applies the first time the knight spawns, the second number to the second spawn, and so on. Once the end of the list is reached, the knight no longer receives that item of starting gear. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>If the inputs are incorrect, an error is raised. </p>
+<h2>Examples</h2>
+<p><code>kts.AddStartingGear(i_dagger, 5, 4, 3, 2)</code> </p>
+<p>The above gives players a supply of daggers each time they spawn. On the first spawn, they get 5 daggers. On the second, they get 4 daggers, then 3, then 2, and after that, they no longer receive starting daggers. </p>
+<p>(The example assumes that an ItemType <code>i_dagger</code> has previously been created by a call to <a href="ItemType.html">kts.ItemType</a>.) </p>
+<h2>See Also</h2>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

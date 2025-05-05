@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetAllHomes</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetAllHomes</h1>
+<h2>Name</h2>
+<p>kts.GetAllHomes &ndash; return a list of all "home" (knight entry point) locations in the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetAllHomes()</code> </p>
+<h2>Description</h2>
+<p>This function returns a Lua array/list of all "homes" in the dungeon. A "home" is a <a href="Tile.html">Tile</a> which had <code>type="home"</code> set when it was created; home tiles are where players initially spawn into the dungeon. </p>
+<p>Each entry in the array is represented by a Lua table with the following fields: </p>
+<ul>
+<li><code>x</code>: x-coordinate of the position "in front of" the home (i.e. the square where the knight will be standing when they spawn at this home). </li>
+<li><code>y</code>: y-coordinate of the position "in front of" the home. </li>
+<li><code>facing</code>: facing direction (either "north", "south", "east" or "west"). This is the direction pointing "towards" the home (i.e. out of the dungeon). </li>
+<li><code>tile</code>: a copy of the home <a href="Tile.html">Tile</a> itself. </li>
+<li><code>secured_by</code>: this is either a Player object, representing the player who has currently secured this home, or <code>nil</code> if no player has yet secured the home. (If two or more players secure the same home, then the home is converted to a wall, and then it won't appear in the <code>GetAllHomes</code> list at all.) </li>
+</ul>
+<h2>Return Value</h2>
+<p>The return value is a table as described above. Note that the table might be empty (e.g. this can happen in duel to the death quests, when all entry points have been secured and converted into walls). </p>
+<h2>Errors</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Since the "home" tables returned by this function include fields <code>x</code> and <code>y</code>, it is valid to pass them to functions that require a "Position" (i.e. the presence of the extra fields <code>facing</code>, <code>tile</code> and so on does not stop the tables being valid Positions, since Lua will just ignore the extra fields if they are present). </p>
+<p>The list returned by this function includes any "special_exit" points (Guarded Exits) in the dungeon &ndash; even though these cannot be used as normal spawn points by knights (they are dungeon exit points only). The <code>tile.special_exit</code> flag can be used to check for this if required. </p>
+<h2>Examples</h2>
+<p>An example result might be: </p>
+<pre>{
+  { x = 3, y = 4, facing = "west", tile = &lt;tile object&gt; },
+  { x = 10, y = 13, facing = "south", tile = &lt;tile object&gt; },
+  { x = 12, y = 9, facing = "east", secured_by = &lt;player object&gt;, tile = &lt;tile object&gt; },
+  ...
+}
+</pre>
+<h2>See Also</h2>
+<p><a href="GetHomeFor.html">kts.GetHomeFor</a> </p>
+<p><a href="GetTiles.html">kts.GetTiles</a> </p>
+<p><a href="Secure.html">kts.Secure</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ItemType</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ItemType</h1>
+<h2>Name</h2>
+<p>kts.ItemType &ndash; create a new ItemType </p>
+<h2>Synopsis</h2>
+<pre>result = kts.ItemType{
+    allow_strength = &lt;boolean&gt;,
+    ammo = &lt;item type&gt;,
+    backpack_graphic = &lt;graphic&gt;,
+    backpack_overdraw = &lt;graphic&gt;,
+    backpack_slot = &lt;integer&gt;,
+    can_throw = &lt;boolean&gt;,
+    control = &lt;control&gt;,
+    critical = &lt;boolean or string&gt;,
+    fragile = &lt;boolean&gt;,
+    graphic = &lt;graphic&gt;,
+    key = &lt;integer&gt;,
+    max_stack = &lt;integer&gt;,
+    melee_action = &lt;function&gt;,
+    melee_backswing_time = &lt;integer&gt;,
+    melee_damage = &lt;function or integer&gt;,
+    melee_downswing_time = &lt;integer&gt;,
+    melee_stun_time = &lt;function or integer&gt;,
+    melee_tile_damage = &lt;function or integer&gt;,
+    missile_access_chance = &lt;number between 0 and 1&gt;,
+    missile_anim = &lt;anim&gt;,
+    missile_backswing_time = &lt;integer&gt;,
+    missile_damage = &lt;function or integer&gt;,
+    missile_downswing_time = &lt;integer&gt;,
+    missile_hit_multiplier = &lt;integer&gt;,
+    missile_range = &lt;integer&gt;,
+    missile_speed = &lt;integer&gt;,
+    missile_stun_time = &lt;function or integer&gt;,
+    on_drop = &lt;function&gt;,
+    on_hit = &lt;function&gt;,
+    on_pick_up = &lt;function&gt;,
+    on_walk_over = &lt;function&gt;,
+    open_traps = &lt;boolean&gt;,
+    overlay = &lt;overlay&gt;,
+    parry_chance = &lt;number between 0 and 1&gt;,
+    prefer_sword = &lt;boolean&gt;,
+    reload_action = &lt;function&gt;,
+    reload_action_time = &lt;integer&gt;,
+    reload_time = &lt;integer&gt;,
+    stack_graphic = &lt;graphic&gt;,
+    tutorial_key = &lt;integer&gt;,
+    type = &lt;"held", "backpack", "magic" or "nopickup"&gt;
+}
+</pre>
+<p>Note: all fields are optional &ndash; reasonable default values will be used for any <code>nil</code> fields. Most items will need to specify at least <code>type</code>, however. </p>
+<h2>Description</h2>
+<p>An "ItemType" represents a "template" for creating items. For example, "axe", "hammer", "gem", and "ancient book of knowledge" are ItemTypes. </p>
+<p>The <code>kts.ItemType</code> function creates a new ItemType. The parameter is a table containing various properties that the ItemType should have, as follows: </p>
+<ul>
+<li><code>allow_strength</code> is usually <code>true</code> (and this is the default). If set to <code>false</code>, then the usual effect of the Strength or Super potion, to automatically destroy dungeon tiles, is suppressed with this item. (The Strength/Super will still have its usual effect when the item is used to attack creatures.) This is used specifically with the Wand of Open Ways; see also <a href="OpenWays.html">kts.OpenWays</a>. </li>
+<li><code>ammo</code> specifies another ItemType which is the "ammo" for this weapon. This is used with the crossbow, where the ammo is the <code>i_bolts</code> ItemType. </li>
+<li><code>backpack_graphic</code> specifies the icon that will be used to represent this item when it is carried by a knight. </li>
+<li><code>backpack_overdraw</code> gives an image that is used in the inventory when the knight carries more than one of this item type. (The image only includes the "top part" of the icon, i.e. the part that is not covered by the icon below it.) </li>
+<li><code>backpack_slot</code> gives the position where this item will appear in the on-screen inventory display. Slots 11 to 19 are used for normal items (left to right), 20 to 22 for keys, 23 for the lock picks, and 30 for gems. </li>
+<li><code>can_throw</code> is true if the item can be thrown (like an axe). </li>
+<li><code>control</code> gives a <a href="Control.html">kts.Control</a> that is available while this item is held. Examples include setting traps, throwing daggers, or using the lockpicks. </li>
+<li><code>critical</code> specifies whether the item is "quest-critical" (which means it will be automatically respawned if it is destroyed for any reason). Examples of quest-critical items include wands, books and gems. <code>critical</code> may be set to true or false, or it may be set to a string like "A gem". (The latter case is the same as setting <code>critical</code> to <code>true</code>, but also, a message like "A gem has been respawned at a random location" will be displayed at the appropriate time.) </li>
+<li><code>fragile</code> indicates that the item will be destroyed if it is inside a chest that is destroyed, or on a table that is destroyed. (E.g. potions.) </li>
+<li><code>graphic</code> is the image to use for the item within the Dungeon. </li>
+<li><code>key</code> is an integer between 1 and 3 if this is one of the three key types, or -1 if this is the lock picks. </li>
+<li><code>max_stack</code> is the maximum number of these items that can be in a single "stack" on the dungeon floor. </li>
+<li><code>melee_action</code> is a function that is called when the item is used to attack a target in melee. For example this is used to implement the special effects of the various wands. </li>
+<li><code>melee_backswing_time</code> is the time (in milliseconds) for the "backswing" part of a melee attack, for this item. </li>
+<li><code>melee_damage</code> is the amount of damage inflicted by this item when used to hit creatures in melee. It can also be a function returning a number (useful for randomisation). See also: melee_tile_damage. </li>
+<li><code>melee_downswing_time</code> is the time (in milliseconds) for the "downswing" part of a melee attack, for this item. </li>
+<li><code>melee_stun_time</code> is the amount of time (in milliseconds) that a creature hit by this item (in melee) will be stunned for. It can also be a function returning a number. </li>
+<li><code>melee_tile_damage</code> is the amount of damage inflicted by this item when used to hit dungeon tiles (chests, tables etc.) in melee. It can also be a function returning a number. See also: melee_damage. </li>
+<li><code>missile_access_chance</code> is the probability of the item passing through gates etc., when fired or thrown as a missile weapon. (Specifically, this applies to tiles with "partial" or "approach" access at the "missiles" access level. See also <a href="Tile.html">kts.Tile</a>.) </li>
+<li><code>missile_anim</code> is a <a href="Anim.html">kts.Anim</a> used for the item while it is flying through the dungeon as a missile weapon. </li>
+<li><code>missile_backswing_time</code> is the time (in milliseconds) for the "backswing" when this item is thrown as a missile weapon. </li>
+<li><code>missile_damage</code> is the amount of damage inflicted by this item when it is thrown as a missile weapon. (This can also be a function returning a number.) </li>
+<li><code>missile_downswing_time</code> is the time (in milliseconds) for the "downswing" when this item is thrown as a missile weapon. </li>
+<li><code>missile_hit_multiplier</code> controls the probability that a missile will hit something. Specifically, the probability to <i>miss</i> is equal to 1 / (1 + Amount of range left * Missile Hit Multiplier). Therefore, the higher the <code>missile_hit_multiplier</code>, the higher the probability to hit, but the probability of hit also falls off with range. </li>
+<li><code>missile_range</code> is the maximum range (in squares) of a missile weapon. </li>
+<li><code>missile_speed</code> gives the speed at which a missile weapon travels through the dungeon. Typical values include 250 for the axe, 350 for daggers and 440 for crossbow bolts. </li>
+<li><code>missile_stun_time</code> is the amount of time (in milliseconds) for which a creature will be stunned after being hit by this missile weapon. This can also be a function returning a number (useful for randomisation). </li>
+<li><code>on_drop</code> is a function called whenever this item is dropped into the dungeon. The function takes no arguments, but the <a href="cxt.html">cxt</a> variable will be available. </li>
+<li><code>on_hit</code> is a function called whenever this item is hit with a weapon. The function takes no arguments, but the <a href="cxt.html">cxt</a> variable will be available. </li>
+<li><code>on_pick_up</code> is a function called whenever this item is picked up by a knight. The function takes no arguments, but the <a href="cxt.html">cxt</a> variable will be available. </li>
+<li><code>on_walk_over</code> is a function called whenever a knight or other creature walks onto the item (while it is in the dungeon). For example, this is used to implement the effect of bear traps. The function takes no arguments, but the <a href="cxt.html">cxt</a> variable will be available. </li>
+<li><code>open_traps</code> should be set to <code>true</code> if a knight can open trapped chests or doors safely while holding this item. This is used for the staff. </li>
+<li><code>overlay</code> is the <a href="Overlay.html">kts.Overlay</a> used to represent the item on-screen while it is being held by a knight (or other creature). </li>
+<li><code>parry_chance</code> is the probability that this item will successfully parry a blow in melee combat. </li>
+<li><code>prefer_sword</code>, if set to true, indicates that the knight will usually prefer to drop this weapon and use the sword instead. The only way to use this item in melee is to deliberately select the "fist" icon from the menu or Action Bar. (This setting is used for the staff.) </li>
+<li><code>reload_action</code> is a function that is called repeatedly while the item is being reloaded with ammo. This is used by the crossbow to play the "clicking" sound effect while the crossbow is being loaded. </li>
+<li><code>reload_action_time</code> is the time (in milliseconds) between calls to <code>reload_action</code>. </li>
+<li><code>reload_time</code> is the total time before the weapon is loaded. </li>
+<li><code>stack_graphic</code> is the <a href="Graphic.html">Graphic</a> used to represent a stack of these items in the dungeon (as opposed to <code>graphic</code> which is used when there is a single item). (If <code>stack_graphic</code> is unset, then <code>graphic</code> is used for both single items and stacks.) </li>
+<li><code>tutorial_key</code> is an integer indicating which tutorial message (if any) is associated with seeing this item. </li>
+<li><code>type</code> determines the type of item: <code>"held"</code> means the knight holds the item in their hands (like a sword or axe); <code>"backpack"</code> means the item is carried in the inventory (like daggers or gems); <code>"magic"</code> means the item is consumed when picked up (like potions or scrolls); and <code>"nopickup"</code> means the item cannot be picked up at all (like open bear traps). </li>
+</ul>
+<h2>Return Value</h2>
+<p>The new ItemType (a Lua userdata object) will be returned. </p>
+<h2>Errors</h2>
+<p>There are several different errors that can be generated if any of the input parameters are incorrect. </p>
+<h2>Notes</h2>
+<p>Once created, it is permissible to set "custom properties" on an ItemType. For example, if <code>i</code> is an ItemType, you could write a value to <code>i.my_custom_field</code> and read it back again later. This might be useful for some special purposes. </p>
+<h2>Examples</h2>
+<p>Several examples of ItemTypes can be found in the file <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/items.lua">knights_data/server/classic/items.lua</a> in the Knights distribution. </p>
+<h2>See Also</h2>
+<p><a href="Anim.html">kts.Anim</a> </p>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="Graphic.html">kts.Graphic</a> </p>
+<p><a href="Overlay.html">kts.Overlay</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

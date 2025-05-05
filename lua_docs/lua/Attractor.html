@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Attractor</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Attractor</h1>
+<h2>Name</h2>
+<p>kts.Attractor &ndash; teleport a random other knight to my room </p>
+<h2>Synopsis</h2>
+<p><code>kts.Attractor()</code> </p>
+<h2>Description</h2>
+<p>This function teleports a random other knight to the current actor's room. </p>
+<p>In other words: If the current actor (as defined by <code>cxt.actor</code>) is a knight, then a random <i>other</i> knight is chosen, and that knight is teleported to a randomly chosen unoccupied square in the current knight's room. If the current actor is some other type of creature, then a random knight is chosen (from among all the knights in the dungeon) and teleported to this creature's room. </p>
+<p>If no (other) knights exist (e.g. if the actor is the only knight in a single-player game) then the current actor is teleported to a random dungeon square instead. (This is the only case in which the current actor, as opposed to some other knight, will be teleported by this function.) </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>No errors can be raised by this function. </p>
+<p>The teleportation can fail (e.g. because the current room is already full with knights or other creatures, so there is no space for the new knight to arrive), but in this case no Lua error is raised &ndash; instead, nothing happens and the actor stays where they currently are. </p>
+<p>This function can also fail if <code>cxt.actor</code> is not a valid creature, but again in that case, no error is raised, and instead the function just does nothing. </p>
+<h2>Notes</h2>
+<p>This function is mainly intended to be used from item or tile effects (e.g. the <code>on_pick_up</code> function of an <a href="ItemType.html">ItemType</a>). </p>
+<p>No sound effects or visual effects are performed by this function &ndash; if those are required, they must be done separately. </p>
+<h2>Examples</h2>
+<p>Scrolls use this function (as one of their possible effects); try searching for <code>my_attractor</code> in the standard <a href="https://github.com/sdthompson1/knights/tree/main/knights_data/server">Knights Lua files</a> to see how this works. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The Context table</a> </p>
+<p><a href="TeleportRandom.html">kts.TeleportRandom</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

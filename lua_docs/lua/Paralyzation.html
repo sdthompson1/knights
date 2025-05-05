@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Paralyzation</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Paralyzation</h1>
+<h2>Name</h2>
+<p>kts.Paralyzation &ndash; give the current actor the Paralyzation effect </p>
+<h2>Synopsis</h2>
+<p><code>kts.Paralyzation(duration)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then, unless they are immune, they gain the Paralyzation magical effect for the next <code>duration</code> milliseconds. </p>
+<p>If the knight already has a different incompatible magic effect (such as Strength or Regeneration) then the other effect is cancelled in favour of Paralyzation. </p>
+<p>If the knight already has Paralyzation, then the existing Paralyzation timer is cancelled and replaced with the new one. </p>
+<p>Knights with Poison Immunity are immune to Paralyzation (any attempt to paralyze them will fail, and do nothing). </p>
+<p>If <code>cxt.actor</code> is not a knight then calling <code>kts.Paralyzation</code> will do nothing. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Paralyzation, as the name implies, prevents the knight from moving until the effect runs out. </p>
+<p>The duration argument to <code>kts.Paralyzation</code> is usually set to some kind of random number, to provide some unpredictability for the players. The duration value is not made visible to the player. </p>
+<p>The "Paralyzation" message (that flashes above the knight while paralyzation is in effect) is set as the <code>paralyzation_msg</code> entry in the <a href="MISC_CONFIG.html">kts.MISC_CONFIG</a> table. </p>
+<h2>Examples</h2>
+<p>To paralyze a knight for a random number of seconds between 1 and 60: </p>
+<p><code>kts.Paralyzation(kts.RandomRange(1, 60) * 1000)</code> </p>
+<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/magic.lua">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Invisibility.html">kts.Invisibility</a> </p>
+<p><a href="PoisonImmunity.html">kts.PoisonImmunity</a> </p>
+<p><a href="Quickness.html">kts.Quickness</a> </p>
+<p><a href="Regeneration.html">kts.Regeneration</a> </p>
+<p><a href="Strength.html">kts.Strength</a> </p>
+<p><a href="Super.html">kts.Super</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

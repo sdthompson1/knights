@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetTimeLimit</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetTimeLimit</h1>
+<h2>Name</h2>
+<p>kts.SetTimeLimit &ndash; set a time limit for the next game </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetTimeLimit(time_in_seconds)</code> </p>
+<h2>Description</h2>
+<p>If this function is called during game setup then the next game will have a time limit of <code>time_in_seconds</code> seconds. </p>
+<p>If the time runs out, and the game is a <a href="SetDeathmatchMode.html">deathmatch</a>, then the player(s) with the highest score will be declared the winner(s). For non-deathmatch games, all players lose when time runs out. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>If the value passed is not an integer then an error results. </p>
+<h2>See Also</h2>
+<p><a href="SetDeathmatchMode.html">kts.SetDeathmatchMode</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

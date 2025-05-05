@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Tile</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Tile</h1>
+<h2>Name</h2>
+<p>kts.Tile &ndash; create a new Tile </p>
+<h2>Synopsis</h2>
+<pre>tile =
+    kts.Tile { 
+        type = &lt;"", "home", "door", "chest" or "barrel"&gt;,
+
+        -- For all tile types:
+        access = &lt;access table (see below)&gt;,
+        connectivity_check = &lt;integer&gt;,
+        control = &lt;control or function&gt;,
+        depth = &lt;integer&gt;,
+        graphic = &lt;graphic&gt;,
+        hit_points = &lt;function or integer&gt;,
+        items = &lt;see description below&gt;,
+        on_activate = &lt;function&gt;,
+        on_approach = &lt;function&gt;,
+        on_destroy = &lt;function&gt;,
+        on_hit = &lt;function&gt;,
+        on_walk_over = &lt;function&gt;,
+        on_withdraw = &lt;function&gt;,
+        stairs_down = &lt;"special", "north", "south", "east", "west"&gt;,
+        tutorial = &lt;integer&gt;,
+        map_as = &lt;"wall", "floor"&gt;,
+
+        -- For type = "home":
+        facing = &lt;"north", "south", "east", "west"&gt;,
+        special_exit = &lt;boolean&gt;,
+        unsecured_colour = &lt;integer&gt;,
+
+        -- For type = "door" or "chest":
+        open = &lt;boolean&gt;,
+        open_graphic = &lt;graphic&gt;,
+        lock_chance = &lt;number between 0.0 and 1.0&gt;,
+        lock_pick_only_chance = &lt;number between 0.0 and 1.0&gt;,
+        keymax = &lt;integer&gt;,
+        special_lock = &lt;boolean&gt;,
+        on_open_or_close = &lt;function&gt;,
+        on_unlock_fail = &lt;function&gt;,
+
+        -- Additionally for type = "chest":
+        facing = &lt;"north", "south", "east", "west"&gt;,
+        trap_chance = &lt;number between 0.0 and 1.0&gt;,
+        traps = &lt;function&gt;
+    }
+</pre>
+<p>where: </p>
+<pre>&lt;access table&gt; = {
+    "flying" = &lt;access type&gt;,
+    "missiles" = &lt;access type&gt;,
+    "walking" = &lt;access type&gt;
+}
+
+&lt;access type&gt; = nil, "approach", "partial", "blocked", "clear"
+</pre>
+<p>All fields listed above also accept <code>nil</code> as a valid value. </p>
+<h2>Description</h2>
+<p>A "Tile" is an object representing the "terrain" within a particular square of the dungeon. A Tile might therefore represent a wall, a piece of floor, a treasure chest, etc. A given dungeon square can contain more than one Tile, for example a treasure chest tile might be overlaid on top of a floor tile. </p>
+<p>The <code>kts.Tile</code> function creates a new Tile. The function takes one parameter, a table, which contains various properties that the new Tile should have. These are as follows: </p>
+<ul>
+<li><code>type</code> selects the overall type of the tile. This can be one of the following values: <ul>
+<li><code>""</code> (or <code>nil</code>) selects a normal tile with no special properties. </li>
+<li><code>"home"</code> selects an entry/exit point tile. These tiles can be used by knights as a spawn point, used as dungeon exits (in "escape from the dungeon" quests), or secured by the Wand of Securing. </li>
+<li><code>"door"</code> or <code>"chest"</code> select door or chest tiles respectively. Unlike other tile types, these tiles have two states: open and closed. They can also have traps set on them, and can be locked. Chests can additionally contain items. </li>
+<li><code>"barrel"</code> is a tile that may be "hiding" an item within it. When the tile is destroyed, the item is revealed. </li>
+</ul>
+<li><code>access</code> controls whether the tile can be passed through. <ul>
+<li>The following "access types" are available: <ul>
+<li><code>"blocked"</code> means that the tile is blocked &ndash; nothing can pass through it. Used for walls. </li>
+<li><code>"clear"</code> means that the tile is open &ndash; creatures can enter the tile. Used for floors. </li>
+<li><code>"approach"</code> or <code>"partial"</code> means that the tile can be approached, but not moved through. Used for closed doors and the like. </li>
+</ul>
+<li>Moreover, there are three different access "levels": <code>"flying"</code>, <code>"missiles"</code> and <code>"walking"</code>. The access type can be set separately for each. For example, a treasure chest might have <code>{"flying": "clear", "walking": "approach"}</code>, which means that knights (and other walking creatures) can approach the chest but not move through it, while vampire bats (and other flying creatures) can fly over it. </li>
+<li>The <code>"missiles"</code> access level refers to projectiles such as flying daggers and axes. Note that if <code>"missiles"</code> is set to <code>"approach"</code> (or <code>"partial"</code>) this has a special meaning: the missile will have a fixed probability of passing through the tile, set by the <code>missile_access_chance</code> property of the ItemType. (This is used for the closed gates, where a certain proportion of missiles will be blocked by the gate.) See also <a href="ItemType.html">kts.ItemType</a>. </li>
+<li>Note that for doors, the access settings only apply when the door is closed. When the door is open, access is considered to be <code>"clear"</code> at all levels. </li>
+</ul>
+<li><code>connectivity_check</code> determines whether the dungeon generator considers this tile as usually impassable by knights (-1), usually passable (1), or the dungeon generator should guess based on heuristics (0). See <a href="ConnectivityCheck.html">kts.ConnectivityCheck</a> for details. </li>
+<li><code>control</code> may be set to a Control (see <a href="Control.html">kts.Control</a>) which becomes available if the knight is standing on or approaching the tile. For example, this is used by doors and chests, to make the "open/close door" control available. <code>control</code> may also be set to a Lua function, in which case the function will be passed the current position of the tile, and it can then return a Control object (or nil). </li>
+<li><code>depth</code> is an integer which controls the order in which overlapping tiles are drawn. For example, this is set to a high value for floor tiles, and a lower value for chests, tables etc., to make sure that the chests/tables are drawn on top of the floor tile (and not the other way around). Note that depth values must be between &ndash;8 and +7 currently. </li>
+<li><code>graphic</code> is the Graphic object used for drawing the tile (see <a href="Graphic.html">kts.Graphic</a>). </li>
+<li><code>hit_points</code> is the number of hit points that the tile has. If nonzero, then the tile can be destroyed, once it suffers the given amount of damage. This can also be set to a function that returns a number (in this case the function would usually return a random number &ndash; and having it as a function means that the number will be "rerolled" for each individual instance of the tile in the dungeon, rather than "rolled" only once when the Tile is first created). </li>
+<li><code>items</code> controls how the dungeon generator places items on this tile. This can have several values: <ul>
+<li><code>0</code> means items may not be placed on this tile. </li>
+<li>A number other than zero means that items may be placed here by knights (or otherwise), but the dungeon generator will not generate any items on this tile. </li>
+<li>The string <code>"destroy"</code> has a special meaning: any items placed on this tile are automatically destroyed/lost. This is used for pits. </li>
+<li>Any other string indicates that items are allowed here, and moreover, the "category" of this tile (for item generation purposes) is equal to that string. See <a href="AddItem.html">kts.AddItem</a> and <a href="AddStuff.html">kts.AddStuff</a> for more on how this works. </li>
+<li>Note that the default, if <code>items</code> is <code>nil</code> or not specified, is to disallow items (equivalent to <code>items=0</code>) if access at "walking" level is "clear"; or to allow items (equivalent to <code>items=1</code>) otherwise. </li>
+</ul>
+<li><code>on_activate</code> is a Lua function that is called when the tile is "activated" (see <a href="Activate.html">kts.Activate</a>). </li>
+<li><code>on_approach</code> is a Lua function that is called when the tile is approached by any creature. </li>
+<li><code>on_destroy</code> is a Lua function that is called when the tile is destroyed. </li>
+<li><code>on_hit</code> is a Lua function that is called when the tile is hit by any creature (e.g. a sword strike from a knight). </li>
+<li><code>on_walk_over</code> is a Lua function that is called when any creature walks onto the tile (note this is not triggered by flying creatures, only walking). </li>
+<li><code>on_withdraw</code> is a Lua function that is called when a creature moves back from approaching the tile. </li>
+<li><code>stairs_down</code> is used to indicate staircase tiles. If set to nil (or omitted) then this tile is not a staircase. If set to a direction (north, south, east or west), then the tile is a staircase and walking in the given direction is going "downstairs". If set to "special" then this tile represents the "top" of a staircase. <ul>
+<li>Stairs affect missile range &ndash; you will have slightly shorter range if throwing/shooting upstairs, or longer if downstairs. </li>
+<li>Stairs also affect the dungeon generator. If a tile has stairs_down equal to a direction, or "special", then doors will not be added next to the tile, nor will monsters be generated on the tile. </li>
+</ul>
+<li><code>tutorial</code> is an integer indicating which tutorial message (if any) is associated with seeing this tile. </li>
+<li><code>map_as</code> indicates whether the tile should be shown on the mini-map as either a <code>"wall"</code> or a <code>"floor"</code>. If omitted, the game will decide automatically, based on the access settings and whether or not the tile is destructible. </li>
+<li><code>facing</code> indicates the orientation of a home or chest tile. For home tiles, this must point "towards" the exit (i.e. out of the dungeon). For chests, this is the direction from the centre of the chest towards the "front" of the chest. (A chest cannot be opened from behind.) </li>
+<li><code>special_exit</code> (for homes) indicates that this is the "special" exit point (e.g. used for "guarded exit" quests). </li>
+<li><code>unsecured_colour</code> (for homes) is an RGB colour value (hex number between 000000 and FFFFFF). The graphic for a "home" tile is expected to include several pixels with colour value FF0000 (red). The game will re-colour all of these pixels in the knight's own house colours (if the home is secured) or in the <code>unsecured_colour</code> if the home is unsecured. Usually <code>unsecured_colour</code> would be set to 0 (black). </li>
+<li><code>open</code> (for doors or chests) indicates whether the door is initially open. </li>
+<li><code>open_graphic</code> (for doors or chests) is an alternative graphic to be used when the door or chest is open (the main <code>graphic</code> is used when it is closed). </li>
+<li><code>lock_chance</code> (for doors/chests) is the probability that the door/chest will be locked at the start of the game. </li>
+<li><code>lock_pick_only_chance</code> (for doors/chests) is the probability that, if locked, the door/chest can only be opened by lockpicks, and not by any of the keys. </li>
+<li><code>keymax</code> (for doors/chests) is the highest allowed key number that will unlock this chest. (When a chest is to be locked, a random number between 1 and <code>keymax</code> will be generated. If this turns out to be higher than the number of keys in the game, then the chest is unlocked instead.) Usually <code>keymax</code> would be set to 3 as a Knights quest usually has up to 3 keys. </li>
+<li><code>special_lock</code> (for doors/chests) means that the door can be opened neither by keys nor lock picks; only switches will work. Used for doors that are involved in switch puzzles. </li>
+<li><code>on_open_or_close</code> (for doors/chests) is a Lua function that is called when the tile is opened or closed by any means. </li>
+<li><code>on_unlock_fail</code> (for doors/chests) is called when a knight fails to unlock the tile (because they do not have the right key, or because their attempt at using lockpicks failed). This is usually used to play a sound effect or show a "Locked" message. </li>
+<li><code>trap_chance</code> (for chests) is the probability that the tile will contain a trap, when "pretrapped chests" is active. </li>
+<li><code>traps</code> (for chests) is a Lua function that is called during dungeon generation, when a chest needs to be given a trap. The function receives two parameters: the position of the chest, and the chest's "facing" direction. It will usually just call either <a href="SetPoisonTrap.html">kts.SetPoisonTrap</a> or <a href="SetBladeTrap.html">kts.SetBladeTrap</a> to create the trap. </li>
+</ul>
+<h2>Return Value</h2>
+<p>The new Tile (a Lua userdata object) will be returned. </p>
+<h2>Errors</h2>
+<p>There are several different errors that can be generated if any of the input parameters are incorrect. </p>
+<h2>Notes</h2>
+<h3>Shared Tile instances</h3>
+<p>For most tiles, the Lua object representing that tile is "shared" across all instances of the tile in the dungeon. So, for example, if there is a tile named <code>t_wall_normal</code>, then all "normal wall" tiles in the dungeon will actually be a reference to that same userdata object, and, for example, they will compare equal using the Lua <code>==</code> operator. This can be useful at times; for example, if you want to detect whether a certain tile is a "crystal ball", then you can compare it to <code>t_crystal_ball</code> using <code>==</code>. (This technique was used in the "telewand" mod to create a special effect when a crystal ball was struck with a certain wand.) </p>
+<p>However, for <code>home</code>, <code>door</code>, <code>chest</code> or <code>barrel</code> tiles, each copy of the tile in the dungeon is actually a separate userdata instance. This is because these tiles have their own "state" that needs to be stored separately for each instance of the tile (for example, a door needs to know whether it is open or closed, a home needs to know whether it is secured, and a chest or barrel needs to know the stored item). The upshot of this is that, for example, you cannot detect whether a tile is a barrel simply by comparing it to <code>t_barrel</code> using <code>==</code>, because each individual barrel tile is considered "not equal" to <code>t_barrel</code>, and they are also all "not equal" to each other. </p>
+<h3>Custom properties</h3>
+<p>Note also that, once created, Tiles can store user-defined properties. For example, if <code>t</code> is a Tile, then we can write to a field such as <code>t.my_custom_field</code>, and read back from it again later. This might be useful for some special purposes. </p>
+<h2>Examples</h2>
+<p>A simple floor tile: </p>
+<pre>floor = kts.Tile {
+    access = {
+        walking = "clear",
+        flying = "clear",
+        missiles = "clear"
+    },
+    items = "floor",
+    graphic = my_floor_graphic
+}
+</pre>
+<p>A treasure chest: </p>
+<pre>chest = kts.Tile {
+    type = "chest",
+
+    graphic = my_graphic,   -- previously created by calling kts.Graphic
+    open_graphic = my_open_graphic,
+    facing = "north",
+    depth = -4,
+
+    items = "chest",
+    access = {
+        walking = "approach",
+        flying = "clear",
+        missiles = "clear"
+    },
+    trap_chance = 0.5,
+    traps = function(pos, dir)
+        if kts.RandomChance(0.5) then
+            kts.SetPoisonTrap(pos, poison_trap_item)
+        else
+            kts.SetBladeTrap(pos, blade_trap_item, bolt_item, dir)
+        end
+    end,
+    lock_chance = 0.5,
+    lock_pick_only_chance = 0.16667,
+    keymax = 3,
+    hit_points = function() return kts.RandomRange(1, 20) end,
+    control = my_control,  -- previously created by calling kts.Control
+
+    -- Not shown here:
+    -- functions on_open_or_close, on_unlock_fail, on_hit,
+    -- which would typically play sound effects and/or show messages.
+}
+</pre>
+<h2>See Also</h2>
+<p><a href="Activate.html">kts.Activate</a> </p>
+<p><a href="AddItem.html">kts.AddItem</a> </p>
+<p><a href="AddStuff.html">kts.AddStuff</a> </p>
+<p><a href="CloseDoor.html">kts.CloseDoor</a> </p>
+<p><a href="ConnectivityCheck.html">kts.ConnectivityCheck</a> </p>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="Graphic.html">kts.Graphic</a> </p>
+<p><a href="IsDoorOpen.html">kts.IsDoorOpen</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="LoadSegments.html">kts.LoadSegments</a> </p>
+<p><a href="LockDoor.html">kts.LockDoor</a> </p>
+<p><a href="OpenDoor.html">kts.OpenDoor</a> </p>
+<p><a href="OpenOrCloseDoor.html">kts.OpenOrCloseDoor</a> </p>
+<p><a href="SetBladeTrap.html">kts.SetBladeTrap</a> </p>
+<p><a href="SetPoisonTrap.html">kts.SetPoisonTrap</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetPlayer</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetPlayer</h1>
+<h2>Name</h2>
+<p>kts.GetPlayer &ndash; get the Player corresponding to a Creature </p>
+<h2>Synopsis</h2>
+<p><code>player = kts.GetPlayer(creature)</code> </p>
+<h2>Description</h2>
+<p>Given a creature, this first checks if the creature is a knight. If so, a Player object, representing the player in control of that knight, is returned. Otherwise, <code>nil</code> is returned. </p>
+<p>A "Player object" is just a Lua userdata object representing the player. It can be used with functions such as <a href="GetHomeFor.html">kts.GetHomeFor</a> or <a href="EliminatePlayer.html">kts.EliminatePlayer</a>. </p>
+<h2>Return Value</h2>
+<p>Either a Player userdata, or <code>nil</code> is returned. </p>
+<h2>Errors</h2>
+<p>If the input is not a valid Creature then an error is raised. </p>
+<h2>Examples</h2>
+<p>If the <code>cxt</code> table is available (this will be the case within "callback" functions, like <code>on_approach</code>, <code>on_walk_over</code> etc), then you can use <code>kts.GetPlayer(cxt.actor)</code> to find the current player (if there is one). </p>
+<p>For example, the following code would create a Tile which eliminates from the game any player who walks on it: </p>
+<pre>function eliminate_player()
+    local player = kts.GetPlayer(cxt.actor)
+    if player ~= nil then
+        print(player, "Ha ha, you stepped on the booby trapped tile, now we are kicking you from the game!!")
+        kts.EliminatePlayer(player)
+    end
+end
+
+my_tile = kts.Tile{ on_walk_over = eliminate_player,
+                    -- other settings e.g. "graphic", "access"
+                  }
+</pre>
+<p>Obviously this would be a very cruel thing to create in an actual game, but it is just an example :) </p>
+<h2>See Also</h2>
+<p><a href="EliminatePlayer.html">kts.EliminatePlayer</a> </p>
+<p><a href="GetAllPlayers.html">kts.GetAllPlayers</a> </p>
+<p><a href="GetHomeFor.html">kts.GetHomeFor</a> </p>
+<p><a href="GetPlayerName.html">kts.GetPlayerName</a> </p>
+<p><a href="print.html">print</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

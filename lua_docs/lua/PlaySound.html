@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.PlaySound</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.PlaySound</h1>
+<h2>Name</h2>
+<p>kts.PlaySound &ndash; play a sound effect </p>
+<h2>Synopsis</h2>
+<p><code>kts.PlaySound(position, sound, frequency)</code> </p>
+<h2>Description</h2>
+<p>This function plays a sound at a given dungeon position. </p>
+<p><code>position</code> can either be a valid dungeon position (i.e. a Lua table with <code>x</code> and <code>y</code> fields), or <code>nil</code>. In the former case, only knights in the same room as the given position will hear the sound; in the latter case, all players will hear it. </p>
+<p><code>sound</code> should be a Sound object, as created by <a href="Sound.html">kts.Sound</a>. </p>
+<p><code>frequency</code> specifies the sample rate in Hz. This can be varied up or down to play the sound at a different pitch. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors can be generated if the input parameters are invalid. </p>
+<h2>See Also</h2>
+<p><a href="Sound.html">kts.Sound</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

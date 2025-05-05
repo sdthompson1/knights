@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Activate</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Activate</h1>
+<h2>Name</h2>
+<p>kts.Activate &ndash; activate a tile </p>
+<h2>Synopsis</h2>
+<p><code>kts.Activate()</code> </p>
+<p><code>result = kts.Can_Activate()</code> </p>
+<h2>Description</h2>
+<p>When <code>kts.Activate()</code> is called, the creature found in <code>cxt.actor</code> will try to activate the tile found in <code>cxt.tile</code> (at position <code>cxt.tile_pos</code>). This essentially means that the <code>on_activate</code> function for the tile will be called. </p>
+<p><code>kts.Can_Activate()</code> returns true if it is currently possible to activate a tile, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.Activate()</code> returns no meaningful value. <code>kts.Can_Activate()</code> returns a boolean. </p>
+<h2>Notes</h2>
+<p><code>kts.Activate</code> and <code>kts.Can_Activate</code> are usually used as the <code>action</code> and <code>possible</code> functions (respectively) of a <a href="Control.html">Control</a>. </p>
+<h2>See Also</h2>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.RemoveTile</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.RemoveTile</h1>
+<h2>Name</h2>
+<p>kts.RemoveTile &ndash; remove a tile from the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>kts.RemoveTile(pos, tile)</code> </p>
+<h2>Description</h2>
+<p>Given a Position (table containing <code>x</code> and <code>y</code> co-ordinates) and a Tile, this function will look for a copy of the given tile in the given dungeon square, and if found, remove/delete it. </p>
+<p>If multiple copies of the tile exist in the given square, only one is removed. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>An error occurs if the input arguments are not a valid map position or Tile respectively. </p>
+<p>If no copy of the tile exists at the given square, this is not an error &ndash; the function just does nothing in that case. </p>
+<h2>Examples</h2>
+<p>One example of using this function is to implement "toggling" between, say, an open pit tile and a closed pit tile. <code>kts.RemoveTile</code> would be used to remove the open pit and <code>kts.AddTile</code> would be used to replace it with a closed pit (or vice versa). </p>
+<h2>See Also</h2>
+<p><a href="AddTile.html">kts.AddTile</a> </p>
+<p><a href="GetTiles.html">kts.GetTiles</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

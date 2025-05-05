@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.PoisonImmunity</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.PoisonImmunity</h1>
+<h2>Name</h2>
+<p>kts.PoisonImmunity &ndash; give the current actor Poison Immunity </p>
+<h2>Synopsis</h2>
+<p><code>kts.PoisonImmunity(duration, message)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then that knight gains the Poison Immunity magical effect, for the next <code>duration</code> milliseconds. The string <code>message</code> will also flash on screen above the knight a number of times. </p>
+<p>If the knight already has Poison Immunity, then the existing Poison Immunity timer is cancelled and replaced with the new one. </p>
+<p>If the current actor is not a knight then nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>Poison Immunity gives the knight immunity to both Poison and Paralyzation. </p>
+<p>The duration (first argument to <code>kts.PoisonImmunity</code>) is usually set to some kind of random number, to provide some unpredictability for the players. The duration value is not made visible to the player. </p>
+<h2>Examples</h2>
+<p>To give a knight Poison Immunity for a random number of seconds between 1 and 60: </p>
+<p><code>kts.PoisonImmunity(kts.RandomRange(1, 60) * 1000, "Poison Immunity")</code> </p>
+<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/magic.lua">magic.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Invisibility.html">kts.Invisibility</a> </p>
+<p><a href="Invulnerability.html">kts.Invulnerability</a> </p>
+<p><a href="Paralyzation.html">kts.Paralyzation</a> </p>
+<p><a href="Quickness.html">kts.Quickness</a> </p>
+<p><a href="Regeneration.html">kts.Regeneration</a> </p>
+<p><a href="Strength.html">kts.Strength</a> </p>
+<p><a href="Super.html">kts.Super</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

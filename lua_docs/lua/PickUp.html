@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.PickUp</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.PickUp</h1>
+<h2>Name</h2>
+<p>kts.PickUp &ndash; pick up an item </p>
+<h2>Synopsis</h2>
+<p><code>kts.PickUp()</code> </p>
+<p><code>result = kts.Can_PickUp()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (<code>cxt.actor</code>) is a knight, then <code>kts.PickUp()</code> will attempt to pick up an item. If the knight is currently approaching a square (such as a table or chest), then the approached square is targetted; otherwise, the knight's current square is targetted. If the targetted square contains an item, it will be picked up (otherwise, nothing happens). </p>
+<p>If the new item is a "large" item (such as a hammer or crossbow), and the knight is already carrying another large item, then the currently held item will be dropped first (i.e. the knight will exchange their current item for the new item). If the new item is a "small" item (such as a potion or gem) then the knight will just pick it up without dropping anything. </p>
+<p>If the actor is not a knight then nothing happens. </p>
+<p><code>kts.Can_PickUp()</code> returns true if there is an item available for pickup, and it is possible for the current actor to pick it up (i.e. they are not busy doing something else or otherwise unable to pick up currently). Otherwise it returns false. </p>
+<h2>Return Value</h2>
+<p><code>kts.PickUp()</code> returns nothing, and <code>kts.Can_PickUp()</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p><code>kts.PickUp</code> and <code>kts.Can_PickUp</code> are usually used as the <code>action</code> and <code>possible</code> functions (respectively) of a <a href="Control.html">Control</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Drop.html">kts.Drop</a> </p>
+<p><a href="DropHeld.html">kts.DropHeld</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Throw</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Throw</h1>
+<h2>Name</h2>
+<p>kts.Throw &ndash; throw an item from the actor's inventory (e.g. daggers) </p>
+<h2>Synopsis</h2>
+<p><code>kts.Throw()</code> </p>
+<p><code>result = kts.Can_Throw()</code> </p>
+<h2>Description</h2>
+<p>If the actor (<code>cxt.actor</code>) is a knight, carrying at least one item of type <code>cxt.item_type</code>, then calling <code>kts.Throw()</code> will cause the knight to throw one item of the given type (e.g. a throwing dagger). </p>
+<p>Throwing small items like daggers is not allowed while the knight is carrying a hand-held weapon (like a hammer or crossbow), so if the knight is currently carrying any item in their hands (other than the default sword), then the knight will drop their held item (as if <a href="DropHeld.html">kts.DropHeld</a> had been called), instead of throwing. </p>
+<p><code>kts.Can_Throw()</code> returns true if the actor is a knight carrying at least one item of type <code>cxt.item_type</code>, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.Throw()</code> returns nothing, and <code>kts.Can_Throw()</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p><code>kts.Throw</code> and <code>kts.Can_Throw</code> are useful as the <code>action</code> and <code>possible</code> functions of a <a href="Control.html">Control</a>, respectively. In particular, this Control would usually be attached to a "throwable" item type (such as daggers). </p>
+<h2>Examples</h2>
+<p>The main example for this function is the standard "throwing dagger" item: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L158">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="ThrowOrShoot.html">kts.ThrowOrShoot</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

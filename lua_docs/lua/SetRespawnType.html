@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetRespawnType</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetRespawnType</h1>
+<h2>Name</h2>
+<p>kts.SetRespawnType &ndash; set the current "respawn type" for all knights </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetRespawnType(respawn_type)</code> </p>
+<h2>Description</h2>
+<p>This function controls respawn behaviour. The <code>respawn_type</code> parameter must be one of the following strings: </p>
+<ul>
+<li><code>"normal"</code> &ndash; the normal Knights respawn behaviour. Knights will spawn at a fixed entry point (or "home"), which only changes if the wand of securing is used. </li>
+<li><code>"different"</code> &ndash; Knights will appear at a different, randomly selected "home" tile (dungeon entry point) each time they respawn. Knights can still heal by visiting their most recent entry point. </li>
+<li><code>"anywhere"</code> &ndash; The "home" (entry point) tiles are not used for respawning at all. Instead knights just respawn at a completely random dungeon position. Healing by returning to one's entry point will not be available. </li>
+</ul>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>If the input parameter is not one of the strings listed above, an error will result. </p>
+<h2>Notes</h2>
+<p>If both <code>SetRespawnType</code> and <a href="SetRespawnFunction.html">SetRespawnFunction</a> are used, then the "respawn function" takes priority, and the "respawn type" is only used if the respawn function returned nil. </p>
+<h2>See Also</h2>
+<p><a href="GetRespawnFunction.html">kts.GetRespawnFunction</a> </p>
+<p><a href="GetRespawnType.html">kts.GetRespawnType</a> </p>
+<p><a href="SetRespawnFunction.html">kts.SetRespawnFunction</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

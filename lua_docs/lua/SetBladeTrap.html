@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetBladeTrap</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetBladeTrap</h1>
+<h2>Name</h2>
+<p>kts.SetBladeTrap &ndash; add a blade trap to a door or chest tile </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetBladeTrap(position, trap_item, bolt_item, direction)</code> </p>
+<h2>Description</h2>
+<p>This adds a spring blade trap to a door or chest tile. When the door or chest is opened (or struck with a weapon), the trap will trigger. </p>
+<p><code>position</code> gives the position of the tile to be trapped (as a table with <code>x</code> and <code>y</code> fields). </p>
+<p><code>trap_item</code> is an <a href="ItemType.html">ItemType</a> that represents the trap itself; this item will be put back into the dungeon if a knight safely disarms the trap. </p>
+<p><code>bolt_item</code> is an <a href="ItemType.html">ItemType</a> that represents the missile fired by the trap. This ItemType is used only for its missile properties (damage, speed etc.); the item itself will not appear in the dungeon. </p>
+<p><code>direction</code> is the map direction ("north", "south", "east" or "west") in which the bolt will be fired. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Errors</h2>
+<p>Errors will be raised if the inputs are not valid positions, item types or directions. </p>
+<p>If there is no trappable door or chest at the given position, then no error is generated; instead, the function just does nothing. </p>
+<h2>Notes</h2>
+<p>Door/chest tiles can only contain one trap at a time. If a trap already exists when this function is called, then the existing trap will be triggered, and then the new trap will replace it. </p>
+<h2>See Also</h2>
+<p><a href="SetBearTrap.html">kts.SetBearTrap</a> </p>
+<p><a href="SetPoisonTrap.html">kts.SetPoisonTrap</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

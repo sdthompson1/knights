@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.FlashScreen</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.FlashScreen</h1>
+<h2>Name</h2>
+<p>kts.FlashScreen &ndash; cause the screen to flash </p>
+<h2>Synopsis</h2>
+<p><code>kts.FlashScreen()</code> </p>
+<p><code>kts.FlashScreen(delay)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (determined by <code>cxt.actor</code>) is a knight, then the screen will briefly flash for all players who are currently able to see that knight. </p>
+<p>If <code>delay</code> is specified, then the screen flash will happen <code>delay</code> milliseconds from now; otherwise it will happen immediately. </p>
+<p>If the current actor is not a knight, then nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>This is used for things like wands (which flash the screen when used) or pentagrams (which flash the screen when walked over). </p>
+<h2>Bugs</h2>
+<p>The rule that <code>kts.FlashScreen</code> does nothing when the actor is not a knight was originally designed to prevent screen flashes from being accidentally triggered by monsters. E.g. if a zombie triggered a screen flash every time it walked over a pentagram, then that would be quite distracting. However, if the Lua code actually <i>wants</i> to trigger a screen flash from something that a monster does, then currently there is no way to do that. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="FlashMessage.html">kts.FlashMessage</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

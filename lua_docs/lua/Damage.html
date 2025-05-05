@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Damage</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Damage</h1>
+<h2>Name</h2>
+<p>kts.Damage &ndash; apply damage to the current actor </p>
+<h2>Synopsis</h2>
+<p><code>kts.Damage(amount, stun_time)</code> </p>
+<p><code>kts.Damage(amount, stun_time, inhibit_squelch)</code> </p>
+<h2>Description</h2>
+<p>This function damages the current actor (<code>cxt.actor</code>) for the given <code>amount</code>. The actor will lose <code>amount</code> hitpoints, and (if they are still alive after receiving the damage) they will be stunned for <code>stun_time</code> milliseconds (this means they cannot perform any actions during the stun period). </p>
+<p>If the actor has <a href="Invulnerability.html">Invulnerability</a>, then they are immune to damage, so neither the hitpoint loss nor the stun time will apply. </p>
+<p>If the actor is a knight then <code>HOOK_KNIGHT_DAMAGE</code> will be run. </p>
+<p>If the actor is a knight and the damage amount is greater than zero and <code>inhibit_squelch</code> is <code>false</code> (or not specified), then <code>HOOK_CREATURE_SQUELCH</code> will run. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Examples</h2>
+<p>In the standard Knights data files, this is used as part of the <code>on_walk_over</code> action for a bear trap, to cause the actor to become damaged (and stunned for a significant time) when they walk over a bear trap. See <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L367">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

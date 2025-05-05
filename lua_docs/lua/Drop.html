@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Drop</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Drop</h1>
+<h2>Name</h2>
+<p>kts.Drop &ndash; drop an item from the actor's inventory </p>
+<h2>Synopsis</h2>
+<p><code>kts.Drop(item_type)</code> </p>
+<p><code>result = kts.Can_Drop(item_type)</code> </p>
+<h2>Description</h2>
+<p>If the current actor (given by <code>cxt.actor</code>) is a knight, who is currently carrying at least one item of type <code>item_type</code> in their "backpack", then <code>kts.Drop(item_type)</code> will drop one or more items of that type. </p>
+<p>The number of items dropped is equal to either the <code>max_stack</code> property of the given <a href="ItemType.html">ItemType</a>, or the number of items of that type already carried by the knight, whichever is lower. </p>
+<p>If the knight is currently approaching a tile (such as a table or chest), then the item(s) will be dropped onto that tile if possible; otherwise, they will be dropped on the knight's current square. Alternatively, if the target tile is already "full" (i.e. it already contains a different item type, or more than the <code>max_stack</code> value of the item type being dropped), then the item(s) may be placed on another nearby tile instead. </p>
+<p><code>kts.Can_Drop(item_type)</code> will return true if it is currently possible for the knight to drop at least one item of the given type, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.Drop</code> returns nothing, and <code>kts.Can_Drop</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p>This function can only be used to drop "backpack" items (like gems or daggers), not items "held in hands" (like hammers or crossbows). For the latter, use <a href="DropHeld.html">kts.DropHeld</a> instead. </p>
+<p><code>kts.Drop</code> and <code>kts.Can_Drop</code> are usually used as the <code>action</code> and <code>possible</code> functions (respectively) of a <a href="Control.html">Control</a>. </p>
+<h2>Examples</h2>
+<p>The standard "Drop Gem" control is implemented using this function: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/controls.lua#L23">controls.lua</a>. Note that since gems have <code>max_stack</code> equal to 1, this control only drops one gem at a time. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Control.html">kts.Control</a> </p>
+<p><a href="DropHeld.html">kts.DropHeld</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<p><a href="PickUp.html">kts.PickUp</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

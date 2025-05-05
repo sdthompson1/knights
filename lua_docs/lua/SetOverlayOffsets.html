@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SetOverlayOffsets</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SetOverlayOffsets</h1>
+<h2>Name</h2>
+<p>kts.SetOverlayOffsets &ndash; set x,y offsets for Overlay graphics </p>
+<h2>Synopsis</h2>
+<p><code>kts.SetOverlayOffsets(params)</code> </p>
+<p>where <code>params</code> is a list of 60 parameters as described below. </p>
+<h2>Description</h2>
+<p>When an item <a href="Overlay.html">Overlay</a> is drawn on top of a creature, the overlay graphic is not displayed at the exact same (x,y) pixel coordinates as the creature; instead it is offset by a certain amount in both x and y. This function sets those offsets. </p>
+<p>The parameters are divided into five groups of 12 parameters each. The first group corresponds to a "normal" creature (e.g. a knight just walking along normally), the second group corresponds to "melee backswing" (used when a knight is holding back the sword or other weapon, ready to strike), the third group corresponds to "melee downswing" (used after a knight has struck), the fourth group corresponds to "parrying" (used when a knight parries a blow), and the fifth group corresponds to "throwing backswing" (used when a knight is about to throw a missile weapon e.g. an axe). </p>
+<p>Each group is itself subdivided into four "triples" of parameters. Each "triple" consists of a direction name ("north", "south", "east" or "west"), an x offset (in units of 1/1000th of the dungeon square size), and a y offset (again in units of 1/1000th of a square). </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>Errors may be raised if the number of types of parameters are not correct. </p>
+<h2>Notes</h2>
+<p>Most users will not need to care about this function. The necessary <code>kts.SetOverlayOffsets</code> call has already been provided in <code>graphics.lua</code>, and it should not be necessary to change this in any way. In fact, doing so might break the animations for the existing creatures and weapons, so caution is advised. </p>
+<h2>Bugs</h2>
+<p>The overlay offsets cannot be changed per-Anim; instead only one "global" set of offsets (used for all Anims and Overlays) can be set. </p>
+<h2>Examples</h2>
+<p>The default settings, found in <code>graphics.lua</code>, are as follows: </p>
+<pre>kts.SetOverlayOffsets(
+
+-- Normal
+    "west", -250, -188,
+    "north", 188, -250,
+    "east", 250, 188,
+    "south", -188, 250,
+
+-- Melee backswing
+    "south", 188, 625,
+    "west", -625, 188,
+    "north", -188, -625,
+    "east", 625, -188,
+
+-- Melee downswing
+    "north", 0, -1000,
+    "east", 1000, 0,
+    "south", 0, 1000,
+    "west", -1000, 0,
+
+-- Parry
+    "west", -250, -125,
+    "north", 125, -250,
+    "east", 250, 125,
+    "south", -125, 250,
+
+-- Throwing backswing
+    "south", 188, 625,
+    "west", -625, 188,
+    "north", -188, -625,
+    "east", 625, -188
+)
+</pre>
+<h2>See Also</h2>
+<p><a href="Overlay.html">kts.Overlay</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

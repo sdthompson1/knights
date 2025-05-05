@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.SwingOrDrop</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.SwingOrDrop</h1>
+<h2>Name</h2>
+<p>kts.SwingOrDrop &ndash; attack with melee weapon if possible, drop held item otherwise </p>
+<h2>Synopsis</h2>
+<p><code>kts.SwingOrDrop()</code> </p>
+<p><code>result = kts.Can_SwingOrDrop()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (<code>cxt.actor</code>) is a creature who is able to act, and is not currently approaching a square, then calling <code>kts.SwingOrDrop()</code> will cause that creature to begin a melee attack with their currently held weapon, if applicable, or it will cause them to drop their currently held item (as if <a href="DropHeld.html">kts.DropHeld</a> had been called), otherwise. </p>
+<p><code>kts.Can_SwingOrDrop()</code> returns true if the current actor is not currently approaching a square, or false otherwise. </p>
+<h2>Return Value</h2>
+<p><code>kts.SwingOrDrop</code> returns nothing, and <code>kts.Can_SwingOrDrop</code> returns a boolean as described above. </p>
+<h2>Notes</h2>
+<p><code>kts.SwingOrDrop</code> and <code>kts.Can_SwingOrDrop</code> are useful as the <code>action</code> and <code>possible</code> functions of a <a href="Control.html">Control</a>, respectively. </p>
+<h2>Examples</h2>
+<p>The standard "melee attack" control ("fist" icon) uses this function: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/controls.lua#L49">controls.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="Swing.html">kts.Swing</a> </p>
+<p><a href="Throw.html">kts.Throw</a> </p>
+<p><a href="ThrowOrShoot.html">kts.ThrowOrShoot</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

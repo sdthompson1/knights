@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetItemInHand</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetItemInHand</h1>
+<h2>Name</h2>
+<p>kts.GetItemInHand &ndash; get the current item carried by a creature (if any) </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetItemInHand(creature)</code> </p>
+<h2>Description</h2>
+<p>This returns the <a href="ItemType.html">ItemType</a> corresponding to the item held by the given creature, or <code>nil</code> if the creature is not holding an item (e.g. a vampire bat). </p>
+<p>If the input is <code>nil</code> then <code>nil</code> is returned. </p>
+<h2>Return Value</h2>
+<p>An ItemType userdata object, or <code>nil</code>, is returned. </p>
+<h2>Errors</h2>
+<p>If the input is neither <code>nil</code> nor a valid Creature then an error is raised. </p>
+<h2>Examples</h2>
+<p>One example of using this function can be found in the Lua code for the "destroy book with wand" quest that ships with the game. When the special pentagram is hit, the code uses <code>kts.GetItemInHand</code> to figure out whether the knight is carrying the wand or not. See <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/classic/quest_funcs.lua#L117">quest_funcs.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

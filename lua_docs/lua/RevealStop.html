@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.RevealStop</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.RevealStop</h1>
+<h2>Name</h2>
+<p>kts.RevealStop &ndash; stop revealing the actor's location to all players </p>
+<h2>Synopsis</h2>
+<p><code>kts.RevealStop()</code> </p>
+<h2>Description</h2>
+<p>If the current actor (<code>cxt.actor</code>) is a knight, the effect of a previous <a href="RevealStart.html">kts.RevealStart</a> call is cancelled, and the knight's location is no longer revealed to other players (unless there is some other reason why it should still be revealed, e.g. a previous call to <a href="RevealLocation.html">kts.RevealLocation</a> is still in effect). </p>
+<p>If the current actor is not a knight, nothing happens. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p>This function works completely independently of <a href="RevealLocation.html">kts.RevealLocation</a>. </p>
+<p>Multiple calls to <a href="RevealStart.html">kts.RevealStart</a> "stack", i.e. if <code>kts.RevealStart()</code> is called multiple times, then <code>kts.RevealStop()</code> must be called the same number of times to cancel the effect. </p>
+<h2>Examples</h2>
+<p>This is used as part of the Ancient Book of Knowledge effect: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L312">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="RevealLocation.html">kts.RevealLocation</a> </p>
+<p><a href="RevealStart.html">kts.RevealStart</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

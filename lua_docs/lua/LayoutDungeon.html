@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.LayoutDungeon</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.LayoutDungeon</h1>
+<h2>Name</h2>
+<p>kts.LayoutDungeon &ndash; generate the dungeon layout for a new game </p>
+<h2>Synopsis</h2>
+<pre>kts.LayoutDungeon {
+    layout = &lt;layout table&gt;,
+    wall = &lt;tile&gt;,
+    horiz_door = &lt;tile&gt;,
+    vert_door = &lt;tile&gt;,
+    segments = &lt;segments&gt;,
+    special_segments = &lt;segments&gt;,
+    entry_type = &lt;string&gt;,
+    allow_rotate = &lt;boolean&gt;
+}
+</pre>
+<h2>Description</h2>
+<h3>How dungeon layouts work</h3>
+<p>A dungeon layout consists of a grid of up to 3x3 "cells". Each cell is labelled either <code>block</code>, <code>edge</code> or <code>special</code> (the meaning of these terms will be discussed below). Also, each of the four borders of each cell can be considered either "open" or "closed". </p>
+<p>Here are some example dungeon layouts: </p>
+<p><img src="layouts.png" alt="Diagram showing four example dungeon layouts" width="1650" height="1448" style="width: 700px; height: auto;">
+</p>
+<p>In the above diagram, dotted lines indicate "open" borders between cells, and solid lines indicate "closed" borders. </p>
+<p>(Note that a "Dungeon Type" in the Knights quest selection menu might correspond to more than one possible "dungeon layout" in the sense being discussed here. For example, there are three different "Ring" dungeon layouts, and five different "Long Snakes"; the above diagram shows only one of each.) </p>
+<p>Dungeons are made by filling in each cell of the chosen layout with a different, randomly selected "segment". A segment is a pre-designed set of dungeon rooms. For example, this is a segment: </p>
+<p><img src="segment.png" alt="Example dungeon segment, showing several dungeon rooms" width="576" height="576" style="width: 400px; height: auto;">
+</p>
+<p>The standard Knights data files include over 200 different segments, allowing for plenty of variety in games, and users can also add more segments by editing the data files if they wish. </p>
+<p>Here is an example of the "Long Snake" layout shown above being filled in with some segments, to make a dungeon: </p>
+<p><img src="long_snake_dungeon.png" alt="Example Long Snake dungeon showing segment boundaries" width="1920" height="1918" style="width: 800px; height: auto;">
+</p>
+<p>Here, the segment boundaries have been highlighted in red. Observe how each of the seven cells in the "Long Snake" dungeon layout (see previous diagram) have now been filled in with a different, randomly chosen dungeon segment. Observe also the one-square-thick borders that have been added between the segments. In cases where there is a "closed" border (solid line on the dungeon layout diagram), the border squares are completely filled with solid walls, but on the "open" borders (dotted lines on the layout), there is a mix of solid walls and (randomly placed) wooden door tiles. This allows the knights to travel between the different dungeon segments. (In a Long Snake layout, the pattern of open and closed borders is designed such that the knights have to walk a long, winding path to get from one end of the dungeon to the other. In most other layouts, most of the borders are open, allowing the knights to traverse the dungeon more easily.) </p>
+<p>We now explain what the different cell types (<code>block</code>, <code>edge</code> and <code>special</code>) mean. In many cases, the cell types don't actually make any difference, and the dungeon generator just fills each cell with a randomly chosen segment, regardless of the cell type. However, there are some circumstances in which the cell types matter, as follows: </p>
+<ul>
+<li>In quests with certain "required" segments, such as gnome book rooms, liche tombs, special pentagrams, or guarded exits, these segments are always preferentially placed in an <code>edge</code> or <code>special</code> cell, if possible. Only if there are none of those cell types remaining will a <code>block</code> cell be used. </li>
+<li>If the "Away from Other" entry point option has been selected, then the knight entry points <i>must</i> be placed on <code>edge</code> cells, and each knight will start in a <i>different</i> <code>edge</code> cell. (This is why the "Away from Other" option is limited to a maximum of four players; none of the standard dungeon layouts contains more than four <code>edge</code> cells.) </li>
+<li>If "Close to Other" entry points are being used, then all knight entry points will be located in the <i>same</i> segment. This will be a segment corresponding to an <code>edge</code> cell if possible, or a <code>block</code> cell if no <code>edge</code> cells are available. (Again, this entry point option is limited to four players, this time because none of the standard dungeon segments contains more than four "home" tiles.) </li>
+</ul>
+<p>An additional rule is that if a <code>special</code> cell is not filled with a "required" dungeon segment then it is removed from the layout entirely. This comes into play for the "Ring" dungeon type (which is the only dungeon type that uses the <code>special</code> cells currently). For example, in the "Ring" dungeon layout shown above, the centre cell is <code>special</code>. If the quest has at least one "required" segment (such as a guarded exit point), then this will appear in the centre of the ring, otherwise the centre of the ring will be left empty. </p>
+<h3>Representing dungeon layouts in Lua</h3>
+<p>In Lua, a dungeon layout is represented by a table, as in the following examples: </p>
+<pre>-- Tiny Dungeon
+tiny_layout = {
+    width = 1,
+    height = 1,
+    data = {
+        { type="block" }
+    }
+}
+
+-- Basic Dungeon
+basic_layout = {
+    width=2, 
+    height=2, 
+    data={
+        { type="edge" }, { type="edge" },
+        { type="edge" }, { type="edge" }
+    }
+}
+
+-- Long Snake Dungeon
+long_snake_layout = {
+    width=3,
+    height=3,
+    data={
+        { type="block" }, { type="edge",  exits="w"  }, { type="none"  },
+        { type="block" }, { type="block", exits="we" }, { type="block" },
+        { type="none"  }, { type="edge",  exits="e"  }, { type="block"
+    }
+}
+
+-- Ring Dungeon
+ring_layout = {
+    width=3,
+    height=3,
+    data={
+        {type="block"            }, {type="block"            }, {type="special"},
+        {type="block", exits="ns"}, {type="block", exits="ns"}, {type="none"   },
+        {type="block"            }, {type="block"            }, {type="none"   }
+    }
+}
+</pre>
+<p>The table contains fields <code>width</code> and <code>height</code> giving the size of the layout (in cells) and then a <code>data</code> field containing the cells themselves (in order, left to right then top to bottom). Each cell is itself represented by a table containing a <code>type</code> field, which must be set to one of the strings <code>"block"</code>, <code>"edge"</code> or <code>"special"</code> (representing a cell of the corresponding type) or else <code>"none"</code> (representing a cell which is not actually part of the current layout). Each cell <i>may</i> also contain a field <code>exits</code> which is a string containing one or more of the letters "n", "e", "s" and/or "w" (for north, east, south and west) which determines the borders of the cell that are considered "open". The default (if <code>exits</code> is not specified) is for all borders to neighbouring cells to be considered open. Note that <code>exits</code> must be consistent, e.g. if one cell has an exit to the north, then the neighbouring cell just above must have an exit to the south (if this is not the case then an error message will be generated). </p>
+<h3>The kts.LayoutDungeon function</h3>
+<p>Calling the <code>kts.LayoutDungeon</code> function kicks off the dungeon generation process and places the map segments into the dungeon. The players' homes (dungeon entry points) are also assigned at this time. </p>
+<p>Before this function is called, the dungeon should be completely empty, and also the <code>kts.DUNGEON_ERROR</code> variable should be <code>nil</code>. <a href="WipeDungeon.html">kts.WipeDungeon</a> can be called beforehand, if necessary, to make sure that this is the case. </p>
+<p><code>kts.LayoutDungeon</code> takes exactly one parameter, which should be a table containing the following fields: </p>
+<ul>
+<li><code>layout</code> is a dungeon layout table, as described above. </li>
+<li><code>wall</code> is a <a href="Tile.html">Tile</a> representing a solid wall. This tile will be used to fill in the borders between dungeon segments. </li>
+<li><code>horiz_door</code> and <code>vert_door</code> are <a href="Tile.html">Tiles</a> representing horizontally and vertically aligned wooden doors. These tiles are placed (at random locations) along any "open" borders in the layout, allowing knights to travel from one segment to another. </li>
+<li><code>segments</code> and <code>special_segments</code> are lists of dungeon segments (as returned by a previous <a href="LoadSegments.html">kts.LoadSegments</a> call). <ul>
+<li><code>special_segments</code> represents segments that <i>must</i> be included in the dungeon as part of the current quest, e.g. guarded exit segments or liche tombs etc. (Normally this will be a fairly short list, perhaps containing only one or two segments, or perhaps none at all for a simpler quest.) As described above, these segments will be placed in <code>special</code> or <code>edge</code> map cells if possible, or <code>block</code> cells otherwise. (If there are not enough cells in the layout for all of the <code>special_segments</code> to fit, then dungeon generation fails.) </li>
+<li><code>segments</code> contains a list of "normal" segments that are available for the dungeon generator to use. (Normally this will be a large list, potentially containing hundreds of segments.) After all <code>special_segments</code> have been placed, the dungeon generator will fill every remaining <code>block</code> or <code>edge</code> cell (but not <code>special</code> cells) with randomly chosen segments from the <code>segments</code> list. The dungeon generator will take care to ensure that there are enough segments containing "home" tiles, so that all knights have entry points into the dungeon, but other than that, the dungeon generator basically just chooses at random from this list. </li>
+</ul>
+<li><code>entry_type</code> is one of the strings <code>"none"</code>, <code>"close"</code>, <code>"away"</code> or <code>"random"</code> giving the method of selecting dungeon entry points ("homes") for the knights. They have the following meanings: <ul>
+<li><code>"none"</code> means that knights won't be given homes at all &ndash; in this case, <a href="SetRespawnType.html">kts.SetRespawnType</a> must be used to set the respawn type to <code>"different"</code> or <code>"anywhere"</code> (otherwise knights won't be able to enter the dungeon and the game won't work). </li>
+<li><code>"close"</code> means that knight homes will all be placed in the same dungeon segment &ndash; an <code>edge</code> segment if possible, or a <code>block</code> otherwise. </li>
+<li><code>"away"</code> means that each knight home must be in a different segment. In this case all homes must also be on <code>edge</code> segments. </li>
+<li><code>"random"</code> means that knights can be assigned to any available "home" tile in the dungeon at random. The only limit on number of players is the size of the dungeon and the number of homes that it contains. </li>
+</ul>
+<li><code>allow_rotate</code> is a boolean indicating whether the dungeon generator is allowed to randomly rotate and/or reflect segments before placing them into the dungeon. This is optional; if it is missing (or nil) then it defaults to true. <ul>
+<li>Note: The dungeon generator is always allowed to rotate and/or reflect the dungeon <i>layout</i> (i.e. the 3x3 arrangement of cells). The <code>allow_rotate</code> setting determines whether the segments <i>themselves</i> can be rotated and/or reflected before being placed into the dungeon. If this is enabled, then information from previous calls to <a href="SetRotate.html">kts.SetRotate</a> and <a href="SetReflect.html">kts.SetReflect</a> will be used to determine how to rotate and/or reflect individual dungeon tiles. </li>
+</ul>
+</ul>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>If the parameters to the function are invalid (for example, an incorrect dungeon layout table is given, or an invalid <code>entry_type</code> string is used), then a Lua error will be raised. </p>
+<p>If the parameters are valid, but dungeon generation itself fails, no error is raised; instead, the variable <code>kts.DUNGEON_ERROR</code> is set to a string indicating the reason for the failure. (If dungeon generation is successful, <code>kts.DUNGEON_ERROR</code> will be left as <code>nil</code>.) </p>
+<h2>Notes</h2>
+<p>A full dungeon generation system will not only need to call <code>kts.LayoutDungeon</code>, but it will also need to call other functions such as <a href="GenerateLocksAndTraps.html">kts.GenerateLocksAndTraps</a>, <a href="AddItem.html">kts.AddItem</a>, <a href="AddStuff.html">kts.AddStuff</a>, <a href="AddMonsters.html">kts.AddMonsters</a> and <a href="ConnectivityCheck.html">kts.ConnectivityCheck</a> to populate the dungeon with items and monsters, and ensure that all rooms are accessible to players. </p>
+<p>Also, calling the dungeon generator multiple times is sometimes necessary, as there might be cases where dungeon generation fails (just due to random chance) but retrying it succeeds. If dungeon generation fails more than, say, 25 times in a row, then it is likely that the current layout is simply not big enough to fit in everything needed for the current quest, and in that case, starting over with a larger dungeon layout is recommended. </p>
+<p>This is all taken care of by the standard Knights Lua files; the code can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/dungeon_setup.lua">dungeon_setup.lua</a>. (In particular, the function <code>generate_dungeon</code> in that file is the starting point for dungeon generation.) </p>
+<h2>Examples</h2>
+<p>The standard dungeon layouts ("Tiny", "Basic", "Big", "Huge", "Snake", "Ring" and so on) can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/dungeon_layouts.lua">dungeon_layouts.lua</a>. Note that the actual dungeon layout table is returned by the function marked <code>func</code> in each case (the rest of the structure in that file is internally used by the Lua code, and is not part of the data that is passed to <code>kts.LayoutDungeon</code>). Also note that for many of the dungeon types, there is not just one dungeon layout, but several, which are selected from at random when a game with that dungeon type is played. For example, there are three possible "Huge" dungeon layouts, one of which is selected at random whenever a quest with a "Huge" dungeon is played. </p>
+<h2>See Also</h2>
+<p><a href="AddItem.html">kts.AddItem</a> </p>
+<p><a href="AddStuff.html">kts.AddStuff</a> </p>
+<p><a href="AddMonsters.html">kts.AddMonsters</a> </p>
+<p><a href="ConnectivityCheck.html">kts.ConnectivityCheck</a> </p>
+<p><a href="GenerateLocksAndTraps.html">kts.GenerateLocksAndTraps</a> </p>
+<p><a href="LoadSegments.html">kts.LoadSegments</a> </p>
+<p><a href="SetReflect.html">kts.SetReflect</a> </p>
+<p><a href="SetRespawnType.html">kts.SetRespawnType</a> </p>
+<p><a href="SetRotate.html">kts.SetRotate</a> </p>
+<p><a href="Tile.html">kts.Tile</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

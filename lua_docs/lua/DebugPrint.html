@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.DebugPrint</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.DebugPrint</h1>
+<h2>Name</h2>
+<p>kts.DebugPrint &ndash; print a string to the console </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.DebugPrint(message)</code> </p>
+<h2>Description</h2>
+<p>This function takes one parameter which should be a string. The string will be printed to the game process's 'stdout'. </p>
+<p>On Windows, if the process does not have a 'stdout' (e.g. because it was launched directly from the Start menu) then a new console window will be opened, and the message will appear there. </p>
+<p>This is useful for printing debug messages or other strings that you don't want to appear in the actual in-game "Messages" window. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>Bugs</h2>
+<p>Ideally this function would allow multiple parameters to be passed (just like the built-in Lua <code>print</code> function). </p>
+<h2>See Also</h2>
+<p><a href="print.html">print</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

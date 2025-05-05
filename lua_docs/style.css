@@ -1,0 +1,231 @@
+/* Wrapper div for the entire page content */
+div.wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Select sans-serif font, black text, white background, 1 em between paragraphs */
+body {
+  font-family: sans-serif;
+  color: black;
+  background-color: white;
+  margin: 1em;
+}
+
+/* Select navy colour for headings */
+h1,h2,h3,h4 {
+  font-family: sans-serif;
+  color: navy;
+}
+
+/* h1 should be centred */
+h1 {
+  text-align: center;
+}
+
+/* Extra spacing for h2's, in order to better separate sections */
+h2 {
+  margin-top: 1.3em;
+}
+
+/* ... but don't use extra spacing for an h2 immediately below an h1 */
+h1 + h2 {
+  margin-top: 0;
+}
+
+
+/* Increase spacing in lists */
+li {
+    margin-top: 0.75em;
+}
+
+
+/* Page header (gives a horizontal rule at top of page, also used
+   for the "nav bar" on Knights pages) */
+div.header {
+  padding: 0 0 0.5em 0;
+  margin: 0 0 1.7em 0;
+  border-bottom: solid thin;
+}
+
+div.header ul {
+  padding: 0 0 0 0;
+  margin: 0 0 0 0;
+}
+
+div.header li {
+  display: inline;
+  padding: 0 1em 0 0;
+  margin: 0 0 0 0;
+}
+
+div.header table {
+  width: 100%;
+}
+
+div.header td {
+  width: 33.3333%;
+}
+
+
+/* Footers */
+
+/* used for solarflare site */
+div.footer {
+  font-style: italic;
+  margin-top: 2.5em;
+  border-top: thin solid;
+}
+
+/* used for Knights Manual (with previous/next page links) */
+div.footer2 {
+  margin-top: 2.5em;
+  padding-top: 0.4em;
+  border-top: thin solid;
+}  
+
+div.footer2 table { 
+  width: 100%;
+}
+
+div.footer2 td {
+  width: 33.3333%;
+}
+
+/* used for knightsgame site */
+div.footer3 { 
+  margin-top: 2.5em;
+}
+
+
+/* "Pre" text ("codeBlock") should use monospace font */
+pre {
+  font-family: monospace;
+}
+
+
+/* Two column styling (e.g. used for solarflare front page) */
+div.twocolumn {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3em;
+}
+div.left_column {
+    flex: 1;
+    min-width: 23em;
+}
+div.right_column {
+    flex: 1;
+    min-width: 23em;
+}
+
+div.kts_twocolumn {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2em;
+}
+div.kts_left_column {
+    flex: 1;
+    min-width: 600px;
+}
+div.kts_right_column {
+    flex: 1;
+    min-width: 20em;
+}
+
+img.small_img {
+  float: left;
+  padding-right: 1em;
+  border-style: none;
+}
+
+
+/* Spacers: these clear out the two column mode.
+ (I think only small_spacer is used currently, but not sure.) */
+
+div.spacer {
+  clear: both;
+  padding: 1em;
+}
+
+div.small_spacer {
+  clear: both;
+  padding: 0.25em;
+}
+
+
+/* Boxout on Knights front page */
+div.boxout {
+  background-color: #eeeeff;
+  padding: 0.5em 2em 1.5em 1em;
+}
+
+div.boxout > h2:first-of-type {
+    margin-top: 0.6em;
+}
+
+
+/* Hidden field in the server list form */
+div.knights123 {
+  display: none;
+}
+
+/* Review quotes */
+blockquote {
+  background-color: #ffffbb;
+  font-style: italic;
+  padding: 0.5em 1em 0.5em 1em;
+  margin: 1.5em 3em 1em 2em;
+  border-radius: 6pt;
+}
+
+blockquote cite {
+  font-style: normal;
+  display: block;
+  margin-top: 2pt;
+  margin-left: 2em;
+}
+
+blockquote cite:before {
+  content: "\2014 \2009";
+}
+
+/* Download boxout */
+div.dlbox {
+  background-color: #eeeeff;
+  border-color: #000000;
+  border: 1px solid;
+  padding: 0.5em 1em 0.5em 1em;
+  margin: 1.5em 3em 1.5em 2em;
+}
+
+
+/* "Float figures" (used on "About me" page) */
+figure {
+    font-style: italic;
+    font-size: smaller;
+}
+
+figure > img {
+    border: 1px black solid;
+}
+
+figure.left_float {
+    float: left;
+    margin: 0em 1em 0.75em 0em;
+}
+figure.right_float {
+    float: right;
+    margin: 0em 0em 0.75em 1em;
+}
+
+/* Special borderless version of right_float class */
+figure.borderless_right_float {
+    float: right;
+    margin: 0em 0em 0.75em 1em;
+}
+figure.borderless_right_float > img {
+    border: none;
+}

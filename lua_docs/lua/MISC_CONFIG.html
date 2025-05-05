@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.MISC_CONFIG</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.MISC_CONFIG</h1>
+<h2>Name</h2>
+<p>kts.MISC_CONFIG &ndash; table of miscellaneous config settings </p>
+<h2>Synopsis</h2>
+<pre>kts.MISC_CONFIG = {
+    ... table of various settings ...
+}
+</pre>
+<h2>Description</h2>
+<p>The table <code>kts.MISC_CONFIG</code>, defined in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/misc_config.lua">misc_config.lua</a>, contains configuration variables that affect the game in various ways. </p>
+<p>Most mods will probably not need to change any of these settings, but they are documented here for completeness. </p>
+<p>The following fields are available: </p>
+<ul>
+<li><code>respawn_delay</code> sets the number of milliseconds of delay before a knight respawns after death. </li>
+<li><code>walk_time</code> sets the walking speed of knights; specifically, it is the number of milliseconds that it takes for a knight to walk from one square to the next, at standard speed. </li>
+<li><code>walk_limit</code> sets the amount of distance (between two squares) that must be travelled before you reach the "point of no return"; after this point, releasing the movement key will make the knight continue on to the next square, instead of walking backwards to their original square. This value is measured on a scale from 0 to 1000 (e.g. 500 represents half-way between the two squares). </li>
+<li><code>action_delay</code> is the number of milliseconds that a knight has to wait after completing a standard action (such as an attack or a drop) before starting the next action. </li>
+<li><code>turn_delay</code> is the number of milliseconds that a knight has to wait after turning to face a new direction. </li>
+<li><code>crossbow_delay</code> is the number of milliseconds that a knight has to wait after shooting a crossbow. </li>
+<li><code>approach_offset</code> is how far a knight moves when "approaching" a square (like a door or a chest). This is on a scale from 0 to 1000, e.g. the default value of 250 means that the knight moves one-quarter of the way into the next square when approaching. </li>
+<li><code>healing_time</code> is the number of milliseconds between each health increase when a knight approaches their own home square. </li>
+<li><code>healing_amount</code> is the number of hitpoints added in each health increase when a knight approaches their own home square. </li>
+<li><code>slow_regen_time</code> is the number of milliseconds between each health increase while a knight has the "slow regeneration" effect. </li>
+<li><code>slow_regen_amount</code> is the number of hitpoints added in each health increase while a knight has the "slow regeneration" effect. </li>
+<li><code>fast_regen_time</code> is the number of milliseconds between each health increase while a knight has the "fast regeneration" effect. </li>
+<li><code>fast_regen_amount</code> is the number of hitpoints added in each health increase while a knight has the "fast regeneration" effect. </li>
+<li><code>super_regen_time</code> is the number of milliseconds between each health increase while a knight has the "super" effect. </li>
+<li><code>super_regen_amount</code> is the number of hitpoints added in each health increase while a knight has the "super" effect. </li>
+<li><code>quickness_factor</code> sets the effectiveness of the "quickness" effect. (This also applies to the quickness given as part of the "super" effect.) This is on a scale where 100 means no change, 200 means all actions are twice as quick, etc. E.g. the default value of 150 means that all actions take place 1.5x faster than normal. </li>
+<li><code>attack_threshold</code> is the time difference, in milliseconds, for two attack hits to be considered simultaneous. If two hits are considered simultaneous then special rules are used to resolve them: <ul>
+<li>If a knight and a monster are about to hit each other at exactly the same time (or within <code>attack_threshold</code> milliseconds of each other), then the monster's attack is cancelled and the knight's attack takes effect. This makes the zombies slightly easier to kill, and matches the original Amiga Knights behaviour better. </li>
+<li>If two knights are about to hit each other at exactly the same time (or within <code>attack_threshold</code> milliseconds of each other), then it is 50-50 who "wins"; one of the attacks (chosen randomly) will succeed and the other will be cancelled. This ensures a fair result when two knights are attacking each other and each they started their attack at about the same time. </li>
+</ul>
+<li><code>melee_delay_time</code> is the time (in milliseconds) that a knight has to wait, after a melee attack completes, before they can start their next action. </li>
+<li><code>att_move_delay_time</code> affects the situation where a knight presses their attack button/key while still moving between squares. This will commence the attack before the knight actually reaches the new square. By doing this, players can gain a slight advantage &ndash; the blow will land slightly faster than if the player had waited until fully arriving in the new square before pressing the attack button. The maximum time advantage that can be gained by this method is <code>att_move_delay_time</code> milliseconds. (This is set fairly low, so that players can gain a slight advantage by doing this, but not a particularly significant one.) </li>
+<li><code>att_mov_anim_time</code> controls the appearance of the animation in the situation where a knight presses their attack button while still moving between squares. The knight's "backswing" animation will only appear for a maximum of <code>att_mov_anim_time</code> milliseconds. Note that this only affects the graphics, and does not affect the mechanics of the attack at all. </li>
+<li><code>parry_delay</code> sets the time (in milliseconds) that a knight has to wait after parrying, before they can start another action. </li>
+<li><code>door_closed_damage</code> sets the amount of damage that a knight (or other creature) receives when a door is closed on top of them (for example, this might happen when another knight activates switch or pressure plate). The default value of 1000 is another to kill any creature (except a knight with Invulnerability). </li>
+<li><code>knight_hitpoints</code> controls the number of hitpoints that a knight has. (Note that changing this might require changes to the game client code itself, because the default Potion Bottle graphics assume there will be 4 hitpoints.) </li>
+<li><code>item_replacement_interval</code> sets the number of milliseconds in between attempts to replace "important" items (such as gems) into the dungeon after they are destroyed. </li>
+<li><code>item_check_interval</code> sets the interval (in milliseconds) at which the game should check for "important" destroyed items. <ul>
+<li>The difference between this and the previous setting is that <code>item_check_interval</code> sets the interval at which checks will take place; if a check does find that an "important" item needs to be replaced, then the game will keep trying, every <code>item_replacement_interval</code> milliseconds, to find a spot to respawn it at, and these attempts will continue until the item is successfully placed. </li>
+</ul>
+<li><code>item_respawn_interval</code> sets the interval, in milliseconds, at which the game should check whether any item needs to respawn as part of the "Item Respawning" feature (which is controlled by <a href="SetStuffRespawning.html">kts.SetStuffRespawning</a>). </li>
+<li><code>monster_radius</code> sets the maximum distance (in squares) from a knight that monster generation can occur at. "Monster generation" in this case refers to both zombie activity and the generation of vampire bats at pit tiles. These things do not occur just anywhere in the dungeon; in larger dungeons, they are restricted to the vicinity of players. (The intention of this is to try to make sure that monsters are not generated so far away from the players that the players only have a very small chance of actually encountering them.) </li>
+<li><code>monster_interval</code> sets the interval (in milliseconds) at which the monster generator is run. Changing this is one way to influence the monster spawning rate. (Tweaking the probability values in <a href="AddMonsterGenerator.html">kts.AddMonsterGenerator</a> and <a href="SetZombieActivity.html">kts.SetZombieActivity</a> would be another, and probably better way.) </li>
+<li><code>monster_respawn_wait</code> is the amount of time after a particular zombie dies, before it can be brought back to life again. This is <i>not</i> measured in milliseconds, instead it is measured in multiples of <code>monster_interval</code>. The intention of this is to prevent the slightly ridiculous situation where a player kills a zombie, only for the zombie to immediately reanimate again (due to unlucky timing with the zombie activity timers). </li>
+<li><code>monster_wait_time</code> is the length of time (in milliseconds) a monster will wait for, if it chooses to "do nothing" (see also next item). </li>
+<li><code>monster_wait_chance</code> is the probability (between 0 and 1) that a monster will choose to "do nothing" if it has nothing else to do (e.g. if there are no knights in its current room). (The alternative is that the monster would just move about randomly in that situation.) </li>
+<li><code>flying_monster_targetting_offset</code> sets how far away you have to be from a vampire bat before it can bite you. This is on a scale from 0 to 1000, where e.g. 500 represents a distance of exactly half a square. </li>
+<li><code>flying_monster_bite_wait</code> sets the waiting time (in milliseconds) after a vampire bat attacks, before it is able to attack again. </li>
+<li><code>walking_monster_damage_delay</code> controls the timing for animations when a zombie is damaged without also being "stunned". This is a rare occurrence so this setting probably does nothing useful. </li>
+<li><code>control_poll_interval</code> sets the interval (in milliseconds) at which the Knights server will read control inputs from the player(s). Lower values would give lower input latency, at the expense of greater CPU usage. </li>
+<li><code>player_task_interval</code> sets the interval (in milliseconds) at which the player's mini-map is updated. </li>
+<li><code>missile_check_interval</code> is the interval (in milliseconds) at which missile collision detection is done. (This needs to be set relatively low, so that collisions are not missed.) </li>
+<li><code>blood_icon_duration</code> sets the amount of time (in milliseconds) for which blood effects are shown, when a knight is hit. </li>
+<li><code>invuln_r</code>, <code>invuln_g</code> and <code>invuln_b</code> set the colour (red, green and blue components, each on a scale from 0 to 255) of an invulnerable knight. </li>
+<li><code>paraylzation_msg</code> and <code>required_msg</code> set strings for two of the in-game messages. (Note there are many other strings hard-coded into the executable; it is not particularly clear why these two were singled out to be configurable from Lua.) </li>
+<li><code>dagger_time_delay</code> sets the amount of time (in milliseconds) between pressing the "throw dagger" button, in the new control system, and daggers actually being thrown. The reasoning behind this is that the old (Amiga-style) control system required you to open a menu (which took about half a second) before you could start throwing daggers, and it would be unfair if users of the new control system could throw daggers without a similar delay being imposed. </li>
+</ul>
+<h2>Notes</h2>
+<p>The <code>MISC_CONFIG</code> is only loaded once, when the server starts up. Therefore, changes to <code>MISC_CONFIG</code> mid-game, or pre-game (i.e. while players are choosing the next quest), will <i>not</i> affect the game at all. </p>
+<p>This page is about the server-side <code>MISC_CONFIG</code> table. There is also another <code>MISC_CONFIG</code> in the Knights client settings (file <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/client/client_config.lua">client_config.lua</a>), which configures various aspects of the game client's UI. This client-side configuration cannot be changed by Knights "mods" and therefore is not documented here. However, it should not be confused with the server-side <code>MISC_CONFIG</code> (i.e. the <code>kts.MISC_CONFIG</code> variable defined in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/misc_config.lua">misc_config.lua</a>) which is what is being discussed on this page. </p>
+<h2>Bugs</h2>
+<p>The <code>monster_radius</code> setting does not quite work as described above. What actually happens is that when it is time to run monster generation, the game calculates the minimum x and y coordinates of all knights in the dungeon, and subtracts <code>monster_radius</code> from those; it also calculates the maximum x and y coordinates of all knights, and adds <code>monster_radius</code>. This calculation produces two dungeon positions, which become the top-left and bottom-right corners of a rectangle. Monsters can then be generated at any dungeon position inside that rectangle. What this means is that if all knights are fairly close together, then monsters will be generated only in the vicinity of the knights, but if the knights are far apart (say in opposite corners of the dungeon), then monsters will be generated pretty much anywhere in the dungeon. This is, obviously, not a critical issue, since the monsters will move about and players will find them eventually, but perhaps a future version of the game could implement some slightly more sophisticated logic for this feature. </p>
+<h2>Examples</h2>
+<p>A mod that wanted to remove the distinction between "fast" and "slow" regeneration potions, and have both potion types regenerate at the same speed, might include code like the following: </p>
+<pre>kts.MISC_CONFIG.slow_regen_time = 1400
+kts.MISC_CONFIG.fast_regen_time = 1400
+</pre>
+<p>This sets both <code>slow_regen_time</code> and <code>fast_regen_time</code> to the same value (intermediate between the usual settings for these two variables). </p>
+<div class="footer3"></div>
+</div></body>
+</html>

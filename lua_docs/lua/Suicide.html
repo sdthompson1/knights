@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.Suicide</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.Suicide</h1>
+<h2>Name</h2>
+<p>kts.Suicide &ndash; kill the current actor </p>
+<h2>Synopsis</h2>
+<p><code>kts.Suicide()</code> </p>
+<h2>Description</h2>
+<p>Calling <code>kts.Suicide()</code> will instantly kill the current actor (as given by <code>cxt.actor</code>) and remove them from the map. A corpse will be left behind at their location. </p>
+<p>The <code>HOOK_KNIGHT_DAMAGE</code> hook is also run at the same time. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Notes</h2>
+<p><code>kts.Suicide</code> is usually used as the <code>action</code> function of a <a href="Control.html">Control</a>. </p>
+<h2>Bugs</h2>
+<p><code>kts.Suicide</code> works regardless of whether the current actor is a knight, or some other type of creature. However, <code>HOOK_KNIGHT_DAMAGE</code> is called regardless of what type of creature the actor is. This could be considered a bug because, as the name suggests, <code>HOOK_KNIGHT_DAMAGE</code> is only meant to be called when knights are damaged, not other creature types. </p>
+<p>In practice, however, <code>kts.Suicide</code> is only ever used with knights, and so the above bug does not cause any issues. </p>
+<h2>Examples</h2>
+<p>The standard "Suicide" control is implemented using this function: see <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/controls.lua#L59">controls.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.ChangeItem</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.ChangeItem</h1>
+<h2>Name</h2>
+<p>kts.ChangeItem &ndash; transform an item into another </p>
+<h2>Synopsis</h2>
+<p><code>kts.ChangeItem(new_item_type)</code> </p>
+<h2>Description</h2>
+<p>This function changes the type of the item at <code>cxt.item_pos</code> (if any) to match the given <code>new_item_type</code>. </p>
+<p>In more detail: If any of <code>cxt.item_pos</code> or <code>cxt.item</code> or <code>new_item_type</code> are <code>nil</code>, then this function does nothing. Otherwise, any item currently at position <code>cxt.item_pos</code> is destroyed, and then a newly generated item of type <code>new_item_type</code> is created and added to the dungeon at that same position. </p>
+<h2>Return Value</h2>
+<p>None. </p>
+<h2>Errors</h2>
+<p>This function raises an error in any of the following cases: </p>
+<ul>
+<li>The <code>cxt</code> global variable is undefined or invalid </li>
+<li><code>cxt.item_pos</code> is neither a valid map position, nor <code>nil</code> (Note: a "valid map position" means a table containing fields <code>x</code> and <code>y</code> giving the co-ordinates of a particular dungeon square) </li>
+<li><code>cxt.item_type</code> is neither a valid <a href="ItemType.html">ItemType</a> nor <code>nil</code> </li>
+<li><code>new_item_type</code> is neither a valid <a href="ItemType.html">ItemType</a> nor <code>nil</code> </li>
+</ul>
+<h2>Examples</h2>
+<p>The bear trap item provides an example of this function being used. When an open bear trap is walked over by a creature, or hit with a weapon, the <code>kts.ChangeItem</code> function is used to change it into a closed bear trap. See <a href="https://github.com/sdthompson1/knights/blob/aa1756dbc3e77f5285b06837c6fb7b40551d1836/knights_data/server/classic/items.lua#L368">items.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="cxt.html">The cxt table</a> </p>
+<p><a href="ChangeTile.html">kts.ChangeTile</a> </p>
+<p><a href="ItemType.html">kts.ItemType</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

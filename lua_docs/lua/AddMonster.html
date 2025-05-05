@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.AddMonster</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.AddMonster</h1>
+<h2>Name</h2>
+<p>kts.AddMonster &ndash; add a monster to the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.AddMonster(pos, monster_type)</code> </p>
+<h2>Description</h2>
+<p>If possible, a monster of the given <a href="MonsterType.html">MonsterType</a> will be created, and placed into the dungeon at position <code>pos</code>. </p>
+<p>If not possible (for example, because there is no room at position <code>pos</code>), then nothing will happen. </p>
+<h2>Return Value</h2>
+<p>If placement succeeds, a Creature userdata object, representing the new monster, will be returned. </p>
+<p>Otherwise, <code>nil</code> is returned. </p>
+<h2>Errors</h2>
+<p>If any of the input parameters are invalid then an error is raised. </p>
+<h2>See Also</h2>
+<p><a href="MonsterType.html">kts.MonsterType</a> </p>
+<p><a href="AddMonsters.html">kts.AddMonsters</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

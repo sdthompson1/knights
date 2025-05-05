@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.PlaceItem</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.PlaceItem</h1>
+<h2>Name</h2>
+<p>kts.PlaceItem &ndash; add an item to the dungeon </p>
+<h2>Synopsis</h2>
+<p><code>success = kts.PlaceItem(position, itemtype)</code> </p>
+<p><code>success = kts.PlaceItem(position, itemtype, number)</code> </p>
+<h2>Description</h2>
+<p>This attempts to place an item of type <code>itemtype</code> at dungeon position <code>pos</code>. </p>
+<p>If <code>number</code> is specified, then a stack of <code>number</code> items will be placed, otherwise a single item will be placed. </p>
+<p>If the given map position contains a chest or barrel tile, then the new item will be placed inside the chest or barrel, otherwise it will be placed directly on the floor. </p>
+<p>If the given position already contains an item, then placement will fail. </p>
+<h2>Return Value</h2>
+<p>Returns true if item placement succeeds, or false otherwise. </p>
+<h2>Errors</h2>
+<p>Errors may result if the <code>position</code> is not a valid map position (i.e. a table containing <code>x</code> and <code>y</code> values), or <code>itemtype</code> is not an <a href="ItemType.html">ItemType</a> value, or <code>number</code> (if present) is not a valid integer. </p>
+<h2>Examples</h2>
+<p>This is used in the Tutorial to place some initial items at fixed positions within the tutorial map. See <a href="https://github.com/sdthompson1/knights/blob/fa85e9fbc8ee287f87c1e99680c56223520b6f18/knights_data/server/tutorial/init.lua#L245">tutorial/init.lua</a>. </p>
+<h2>See Also</h2>
+<p><a href="AddItem.html">kts.AddItem</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>
