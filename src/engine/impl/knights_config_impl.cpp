@@ -123,7 +123,7 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
         
         // Load some lua code into the context
         LuaExecRStream(lua, 
-                       boost::filesystem::path("server") / config_file_name, 
+                       std::string("server/") + config_file_name,
                        0, 
                        0, 
                        false,    // look in top level rsrc directory only

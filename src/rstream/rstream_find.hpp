@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -24,20 +24,20 @@
 #ifndef RSTREAM_FIND_HPP
 #define RSTREAM_FIND_HPP
 
-#include "boost/filesystem.hpp"
-
 //
 // Given a path "input_path" and a directory "cwd", this function
 // returns either "cwd / input_path" if this exists, or just
-// "input_path" otherwise. (In the former case, any redundant ".."
-// path components are removed.)
+// "input_path" otherwise.
 //
-// It is intended for the case where you want to look for a file
-// either in some "current directory", or in the base directory.
+// Exception: if the input_path begins with a slash or backslash, then
+// "cwd" is ignored and "input_path" is returned unmodified.
+//
+// This is intended for cases where you want to look for a file either
+// in some "current directory", or in the base directory.
 //
 
-boost::filesystem::path RStreamFind(const boost::filesystem::path &input_path,
-                                    const boost::filesystem::path &cwd);
+std::string RStreamFind(const std::string &input_path,
+                        const std::string &cwd);
 
 #endif
 

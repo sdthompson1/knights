@@ -24,8 +24,6 @@
 #ifndef LOAD_SEGMENTS_HPP
 #define LOAD_SEGMENTS_HPP
 
-#include "boost/filesystem.hpp"
-
 class KnightsConfigImpl;
 
 struct lua_State;
@@ -39,6 +37,6 @@ struct lua_State;
 
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
                   const char *filename,
-                  const boost::filesystem::path &cwd);
+                  const std::string &cwd);
 
 #endif

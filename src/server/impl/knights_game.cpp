@@ -1227,7 +1227,7 @@ namespace {
         }
 
         if (ct != filesize) {
-            throw std::runtime_error("Could not read file (on server): " + fi.getPath().generic_string());
+            throw std::runtime_error("Could not read file (on server): " + fi.getPath());
         }
     }
 }

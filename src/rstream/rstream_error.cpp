@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -23,11 +23,10 @@
 
 #include "rstream_error.hpp"
 
-RStreamError::RStreamError(const boost::filesystem::path &r, const std::string &e)
+RStreamError::RStreamError(const std::string &r, const std::string &e)
     : resource(r), error_msg(e)
 {
-    what_str = "error loading '" + getResource().generic_string() +
-        "': " + getErrorMsg();
+    what_str = "error loading '" + getResource() + "': " + getErrorMsg();
 }
 
 const char *RStreamError::what() const throw()

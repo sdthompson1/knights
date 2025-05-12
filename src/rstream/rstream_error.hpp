@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -24,8 +24,6 @@
 #ifndef RSTREAM_ERROR_HPP
 #define RSTREAM_ERROR_HPP
 
-#include "boost/filesystem.hpp"
-
 #include <exception>
 #include <string>
 
@@ -37,14 +35,14 @@
 
 class RStreamError : public std::exception {
 public:
-    RStreamError(const boost::filesystem::path &r, const std::string &e);
+    RStreamError(const std::string &r, const std::string &e);
     virtual ~RStreamError() throw() { }
-    const boost::filesystem::path & getResource() const { return resource; }
+    const std::string & getResource() const { return resource; }
     const std::string &getErrorMsg() const { return error_msg; }
     const char *what() const throw();
 
 private:
-    boost::filesystem::path resource;
+    std::string resource;
     std::string error_msg, what_str;
 };
 

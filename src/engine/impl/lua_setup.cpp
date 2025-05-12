@@ -131,7 +131,7 @@ namespace {
         KnightsConfigImpl *kc = GetKC(lua, "Segments");        
         const char *filename = luaL_checkstring(lua, 2);
 
-        boost::filesystem::path cwd;
+        std::string cwd;
         lua_getglobal(lua, "_CWD");  // [.. cwd]
         const char *p = lua_tostring(lua, -1);
         if (p) {

@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 
 #include "file_info.hpp"
 #include "rstream_find.hpp"
+
+#include <stdexcept>
 
 FileInfo::FileInfo(const char *f, const char *cwd)
 {
@@ -52,5 +54,5 @@ FileInfo::FileInfo(Coercri::InputByteBuf &buf)
 void FileInfo::serialize(Coercri::OutputByteBuf &buf) const
 {
     buf.writeUbyte(standard_file ? 1 : 0);
-    buf.writeString(pathname.generic_string());
+    buf.writeString(pathname);
 }

@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -32,8 +32,6 @@
 
 #include "network/byte_buf.hpp" // coercri
 
-#include "boost/filesystem.hpp"
-
 #include <string>
 
 class FileInfo {
@@ -47,7 +45,7 @@ public:
 
     // interface used by FileCache
     bool isStandardFile() const { return standard_file; }
-    const boost::filesystem::path &getPath() const { return pathname; }
+    const std::string &getPath() const { return pathname; }
 
     // comparison operator(s)
     bool operator==(const FileInfo &rhs) const 
@@ -57,7 +55,9 @@ public:
     }
     
 private:
-    boost::filesystem::path pathname;
+    // This is a resource pathname i.e. it will be passed to RStream constructor eventually.
+    // Therefore, it is a std::string rather than a boost::filesystem::path.
+    std::string pathname;
 
     // false: file is on server, must be downloaded by client (or read from cache, if client does caching).
     // true: file is one of the "standard files" included with Knights; client doesn't need to download.

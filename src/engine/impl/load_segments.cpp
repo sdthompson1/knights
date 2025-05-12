@@ -36,11 +36,11 @@
 using std::unique_ptr;
 
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
-                  const char *filename, const boost::filesystem::path &cwd)
+                  const char *filename, const std::string &cwd)
 {
     // [tiletbl]
     
-    boost::filesystem::path to_load = RStreamFind(filename, cwd);
+    std::string to_load = RStreamFind(filename, cwd);
     RStream str(to_load);
 
     lua_newtable(lua);    // [tiletbl result]

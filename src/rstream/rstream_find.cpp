@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -24,32 +24,16 @@
 #include "rstream.hpp"
 #include "rstream_find.hpp"
 
-namespace {
-    boost::filesystem::path RemoveDotDot(const boost::filesystem::path &p)
-    {
-        // This is like a cut-down canonical(), that does not chase symlinks.
-        boost::filesystem::path result;
-        for (boost::filesystem::path::iterator it = p.begin(); it != p.end(); ++it) {
-            if (*it == ".") continue;
-            if (*it == "..") {
-                result.remove_filename();
-                continue;
-            }
-            result /= *it;
-        }
-        return result;
-    }
-}
-
-boost::filesystem::path RStreamFind(const boost::filesystem::path &input_path,
-                                    const boost::filesystem::path &cwd)
+std::string RStreamFind(const std::string &input_path,
+                        const std::string &cwd)
 {
-    if (input_path.has_root_path()) {
-        // This shouldn't really happen for rstream paths. Just hand it back to the caller.
+    if (!input_path.empty() && (input_path[0] == '/' || input_path[0] == '\\')) {
+        // "Absolute" resource path; do not use cwd
         return input_path;
 
     } else {
-        boost::filesystem::path proposed = RemoveDotDot(cwd / input_path);
+        // Try the cwd first, then fall back to just input_path
+        std::string proposed = cwd + "/" + input_path;
         if (RStream::Exists(proposed)) {
             return proposed;
         } else {

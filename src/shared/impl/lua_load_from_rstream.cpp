@@ -55,10 +55,10 @@ namespace {
         return &rc->buf[0];
     }
 
-    boost::filesystem::path GetCWD(lua_State *lua)
+    std::string GetCWD(lua_State *lua)
     {
         // Returns CWD, or empty path if CWD not set.
-        boost::filesystem::path result;
+        std::string result;
         lua_getglobal(lua, "_CWD");
         const char *p = lua_tostring(lua, -1);
         if (p) {
@@ -68,15 +68,15 @@ namespace {
         return result;   
     }
 
-    void SetCWD(lua_State *lua, const boost::filesystem::path &path)
+    void SetCWD(lua_State *lua, const std::string &path)
     {
-        lua_pushstring(lua, path.generic_string().c_str());
+        lua_pushstring(lua, path.c_str());
         lua_setglobal(lua, "_CWD");
     }
 }
 
 // Load and execute lua code in rstream named 'filename'
-void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
+void LuaExecRStream(lua_State *lua, const std::string &filename,
                     int nargs, int nresults,
                     bool look_in_cwd,
                     bool use_dofile_namespace_proposal)
@@ -84,8 +84,8 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
     // Catch exceptions and convert them to lua errors if required.
     try {
 
-        boost::filesystem::path old_cwd = GetCWD(lua);
-        boost::filesystem::path to_load;
+        std::string old_cwd = GetCWD(lua);
+        std::string to_load;
         
         if (look_in_cwd) {
             to_load = RStreamFind(filename, old_cwd);
@@ -100,17 +100,18 @@ void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
         if (!str) {
             // Throw a C++ error.
             // (Will be converted to a Lua error by the below catch block, if necessary.)
-            std::string err_msg = std::string("Error opening Lua file '") + filename.generic_string() + "'";
+            std::string err_msg = std::string("Error opening Lua file '") + filename + "'";
             throw LuaError(err_msg);
         }
 
-        // set _CWD to the new cwd
-        SetCWD(lua, to_load.parent_path());
+        // Set _CWD to the new cwd
+        std::string parent_dir = RStream::NormalizePath(to_load + "/..");
+        SetCWD(lua, parent_dir);
         
         // now load it (pushes lua function onto the stack)
         // note: we accept only text chunks, for security reasons
         ReadContext rc;
-        rc.filename = to_load.generic_string();
+        rc.filename = to_load;
         rc.str = &str;
         const std::string chunkname = "@" + rc.filename;
         const int result = lua_load(lua, &LuaReader, &rc, chunkname.c_str(), "t");  // pushes 1 lua function

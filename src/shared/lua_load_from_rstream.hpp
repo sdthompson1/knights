@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -24,8 +24,6 @@
 #ifndef LUA_LOAD_FROM_RSTREAM_HPP
 #define LUA_LOAD_FROM_RSTREAM_HPP
 
-#include "boost/filesystem.hpp"
-
 #include <string>
 
 struct lua_State;
@@ -44,7 +42,7 @@ struct lua_State;
 // If look_in_cwd is set, then the file will be looked for in _CWD first, then the RStream root.
 // If look_in_cwd is clear, the file will be looked for only in the RStream root.
 
-void LuaExecRStream(lua_State *lua, const boost::filesystem::path &filename,
+void LuaExecRStream(lua_State *lua, const std::string &filename,
                     int nargs, int nresults,
                     bool look_in_cwd,
                     bool use_dofile_namespace_proposal);

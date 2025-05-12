@@ -137,7 +137,7 @@ namespace {
 
         if (!gfx->getFileInfo().isStandardFile()) {
             throw std::runtime_error("Error in client config, non-local filename '" + 
-                gfx->getFileInfo().getPath().generic_string() 
+                gfx->getFileInfo().getPath()
                 + "' used (try adding '+' at start of filename)");
         }
 
