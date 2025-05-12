@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "graphic.hpp"
 #include "rstream.hpp"
 
-#include "lua.hpp"
+#include "include_lua.hpp"
 
 Graphic::Graphic(const Graphic &rhs)
     : file(rhs.file), hx(rhs.hx), hy(rhs.hy), r(rhs.r), g(rhs.g), b(rhs.b),

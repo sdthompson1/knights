@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 #include "my_exceptions.hpp"
 #include "random_int.hpp"
 
-#include "lua.hpp"
+#include "include_lua.hpp"
 
 RandomInt::RandomInt(lua_State *lua)
 {

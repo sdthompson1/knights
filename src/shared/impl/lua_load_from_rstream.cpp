@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 #include "rstream.hpp"
 #include "rstream_find.hpp"
 
-#include "lua.hpp"
+#include "include_lua.hpp"
 
 #include <cstring>
 

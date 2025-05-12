@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -53,7 +53,7 @@
 #include "tutorial_manager.hpp"
 #include "tutorial_window.hpp"
 
-#include "lua.hpp"
+#include "include_lua.hpp"
 
 #include "boost/scoped_ptr.hpp"
 

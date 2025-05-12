@@ -21,7 +21,7 @@ SERVER_BINARY_NAME = knights_server
 CC = gcc
 CXX = g++
 
-CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG
+CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG -DLUA_INCLUDES_REQUIRE_EXTERN_C
 CFLAGS = -O3 -ffast-math
 CXXFLAGS = $(CFLAGS)
 BOOST_LIBS = -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX)
@@ -228,409 +228,409 @@ src/coercri/timer/generic_timer.o: src/coercri/timer/generic_timer.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/action_data.o: src/engine/impl/action_data.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/anim_lua_ctor.o: src/engine/impl/anim_lua_ctor.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/concrete_traps.o: src/engine/impl/concrete_traps.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/control.o: src/engine/impl/control.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/control_actions.o: src/engine/impl/control_actions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/coord_transform.o: src/engine/impl/coord_transform.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/create_monster_type.o: src/engine/impl/create_monster_type.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/create_tile.o: src/engine/impl/create_tile.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/creature.o: src/engine/impl/creature.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/dispel_magic.o: src/engine/impl/dispel_magic.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/dungeon_generator.o: src/engine/impl/dungeon_generator.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/dungeon_layout.o: src/engine/impl/dungeon_layout.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/dungeon_map.o: src/engine/impl/dungeon_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/entity.o: src/engine/impl/entity.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/event_manager.o: src/engine/impl/event_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/gore_manager.o: src/engine/impl/gore_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/healing_task.o: src/engine/impl/healing_task.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/home_manager.o: src/engine/impl/home_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/item.o: src/engine/impl/item.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/item_check_task.o: src/engine/impl/item_check_task.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/item_generator.o: src/engine/impl/item_generator.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/item_respawn_task.o: src/engine/impl/item_respawn_task.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/item_type.o: src/engine/impl/item_type.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/knight.o: src/engine/impl/knight.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/knight_task.o: src/engine/impl/knight_task.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/knights_config.o: src/engine/impl/knights_config.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/knights_config_impl.o: src/engine/impl/knights_config_impl.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/knights_engine.o: src/engine/impl/knights_engine.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/legacy_action.o: src/engine/impl/legacy_action.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/load_segments.o: src/engine/impl/load_segments.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lockable.o: src/engine/impl/lockable.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_check.o: src/engine/impl/lua_check.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_exec_coroutine.o: src/engine/impl/lua_exec_coroutine.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_func.o: src/engine/impl/lua_func.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_game_setup.o: src/engine/impl/lua_game_setup.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_ingame.o: src/engine/impl/lua_ingame.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_setup.o: src/engine/impl/lua_setup.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/lua_userdata.o: src/engine/impl/lua_userdata.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/magic_actions.o: src/engine/impl/magic_actions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/magic_map.o: src/engine/impl/magic_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/mediator.o: src/engine/impl/mediator.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/menu_wrapper.o: src/engine/impl/menu_wrapper.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/missile.o: src/engine/impl/missile.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/monster.o: src/engine/impl/monster.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/monster_definitions.o: src/engine/impl/monster_definitions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/monster_manager.o: src/engine/impl/monster_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/monster_support.o: src/engine/impl/monster_support.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/monster_task.o: src/engine/impl/monster_task.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/monster_type.o: src/engine/impl/monster_type.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/overlay_lua_ctor.o: src/engine/impl/overlay_lua_ctor.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/player.o: src/engine/impl/player.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/player_task.o: src/engine/impl/player_task.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/quest_hint_manager.o: src/engine/impl/quest_hint_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/random_int.o: src/engine/impl/random_int.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/room_map.o: src/engine/impl/room_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/script_actions.o: src/engine/impl/script_actions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/segment.o: src/engine/impl/segment.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/segment_set.o: src/engine/impl/segment_set.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/special_tiles.o: src/engine/impl/special_tiles.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/stuff_bag.o: src/engine/impl/stuff_bag.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/sweep.o: src/engine/impl/sweep.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/task_manager.o: src/engine/impl/task_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/teleport.o: src/engine/impl/teleport.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/tile.o: src/engine/impl/tile.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/time_limit_task.o: src/engine/impl/time_limit_task.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/tutorial_manager.o: src/engine/impl/tutorial_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/user_control_lua_ctor.o: src/engine/impl/user_control_lua_ctor.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/engine/impl/view_manager.o: src/engine/impl/view_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/engine -Isrc/kconfig -Isrc/misc -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -876,325 +876,325 @@ src/external/guichan/src/widgets/window.o: src/external/guichan/src/widgets/wind
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/action_bar.o: src/main/action_bar.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/adjust_list_box_size.o: src/main/adjust_list_box_size.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/connecting_screen.o: src/main/connecting_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/credits_screen.o: src/main/credits_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/draw.o: src/main/draw.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/entity_map.o: src/main/entity_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/error_screen.o: src/main/error_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/file_cache.o: src/main/file_cache.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/find_server_screen.o: src/main/find_server_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/game_manager.o: src/main/game_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gfx_manager.o: src/main/gfx_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gfx_resizer_compose.o: src/main/gfx_resizer_compose.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gfx_resizer_nearest_nbr.o: src/main/gfx_resizer_nearest_nbr.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gfx_resizer_scale2x.o: src/main/gfx_resizer_scale2x.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/graphic_transform.o: src/main/graphic_transform.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gui_button.o: src/main/gui_button.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gui_centre.o: src/main/gui_centre.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gui_draw_box.o: src/main/gui_draw_box.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gui_numeric_field.o: src/main/gui_numeric_field.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gui_panel.o: src/main/gui_panel.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gui_simple_container.o: src/main/gui_simple_container.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/gui_text_wrap.o: src/main/gui_text_wrap.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/host_lan_screen.o: src/main/host_lan_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/house_colour_font.o: src/main/house_colour_font.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/in_game_screen.o: src/main/in_game_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/keyboard_controller.o: src/main/keyboard_controller.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/knights_app.o: src/main/knights_app.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/load_font.o: src/main/load_font.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/loading_screen.o: src/main/loading_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/lobby_screen.o: src/main/lobby_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/local_display.o: src/main/local_display.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/local_dungeon_view.o: src/main/local_dungeon_view.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/local_mini_map.o: src/main/local_mini_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/local_status_display.o: src/main/local_status_display.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/main.o: src/main/main.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/make_scroll_area.o: src/main/make_scroll_area.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/menu_screen.o: src/main/menu_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/options.o: src/main/options.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/options_screen.o: src/main/options_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/password_screen.o: src/main/password_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/potion_renderer.o: src/main/potion_renderer.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/skull_renderer.o: src/main/skull_renderer.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/sound_manager.o: src/main/sound_manager.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/start_game_screen.o: src/main/start_game_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/tab_font.o: src/main/tab_font.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/text_formatter.o: src/main/text_formatter.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/title_block.o: src/main/title_block.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/title_screen.o: src/main/title_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/x_centre.o: src/main/x_centre.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/misc -Isrc/rstream -Isrc/server -Isrc/shared -I. -Icurl/include  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/misc/config_map.o: src/misc/config_map.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/misc/find_knights_data_dir.o: src/misc/find_knights_data_dir.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/misc/metaserver_urls.o: src/misc/metaserver_urls.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/misc/rng.o: src/misc/rng.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/misc/round.o: src/misc/round.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I. -Isrc/external/lua  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -1260,109 +1260,109 @@ src/server/impl/server_status_display.o: src/server/impl/server_status_display.c
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/anim.o: src/shared/impl/anim.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/colour_change.o: src/shared/impl/colour_change.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/file_info.o: src/shared/impl/file_info.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/graphic.o: src/shared/impl/graphic.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_exec.o: src/shared/impl/lua_exec.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_func_wrapper.o: src/shared/impl/lua_func_wrapper.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_load_from_rstream.o: src/shared/impl/lua_load_from_rstream.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_module.o: src/shared/impl/lua_module.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_ref.o: src/shared/impl/lua_ref.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_sandbox.o: src/shared/impl/lua_sandbox.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/lua_traceback.o: src/shared/impl/lua_traceback.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/map_support.o: src/shared/impl/map_support.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/menu.o: src/shared/impl/menu.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/menu_item.o: src/shared/impl/menu_item.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/overlay.o: src/shared/impl/overlay.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/sound.o: src/shared/impl/sound.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/trim.o: src/shared/impl/trim.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/user_control.o: src/shared/impl/user_control.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/external/lua -Isrc/rstream  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
