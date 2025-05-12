@@ -805,6 +805,7 @@ int main(int argc, char **argv)
 
     // initialize rng.
     g_rng.initialize();
+    g_rng.setSeed(static_cast<unsigned int>(std::time(0)));
     
     // Load the configuration. Exit if this fails.
     try {
