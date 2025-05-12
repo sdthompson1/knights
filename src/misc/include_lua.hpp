@@ -64,10 +64,10 @@ distributions work similarly to Debian in this respect -- maybe we can
 revisit that assumption later if necessary.)
 
 In our Windows build, we leave LUA_INCLUDES_REQUIRE_EXTERN_C
-undefined; this is because the "vcpkg" Lua package (for Visual Studio)
-has been built in the way the original Lua developers intended (i.e.
-using C++-style symbols), so the use of `extern "C"` is not required
-in that case.
+undefined; this is because we are using the "vcpkg" Lua package
+(for Visual Studio), and enabling the "cpp" feature of that package
+(which builds it as C++ rather than C), so the use of `extern "C"`
+is not required in that case.
 */
 
 #ifdef LUA_INCLUDES_REQUIRE_EXTERN_C
