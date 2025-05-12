@@ -50,24 +50,23 @@ errors through C++ code, so we need the C++ exception handling). This
 means that to include Lua, we should include "lua.h" (and also
 "lualib.h" and "lauxlib.h" if desired).
 
-The issue is that when using the Debian "liblua" package, things work
-differently. For some reason, the Debian people decided to compile
-their liblua-c++.so library using `extern "C"` linkage, even though it
-is a C++ library, compiled with a C++ compiler. This means that when
-(and only when) using that particular library/package, we have to wrap
-all the Lua includes in `extern "C"`.
+The issue is that when using pre-packaged Lua packages, such as the
+Debian "liblua" package or the vcpkg "lua" package, things seem to work
+differently. In these cases, the Lua library is compiled using `extern
+"C"` linkage, even though it is a C++ library, compiled with a C++
+compiler. This means that when using either of these packages (as
+opposed to building Lua directly from source), the "lua.h" include must
+be wrapped in `extern "C"`.
 
-Our solution is to make a preprocessor symbol
-LUA_INCLUDES_REQUIRE_EXTERN_C and make sure to define this in the
-Makefile when compiling for Linux. (For now I'm assuming all Linux
-distributions work similarly to Debian in this respect -- maybe we can
-revisit that assumption later if necessary.)
-
-In our Windows build, we leave LUA_INCLUDES_REQUIRE_EXTERN_C
-undefined; this is because the "vcpkg" Lua package (for Visual Studio)
-has been built in the way the original Lua developers intended (i.e.
-using C++-style symbols), so the use of `extern "C"` is not required
-in that case.
+Our solution is to use a preprocessor symbol
+LUA_INCLUDES_REQUIRE_EXTERN_C, and make sure that this is defined both
+in the Linux Makefile and in the Visual Studio project files, for
+normal Knights builds. (This is assuming that the person building
+Knights will get their Lua from an external package, rather than
+building Lua themselves.) However, when building the Knights "virtual
+server" (see src/virtual_server/Makefile), we leave
+LUA_INCLUDES_REQUIRE_EXTERN_C undefined, since we typically build Lua
+from source in that particular case.
 */
 
 #ifdef LUA_INCLUDES_REQUIRE_EXTERN_C
