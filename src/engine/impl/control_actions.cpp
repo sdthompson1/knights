@@ -48,7 +48,6 @@
 #include "include_lua.hpp"
 
 #include "boost/scoped_ptr.hpp"
-#include "boost/thread/mutex.hpp"
 
 // Undefine annoying windows macro that conflicts with my SC_MOVE constant
 #ifdef SC_MOVE
