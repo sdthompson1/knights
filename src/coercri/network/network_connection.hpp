@@ -63,7 +63,7 @@ namespace Coercri {
             PENDING,    // (Client side only) Awaiting connection to server
             CONNECTED,  // Ready to send/receive data
             CLOSED,     // Connection closed (either by local or remote close() call, or by a timeout).
-            FAILED      // The connection request timed out or was refused.
+            FAILED      // (Client side only) The connection request timed out or was refused.
         };
 
         

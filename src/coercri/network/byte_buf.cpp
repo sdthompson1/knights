@@ -126,6 +126,7 @@ namespace Coercri {
     {
         std::string s;
         const std::ptrdiff_t size = readVarInt();
+        if (size < 0) throw CoercriError("readString: invalid length");
         s.resize(std::min(size, buf.end() - iter));
         for (std::string::iterator it = s.begin(); it != s.end(); ++it) {
             *it = static_cast<char>(readUbyte());
