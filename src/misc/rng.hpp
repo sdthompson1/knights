@@ -31,7 +31,8 @@
  * The RNG is now setup to be thread specific. This is useful from a
  * debugging perspective because it means we can replay the exact
  * sequence of random numbers generated in a particular game, given
- * only the starting seed.
+ * only the starting seed. [Note: this does not apply when VIRTUAL_SERVER
+ * is defined.]
  *
  * There is still only one global access point to the RNG (g_rng); you
  * have to call initialize() once in each thread that wants random
@@ -42,7 +43,11 @@
 #ifndef RNG_HPP
 #define RNG_HPP
 
+#ifndef VIRTUAL_SERVER
 #include "boost/thread/tss.hpp"
+#endif
+
+#include <memory>
 
 class RNGImpl;
 
@@ -64,7 +69,11 @@ public:
     float getFloat(float a, float b) { return a + getU01() * (b-a); }
 
 private:
+#ifdef VIRTUAL_SERVER
+    std::unique_ptr<RNGImpl> pimpl;
+#else
     boost::thread_specific_ptr<RNGImpl> pimpl;
+#endif
 };
 
 // for std::random_shuffle compatibility

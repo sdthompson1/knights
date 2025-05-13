@@ -26,9 +26,9 @@
 
 #include <vector>
 
+#ifndef VIRTUAL_SERVER
 namespace bfs = boost::filesystem;
 
-#ifndef VIRTUAL_SERVER
 bfs::path RStream::base_path;
 bool RStream::initialized = false;
 

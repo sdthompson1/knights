@@ -26,7 +26,9 @@
 #include "legacy_action.hpp"
 #include "my_ctype.hpp"
 
+#ifndef VIRTUAL_SERVER
 #include "boost/thread/locks.hpp"
+#endif
 
 
 //
@@ -54,7 +56,9 @@ MapDirection ActionPars::getMapDirection(int index)
 // ActionMaker
 //
 
+#ifndef VIRTUAL_SERVER
 boost::mutex g_makers_mutex;
+#endif
 
 std::map<std::string, const ActionMaker*> & MakersMap()
 {
@@ -77,7 +81,9 @@ LegacyAction * ActionMaker::createAction(const std::string &name, ActionPars &pa
     {
         // We lock 'g_makers_mutex' in case std::map does not support
         // multiple concurrent readers.
+#ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(g_makers_mutex);
+#endif
         std::map<std::string, const ActionMaker *> & makers = MakersMap();
         std::map<std::string, const ActionMaker *>::iterator it = makers.find(name);
         if (it != makers.end()) maker = it->second;

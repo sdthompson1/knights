@@ -3,4 +3,7 @@ knights_server
 *.o
 *.P
 .vs
-
+src/virtual_server/build
+src/virtual_server/knights_virtual_server
+src/virtual_server/risc_vm.cpp
+src/virtual_server/risc_vm.hpp

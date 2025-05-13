@@ -27,9 +27,10 @@
 #include <istream>
 #include <fstream>
 
+#ifndef VIRTUAL_SERVER
 #include "boost/filesystem.hpp"
 #include "boost/filesystem/fstream.hpp"
-
+#endif
 
 /*
  * Resource streams. Like ifstream except we load from "resources"

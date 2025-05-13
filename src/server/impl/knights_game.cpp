@@ -43,12 +43,21 @@
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/weak_ptr.hpp"
+
+#ifdef VIRTUAL_SERVER
+#include "syscalls.hpp"
+#else
 #include "boost/thread/condition_variable.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/thread.hpp"
+#endif
 
 #include <algorithm>
+#include <ctime>
+#include <map>
+#include <memory>
 #include <set>
+#include <sstream>
 
 #ifdef min
 #undef min
@@ -60,6 +69,12 @@
 using std::ios_base;
 using std::string;
 using std::vector;
+
+#ifdef VIRTUAL_SERVER
+namespace {
+    class UpdateThread;
+}
+#endif
 
 // This is a hack for FastForwardUntil
 bool g_hack_fast_forward_flag = false;
@@ -120,12 +135,17 @@ public:
 
     bool game_over;
     bool pause_mode;
-    
+
+#ifdef VIRTUAL_SERVER
+    std::unique_ptr<UpdateThread> update_thread;
+#else
     // methods of KnightsGame should (usually) lock this mutex.
     // the update thread will also lock this mutex when it is making changes to the KnightsGameImpl or GameConnection structures.
     boost::mutex my_mutex;
 
     boost::thread update_thread;
+#endif
+
     volatile bool update_thread_wants_to_exit;
     volatile bool emergency_exit;  // lua_State is unusable; close the game asap.
     std::string emergency_err_msg;
@@ -150,7 +170,9 @@ public:
     // Condition variable used to wake up the update thread when a control comes in
     // (instead of polling, like it used to do).
     // Note, this is controlled using the same mutex (my_mutex) as the rest of the data.
+#ifndef VIRTUAL_SERVER
     boost::condition_variable wake_up_cond_var;
+#endif
     bool wake_up_flag;
 };
 
@@ -181,6 +203,9 @@ namespace {
     void WaitForMsgCounter(KnightsGameImpl &kg)
     {
         if (kg.update_counts.get()) {
+#ifdef VIRTUAL_SERVER
+            throw std::runtime_error("WaitForMsgCounter: Not supported");
+#else
             while (1) {
                 {
                     boost::lock_guard<boost::mutex> lock(kg.my_mutex);
@@ -192,6 +217,7 @@ namespace {
                 // sleep until the update gets completed.
                 boost::this_thread::sleep(boost::posix_time::milliseconds(1));
             }
+#endif
         }
     }
     
@@ -523,6 +549,9 @@ namespace {
                     kg.startup_err_msg = e.what();
                     if (kg.startup_err_msg.empty()) kg.startup_err_msg = "Unknown error";
                     kg.update_thread_wants_to_exit = true;
+#ifdef VIRTUAL_SERVER
+                    vs_exit_game_thread();
+#endif
                     return;
                 }
 
@@ -543,7 +572,9 @@ namespace {
                 // Wait until all players have set the 'finished_loading' flag
                 while (1) {
                     {
+#ifndef VIRTUAL_SERVER
                         boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
                         bool all_loaded = true;
                         for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                             if (!(*it)->obs_flag && !(*it)->finished_loading) {
@@ -553,11 +584,17 @@ namespace {
                         }
                         if (all_loaded) break;
                     }
+#ifdef VIRTUAL_SERVER
+                    vs_switch_to_main_thread(100);
+#else
                     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+#endif
                 }
 
                 {
+#ifndef VIRTUAL_SERVER
                     boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
 
                     // Send through any initialization msgs from lua.
                     SendMessages(kg.connections, messages);
@@ -575,18 +612,26 @@ namespace {
 
                 // Go into game loop. NOTE: This will run forever until the main thread interrupts us
                 // (or an exception occurs, or update() returns false).
-                int last_time = timer->getMsec();
-                int time_now = last_time;
+                unsigned int time_now = timer->getMsec();
+                unsigned int last_time = time_now;
                 while (1) {
-                    // work out how long since the last update
-                    const int update_delta_t = time_now - last_time;
+                    // Invariant: time_now should be set to the current time at this point,
+                    // and last_time should be the last time we updated the KnightsEngine.
 
-                    // run an update
+                    // Work out how long since the last update
+                    int update_delta_t = time_now - last_time;
+
+                    // Don't try to run excessively long updates
+                    if (update_delta_t > 1000) {
+                        update_delta_t = 1000;
+                    }
+
+                    // Run an update
                     const bool should_continue = update(update_delta_t);
                     if (!should_continue) break;   // End of game
-                    last_time += update_delta_t;
+                    last_time = time_now;
 
-                    // schedule the next update
+                    // Schedule the next update
                     const int max_time_to_update = 250;
                     const unsigned int time_of_next_update =
                         g_hack_fast_forward_flag
@@ -594,29 +639,40 @@ namespace {
                         timer->getMsec()
                         :
                         last_time + std::min(max_time_to_update, engine->getTimeToNextUpdate());
-                    
+
                     // Sleep until main thread signals us, or until we reach time_of_next_update
                     while (1)
                     {
-                        // Update time_now, and work out how long we need to wait
+                        // Get an updated time_now
                         time_now = timer->getMsec();
+
+                        // Work out how long we need to wait
                         int wait_time = time_of_next_update - time_now;
                         
-                        if (wait_time <= 0) break;  // The update has arrived!
+                        if (wait_time <= 0) {
+                            break;  // The update has arrived!
+                        }
 
                         // OK, so we need to wait for a bit. Lock mutex
+#ifndef VIRTUAL_SERVER
                         boost::unique_lock<boost::mutex> lock(kg.my_mutex);
+#endif
 
                         // The call to timed_wait UNLOCKS the mutex, WAITS for either the time to expire, or
                         // the main loop to signal us, then LOCKS the mutex again before returning.
+#ifdef VIRTUAL_SERVER
+                        vs_switch_to_main_thread(wait_time);
+#else
                         kg.wake_up_cond_var.timed_wait(lock, 
                             boost::posix_time::milliseconds(wait_time));
+#endif
 
                         if (kg.wake_up_flag) {
                             // The reason that timed_wait() returned was that the main loop signalled us.
                             // Acknowledge the signal (by clearing the flag), then break (which will force
                             // the next update -- as well as releasing the mutex).
                             kg.wake_up_flag = false;
+                            time_now = timer->getMsec();  // maintain invariant
                             break;
                         }
 
@@ -627,7 +683,7 @@ namespace {
                         // succeed and we will break out, and do the next update.
                     }
                 }
-                
+
             } catch (boost::thread_interrupted &) {
                 // Allow this to go through. The code that interrupted us knows what it's doing...
 
@@ -651,13 +707,20 @@ namespace {
             // Tell the main thread that the update thread wants to exit.
             // Note no need to lock mutex because there is only one writer (us) and one reader (the main thread)
             kg.update_thread_wants_to_exit = true;
+
+#ifdef VIRTUAL_SERVER
+            // Exit the thread
+            vs_exit_game_thread();
+#endif
         }
 
         void sendError(const char * msg) throw()
         {
             try {
                 // send error to all players connected to this game.
+#ifndef VIRTUAL_SERVER
                 boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     Coercri::OutputByteBuf buf((*it)->output_data);
                     buf.writeUbyte(SERVER_ERROR);
@@ -682,7 +745,9 @@ namespace {
 
             // read controls (and see if paused)
             {
+#ifndef VIRTUAL_SERVER
                 boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
 
                 msg_counter = kg.msg_counter;
                 
@@ -729,6 +794,9 @@ namespace {
                 // Check whether we are in "replay" mode, and if so, don't allow the update if the msg_counter hasn't reached
                 // the correct value yet.
                 if (kg.update_counts.get()) {
+#ifdef VIRTUAL_SERVER
+                    throw std::runtime_error("update_counts: not supported");
+#else
                     if (kg.update_counts->empty() || kg.update_counts->front() > msg_counter) {
                         boost::this_thread::interruption_point(); // ensure main thread can interrupt us
                         return true;  // ignore the update
@@ -739,6 +807,7 @@ namespace {
                         time_delta = kg.time_deltas->front();
                         kg.time_deltas->pop_front();
                     }
+#endif
                 }
 
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
@@ -794,7 +863,7 @@ namespace {
                     }
                 }
             }
-            
+
             // run the update
             engine->update(time_delta, *callbacks);
 
@@ -811,7 +880,9 @@ namespace {
 
             // copy the results back to the GameConnection buffers
             {
+#ifndef VIRTUAL_SERVER
                 boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
                 for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     if ((*it)->obs_flag) {
                         if ((*it)->observer_num > 0) {
@@ -863,7 +934,9 @@ namespace {
                 std::vector<PlayerInfo> player_list;
                 engine->getPlayerList(player_list);
 
+#ifndef VIRTUAL_SERVER
                 boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
 
                 // first job: remove any players who don't have a corresponding connection.
                 // (e.g. this can happen if a player disconnects after they are eliminated from the game.)
@@ -953,7 +1026,9 @@ namespace {
 
             // poll to see if the game is over.
             if (!game_over_sent && callbacks->isGameOver()) {
+#ifndef VIRTUAL_SERVER
                 boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
                 kg.game_over = true;
                 game_over_sent = true;
                 time_to_force_quit = 60000;
@@ -989,7 +1064,9 @@ namespace {
             if (time_to_force_quit > 0) {
                 time_to_force_quit -= time_delta;
                 if (time_to_force_quit <= 0) {
+#ifndef VIRTUAL_SERVER
                     boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
                     ReturnToMenu(kg);
                     return false;  // force game loop to quit
                 }
@@ -1041,7 +1118,11 @@ namespace {
     {
         // mutex is UNLOCKED at this point
 
+#ifdef VIRTUAL_SERVER
+        if (vs_game_thread_running()) return;  // Game is already started
+#else
         if (kg.update_thread.joinable()) return;  // Game is already started.
+#endif
 
         // game thread definitely not running at this point... so it is safe to access kg
         
@@ -1094,9 +1175,16 @@ namespace {
             kg.emergency_err_msg.clear();
             kg.startup_signal = false;
             kg.startup_err_msg.clear();
+
+#ifdef VIRTUAL_SERVER
+            kg.update_thread.reset(new UpdateThread(kg, kg.timer));
+            vs_start_game_thread(reinterpret_cast<void*>(&UpdateThread::operator()),
+                                 static_cast<void*>(kg.update_thread.get()));
+#else
             UpdateThread thr(kg, kg.timer);
             boost::thread new_thread(thr);
             kg.update_thread.swap(new_thread);  // start the sub-thread -- game is now running.
+#endif
 
             // Wait for the sub thread to set the "startup_signal" flag.
             while (1) {
@@ -1107,7 +1195,15 @@ namespace {
 
                 if (kg.update_thread_wants_to_exit) {
                     // The sub-thread has exited. This usually signals an error of some sort.
+#ifdef VIRTUAL_SERVER
+                    // Sanity check: Game thread should have exited at this point
+                    if (vs_game_thread_running()) {
+                        throw std::runtime_error("Game thread should have exited");
+                    }
+                    kg.update_thread.reset();
+#else
                     kg.update_thread.join();
+#endif
 
                     if (kg.emergency_exit) {
                         // very serious error -- escalate to our caller.
@@ -1118,12 +1214,26 @@ namespace {
                     break;
                 }
 
-                // sleep for a bit while we wait.
-                boost::this_thread::sleep(boost::posix_time::milliseconds(100));  
+#ifdef VIRTUAL_SERVER
+                // Allow game thread init code to run
+                vs_switch_to_game_thread();
+
+                // The game thread should have set either kg.startup_signal or
+                // kg.update_thread_wants_to_exit before switching back to main thread.
+                // If not, it is an error.
+                if (!kg.startup_signal && !kg.update_thread_wants_to_exit) {
+                    throw std::runtime_error("Game thread did not init properly");
+                }
+#else
+                // Sleep while we wait for the game thread init code to complete.
+                boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+#endif
             }
 
             // Lock the mutex
+#ifndef VIRTUAL_SERVER
             boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
             
             // If the game failed to initialize then print a message and refuse to start the game.
             // Otherwise, send startup message to all players.
@@ -1135,8 +1245,16 @@ namespace {
                 if (kg.knights_log) {
                     kg.knights_log->logMessage(kg.game_name + "\tError starting game\t" + err_msg);
                 }
-                
+
+#ifdef VIRTUAL_SERVER
+                // Sanity check: Game thread should have exited if err_msg was set
+                if (vs_game_thread_running()) {
+                    throw std::runtime_error("Game thread should have exited at this point!");
+                }
+                kg.update_thread.reset();
+#else
                 kg.update_thread.join();
+#endif
 
             } else {
                 // No errors -- We can start the game now
@@ -1167,7 +1285,7 @@ namespace {
                         buf.writeUbyte(0);  // already_started flag (false)
                     }
                 }
-            
+
                 // Log a message if required.
                 if (kg.knights_log) {
                     std::ostringstream str;
@@ -1195,9 +1313,14 @@ namespace {
         // NOTE: Mutex should be UNLOCKED when calling this routine, otherwise we will get a 
         // deadlock if the update thread is currently waiting for the mutex. (Apparently
         // a thread can't be interrupted while it is waiting for a mutex.)
-        
+
+#ifdef VIRTUAL_SERVER
+        vs_interrupt_game_thread();
+        kg.update_thread.reset();
+#else
         kg.update_thread.interrupt();
         kg.update_thread.join();
+#endif
 
         ReturnToMenu(kg);
     }
@@ -1276,19 +1399,28 @@ KnightsGame::~KnightsGame()
     // the thread will just become "detached" and continue running,
     // with disastrous consequences if the KnightsGame object is being
     // destroyed!
+#ifdef VIRTUAL_SERVER
+    vs_interrupt_game_thread();
+    pimpl->update_thread.reset();
+#else
     pimpl->update_thread.interrupt();
     pimpl->update_thread.join();
+#endif
 }
 
 int KnightsGame::getNumPlayers() const
 {
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     return CountPlayers(*pimpl);
 }
 
 int KnightsGame::getNumObservers() const
 {
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     int n = 0;
     for (game_conn_vector::const_iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
         if ((*it)->obs_flag) ++n;
@@ -1304,14 +1436,20 @@ bool KnightsGame::isSplitScreenAllowed() const
 
 GameStatus KnightsGame::getStatus() const
 {
+#ifdef VIRTUAL_SERVER
+    if (vs_game_thread_running()) return GS_RUNNING;
+#else
     if (pimpl->update_thread.joinable()) return GS_RUNNING;
+#endif
     else if (getNumPlayers() < 2) return GS_WAITING_FOR_PLAYERS;
     else return GS_SELECTING_QUEST;
 }
 
 bool KnightsGame::getObsFlag(GameConnection &conn) const
 {
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     return conn.obs_flag;
 }
 
@@ -1319,8 +1457,10 @@ GameConnection & KnightsGame::newClientConnection(const UTF8String &client_name,
                                                   int client_version, bool approach_based_controls, bool action_bar_controls)
 {
     WaitForMsgCounter(*pimpl);
-    
+
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     
     // check preconditions. (caller should have checked these already.)
@@ -1333,7 +1473,12 @@ GameConnection & KnightsGame::newClientConnection(const UTF8String &client_name,
     if (!client_name_2.empty() && !pimpl->connections.empty()) throw UnexpectedError("Cannot join in split screen mode while connections exist");
 
     // If the game is running, they join as an observer, otherwise, they join as a player
-    const bool new_obs_flag = pimpl->update_thread.joinable();
+    const bool new_obs_flag =
+#ifdef VIRTUAL_SERVER
+        vs_game_thread_running();
+#else
+        pimpl->update_thread.joinable();
+#endif
 
     // create the GameConnection
     boost::shared_ptr<GameConnection> conn(new GameConnection(client_name, client_name_2, 
@@ -1391,7 +1536,13 @@ GameConnection & KnightsGame::newClientConnection(const UTF8String &client_name,
 
     // If the new player is an observer and the game is running then
     // send him the START_GAME_OBS msg immediately
-    if (new_obs_flag && pimpl->update_thread.joinable()) {
+    bool is_running;
+#ifdef VIRTUAL_SERVER
+    is_running = vs_game_thread_running();
+#else
+    is_running = pimpl->update_thread.joinable();
+#endif
+    if (new_obs_flag && is_running) {
         // send the msg
         buf.writeUbyte(SERVER_START_GAME_OBS);
         buf.writeUbyte(pimpl->all_player_names.size());
@@ -1425,7 +1576,9 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
     WaitForMsgCounter(*pimpl);
     
     {
+#ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
         if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
         
         // Find the client in our connections list. 
@@ -1452,21 +1605,31 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
             }
         }
     }
-    
-    if (is_player && pimpl->update_thread.joinable()) {
+
+    bool is_running;
+#ifdef VIRTUAL_SERVER
+    is_running = vs_game_thread_running();
+#else
+    is_running = pimpl->update_thread.joinable();
+#endif
+    if (is_player && is_running) {
         // The leaving client is one of the players (as opposed to an observer).
         if (num_player_connections <= 1) {
             // Only one player connection is left. We should just terminate the game at this point.
             StopGameAndReturnToMenu(*pimpl);
         } else {
             // There are still players left in so eliminate that player and allow the game to continue.
+#ifndef VIRTUAL_SERVER
             boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
             pimpl->players_to_eliminate.push_back(player_num);
         }
     }
     
     {
+#ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
         
         // Send SERVER_PLAYER_LEFT_THIS_GAME message to all remaining players
         for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
@@ -1496,10 +1659,17 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
 
 void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_orig)
 {
+    bool is_running;
+#ifdef VIRTUAL_SERVER
+    is_running = vs_game_thread_running();
+#else
+    is_running = pimpl->update_thread.joinable();
+#endif
+
     // Determine whether this is a Team chat message
     bool is_team;
     std::string msg;
-    if (!pimpl->update_thread.joinable() || conn.obs_flag) {
+    if (!is_running || conn.obs_flag) {
         // Team chat not available (either because we are on the quest selection menu, 
         // or because sender is an observer).
         is_team = false;
@@ -1512,7 +1682,9 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_o
     // Forward the message to everybody (including the originator)
     // (Except team chat msgs which go to team mates only)
     WaitForMsgCounter(*pimpl);
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
 
@@ -1538,7 +1710,11 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_o
 
 void KnightsGame::setReady(GameConnection &conn, bool ready)
 {
+#ifdef VIRTUAL_SERVER
+    if (vs_game_thread_running()) return;
+#else
     if (pimpl->update_thread.joinable()) return;  // Game is running.
+#endif
 
     // (We know the game is not running at this point, so no need to lock mutex)
     
@@ -1556,11 +1732,17 @@ void KnightsGame::setReady(GameConnection &conn, bool ready)
 
 void KnightsGame::setHouseColour(GameConnection &conn, int hse_col)
 {
+#ifdef VIRTUAL_SERVER
+    if (vs_game_thread_running()) return;
+#else
     if (pimpl->update_thread.joinable()) return;  // Game is running
+#endif
 
     WaitForMsgCounter(*pimpl);
-    
+
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag) {
         conn.house_colour = hse_col;
@@ -1582,7 +1764,9 @@ void KnightsGame::setHouseColour(GameConnection &conn, int hse_col)
 void KnightsGame::finishedLoading(GameConnection &conn)
 {
     WaitForMsgCounter(*pimpl);
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     conn.finished_loading = true;
 }
@@ -1595,7 +1779,9 @@ void KnightsGame::readyToEnd(GameConnection &conn)
     
     bool all_ready = false;
     {
+#ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
         if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
         if (!conn.obs_flag) {
             conn.ready_to_end = true;
@@ -1623,13 +1809,19 @@ void KnightsGame::readyToEnd(GameConnection &conn)
 
 bool KnightsGame::requestQuit(GameConnection &conn)
 {
+#ifdef VIRTUAL_SERVER
+    if (!vs_game_thread_running()) return false;   // Game is not running
+#else
     if (!pimpl->update_thread.joinable()) return false;  // Game is not running
+#endif
 
     WaitForMsgCounter(*pimpl);
     
     bool obs_flag;
     {
+#ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
         if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
         obs_flag = conn.obs_flag;
     }
@@ -1642,12 +1834,16 @@ bool KnightsGame::requestQuit(GameConnection &conn)
         // If there are only two players then stop the game (with appropriate message), 
         // otherwise, kick this player out (but the game continues).
         if (getNumPlayers() > 2) {
+#ifndef VIRTUAL_SERVER
             boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
             pimpl->players_to_eliminate.push_back(conn.player_num);
             return true;
         } else {
             {
+#ifndef VIRTUAL_SERVER
                 boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
                 Announcement(*pimpl, conn.name.asLatin1() + " quit the game.");
             }
             StopGameAndReturnToMenu(*pimpl);
@@ -1661,14 +1857,20 @@ bool KnightsGame::requestQuit(GameConnection &conn)
 void KnightsGame::setPauseMode(bool pm)
 {
     WaitForMsgCounter(*pimpl);
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     pimpl->pause_mode = pm;
 }
 
 void KnightsGame::setMenuSelection(GameConnection &conn, int item_num, int choice_num)
 {
+#ifdef VIRTUAL_SERVER
+    if (vs_game_thread_running()) return;  // Game is running
+#else
     if (pimpl->update_thread.joinable()) return;  // Game is running
+#endif
 
     WaitForMsgCounter(*pimpl);
 
@@ -1689,7 +1891,11 @@ void KnightsGame::setMenuSelection(GameConnection &conn, int item_num, int choic
 
 void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int choice_num)
 {
+#ifdef VIRTUAL_SERVER
+    if (vs_game_thread_running()) return;   // Game is running
+#else
     if (pimpl->update_thread.joinable()) return;  // game is running
+#endif
 
     // since we now know the update thread is not running, there is no need to lock.
 
@@ -1720,11 +1926,17 @@ void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int c
 
 void KnightsGame::randomQuest(GameConnection &conn)
 {
+#ifdef VIRTUAL_SERVER
+    if (vs_game_thread_running()) return;   // Game is running
+#else
     if (pimpl->update_thread.joinable()) return;  // Game is running
+#endif
     
     WaitForMsgCounter(*pimpl);
 
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can set quests.
 
@@ -1755,7 +1967,9 @@ void KnightsGame::randomQuest(GameConnection &conn)
 
 void KnightsGame::requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids)
 {
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     std::vector<const Graphic *> graphics;
     pimpl->knights_config->getGraphics(graphics);
     
@@ -1774,7 +1988,9 @@ void KnightsGame::requestGraphics(Coercri::OutputByteBuf &buf, const std::vector
 
 void KnightsGame::requestSounds(Coercri::OutputByteBuf &buf, const std::vector<int> &ids)
 {
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     std::vector<const Sound *> sounds;
     pimpl->knights_config->getSounds(sounds);
     
@@ -1793,29 +2009,43 @@ void KnightsGame::requestSounds(Coercri::OutputByteBuf &buf, const std::vector<i
 
 void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control_num)
 {
+#ifdef VIRTUAL_SERVER
+    if (!vs_game_thread_running()) return;  // Game is not running
+#else
     if (!pimpl->update_thread.joinable()) return; // Game is not running
+#endif
 
     WaitForMsgCounter(*pimpl);
 
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag && p >= 0 && p < (conn.name2.empty() ? 1 : 2)) {
         const UserControl * control = control_num == 0 ? 0 : pimpl->controls.at(control_num - 1);
         conn.control_queue[p].push_back(control);
+        pimpl->wake_up_flag = true;
     }
 }
 
 void KnightsGame::requestSpeechBubble(GameConnection &conn, bool show)
 {
+#ifdef VIRTUAL_SERVER
+    if (!vs_game_thread_running()) return;   // Game is not running
+#else
     if (!pimpl->update_thread.joinable()) return;  // Game is not running
+#endif
 
     WaitForMsgCounter(*pimpl);
 
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag) {
         conn.speech_request = true;
         conn.speech_bubble = show;
+        pimpl->wake_up_flag = true;
     }
 }
 
@@ -1833,25 +2063,33 @@ void KnightsGame::endOfMessagePacket()
     // (Note: There is still at least one polling delay, and that is in KnightTask which
     // only runs every 'control_poll_interval', currently 50ms.)
 
+#ifndef VIRTUAL_SERVER
     bool flag;
     {
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
         flag = (pimpl->wake_up_flag);
     }
     if (flag) pimpl->wake_up_cond_var.notify_one();
+#endif
 }
 
 void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
 {
     WaitForMsgCounter(*pimpl);
-    
+
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     
     if (conn.obs_flag == new_obs_flag) return;  // Nothing to do
     
     // If the game is in progress then don't allow players to change obs-flag setting
+#ifdef VIRTUAL_SERVER
+    if (vs_game_thread_running()) {
+#else
     if (pimpl->update_thread.joinable()) {
+#endif
         Coercri::OutputByteBuf buf(conn.output_data);
         buf.writeUbyte(SERVER_ANNOUNCEMENT);
         buf.writeString("Cannot change observer status at this time. Please wait until the game has finished.");
@@ -1911,7 +2149,9 @@ void KnightsGame::getOutputData(GameConnection &conn, std::vector<unsigned char>
     bool do_wait;
 
     {
+#ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
         std::swap(conn.output_data, data);
         conn.output_data.clear();
         do_wait = pimpl->update_thread_wants_to_exit;
@@ -1921,7 +2161,15 @@ void KnightsGame::getOutputData(GameConnection &conn, std::vector<unsigned char>
     // to join() with the update thread, if the update thread has
     // finished.
     if (do_wait) {
+#ifdef VIRTUAL_SERVER
+        // If pimpl->update_thread_wants_to_exit is true, then game thread should have exited by now
+        if (vs_game_thread_running()) {
+            throw std::runtime_error("Game thread did not exit when expected to");
+        }
+        pimpl->update_thread.reset();
+#else
         if (pimpl->update_thread.joinable()) pimpl->update_thread.join();
+#endif
         pimpl->update_thread_wants_to_exit = false;
         if (pimpl->emergency_exit) {
             // Throw an exception and let the caller deal with it.
@@ -1935,12 +2183,16 @@ void KnightsGame::getOutputData(GameConnection &conn, std::vector<unsigned char>
 
 void KnightsGame::setPingTime(GameConnection &conn, int ping)
 {
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     conn.ping_time = ping;
 }
 
 void KnightsGame::setMsgCountUpdateFlag(bool on)
 {
+#ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
     pimpl->msg_count_update_flag = on;
 }

@@ -43,7 +43,9 @@
 #include "tutorial_manager.hpp"
 #include "view_manager.hpp"
 
+#ifndef VIRTUAL_SERVER
 #include "boost/thread/tss.hpp"
+#endif
 
 #include <sstream>
 #include <stdexcept>
@@ -52,7 +54,15 @@ using std::string;
 
 namespace {
     // Thread-local storage for the mediator.
+#ifdef VIRTUAL_SERVER
+    // Note: the VIRTUAL_SERVER only supports one game at a time, so using a plain
+    // std::unique_ptr is valid in this case
+    std::unique_ptr<Mediator> g_mediator_ptr;
+#else
+    // For the full server, multiple games are supported but each game runs in its
+    // own thread, so we use boost::thread_specific_ptr
     boost::thread_specific_ptr<Mediator> g_mediator_ptr;
+#endif
 }
 
 

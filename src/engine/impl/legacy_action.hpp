@@ -28,7 +28,10 @@
 #include "random_int.hpp"
 
 #include "boost/shared_ptr.hpp"
+
+#ifndef VIRTUAL_SERVER
 #include "boost/thread/mutex.hpp"
+#endif
 
 #include <map>
 #include <string>
@@ -123,9 +126,12 @@ public:
   }
 
 
+#ifndef VIRTUAL_SERVER
 // this allows access to the global "makers map" (maps action name -> ActionMaker).
 // make sure you lock g_makers_mutex while accessing it.
 extern boost::mutex g_makers_mutex;
+#endif
+
 std::map<std::string, const ActionMaker *> & MakersMap();
 
 

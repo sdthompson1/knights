@@ -1328,7 +1328,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     // Now we want to add all the LegacyActions as Lua functions.
     {
+#ifndef VIRTUAL_SERVER
         boost::unique_lock<boost::mutex> lock(g_makers_mutex);
+#endif
         const std::map<std::string, const ActionMaker *> & makers_map = MakersMap();
         for (std::map<std::string, const ActionMaker *>::const_iterator it = makers_map.begin();
         it != makers_map.end(); ++it) {

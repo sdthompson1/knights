@@ -25,8 +25,10 @@
 
 #include "lua_func_wrapper.hpp"
 
+#ifndef VIRTUAL_SERVER
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/locks.hpp"
+#endif
 
 #include <map>
 
@@ -39,7 +41,10 @@ struct lua_longjmp {
 
 namespace {
 
+#ifndef VIRTUAL_SERVER
     boost::mutex g_wrapper_mutex;
+#endif
+
     std::map<int, lua_CFunction> g_func_map;
     int g_next_index;
     
@@ -49,7 +54,9 @@ namespace {
         
         lua_CFunction func;
         {
+#ifndef VIRTUAL_SERVER
             boost::unique_lock<boost::mutex> lock(g_wrapper_mutex);
+#endif
             func = g_func_map[i];
         }
 
@@ -76,7 +83,9 @@ void PushCClosure(lua_State *lua, lua_CFunction func, int nupvalues)
 {
     int i;  // initialized below
     {
+#ifndef VIRTUAL_SERVER
         boost::unique_lock<boost::mutex> lock(g_wrapper_mutex);
+#endif
         i = g_next_index++;
         g_func_map[i] = func;
     }
