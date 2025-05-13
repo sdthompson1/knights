@@ -42,7 +42,7 @@ void vs_start_game_thread(void *code_addr, void *this_ptr)
         "ecall"             // Make syscall
         : // No outputs
         : "r" (code_addr), "r" (this_ptr)   // Inputs
-        : "a0", "a1", "a7"                  // Trashed registers
+        : "a0", "a1", "a7"                  // Clobbered values
     );
 }
 
@@ -58,7 +58,7 @@ unsigned int vs_switch_to_game_thread()
         "mv %0, a0"          // Return result from a0
         : "=r" (param)       // Output: param
         :                    // No inputs
-        : "a0", "a7"         // Trashed registers
+        : "a0", "a7", "memory"   // Clobbered values
     );
     return param;
 }
@@ -83,7 +83,7 @@ void vs_end_tick(unsigned int ms)
         "ecall"             // Make syscall
         :                   // No outputs
         : "r" (ms)          // Input: ms
-        : "a0", "a7"        // Trashed registers
+        : "a0", "a7"        // Clobbered values
     );
 }
 
@@ -100,7 +100,7 @@ void vs_switch_to_main_thread(unsigned int param)
         "ecall"            // Make syscall
         :                  // No outputs
         : "r" (param)      // Input: param
-        : "a0", "a7"       // Trashed registers
+        : "a0", "a7", "memory"    // Clobbered values
     );
     if (g_interrupt_flag) {
         throw boost::thread_interrupted();
