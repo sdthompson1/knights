@@ -74,6 +74,9 @@ KnightsVM::KnightsVM(uint32_t initial_time_ms)
     // Initial timer
     timer_ms = initial_time_ms;
 
+    // RStream files enabled initially
+    rstream_enabled = true;
+
     // The main stack area runs from MAIN_STACK_TOP - MAX_STACK_BYTES (inclusive)
     // to MAIN_STACK_TOP (exclusive).
     //
@@ -420,6 +423,9 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
 #ifdef LOG_ECALLS
         printf("END_TICK %d ms\n", getA0());
 #endif
+        // Disable rstream files after the first tick
+        rstream_enabled = false;
+        files.clear();  // Closes any files that are still open
         return ECALL_END_TICK;
 
     default:
@@ -458,6 +464,11 @@ KnightsVM::PathType KnightsVM::interpretPath(std::string &resource_filename)
 
 int KnightsVM::openRstreamFile(const std::string &resource_filename)
 {
+    if (!rstream_enabled) {
+        // Not allowed to read RStream files after first tick
+        return -NEWLIB_ENOENT;
+    }
+
     bool error = false;
     std::unique_ptr<RStream> str;
     try {

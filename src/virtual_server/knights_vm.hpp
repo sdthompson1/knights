@@ -62,8 +62,9 @@ public:
     // VM to "TICK:" will be appended to vm_output_data. Otherwise,
     // data written to "TICK:" will be ignored.
 
-    // The VM is allowed to read files from the host "knights_data"
-    // directory (by using paths of the form "RES:dir/filename").
+    // During the first tick (ONLY), the VM is allowed to read files
+    // from the host "knights_data" directory (by using paths of the
+    // form "RES:dir/filename").
 
     // Execution continues until the next END_TICK syscall. The
     // parameter to that syscall (representing the number of
@@ -79,15 +80,14 @@ public:
     // The VM execution is guaranteed to be deterministic, so if two
     // VMs are given the same "initial_time_ms" in the constructor,
     // and the same runTick calls are made (with identical tick data),
-    // and the same "RES:" files are available to both machines, then
-    // the two VMs will end up in exactly the same state.
+    // and the same "RES:" files are available to both machines
+    // (during the first tick), then the two VMs will end up in
+    // exactly the same state.
 
     int runTick(const unsigned char *tick_data_begin,
                 const unsigned char *tick_data_end,
                 std::vector<unsigned char> *vm_output_data);
 
-
-    // TODO: Method to disable file loading.
 
     // TODO: Methods to save and restore snapshots.
 
@@ -122,6 +122,7 @@ private:
     uint32_t timer_ms;
 
     // Access to RStream files
+    bool rstream_enabled;  // True during first tick only
     std::vector<std::unique_ptr<std::istream> > files;
 
     // Stack guard address for the thread stack
