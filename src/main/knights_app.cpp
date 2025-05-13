@@ -88,6 +88,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <random>
 
 #ifdef __LP64__
 #include <stdint.h>
@@ -304,7 +305,13 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     
     // initialize RNG
     g_rng.initialize();
-    g_rng.setSeed(static_cast<unsigned int>(std::time(0)));
+    unsigned int seed = std::time(0);
+    {
+        // Mix in some additional randomness if available
+        std::random_device rand;
+        seed ^= rand();
+    }
+    g_rng.setSeed(seed);
 
     // initialize resource lib
     std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";

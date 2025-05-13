@@ -56,6 +56,7 @@
 #include <csignal>
 #include <ctime>
 #include <iostream>
+#include <random>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -805,8 +806,14 @@ int main(int argc, char **argv)
 
     // initialize rng.
     g_rng.initialize();
-    g_rng.setSeed(static_cast<unsigned int>(std::time(0)));
-    
+    unsigned int seed = static_cast<unsigned int>(std::time(0));
+    {
+        std::random_device rand;
+        seed ^= rand();
+    }
+    g_rng.setSeed(seed);
+
+
     // Load the configuration. Exit if this fails.
     try {
         // Parse arguments

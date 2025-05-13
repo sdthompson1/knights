@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include <memory>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
@@ -191,7 +192,17 @@ int main(int argc, const char **argv)
     unsigned int time_of_last_tick = timer.getMsec();
     unsigned int force_time = 0;  // Time (relative to last tick) at which next tick should be forced.
 
-    KnightsVM vm(time_of_last_tick);
+    // Create a random seed for the VM
+    // Use std::random_device, mixed with time(NULL) (in case random_device does not
+    // work on this platform)
+    unsigned int seed = std::time(NULL);
+    {
+        std::random_device rand;
+        seed ^= rand();
+    }
+
+    // Create the KnightsVM
+    KnightsVM vm(seed);
 
     // Run an initial tick to force everything to load.
     {

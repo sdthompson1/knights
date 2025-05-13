@@ -126,6 +126,8 @@ int main()
         boost::shared_ptr<Coercri::Timer> timer(new VMTimer);
 
         // Make sure our RNG is working
+        // Note: We randomize using timer->getMsec. Using std::random_device is pointless
+        // because the VM has no entropy source other than the timer.
         g_rng.initialize();
         g_rng.setSeed(timer->getMsec());
 

@@ -50,6 +50,7 @@
 #include "boost/thread/condition_variable.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/thread.hpp"
+#include <random>
 #endif
 
 #include <algorithm>
@@ -477,23 +478,37 @@ namespace {
                 // After the flag is set, need to lock kg before accessing it.
 
                 // create the random number generator for this thread
+#ifndef VIRTUAL_SERVER
                 g_rng.initialize();
+#endif
 
                 unsigned int seed;
 
                 if (kg.random_seeds.get() && !kg.random_seeds->empty()) {
+#ifdef VIRTUAL_SERVER
+                    throw std::runtime_error("kg.random_seeds was set unexpectedly");
+#endif
                     seed = kg.random_seeds->front();
                     kg.random_seeds->pop_front();
                 } else {
-                    // construct seed from current time and also address of
-                    // this thread object (just in case two games are started
-                    // at nearly the same time).
-                    seed = static_cast<unsigned int>(reinterpret_cast<intptr_t>(this));
+                    // Note: there is no point calling g_rng.setSeed in the virtual
+                    // server, because in the virtual server, the RNG is global
+                    // (not thread-specific) and has already been seeded elsewhere.
+                    // (In non-virtual-server builds, by contrast, the RNG is thread-
+                    // specific and therefore has to be seeded here.)
+#ifndef VIRTUAL_SERVER
+                    // Construct seed from current time, and also using some
+                    // extra randomness from std::random_device if available.
+                    seed = timer->getMsec();
                     seed += static_cast<unsigned int>(time(0));
-                    seed += timer->getMsec();
+                    std::random_device rand;
+                    seed ^= rand();
+#endif
                 }
 
+#ifndef VIRTUAL_SERVER
                 g_rng.setSeed(seed);
+#endif
                 
                 // log what the seed was.
                 if (kg.knights_log) kg.knights_log->logBinary("RNG", static_cast<int>(seed), 
