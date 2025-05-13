@@ -72,6 +72,7 @@ public:
     void onNewConnection(uint8_t client_number, const std::string &platform_user_id);
     void onCloseConnection(uint8_t client_number);
     void onClientSendData(uint8_t client_number, std::vector<unsigned char> &data);
+    void onClientPingReport(uint8_t client_number, uint16_t ping_time_ms);
 private:
     KnightsServer &server;
     std::vector<ServerConnection*> &connections;
@@ -105,6 +106,15 @@ void VMTickCallbacks::onClientSendData(uint8_t num, std::vector<unsigned char> &
         server.receiveInputData(*connections[num], data);
     } else {
         throw std::runtime_error("onClientSendData error");
+    }
+}
+
+void VMTickCallbacks::onClientPingReport(uint8_t num, uint16_t ping_time_ms)
+{
+    if (num < connections.size() && connections[num] != NULL) {
+        server.setPingTime(*connections[num], ping_time_ms);
+    } else {
+        throw std::runtime_error("onClientPingReport error");
     }
 }
 

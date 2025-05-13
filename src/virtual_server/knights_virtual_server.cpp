@@ -66,10 +66,12 @@ private:
     // Network driver and connections
     std::unique_ptr<Coercri::NetworkDriver> net_driver;
     std::vector<boost::shared_ptr<Coercri::NetworkConnection>> client_connections;
+    int time_until_next_ping_report;
 };
 
 TickNetwork::TickNetwork()
     : net_driver(new Coercri::EnetNetworkDriver(20, 0, true))
+    , time_until_next_ping_report(0)
 {
     net_driver->setServerPort(16399);
     net_driver->enableServer(true);
@@ -78,6 +80,12 @@ TickNetwork::TickNetwork()
 std::vector<unsigned char> TickNetwork::prepareTickData(unsigned int time_since_last_tick,
                                                         bool force)
 {
+    bool need_ping_report = false;
+    if (time_until_next_ping_report <= 0) {
+        need_ping_report = true;
+        time_until_next_ping_report = 5000;  // Interval between ping reports
+    }
+
     // Make an empty tick data buffer
     std::vector<unsigned char> tick_data;
     TickWriter writer(tick_data, time_since_last_tick);
@@ -120,6 +128,12 @@ std::vector<unsigned char> TickNetwork::prepareTickData(unsigned int time_since_
             if (conn->getState() != Coercri::NetworkConnection::CONNECTED) {
                 writer.writeCloseConnection(idx);
                 client_connections[idx].reset();
+            } else if (need_ping_report) {
+                int ping = conn->getPingTime();
+                // Sanity check the ping time before sending
+                if (ping < 0) ping = 0;
+                if (ping > UINT16_MAX) ping = UINT16_MAX;
+                writer.writeClientPingReport(idx, ping);
             }
         }
     }
@@ -128,6 +142,7 @@ std::vector<unsigned char> TickNetwork::prepareTickData(unsigned int time_since_
     // otherwise just clear the tick_data and we will try again next time.
     if (writer.wasMessageWritten() || force) {
         writer.finalize();
+        time_until_next_ping_report -= time_since_last_tick;
     } else {
         tick_data.clear();
     }

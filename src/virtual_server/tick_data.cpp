@@ -36,7 +36,8 @@ namespace {
         TM_NEW_CONNECTION = 0,
         TM_CLOSE_CONNECTION = 1,
         TM_CLIENT_SEND_DATA = 2,
-        TM_SERVER_SEND_DATA = 3
+        TM_CLIENT_PING_REPORT = 3,
+        TM_SERVER_SEND_DATA = 4
     };
 
     unsigned char ReadUbyte(const unsigned char *&first,
@@ -168,6 +169,11 @@ const unsigned char * ReadTickData(const unsigned char *ptr,
             }
             break;
 
+        case TM_CLIENT_PING_REPORT:
+            // Ping time is encoded in the payload length field
+            callbacks.onClientPingReport(client_num, payload_length);
+            break;
+
         case TM_SERVER_SEND_DATA:
             {
                 std::vector<unsigned char> v = ReadVector(ptr, end, payload_length);
@@ -269,6 +275,12 @@ void TickWriter::writeClientSendData(uint8_t client_num, const std::vector<unsig
     for (unsigned char c : data) {
         tick_data.push_back(c);
     }
+}
+
+void TickWriter::writeClientPingReport(uint8_t client_num, uint16_t ping_time_ms)
+{
+    // We encode the ping time in the "payload length" field
+    beginNewMessage(TM_CLIENT_PING_REPORT, ping_time_ms, client_num);
 }
 
 void TickWriter::writeServerSendData(uint8_t client_num, const std::vector<unsigned char> &data)

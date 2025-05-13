@@ -51,6 +51,9 @@ public:
     // another vector if they wish (to avoid copying).
     virtual void onClientSendData(uint8_t client_number, std::vector<unsigned char> &data) { }
 
+    // Called when a client reports their ping time
+    virtual void onClientPingReport(uint8_t client_number, uint16_t ping_time_ms) { }
+
     // Called when the server sends data to a client.
     // The implementation of this function may 'swap' the data to
     // another vector if they wish (to avoid copying).
@@ -77,6 +80,7 @@ public:
     void writeNewConnection(uint8_t client_number, const std::string &platform_user_id);
     void writeCloseConnection(uint8_t client_number);
     void writeClientSendData(uint8_t client_number, const std::vector<unsigned char> &data);
+    void writeClientPingReport(uint8_t client_number, uint16_t ping_time_ms);
     void writeServerSendData(uint8_t client_number, const std::vector<unsigned char> &data);
 
     // True if at least one "write" function was called
