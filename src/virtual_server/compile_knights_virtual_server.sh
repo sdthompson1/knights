@@ -9,10 +9,10 @@
 # Please note building is very slow. An unoptimized build takes around
 # 30 seconds to 1 minute; an optimized build takes around 8 hours (!).
 
-# After building, you can run `knights_virtual_server`, passing the
-# directory containing knights_data as a parameter. Alternatively, if
-# you run it from the directory that contains knights_data, then you
-# don't need to pass a parameter.
+# After building, you can run "knights_virtual_server", passing the
+# path to "knights_data" as a parameter. Alternatively, if you run it
+# from the directory that contains knights_data, then you don't need
+# to pass a parameter.
 
 g++ -I../coercri -I../rstream \
     ../coercri/enet/enet_network_connection.cpp \
