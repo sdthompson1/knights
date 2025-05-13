@@ -41,10 +41,19 @@ namespace {
     // Fds 0, 1, 2 reserved for stdin, stdout, stderr respectively.
     // Fd 3 is reserved for the tick device.
     // Fds 4 and above are used for RStream files.
-    const int TICK_DEVICE_FD = 3;
-    const int BASE_FILE_DESCRIPTOR = 4;
+    const uint32_t TICK_DEVICE_FD = 3;
+    const uint32_t BASE_FILE_DESCRIPTOR = 4;
 
+    // One plus address of last byte of the main stack area.
+    // We place this 64 KB below the top of memory, just to allow a little
+    // bit of a buffer zone above the stack, before the addresses start
+    // wrapping around.
+    const uint32_t MAIN_STACK_TOP = 0xffff0000;
+
+    // Resource limits - hard coded here.
     const int MAX_OPEN_FILES = 1000;
+    const uint32_t MAX_DATA_BYTES = 100 * 1024 * 1024;  // Max difference between program break and initial program break.
+    const uint32_t MAX_STACK_BYTES = 512 * 1024;   // Size of each stack area, in bytes.
 
     // Error codes.
     const int NEWLIB_ENOENT = 2;     // No such file or directory
@@ -56,6 +65,7 @@ namespace {
 }
 
 KnightsVM::KnightsVM(uint32_t initial_time_ms)
+    : RiscVM(MAIN_STACK_TOP - 16)   // Start with 16 zero bytes pushed onto the main stack.
 {
     // There is no tick data initially
     tick_data_ptr = tick_data_end = NULL;
@@ -64,12 +74,27 @@ KnightsVM::KnightsVM(uint32_t initial_time_ms)
     // Initial timer
     timer_ms = initial_time_ms;
 
-    // Place the thread stack at 0xefffffff and below (i.e. 256 MB
-    // below the top of the address space). This means the guard page
-    // address is initially 0xefff0000 and the initial stack pointer
-    // for the thread is 0xf0000000 (i.e. one byte above the actual
-    // topmost stack byte).
-    second_stack_guard = 0xefff0000;
+    // The main stack area runs from MAIN_STACK_TOP - MAX_STACK_BYTES (inclusive)
+    // to MAIN_STACK_TOP (exclusive).
+    //
+    // The buffer zone between the stack areas (allowing for a guard page) is
+    // from MAIN_STACK_TOP - MAX_STACK_BYTES - 0x10000 (inclusive)
+    // to MAIN_STACK_TOP - MAX_STACK_BYTES (exclusive).
+    //
+    // The secondary stack area is
+    // from MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x10000 (inclusive)
+    // to MAIN_STACK_TOP - MAX_STACK_BYTES - 0x10000 (exclusive).
+    //
+    // The buffer zone below the secondary stack area (allowing for a guard page) is
+    // from MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x20000 (inclusive)
+    // to MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x10000 (exclusive).
+    //
+    // We will pre-allocate the top-most page of the secondary stack; this will
+    // automatically prevent the main stack growing into the secondary stack area.
+    // Then place the secondary stack guard another 64 KB (0x10000 bytes) below that.
+    //
+    allocatePage(MAIN_STACK_TOP - MAX_STACK_BYTES - 0x20000);
+    second_stack_guard = MAIN_STACK_TOP - MAX_STACK_BYTES - 0x30000;
 
     // All "alternate" registers are zero initially.
     alt_ra = alt_sp = alt_gp = alt_tp = 0;
@@ -103,7 +128,12 @@ int KnightsVM::runTick(const unsigned char *tick_data_begin,
     }
 
     // The sleep time is in A0.
-    return getA0();
+    // Limit this to the range 0 to 1000 inclusive. (Note getA0() is unsigned.)
+    if (getA0() > uint32_t(1000)) {
+        return 1000;
+    } else {
+        return int(getA0());
+    }
 }
 
 KnightsVM::EcallResult KnightsVM::handleEcall()
@@ -135,7 +165,8 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
             }
             printf("BRK a0=%08x megabytes=%.2f\n", getA0(), megabytes);
 #endif
-            if (getA0() >= getInitialProgramBreak()) {
+            if (getA0() >= getInitialProgramBreak()
+            && getA0() <= getInitialProgramBreak() + MAX_DATA_BYTES) {
                 setProgramBreak(getA0());
             }
             setA0(getProgramBreak());
@@ -209,8 +240,8 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         printf("READ(fd:%d)\n", getA0());
 #endif
         {
-            int fd = getA0();
-            int index = fd - BASE_FILE_DESCRIPTOR;
+            uint32_t fd = getA0();
+            uint32_t file_index = fd - BASE_FILE_DESCRIPTOR;
 
             uint32_t addr = getA1();
             uint32_t size = getA2();
@@ -234,22 +265,24 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
                 // Return number of bytes read
                 setA0(count);
 
-            } else if (index >= 0 && index < int(files.size()) && files[index]) {
+            } else if (fd >= BASE_FILE_DESCRIPTOR
+                       && file_index < files.size()
+                       && files[file_index]) {
                 // RStream file
 
-                if (files[index]->eof()) {
+                if (files[file_index]->eof()) {
                     // We already reached eof for this file
                     setA0(0);
                 } else {
                     // Read upto 1K chunks
                     char buf[1024];
-                    files[index]->read(buf, size);
-                    if (files[index]->fail() && !files[index]->eof()) {
+                    files[file_index]->read(buf, size);
+                    if (files[file_index]->fail() && !files[file_index]->eof()) {
                         // Read error
                         setA0(-NEWLIB_EIO);
                     } else {
                         // Successful read (might have been zero bytes if at eof, but that's fine)
-                        uint32_t count = files[index]->gcount();
+                        uint32_t count = files[file_index]->gcount();
                         for (uint32_t i = 0; i < count; ++i) {
                             writeByte(addr + i, buf[i]);
                         }
@@ -273,13 +306,13 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         printf("WRITE(fd:%d) ", getA0());
 #endif
         {
-            int fd = getA0();
+            uint32_t fd = getA0();
             uint32_t addr = getA1();
             uint32_t size = getA2();
 
             if (fd == 1 || fd == 2) {
                 // Allow writes to stdout or stderr
-                std::ostream &str = fd == 1 ? std::cout : std::cerr;
+                std::ostream &str = (fd == 1) ? std::cout : std::cerr;
                 for (uint32_t i = 0; i < size; ++i) {
                     str << char(readByteU(addr + i));
                 }
@@ -314,11 +347,13 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         printf("CLOSE(fd:%d)\n", getA0());
 #endif
         {
-            int fd = getA0();
-            int index = fd - BASE_FILE_DESCRIPTOR;
-            if (index >= 0 && index < int(files.size()) && files[index]) {
+            uint32_t fd = getA0();
+            uint32_t file_index = fd - BASE_FILE_DESCRIPTOR;
+            if (fd >= BASE_FILE_DESCRIPTOR
+            && file_index < files.size()
+            && files[file_index]) {
                 // RStream file is being closed
-                files[index].reset();
+                files[file_index].reset();
                 setA0(0);  // success
 
             } else if (fd == TICK_DEVICE_FD) {
@@ -357,7 +392,7 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         alt_gp = getGP();
         alt_pc = getA0();
         alt_a0 = getA1();
-        alt_sp = 0xf0000000;  // Top of secondary stack (or one byte above top, technically)
+        alt_sp = MAIN_STACK_TOP - MAX_STACK_BYTES - 0x10000; // Top of secondary stack (see ctor for calculations)
         return ECALL_CONTINUE;
 
     case 5001:
@@ -498,8 +533,15 @@ void KnightsVM::handleInvalidAddress(uint32_t addr)
         allocatePage(second_stack_guard);
         second_stack_guard -= 0x10000;
         if (isPageAllocated(second_stack_guard)) {
+            throw std::runtime_error("Thread stack guard page is allocated (shouldn't happen?)");
+        }
+
+        // Do not allow the secondary stack guard page to sink below its minimum allowed value.
+        // (See comments in KnightsVM constructor for the calculations.)
+        if (second_stack_guard < MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x20000) {
             throw std::runtime_error("Thread stack overflow");
         }
+
     } else {
         RiscVM::handleInvalidAddress(addr);
     }

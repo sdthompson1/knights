@@ -44,7 +44,7 @@
 // To use this, risc_vm.hpp and risc_vm.cpp must first be generated.
 // See the Makefile in this directory.
 
-class KnightsVM : public RiscVM, private TickCallbacks {
+class KnightsVM : private RiscVM, private TickCallbacks {
 public:
     // Constructor.
     // Initial timer should be set to a random value (to facilitate random seeding
@@ -72,6 +72,9 @@ public:
     // has passed, OR some significant event has occurred (e.g. new
     // network data arrived from a client), before starting the next
     // tick.
+
+    // Note: the return value from runTick is always in the 0 to 1000
+    // range (inclusive).
 
     // The VM execution is guaranteed to be deterministic, so if two
     // VMs are given the same "initial_time_ms" in the constructor,

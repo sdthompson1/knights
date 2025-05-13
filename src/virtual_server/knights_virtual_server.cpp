@@ -32,6 +32,7 @@
 #include "knights_vm.hpp"
 #include "rstream.hpp"
 
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -177,6 +178,17 @@ int main(int argc, const char **argv)
 
     KnightsVM vm(time_of_last_tick);
 
+    // Run an initial tick to force everything to load.
+    {
+        unsigned int time0 = timer.getMsec();
+        std::vector<unsigned char> tick_data;
+        TickWriter writer(tick_data, 0);
+        writer.finalize();
+        vm.runTick(tick_data.data(), tick_data.data() + tick_data.size(), NULL);
+        unsigned int time1 = timer.getMsec();
+        std::cout << "Server running. Init took " << time1 - time0 << " ms." << std::endl;
+    }
+
     while (true) {
         // Calculate how long it has been since the last tick, and
         // whether we should force the next tick.
@@ -203,9 +215,6 @@ int main(int argc, const char **argv)
 
             // Update time_of_last_tick.
             time_of_last_tick = new_time;
-
-            // Upper bound of 1000 ms on force_time.
-            if (force_time > 1000) force_time = 1000;
         }
 
         // The tick might have taken some time to run, so let's get an updated time
