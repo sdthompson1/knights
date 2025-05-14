@@ -77,9 +77,6 @@ namespace {
 }
 #endif
 
-// This is a hack for FastForwardUntil
-bool g_hack_fast_forward_flag = false;
-
 class GameConnection {
 public:
     GameConnection(const UTF8String &n, const UTF8String &n2, bool new_obs_flag, int ver,
@@ -607,10 +604,6 @@ namespace {
                     // Schedule the next update
                     const int max_time_to_update = 250;
                     const unsigned int time_of_next_update =
-                        g_hack_fast_forward_flag
-                        ?
-                        timer->getMsec()
-                        :
                         last_time + std::min(max_time_to_update, engine->getTimeToNextUpdate());
 
                     // Sleep until main thread signals us, or until we reach time_of_next_update

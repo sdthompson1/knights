@@ -69,8 +69,6 @@
 #undef max
 #endif
 
-extern bool g_hack_fast_forward_flag;
-
 // This is used when contacting the Metaserver
 const char * user_agent_string = 
     "Knights-Server/" KNIGHTS_VERSION " (" KNIGHTS_PLATFORM "; " KNIGHTS_WEBSITE ")";
