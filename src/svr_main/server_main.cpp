@@ -36,7 +36,6 @@
 #include "metaserver_urls.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
-#include "replay_file.hpp"
 #include "rng.hpp"
 #include "rstream.hpp"
 #include "version.hpp"
@@ -100,9 +99,6 @@ struct Conn {
     boost::shared_ptr<Coercri::NetworkConnection> remote;
 };
 std::vector<Conn> g_conns;
-
-// Fake connections for replays.
-std::map<int, ServerConnection*> g_replay_conns;
 
 // UDP socket for replying to broadcasts.
 boost::shared_ptr<Coercri::UDPSocket> broadcast_socket;
@@ -172,7 +168,7 @@ void KnightsConfigLoader::operator ()()
 
 class LogWriter {
 public:
-    LogWriter(std::ostream &s, std::ostream *b) : str(s), bin_str(b) { }
+    explicit LogWriter(std::ostream &s) : str(s) { }
 
     void addText(const std::string &msg)
     {
@@ -180,18 +176,11 @@ public:
         tbuf1.insert(tbuf1.end(), msg.begin(), msg.end());
     }
 
-    void addBinary(const unsigned char *msg1, int nbytes1, const unsigned char *msg2, int nbytes2)
-    {
-        boost::lock_guard<boost::mutex> lock(mutex);
-        bbuf1.insert(bbuf1.end(), msg1, msg1 + nbytes1);
-        bbuf1.insert(bbuf1.end(), msg2, msg2 + nbytes2);
-    }
-
     void operator()()
     {
         // Loop forever (main thread will send us a thread_interrupted exception when it wants us to shut down).
         while (1) {
-            // Periodically flush the log buffers to disk.
+            // Periodically flush the log buffer to the output stream.
             boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
             flush();
         }
@@ -199,11 +188,10 @@ public:
     
     void flush()
     {
-        // invariant: tbuf2 and bbuf2 are empty at beginning and end of this routine.
+        // invariant: tbuf2 is empty at beginning and end of this routine.
         {
             boost::lock_guard<boost::mutex> lock(mutex);
             tbuf1.swap(tbuf2);
-            bbuf1.swap(bbuf2);
         }
 
         if (!tbuf2.empty()) {
@@ -211,21 +199,14 @@ public:
             str.flush();
             tbuf2.clear();
         }
-        if (!bbuf2.empty() && bin_str) {
-            bin_str->write(reinterpret_cast<char*>(&bbuf2[0]), bbuf2.size());
-            bin_str->flush();
-            bbuf2.clear();
-        }
     }
     
 private:
     boost::mutex mutex;
     std::vector<char> tbuf1, tbuf2;
-    std::vector<unsigned char> bbuf1, bbuf2;
 
-    // the output streams are written to ONLY by this thread.
+    // the output stream is written to ONLY by this thread.
     std::ostream &str;
-    std::ostream *bin_str;
 };
     
 
@@ -236,17 +217,15 @@ private:
 
 class MyLog : public KnightsLog {
 public:
-    MyLog(LogWriter &w, bool do_bin) : lw(w), do_binary(do_bin) { }
+    explicit MyLog(LogWriter &w) : lw(w) { }
 
     virtual void logMessage(const std::string &msg);
-    virtual void logBinary(const char *msg_code, int conn_num, int num_extra_bytes, const char *extra_bytes);
 
 private:
     std::string getTimeString();
     boost::mutex mutex;  // used to protect call to ctime in getTimeString
 
     LogWriter &lw;
-    bool do_binary;
 };
 
 void MyLog::logMessage(const std::string &msg)
@@ -256,28 +235,6 @@ void MyLog::logMessage(const std::string &msg)
     m += msg;
     m += '\n';
     lw.addText(m);
-}
-
-void MyLog::logBinary(const char *msg_code, int arg, int num_extra_bytes, const char *extra_bytes)
-{
-    if (do_binary) {
-
-        unsigned char buf[8 + sizeof(time_t) + sizeof(unsigned int) + sizeof(int) + sizeof(int)];
-
-        // Write msg hdr
-        buf[0] = '#'; buf[1] = 'K'; buf[2] = 'T'; buf[3] = 'S'; buf[4] = '#';
-        buf[5] = msg_code[0]; buf[6] = msg_code[1]; buf[7] = msg_code[2];
-
-        // Write timestamps
-        *reinterpret_cast<time_t*>(buf+8) = time(0);
-        *reinterpret_cast<unsigned int*>(buf+8+sizeof(time_t)) = timer->getMsec();
-        
-        // Write the message data.
-        *reinterpret_cast<int*>(buf+(8+sizeof(time_t)+sizeof(unsigned int))) = arg;
-        *reinterpret_cast<int*>(buf+(8+sizeof(time_t)+sizeof(unsigned int)+sizeof(int))) = num_extra_bytes;
-
-        lw.addBinary(buf, sizeof(buf), reinterpret_cast<const unsigned char*>(extra_bytes), num_extra_bytes);
-    }
 }
 
 std::string MyLog::getTimeString()
@@ -292,13 +249,6 @@ std::string MyLog::getTimeString()
     return result.substr(0, result.length()-1);  // remove final '\n'
 }
 
-
-struct UpdateStruct {
-    std::string game_name;
-    std::deque<int> update_counts;
-    std::deque<int> time_deltas;
-    std::deque<unsigned int> random_seeds;
-};
 
 //
 // Signal Handler.
@@ -371,84 +321,6 @@ bool ProcessIncomingNetMsgs()
     }
 
     return did_something;
-}
-
-bool ProcessReplayFile(ReplayFile & file, std::vector<UpdateStruct*> & update_structs)
-{
-    // Read a message from the replay file
-    std::string msg;
-    int int_arg;
-    std::string extra_bytes;
-    unsigned int msec;
-    file.readMessage(msg, int_arg, extra_bytes, msec);
-
-    g_hack_fast_forward_flag = msec < g_config->getFastForwardUntil();
-    
-    if (msg == "EOF") return false;
-    
-    if (msg == "NCC") {
-        // New client connection (number in int_arg)
-        g_replay_conns[int_arg] = &g_knights_server->newClientConnection("");
-    } else if (msg == "CCC") {
-        // Close client connection (number in int_arg)
-        g_knights_server->connectionClosed(*g_replay_conns[int_arg]);
-        g_replay_conns.erase(int_arg);
-    } else if (msg == "RCV") {
-        // Received a data packet from a client
-        // Conn num in int_arg, data packet in extra_bytes
-        std::vector<unsigned char> net_msg(extra_bytes.size());
-        for (size_t i = 0; i < extra_bytes.size(); ++i) net_msg[i] = static_cast<unsigned char>(extra_bytes[i]);
-        g_knights_server->receiveInputData(*g_replay_conns[int_arg], net_msg);
-    } else if (msg == "NGM") {
-        // New game (game name in extra_bytes)
-
-        std::unique_ptr<std::deque<int> > update_counts;
-        std::unique_ptr<std::deque<int> > time_deltas;
-        std::unique_ptr<std::deque<unsigned int> > random_seeds;
-        
-        // Look for the game in update_structs
-        for (std::vector<UpdateStruct*>::iterator it = update_structs.begin(); it != update_structs.end(); ++it) {
-            if ((*it)->game_name == extra_bytes) {
-                update_counts.reset(new std::deque<int>((*it)->update_counts));
-                time_deltas.reset(new std::deque<int>((*it)->time_deltas));
-                random_seeds.reset(new std::deque<unsigned int>((*it)->random_seeds));
-                update_structs.erase(it);
-                break;
-            }
-        }
-        
-        g_knights_server->startNewGame(LoadKnightsConfig(), extra_bytes, std::move(update_counts), std::move(time_deltas), std::move(random_seeds));
-    } else if (msg == "CGM") {
-        // Close game (game name in extra_bytes)
-        g_knights_server->closeGame(extra_bytes);
-    } else if (msg == "RST") {
-        // Restart message.
-        // TODO.
-    } else if (msg == "QST") {
-        // Quest Setup message
-
-        // first read the game name
-        size_t pos = 0;
-        while (extra_bytes[pos] != '\0') ++pos;
-        std::string game_name = extra_bytes.substr(0, pos);
-        ++pos;  // skip over the null
-
-        // now loop through settings
-        while (pos < extra_bytes.size()) {
-            int item = std::atoi(&extra_bytes[pos]);
-            while (extra_bytes[pos] != '\0') ++pos;
-            ++pos;
-            int choice = std::atoi(&extra_bytes[pos]);
-            while (extra_bytes[pos] != '\0') ++pos;
-            ++pos;
-            g_knights_server->setMenuSelection(game_name, item, choice);
-        }
-        
-    } else if (msg != "RNG" && msg != "UPD") {
-        throw std::runtime_error("Unknown message code!!");
-    }
-
-    return true;
 }
 
 
@@ -849,89 +721,9 @@ int main(int argc, char **argv)
         }
     }
 
-    // Cannot log and replay to same file
-    if (!g_config->getBinaryLogFile().empty() && !g_config->getReplayFile().empty()
-    && g_config->getBinaryLogFile() == g_config->getReplayFile()) {
-        std::cout << "Cannot set BinaryLog and Replay to the same file. Exiting.\n";
-        return 1;
-    }
-
-    // Cannot use metaserver if in replay mode
-    if (g_config->getUseMetaserver() && !g_config->getReplayFile().empty()) {
-        std::cout << "Cannot use metaserver in replay mode. Exiting.\n";
-        return 1;
-    }
-    
-    // Open binary log file if necessary
-    // Open for append so that we don't trash any existing log data.
-    std::unique_ptr<std::ostream> binary_log_stream;
-    if (!g_config->getBinaryLogFile().empty()) {
-        binary_log_stream.reset(new std::ofstream(g_config->getBinaryLogFile().c_str(), std::ios::out | std::ios::binary | std::ios::app));
-        if (!*binary_log_stream) {
-            std::cout << "Failed to open binary log file: " << g_config->getBinaryLogFile() << ". Exiting.\n";
-            return 1;
-        }
-    }
-
-    // If replay mode then do first pass through replay file (to get the update times)
-    // then open file ready for second pass.
-    std::unique_ptr<ReplayFile> replay_file;
-    std::vector<UpdateStruct*> update_structs;
-    if (!g_config->getReplayFile().empty()) {
-
-        std::map<std::string, UpdateStruct*> curr;
-        
-        try {
-            replay_file.reset(new ReplayFile(g_config->getReplayFile(), g_config->getTimestampSize()));
-        } catch (std::exception &e) {
-            std::cout << e.what() << std::endl;
-            return 1;
-        }
-
-        std::string msg;
-        int int_arg;
-        std::string extra_bytes;
-        unsigned int dummy_msec;
-        while (1) {
-            replay_file->readMessage(msg, int_arg, extra_bytes, dummy_msec);
-            if (msg == "EOF") break;
-            if (msg == "NGM") {
-                // new game
-                // extra_bytes is the game name
-
-                // NOTE: This "new" doesn't have a corresponding "delete".
-                // Therefore, we leak memory.
-                // However, we don't really care because the replay mode is only for testing/debugging,
-                // and anyway you only run through this code once at the beginning, therefore we leak
-                // only a constant amount of memory (which we rely on the OS to free at program exit).
-                
-                UpdateStruct *foo = new UpdateStruct;
-                foo->game_name = extra_bytes;
-                update_structs.push_back(foo);
-                curr[extra_bytes] = foo;
-            } else if (msg == "UPD") {
-                // update time stored in int_arg
-                // extra_bytes is the time_delta foll. by the game name
-
-                const int time_delta = *reinterpret_cast<const int*>(extra_bytes.c_str());
-                const std::string game_name = extra_bytes.c_str() + 4;
-
-                curr[game_name]->update_counts.push_back(int_arg);
-                curr[game_name]->time_deltas.push_back(time_delta);
-            } else if (msg == "RNG") {
-                // random seed is stored in int_arg
-                // extra_bytes is the game name
-                curr[extra_bytes]->random_seeds.push_back(static_cast<unsigned int>(int_arg));
-            }
-        }
-
-        // rewind the file
-        replay_file.reset(new ReplayFile(g_config->getReplayFile(), g_config->getTimestampSize()));
-    }
-    
     // Send log msgs to log file, or to cout if no log file specified
-    LogWriter log_writer(log_file_stream.get() ? *log_file_stream : std::cout, binary_log_stream.get());
-    MyLog my_log(log_writer, binary_log_stream.get() ? true : false);
+    LogWriter log_writer(log_file_stream.get() ? *log_file_stream : std::cout);
+    MyLog my_log(log_writer);
     
     // Start up the logging thread.
     boost::thread logging_thread(boost::ref(log_writer));
@@ -959,16 +751,6 @@ int main(int argc, char **argv)
         // Write initial log messages.
         my_log.logMessage(std::string("\tKnights Server version ") + KNIGHTS_VERSION + " starting...");
 
-        if (binary_log_stream.get()) {
-            my_log.logMessage(std::string("\tRecording games to file: ") + g_config->getBinaryLogFile());
-        }
-        if (replay_file.get()) {
-            my_log.logMessage(std::string("\tReplaying from: ") + g_config->getReplayFile());
-        }
-
-        // Write "Restart" message to binary log
-        my_log.logBinary("RST", 0, 0, 0);
-    
         // Start the KnightsConfig loading thread
         KnightsConfigLoader knights_config_loader;
         boost::thread loader_thread(boost::ref(knights_config_loader));
@@ -1021,12 +803,7 @@ int main(int argc, char **argv)
             while (net_driver->doEvents()) did_something = true;
 
             // Forward any incoming net messages.
-            if (replay_file.get()) g_knights_server->setMsgCountUpdateFlag(false);  // turn off msg count updates for msgs that are not from replay file
             did_something = ProcessIncomingNetMsgs() || did_something;
-            if (replay_file.get()) g_knights_server->setMsgCountUpdateFlag(true);
-            
-            // Replay events from the replay file.
-            if (replay_file.get()) did_something = ProcessReplayFile(*replay_file, update_structs) || did_something;
 
             // Reply to any broadcast messages.
             if (g_config->getReplyToBroadcast()) {
@@ -1039,7 +816,7 @@ int main(int argc, char **argv)
                 last_misc_update = time_now;
 
                 // Spawn new games / clean up old games if needed.
-                if (!replay_file.get()) CheckGames(knights_config_loader);
+                CheckGames(knights_config_loader);
             
                 // Update the g_num_players variable
                 const int num_players = g_knights_server->getNumberOfPlayers();

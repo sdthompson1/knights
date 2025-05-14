@@ -54,12 +54,11 @@ class KnightsLog;
 
 class KnightsGame {
 public:
-    explicit KnightsGame(boost::shared_ptr<KnightsConfig> config, boost::shared_ptr<Coercri::Timer> tmr,
-                         bool allow_split_screen, KnightsLog *knights_log, 
-                         const std::string &game_name,
-                         std::unique_ptr<std::deque<int> > update_counts,
-                         std::unique_ptr<std::deque<int> > time_deltas,
-                         std::unique_ptr<std::deque<unsigned int> > random_seeds);
+    explicit KnightsGame(boost::shared_ptr<KnightsConfig> config,
+                         boost::shared_ptr<Coercri::Timer> timer,
+                         bool allow_split_screen,
+                         KnightsLog *knights_log,
+                         const std::string &game_name);
     ~KnightsGame();
 
     // get information
@@ -90,7 +89,6 @@ public:
     bool requestQuit(GameConnection &);
     void setPauseMode(bool p); 
     void setMenuSelection(GameConnection &, int item_num, int new_choice_num);
-    void setMenuSelectionWork(GameConnection *, int item_num, int new_choice_num);  // not usu. called directly (replays are the exception).
     void randomQuest(GameConnection &);
     void requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids);
     void requestSounds(Coercri::OutputByteBuf &, const std::vector<int> &ids);
@@ -111,9 +109,6 @@ public:
 
     void setPingTime(GameConnection &conn, int ping);
 
-    // This is used for replays
-    void setMsgCountUpdateFlag(bool on);
-    
 private:
     boost::shared_ptr<KnightsGameImpl> pimpl;
 };

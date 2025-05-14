@@ -92,8 +92,6 @@ Config::Config(std::istream &str)
     max_players = 100;  // reasonable default. can't set this too high else enet_host_create will fail.
     metaserver = true;
     broadcast = true;
-    timestamp_size = sizeof(time_t);
-    fast_forward_until = 0;
 
     // Now load the config file.
     // Throws ConfigError if there is a problem.
@@ -146,14 +144,6 @@ Config::Config(std::istream &str)
             knights_data_dir = value;
         } else if (lkey == "logfile") {
             log_file = value;
-        } else if (lkey == "binarylog") {
-            binary_log_file = value;
-        } else if (lkey == "replay") {
-            replay_file = value;
-        } else if (lkey == "timestampsize") {
-            timestamp_size = StrToInt(line_counter, value);
-        } else if (lkey == "fastforwarduntil") {
-            fast_forward_until = StrToUnsignedInt(line_counter, value);
         } else {
             throw ConfigError(line_counter, "Unknown setting: " + key);
         }

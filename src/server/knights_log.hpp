@@ -37,10 +37,6 @@ public:
 
     // NOTE: logMessage may be called concurrently from different threads.
     virtual void logMessage(const std::string &msg) = 0;
-
-    // binary log msgs. used for debugging.
-    // note: msg_code must be a 3 byte string.
-    virtual void logBinary(const char * msg_code, int conn_num, int num_extra_bytes, const char * extra_bytes) = 0;
 };
 
 #endif

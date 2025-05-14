@@ -62,17 +62,4 @@ private:
 };
 
 
-// This implementation logs the quest in a QST binary log message
-
-class RandomQuestMenuListener : public MenuListener {
-public:
-    explicit RandomQuestMenuListener(std::ostream &str_) : str(str_) { }
-    virtual void settingChanged(int item_num, const char *item_key,
-                                int choice_num, const char *choice_string,
-                                const std::vector<int> &allowed_choices);
-private:
-    std::ostream &str;
-};
-
-
 #endif

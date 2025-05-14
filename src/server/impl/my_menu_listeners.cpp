@@ -67,13 +67,3 @@ void LogMenuListener::settingChanged(int item_num, const char *item_key,
     str << ", " << item_key << "=" << choice_string;
 }
 
-
-// --------- RandomQuestMenuListener ------------------
-
-void RandomQuestMenuListener::settingChanged(int item_num, const char *item_key,
-                                             int choice_num, const char *choice_string,
-                                             const std::vector<int> &allowed_choices)
-{
-    str << item_num << '\0';
-    str << choice_num << '\0';
-}

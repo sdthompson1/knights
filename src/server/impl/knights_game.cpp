@@ -162,12 +162,6 @@ public:
     volatile bool startup_signal;
     std::string startup_err_msg;
 
-    int msg_counter;  // used for logging when 'update' events occur.
-    std::unique_ptr<std::deque<int> > update_counts;   // used for playback.
-    std::unique_ptr<std::deque<int> > time_deltas;     // ditto
-    std::unique_ptr<std::deque<unsigned int> > random_seeds; // ditto
-    bool msg_count_update_flag;
-
     // Condition variable used to wake up the update thread when a control comes in
     // (instead of polling, like it used to do).
     // Note, this is controlled using the same mutex (my_mutex) as the rest of the data.
@@ -201,27 +195,6 @@ namespace {
         msg = msg_orig.substr(idx);
     }
 
-    void WaitForMsgCounter(KnightsGameImpl &kg)
-    {
-        if (kg.update_counts.get()) {
-#ifdef VIRTUAL_SERVER
-            throw std::runtime_error("WaitForMsgCounter: Not supported");
-#else
-            while (1) {
-                {
-                    boost::lock_guard<boost::mutex> lock(kg.my_mutex);
-                    if (kg.update_counts->empty() || kg.update_counts->front() > kg.msg_counter) {
-                        // no update waiting
-                        return;
-                    }
-                }
-                // sleep until the update gets completed.
-                boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-            }
-#endif
-        }
-    }
-    
     void Announcement(KnightsGameImpl &kg, const std::string &msg_latin1, bool is_err = false)
     {
         for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
@@ -484,35 +457,20 @@ namespace {
 
                 unsigned int seed;
 
-                if (kg.random_seeds.get() && !kg.random_seeds->empty()) {
-#ifdef VIRTUAL_SERVER
-                    throw std::runtime_error("kg.random_seeds was set unexpectedly");
-#endif
-                    seed = kg.random_seeds->front();
-                    kg.random_seeds->pop_front();
-                } else {
-                    // Note: there is no point calling g_rng.setSeed in the virtual
-                    // server, because in the virtual server, the RNG is global
-                    // (not thread-specific) and has already been seeded elsewhere.
-                    // (In non-virtual-server builds, by contrast, the RNG is thread-
-                    // specific and therefore has to be seeded here.)
 #ifndef VIRTUAL_SERVER
-                    // Construct seed from current time, and also using some
-                    // extra randomness from std::random_device if available.
-                    seed = timer->getMsec();
-                    seed += static_cast<unsigned int>(time(0));
-                    std::random_device rand;
-                    seed ^= rand();
-#endif
-                }
-
-#ifndef VIRTUAL_SERVER
+                // Construct seed from current time, and also using some
+                // extra randomness from std::random_device if available.
+                // Note: there is no point calling g_rng.setSeed in the virtual
+                // server, because in the virtual server, the RNG is global
+                // (not thread-specific) and has already been seeded elsewhere.
+                // (In non-virtual-server builds, by contrast, the RNG is thread-
+                // specific and therefore has to be seeded here.)
+                seed = timer->getMsec();
+                seed += static_cast<unsigned int>(time(0));
+                std::random_device rand;
+                seed ^= rand();
                 g_rng.setSeed(seed);
 #endif
-                
-                // log what the seed was.
-                if (kg.knights_log) kg.knights_log->logBinary("RNG", static_cast<int>(seed), 
-                                                              kg.game_name.length(), kg.game_name.c_str());
 
                 // Setup house colours and player names
                 // Also count how many players on each team.
@@ -756,16 +714,12 @@ namespace {
         // else it wants to do).
         bool update(int time_delta)
         {
-            int msg_counter;  // find out the value of the msg counter at the time when we read the controls (etc).
-
             // read controls (and see if paused)
             {
 #ifndef VIRTUAL_SERVER
                 boost::lock_guard<boost::mutex> lock(kg.my_mutex);
 #endif
 
-                msg_counter = kg.msg_counter;
-                
                 // Delete any "dead" observers.
                 for (std::vector<int>::iterator it = kg.delete_observer_nums.begin(); it != kg.delete_observer_nums.end(); ++it) {
                     callbacks->rmObserverNum(*it);
@@ -804,25 +758,6 @@ namespace {
                 // (and therefore pause should be allowed)
                 if (kg.pause_mode && kg.allow_split_screen) {
                     return true;  // ignore the update
-                }
-
-                // Check whether we are in "replay" mode, and if so, don't allow the update if the msg_counter hasn't reached
-                // the correct value yet.
-                if (kg.update_counts.get()) {
-#ifdef VIRTUAL_SERVER
-                    throw std::runtime_error("update_counts: not supported");
-#else
-                    if (kg.update_counts->empty() || kg.update_counts->front() > msg_counter) {
-                        boost::this_thread::interruption_point(); // ensure main thread can interrupt us
-                        return true;  // ignore the update
-                    } else {
-                        kg.update_counts->pop_front();
-
-                        // overwrite the time delta
-                        time_delta = kg.time_deltas->front();
-                        kg.time_deltas->pop_front();
-                    }
-#endif
                 }
 
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
@@ -881,17 +816,6 @@ namespace {
 
             // run the update
             engine->update(time_delta, *callbacks);
-
-            // log the msg_counter at the time of the update, and the time delta
-            // note: int_arg stores the msg counter
-            // we store the time delta in the string part.
-            if (kg.knights_log) {
-                std::vector<char> dat;
-                dat.resize(kg.game_name.length() + sizeof(time_delta));
-                *reinterpret_cast<int*>(&dat[0]) = time_delta;
-                std::copy(kg.game_name.begin(), kg.game_name.end(), &dat[sizeof(time_delta)]);
-                kg.knights_log->logBinary("UPD", msg_counter, dat.size(), &dat[0]);
-            }
 
             // copy the results back to the GameConnection buffers
             {
@@ -1374,10 +1298,7 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
                          boost::shared_ptr<Coercri::Timer> tmr,
                          bool allow_split_screen,
                          KnightsLog *knights_log,
-                         const std::string &game_name,
-                         std::unique_ptr<std::deque<int> > update_counts,
-                         std::unique_ptr<std::deque<int> > time_deltas,
-                         std::unique_ptr<std::deque<unsigned int> > random_seeds)
+                         const std::string &game_name)
     : pimpl(new KnightsGameImpl)
 {
     pimpl->knights_config = config;
@@ -1397,12 +1318,6 @@ KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
     
     pimpl->knights_log = knights_log;
     pimpl->game_name = game_name;
-
-    pimpl->msg_counter = 0;
-    if (update_counts.get()) pimpl->update_counts = std::move(update_counts);
-    if (time_deltas.get()) pimpl->time_deltas = std::move(time_deltas);
-    if (random_seeds.get()) pimpl->random_seeds = std::move(random_seeds);
-    pimpl->msg_count_update_flag = true;
 
     pimpl->wake_up_flag = false;
 }
@@ -1471,13 +1386,10 @@ bool KnightsGame::getObsFlag(GameConnection &conn) const
 GameConnection & KnightsGame::newClientConnection(const UTF8String &client_name, const UTF8String &client_name_2, 
                                                   int client_version, bool approach_based_controls, bool action_bar_controls)
 {
-    WaitForMsgCounter(*pimpl);
-
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
-    
+
     // check preconditions. (caller should have checked these already.)
     if (client_name.empty()) throw UnexpectedError("invalid client name");
     for (game_conn_vector::const_iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
@@ -1588,15 +1500,12 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
     int player_num = 0;
     int num_player_connections = 0;
 
-    WaitForMsgCounter(*pimpl);
-    
     {
 #ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-        if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
-        
-        // Find the client in our connections list. 
+
+        // Find the client in our connections list.
         game_conn_vector::iterator where = std::find_if(pimpl->connections.begin(), 
                                                         pimpl->connections.end(), ShPtrEq<GameConnection>(&conn));
         ASSERT(where != pimpl->connections.end());
@@ -1696,11 +1605,9 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_o
 
     // Forward the message to everybody (including the originator)
     // (Except team chat msgs which go to team mates only)
-    WaitForMsgCounter(*pimpl);
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
 
         if (is_team) {
@@ -1733,9 +1640,6 @@ void KnightsGame::setReady(GameConnection &conn, bool ready)
 
     // (We know the game is not running at this point, so no need to lock mutex)
     
-    WaitForMsgCounter(*pimpl);
-    
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag) {
         // Set conn.is_ready and send out notifications
         DoSetReady(*pimpl, conn, ready);
@@ -1753,12 +1657,9 @@ void KnightsGame::setHouseColour(GameConnection &conn, int hse_col)
     if (pimpl->update_thread.joinable()) return;  // Game is running
 #endif
 
-    WaitForMsgCounter(*pimpl);
-
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag) {
         conn.house_colour = hse_col;
 
@@ -1778,11 +1679,9 @@ void KnightsGame::setHouseColour(GameConnection &conn, int hse_col)
     
 void KnightsGame::finishedLoading(GameConnection &conn)
 {
-    WaitForMsgCounter(*pimpl);
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     conn.finished_loading = true;
 }
 
@@ -1790,14 +1689,11 @@ void KnightsGame::readyToEnd(GameConnection &conn)
 {
     if (!pimpl->game_over) return;
 
-    WaitForMsgCounter(*pimpl);
-    
     bool all_ready = false;
     {
 #ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-        if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
         if (!conn.obs_flag) {
             conn.ready_to_end = true;
             all_ready = true;
@@ -1830,14 +1726,11 @@ bool KnightsGame::requestQuit(GameConnection &conn)
     if (!pimpl->update_thread.joinable()) return false;  // Game is not running
 #endif
 
-    WaitForMsgCounter(*pimpl);
-    
     bool obs_flag;
     {
 #ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-        if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
         obs_flag = conn.obs_flag;
     }
     if (!obs_flag) {
@@ -1871,11 +1764,9 @@ bool KnightsGame::requestQuit(GameConnection &conn)
 
 void KnightsGame::setPauseMode(bool pm)
 {
-    WaitForMsgCounter(*pimpl);
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     pimpl->pause_mode = pm;
 }
 
@@ -1887,44 +1778,28 @@ void KnightsGame::setMenuSelection(GameConnection &conn, int item_num, int choic
     if (pimpl->update_thread.joinable()) return;  // Game is running
 #endif
 
-    WaitForMsgCounter(*pimpl);
-
     // validate input
     const int num_items = pimpl->knights_config->getMenu().getNumItems();
     if (item_num < 0 || item_num >= num_items) return;
     const MenuItem & item = pimpl->knights_config->getMenu().getItem(item_num);
     if (!item.isNumeric() && (choice_num < 0 || choice_num >= item.getNumChoices())) return;
 
-    // update msgcounter, also check we are a player
+    // check we are a player
     // note: we know update thread is not running (see above) so no need to lock
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can adjust the menu.
 
     // send out the settings change(s) to all players
-    setMenuSelectionWork(&conn, item_num, choice_num);
-}
-
-void KnightsGame::setMenuSelectionWork(GameConnection *conn, int item_num, int choice_num)
-{
-#ifdef VIRTUAL_SERVER
-    if (vs_game_thread_running()) return;   // Game is running
-#else
-    if (pimpl->update_thread.joinable()) return;  // game is running
-#endif
-
-    // since we now know the update thread is not running, there is no need to lock.
-
     MyMenuListener listener;
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
         listener.addBuf((*it)->output_data);
     }
     pimpl->knights_config->changeMenuSetting(item_num, choice_num, listener);
     
-    if (conn && listener.wereThereChanges()) {
+    if (listener.wereThereChanges()) {
         // send announcement to all players
         const MenuItem & item = pimpl->knights_config->getMenu().getItem(item_num);
         std::ostringstream str;
-        str << conn->name.asLatin1() << " set \"" << item.getTitleString() << "\" to ";
+        str << conn.name.asLatin1() << " set \"" << item.getTitleString() << "\" to ";
         
         if (item.isNumeric()) {
             str << choice_num;
@@ -1947,12 +1822,9 @@ void KnightsGame::randomQuest(GameConnection &conn)
     if (pimpl->update_thread.joinable()) return;  // Game is running
 #endif
     
-    WaitForMsgCounter(*pimpl);
-
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (conn.obs_flag) return;   // only players can set quests.
 
     MyMenuListener listener;
@@ -1966,18 +1838,6 @@ void KnightsGame::randomQuest(GameConnection &conn)
 
     // deactivate all ready flags
     DeactivateReadyFlags(*pimpl);
-
-    // Also have to save the quest in the binary log
-    // (This is so that replays work correctly. It is no good just having 
-    // "random quest" in the log, we need to save what the quest was actually set to.)
-    if (pimpl->knights_log) {
-        std::ostringstream random_quest_str;
-        random_quest_str << pimpl->game_name << '\0';
-        RandomQuestMenuListener random_quest_listener(random_quest_str);
-        pimpl->knights_config->getCurrentMenuSettings(random_quest_listener);
-        const std::string &s = random_quest_str.str();
-        pimpl->knights_log->logBinary("QST", 0, s.length(), s.c_str());
-    }
 }
 
 void KnightsGame::requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids)
@@ -2030,12 +1890,9 @@ void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control
     if (!pimpl->update_thread.joinable()) return; // Game is not running
 #endif
 
-    WaitForMsgCounter(*pimpl);
-
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag && p >= 0 && p < (conn.name2.empty() ? 1 : 2)) {
         const UserControl * control = control_num == 0 ? 0 : pimpl->controls.at(control_num - 1);
         conn.control_queue[p].push_back(control);
@@ -2051,12 +1908,9 @@ void KnightsGame::requestSpeechBubble(GameConnection &conn, bool show)
     if (!pimpl->update_thread.joinable()) return;  // Game is not running
 #endif
 
-    WaitForMsgCounter(*pimpl);
-
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
     if (!conn.obs_flag) {
         conn.speech_request = true;
         conn.speech_bubble = show;
@@ -2090,13 +1944,10 @@ void KnightsGame::endOfMessagePacket()
 
 void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
 {
-    WaitForMsgCounter(*pimpl);
-
 #ifndef VIRTUAL_SERVER
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-    if (pimpl->msg_count_update_flag) pimpl->msg_counter++;
-    
+
     if (conn.obs_flag == new_obs_flag) return;  // Nothing to do
     
     // If the game is in progress then don't allow players to change obs-flag setting
@@ -2202,12 +2053,4 @@ void KnightsGame::setPingTime(GameConnection &conn, int ping)
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
     conn.ping_time = ping;
-}
-
-void KnightsGame::setMsgCountUpdateFlag(bool on)
-{
-#ifndef VIRTUAL_SERVER
-    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
-    pimpl->msg_count_update_flag = on;
 }

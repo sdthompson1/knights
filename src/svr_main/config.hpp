@@ -64,12 +64,7 @@ public:
 
     const std::string & getKnightsDataDir() const { return knights_data_dir; }  // empty means use default (DATA_DIR or knights_data)
     const std::string & getLogFile() const { return log_file; }  // empty means print log to stdout.
-    const std::string & getBinaryLogFile() const { return binary_log_file; }  // empty means do not create a binary log file.
-    const std::string & getReplayFile() const { return replay_file; }
 
-    int getTimestampSize() const { return timestamp_size; }
-    unsigned int getFastForwardUntil() const { return fast_forward_until; }
-    
 private:
     int port;
     std::string description, motd_file, old_motd_file;
@@ -79,10 +74,6 @@ private:
     std::string password;
     std::string knights_data_dir;
     std::string log_file;
-    std::string binary_log_file;
-    std::string replay_file;
-    int timestamp_size;
-    unsigned int fast_forward_until;
 };
     
 #endif

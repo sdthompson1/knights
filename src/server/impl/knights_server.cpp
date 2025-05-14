@@ -260,9 +260,6 @@ ServerConnection & KnightsServer::newClientConnection(std::string ip)
     // log that we got a new connection (can't show player name yet).
     if (pimpl->knights_log) {
         pimpl->knights_log->logMessage("\tincoming connection\taddr=" + ip);
-
-        // also save to binary log
-        pimpl->knights_log->logBinary("NCC", new_conn->unique_id, 0, 0);
     }
 
     return *new_conn;
@@ -273,11 +270,6 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 {
     // This is where we decode incoming messages from the client
 
-    // First save the msg to the binary log
-    if (pimpl->knights_log) {
-        pimpl->knights_log->logBinary("RCV", conn.unique_id, data.size(), reinterpret_cast<const char*>(&data[0]));
-    }
-    
     std::string error_msg;
     
     try {
@@ -759,9 +751,6 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
     // log a message
     if (pimpl->knights_log) {
         pimpl->knights_log->logMessage(game_name + "\tplayer disconnected\taddr=" + ip + ", player=" + name.asUTF8());
-
-        // binary log
-        pimpl->knights_log->logBinary("CCC", unique_id, 0, 0);
     }
 }
 
@@ -773,10 +762,7 @@ void KnightsServer::setPingTime(ServerConnection &conn, int ping)
 }
 
 void KnightsServer::startNewGame(boost::shared_ptr<KnightsConfig> config,
-                                 const std::string &game_name,
-                                 std::unique_ptr<std::deque<int> > update_counts,
-                                 std::unique_ptr<std::deque<int> > time_deltas,
-                                 std::unique_ptr<std::deque<unsigned int> > random_seeds)
+                                 const std::string &game_name)
 {
     if (game_name.empty()) throw UnexpectedError("Game name not set");
     
@@ -788,8 +774,7 @@ void KnightsServer::startNewGame(boost::shared_ptr<KnightsConfig> config,
         boost::shared_ptr<KnightsGame> game(new KnightsGame(config, pimpl->timer,
                                                             pimpl->allow_split_screen,
                                                             pimpl->knights_log,
-                                                            game_name,
-                                                            std::move(update_counts), std::move(time_deltas), std::move(random_seeds)));
+                                                            game_name));
         pimpl->games.insert(std::make_pair(game_name, game));
 
         // Notify players about the new game.
@@ -800,11 +785,6 @@ void KnightsServer::startNewGame(boost::shared_ptr<KnightsConfig> config,
             buf.writeVarInt(game->getNumPlayers());
             buf.writeVarInt(game->getNumObservers());
             buf.writeUbyte(game->getStatus());
-        }
-
-        // Log it
-        if (pimpl->knights_log) {
-            pimpl->knights_log->logBinary("NGM", 0, game_name.size(), game_name.c_str());
         }
     }
 }
@@ -824,11 +804,6 @@ bool KnightsServer::closeGame(const std::string &game_name)
             buf.writeString(game_name);
         }
 
-        // Log it
-        if (pimpl->knights_log) {
-            pimpl->knights_log->logBinary("CGM", 0, game_name.size(), game_name.c_str());
-        }
-        
         return true;
     } else {
         return false;
@@ -850,14 +825,6 @@ std::vector<GameInfo> KnightsServer::getRunningGames() const
     return result;
 }
 
-void KnightsServer::setMenuSelection(const std::string &game_name, int item, int choice)
-{
-    game_map::iterator it = pimpl->games.find(game_name);
-    if (it != pimpl->games.end()) {
-        it->second->setMenuSelectionWork(0, item, choice);
-    }
-}
-
 int KnightsServer::getNumberOfPlayers() const
 {
     return int(pimpl->connections.size());
@@ -866,11 +833,4 @@ int KnightsServer::getNumberOfPlayers() const
 void KnightsServer::setKnightsLog(KnightsLog *klog)
 {
     pimpl->knights_log = klog;
-}
-
-void KnightsServer::setMsgCountUpdateFlag(bool on)
-{
-    for (game_map::iterator it = pimpl->games.begin(); it != pimpl->games.end(); ++it) {
-        it->second->setMsgCountUpdateFlag(on);
-    }
 }

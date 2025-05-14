@@ -18,18 +18,12 @@
     <ClCompile Include="..\..\src\svr_main\config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\svr_main\replay_file.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\svr_main\server_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\svr_main\config.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\svr_main\replay_file.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

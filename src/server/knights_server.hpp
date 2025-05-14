@@ -90,10 +90,7 @@ public:
     
     // Start a new game
     void startNewGame(boost::shared_ptr<KnightsConfig> config,
-                      const std::string &game_name,
-                      std::unique_ptr<std::deque<int> > update_counts = std::unique_ptr<std::deque<int> >(),
-                      std::unique_ptr<std::deque<int> > time_deltas = std::unique_ptr<std::deque<int> >(),
-                      std::unique_ptr<std::deque<unsigned int> > random_seeds = std::unique_ptr<std::deque<unsigned int> >() );
+                      const std::string &game_name);
     
     // Destroy an empty game. This will fail if anyone is currently connected to the game.
     // Returns true if successful.
@@ -101,10 +98,6 @@ public:
 
     // Get the list of running games.
     std::vector<GameInfo> getRunningGames() const;
-
-    // Set a menu selection
-    // Used for replays.
-    void setMenuSelection(const std::string &game_name, int item, int choice);
 
     
     //
@@ -123,8 +116,6 @@ public:
     // not (currently) propagated to existing KnightsGames when this is called.
     void setKnightsLog(KnightsLog *);
 
-
-    void setMsgCountUpdateFlag(bool on);
     
 private:
     std::unique_ptr<KnightsServerImpl> pimpl;

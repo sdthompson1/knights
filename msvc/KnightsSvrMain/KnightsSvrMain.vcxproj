@@ -102,12 +102,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\svr_main\config.cpp" />
-    <ClCompile Include="..\..\src\svr_main\replay_file.cpp" />
     <ClCompile Include="..\..\src\svr_main\server_main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\svr_main\config.hpp" />
-    <ClInclude Include="..\..\src\svr_main\replay_file.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Coercri\Coercri.vcxproj">
