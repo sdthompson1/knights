@@ -325,13 +325,16 @@ void Player::setControl(const Control *ctrl)
     // second control just gets lost!). Other controls are replaced
     // immediately.
     if (control == 0 || control->isContinuous()) {
-        control = ctrl;
+        if (control != ctrl) { // skip update if we are not changing anything
 
-        // Wake up the KnightTask immediately, rather than waiting for its poll interval
-        // (this reduces control latency)
-        TaskManager &tm(Mediator::instance().getTaskManager());
-        tm.rmTask(knight_task);
-        tm.addTask(knight_task, TP_NORMAL, tm.getGVT());
+            control = ctrl;
+
+            // Wake up the KnightTask immediately, rather than waiting for its poll interval
+            // (this reduces control latency)
+            TaskManager &tm(Mediator::instance().getTaskManager());
+            tm.rmTask(knight_task);
+            tm.addTask(knight_task, TP_NORMAL, tm.getGVT());
+        }
     }
 }
 
