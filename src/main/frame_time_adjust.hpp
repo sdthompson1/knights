@@ -1,9 +1,9 @@
 /*
- * find_server_screen.hpp
+ * frame_time_adjust.hpp
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -21,26 +21,11 @@
  *
  */
 
-#ifndef FIND_SERVER_SCREEN_HPP
-#define FIND_SERVER_SCREEN_HPP
+#ifndef FRAME_TIME_ADJUST_HPP
+#define FRAME_TIME_ADJUST_HPP
 
-#include "screen.hpp"
+unsigned int MsecToFrameCount(unsigned int msec, unsigned int fps);
 
-#include <string>
-
-class FindServerScreenImpl;
-
-class FindServerScreen : public Screen {
-public:
-    FindServerScreen(const std::string &title, bool internet);
-    virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
-    virtual void update();
-
-private:
-    boost::shared_ptr<FindServerScreenImpl> pimpl;
-    std::string title;
-    bool internet;
-};
+unsigned int FrameCountToMsec(unsigned int frames, unsigned int fps);
 
 #endif
-

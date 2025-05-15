@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\src\main\find_server_screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\main\frame_time_adjust.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\main\game_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

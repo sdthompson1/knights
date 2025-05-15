@@ -83,11 +83,6 @@ InGameScreen::~InGameScreen()
     }
 }
 
-unsigned int InGameScreen::getUpdateInterval()
-{
-    return 1000 / static_cast<unsigned int>(knights_app.getConfigMap().getInt("fps"));
-}
-
 void InGameScreen::setupDisplay()
 {
     using std::pair;

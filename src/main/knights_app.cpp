@@ -27,6 +27,7 @@
 #include "credits_screen.hpp"
 #include "error_screen.hpp"
 #include "file_cache.hpp"
+#include "frame_time_adjust.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
 #include "gfx_resizer_compose.hpp"
@@ -208,9 +209,6 @@ public:
     // we do not want these shared, we want to be sure there is only one copy of each:
     std::unique_ptr<Screen> current_screen, requested_screen;
     
-    unsigned int last_time;  // last time update() was called
-    unsigned int update_interval;
-    
     bool running;
 
     boost::shared_ptr<GfxManager> gfx_manager;
@@ -277,7 +275,7 @@ public:
     bool autostart;
 
     // functions
-    KnightsAppImpl() : last_time(0), update_interval(0), running(true), player_name_changed(false) { }
+    KnightsAppImpl() : running(true), player_name_changed(false) { }
 
     void saveOptions();
     
@@ -540,10 +538,6 @@ void KnightsApp::executeScreenChange()
         // Initialize the new screen, and bring up the gui if required
         const bool requires_gui = pimpl->current_screen->start(*this, pimpl->window, *pimpl->gui);
         if (requires_gui) pimpl->cg_listener->enableGui();
-        
-        // Reset timer.
-        pimpl->last_time = pimpl->timer->getMsec();
-        pimpl->update_interval = pimpl->current_screen->getUpdateInterval();
 
         // Ensure the screen gets repainted
         pimpl->window->invalidateAll();
@@ -890,12 +884,18 @@ void KnightsApp::runKnights()
     // Error Handling system.
     std::string error;
     int num_errors = 0;
-    
+
+    // Timing - now keyed to "frames" to try to give smoother animation
+    const unsigned int fps = std::min((unsigned int)1000,
+                                      (unsigned int)(pimpl->config_map.getInt("fps")));
+    unsigned int last_update_time = pimpl->timer->getMsec() - 1000; // Fake initial value, 1 second ago
+    unsigned int last_update_frame_count = MsecToFrameCount(last_update_time, fps);
+
     // Main Loop
     while (pimpl->running) {
 
         bool did_something = false;
-        
+
         if (!error.empty() && num_errors > 100) {
             // Too many errors
             // Abort game.
@@ -935,28 +935,44 @@ void KnightsApp::runKnights()
 
             // Also: do the broadcast msgs
             did_something = pimpl->processBroadcastMsgs() || did_something;
-            
-            // Do updates
-            if (pimpl->update_interval > 0) {
-                const unsigned int time_now = pimpl->timer->getMsec();
-                unsigned int time_since_last_update = time_now - pimpl->last_time;
 
-                // if it's time for an update then do one.
-                if (time_since_last_update >= pimpl->update_interval) {
-                    pimpl->last_time += pimpl->update_interval;
-                    time_since_last_update -= pimpl->update_interval;
-                    if (time_since_last_update > pimpl->update_interval) {
-                        pimpl->last_time = time_now - pimpl->update_interval;  // don't let it get too far behind.
-                    }
-                    pimpl->current_screen->update();
-                    did_something = true;
-                }
+
+            // Determine if update is needed
+            UpdateType update_type = pimpl->current_screen->getUpdateType();
+            unsigned int time_now = pimpl->timer->getMsec();
+            unsigned int frame_count_now = MsecToFrameCount(time_now, fps);
+            bool need_update = false;
+            if (update_type == UPDATE_TYPE_REALTIME) {
+                need_update = (frame_count_now != last_update_frame_count);
+            } else {
+                need_update = (int(time_now - last_update_time) > 100);
             }
 
-            // Draw the screen if necessary
-            const bool screen_change_imminent = pimpl->requested_screen.get() != pimpl->current_screen.get() 
-                   && pimpl->requested_screen.get();
-            if (pimpl->window->needsRepaint() && !screen_change_imminent) {
+            // Do update if needed
+            if (need_update) {
+                pimpl->current_screen->update();
+                did_something = true;
+                last_update_time = time_now;
+                last_update_frame_count = frame_count_now;
+            }
+
+
+            // Determine if draw is needed
+            bool need_draw = false;
+            if (update_type == UPDATE_TYPE_REALTIME) {
+                need_draw = need_update;
+            } else {
+                need_draw = pimpl->window->needsRepaint();
+            }
+
+            // Block drawing if the screen is about to change
+            if (pimpl->requested_screen.get() != pimpl->current_screen.get()
+            && pimpl->requested_screen.get()) {
+                need_draw = false;
+            }
+
+            // Draw screen if needed
+            if (need_draw) {
                 std::unique_ptr<Coercri::GfxContext> gc = pimpl->window->createGfxContext();
                 gc->clearClipRectangle();
                 gc->clearScreen(Coercri::Color(0,0,0));
@@ -966,15 +982,18 @@ void KnightsApp::runKnights()
                 did_something = true;
             }
 
+
             // Sleep if necessary (so that we don't consume 100% CPU).
             if (!did_something) {
                 unsigned int delay = 0u;
-                if (pimpl->update_interval == 0) {
+                if (update_type == UPDATE_TYPE_INFREQUENT) {
                     delay = 20u;
                 } else {
-                    const unsigned int time_since_last_update = pimpl->timer->getMsec() - pimpl->last_time;
-                    if (time_since_last_update < pimpl->update_interval) {
-                        delay = pimpl->update_interval - time_since_last_update;
+                    const unsigned int next_update_time =
+                        FrameCountToMsec(last_update_frame_count + 1u, fps);
+                    const int time_to = next_update_time - pimpl->timer->getMsec();
+                    if (time_to > 0) {
+                        delay = time_to;
                     }
                 }
                 if (delay > 20u) delay = 20u;

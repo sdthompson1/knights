@@ -37,7 +37,6 @@ public:
     explicit MenuScreen(boost::shared_ptr<KnightsClient> knights_client, bool extended,
                         std::string saved_chat = std::string());
     virtual bool start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
-    virtual unsigned int getUpdateInterval() { return 50; }
     virtual void update();
     
 private:

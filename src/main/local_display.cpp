@@ -301,6 +301,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
       timer(timer_),
       last_time(-1),
       game_end_time(-1),
+      fps(std::min(1000, cfg.getInt("fps"))),
 
       chat_list(chat_list_),
       ingame_player_list(ingame_player_list_),
@@ -432,13 +433,23 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_
     }
 }
 
+unsigned int LocalDisplay::getAdjustedTime()
+{
+    // Get time now, but adjusted to the start of a "frame boundary"
+    // The aim is to try to get smoother animation by making sure that all drawn frames
+    // are roughly equally spaced in time
+    const unsigned int time_now = timer.getMsec();
+    const unsigned int frame_count = MsecToFrameCount(time_now, fps);
+    return FrameCountToMsec(frame_count, fps);
+}
+
 void LocalDisplay::recalculateTime(bool is_paused, int remaining)
 {
-    const int time_now = timer.getMsec();
+    const int time_now = getAdjustedTime();
     if (last_time == -1) last_time = time_now;  // initialization.
     const int time_delta = time_now - last_time;
     last_time = time_now;
-    
+
     if (!is_paused) {
         time += time_delta;
         for (int plyr_num = 0; plyr_num < nplayers; ++plyr_num) {

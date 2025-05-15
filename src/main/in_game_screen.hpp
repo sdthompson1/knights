@@ -57,7 +57,7 @@ public:
                  bool single_player_, bool tutorial);
     virtual bool start(KnightsApp &, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     virtual ~InGameScreen();
-    virtual unsigned int getUpdateInterval();
+    virtual UpdateType getUpdateType() { return UPDATE_TYPE_REALTIME; }
     virtual void update();
     virtual void draw(Coercri::GfxContext &gc);
 

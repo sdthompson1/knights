@@ -37,7 +37,6 @@ public:
     ~LobbyScreen();
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
-    virtual unsigned int getUpdateInterval();
    
 private:
     // prevent copying

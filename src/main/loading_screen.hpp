@@ -42,7 +42,6 @@ public:
                            bool autostart);
     virtual ~LoadingScreen();
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window>, gcn::Gui &);
-    virtual unsigned int getUpdateInterval() { return 50; }
     virtual void update();
     virtual void draw(Coercri::GfxContext &gc);
 

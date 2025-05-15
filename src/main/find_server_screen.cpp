@@ -922,8 +922,3 @@ void FindServerScreen::update()
 {
     if (pimpl) pimpl->doUpdate();
 }
-
-unsigned int FindServerScreen::getUpdateInterval()
-{
-    return 100;
-}

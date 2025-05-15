@@ -204,6 +204,7 @@ public:
 private:
     void initialize(int nplayers, const std::vector<UTF8String> &names, 
                     const Graphic *, const Graphic *, const Graphic *, const Graphic *);
+    unsigned int getAdjustedTime();
     void setMenuControl(int plyr, MapDirection d, const UserControl *ctrl, const UserControl *prev);
     void setupGui(int chat_area_x, int chat_area_y, int chat_area_width, int chat_area_height,
                   int plyr_list_x, int plyr_list_y, int plyr_list_width, int plyr_list_height,
@@ -313,6 +314,7 @@ private:
     Coercri::Timer & timer;
     int last_time;
     int game_end_time; // -1 if not set or else the value of 'time' when the game should end.
+    unsigned int fps;
 
     // gui stuff
     ChatList &chat_list;

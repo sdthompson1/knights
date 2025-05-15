@@ -402,8 +402,3 @@ void LobbyScreen::update()
         pimpl->window->invalidateAll();
     }
 }
-
-unsigned int LobbyScreen::getUpdateInterval()
-{
-    return 100;
-}

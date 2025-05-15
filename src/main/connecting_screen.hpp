@@ -37,7 +37,6 @@ public:
     ConnectingScreen(const std::string &address, int port, bool join_lan_game, const UTF8String &player_name);
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
-    virtual unsigned int getUpdateInterval() { return 50; }
 private:
     boost::shared_ptr<ConnectingScreenImpl> pimpl;
 };
