@@ -447,21 +447,14 @@ namespace {
                 // We can do whatever we want to kg (without needing to lock it) before we set that flag.
                 // After the flag is set, need to lock kg before accessing it.
 
-                // create the random number generator for this thread
 #ifndef VIRTUAL_SERVER
+                // If VIRTUAL_SERVER is *not* defined then each thread has its own
+                // RNG, therefore we need to initialize and seed it now.
                 g_rng.initialize();
-#endif
 
-                unsigned int seed;
-
-#ifndef VIRTUAL_SERVER
                 // Construct seed from current time, and also using some
                 // extra randomness from std::random_device if available.
-                // Note: there is no point calling g_rng.setSeed in the virtual
-                // server, because in the virtual server, the RNG is global
-                // (not thread-specific) and has already been seeded elsewhere.
-                // (In non-virtual-server builds, by contrast, the RNG is thread-
-                // specific and therefore has to be seeded here.)
+                unsigned int seed;
                 seed = timer->getMsec();
                 seed += static_cast<unsigned int>(time(0));
                 std::random_device rand;
@@ -582,73 +575,7 @@ namespace {
 
                 // Go into game loop. NOTE: This will run forever until the main thread interrupts us
                 // (or an exception occurs, or update() returns false).
-                unsigned int time_now = timer->getMsec();
-                unsigned int last_time = time_now;
-                while (1) {
-                    // Invariant: time_now should be set to the current time at this point,
-                    // and last_time should be the last time we updated the KnightsEngine.
-
-                    // Work out how long since the last update
-                    int update_delta_t = time_now - last_time;
-
-                    // Don't try to run excessively long updates
-                    if (update_delta_t > 1000) {
-                        update_delta_t = 1000;
-                    }
-
-                    // Run an update
-                    const bool should_continue = update(update_delta_t);
-                    if (!should_continue) break;   // End of game
-                    last_time = time_now;
-
-                    // Schedule the next update
-                    const int max_time_to_update = 250;
-                    const unsigned int time_of_next_update =
-                        last_time + std::min(max_time_to_update, engine->getTimeToNextUpdate());
-
-                    // Sleep until main thread signals us, or until we reach time_of_next_update
-                    while (1)
-                    {
-                        // Get an updated time_now
-                        time_now = timer->getMsec();
-
-                        // Work out how long we need to wait
-                        int wait_time = time_of_next_update - time_now;
-                        
-                        if (wait_time <= 0) {
-                            break;  // The update has arrived!
-                        }
-
-                        // OK, so we need to wait for a bit. Lock mutex
-#ifndef VIRTUAL_SERVER
-                        boost::unique_lock<boost::mutex> lock(kg.my_mutex);
-#endif
-
-                        // The call to timed_wait UNLOCKS the mutex, WAITS for either the time to expire, or
-                        // the main loop to signal us, then LOCKS the mutex again before returning.
-#ifdef VIRTUAL_SERVER
-                        vs_switch_to_main_thread(wait_time);
-#else
-                        kg.wake_up_cond_var.timed_wait(lock, 
-                            boost::posix_time::milliseconds(wait_time));
-#endif
-
-                        if (kg.wake_up_flag) {
-                            // The reason that timed_wait() returned was that the main loop signalled us.
-                            // Acknowledge the signal (by clearing the flag), then break (which will force
-                            // the next update -- as well as releasing the mutex).
-                            kg.wake_up_flag = false;
-                            time_now = timer->getMsec();  // maintain invariant
-                            break;
-                        }
-
-                        // Go round again.
-                        // If the return from timed_wait was spurious, then the "if wait_time<=0" check will
-                        // fail and we will go round again.
-                        // If the return from timed_wait was because the timer expired, then the "if" will
-                        // succeed and we will break out, and do the next update.
-                    }
-                }
+                mainGameLoop();
 
             } catch (boost::thread_interrupted &) {
                 // Allow this to go through. The code that interrupted us knows what it's doing...
@@ -702,269 +629,330 @@ namespace {
             }
         }
 
+        void mainGameLoop()
+        {
+            // Get current wall clock time.
+            unsigned int wall_clock_time = timer->getMsec();
+
+            // Track "simulated time" inside the dungeon.
+
+            // Initially, we imagine that the dungeon clocks are
+            // synchronised with the actual wall clock time
+            // (timer->getMsec()).
+
+            // Our goal will be to keep advancing dungeon_time to try
+            // to keep up with wall clock time, by making "update"
+            // calls.
+            unsigned int dungeon_time = wall_clock_time;
+
+            while (1) {
+                // Invariant: at this point, wall_clock_time equals
+                // the current value of timer->getMsec(), or as close
+                // as possible to it.
+
+                // The dungeon time is always at, or behind, wall
+                // clock time. Calculate exactly how much behind it
+                // is.
+                int update_delta_t = wall_clock_time - dungeon_time;
+
+                // Simulate the dungeon forward in time until it
+                // catches up with wall_clock_time (if necessary).
+                if (update_delta_t > 0) {
+
+                    // We cap the actual dungeon update to 1000 ms;
+                    // this prevents excessively long updates.
+                    int capped_update_delta_t = update_delta_t > 1000 ? 1000 : update_delta_t;
+
+                    // Do the actual game update. This simulates all
+                    // knights, monsters, etc., for a period of
+                    // "capped_update_delta_t".
+                    const bool should_continue = update(capped_update_delta_t);
+
+                    // We always advance dungeon_time by the full
+                    // amount, even if the update was capped.
+                    dungeon_time += update_delta_t;
+
+                    // Is the game over? If so, we are done here.
+                    if (!should_continue) return;
+
+                }
+
+                // Note: at this point, dungeon_time should be equal
+                // to wall_clock_time. (It could also be greater, but
+                // only if wall_clock_time ran backwards, which should
+                // never happen.)
+
+                // Schedule the next update.
+                const unsigned int next_update_time = wall_clock_time + calculateUpdateDelay();
+
+                // Sleep until next_update_time, or until something of
+                // interest happens (e.g. a new player input is
+                // received).
+                wall_clock_time = sleepUntil(next_update_time);
+            }
+        }
+
+        int calculateUpdateDelay() const
+        {
+            const int delay = engine->getTimeToNextUpdate();
+            const int cap = 250;
+            if (delay > cap) {
+                // Make sure to do at least one update every "cap" ms,
+                // just to keep things moving.
+                return cap;
+            } else if (delay < 1) {
+                // Always delay at least 1 millisecond, to avoid loops
+                // where we just busy-wait until the timer advances by
+                // one!
+                return 1;
+            } else {
+                return delay;
+            }
+        }
+
+        // This sleeps until either the main thread signals us, or
+        // timer->getMsec() reaches (approximately) target_time. It
+        // returns the new value of timer->getMsec().
+        unsigned int sleepUntil(unsigned int target_time)
+        {
+            while (true) {
+
+                // Calculate how long we need to wait
+                unsigned int time_now = timer->getMsec();
+                int wait_time = target_time - time_now;
+
+                // If wait time is zero or negative, then we are done
+                if (wait_time <= 0) {
+                    return time_now;
+                }
+
+                // Otherwise, sleep for an appropriate period.
+#ifndef VIRTUAL_SERVER
+                boost::unique_lock<boost::mutex> lock(kg.my_mutex);
+#endif
+
+                // The call to timed_wait UNLOCKS the mutex, WAITS for
+                // either the time to expire, or the main loop to
+                // signal us, then LOCKS the mutex again before
+                // returning.
+#ifdef VIRTUAL_SERVER
+                vs_switch_to_main_thread(wait_time);
+#else
+                kg.wake_up_cond_var.timed_wait(lock,
+                    boost::posix_time::milliseconds(wait_time));
+#endif
+
+                if (kg.wake_up_flag) {
+                    // The reason that timed_wait() returned was that
+                    // the main loop signalled us. Acknowledge the
+                    // signal (by clearing the flag), then return
+                    // early.
+                    kg.wake_up_flag = false;
+                    return timer->getMsec();
+                }
+
+                // Loop again; this will either return (if the
+                // target_time has been reached) or go back to sleep
+                // (if the wake was spurious).
+            }
+        }
+
+        // Main function for dungeon update.
         // Returns true if the game should continue or false if we should quit.
-        // Note, if returning false, update() is responsible for sending out SERVER_GOTO_MENU (or whatever
-        // else it wants to do).
+        // Note, if returning false, update() is responsible for sending out
+        // SERVER_GOTO_MENU (or whatever else it wants to do).
         bool update(int time_delta)
         {
-            // read controls (and see if paused)
-            {
-#ifndef VIRTUAL_SERVER
-                boost::lock_guard<boost::mutex> lock(kg.my_mutex);
-#endif
+            // Pre-update activities
+            if (!preUpdate()) return true;
 
-                // Delete any "dead" observers.
-                for (std::vector<int>::iterator it = kg.delete_observer_nums.begin(); it != kg.delete_observer_nums.end(); ++it) {
-                    callbacks->rmObserverNum(*it);
-                }
-                kg.delete_observer_nums.clear();
-                
-                // Delete any disconnected players
-                for (std::vector<int>::iterator it = kg.players_to_eliminate.begin(); it != kg.players_to_eliminate.end(); ++it) {
-                    engine->eliminatePlayer(*it);
-                }
-                kg.players_to_eliminate.clear();
-
-                // Put eliminated players into obs mode (Trac #10)
-                std::vector<int> put_into_obs_mode = callbacks->getPlayersToPutIntoObsMode();
-                for (std::vector<int>::const_iterator p = put_into_obs_mode.begin(); p != put_into_obs_mode.end(); ++p) {
-                    for (game_conn_vector::iterator c = kg.connections.begin(); c != kg.connections.end(); ++c) {
-                        if ((*c)->player_num == *p) {
-                            // Send him the 'go into obs mode' command
-                            Coercri::OutputByteBuf buf((*c)->output_data);
-                            buf.writeUbyte(SERVER_GO_INTO_OBS_MODE);
-                            buf.writeUbyte(kg.all_player_names.size());
-                            for (std::vector<UTF8String>::const_iterator it = kg.all_player_names.begin(); it != kg.all_player_names.end(); ++it) {
-                                buf.writeString(it->asUTF8());
-                            }
-
-                            // Set his obs_num to zero (which means "observer num not allocated yet")
-                            // and his obs_flag to true. (Leave player_num unchanged.)
-                            (*c)->obs_flag = true;
-                            (*c)->observer_num = 0;
-                            (*c)->cancel_obs_mode_after_game = true;
-                        }
-                    }
-                }
-                
-                // we assume that allow_split_screen means this is a local game
-                // (and therefore pause should be allowed)
-                if (kg.pause_mode && kg.allow_split_screen) {
-                    return true;  // ignore the update
-                }
-
-                for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    if (!(*it)->obs_flag) {
-                        for (int p = 0; p < ((*it)->name2.empty() ? 1 : 2); ++p) {
-
-                            const UserControl *final_ctrl = 0;
-
-                            for (std::vector<const UserControl*>::const_iterator c = (*it)->control_queue[p].begin();
-                            c != (*it)->control_queue[p].end(); ++c) {
-                                final_ctrl = *c;
-                                engine->setControl((*it)->player_num + p, *c);
-                            }
-                            (*it)->control_queue[p].clear();
-
-                            // if the final control is continuous then re-insert it into the queue for next time.
-                            if (final_ctrl && final_ctrl->isContinuous()) {
-                                (*it)->control_queue[p].push_back(final_ctrl);
-                            }
-
-                            // speech bubble handling.
-                            if ((*it)->speech_request) {
-                                (*it)->speech_request = false;
-                                engine->setSpeechBubble((*it)->player_num, (*it)->speech_bubble);
-                            }
-                        }
-                    } else {
-                        // He is an observer. If he has not been allocated an observer_num
-                        // yet then give him one, and send him the startup commands. (but only if
-                        // he has finished loading.)
-                        if ((*it)->observer_num == 0 && (*it)->finished_loading) {
-                            std::vector<unsigned char> & buf = (*it)->output_data;
-
-                            for (int p = 0; p < nplayers; ++p) {
-                                buf.push_back(SERVER_SWITCH_PLAYER);
-                                buf.push_back(p);
-
-                                // This will send mini map and status display updates to ALL connected players/observers
-                                // (even those who already have this data).
-                                //
-                                // (For the tile/item updates, there is an optimization in ViewManager -- the "force" 
-                                // flag -- which should mean that only the new observer gets these updates, at least; 
-                                // although I haven't explicitly tested this.)
-                                //
-                                // A previous version of this code used a hack to try to avoid the unnecessary updates,
-                                // but that caused a bug (Trac #115), so it has been removed, and we just accept the 
-                                // unnecessary updates for now.
-                                engine->catchUp(p, *callbacks);
-                            }
-                            
-                            (*it)->observer_num = callbacks->allocObserverNum();
-                        }
-                    }
-                }
-            }
-
-            // run the update
+            // Update the dungeon
             engine->update(time_delta, *callbacks);
 
-            // copy the results back to the GameConnection buffers
-            {
+            // Post-update activities
+            return postUpdate(time_delta);
+        }
+
+        // Prepare for a dungeon update, e.g. remove disconnected players, put
+        // eliminated players into observer mode, catch up new observers.
+        // Returns true if should continue to the main update, or false if game is paused.
+        bool preUpdate()
+        {
 #ifndef VIRTUAL_SERVER
-                boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+            boost::lock_guard<boost::mutex> lock(kg.my_mutex);
 #endif
-                for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    if ((*it)->obs_flag) {
-                        if ((*it)->observer_num > 0) {
-                            // Send observer cmds to that player. (We're assuming observation is always allowed at the moment.)
-                            callbacks->appendObserverCmds((*it)->observer_num, (*it)->output_data);
+
+            // Delete any "dead" observers.
+            for (std::vector<int>::iterator it = kg.delete_observer_nums.begin(); it != kg.delete_observer_nums.end(); ++it) {
+                callbacks->rmObserverNum(*it);
+            }
+            kg.delete_observer_nums.clear();
+
+            // Delete any disconnected players
+            for (std::vector<int>::iterator it = kg.players_to_eliminate.begin(); it != kg.players_to_eliminate.end(); ++it) {
+                engine->eliminatePlayer(*it);
+            }
+            kg.players_to_eliminate.clear();
+
+            // Put eliminated players into obs mode (Trac #10)
+            std::vector<int> put_into_obs_mode = callbacks->getPlayersToPutIntoObsMode();
+            for (std::vector<int>::const_iterator p = put_into_obs_mode.begin(); p != put_into_obs_mode.end(); ++p) {
+                for (game_conn_vector::iterator c = kg.connections.begin(); c != kg.connections.end(); ++c) {
+                    if ((*c)->player_num == *p) {
+                        // Send him the 'go into obs mode' command
+                        Coercri::OutputByteBuf buf((*c)->output_data);
+                        buf.writeUbyte(SERVER_GO_INTO_OBS_MODE);
+                        buf.writeUbyte(kg.all_player_names.size());
+                        for (std::vector<UTF8String>::const_iterator it = kg.all_player_names.begin(); it != kg.all_player_names.end(); ++it) {
+                            buf.writeString(it->asUTF8());
                         }
-                    } else {
-                        const bool split_screen = !(*it)->name2.empty();
-                        if (split_screen) {
-                            // Select player 0 for split screen mode
-                            (*it)->output_data.push_back(SERVER_SWITCH_PLAYER);
-                            (*it)->output_data.push_back(0);
+
+                        // Set his obs_num to zero (which means "observer num not allocated yet")
+                        // and his obs_flag to true. (Leave player_num unchanged.)
+                        (*c)->obs_flag = true;
+                        (*c)->observer_num = 0;
+                        (*c)->cancel_obs_mode_after_game = true;
+                    }
+                }
+            }
+
+            // Detect whether the game is paused
+            // (Pausing is only allowed in split-screen mode)
+            if (kg.pause_mode && kg.allow_split_screen) {
+                return false;  // Do not proceed any further
+            }
+
+            // Check for observers that need to catch up
+            for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                if ((*it)->obs_flag) {
+                    // If this player has not been allocated an observer_num yet, then assign them
+                    // one, and send the startup commands. (But only if they have finished loading.)
+                    if ((*it)->observer_num == 0 && (*it)->finished_loading) {
+                        std::vector<unsigned char> & buf = (*it)->output_data;
+
+                        for (int p = 0; p < nplayers; ++p) {
+                            buf.push_back(SERVER_SWITCH_PLAYER);
+                            buf.push_back(p);
+
+                            // This will send mini map and status display updates to ALL connected players/observers
+                            // (even those who already have this data).
+                            //
+                            // (For the tile/item updates, there is an optimization in ViewManager -- the "force"
+                            // flag -- which should mean that only the new observer gets these updates, at least;
+                            // although I haven't explicitly tested this.)
+                            //
+                            // A previous version of this code used a hack to try to avoid the unnecessary updates,
+                            // but that caused a bug (Trac #115), so it has been removed, and we just accept the
+                            // unnecessary updates for now.
+                            engine->catchUp(p, *callbacks);
                         }
 
-                        const int buf_size_before_p0 = (*it)->output_data.size();
-                        callbacks->appendPlayerCmds((*it)->player_num, (*it)->output_data);
+                        (*it)->observer_num = callbacks->allocObserverNum();
+                    }
+                }
+            }
 
-                        if (split_screen) {
-                            if ((*it)->output_data.size() == buf_size_before_p0) {
-                                // can remove the SWITCH_PLAYER 0 cmd
-                                (*it)->output_data.pop_back();
-                                (*it)->output_data.pop_back();
-                            }
+            // Ready to proceed with the actual update!
+            return true;
+        }
 
-                            // Select player 1 for split screen mode
-                            (*it)->output_data.push_back(SERVER_SWITCH_PLAYER);
-                            (*it)->output_data.push_back(1);
+        // Do stuff that needs to happen after the dungeon has caught up to the current
+        // wall clock time, like inputting player actions, and copying any outputs back to
+        // the GameConnection buffers (ready for sending to the network).
+        // Returns true if game is still running, or false if it has ended.
+        bool postUpdate(int time_delta)
+        {
+#ifndef VIRTUAL_SERVER
+            boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
 
-                            // Send player 1's data
-                            const int buf_size_before_p1 = (*it)->output_data.size();
-                            callbacks->appendPlayerCmds((*it)->player_num + 1, (*it)->output_data);
+            // Read control inputs
+            for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                if (!(*it)->obs_flag) {
+                    for (int p = 0; p < ((*it)->name2.empty() ? 1 : 2); ++p) {
 
-                            if ((*it)->output_data.size() == buf_size_before_p1) {
-                                // can remove the SWITCH_PLAYER 1 cmd
-                                (*it)->output_data.pop_back();
-                                (*it)->output_data.pop_back();
-                            }
+                        const UserControl *final_ctrl = 0;
+
+                        for (std::vector<const UserControl*>::const_iterator c = (*it)->control_queue[p].begin();
+                        c != (*it)->control_queue[p].end();
+                        ++c) {
+                            final_ctrl = *c;
+                            engine->setControl((*it)->player_num + p, *c);
+                        }
+                        (*it)->control_queue[p].clear();
+
+                        // if the final control is continuous then re-insert it into the queue for next time.
+                        if (final_ctrl && final_ctrl->isContinuous()) {
+                            (*it)->control_queue[p].push_back(final_ctrl);
+                        }
+
+                        // speech bubble handling.
+                        if ((*it)->speech_request) {
+                            (*it)->speech_request = false;
+                            engine->setSpeechBubble((*it)->player_num, (*it)->speech_bubble);
                         }
                     }
                 }
-                callbacks->clearCmds();
             }
 
-            // do player list update every N seconds, or if someone has died (total skulls has changed)
+            // Copy output data back to GameConnection buffers
+            for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                if ((*it)->obs_flag) {
+                    if ((*it)->observer_num > 0) {
+                        // Send observer cmds to that player. (We're assuming observation is always allowed at the moment.)
+                        callbacks->appendObserverCmds((*it)->observer_num, (*it)->output_data);
+                    }
+                } else {
+                    const bool split_screen = !(*it)->name2.empty();
+                    if (split_screen) {
+                        // Select player 0 for split screen mode
+                        (*it)->output_data.push_back(SERVER_SWITCH_PLAYER);
+                        (*it)->output_data.push_back(0);
+                    }
+
+                    const int buf_size_before_p0 = (*it)->output_data.size();
+                    callbacks->appendPlayerCmds((*it)->player_num, (*it)->output_data);
+
+                    if (split_screen) {
+                        if ((*it)->output_data.size() == buf_size_before_p0) {
+                            // can remove the SWITCH_PLAYER 0 cmd
+                            (*it)->output_data.pop_back();
+                            (*it)->output_data.pop_back();
+                        }
+
+                        // Select player 1 for split screen mode
+                        (*it)->output_data.push_back(SERVER_SWITCH_PLAYER);
+                        (*it)->output_data.push_back(1);
+
+                        // Send player 1's data
+                        const int buf_size_before_p1 = (*it)->output_data.size();
+                        callbacks->appendPlayerCmds((*it)->player_num + 1, (*it)->output_data);
+
+                        if ((*it)->output_data.size() == buf_size_before_p1) {
+                            // can remove the SWITCH_PLAYER 1 cmd
+                            (*it)->output_data.pop_back();
+                            (*it)->output_data.pop_back();
+                        }
+                    }
+                }
+            }
+            callbacks->clearCmds();
+
+            // Do player list update every N seconds, or if someone has died (total skulls has changed).
             const int total_skulls = engine->getSkullsPlusKills();
             time_to_player_list_update -= time_delta;
             if (time_to_player_list_update <= 0 || total_skulls != prev_total_skulls) {
-
-                std::vector<PlayerInfo> player_list;
-                engine->getPlayerList(player_list);
-
-#ifndef VIRTUAL_SERVER
-                boost::lock_guard<boost::mutex> lock(kg.my_mutex);
-#endif
-
-                // first job: remove any players who don't have a corresponding connection.
-                // (e.g. this can happen if a player disconnects after they are eliminated from the game.)
-                for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                    const int num = player_list[idx].player_num;
-                    bool found = false;
-                    for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                        if ((*it)->player_num == num) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) {
-                        ++idx;
-                    } else {
-                        player_list.erase(player_list.begin() + idx);
-                    }
-                }
-
-                // associate a ping time with each player
-                // -- Only do this if the timer ran out, not if we are updating following a death,
-                // otherwise it looks strange when the pings update just because someone died.
-                if (time_to_player_list_update <= 0) {
-                    for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                        const int num = player_list[idx].player_num;
-                        for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                            if ((*it)->player_num == num) {
-                                pings[(*it)->name] = (*it)->ping_time;
-                            }
-                        }
-                    }
-                }
-
-                // any eliminated player should have (Eliminated) after their name
-                for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                    if (player_list[idx].eliminated) {
-                        player_list[idx].name += UTF8String::fromUTF8(" (Eliminated)");
-                    }
-                }
-
-                // now add observers to the list (Trac #26)
-                for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    if ((*it)->player_num == -1) {
-                        ASSERT((*it)->obs_flag);  // when game is running, player_num == -1 implies obs_flag
-                        PlayerInfo pi;
-                        pi.name = (*it)->name + UTF8String::fromUTF8(" (Observer)");
-                        pi.house_colour = Coercri::Color(0,0,0);
-                        pi.player_num = -1;
-                        pi.kills = -1;
-                        pi.deaths = -1;
-                        pi.frags = -1000;
-                        pi.eliminated = false;
-                        player_list.push_back(pi);
-                        pings[pi.name] = (*it)->ping_time;
-                    }
-                }
-
-                // get the time remaining as well.
-                const int time_remaining = engine->getTimeRemaining();
-
-                // now send out the updates
-                for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    Coercri::OutputByteBuf buf((*it)->output_data);
-                    buf.writeUbyte(SERVER_PLAYER_LIST);
-                    buf.writeVarInt(player_list.size());
-                    for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                        buf.writeString(player_list[idx].name.asUTF8());
-                        buf.writeUbyte(player_list[idx].house_colour.r);
-                        buf.writeUbyte(player_list[idx].house_colour.g);
-                        buf.writeUbyte(player_list[idx].house_colour.b);
-                        buf.writeVarInt(player_list[idx].kills);
-                        buf.writeVarInt(player_list[idx].deaths);
-                        buf.writeVarInt(player_list[idx].frags);
-                        buf.writeVarInt(pings[player_list[idx].name]);
-                    }
-
-                    if (time_remaining > -1) {
-                        buf.writeUbyte(SERVER_TIME_REMAINING);
-                        buf.writeVarInt(time_remaining);
-                    }
-                }
-
-                // Reset the update timers etc
+                doPlayerListUpdate();
                 prev_total_skulls = total_skulls;
                 if (time_to_player_list_update <= 0) time_to_player_list_update = 3000;  // 3 seconds
             }
 
-            // poll to see if the game is over.
+            // Check to see if the game is over
             if (!game_over_sent && callbacks->isGameOver()) {
-#ifndef VIRTUAL_SERVER
-                boost::lock_guard<boost::mutex> lock(kg.my_mutex);
-#endif
                 kg.game_over = true;
                 game_over_sent = true;
                 time_to_force_quit = 60000;
-                
+
                 // find names of all players, and the winner
                 std::vector<UTF8String> loser_names;
                 UTF8String winner_name;
@@ -978,7 +966,7 @@ namespace {
                         // note: name2 not supported here currently.
                     }
                 }
-                
+
                 if (kg.knights_log) {
                     std::string msg;
                     msg = kg.game_name + "\tgame won\t";
@@ -992,7 +980,8 @@ namespace {
                 }
             }
 
-            // 'force quit' countdown. this forces the winner/loser screen to close after a certain time (Trac #7)
+            // "Force quit" countdown. This forces the winner/loser
+            // screen to close after a certain time (Trac #7).
             if (time_to_force_quit > 0) {
                 time_to_force_quit -= time_delta;
                 if (time_to_force_quit <= 0) {
@@ -1004,7 +993,98 @@ namespace {
                 }
             }
 
-            return true;  // game loop should continue
+            // Let the game continue!
+            return true;
+        }
+
+        // Player list update function - this is called every few seconds or
+        // when the number of kills changes.
+        // The mutex is locked when this is called.
+        void doPlayerListUpdate()
+        {
+            std::vector<PlayerInfo> player_list;
+            engine->getPlayerList(player_list);
+
+            // First job: remove any players who don't have a corresponding connection.
+            // (e.g. this can happen if a player disconnects after they are eliminated from the game.)
+            for (size_t idx = 0; idx < player_list.size(); ++idx) {
+                const int num = player_list[idx].player_num;
+                bool found = false;
+                for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                    if ((*it)->player_num == num) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    ++idx;
+                } else {
+                    player_list.erase(player_list.begin() + idx);
+                }
+            }
+
+            // Associate a ping time with each player.
+            // -- Only do this if the timer ran out, not if we are updating following a death,
+            // otherwise it looks strange when the pings update just because someone died.
+            if (time_to_player_list_update <= 0) {
+                for (size_t idx = 0; idx < player_list.size(); ++idx) {
+                    const int num = player_list[idx].player_num;
+                    for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                        if ((*it)->player_num == num) {
+                            pings[(*it)->name] = (*it)->ping_time;
+                        }
+                    }
+                }
+            }
+
+            // any eliminated player should have (Eliminated) after their name
+            for (size_t idx = 0; idx < player_list.size(); ++idx) {
+                if (player_list[idx].eliminated) {
+                    player_list[idx].name += UTF8String::fromUTF8(" (Eliminated)");
+                }
+            }
+
+            // now add observers to the list (Trac #26)
+            for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                if ((*it)->player_num == -1) {
+                    ASSERT((*it)->obs_flag);  // when game is running, player_num == -1 implies obs_flag
+                    PlayerInfo pi;
+                    pi.name = (*it)->name + UTF8String::fromUTF8(" (Observer)");
+                    pi.house_colour = Coercri::Color(0,0,0);
+                    pi.player_num = -1;
+                    pi.kills = -1;
+                    pi.deaths = -1;
+                    pi.frags = -1000;
+                    pi.eliminated = false;
+                    player_list.push_back(pi);
+                    pings[pi.name] = (*it)->ping_time;
+                }
+            }
+
+            // get the time remaining as well.
+            const int time_remaining = engine->getTimeRemaining();
+
+            // now send out the updates
+            for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                Coercri::OutputByteBuf buf((*it)->output_data);
+                buf.writeUbyte(SERVER_PLAYER_LIST);
+                buf.writeVarInt(player_list.size());
+                for (size_t idx = 0; idx < player_list.size(); ++idx) {
+                    buf.writeString(player_list[idx].name.asUTF8());
+                    buf.writeUbyte(player_list[idx].house_colour.r);
+                    buf.writeUbyte(player_list[idx].house_colour.g);
+                    buf.writeUbyte(player_list[idx].house_colour.b);
+                    buf.writeVarInt(player_list[idx].kills);
+                    buf.writeVarInt(player_list[idx].deaths);
+                    buf.writeVarInt(player_list[idx].frags);
+                    buf.writeVarInt(pings[player_list[idx].name]);
+                }
+
+                if (time_remaining > -1) {
+                    buf.writeUbyte(SERVER_TIME_REMAINING);
+                    buf.writeVarInt(time_remaining);
+                }
+            }
         }
 
     private:

@@ -84,7 +84,7 @@ std::vector<unsigned char> TickNetwork::prepareTickData(unsigned int time_since_
     bool need_ping_report = false;
     if (time_until_next_ping_report <= 0) {
         need_ping_report = true;
-        time_until_next_ping_report = 5000;  // Interval between ping reports
+        time_until_next_ping_report = 3000;  // Interval between ping reports (See also time_to_player_list_update in knights_game.cpp)
     }
 
     // Make an empty tick data buffer
