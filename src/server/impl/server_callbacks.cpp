@@ -32,6 +32,7 @@
 #include "sound.hpp"
 #include "user_control.hpp"
 
+#include <iterator>
 #include <limits>
 
 ServerCallbacks::ServerCallbacks(int nplayers)
