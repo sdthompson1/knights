@@ -26,6 +26,7 @@
 #include "action_bar.hpp"
 #include "config_map.hpp"
 #include "controller.hpp"
+#include "frame_time_adjust.hpp"
 #include "game_manager.hpp"  // for ChatList
 #include "gfx_manager.hpp"
 #include "gfx_resizer.hpp"
