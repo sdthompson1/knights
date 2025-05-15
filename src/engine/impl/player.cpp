@@ -326,6 +326,12 @@ void Player::setControl(const Control *ctrl)
     // immediately.
     if (control == 0 || control->isContinuous()) {
         control = ctrl;
+
+        // Wake up the KnightTask immediately, rather than waiting for its poll interval
+        // (this reduces control latency)
+        TaskManager &tm(Mediator::instance().getTaskManager());
+        tm.rmTask(knight_task);
+        tm.addTask(knight_task, TP_NORMAL, tm.getGVT());
     }
 }
 
@@ -569,10 +575,11 @@ bool Player::respawn()
     // Cancel any respawn task that might still be in progress.
     this->respawn_task = shared_ptr<RespawnTask>();
 
-    // Create a KnightTask so that the knight can be controlled.
-    shared_ptr<KnightTask> ktsk(new KnightTask(*this));
+    // Cancel/delete existing KnightTask and recreate it
     TaskManager &tm(mediator.getTaskManager());
-    tm.addTask(ktsk, TP_NORMAL, tm.getGVT() + 1);
+    tm.rmTask(knight_task);
+    knight_task.reset(new KnightTask(*this));
+    tm.addTask(knight_task, TP_NORMAL, tm.getGVT() + 1);
     
     // Respawn was successful!
     return true;

@@ -47,6 +47,7 @@ class HealingTask;
 class Item;
 class ItemType;
 class Knight;
+class KnightTask;
 class MiniMap;
 class RespawnTask;
 class RoomMap;
@@ -242,6 +243,7 @@ private:
     weak_ptr<Knight> knight;
     shared_ptr<RespawnTask> respawn_task;
     shared_ptr<HealingTask> healing_task;
+    shared_ptr<KnightTask> knight_task;
 
     shared_ptr<const ColourChange> secured_home_cc;
 
