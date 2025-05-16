@@ -44,6 +44,8 @@
 #ifndef COERCRI_TIMER_HPP
 #define COERCRI_TIMER_HPP
 
+#include <cstdint>
+
 namespace Coercri {
 
     // NOTE: Timer is thread safe -- multiple threads are allowed to
@@ -53,11 +55,15 @@ namespace Coercri {
     public:
         virtual ~Timer() { }
 
-        // Get current "clock time" in milliseconds -- note does not necessarily start from zero.
+        // Get current "clock time" in milliseconds or microseconds.
+        // Note the clock does not necessarily start from zero.
         virtual unsigned int getMsec() = 0;
+        virtual uint64_t getUsec() = 0;
 
-        // Sleep for at least the given number of milliseconds. Yields the CPU in the meantime.
+        // Sleep for at least the given number of milliseconds or microseconds.
+        // Yields the CPU in the meantime.
         virtual void sleepMsec(int msec) = 0;
+        virtual void sleepUsec(int64_t msec) = 0;
     };
 
 }

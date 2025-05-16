@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -41,6 +41,8 @@
 #include "timer/timer.hpp"
 
 #include "boost/scoped_ptr.hpp"
+
+#include <cstdint>
 
 class ActionBar;
 class ChatList;
@@ -81,7 +83,6 @@ public:
                  int nplyrs,
                  bool deathmatch_mode,
                  const std::vector<UTF8String> &player_names_,
-                 Coercri::Timer &timer,
                  ChatList &chat_list_,
                  ChatList &ingame_player_list_,
                  ChatList &quest_rqmts_list_,
@@ -104,8 +105,9 @@ public:
     //
 
     // should be called before each call to drawNormal, drawSplitScreen or drawObs.
-    // remaining = time left until end of game (milliseconds) or <0 for no time limit
-    void recalculateTime(bool is_paused, int remaining);
+    // delta_us = number of microseconds elapsed since previous call to recalculateTime.
+    // remaining_us = time left until end of game (microseconds) or <0 for no time limit.
+    void recalculateTime(bool is_paused, int64_t delta_us, int64_t remaining_us);
 
     // routines to draw the in-game screen (dungeon view, status display etc.)
     // return value = actual height used.
@@ -192,7 +194,7 @@ public:
     void setAvailableControls(int plyr, const std::vector<std::pair<const UserControl*, bool> > &available_controls);
     void setMenuHighlight(int plyr, const UserControl *highlight);
     
-    void flashScreen(int plyr, int delay);
+    void flashScreen(int plyr, int delay_ms);  // Note milliseconds not microseconds
 
     void gameMsg(int plyr, const std::string &msg, bool is_err);
 
@@ -204,7 +206,6 @@ public:
 private:
     void initialize(int nplayers, const std::vector<UTF8String> &names, 
                     const Graphic *, const Graphic *, const Graphic *, const Graphic *);
-    unsigned int getAdjustedTime();
     void setMenuControl(int plyr, MapDirection d, const UserControl *ctrl, const UserControl *prev);
     void setupGui(int chat_area_x, int chat_area_y, int chat_area_width, int chat_area_height,
                   int plyr_list_x, int plyr_list_y, int plyr_list_width, int plyr_list_height,
@@ -240,7 +241,7 @@ private:
     const int min_font_size;
     const float ref_font_size;
     const int ref_action_bar_left, ref_action_bar_top;
-    const int game_over_t1, game_over_t2, game_over_t3;
+    const int64_t game_over_t1_us, game_over_t2_us, game_over_t3_us;
 
     // controllers.
     const Controller *controller1, *controller2;
@@ -248,7 +249,7 @@ private:
     
     // controller state
     bool attack_mode[2], allow_menu_open[2], approached_when_menu_was_opened[2];
-    int fire_start_time[2];
+    int64_t fire_start_time_us[2];
     enum MenuNullEnum { M_OK, M_CTS, M_NULL };
     MenuNullEnum menu_null[2];
     MapDirection menu_null_dir[2];
@@ -282,21 +283,24 @@ private:
     boost::shared_ptr<ActionBar> action_bar;
 
     // other display stuff.
-    std::vector<int> flash_screen_start;
+    std::vector<int> flash_screen_start_us;
     boost::shared_ptr<std::vector<std::pair<std::string,std::string> > > menu_strings;
     const Graphic *winner_image;
     const Graphic *loser_image;
 
     // we need to keep track of time (for animations, making entities move at the correct speed, etc).
-    // the time is stored here and updated by calls to draw() (caller must pass in an updated time).
-    int time;
+    // the time is stored here, and increased by calls to recalculateTime
+    int64_t time_us;
 
     // have we won or lost yet
     std::vector<bool> won;
     std::vector<bool> lost;
-    std::vector<int> game_over_time;
+    std::vector<int64_t> game_over_time_us;
     bool ready_msg_sent;
-    
+
+    // game end time
+    int64_t game_end_time_us; // -1 if not set or else the value of 'time' when the game should end.
+
     // sounds waiting to be played
     struct MySound {
         const Sound *sound;
@@ -309,12 +313,6 @@ private:
         std::vector<bool> plyr;
     };
     std::vector<MySound> sounds;
-
-    // timer
-    Coercri::Timer & timer;
-    int last_time;
-    int game_end_time; // -1 if not set or else the value of 'time' when the game should end.
-    unsigned int fps;
 
     // gui stuff
     ChatList &chat_list;

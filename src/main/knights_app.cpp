@@ -27,7 +27,6 @@
 #include "credits_screen.hpp"
 #include "error_screen.hpp"
 #include "file_cache.hpp"
-#include "frame_time_adjust.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
 #include "gfx_resizer_compose.hpp"
@@ -885,11 +884,11 @@ void KnightsApp::runKnights()
     std::string error;
     int num_errors = 0;
 
-    // Timing - now keyed to "frames" to try to give smoother animation
+    // Timing
     const unsigned int fps = std::min((unsigned int)1000,
                                       (unsigned int)(pimpl->config_map.getInt("fps")));
-    unsigned int last_update_time = pimpl->timer->getMsec() - 1000; // Fake initial value, 1 second ago
-    unsigned int last_update_frame_count = MsecToFrameCount(last_update_time, fps);
+    const int64_t frame_time_us = int64_t(1000000) / int64_t(fps);
+    uint64_t last_update_time_us = pimpl->timer->getUsec() - 1000000; // Fake initial value, 1 second ago
 
     // Main Loop
     while (pimpl->running) {
@@ -939,21 +938,36 @@ void KnightsApp::runKnights()
 
             // Determine if update is needed
             UpdateType update_type = pimpl->current_screen->getUpdateType();
-            unsigned int time_now = pimpl->timer->getMsec();
-            unsigned int frame_count_now = MsecToFrameCount(time_now, fps);
+            uint64_t time_now_us = pimpl->timer->getUsec();
+            int64_t time_since_last_update_us = time_now_us - last_update_time_us;
             bool need_update = false;
             if (update_type == UPDATE_TYPE_REALTIME) {
-                need_update = (frame_count_now != last_update_frame_count);
+                need_update = (time_since_last_update_us >= frame_time_us);
             } else {
-                need_update = (int(time_now - last_update_time) > 100);
+                need_update = (time_since_last_update_us > 100 * 1000);
             }
 
             // Do update if needed
             if (need_update) {
                 pimpl->current_screen->update();
                 did_something = true;
-                last_update_time = time_now;
-                last_update_frame_count = frame_count_now;
+
+                // Adjust last_update_time_us
+                if (update_type == UPDATE_TYPE_REALTIME) {
+                    // Try to adjust last_update_time_us in steps of exactly frame_time_us
+                    // (in order to make our rendered frames evenly spaced in time),
+                    // if the CPU can keep up with this.
+                    last_update_time_us += frame_time_us;
+                    int64_t new_time_delta_us = time_now_us - last_update_time_us;
+                    if (new_time_delta_us >= frame_time_us) {
+                        // CPU is falling behind (by at least one frame), so just
+                        // "catch up" instantly at this point.
+                        last_update_time_us = time_now_us;
+                    }
+                } else {
+                    // Simple method
+                    last_update_time_us = time_now_us;
+                }
             }
 
 
@@ -977,7 +991,7 @@ void KnightsApp::runKnights()
                 gc->clearClipRectangle();
                 gc->clearScreen(Coercri::Color(0,0,0));
                 pimpl->cg_listener->draw(*gc);
-                pimpl->current_screen->draw(*gc);
+                pimpl->current_screen->draw(last_update_time_us, *gc);
                 pimpl->window->cancelInvalidRegion();
                 did_something = true;
             }
@@ -985,19 +999,28 @@ void KnightsApp::runKnights()
 
             // Sleep if necessary (so that we don't consume 100% CPU).
             if (!did_something) {
-                unsigned int delay = 0u;
+                int64_t delay_us = 0u;
                 if (update_type == UPDATE_TYPE_INFREQUENT) {
-                    delay = 20u;
+                    // Fixed delay of 20 ms between updates
+                    // (Even though the next update() call is 100ms away,
+                    // we still want to wake up a bit before that, in order
+                    // to check for window system messages, network messages, etc.)
+                    delay_us = 20000;
+
                 } else {
-                    const unsigned int next_update_time =
-                        FrameCountToMsec(last_update_frame_count + 1u, fps);
-                    const int time_to = next_update_time - pimpl->timer->getMsec();
-                    if (time_to > 0) {
-                        delay = time_to;
+                    const uint64_t next_update_time_us = last_update_time_us + frame_time_us;
+                    const int64_t time_to_us = next_update_time_us - pimpl->timer->getUsec();
+                    if (time_to_us > 0) {
+                        delay_us = time_to_us;
+
+                        // Cap sleep at 20ms to allow a chance to check the message queue
+                        // (note: this will only kick in if fps is set very low)
+                        if (delay_us > 20000) {
+                            delay_us = 20000;
+                        }
                     }
                 }
-                if (delay > 20u) delay = 20u;
-                if (delay > 0u) pimpl->timer->sleepMsec(delay);
+                if (delay_us > 0) pimpl->timer->sleepUsec(delay_us);
                 num_errors = 0;  // if we can get to a sleep w/o error, then assume things
                                  // are going well & can reset num_errors.
             }

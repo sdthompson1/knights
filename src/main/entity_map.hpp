@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include "graphic_element.hpp"  // MSVC compiler gives a link error on getEntityMap if we don't have this...
 #include "map_support.hpp"
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <vector>
@@ -45,27 +46,27 @@ class EntityMap {
 public:
     explicit EntityMap(const ConfigMap &cfg, int approach_offset_);
 
-    void addEntity(int time, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
-                   const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvis, bool ainvuln,
-                   int cur_ofs, MotionType motion_type, int motion_time_remaining,
+    void addEntity(int64_t time_us, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
+                   const Anim *anim, const Overlay *ovr, int af, int64_t atz_us, bool ainvis, bool ainvuln,
+                   int cur_ofs, MotionType motion_type, int64_t motion_time_remaining_us,
                    const UTF8String &name);
     void rmEntity(unsigned short int key);
-    void moveEntity(int time, unsigned short int key, MotionType motion_type, int motion_duration, bool missile_mode);
-    void flipEntityMotion(int time, unsigned short int key, int initial_delay, int motion_duration);
+    void moveEntity(int64_t time_us, unsigned short int key, MotionType motion_type, int64_t motion_duration_us, bool missile_mode);
+    void flipEntityMotion(int64_t time_us, unsigned short int key, int64_t initial_delay_us, int64_t motion_duration_us);
     void repositionEntity(unsigned short int key, int new_x, int new_y);
     void setAnimData(unsigned short int key, const Anim *, const Overlay *,
-                     int af, int atz, bool ainvis, bool ainvuln, bool during_motion);
+                     int af, int64_t atz_us, bool ainvis, bool ainvuln, bool during_motion);
     void setFacing(unsigned short int key, MapDirection new_facing);
     void setSpeechBubble(unsigned short int key, bool show);
     void clear() { entities.clear(); } // delete all contained entities
         
     // getEntityGfx (used for drawing)
-    // Coords of bottom-left of the map display area (square coord 0,0) must be passed in,
+    // Coords of top-left of the map display area (square coord 0,0) must be passed in,
     // together with pixels_per_square.
     // Entity depth is a base depth at which entities are drawn (it's modified by MapHeights).
     // Results will be _added_ to "gfx_buffer" (previous contents of "gfx_buffer" will be
     // retained as well).
-    void getEntityGfx(int time, int bl_x, int bl_y, int pixels_per_square, int entity_depth,
+    void getEntityGfx(int64_t time_us, int tl_x, int tl_y, int pixels_per_square, int entity_depth,
                       std::map<int, std::vector<GraphicElement> > &gfx_buffer,
                       std::vector<TextElement> &txt_buffer, bool show_own_name,
                       const Graphic *speech_bubble, int speech_depth);
@@ -82,7 +83,9 @@ private:
             struct {
                 // so: starting offset
                 // nt: "natural time" (how long the move would take at normal speed).
-                int so, nt;
+                // ("us" = microseconds)
+                int so;
+                int64_t nt_us;
                 MotionType type;
             } move_info;
             struct {
@@ -93,7 +96,7 @@ private:
                 const Anim *anim;
                 const Overlay *ovr;
                 int af;
-                int atz;
+                int64_t atz_us;
                 bool ainvis, ainvuln;
             } anim_info;
             MapDirection facing_info;
@@ -106,25 +109,25 @@ private:
         const Anim *anim;
         const Overlay *ovr;
         int af;
-        int atz;
+        int64_t atz_us;
         bool ainvis, ainvuln;
         MapDirection facing;
         bool approached;          // true if currently "approached" (and not moving)
         bool show_speech_bubble;
         UTF8String name;
         
-        int start_time;   // time at which the cmd block was started
-        int finish_time;  // time at which the cmd block should be completed
-        int tnt;          // total natural time (over all cmds)
+        int64_t start_time_us;   // time at which the cmd block was started
+        int64_t finish_time_us;  // time at which the cmd block should be completed
+        int64_t tnt_us;          // total natural time (over all cmds)
         std::list<Command> cmds;  // the command block itself
     };
 
     int getFinalOffset(MotionType);
-    void getCurrentOffset(int time, const Data &ent, const Command &cmd,
-                          int &nt_so_far, int &cur_ofs);
-    void update(int, Data &dat);
-    void update(int);
-    void addGraphic(const Data &ent, int time, int bl_x, int bl_y,
+    void getCurrentOffset(int64_t time_us, const Data &ent, const Command &cmd,
+                          int64_t &nt_so_far, int &cur_ofs);
+    void update(int64_t time_us, Data &dat);
+    void update(int64_t time_us);
+    void addGraphic(const Data &ent, int64_t time_us, int tl_x, int tl_y,
                     int entity_depth,
                     std::map<int, std::vector<GraphicElement> > &gfx_buffer,
                     std::vector<TextElement> &txt_buffer,
@@ -133,9 +136,9 @@ private:
                     const Graphic *speech_bubble,
                     int speech_depth);
 
-    void recomputeEntityMotion(std::map<unsigned short int,Data>::iterator it, int time);
+    void recomputeEntityMotion(std::map<unsigned short int,Data>::iterator it, int64_t time_us);
 
-    const Graphic * chooseGraphic(const Anim *anim, MapDirection facing, int frame, int x, int y, int time);
+    const Graphic * chooseGraphic(const Anim *anim, MapDirection facing, int frame, int x, int y, int64_t time_us);
 
 private:
     // key --> ID number for the entity;
@@ -145,10 +148,10 @@ private:
     // yet been applied.
     std::map<unsigned short int, Data> entities;
 
-    const int bat_anim_timescale;
+    const int64_t bat_anim_timescale_us;
     const int approach_offset;
 
-    int vbat_last_time;
+    int64_t vbat_last_time_us;
     int vbat_frames[64];
 };
 

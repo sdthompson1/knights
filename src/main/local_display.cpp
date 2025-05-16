@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include "action_bar.hpp"
 #include "config_map.hpp"
 #include "controller.hpp"
-#include "frame_time_adjust.hpp"
 #include "game_manager.hpp"  // for ChatList
 #include "gfx_manager.hpp"
 #include "gfx_resizer.hpp"
@@ -248,12 +247,11 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            const SkullRenderer *skull_rend,
                            boost::shared_ptr<std::vector<std::pair<std::string,std::string> > > menu_strings_,
                            const std::vector<const UserControl*> &std_ctrls,
-                           const Controller *ctrlr1, 
+                           const Controller *ctrlr1,
                            const Controller *ctrlr2,
                            int nplyrs,
                            bool dm_mode,
                            const std::vector<UTF8String> &player_names,
-                           Coercri::Timer & timer_,
                            ChatList &chat_list_,
                            ChatList &ingame_player_list_,
                            ChatList &quest_rqmts_list_,
@@ -285,9 +283,9 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
       ref_action_bar_left(cfg.getInt("dpy_action_bar_left")),
       ref_action_bar_top(cfg.getInt("dpy_action_bar_top")),
       
-      game_over_t1(cfg.getInt("game_over_fade_time")),
-      game_over_t2(game_over_t1 + cfg.getInt("game_over_black_time")),
-      game_over_t3(game_over_t2 + game_over_t1),
+      game_over_t1_us(int64_t(cfg.getInt("game_over_fade_time")) * 1000),  // convert to us
+      game_over_t2_us(game_over_t1_us + int64_t(cfg.getInt("game_over_black_time")) * 1000),
+      game_over_t3_us(game_over_t2_us + game_over_t1_us),
       
       // other stuff
       controller1(ctrlr1),
@@ -296,13 +294,10 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
       menu_strings(menu_strings_),
       winner_image(winner_image_),
       loser_image(loser_image_),
-      time(0),
+      time_us(0),
       ready_msg_sent(false),
 
-      timer(timer_),
-      last_time(-1),
-      game_end_time(-1),
-      fps(std::min(1000, cfg.getInt("fps"))),
+      game_end_time_us(-1),
 
       chat_list(chat_list_),
       ingame_player_list(ingame_player_list_),
@@ -335,7 +330,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
         attack_mode[i] = false;
         allow_menu_open[i] = true;
         approached_when_menu_was_opened[i] = false;
-        fire_start_time[i] = 0;
+        fire_start_time_us[i] = 0;
         menu_null[i] = M_OK;
         menu_null_dir[i] = D_NORTH;
         my_facing[i] = D_NORTH;
@@ -376,8 +371,8 @@ void LocalDisplay::goIntoObserverMode(int nplyrs,
     action_bar.reset();
     won.clear();
     lost.clear();
-    game_over_time.clear();
-    flash_screen_start.clear();
+    game_over_time_us.clear();
+    flash_screen_start_us.clear();
 
     initialize(nplyrs, player_names, 0, 0, 0, speech_bubble);
 }
@@ -400,8 +395,8 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_
     status_display.resize(nplyrs);
     won.resize(nplyrs);
     lost.resize(nplyrs);
-    game_over_time.resize(nplyrs);
-    flash_screen_start.resize(nplyrs);
+    game_over_time_us.resize(nplyrs);
+    flash_screen_start_us.resize(nplyrs);
     
     // If names are set then we must be in "observer mode"
     observer_mode = !names.empty();
@@ -417,8 +412,8 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_
                                                        menu_gfx_centre, menu_gfx_empty, menu_gfx_highlight));
 
         won[i] = lost[i] = false;
-        game_over_time[i] = -9999;
-        flash_screen_start[i] = -9999;
+        game_over_time_us[i] = -9999999;
+        flash_screen_start_us[i] = -9999999;
     }
 
     if (tutorial_mode && controller1 && !controller1->usingActionBar()) {
@@ -434,34 +429,24 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_
     }
 }
 
-unsigned int LocalDisplay::getAdjustedTime()
+void LocalDisplay::recalculateTime(bool is_paused, int64_t delta_us, int64_t remaining_us)
 {
-    // Get time now, but adjusted to the start of a "frame boundary"
-    // The aim is to try to get smoother animation by making sure that all drawn frames
-    // are roughly equally spaced in time
-    const unsigned int time_now = timer.getMsec();
-    const unsigned int frame_count = MsecToFrameCount(time_now, fps);
-    return FrameCountToMsec(frame_count, fps);
-}
-
-void LocalDisplay::recalculateTime(bool is_paused, int remaining)
-{
-    const int time_now = getAdjustedTime();
-    if (last_time == -1) last_time = time_now;  // initialization.
-    const int time_delta = time_now - last_time;
-    last_time = time_now;
-
     if (!is_paused) {
-        time += time_delta;
+        time_us += delta_us;
         for (int plyr_num = 0; plyr_num < nplayers; ++plyr_num) {
-            dungeon_view[plyr_num]->addToTime(time_delta);
+            dungeon_view[plyr_num]->addMicrosecondsToTime(delta_us);
         }
 
         // recalculate game_end_time
-        if (remaining >= 0) {
-            const int new_end_time = time + remaining;
-            if (game_end_time < 0) prev_gui_x = -9999; // force a re-layout of the gui
-            if (new_end_time < game_end_time || game_end_time < 0) game_end_time = new_end_time;
+        if (remaining_us >= 0) {
+            const int new_end_time_us = time_us + remaining_us;
+            if (game_end_time_us < 0) {
+                // force a re-layout of the gui
+                prev_gui_x = -9999;
+            }
+            if (new_end_time_us < game_end_time_us || game_end_time_us < 0) {
+                game_end_time_us = new_end_time_us;
+            }
             setTimeLimitCaption();
         }
     }
@@ -469,13 +454,13 @@ void LocalDisplay::recalculateTime(bool is_paused, int remaining)
 
 void LocalDisplay::setTimeLimitCaption()
 {
-    if (game_end_time >= 0) {
+    if (game_end_time_us >= 0) {
 
-        int t = 0;
-        for (std::vector<int>::const_iterator it = game_over_time.begin(); it != game_over_time.end(); ++it) {
+        int64_t t = 0;
+        for (std::vector<int64_t>::const_iterator it = game_over_time_us.begin(); it != game_over_time_us.end(); ++it) {
             if (*it < 0) {
                 // The game is not finished yet. Use current time
-                t = time;
+                t = time_us;
                 break;
             } else {
                 // Use the game_over_time of the last player to finish
@@ -483,9 +468,9 @@ void LocalDisplay::setTimeLimitCaption()
             }
         }
         
-        const int time_left = std::max(0, game_end_time - t + 999) / 1000;
-        const int mins = time_left / 60;
-        const int secs = time_left % 60;
+        const int64_t time_left_s = std::max(INT64_C(0), game_end_time_us - t + 999999) / 1000000;
+        const int mins = time_left_s / 60;
+        const int secs = time_left_s % 60;
         std::stringstream str;
         str.fill('0');
         str << mins << ":" << std::setw(2) << secs;
@@ -640,7 +625,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
 
         // Time remaining
         int time_limit_height = 0;
-        if (game_end_time >= 0) {
+        if (game_end_time_us >= 0) {
             time_limit_label.reset(new gcn::Label);
             time_limit_label->setFont(gui_font.get());
             time_limit_label->setForegroundColor(gcn::Color(255,255,255));
@@ -1021,7 +1006,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
 
     const int dungeon_excess_width = std::max(0, vp_width - dungeon_width);
     const int status_area_excess_width = std::max(0, vp_width - status_area_width);
-    
+
     // work out dungeon position
     int dungeon_x;
     const int dungeon_margin = bias == 0 ? dungeon_excess_width/2 : dungeon_excess_width/5;
@@ -1037,7 +1022,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     // work out action bar position
     const int action_bar_x = dungeon_x + Round(ref_action_bar_left * scale);
     const int action_bar_y = status_area_y + Round(ref_action_bar_top * scale);    
-    
+
     // Set clip rectangle
     // (this is to stop anything accidentally being drawn on the opponent's side of the screen).
     if (tutorial_popups.empty()) {
@@ -1049,16 +1034,16 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     bool draw_in_game_screen = true;
     bool draw_winner_loser_screen = false;
     if (won[player_num] || lost[player_num]) {
-        if (game_over_time[player_num] < 0) {
-            game_over_time[player_num] = time;
+        if (game_over_time_us[player_num] < 0) {
+            game_over_time_us[player_num] = time_us;
         }
-        if (time >= game_over_time[player_num] + game_over_t1) {
+        if (time_us >= game_over_time_us[player_num] + game_over_t1_us) {
             draw_in_game_screen = false;
         }
-        if (time > game_over_time[player_num] + game_over_t2) {
+        if (time_us > game_over_time_us[player_num] + game_over_t2_us) {
             draw_winner_loser_screen = true;
         }
-        if (tutorial_mode && time > game_over_time[player_num] + game_over_t3 && !have_sent_end_msg) {
+        if (tutorial_mode && time_us > game_over_time_us[player_num] + game_over_t3_us && !have_sent_end_msg) {
             have_sent_end_msg = true;
             TutorialWindow win;
             win.popup = true;
@@ -1099,7 +1084,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         boost::shared_ptr<ColourChange> my_colour_change = dungeon_view[player_num]->getMyColourChange();
 
         const Graphic * image = 0;
-        
+
         if (won[player_num]) {
             if (winner_image) {
                 image = winner_image;
@@ -1144,8 +1129,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     if (draw_in_game_screen) {
 
         // Check whether screen should flash
-        const bool screen_flash = (time >= flash_screen_start[player_num] 
-                                  && time <= flash_screen_start[player_num] + config_map.getInt("screen_flash_time"));
+        const bool screen_flash = (time_us >= flash_screen_start_us[player_num]
+                                  && time_us <= flash_screen_start_us[player_num] + config_map.getInt("screen_flash_time")*1000);
 
         // Draw the coloured background if screen is flashing
         if (screen_flash) {
@@ -1170,7 +1155,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         
         // Draw action bar
         if (action_bar) {
-            action_bar->draw(gc, gm, time, scale, action_bar_x, action_bar_y, highlight_slot, strong_highlight);
+            // Action bar still uses milliseconds for the time
+            action_bar->draw(gc, gm, time_us/1000, scale, action_bar_x, action_bar_y, highlight_slot, strong_highlight);
 
             if (action_bar_tool_tips || tutorial_mode) {
                 // Draw action bar tool tips
@@ -1185,8 +1171,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             }
         }
 
-        // Draw status area
-        status_display[player_num]->draw(gc, gm, time, scale, status_area_x, status_area_y,
+        // Draw status area (this still uses milliseconds for the time)
+        status_display[player_num]->draw(gc, gm, time_us/1000, scale, status_area_x, status_area_y,
                                          dungeon_view[player_num]->aliveRecently(),
                                          *mini_map[player_num], time_limit_string);
 
@@ -1251,15 +1237,15 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     // semi-transparent black rectangle over the whole screen...
     if (won[player_num] || lost[player_num]) {
         float alpha = 0.0f;
-        const int delta = time - game_over_time[player_num];
+        const int64_t delta = time_us - game_over_time_us[player_num];
         if (delta <= 0) {
             alpha = 0.0f;
-        } else if (delta < game_over_t1) {
-            alpha = float(delta) / float(game_over_t1);
-        } else if (delta < game_over_t2) {
+        } else if (delta < game_over_t1_us) {
+            alpha = float(delta) / float(game_over_t1_us);
+        } else if (delta < game_over_t2_us) {
             alpha = 1.0f;
-        } else if (delta < game_over_t3) {
-            alpha = 1.0f - float(delta - game_over_t2) / float(game_over_t3 - game_over_t2);
+        } else if (delta < game_over_t3_us) {
+            alpha = 1.0f - float(delta - game_over_t2_us) / float(game_over_t3_us - game_over_t2_us);
         } else {
             alpha = 0.0f;
         }
@@ -1526,7 +1512,7 @@ const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mle
     }
     
     // set up some constants
-    const int menu_delay = config_map.getInt("menu_delay"); // cutoff btwn 'tapping' and 'holding' fire.
+    const int64_t menu_delay_us = int64_t(config_map.getInt("menu_delay")) * 1000; // cutoff btwn 'tapping' and 'holding' fire. (Note value in config file is ms not us.)
     const bool approached = dungeon_view[plyr]->isApproached();
     
     // get current controller state
@@ -1613,25 +1599,25 @@ const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mle
     // work out 'long' fire state
     enum FireState { NONE, TAPPED, HELD } long_fire = NONE;
     if (ctrlr.fire) {
-        if (fire_start_time[plyr] == 0) {
+        if (fire_start_time_us[plyr] == 0) {
             // fire_start_time: set to time when fire was pressed down (or 0 if fire is
             // currently released)
             // attack_mode: if fire+direction is used to attack, then attack_mode is set true,
             // which disables menus and 'tapping'.
-            fire_start_time[plyr] = time;
+            fire_start_time_us[plyr] = time_us;
             attack_mode[plyr] = false;
         }
-        if (time >= fire_start_time[plyr] + menu_delay && !attack_mode[plyr]) {
+        if (time_us >= fire_start_time_us[plyr] + menu_delay_us && !attack_mode[plyr]) {
             long_fire = HELD;
         }
     } else {
         // do a 'tap' if allowed
-        if (fire_start_time[plyr] > 0 && fire_start_time[plyr] < time + menu_delay && !attack_mode[plyr]) {
+        if (fire_start_time_us[plyr] > 0 && fire_start_time_us[plyr] < time_us + menu_delay_us && !attack_mode[plyr]) {
             long_fire = TAPPED;
         }
 
         // reset fire state when fire is released
-        fire_start_time[plyr] = 0;
+        fire_start_time_us[plyr] = 0;
         attack_mode[plyr] = false;
 
         // reset allow_menu_open when they let go of fire when the menu is closed.
@@ -1899,12 +1885,12 @@ void LocalDisplay::setMenuHighlight(int plyr, const UserControl *highlight)
     status_display[plyr]->clearMenuHighlight();
 }
 
-void LocalDisplay::flashScreen(int plyr, int delay)
+void LocalDisplay::flashScreen(int plyr, int delay_ms)
 {
     if (plyr < 0 || plyr >= nplayers) {
         throw UnexpectedError("bad player number in LocalDisplay");
     } else {
-        flash_screen_start[plyr] = time + delay;
+        flash_screen_start_us[plyr] = time_us + int64_t(delay_ms) * 1000;
     }
 }
 

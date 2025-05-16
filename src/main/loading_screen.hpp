@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -43,7 +43,7 @@ public:
     virtual ~LoadingScreen();
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window>, gcn::Gui &);
     virtual void update();
-    virtual void draw(Coercri::GfxContext &gc);
+    virtual void draw(uint64_t, Coercri::GfxContext &gc);
 
 private:
     struct Loader {

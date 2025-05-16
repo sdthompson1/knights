@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -36,11 +36,14 @@
 
 #include "boost/shared_ptr.hpp"
 
+#include <cstdint>
+
 class KnightsApp;
 
 enum UpdateType {
-    // update() and draw() are both called every "frame" (frame duration is set by
-    // "fps" setting in client_config)
+    // update() and draw() are both called approximately once every
+    // "frame" (frame duration is set by "fps" setting in
+    // client_config)
     UPDATE_TYPE_REALTIME,
 
     // update() is called approximately every 100 ms
@@ -61,10 +64,12 @@ public:
     virtual UpdateType getUpdateType() { return UPDATE_TYPE_INFREQUENT; }
 
     // Update and draw methods. See above for the schedule on which these are called.
-    // (Note: both might be called less frequently than advertised if CPU load is heavy.)
-    // (Note: Main loop will call cg_listener->draw(), so draw() should only do non-Guichan drawing.)
+    // (Note: both update and draw might be called less frequently than expected
+    // if CPU load is heavy.)
+    // (Note: Main loop will call cg_listener->draw(), so draw() should only do
+    // non-Guichan drawing.)
     virtual void update() { }
-    virtual void draw(Coercri::GfxContext &gc) { }
+    virtual void draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc) { }
 };
 
 #endif

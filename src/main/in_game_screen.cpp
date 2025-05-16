@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -62,7 +62,9 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
       mx(0), my(0), mleft(false), mright(false),
       focus_timer(0),
       waiting_to_focus_chat(false),
-      waiting_to_chat_all(false)
+      waiting_to_chat_all(false),
+      prev_frame_timestamp_us(0),
+      prev_frame_timestamp_valid(false)
 {
 }
 
@@ -129,7 +131,6 @@ void InGameScreen::setupDisplay()
                                    init_nplayers,
                                    deathmatch_mode,
                                    init_player_names,
-                                   knights_app.getTimer(),
                                    knights_app.getGameManager().getChatList(),
                                    knights_app.getGameManager().getIngamePlayerList(),
                                    knights_app.getGameManager().getQuestRequirementsList(),
@@ -170,8 +171,15 @@ void InGameScreen::checkChatFocus()
     }
 }
 
-void InGameScreen::draw(Coercri::GfxContext &gc)
+void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
 {
+    int64_t time_delta_us = 0;
+    if (prev_frame_timestamp_valid) {
+        time_delta_us = frame_timestamp_us - prev_frame_timestamp_us;
+    }
+    prev_frame_timestamp_us = frame_timestamp_us;
+    prev_frame_timestamp_valid = true;
+
     checkChatFocus();
     
     const std::vector<UTF8String> & player_names = display->getPlayerNamesForObsMode();
@@ -182,8 +190,12 @@ void InGameScreen::draw(Coercri::GfxContext &gc)
     const bool is_split_screen = nplayers >= 2 && player_names.empty();
     const bool is_gameplay_paused = (pause_mode && (is_split_screen || single_player));
 
+    const int remaining_ms = knights_app.getGameManager().getTimeRemaining();
+    const int64_t remaining_us = int64_t(remaining_ms) * 1000;
+
     display->recalculateTime(is_gameplay_paused,
-                             knights_app.getGameManager().getTimeRemaining());
+                             time_delta_us,
+                             remaining_us);
 
     if (nplayers >= 2) {
         if (player_names.empty()) {

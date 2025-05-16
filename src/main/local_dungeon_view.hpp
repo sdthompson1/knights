@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 
 #include "gfx/gfx_context.hpp" // coercri
 
+#include <cstdint>
 #include <list>
 #include <queue>
 #include <vector>
@@ -50,7 +51,7 @@ public:
     //
 
     LocalDungeonView(const ConfigMap &config_map, int approach_offset, const Graphic *speech_bubble_);
-    void addToTime(int delta) { time += delta; }
+    void addMicrosecondsToTime(int64_t delta_us) { time_us += delta_us; }
     void draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen_flash,
               int phy_dungeon_left, int phy_dungeon_top,
               int phy_dungeon_width, int phy_dungeon_height,
@@ -68,16 +69,16 @@ public:
     void setCurrentRoom(int r, int width, int height);
 
     void addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
-                   const Anim * anim, const Overlay *ovr, int af, int atz_diff,
+                   const Anim * anim, const Overlay *ovr, int af, int atz_diff_ms,
                    bool ainvis, bool ainvuln, // (anim data)
                    bool approached,
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
                    const UTF8String &name);
     void rmEntity(unsigned short int id);
     void repositionEntity(unsigned short int id, int new_x, int new_y);
-    void moveEntity(unsigned short int id, MotionType motion_type, int motion_duration, bool missile_mode);
-    void flipEntityMotion(unsigned short int id, int initial_delay, int motion_duration);
-    void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af, int atz_diff, bool ainvis, bool ainvuln, bool currently_moving);
+    void moveEntity(unsigned short int id, MotionType motion_type, int motion_duration_ms, bool missile_mode);
+    void flipEntityMotion(unsigned short int id, int initial_delay_ms, int motion_duration_ms);
+    void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af, int atz_diff_ms, bool ainvis, bool ainvuln, bool currently_moving);
     void setFacing(unsigned short int id, MapDirection new_facing);
     void setSpeechBubble(unsigned short int id, bool show);
 
@@ -86,7 +87,7 @@ public:
 
     void setItem(int x, int y, const Graphic *gfx, bool);
 
-    void placeIcon(int x, int y, const Graphic *gfx, int dur);
+    void placeIcon(int x, int y, const Graphic *gfx, int dur_ms);
 
     void flashMessage(const std::string &msg_latin1, int ntimes);
     void cancelContinuousMessages();
@@ -96,15 +97,15 @@ private:
     // config map
     const ConfigMap &config_map;
 
-    // time (updated by addToTime() method)
-    int time;
+    // time (updated by addMicrosecondsToTime() method)
+    int64_t time_us;
     
     // icons
     struct LocalIcon {
         int room_no;
         int x, y;
-        int expiry;
-        bool operator<(const LocalIcon &other) const { return expiry < other.expiry; }
+        int expiry_ms;
+        bool operator<(const LocalIcon &other) const { return expiry_ms < other.expiry_ms; }
     };
     std::priority_queue<LocalIcon> icons;
 
@@ -135,16 +136,16 @@ private:
     int current_room;
 
     EntityMap entity_map;
-    
+
     struct CompareDepth {
         bool operator()(const RoomData::GfxEntry &lhs, const RoomData::GfxEntry &rhs) const {
             return lhs.depth > rhs.depth;  // reverse order (highest depth first)
         }
     };
-    
+
     // my knight
     int my_x, my_y;
-    int last_known_time;
+    int last_known_time_ms;
     int last_known_x, last_known_y;
     boost::shared_ptr<ColourChange> my_colour_change;
     bool my_approached;
@@ -152,12 +153,12 @@ private:
     // messages
     struct Message {
         UTF8String message;
-        int start_time;
-        int stop_time;
+        int start_time_ms;
+        int stop_time_ms;
     };
     std::deque<Message> messages;  // sorted by start_time
     std::vector<UTF8String> cts_messages;
-    int last_mtime;
+    int last_mtime_ms;
 
     // gfx buffer
     std::map<int, std::vector<GraphicElement> > gfx_buffer;

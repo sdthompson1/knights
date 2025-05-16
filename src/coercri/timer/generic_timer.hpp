@@ -55,7 +55,9 @@ namespace Coercri {
         GenericTimer();
         ~GenericTimer();
         unsigned int getMsec();
+        uint64_t getUsec();
         void sleepMsec(int msec);
+        void sleepUsec(int64_t usec);
     };
 }
 

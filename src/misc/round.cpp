@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -18,11 +18,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Knights.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
-/*
- * Rounds a float to the nearest integer.
  *
  */
 

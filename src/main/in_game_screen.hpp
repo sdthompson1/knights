@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -59,7 +59,7 @@ public:
     virtual ~InGameScreen();
     virtual UpdateType getUpdateType() { return UPDATE_TYPE_REALTIME; }
     virtual void update();
-    virtual void draw(Coercri::GfxContext &gc);
+    virtual void draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc);
 
     virtual void onMouseMove(int new_x, int new_y);
     virtual void onMouseDown(int x, int y, Coercri::MouseButton m);
@@ -110,6 +110,9 @@ private:
     bool waiting_to_focus_chat;
     bool waiting_to_chat_all;
     std::string stored_chat_field_contents;
+
+    uint64_t prev_frame_timestamp_us;
+    bool prev_frame_timestamp_valid;
 };
 
 #endif

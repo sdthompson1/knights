@@ -21,14 +21,30 @@
  *
  */
 
-/*
- * Rounds a float to the nearest integer.
- *
- */
-
 #ifndef ROUND_HPP
 #define ROUND_HPP
 
+// Round a float to nearest integer.
 int Round(float x);
+
+// Divide two integers, rounding to nearest (instead of truncating).
+inline int DivRoundNearest(int num, int denom)
+{
+    // Make denominator positive
+    if (denom < 0) {
+        denom = -denom;
+        num = -num;
+    }
+
+    // We will need to add or subtract half the denominator to get round-to-nearest behaviour
+    int half_denom = (denom >> 1);
+
+    // For positive numerator, add; for negative, subtract
+    if (num >= 0) {
+        return (num + half_denom) / denom;
+    } else {
+        return (num - half_denom) / denom;
+    }
+}
 
 #endif

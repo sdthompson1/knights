@@ -93,40 +93,72 @@ namespace Coercri {
 #endif        
     }
 
-    unsigned int GenericTimer::getMsec()
+    uint64_t GenericTimer::getUsec()
     {
 #ifdef WIN32
         if (g_use_perf_counter) {
             LARGE_INTEGER perf_count;
             QueryPerformanceCounter(&perf_count);
 
-            // convert to milliseconds
-            perf_count.QuadPart *= 1000;
-            perf_count.QuadPart /= g_perf_freq.QuadPart;
-            
-            return (unsigned int) perf_count.QuadPart;
+            // Convert to microseconds.
+            // Split the calculation into two parts to avoid overflow issues.
+            uint64_t ticks = perf_count.QuadPart;
+            uint64_t ticks_per_sec = g_perf_freq.QuadPart;
+            uint64_t microseconds = (ticks / ticks_per_sec) * 1000000u;
+            uint64_t remainder = ticks % ticks_per_sec;
+            microseconds += (remainder * 1000000u) / ticks_per_sec;
+
+            return microseconds;
             
         } else {
-            return timeGetTime();
+            // timeGetTime returns milliseconds, multiply by 1000 to convert to microseconds
+            return timeGetTime() * 1000;
         }
 
 #elif defined(__linux__)
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        return (now.tv_sec * 1000u) + (now.tv_nsec / 1000000u);
+        uint64_t seconds = now.tv_sec;
+        uint64_t nanoseconds = now.tv_nsec;
+        return (seconds * 1000000u) + (nanoseconds / 1000u);
 
 #else
 #error "Timer not implemented for this operating system!"
 #endif
-    }    
+    }
+
+    unsigned int GenericTimer::getMsec()
+    {
+        return getUsec() / 1000;
+    }
+
+    void GenericTimer::sleepUsec(int64_t usec)
+    {
+        if (usec > 0) {
+#ifdef WIN32
+            // Sleep takes milliseconds. (I do not know of any
+            // microsecond-sleep API in windows.)
+
+            // We round UP the sleep time to the next higher whole
+            // number of milliseconds. This is because the spec says
+            // we have to sleep for AT LEAST the given time, so
+            // rounding up is appropriate.
+
+            Sleep((usec + 999) / 1000);
+
+#elif defined(__linux__)
+
+            // On Linux we use nanosleep
+            struct timespec ts;
+            ts.tv_sec = usec / 1000000;
+            ts.tv_nsec = (usec % 1000000) * 1000;
+            nanosleep(&ts, NULL);
+#endif
+        }
+    }
 
     void GenericTimer::sleepMsec(int msec)
     {
-#ifdef WIN32
-        Sleep(msec);
-#elif defined(__linux__)
-        usleep(msec * 1000);
-#endif
+        sleepUsec(msec * 1000);
     }
-
 }

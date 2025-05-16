@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -163,7 +163,7 @@ void LoadingScreen::update()
     loader.reset();
 }
 
-void LoadingScreen::draw(Coercri::GfxContext &gc)
+void LoadingScreen::draw(uint64_t timestamp_us, Coercri::GfxContext &gc)
 {
     if (!knights_app) return;
     XCentre(gc, *knights_app->getFont(), knights_app->getFont()->getTextHeight() + 15, UTF8String::fromUTF8("LOADING"));

@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -37,25 +37,25 @@ using std::map;
 using std::vector;
 
 EntityMap::EntityMap(const ConfigMap &cfg, int approach_offset_)
- : bat_anim_timescale(cfg.getInt("bat_anim_timescale")),
+ : bat_anim_timescale_us(int64_t(cfg.getInt("bat_anim_timescale")) * 1000),
    approach_offset(approach_offset_),
-   vbat_last_time(-5000)
+   vbat_last_time_us(-5000000)
 {
     for (int i = 0; i < 64; ++i) vbat_frames[i] = 0;
 }
 
 
-void EntityMap::getCurrentOffset(int time, const Data &ent, const Command &cmd,
-                                 int &nt_so_far, int &cur_ofs)
+void EntityMap::getCurrentOffset(int64_t time_us, const Data &ent, const Command &cmd,
+                                 int64_t &nt_so_far_us, int &cur_ofs)
 {
     ASSERT(cmd.type == Command::MOVE);
-        
-    nt_so_far = (time - ent.start_time) * ent.tnt / (ent.finish_time - ent.start_time);
-    if (nt_so_far < 0) nt_so_far = 0;
-    if (nt_so_far > cmd.move_info.nt) nt_so_far = cmd.move_info.nt;
+
+    nt_so_far_us = (time_us - ent.start_time_us) * ent.tnt_us / (ent.finish_time_us - ent.start_time_us);
+    if (nt_so_far_us < 0) nt_so_far_us = 0;
+    if (nt_so_far_us > cmd.move_info.nt_us) nt_so_far_us = cmd.move_info.nt_us;
 
     const int fo = getFinalOffset(cmd.move_info.type);
-    cur_ofs = cmd.move_info.so + (fo - cmd.move_info.so) * nt_so_far / cmd.move_info.nt;
+    cur_ofs = cmd.move_info.so + (fo - cmd.move_info.so) * nt_so_far_us / cmd.move_info.nt_us;
 }
 
 int EntityMap::getFinalOffset(MotionType type)
@@ -68,9 +68,9 @@ int EntityMap::getFinalOffset(MotionType type)
     }
 }
 
-void EntityMap::addEntity(int time, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
-                          const Anim *anim, const Overlay *ovr, int af, int atz, bool ainvis, bool ainvuln,
-                          int cur_ofs, MotionType motion_type, int motion_time_remaining,
+void EntityMap::addEntity(int64_t time_us, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
+                          const Anim *anim, const Overlay *ovr, int af, int64_t atz_us, bool ainvis, bool ainvuln,
+                          int cur_ofs, MotionType motion_type, int64_t motion_time_remaining_us,
                           const UTF8String &name)
 {
     Data d;
@@ -80,7 +80,7 @@ void EntityMap::addEntity(int time, unsigned short int key, int x, int y, MapHei
     d.anim = anim;
     d.ovr = ovr;
     d.af = af;
-    d.atz = atz;
+    d.atz_us = atz_us;
     d.ainvis = ainvis;
     d.ainvuln = ainvuln;
     d.facing = facing;
@@ -88,18 +88,18 @@ void EntityMap::addEntity(int time, unsigned short int key, int x, int y, MapHei
     d.show_speech_bubble = false;
     d.name = name;
     if (motion_type == MT_NOT_MOVING) {
-        d.start_time = 0;
-        d.finish_time = 0;
-        d.tnt = 0;
+        d.start_time_us = 0;
+        d.finish_time_us = 0;
+        d.tnt_us = 0;
     } else {
-        d.start_time = time;
-        d.finish_time = time + motion_time_remaining;
-        d.tnt = motion_time_remaining;
+        d.start_time_us = time_us;
+        d.finish_time_us = time_us + motion_time_remaining_us;
+        d.tnt_us = motion_time_remaining_us;
         Command cmd;
         cmd.type = Command::MOVE;
         cmd.move_info.so = cur_ofs;
         cmd.move_info.type = motion_type;
-        cmd.move_info.nt = motion_time_remaining;
+        cmd.move_info.nt_us = motion_time_remaining_us;
         d.cmds.push_back(cmd);
     }
     entities.insert(make_pair(key, d));
@@ -113,11 +113,11 @@ void EntityMap::rmEntity(unsigned short int key)
     entities.erase(it);
 }
 
-void EntityMap::recomputeEntityMotion(map<unsigned short int,Data>::iterator it, int time)
+void EntityMap::recomputeEntityMotion(map<unsigned short int,Data>::iterator it, int64_t time_us)
 {
     // Make sure any "reposition" or similar commands are popped
     // from the top of the command queue.
-    update(time, it->second);
+    update(time_us, it->second);
 
     // If a motion cmd is in progress then change its start time to
     // current time, and update its start offset to current
@@ -127,27 +127,28 @@ void EntityMap::recomputeEntityMotion(map<unsigned short int,Data>::iterator it,
         // A motion command is in progress.
         Command &cmd(it->second.cmds.front());
         ASSERT(cmd.type == Command::MOVE);
-        ASSERT(cmd.move_info.nt != 0);
-        ASSERT(it->second.start_time < it->second.finish_time);
+        ASSERT(cmd.move_info.nt_us != 0);
+        ASSERT(it->second.start_time_us < it->second.finish_time_us);
 
         // calculate the offset of the entity right now (taking into
         // account the motion cmd that is currently in progress).
-        int nt_so_far, cur_ofs;
-        getCurrentOffset(time, it->second, cmd, nt_so_far, cur_ofs);
+        int64_t nt_so_far_us;
+        int cur_ofs;
+        getCurrentOffset(time_us, it->second, cmd, nt_so_far_us, cur_ofs);
         
         // Update the existing command
         cmd.move_info.so = cur_ofs;
-        cmd.move_info.nt -= nt_so_far;
-        it->second.tnt -= nt_so_far;
+        cmd.move_info.nt_us -= nt_so_far_us;
+        it->second.tnt_us -= nt_so_far_us;
     } else {
-        ASSERT(it->second.tnt == 0);
+        ASSERT(it->second.tnt_us == 0);
     }
 
-    it->second.start_time = time;
+    it->second.start_time_us = time_us;
 }       
 
-void EntityMap::moveEntity(int time, unsigned short int key,
-                           MotionType motion_type, int motion_duration,
+void EntityMap::moveEntity(int64_t time_us, unsigned short int key,
+                           MotionType motion_type, int64_t motion_duration_us,
                            bool missile_mode)
 {
     if (motion_type == MT_NOT_MOVING) return;
@@ -157,36 +158,63 @@ void EntityMap::moveEntity(int time, unsigned short int key,
 
     // Adjust the command sequence so that it's safe to add new motion
     // cmds afterwards.
-    recomputeEntityMotion(it, time);
-    
-    // new starting offset
+    recomputeEntityMotion(it, time_us);
+
+    // New starting offset
     const int new_so = missile_mode? 500 :
         (it->second.approached? approach_offset : 0);
-    
+
+    // Check if there is an existing command
+    const bool existing_cmd = (!it->second.cmds.empty());
+
     // Add a new command to represent the move
     Command cmd;
     cmd.type = Command::MOVE;
     cmd.move_info.so = new_so;
-    cmd.move_info.nt = motion_duration;
+    cmd.move_info.nt_us = motion_duration_us;
     cmd.move_info.type = motion_type;
     it->second.cmds.push_back(cmd);
     it->second.approached = (motion_type == MT_APPROACH);
-    it->second.finish_time = time + motion_duration;
-    it->second.tnt += cmd.move_info.nt;
+    it->second.tnt_us += cmd.move_info.nt_us;
+
+    if (existing_cmd) {
+        // For the new move to play at the correct speed, we theoretically need to
+        // allow all current moves to finish, then take exactly "motion_duration_us"
+        // microseconds to play out the new move.
+
+        // This, however, will leave us lagging behind the server by
+        // (finish_time_us - time_us) microseconds.
+
+        // We will cap the max allowed lag at THRESHOLD_US
+        // microseconds. If lag would be more than this, then we
+        // effectively "speed up" local animations, by setting an
+        // earlier finish_time.
+
+        const int THRESHOLD_MS = 100;  // Max acceptable lag behind the server (in milliseconds)
+        const int64_t THRESHOLD_US = int64_t(THRESHOLD_MS) * 1000;
+
+        it->second.finish_time_us =
+            std::min(it->second.finish_time_us, time_us + THRESHOLD_US) + motion_duration_us;
+
+    } else {
+        // Just set it to finish at the expected time, i.e. motion_duration from now.
+        it->second.finish_time_us = time_us + motion_duration_us;
+    }
 }
 
-void EntityMap::flipEntityMotion(int time, unsigned short int key, int initial_delay, int input_motion_duration)
+void EntityMap::flipEntityMotion(int64_t time_us, unsigned short int key,
+                                 int64_t initial_delay_us, int64_t input_motion_duration_us)
 {
     // We handle this by making a move of duration (initial_delay + input_motion_duration),
     // then fixing up the initial_delay at the end.
-    ASSERT(input_motion_duration > 0);
-    const int actual_motion_duration = input_motion_duration + initial_delay;
+    ASSERT(input_motion_duration_us > 0);
+    const int64_t actual_motion_duration_us = input_motion_duration_us + initial_delay_us;
         
     map<unsigned short int,Data>::iterator it = entities.find(key);
     if (it == entities.end()) return;
 
     // Adjust the command block so that it starts at the current time.
-    recomputeEntityMotion(it, time);     
+    recomputeEntityMotion(it, time_us);
 
     // Two cases here:
     // 
@@ -208,7 +236,7 @@ void EntityMap::flipEntityMotion(int time, unsigned short int key, int initial_d
         // Case (i). Here we need to manually turn the entity around and
         // start a normal motion.
         setFacing(key, Opposite(it->second.facing));
-        moveEntity(time, key, MT_MOVE, actual_motion_duration, false);
+        moveEntity(time_us, key, MT_MOVE, actual_motion_duration_us, false);
     } else {
         // Case (ii). What we do here depends on whether the flip
         // applies to the currently executing motion cmd (the one at
@@ -227,11 +255,11 @@ void EntityMap::flipEntityMotion(int time, unsigned short int key, int initial_d
             cmd.move_info.so = 1000 - cmd.move_info.so;
 
             // Update the motion duration and finish time
-            const int old_nt = cmd.move_info.nt;
-            const int new_nt = actual_motion_duration;
-            cmd.move_info.nt = new_nt;
-            it->second.tnt += (new_nt - old_nt);
-            it->second.finish_time = time + actual_motion_duration;
+            const int64_t old_nt_us = cmd.move_info.nt_us;
+            const int64_t new_nt_us = actual_motion_duration_us;
+            cmd.move_info.nt_us = new_nt_us;
+            it->second.tnt_us += (new_nt_us - old_nt_us);
+            it->second.finish_time_us = time_us + actual_motion_duration_us;
         } else {
             // Case (ii)(b)
             //
@@ -253,11 +281,11 @@ void EntityMap::flipEntityMotion(int time, unsigned short int key, int initial_d
             // the user will hopefully hardly see it -- and this case
             // should be fairly rare anyway).
 
-            const int old_nt = cmd.move_info.nt;
-            cmd.move_info.nt = 1;
-            it->second.tnt += (1 - old_nt);
+            const int64_t old_nt_us = cmd.move_info.nt_us;
+            cmd.move_info.nt_us = 1;
+            it->second.tnt_us += (1 - old_nt_us);
             setFacing(key, Opposite(it->second.facing));
-            moveEntity(time, key, MT_MOVE, actual_motion_duration, false);
+            moveEntity(time_us, key, MT_MOVE, actual_motion_duration_us, false);
         }
     }
 
@@ -268,22 +296,20 @@ void EntityMap::flipEntityMotion(int time, unsigned short int key, int initial_d
     // possible.)
     if (!it->second.cmds.empty()
     && it->second.cmds.front().type == Command::MOVE
-    && it->second.cmds.front().move_info.nt == it->second.tnt) {
-        ASSERT(it->second.tnt == actual_motion_duration);
-        int time_increase = initial_delay;
+    && it->second.cmds.front().move_info.nt_us == it->second.tnt_us) {
+        ASSERT(it->second.tnt_us == actual_motion_duration_us);
+        int64_t time_increase_us = initial_delay_us;
 
         // Account for any existing delay
         // (TODO: is this actually necessary?)
-        if (it->second.start_time > time) time_increase -= (it->second.start_time - time);
-        if (time_increase < 0) time_increase = 0;
+        if (it->second.start_time_us > time_us) time_increase_us -= (it->second.start_time_us - time_us);
+        if (time_increase_us < 0) time_increase_us = 0;
                 
-        it->second.start_time += time_increase;
-        it->second.cmds.front().move_info.nt -= time_increase;
-        it->second.tnt -= time_increase;
+        it->second.start_time_us += time_increase_us;
+        it->second.cmds.front().move_info.nt_us -= time_increase_us;
+        it->second.tnt_us -= time_increase_us;
     }
 }
-
-
 
 void EntityMap::repositionEntity(unsigned short int key, int new_x, int new_y)
 {
@@ -299,7 +325,7 @@ void EntityMap::repositionEntity(unsigned short int key, int new_x, int new_y)
 }
 
 void EntityMap::setAnimData(unsigned short int key, const Anim *anim, const Overlay *ovr,
-                            int af, int atz, bool ainvis, bool ainvuln, bool during_motion)
+                            int af, int64_t atz_us, bool ainvis, bool ainvuln, bool during_motion)
 {
     map<unsigned short int, Data>::iterator it = entities.find(key);
     if (it == entities.end()) return;
@@ -308,7 +334,7 @@ void EntityMap::setAnimData(unsigned short int key, const Anim *anim, const Over
     cmd.anim_info.anim = anim;
     cmd.anim_info.ovr = ovr;
     cmd.anim_info.af = af;
-    cmd.anim_info.atz = atz;
+    cmd.anim_info.atz_us = atz_us;
     cmd.anim_info.ainvis = ainvis;
     cmd.anim_info.ainvuln = ainvuln;
 
@@ -331,7 +357,6 @@ void EntityMap::setAnimData(unsigned short int key, const Anim *anim, const Over
         cmds.insert(ins, cmd);
 
     } else {
-                
         // If during_motion is false, add the new cmd at the end of
         // the queue - this is for things like a change of facing,
         // where we *do* want to wait for the current move to finish.
@@ -358,25 +383,25 @@ void EntityMap::setSpeechBubble(unsigned short int key, bool show)
     it->second.show_speech_bubble = show;
 }
 
-void EntityMap::update(int time, EntityMap::Data &ent)
+void EntityMap::update(int64_t time_us, EntityMap::Data &ent)
 {
     while (!ent.cmds.empty()) {
         const Command &cmd(ent.cmds.front());
-                        
+
         switch (cmd.type) {
         case Command::MOVE:
             {
-                int dur = (ent.finish_time - ent.start_time);
-                int fini_time = (cmd.move_info.nt * dur / ent.tnt)
-                    + ent.start_time;
-                if (time < fini_time) {
+                int64_t dur_us = (ent.finish_time_us - ent.start_time_us);
+                int64_t fini_time_us = (cmd.move_info.nt_us * dur_us / ent.tnt_us)
+                    + ent.start_time_us;
+                if (time_us < fini_time_us) {
                     // This command is still in progress
                     return;
                 } else {
                     // This command has completed
-                    ent.tnt -= cmd.move_info.nt;
+                    ent.tnt_us -= cmd.move_info.nt_us;
                     // Next command starts when previous one finished:
-                    ent.start_time = fini_time;
+                    ent.start_time_us = fini_time_us;
                     // If it was a "move" command, we have to update position, too:
                     // (it's no good waiting for the server to send the reposition command,
                     // because while we're waiting, the entity will have the wrong
@@ -410,7 +435,7 @@ void EntityMap::update(int time, EntityMap::Data &ent)
             ent.anim = cmd.anim_info.anim;
             ent.ovr = cmd.anim_info.ovr;
             ent.af = cmd.anim_info.af;
-            ent.atz = cmd.anim_info.atz;
+            ent.atz_us = cmd.anim_info.atz_us;
             ent.ainvis = cmd.anim_info.ainvis;
             ent.ainvuln = cmd.anim_info.ainvuln;
             break;
@@ -422,19 +447,19 @@ void EntityMap::update(int time, EntityMap::Data &ent)
                 
         ent.cmds.pop_front();
     }
-}       
+}
         
         
-void EntityMap::update(int time)
+void EntityMap::update(int64_t time_us)
 {
     for (map<unsigned short int,Data>::iterator it = entities.begin(); it != entities.end(); ++it) {
-        update(time, it->second);
+        update(time_us, it->second);
     }
 }
 
 const Graphic * EntityMap::chooseGraphic(const Anim *anim,
                                          MapDirection facing, int frame,
-                                         int x, int y, int time)
+                                         int x, int y, int64_t time_us)
 {
     if (!anim->getVbatMode()) {
         // Straight lookup
@@ -446,12 +471,12 @@ const Graphic * EntityMap::chooseGraphic(const Anim *anim,
             return anim->getGraphic(D_WEST, 0);
         } else {
             // "Flapping" frame -- this has to be chosen randomly.
-            if (time > vbat_last_time + (bat_anim_timescale<<7)) {
+            if (time_us > vbat_last_time_us + (bat_anim_timescale_us<<7)) {
                 // (every 2**7 == 128 timescales, we regenerate the random table.)
                 for (int i = 0; i < 64; ++i) {
                     vbat_frames[i] = g_rng.getInt(0,3);
                 }
-                vbat_last_time = time;
+                vbat_last_time_us = time_us;
             }
 
             // The exact graphic is chosen based on time, facing and
@@ -460,7 +485,7 @@ const Graphic * EntityMap::chooseGraphic(const Anim *anim,
             // would be way too fast. The procedure here is designed 
             // to make the same graphic remain for a fixed time before 
             // we switch to a new, randomly chosen graphic.)
-            int idx = time / bat_anim_timescale + int(facing) + (x<<3) + y;
+            int idx = time_us / bat_anim_timescale_us + int(facing) + (x<<3) + y;
             idx >>= 2;
             idx = idx & 63;
             return anim->getGraphic(MapDirection(vbat_frames[idx]), 0);
@@ -468,7 +493,7 @@ const Graphic * EntityMap::chooseGraphic(const Anim *anim,
     }
 }
 
-void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int entity_depth,
+void EntityMap::addGraphic(const Data &ent, int64_t time_us, int tl_x, int tl_y, int entity_depth,
                            map<int, vector<GraphicElement> > &gfx_buffer,
                            vector<TextElement> &txt_buffer,
                            int pixels_per_square, bool add_entity_name,
@@ -479,8 +504,8 @@ void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int en
     if (anim) {
                 
         // Work out the graphic and colour-change for this frame
-        const int frame = (time >= ent.atz && ent.atz > 0) ? 0 : ent.af;
-        const Graphic *lower_graphic = chooseGraphic(anim, ent.facing, frame, ent.x, ent.y, time);
+        const int frame = (time_us >= ent.atz_us && ent.atz_us > 0) ? 0 : ent.af;
+        const Graphic *lower_graphic = chooseGraphic(anim, ent.facing, frame, ent.x, ent.y, time_us);
         const ColourChange *lower_cc = &(anim->getColourChange(ent.ainvuln));
         
         if (lower_graphic) {
@@ -491,9 +516,9 @@ void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int en
             } else {
                 const Command &cmd(ent.cmds.front());
                 ASSERT(cmd.type == Command::MOVE);
-                int dummy;
+                int64_t dummy;
                 // Set ofs to current offset
-                getCurrentOffset(time, ent, cmd, dummy, ofs);
+                getCurrentOffset(time_us, ent, cmd, dummy, ofs);
             }
             switch (ent.facing) {
             case D_NORTH:
@@ -515,15 +540,15 @@ void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int en
             }
             
             const int d = entity_depth - 10*ent.height;
-                        
+
             GraphicElement ge;
             const int entity_x = tl_x
                 + ent.x * pixels_per_square
-                + (ox * pixels_per_square + 500) / 1000;
+                + DivRoundNearest(ox * pixels_per_square, 1000);
             ge.sx = entity_x;
             const int entity_y = tl_y
                 + ent.y * pixels_per_square
-                + (oy * pixels_per_square + 500) / 1000;
+                + DivRoundNearest(oy * pixels_per_square, 1000);
             ge.sy = entity_y;
             ge.gr = lower_graphic;
             ge.cc = lower_cc;
@@ -569,17 +594,17 @@ void EntityMap::addGraphic(const Data &ent, int time, int tl_x, int tl_y, int en
     }
 }
 
-void EntityMap::getEntityGfx(int time, int tl_x, int tl_y, int pixels_per_square, int entity_depth,
+void EntityMap::getEntityGfx(int64_t time_us, int tl_x, int tl_y, int pixels_per_square, int entity_depth,
                              map<int, vector<GraphicElement> > &gfx_buffer,
                              vector<TextElement> &txt_buffer,
                              bool show_own_name,
                              const Graphic *speech_bubble,
                              int speech_depth)
 {
-    update(time);
+    update(time_us);
         
     for (map<unsigned short int,Data>::iterator it = entities.begin(); it != entities.end(); ++it) {
-        addGraphic(it->second, time, tl_x, tl_y, entity_depth, gfx_buffer, txt_buffer,
+        addGraphic(it->second, time_us, tl_x, tl_y, entity_depth, gfx_buffer, txt_buffer,
                    pixels_per_square, show_own_name || it->first != 0,
                    speech_bubble, speech_depth);
     }

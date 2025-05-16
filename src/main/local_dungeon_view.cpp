@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -31,6 +31,8 @@
 #include "local_dungeon_view.hpp"
 #include "round.hpp"
 
+#include <iostream>
+
 namespace {
     // NB item_depth must be greater than the other depths here.
     const int speech_depth = -300;
@@ -44,14 +46,14 @@ namespace {
 
 LocalDungeonView::LocalDungeonView(const ConfigMap &cfg, int approach_offset, const Graphic *speech_bubble_)
     : config_map(cfg),
-      time(0),
+      time_us(0),
       current_room(-1),
       entity_map(cfg, approach_offset),
       my_x(MY_X_OFFSCREEN_VALUE), my_y(0),
-      last_known_time(-999999),
+      last_known_time_ms(-999999),
       last_known_x(0), last_known_y(0),
       my_approached(false),
-      last_mtime(-999999),
+      last_mtime_ms(-999999),
       speech_bubble(speech_bubble_)
 { }
 
@@ -71,7 +73,8 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
     static const ColourChange empty_cc;
 
     // Clear out expired icons
-    while (!icons.empty() && time > icons.top().expiry) {
+    int time_ms = time_us / 1000;
+    while (!icons.empty() && time_ms > icons.top().expiry_ms) {
         map<int,RoomData>::iterator ri = rooms.find(icons.top().room_no);
         if (ri != rooms.end()) {
             list<RoomData::GfxEntry> &glst(ri->second.lookupGfx(icons.top().x,
@@ -90,12 +93,12 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
     // Clear out expired messages
     // Note - this is not perfect as queue is ordered by start_time, rather than stop_time.
     // But this does not matter much in practice.
-    while (!messages.empty() && time >= messages.front().stop_time) {
+    while (!messages.empty() && time_ms >= messages.front().stop_time_ms) {
         messages.pop_front();
     }
 
     // Draw current room
-    if (my_x != MY_X_OFFSCREEN_VALUE) last_known_time = time;
+    if (my_x != MY_X_OFFSCREEN_VALUE) last_known_time_ms = time_ms;
 
     if (aliveRecently()) {
         // We are alive, or have been dead for no longer than
@@ -140,9 +143,9 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
             }
             
             // Add the entities (always)
-            entity_map.getEntityGfx(time, room_tl_x, room_tl_y, phy_pixels_per_square, entity_depth, gfx_buffer, txt_buffer, show_own_name,
+            entity_map.getEntityGfx(time_us, room_tl_x, room_tl_y, phy_pixels_per_square, entity_depth, gfx_buffer, txt_buffer, show_own_name,
                                     speech_bubble, speech_depth);
-            
+
             // Now draw all buffered graphics
             for (map<int, vector<GraphicElement> >::reverse_iterator it = gfx_buffer.rbegin();
             it != gfx_buffer.rend(); ++it) {
@@ -185,21 +188,21 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
 
         // Determine whether we should draw a message
         if (messages.empty() && cts_messages.empty()) {
-            last_mtime = 0;
+            last_mtime_ms = 0;
         } else {
-            if (last_mtime == 0) {
-                if (!messages.empty()) last_mtime = messages.front().start_time;
-                else last_mtime = time;
+            if (last_mtime_ms == 0) {
+                if (!messages.empty()) last_mtime_ms = messages.front().start_time_ms;
+                else last_mtime_ms = time_ms;
             }
-            int mtime = time - last_mtime;
+            int mtime_ms = time_ms - last_mtime_ms;
                 
-            const int msg_on_time = config_map.getInt("message_on_time");
-            const int msg_off_time = config_map.getInt("message_off_time");
+            const int msg_on_time_ms = config_map.getInt("message_on_time");
+            const int msg_off_time_ms = config_map.getInt("message_off_time");
             const int nmsgs = messages.size() + cts_messages.size();
-            int mphase = (mtime / (msg_on_time + msg_off_time)) % nmsgs;
+            int mphase = (mtime_ms / (msg_on_time_ms + msg_off_time_ms)) % nmsgs;
             const UTF8String &the_msg(mphase < messages.size() ? messages[mphase].message
                                        : cts_messages[mphase - messages.size()]);
-            if (mtime % (msg_on_time + msg_off_time) <= msg_on_time) {
+            if (mtime_ms % (msg_on_time_ms + msg_off_time_ms) <= msg_on_time_ms) {
                 std::map<int,RoomData>::iterator ri = rooms.find(current_room);
                 if (ri != rooms.end()) {
                     DrawUI::drawMessage(config_map, gc,
@@ -215,7 +218,8 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
 
 bool LocalDungeonView::aliveRecently() const
 {
-    return time < last_known_time + config_map.getInt("death_draw_map_time");
+    int time_ms = time_us / 1000;
+    return time_ms < last_known_time_ms + config_map.getInt("death_draw_map_time");
 }
 
 void LocalDungeonView::setCurrentRoom(int r, int w, int h)
@@ -234,15 +238,18 @@ void LocalDungeonView::setCurrentRoom(int r, int w, int h)
 }
 
 void LocalDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
-                                 const Anim * anim, const Overlay *ovr, int af, int atz_diff,
+                                 const Anim * anim, const Overlay *ovr, int af, int atz_diff_ms,
                                  bool ainvis, bool ainvuln,
                                  bool approached,
-                                 int cur_ofs, MotionType motion_type, int motion_time_remaining,
+                                 int cur_ofs, MotionType motion_type, int motion_time_remaining_ms,
                                  const UTF8String &name)
 {
-    entity_map.addEntity(time, id, x, y, ht, facing, anim, ovr, af, atz_diff ? atz_diff + time : 0, 
+    int64_t atz_diff_us = int64_t(atz_diff_ms) * 1000;
+    int64_t motion_time_remaining_us = motion_time_remaining_ms * 1000;
+    entity_map.addEntity(time_us, id, x, y, ht, facing, anim, ovr, af,
+                         atz_diff_us ? atz_diff_us + time_us : 0,
                          ainvis, ainvuln,
-                         cur_ofs, motion_type, motion_time_remaining, name);
+                         cur_ofs, motion_type, motion_time_remaining_us, name);
     if (id == 0) {
         // my knight
         my_x = x;
@@ -280,23 +287,29 @@ void LocalDungeonView::repositionEntity(unsigned short int id, int new_x, int ne
     }
 }
 
-void LocalDungeonView::moveEntity(unsigned short int id, MotionType mt, int motion_dur, bool missile_mode)
+void LocalDungeonView::moveEntity(unsigned short int id, MotionType mt, int motion_dur_ms, bool missile_mode)
 {
-    entity_map.moveEntity(time, id, mt, motion_dur, missile_mode);
+    int64_t motion_dur_us = int64_t(motion_dur_ms) * 1000;
+    entity_map.moveEntity(time_us, id, mt, motion_dur_us, missile_mode);
     if (id==0) {
         my_approached = (mt == MT_APPROACH);
     }
 }
 
-void LocalDungeonView::flipEntityMotion(unsigned short int id, int initial_delay, int motion_dur)
+void LocalDungeonView::flipEntityMotion(unsigned short int id, int initial_delay_ms, int motion_dur_ms)
 {
-    entity_map.flipEntityMotion(time, id, initial_delay, motion_dur);
+    int64_t initial_delay_us = int64_t(initial_delay_ms) * 1000;
+    int64_t motion_dur_us = int64_t(motion_dur_ms) * 1000;
+    entity_map.flipEntityMotion(time_us, id, initial_delay_us, motion_dur_us);
 }
 
 void LocalDungeonView::setAnimData(unsigned short int id, const Anim *a, const Overlay *o,
-                                   int af, int atz_diff, bool ainvis, bool ainvuln, bool currently_moving)
+                                   int af, int atz_diff_ms, bool ainvis, bool ainvuln, bool currently_moving)
 {
-    entity_map.setAnimData(id, a, o, af, atz_diff ? atz_diff + time : 0, ainvis, ainvuln, currently_moving);
+    int64_t atz_diff_us = int64_t(atz_diff_ms) * 1000;
+    entity_map.setAnimData(id, a, o, af,
+                           atz_diff_us ? atz_diff_us + time_us : 0,
+                           ainvis, ainvuln, currently_moving);
 }
 
 void LocalDungeonView::setFacing(unsigned short int id, MapDirection new_facing)
@@ -358,26 +371,30 @@ void LocalDungeonView::setItem(int x, int y, const Graphic * graphic, bool)
     setTile(x, y, item_depth, graphic, boost::shared_ptr<const ColourChange>(), true);
 }
 
-void LocalDungeonView::placeIcon(int x, int y, const Graphic *g, int dur)
+void LocalDungeonView::placeIcon(int x, int y, const Graphic *g, int dur_ms)
 {
     if (current_room == -1) return;
-    
+
+    int time_ms = time_us / 1000;
+
     // Add the 'icon' to the gmap. Also store in 'icons' list.
     setTile(x, y, icon_depth, g, boost::shared_ptr<const ColourChange>(), true);
     LocalIcon ic;
     ic.room_no = current_room;
     ic.x = x;
     ic.y = y;
-    ic.expiry = dur + time;
+    ic.expiry_ms = dur_ms + time_ms;
     icons.push(ic);
 }
 
 void LocalDungeonView::flashMessage(const std::string &s_latin1, int ntimes)
 {
+    int time_ms = time_us / 1000;
+
     Message m;
     m.message = UTF8String::fromLatin1(s_latin1);
-    m.start_time = time;
-    m.stop_time = time + (config_map.getInt("message_on_time") + config_map.getInt("message_off_time"))*ntimes;
+    m.start_time_ms = time_ms;
+    m.stop_time_ms = time_ms + (config_map.getInt("message_on_time") + config_map.getInt("message_off_time"))*ntimes;
     messages.push_back(m);
 }
 
