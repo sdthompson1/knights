@@ -41,30 +41,63 @@
 #include "delete_sdl_surface.hpp"
 #include "sdl_graphic.hpp"
 #include "sdl_surface_from_pixels.hpp"
+#include "sdl_window.hpp"
 #include "../../core/coercri_error.hpp"
 
 namespace Coercri {
 
     SDLGraphic::SDLGraphic(boost::shared_ptr<const PixelArray> p, int hx_, int hy_)
-        : pixels(p), hx(hx_), hy(hy_), used_renderer(nullptr)
+        : pixels(p), hx(hx_), hy(hy_), used_window(nullptr), used_renderer(nullptr)
     {
         if (!pixels) throw CoercriError("Null pixel_array used for graphic");
     }
 
-    void SDLGraphic::createTexture(SDL_Renderer *renderer) const
+    SDLGraphic::~SDLGraphic()
     {
-        if (used_renderer != renderer) {
-            boost::shared_ptr<SDL_Surface> surface = sdl_surface_from_pixels(*pixels);
-            texture.reset( SDL_CreateTextureFromSurface( renderer,
-                                                         surface.get() ),
-                           DeleteSDLTexture() );
-            used_renderer = renderer;
+        if (used_window) {
+            used_window->rmGraphicUsingThisWindow(this);
         }
     }
-    
-    void SDLGraphic::blit(SDL_Renderer *renderer, int x, int y) const
+
+    void SDLGraphic::createTexture(SDLWindow *window, SDL_Renderer *renderer) const
     {
-        createTexture(renderer);
+        // Note: Currently we can only associate a SDLGraphic with a single SDL_Renderer
+        // at a time. This is probably very inefficient for multi-window applications
+        // (we would have to keep destroying and recreating the texture as the Graphic
+        // is rendered to different windows), but it works fine for Knights.
+        if (used_renderer != renderer) {
+            if (used_window) {
+                used_window->rmGraphicUsingThisWindow(this);
+            }
+
+            if (renderer == nullptr) {
+                texture.reset();
+            } else {
+                boost::shared_ptr<SDL_Surface> surface = sdl_surface_from_pixels(*pixels);
+                texture.reset( SDL_CreateTextureFromSurface( renderer,
+                                                             surface.get() ),
+                               DeleteSDLTexture() );
+            }
+
+            used_window = window;
+            used_renderer = renderer;
+
+            if (used_window) {
+                used_window->addGraphicUsingThisWindow(this);
+            }
+        }
+    }
+
+    void SDLGraphic::notifyWindowDestroyed(SDLWindow *window) const
+    {
+        // this window is being destroyed, so our cached texture is no longer valid.
+        // delete it.
+        createTexture(nullptr, nullptr);
+    }
+
+    void SDLGraphic::blit(SDLWindow *window, SDL_Renderer *renderer, int x, int y) const
+    {
+        createTexture(window, renderer);
 
         SDL_SetTextureColorMod(texture.get(), 255, 255, 255);
         SDL_SetTextureAlphaMod(texture.get(), 255);
@@ -78,9 +111,9 @@ namespace Coercri {
         SDL_RenderCopy(renderer, texture.get(), NULL, &dest_rect);
     }
 
-    void SDLGraphic::blitModulated(SDL_Renderer *renderer, int x, int y, Color col) const
+    void SDLGraphic::blitModulated(SDLWindow *window, SDL_Renderer *renderer, int x, int y, Color col) const
     {
-        createTexture(renderer);
+        createTexture(window, renderer);
 
         SDL_SetTextureColorMod(texture.get(), col.r, col.g, col.b);
         SDL_SetTextureAlphaMod(texture.get(), col.a);

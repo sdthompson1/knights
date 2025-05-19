@@ -46,8 +46,8 @@
 
 namespace Coercri {
 
-    SDLGfxContext::SDLGfxContext(SDL_Renderer *rend)
-        : renderer(rend)
+    SDLGfxContext::SDLGfxContext(SDLWindow *wind, SDL_Renderer *rend)
+        : window(wind), renderer(rend)
     {
         clearClipRectangle();
     }
@@ -118,7 +118,7 @@ namespace Coercri {
     {
         const SDLGraphic *sdl_graphic = dynamic_cast<const SDLGraphic*>(&graphic);
         if (sdl_graphic) {
-            sdl_graphic->blit(renderer, x, y);
+            sdl_graphic->blit(window, renderer, x, y);
         }
     }
 
@@ -126,7 +126,7 @@ namespace Coercri {
     {
         const SDLGraphic *sdl_graphic = dynamic_cast<const SDLGraphic*>(&graphic);
         if (sdl_graphic) {
-            sdl_graphic->blitModulated(renderer, x, y, col);
+            sdl_graphic->blitModulated(window, renderer, x, y, col);
         }
     }
 

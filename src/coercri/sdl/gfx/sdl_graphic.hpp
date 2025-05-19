@@ -53,12 +53,15 @@
 
 namespace Coercri {
 
+    class SDLWindow;
+
     class SDLGraphic : public Graphic {
     public:
         SDLGraphic(boost::shared_ptr<const PixelArray> pixels, int hx, int hy);
+        ~SDLGraphic();
 
-        void blit(SDL_Renderer *renderer, int x, int y) const;
-        void blitModulated(SDL_Renderer *renderer, int x, int y, Color col) const;
+        void blit(SDLWindow *window, SDL_Renderer *renderer, int x, int y) const;
+        void blitModulated(SDLWindow *window, SDL_Renderer *renderer, int x, int y, Color col) const;
 
         // overridden from Graphic:
         int getWidth() const;
@@ -66,14 +69,20 @@ namespace Coercri {
         void getHandle(int &x, int &y) const;
         boost::shared_ptr<const PixelArray> getPixels() const;
 
+        // this is called when the SDLWindow that this Graphic is "using" is being destroyed.
+        void notifyWindowDestroyed(SDLWindow *window) const;
+
     private:
-        void createTexture(SDL_Renderer *renderer) const;
+        // create a cached SDL_Texture object for rendering onto the given window.
+        // this is called internally by blit and blitModulated as needed.
+        void createTexture(SDLWindow *window, SDL_Renderer *renderer) const;
 
     private:
         boost::shared_ptr<const PixelArray> pixels;
         int hx, hy;
 
         // cached values:
+        mutable SDLWindow *used_window;
         mutable SDL_Renderer *used_renderer;
         mutable boost::shared_ptr<SDL_Texture> texture;  // Constructed with DeleteSDLTexture
     };

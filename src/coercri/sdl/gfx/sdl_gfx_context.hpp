@@ -53,9 +53,11 @@
 
 namespace Coercri {
 
+    class SDLWindow;
+
     class SDLGfxContext : public GfxContext {
     public:
-        explicit SDLGfxContext(SDL_Renderer *renderer);
+        SDLGfxContext(SDLWindow *window, SDL_Renderer *renderer);
         virtual ~SDLGfxContext();
 
         virtual void setClipRectangle(const Rectangle &rect);
@@ -80,6 +82,7 @@ namespace Coercri {
         void loadClipRectangle();
 
     private:
+        SDLWindow *window;
         SDL_Renderer *renderer;
         Rectangle clip_rectangle;
     };

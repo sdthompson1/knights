@@ -49,7 +49,11 @@
 
 #include <SDL2/SDL.h>
 
+#include <unordered_set>
+
 namespace Coercri {
+
+    class SDLGraphic;
 
     class SDLWindow : public Window {
     public:
@@ -66,7 +70,10 @@ namespace Coercri {
         virtual bool isMaximized() const;
         virtual std::unique_ptr<GfxContext> createGfxContext();
         virtual void setIcon(const PixelArray &);
-        
+
+        void addGraphicUsingThisWindow(const SDLGraphic *g) { gfx_using_this_window.insert(g); }
+        void rmGraphicUsingThisWindow(const SDLGraphic *g) { gfx_using_this_window.erase(g); }
+
         bool need_window_resize;  // see SDLGfxDriver::pollEvents.
         bool hidden_flag;
         bool minimized_flag;
@@ -78,6 +85,8 @@ namespace Coercri {
 
         SDL_Window *sdl_window;
         SDL_Renderer *sdl_renderer;
+
+        std::unordered_set<const SDLGraphic*> gfx_using_this_window;
     };
 
 }

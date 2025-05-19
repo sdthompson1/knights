@@ -39,6 +39,7 @@
  */
 
 #include "sdl_gfx_context.hpp"
+#include "sdl_graphic.hpp"
 #include "sdl_surface_from_pixels.hpp"
 #include "sdl_window.hpp"
 #include "../../core/coercri_error.hpp"
@@ -69,6 +70,18 @@ namespace Coercri {
 
     SDLWindow::~SDLWindow()
     {
+        // If any Graphic is currently "using" this window then it
+        // needs to be told about the window's destruction, so that it
+        // can destroy its cached SDL_Texture. (Otherwise,
+        // SDL_DestroyRenderer, below, would destroy the texture, and
+        // then the Graphic would try to destroy it again, which would
+        // be a double-free bug.)
+        while (!gfx_using_this_window.empty()) {
+            (*gfx_using_this_window.begin())->notifyWindowDestroyed(this);
+        }
+
+        // Now we can destroy the renderer and the window.
+        SDL_DestroyRenderer(sdl_renderer);
         SDL_DestroyWindow(sdl_window);
     }
 
@@ -125,7 +138,7 @@ namespace Coercri {
 
     std::unique_ptr<GfxContext> SDLWindow::createGfxContext()
     {
-        std::unique_ptr<GfxContext> p(new SDLGfxContext(sdl_renderer));
+        std::unique_ptr<GfxContext> p(new SDLGfxContext(this, sdl_renderer));
         return p;
     }
 
