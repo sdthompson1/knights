@@ -80,20 +80,20 @@ void LocalMiniMap::rectangleAlgorithm(const std::vector<int> &x_coords,
         for (int x = 0; x < w; ++x) {
 
             // If this is unmapped, we don't have to draw it.
-            if (colours[y*h + x] == COL_UNMAPPED) continue;
+            if (colours[y*w + x] == COL_UNMAPPED) continue;
 
             // If this is already covered, we don't have to draw it again.
-            if (covered[y*h + x]) continue;
+            if (covered[y*w + x]) continue;
 
             // Get colour of this cell
-            MiniMapColour col = colours[y*h + x];
+            MiniMapColour col = colours[y*w + x];
 
             // Extend the rectangle as far to the right as possible.
             int num_cells_x = 1;
             for (int x2 = x + 1; x2 < w; ++x2) {
-                if (colours[y*h + x2] == col) {
+                if (colours[y*w + x2] == col) {
                     ++num_cells_x;
-                    covered[y*h + x2] = true;
+                    covered[y*w + x2] = true;
                 } else {
                     break;
                 }
@@ -105,7 +105,7 @@ void LocalMiniMap::rectangleAlgorithm(const std::vector<int> &x_coords,
                 // The whole row must be covered
                 bool ok = true;
                 for (int x2 = x; x2 < x + num_cells_x; ++x2) {
-                    if (colours[y2*h + x2] != col) {
+                    if (colours[y2*w + x2] != col) {
                         ok = false;
                         break;
                     }
@@ -117,7 +117,7 @@ void LocalMiniMap::rectangleAlgorithm(const std::vector<int> &x_coords,
                 // It was a match. Extend the height, marking the entire new row as covered.
                 ++num_cells_y;
                 for (int x2 = x; x2 < x + num_cells_x; ++x2) {
-                    covered[y2*h + x2] = true;
+                    covered[y2*w + x2] = true;
                 }
             }
 
@@ -456,7 +456,7 @@ void LocalMiniMap::mapKnightLocation(int n, int x, int y)
 // remove it (if on=false).
 void LocalMiniMap::mapItemLocation(int x, int y, bool on)
 {
-    const int id = y * height + x + 1000;  // add 1000 to prevent clashes with other IDs
+    const int id = y * width + x + 1000;  // add 1000 to prevent clashes with other IDs
     if (on) {
         setHighlight(x, y, id);
     } else {
