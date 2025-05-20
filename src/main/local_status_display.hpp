@@ -54,7 +54,7 @@ public:
               int time, float scale,
               int x, int y,
               bool show_potion_bottle,
-              const LocalMiniMap &mini_map,
+              LocalMiniMap &mini_map,
               const std::string &time_limit_string);
     void getSize(float scale, int &width, int &height) const;
     void setMenuOpen(bool m) { menu_open = m; }

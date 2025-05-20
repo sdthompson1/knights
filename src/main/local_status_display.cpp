@@ -84,7 +84,7 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                               int time, float scale,
                               int x, int y,
                               bool show_potion_bottle,
-                              const LocalMiniMap &mini_map,
+                              LocalMiniMap &mini_map,
                               const std::string &time_limit_string_latin1)
 {
     // Work out where to draw the inventory

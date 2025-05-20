@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include "mini_map.hpp"
 
 #include "gfx/gfx_context.hpp"  // coercri
+#include "gfx/rectangle.hpp"
 
 #include <map>
 #include <vector>
@@ -45,8 +46,12 @@ public:
     // functions specific to this class
     //
 
-    explicit LocalMiniMap(const ConfigMap &cfg) : config_map(cfg), width(0), height(0) { }
-    void draw(Coercri::GfxContext &gc, int left, int top, int width, int height, int time) const;
+    explicit LocalMiniMap(const ConfigMap &cfg)
+        : config_map(cfg), width(0), height(0),
+          prev_left(0), prev_top(0), prev_npx(0), prev_npy(0)
+    {}
+
+    void draw(Coercri::GfxContext &gc, int left, int top, int width, int height, int time);
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     
@@ -61,17 +66,36 @@ public:
     void mapItemLocation(int x, int y, bool on);
 
 private:
+    void rectangleAlgorithm(const std::vector<int>&, const std::vector<int>&, const std::vector<MiniMapColour>&);
+    void downScale(int left, int top, int npx, int npy,
+                   const std::vector<MiniMapColour> &new_data,
+                   std::vector<MiniMapColour> &grid,
+                   std::vector<int> &x_coords,
+                   std::vector<int> &y_coords);
+    void upScale(int left, int top, int npx, int npy,
+                 int scale,
+                 const std::vector<MiniMapColour> &new_data,
+                 std::vector<MiniMapColour> &grid,
+                 std::vector<int> &x_coords,
+                 std::vector<int> &y_coords);
+    void rebuildRects(int left, int top, int npx, int npy);
     void setHighlight(int x, int y, int id);
-
-    void makeHighlightedMap(int t, std::vector<MiniMapColour> &new_data) const;
+    void writeHighlightsToMap(std::vector<MiniMapColour> &new_data) const;
     
     const ConfigMap &config_map;
+
     int width, height;
     std::vector<MiniMapColour> data;
+
     struct Highlight {
         int x, y;
     };
     std::map<int, Highlight> highlights;
+
+    int prev_left, prev_top, prev_npx, prev_npy;
+    std::vector<Coercri::Rectangle> wall_rects;
+    std::vector<Coercri::Rectangle> floor_rects;
+    std::vector<Coercri::Rectangle> highlight_rects;
 };
 
 #endif
