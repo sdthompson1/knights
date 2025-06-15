@@ -1138,32 +1138,6 @@ boost::shared_ptr<KnightsClient> KnightsApp::openLocalConnection()
     return conn.knights_client;
 }
 
-void KnightsApp::closeConnection(KnightsClient *knights_client)
-{
-    // see if it's an outgoing (network) connection
-    std::vector<KnightsAppImpl::OutgoingConn>::iterator it;
-    for (it = pimpl->outgoing_conns.begin(); it != pimpl->outgoing_conns.end(); ++it) {
-        if (it->knights_client.get() == knights_client) break;
-    }
-    if (it != pimpl->outgoing_conns.end()) {
-        knights_client->connectionClosed();
-        it->remote->close();
-        pimpl->outgoing_conns.erase(it);
-    } else {
-
-        // see if it's a local connection
-        std::vector<KnightsAppImpl::LocalConn>::iterator it;
-        for (it = pimpl->local_conns.begin(); it != pimpl->local_conns.end(); ++it) {
-            if (it->knights_client.get() == knights_client) break;
-        }
-        if (it != pimpl->local_conns.end()) {
-            knights_client->connectionClosed();
-            pimpl->knights_server->connectionClosed(*it->server_conn);
-            pimpl->local_conns.erase(it);
-        }
-    }
-}
-
 const std::string & KnightsApp::getKnightsConfigFilename() const
 {
     return pimpl->server_config_filename;

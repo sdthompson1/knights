@@ -151,7 +151,6 @@ public:
     
     boost::shared_ptr<KnightsClient> openRemoteConnection(const std::string &address, int port);
     boost::shared_ptr<KnightsClient> openLocalConnection();
-    void closeConnection(KnightsClient *);
 
 
     //
