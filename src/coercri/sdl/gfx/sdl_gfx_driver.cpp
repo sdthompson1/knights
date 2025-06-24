@@ -460,6 +460,11 @@ namespace Coercri {
 
     bool SDLGfxDriver::pollEvents()
     {
+        return waitEventMsec(0);
+    }
+
+    bool SDLGfxDriver::waitEventMsec(int ms)
+    {
         // Remove expired weak ptrs from this->windows
         for (auto iter = windows.begin(); iter != windows.end(); ) {
             if (iter->expired()) {
@@ -484,10 +489,16 @@ namespace Coercri {
 
         // Check for an SDL event
         SDL_Event event;
-        if (SDL_PollEvent(&event)) {
+        bool got_event;
 
+        if (ms > 0) {
+            got_event = SDL_WaitEventTimeout(&event, ms);
+        } else {
+            got_event = SDL_PollEvent(&event);
+        }
+
+        if (got_event) {
             SDLWindow *win = FindCurrentWindow(windows);
-
             DoEvent(win, event);
             return true;
         } else {

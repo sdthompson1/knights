@@ -40,17 +40,6 @@
 
 class KnightsApp;
 
-enum UpdateType {
-    // update() and draw() are both called approximately once every
-    // "frame" (frame duration is set by "fps" setting in
-    // client_config)
-    UPDATE_TYPE_REALTIME,
-
-    // update() is called approximately every 100 ms
-    // draw() is only called when the window needs repainting
-    UPDATE_TYPE_INFREQUENT
-};
-
 class Screen {
 public:
     // This method starts the screen
@@ -60,14 +49,11 @@ public:
     // The destructor should stop the screen (or do nothing if start() wasn't called)
     virtual ~Screen() { }
     
-    // Which update type does this screen require (see above)
-    virtual UpdateType getUpdateType() { return UPDATE_TYPE_INFREQUENT; }
-
-    // Update and draw methods. See above for the schedule on which these are called.
-    // (Note: both update and draw might be called less frequently than expected
-    // if CPU load is heavy.)
-    // (Note: Main loop will call cg_listener->draw(), so draw() should only do
-    // non-Guichan drawing.)
+    // Update and draw methods.
+    // Update is called every frame.
+    // Draw is called after update, but only if window->needsRepaint() is true.
+    // (Note: Main loop will call cg_listener->draw(), so draw() should
+    // only do non-Guichan drawing.)
     virtual void update() { }
     virtual void draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc) { }
 };

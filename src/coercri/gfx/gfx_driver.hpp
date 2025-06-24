@@ -95,6 +95,10 @@ namespace Coercri {
         // Note: This polls only one event at a time; call multiple times if you want to
         // empty out the event queue.
         virtual bool pollEvents() = 0;
+
+        // Wait for one event to occur or the specified number of milliseconds to elapse
+        // (whichever happens first). Returns TRUE if an event occurred.
+        virtual bool waitEventMsec(int ms) = 0;
     };
 
 }

@@ -27,6 +27,7 @@
 #include "credits_screen.hpp"
 #include "error_screen.hpp"
 #include "file_cache.hpp"
+#include "frame_timer.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
 #include "gfx_resizer_compose.hpp"
@@ -266,7 +267,7 @@ public:
     boost::shared_ptr<Coercri::UDPSocket> broadcast_socket;
     unsigned int broadcast_last_time;
     int server_port;
-    
+
     // game manager
     boost::scoped_ptr<GameManager> game_manager;
 
@@ -281,10 +282,10 @@ public:
     void popPotionSetup(lua_State*);
     void popSkullSetup(lua_State*);
 
-    bool processIncomingNetMsgs();
-    bool processOutgoingNetMsgs();
-    bool processLocalNetMsgs();
-    bool processBroadcastMsgs();
+    void processIncomingNetMsgs();
+    void processOutgoingNetMsgs();
+    void processLocalNetMsgs();
+    void processBroadcastMsgs();
 };
 
 /////////////////////////////////////////////////////
@@ -885,23 +886,20 @@ void KnightsApp::runKnights()
     std::string error;
     int num_errors = 0;
 
-    // Timing
-    const unsigned int fps = std::min((unsigned int)1000,
-                                      (unsigned int)(pimpl->config_map.getInt("fps")));
-    const int64_t frame_time_us = int64_t(1000000) / int64_t(fps);
-    uint64_t last_update_time_us = pimpl->timer->getUsec() - 1000000; // Fake initial value, 1 second ago
+    // Frame timing
+    FrameTimer frame_timer(*pimpl->timer,
+                           pimpl->config_map.getInt("max_fps"));
+    bool actively_drawing = false;
 
     // Main Loop
     while (pimpl->running) {
-
-        bool did_something = false;
 
         if (!error.empty() && num_errors > 100) {
             // Too many errors
             // Abort game.
             throw UnexpectedError("FATAL: " + error);
         }
-        
+
         try {
             if (!error.empty()) {
                 // Error detected: try to go to ErrorScreen.
@@ -913,118 +911,79 @@ void KnightsApp::runKnights()
                 executeScreenChange();
                 error.clear();
                 ++num_errors;
-                did_something = true;
             }
 
             // Handle screen changes if necessary
             executeScreenChange();
 
-            // Before running network events, make sure outgoing messages have been sent
-            did_something = pimpl->processOutgoingNetMsgs() || did_something;
-            
-            // Empty out all event queues
-            while (pimpl->gfx_driver->pollEvents()) did_something = true;
-            while (pimpl->cg_listener->processInput()) did_something = true;
-            while (pimpl->net_driver && pimpl->net_driver->doEvents()) did_something = true;
-
-            // Make sure any incoming net messages (or dropped connections) get processed at this point.
-            did_something = pimpl->processIncomingNetMsgs() || did_something;
-
-            // Also: make sure local net messages are routed properly
-            did_something = pimpl->processLocalNetMsgs() || did_something;
-
-            // Also: do the broadcast msgs
-            did_something = pimpl->processBroadcastMsgs() || did_something;
+            // Handle LAN broadcasts if necessary
+            pimpl->processBroadcastMsgs();
 
 
-            // Determine if update is needed
-            UpdateType update_type = pimpl->current_screen->getUpdateType();
-            uint64_t time_now_us = pimpl->timer->getUsec();
-            int64_t time_since_last_update_us = time_now_us - last_update_time_us;
-            bool need_update = false;
-            if (update_type == UPDATE_TYPE_REALTIME) {
-                need_update = (time_since_last_update_us >= frame_time_us);
-            } else {
-                need_update = (time_since_last_update_us > 100 * 1000);
+            // Read input from the network (e.g. server telling us to move a knight on-screen)
+            // (Do this first, so that the frame we are about to draw can include the latest updates)
+            while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
+            pimpl->processIncomingNetMsgs();
+            pimpl->processLocalNetMsgs();
+
+            // Read window system events (e.g. mouse/keyboard control inputs)
+            // Note: If we are not actively drawing frames then we are prepared to wait
+            // a few milliseconds for the first event (to reduce CPU usage)
+            if (!actively_drawing) {
+                pimpl->gfx_driver->waitEventMsec(100);
             }
+            while (pimpl->gfx_driver->pollEvents()) {}
+            while (pimpl->cg_listener->processInput()) {}
 
-            // Do update if needed
-            if (need_update) {
-                pimpl->current_screen->update();
-                did_something = true;
+            // Update the current screen
+            pimpl->current_screen->update();
 
-                // Adjust last_update_time_us
-                if (update_type == UPDATE_TYPE_REALTIME) {
-                    // Try to adjust last_update_time_us in steps of exactly frame_time_us
-                    // (in order to make our rendered frames evenly spaced in time),
-                    // if the CPU can keep up with this.
-                    last_update_time_us += frame_time_us;
-                    int64_t new_time_delta_us = time_now_us - last_update_time_us;
-                    if (new_time_delta_us >= frame_time_us) {
-                        // CPU is falling behind (by at least one frame), so just
-                        // "catch up" instantly at this point.
-                        last_update_time_us = time_now_us;
-                    }
-                } else {
-                    // Simple method
-                    last_update_time_us = time_now_us;
-                }
-            }
+            // Screen::update might have sent outgoing network messages (e.g. in response
+            // to the user clicking the mouse). Send these to the server now
+            pimpl->processOutgoingNetMsgs();
+            pimpl->processLocalNetMsgs();
+            while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
 
 
-            // Determine if draw is needed
-            bool need_draw = false;
-            if (update_type == UPDATE_TYPE_REALTIME) {
-                need_draw = need_update;
-            } else {
-                need_draw = pimpl->window->needsRepaint();
-            }
-
-            // Block drawing if the screen is about to change
+            // Work out if we need to draw.
+            // (Draw if window needsRepaint(), but not if the screen is about to change.)
+            bool need_draw = pimpl->window->needsRepaint();
             if (pimpl->requested_screen.get() != pimpl->current_screen.get()
             && pimpl->requested_screen.get()) {
                 need_draw = false;
             }
 
-            // Draw screen if needed
             if (need_draw) {
+                // Repaint the window.
                 std::unique_ptr<Coercri::GfxContext> gc = pimpl->window->createGfxContext();
+
                 gc->clearClipRectangle();
                 gc->clearScreen(Coercri::Color(0,0,0));
                 pimpl->cg_listener->draw(*gc);
-                pimpl->current_screen->draw(last_update_time_us, *gc);
+                pimpl->current_screen->draw(
+                    frame_timer.getFrameTimestampUsec(),
+                    *gc);
                 pimpl->window->cancelInvalidRegion();
-                did_something = true;
+
+                gc.reset();
+            }
+
+            actively_drawing = need_draw;
+
+            frame_timer.markEndOfFrame();
+
+
+            // Sleep if necessary (so as not to exceed max_fps)
+            int64_t sleep_time_us = frame_timer.getSleepTimeUsec();
+            if (sleep_time_us > 0) {
+                pimpl->timer->sleepUsec(sleep_time_us);
             }
 
 
-            // Sleep if necessary (so that we don't consume 100% CPU).
-            if (!did_something) {
-                int64_t delay_us = 0u;
-                if (update_type == UPDATE_TYPE_INFREQUENT) {
-                    // Fixed delay of 20 ms between updates
-                    // (Even though the next update() call is 100ms away,
-                    // we still want to wake up a bit before that, in order
-                    // to check for window system messages, network messages, etc.)
-                    delay_us = 20000;
+            // If we reach the end of the main loop without error, then
+            // assume things are going well, and reset num_errors.
+            num_errors = 0;
 
-                } else {
-                    const uint64_t next_update_time_us = last_update_time_us + frame_time_us;
-                    const int64_t time_to_us = next_update_time_us - pimpl->timer->getUsec();
-                    if (time_to_us > 0) {
-                        delay_us = time_to_us;
-
-                        // Cap sleep at 20ms to allow a chance to check the message queue
-                        // (note: this will only kick in if fps is set very low)
-                        if (delay_us > 20000) {
-                            delay_us = 20000;
-                        }
-                    }
-                }
-                if (delay_us > 0) pimpl->timer->sleepUsec(delay_us);
-                num_errors = 0;  // if we can get to a sleep w/o error, then assume things
-                                 // are going well & can reset num_errors.
-            }
 
         } catch (LuaError&) {
             // These are big and better displayed on stdout than in a guichan dialog box:
@@ -1160,16 +1119,15 @@ KnightsServer * KnightsApp::createLocalServer()
     return pimpl->knights_server.get();
 }
 
-bool KnightsAppImpl::processIncomingNetMsgs()
+void KnightsAppImpl::processIncomingNetMsgs()
 {
     // Check for any incoming network data and route it to the
     // appropriate KnightsClient or KnightsServer object
 
-    bool did_something = false;
     std::vector<unsigned char> net_msg;
 
     // Do "outgoing" connections first
-    
+
     for (int i = 0; i < outgoing_conns.size(); ) {
         OutgoingConn &out = outgoing_conns[i];
         ASSERT(out.knights_client);
@@ -1177,10 +1135,9 @@ bool KnightsAppImpl::processIncomingNetMsgs()
         // see if there is any data, if so, route it to the KnightsClient
         out.remote->receive(net_msg);
         if (!net_msg.empty()) {
-            did_something = true;
             out.knights_client->receiveInputData(net_msg);
         }
-        
+
         // if connection has dropped, then remove it from the list
         const Coercri::NetworkConnection::State state = out.remote->getState();
         if (state == Coercri::NetworkConnection::CLOSED || state == Coercri::NetworkConnection::FAILED) {
@@ -1190,31 +1147,28 @@ bool KnightsAppImpl::processIncomingNetMsgs()
                 out.knights_client->connectionFailed();
             }
             outgoing_conns.erase(outgoing_conns.begin() + i);
-            did_something = true;
         } else {
             ++i;
         }
     }
 
     // Now do "incoming" connections
-    
+
     for (int i = 0; i < incoming_conns.size(); /* incremented below */) {
         ASSERT(knights_server && "processIncomingNetMsgs: loop over incoming connections");
         IncomingConn &in = incoming_conns[i];
 
         in.remote->receive(net_msg);
         if (!net_msg.empty()) {
-            did_something = true;
             knights_server->receiveInputData(*in.server_conn, net_msg);
         }
-        
+
         const Coercri::NetworkConnection::State state = in.remote->getState();
         ASSERT(state != Coercri::NetworkConnection::FAILED); // incoming connections can't fail...
         if (state == Coercri::NetworkConnection::CLOSED) {
             // connection lost: remove it from the list, and inform the server
             knights_server->connectionClosed(*in.server_conn);
             incoming_conns.erase(incoming_conns.begin() + i);
-            did_something = true;
         } else {
             ++i;
         }
@@ -1228,13 +1182,10 @@ bool KnightsAppImpl::processIncomingNetMsgs()
         in.server_conn = &knights_server->newClientConnection();
         in.remote = *it;
         incoming_conns.push_back(in);
-        did_something = true;
     }
-
-    return did_something;
 }
 
-bool KnightsAppImpl::processOutgoingNetMsgs()
+void KnightsAppImpl::processOutgoingNetMsgs()
 {
     // Pick up any outgoing network data and route it to the
     // appropriate NetworkConnection
@@ -1244,7 +1195,7 @@ bool KnightsAppImpl::processOutgoingNetMsgs()
 
     bool did_something = false;
     std::vector<unsigned char> net_msg;
-    
+
     for (std::vector<OutgoingConn>::iterator it = outgoing_conns.begin(); it != outgoing_conns.end(); ++it) {
         ASSERT(it->knights_client && "processOutgoingNetMsgs");
         it->knights_client->getOutputData(net_msg);
@@ -1267,15 +1218,12 @@ bool KnightsAppImpl::processOutgoingNetMsgs()
             it->remote->send(net_msg);
         }
     }
-
-    return did_something;
 }
 
-bool KnightsAppImpl::processLocalNetMsgs()
+void KnightsAppImpl::processLocalNetMsgs()
 {
-    bool did_something = false;
     std::vector<unsigned char> net_msg;
-    
+
     for (std::vector<LocalConn>::iterator it = local_conns.begin(); it != local_conns.end(); ++it) {
         ASSERT(knights_server && "processLocalNetMsgs");
         ASSERT(it->knights_client && "processLocalNetMsgs");
@@ -1292,7 +1240,7 @@ bool KnightsAppImpl::processLocalNetMsgs()
             OutputDebugString("\n");
         }
 #endif
-        if (!net_msg.empty()) did_something = true;
+
         knights_server->receiveInputData(*it->server_conn, net_msg);
 
         knights_server->getOutputData(*it->server_conn, net_msg);
@@ -1307,11 +1255,8 @@ bool KnightsAppImpl::processLocalNetMsgs()
             OutputDebugString("\n");
         }
 #endif
-        if (!net_msg.empty()) did_something = true;
         it->knights_client->receiveInputData(net_msg);
     }
-
-    return did_something;
 }
 
 //////////////////////////////////////////////
@@ -1326,19 +1271,18 @@ void KnightsApp::startBroadcastReplies(int server_port)
     pimpl->server_port = server_port;
 }
 
-bool KnightsAppImpl::processBroadcastMsgs()
+void KnightsAppImpl::processBroadcastMsgs()
 {
-    if (!broadcast_socket) return false;
+    if (!broadcast_socket) return;
     
     // don't run this more than once per second.
     const unsigned int time_now = timer->getMsec();
-    if (time_now - broadcast_last_time < 1000) return false;
+    if (time_now - broadcast_last_time < 1000) return;
     broadcast_last_time = time_now;
     
     const int num_players = knights_server ? knights_server->getNumberOfPlayers() : 0;
 
     // check for incoming messages, send replies if necessary.
-    bool sent_reply = false;
     std::string msg, address;
     int port;
     while (broadcast_socket->receive(address, port, msg)) {
@@ -1352,13 +1296,9 @@ bool KnightsAppImpl::processBroadcastMsgs()
             reply += static_cast<unsigned char>(num_players & 0xff);
             
             // Send the reply back to the address/port where the broadcast came from.
-            broadcast_socket->send(address, port, reply);            
-
-            sent_reply = true;
+            broadcast_socket->send(address, port, reply);
         }
     }
-
-    return (sent_reply);
 }
 
 
