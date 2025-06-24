@@ -63,7 +63,7 @@ namespace Coercri {
         // Sleep for at least the given number of milliseconds or microseconds.
         // Yields the CPU in the meantime.
         virtual void sleepMsec(int msec) = 0;
-        virtual void sleepUsec(int64_t msec) = 0;
+        virtual void sleepUsec(int64_t usec) = 0;
     };
 
 }
