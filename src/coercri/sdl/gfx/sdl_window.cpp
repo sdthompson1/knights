@@ -49,7 +49,7 @@
 
 namespace Coercri {
 
-    SDLWindow::SDLWindow(SDL_Window *win, int fsw, int fsh)
+    SDLWindow::SDLWindow(SDL_Window *win, bool vsync)
         : need_window_resize(false)
         , hidden_flag(false)
         , minimized_flag(false)
@@ -58,7 +58,8 @@ namespace Coercri {
     {
         invalidateAll(); // make sure the window gets painted initially.
 
-        sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
+        int flags = vsync ? SDL_RENDERER_PRESENTVSYNC : 0;
+        sdl_renderer = SDL_CreateRenderer(sdl_window, -1, flags);
         if (sdl_renderer == NULL) {
             SDL_DestroyWindow(sdl_window);
             throw CoercriError("SDL_CreateRenderer failed");

@@ -395,28 +395,29 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     curl_global_init(CURL_GLOBAL_NOTHING);
     
     // Open the game window.
-    bool fullscreen = pimpl->options->fullscreen;
-    bool maximized = pimpl->options->maximized;
-    if (display_type == DT_WINDOWED) fullscreen = false;
-    if (display_type == DT_FULLSCREEN) fullscreen = true;
-    int width, height;
-    if (fullscreen) {
-        // width, height are not needed to create a fullscreen window. just set them to zero.
-        width = height = 0;
-    } else {
-        getWindowedModeSize(width, height);
+    Coercri::WindowParams params;
+    params.resizable = true;
+    params.fullscreen = pimpl->options->fullscreen;
+    params.maximized = pimpl->options->maximized;
+    params.vsync = (pimpl->config_map.getInt("vsync") != 0);
+    params.title = game_name;
+    if (display_type == DT_WINDOWED) params.fullscreen = false;
+    if (display_type == DT_FULLSCREEN) params.fullscreen = true;
+    if (!params.fullscreen) {
+        getWindowedModeSize(params.width, params.height);
     }
 
     try {
-        pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, fullscreen, maximized, game_name);
+        pimpl->window = pimpl->gfx_driver->createWindow(params);
     } catch (Coercri::CoercriError &) {
         // If creation in fullscreen mode fails then try again in windowed mode (Trac #118)
         // (If it wasn't fullscreen mode then re-throw the exception)
-        if (fullscreen) {
+        if (params.fullscreen) {
             // shrink the window a little bit, so it doesn't fill the entire screen
-            width = std::max(width-200, 400);
-            height = std::max(height-200, 400);
-            pimpl->window = pimpl->gfx_driver->createWindow(width, height, true, false, false, game_name);
+            params.width = std::max(params.width - 200, 400);
+            params.height = std::max(params.height - 200, 400);
+            params.maximized = params.fullscreen = false;
+            pimpl->window = pimpl->gfx_driver->createWindow(params);
         } else {
             throw;
         }

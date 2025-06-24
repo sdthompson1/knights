@@ -416,12 +416,12 @@ namespace Coercri {
         InitKeyTable();
     }
 
-    boost::shared_ptr<Window> SDLGfxDriver::createWindow(int width, int height,
-                                                         bool resizable, bool fullscreen,
-                                                         bool maximized,
-                                                         const std::string &title)
+    boost::shared_ptr<Window> SDLGfxDriver::createWindow(const WindowParams &params)
     {
-        if (fullscreen) {
+        int width = params.width;
+        int height = params.height;
+
+        if (params.fullscreen) {
             SDL_DisplayMode mode;
             int err = SDL_GetDesktopDisplayMode(0, &mode);
             if (err) {
@@ -433,11 +433,11 @@ namespace Coercri {
         }
 
         Uint32 flags = 0;
-        if (fullscreen) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-        if (resizable) flags |= SDL_WINDOW_RESIZABLE;
-        if (maximized) flags |= SDL_WINDOW_MAXIMIZED;
+        if (params.fullscreen) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        if (params.resizable) flags |= SDL_WINDOW_RESIZABLE;
+        if (params.maximized) flags |= SDL_WINDOW_MAXIMIZED;
 
-        SDL_Window *sdl_window = SDL_CreateWindow(title.c_str(),
+        SDL_Window *sdl_window = SDL_CreateWindow(params.title.c_str(),
                                                   SDL_WINDOWPOS_UNDEFINED,
                                                   SDL_WINDOWPOS_UNDEFINED,
                                                   width,
@@ -448,7 +448,7 @@ namespace Coercri {
             throw CoercriError("SDL_CreateWindow failed");
         }
 
-        boost::shared_ptr<SDLWindow> result(new SDLWindow(sdl_window, width, height));
+        boost::shared_ptr<SDLWindow> result(new SDLWindow(sdl_window, params.vsync));
         windows.push_back(boost::weak_ptr<SDLWindow>(result));
         return result;
     }

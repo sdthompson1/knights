@@ -56,12 +56,9 @@ namespace Coercri {
         SDLGfxDriver();
 
         // Functions overridden from GfxDriver
-        virtual boost::shared_ptr<Window> createWindow(int width, int height,
-                                                       bool resizable, bool fullscreen,
-                                                       bool maximized,
-                                                       const std::string &title);
-        virtual boost::shared_ptr<Graphic> createGraphic(boost::shared_ptr<const PixelArray> pixels, int hx = 0, int hy = 0);
-        virtual bool pollEvents();
+        virtual boost::shared_ptr<Window> createWindow(const WindowParams &params) override;
+        virtual boost::shared_ptr<Graphic> createGraphic(boost::shared_ptr<const PixelArray> pixels, int hx = 0, int hy = 0) override;
+        virtual bool pollEvents() override;
         
     private:
         SDLSubSystemHandle video_subsystem;

@@ -49,6 +49,7 @@
 #include "boost/noncopyable.hpp"
 #include "boost/shared_ptr.hpp"
 
+#include <string>
 #include <vector>
 
 namespace Coercri {
@@ -57,7 +58,24 @@ namespace Coercri {
     class Graphic;
     class PixelArray;
     class Window;
-    
+
+    struct WindowParams {
+        WindowParams()
+            : width(0), height(0),
+              resizable(false),
+              fullscreen(false), maximized(false),
+              vsync(false)
+        {}
+
+        int width;
+        int height;
+        bool resizable;
+        bool fullscreen; // note: width,height ignored if fullscreen is true
+        bool maximized;
+        bool vsync;
+        std::string title;
+    };
+
     class GfxDriver : boost::noncopyable {
     public:
         virtual ~GfxDriver() { }
@@ -65,10 +83,7 @@ namespace Coercri {
         // Create a new Window
         // NOTE: the given width, height will be IGNORED if fullscreen is true. (In that case
         // the desktop width and height will be used instead.)
-        virtual boost::shared_ptr<Window> createWindow(int width, int height,
-                                                       bool resizable, bool fullscreen,
-                                                       bool maximized,
-                                                       const std::string &title) = 0;
+        virtual boost::shared_ptr<Window> createWindow(const WindowParams &params) = 0;
 
         // Create a Graphic from a PixelArray.
         virtual boost::shared_ptr<Graphic> createGraphic(boost::shared_ptr<const PixelArray> pixels,

@@ -57,7 +57,7 @@ namespace Coercri {
 
     class SDLWindow : public Window {
     public:
-        explicit SDLWindow(SDL_Window *win, int fullscreen_width, int fullscreen_height);
+        explicit SDLWindow(SDL_Window *win, bool vsync);
         ~SDLWindow();
 
         virtual void getSize(int &w, int &h) const;

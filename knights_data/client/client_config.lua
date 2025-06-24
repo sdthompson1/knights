@@ -45,6 +45,9 @@ death_draw_map_time = 1500; -- how long to show the map after death
 -- Sound settings 
 sound_volume = 30;          -- 0 to 100. NB too high may cause 'crackling'
 
+-- Whether to enable VSYNC (0 = disabled, 1 = enabled)
+vsync = 1;
+
 -- Main game FPS (maximum)
 fps = 120;
 
