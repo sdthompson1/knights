@@ -9,7 +9,7 @@
  *   Stephen Thompson
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -48,6 +48,8 @@
 
 #include "enet/enet.h"
 
+#include "boost/thread.hpp"
+
 #include <queue>
 
 namespace Coercri {
@@ -75,10 +77,14 @@ namespace Coercri {
         void onReceiveAcknowledgment();
         void onReceivePacket(ENetPacket *packet);
         void onDisconnect();
+
+    private:
+        void sendImpl(const std::vector<unsigned char> &);
         
     private:
         // NOTE: if state is CLOSED but peer!=0 this means we have sent our enet_peer_disconnect msg, but
         // haven't received the DISCONNECT event yet. No further transmits should be attempted in this case.
+        mutable boost::mutex mutex;
         ENetPeer *peer;
         State state;
         std::queue<ENetPacket*> queued_packets;  // incoming packets

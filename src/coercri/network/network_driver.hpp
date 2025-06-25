@@ -18,7 +18,7 @@
  *   29-Jun-2008
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -64,11 +64,10 @@ namespace Coercri {
     class NetworkConnection;
     class UDPSocket;
 
-    // This class is NOT thread safe in general, i.e. only the main
-    // thread should make calls to NetworkDriver functions. However
-    // see exception for resolveAddress below.
-    
-    
+
+    // Note: This class is now thread safe. Multiple threads can call
+    // methods concurrently and it should not be a problem.
+
     class NetworkDriver : boost::noncopyable {
     public:
         virtual ~NetworkDriver() { }
@@ -137,12 +136,6 @@ namespace Coercri {
 
         // Resolve an IP address to a hostname. (If not possible then
         // just returns the IP address back again.) May block.
-        //
-        // Thread safety: resolveAddress can be called from outside
-        // the main thread (even if the main thread is executing some
-        // other coercri function), BUT only one thread should be
-        // inside resolveAddress at any given time.
-        //
         virtual std::string resolveAddress(const std::string &ip_address) = 0;
     };
 

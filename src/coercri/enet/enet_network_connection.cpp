@@ -6,7 +6,7 @@
  *   Stephen Thompson
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -85,11 +85,14 @@ namespace Coercri {
 
     EnetNetworkConnection::State EnetNetworkConnection::getState() const
     {
+        boost::unique_lock lock(mutex);
         return state;
     }
 
     void EnetNetworkConnection::close()
     {
+        boost::unique_lock lock(mutex);
+
         if (peer && state != CLOSED && state != FAILED) {
             state = CLOSED;
 
@@ -103,6 +106,12 @@ namespace Coercri {
 
     void EnetNetworkConnection::send(const std::vector<unsigned char> &buf)
     {
+        boost::unique_lock lock(mutex);
+        sendImpl(buf);
+    }
+
+    void EnetNetworkConnection::sendImpl(const std::vector<unsigned char> &buf)
+    {
         if (state == CONNECTED && peer) {
             ENetPacket *packet = enet_packet_create(&buf[0], buf.size(), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(peer, 0, packet);
@@ -115,6 +124,8 @@ namespace Coercri {
 
     void EnetNetworkConnection::receive(std::vector<unsigned char> &buf)
     {
+        boost::unique_lock lock(mutex);
+
         buf.clear();
         while (!queued_packets.empty()) {
             unsigned char* ptr = static_cast<unsigned char*>(queued_packets.front()->data);
@@ -126,6 +137,8 @@ namespace Coercri {
 
     std::string EnetNetworkConnection::getAddress()
     {
+        boost::unique_lock lock(mutex);
+
         char buf[1024];
         enet_address_get_host_ip(&peer->address, buf, sizeof(buf));
         buf[sizeof(buf)-1] = 0;
@@ -134,26 +147,34 @@ namespace Coercri {
 
     int EnetNetworkConnection::getPingTime()
     {
+        boost::unique_lock lock(mutex);
+
         if (peer) return peer->roundTripTime;
         else return 0;
     }
 
     void EnetNetworkConnection::onReceiveAcknowledgment()
     {
+        boost::unique_lock lock(mutex);
+
         state = CONNECTED;
         while (!outgoing_packets.empty()) {
-            send(outgoing_packets.front());
+            sendImpl(outgoing_packets.front());
             outgoing_packets.pop();
         }
     }
 
     void EnetNetworkConnection::onReceivePacket(ENetPacket *packet)
     {
+        boost::unique_lock lock(mutex);
+
         queued_packets.push(packet);
     }
 
     void EnetNetworkConnection::onDisconnect()
     {
+        boost::unique_lock lock(mutex);
+
         // This is called when we get an ENet disconnect event. This
         // means either an existing connection timed out or was
         // closed, or an attempt to establish a new connection timed

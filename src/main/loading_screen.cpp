@@ -109,8 +109,7 @@ void LoadingScreen::update()
     
     if (server_port < 0) {
         // create server & game
-        KnightsServer *server = knights_app->createLocalServer();
-        server->startNewGame(loader->knights_config, "#SplitScreenGame");
+        knights_app->createLocalServer(loader->knights_config, "#SplitScreenGame");
 
         // set dummy player name.
         UTF8String dummy_player_name;
@@ -142,8 +141,7 @@ void LoadingScreen::update()
 
     } else {
         // create server & game
-        KnightsServer *server = knights_app->createServer(server_port);
-        server->startNewGame(loader->knights_config, "#LanGame");
+        knights_app->createServer(server_port, loader->knights_config, "#LanGame");
 
         // create a local client
         boost::shared_ptr<KnightsClient> client = knights_app->openLocalConnection();

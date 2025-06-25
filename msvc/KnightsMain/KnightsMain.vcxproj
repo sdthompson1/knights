@@ -142,6 +142,7 @@
     <ClCompile Include="..\..\src\main\in_game_screen.cpp" />
     <ClCompile Include="..\..\src\main\keyboard_controller.cpp" />
     <ClCompile Include="..\..\src\main\knights_app.cpp" />
+    <ClCompile Include="..\..\src\main\knights_server_wrapper.cpp" />
     <ClCompile Include="..\..\src\main\load_font.cpp" />
     <ClCompile Include="..\..\src\main\loading_screen.cpp" />
     <ClCompile Include="..\..\src\main\lobby_screen.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="..\..\src\main\in_game_screen.hpp" />
     <ClInclude Include="..\..\src\main\keyboard_controller.hpp" />
     <ClInclude Include="..\..\src\main\knights_app.hpp" />
+    <ClInclude Include="..\..\src\main\knights_server_wrapper.hpp" />
     <ClInclude Include="..\..\src\main\load_font.hpp" />
     <ClInclude Include="..\..\src\main\loading_screen.hpp" />
     <ClInclude Include="..\..\src\main\lobby_screen.hpp" />

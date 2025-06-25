@@ -40,6 +40,8 @@
 
 #include "boost/noncopyable.hpp"
 
+#include "core/utf8string.hpp"
+
 #include <vector>
 
 class ClientCallbacks;
@@ -89,7 +91,7 @@ public:
     // output buffer)
     // 
 
-    void setPlayerNameAndControls(const UTF8String &plyr_name, bool action_bar_ctrls);   // should be 1st cmd sent
+    void setPlayerNameAndControls(const Coercri::UTF8String &plyr_name, bool action_bar_ctrls);   // should be 1st cmd sent
     void joinGame(const std::string &game_name);   // attempt to join a game.
     void joinGameSplitScreen(const std::string &game_name);  // used for split screen mode.
     void leaveGame();   // attempt to leave a game (go back to "unjoined" state).

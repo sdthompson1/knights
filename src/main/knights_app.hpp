@@ -53,6 +53,7 @@ class GfxManager;
 class Graphic;
 class KnightsAppImpl;
 class KnightsClient;
+class KnightsConfig;
 class KnightsServer;
 class Options;
 class PotionRenderer;
@@ -166,8 +167,8 @@ public:
     //
 
     const std::string & getKnightsConfigFilename() const;
-    KnightsServer * createServer(int port);
-    KnightsServer * createLocalServer();
+    void createServer(int port, boost::shared_ptr<KnightsConfig> config, const std::string &game_name);
+    void createLocalServer(boost::shared_ptr<KnightsConfig> config, const std::string &game_name);
 
     //
     // LAN broadcast replies. (Reset when we return to title screen.)

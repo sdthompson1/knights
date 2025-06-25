@@ -37,7 +37,7 @@
 #include "keyboard_controller.hpp"
 #include "knights_app.hpp"
 #include "knights_client.hpp"
-#include "knights_server.hpp"
+#include "knights_server_wrapper.hpp"
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
@@ -240,14 +240,7 @@ public:
     
     // server object.
     std::string server_config_filename;
-    boost::scoped_ptr<KnightsServer> knights_server;
-
-    // incoming network connections (to the knights_server above)
-    struct IncomingConn {
-        ServerConnection * server_conn;
-        boost::shared_ptr<Coercri::NetworkConnection> remote;
-    };
-    std::vector<IncomingConn> incoming_conns;
+    std::unique_ptr<KnightsServerWrapper> server_wrapper;
 
     // outgoing network connections
     struct OutgoingConn {
@@ -255,13 +248,6 @@ public:
         boost::shared_ptr<Coercri::NetworkConnection> remote;
     };
     std::vector<OutgoingConn> outgoing_conns;
-
-    // local "loopback" connections
-    struct LocalConn {
-        boost::shared_ptr<KnightsClient> knights_client;
-        ServerConnection * server_conn;
-    };
-    std::vector<LocalConn> local_conns;
 
     // broadcast socket
     boost::shared_ptr<Coercri::UDPSocket> broadcast_socket;
@@ -284,7 +270,6 @@ public:
 
     void processIncomingNetMsgs();
     void processOutgoingNetMsgs();
-    void processLocalNetMsgs();
     void processBroadcastMsgs();
 };
 
@@ -391,6 +376,9 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     // use the enet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
     pimpl->net_driver->enableServer(false);  // start off disabled.
+
+    // create KnightsServerWrapper
+    pimpl->server_wrapper.reset(new KnightsServerWrapper(*pimpl->net_driver, pimpl->timer));
 
     // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
     curl_global_init(CURL_GLOBAL_NOTHING);
@@ -581,31 +569,16 @@ void KnightsApp::setPlayerName(const UTF8String &name)
 void KnightsApp::resetAll()
 {
     // Clean up outgoing connections
-    for (std::vector<KnightsAppImpl::OutgoingConn>::iterator it = pimpl->outgoing_conns.begin();
-    it != pimpl->outgoing_conns.end(); ++it) {
-        ASSERT(it->knights_client && "resetAll: outgoing");
-        it->knights_client->setClientCallbacks(0);
-        it->knights_client->setKnightsCallbacks(0);
-        it->knights_client->connectionClosed();
-        it->remote->close();
+    for (auto &conn : pimpl->outgoing_conns) {
+        conn.knights_client->setClientCallbacks(nullptr);
+        conn.knights_client->setKnightsCallbacks(nullptr);
+        conn.knights_client->connectionClosed();
+        conn.remote->close();
     }
     pimpl->outgoing_conns.clear();
 
-    // Clean up incoming connections
-    for (std::vector<KnightsAppImpl::IncomingConn>::iterator it = pimpl->incoming_conns.begin();
-    it != pimpl->incoming_conns.end(); ++it) {
-        ASSERT(pimpl->knights_server && "resetAll: incoming");  // otherwise there would not be any incoming_conns!
-        pimpl->knights_server->connectionClosed(*it->server_conn);
-        it->remote->close();
-    }
-    pimpl->incoming_conns.clear();
-
-    // Clean up local connections
-    pimpl->local_conns.clear();
-
-    // Shut down the server
-    pimpl->knights_server.reset();
-    pimpl->net_driver->enableServer(false);
+    // Destroy the server if there is one
+    pimpl->server_wrapper->destroyServer();
 
     // Shut down the GameManager (important to do this BEFORE accessing gfxmanager/soundmanager)
     destroyGameManager();
@@ -924,7 +897,7 @@ void KnightsApp::runKnights()
             // (Do this first, so that the frame we are about to draw can include the latest updates)
             while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
             pimpl->processIncomingNetMsgs();
-            pimpl->processLocalNetMsgs();
+            pimpl->server_wrapper->routeLocalPackets();
 
             // Read window system events (e.g. mouse/keyboard control inputs)
             // Note: If we are not actively drawing frames then we are prepared to wait
@@ -941,7 +914,7 @@ void KnightsApp::runKnights()
             // Screen::update might have sent outgoing network messages (e.g. in response
             // to the user clicking the mouse). Send these to the server now
             pimpl->processOutgoingNetMsgs();
-            pimpl->processLocalNetMsgs();
+            pimpl->server_wrapper->routeLocalPackets();
             while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
 
 
@@ -1072,6 +1045,9 @@ void KnightsApp::runKnights()
         while (pimpl->net_driver->doEvents()) ;
         pimpl->timer->sleepMsec(100);
     }
+
+    // Get rid of the KnightsServerWrapper
+    pimpl->server_wrapper.reset();
 }
 
 
@@ -1090,12 +1066,7 @@ boost::shared_ptr<KnightsClient> KnightsApp::openRemoteConnection(const std::str
 
 boost::shared_ptr<KnightsClient> KnightsApp::openLocalConnection()
 {
-    if (!pimpl->knights_server) throw UnexpectedError("server must be created before calling openLocalConnection");
-    KnightsAppImpl::LocalConn conn;
-    conn.knights_client.reset(new KnightsClient);
-    conn.server_conn = &pimpl->knights_server->newClientConnection();
-    pimpl->local_conns.push_back(conn);
-    return conn.knights_client;
+    return pimpl->server_wrapper->openLocalConnection();
 }
 
 const std::string & KnightsApp::getKnightsConfigFilename() const
@@ -1103,20 +1074,17 @@ const std::string & KnightsApp::getKnightsConfigFilename() const
     return pimpl->server_config_filename;
 }
 
-KnightsServer * KnightsApp::createServer(int port)
+void KnightsApp::createServer(int port,
+                              boost::shared_ptr<KnightsConfig> config,
+                              const std::string &game_name)
 {
-    if (pimpl->knights_server) throw UnexpectedError("KnightsServer created twice");
-    pimpl->knights_server.reset(new KnightsServer(pimpl->timer, false, "", "", ""));
-    pimpl->net_driver->setServerPort(port);
-    pimpl->net_driver->enableServer(true);
-    return pimpl->knights_server.get();
+    pimpl->server_wrapper->createServer(port, config, game_name);
 }
 
-KnightsServer * KnightsApp::createLocalServer()
+void KnightsApp::createLocalServer(boost::shared_ptr<KnightsConfig> config,
+                                   const std::string &game_name)
 {
-    if (pimpl->knights_server) throw UnexpectedError("KnightsServer created twice");
-    pimpl->knights_server.reset(new KnightsServer(pimpl->timer, true, "", "", ""));
-    return pimpl->knights_server.get();
+    pimpl->server_wrapper->createLocalServer(config, game_name);
 }
 
 void KnightsAppImpl::processIncomingNetMsgs()
@@ -1125,8 +1093,6 @@ void KnightsAppImpl::processIncomingNetMsgs()
     // appropriate KnightsClient or KnightsServer object
 
     std::vector<unsigned char> net_msg;
-
-    // Do "outgoing" connections first
 
     for (int i = 0; i < outgoing_conns.size(); ) {
         OutgoingConn &out = outgoing_conns[i];
@@ -1151,38 +1117,6 @@ void KnightsAppImpl::processIncomingNetMsgs()
             ++i;
         }
     }
-
-    // Now do "incoming" connections
-
-    for (int i = 0; i < incoming_conns.size(); /* incremented below */) {
-        ASSERT(knights_server && "processIncomingNetMsgs: loop over incoming connections");
-        IncomingConn &in = incoming_conns[i];
-
-        in.remote->receive(net_msg);
-        if (!net_msg.empty()) {
-            knights_server->receiveInputData(*in.server_conn, net_msg);
-        }
-
-        const Coercri::NetworkConnection::State state = in.remote->getState();
-        ASSERT(state != Coercri::NetworkConnection::FAILED); // incoming connections can't fail...
-        if (state == Coercri::NetworkConnection::CLOSED) {
-            // connection lost: remove it from the list, and inform the server
-            knights_server->connectionClosed(*in.server_conn);
-            incoming_conns.erase(incoming_conns.begin() + i);
-        } else {
-            ++i;
-        }
-    }
-
-    // Listen for new incoming connections.
-    Coercri::NetworkDriver::Connections new_conns = net_driver->pollIncomingConnections();
-    for (Coercri::NetworkDriver::Connections::const_iterator it = new_conns.begin(); it != new_conns.end(); ++it) {
-        ASSERT(knights_server && "processIncomingNetMsgs: listen for new incoming connections");
-        IncomingConn in;
-        in.server_conn = &knights_server->newClientConnection();
-        in.remote = *it;
-        incoming_conns.push_back(in);
-    }
 }
 
 void KnightsAppImpl::processOutgoingNetMsgs()
@@ -1203,59 +1137,6 @@ void KnightsAppImpl::processOutgoingNetMsgs()
             did_something = true;
             it->remote->send(net_msg);
         }
-    }
-
-    // tell the server what the ping times are
-    for (std::vector<IncomingConn>::iterator it = incoming_conns.begin(); it != incoming_conns.end(); ++it) {
-        knights_server->setPingTime(*it->server_conn, it->remote->getPingTime());
-    }
-
-    for (std::vector<IncomingConn>::iterator it = incoming_conns.begin(); it != incoming_conns.end(); ++it) {
-        ASSERT(knights_server && "processOutgoingNetMsgs");
-        knights_server->getOutputData(*it->server_conn, net_msg);
-        if (!net_msg.empty()) {
-            did_something = true;
-            it->remote->send(net_msg);
-        }
-    }
-}
-
-void KnightsAppImpl::processLocalNetMsgs()
-{
-    std::vector<unsigned char> net_msg;
-
-    for (std::vector<LocalConn>::iterator it = local_conns.begin(); it != local_conns.end(); ++it) {
-        ASSERT(knights_server && "processLocalNetMsgs");
-        ASSERT(it->knights_client && "processLocalNetMsgs");
-
-        it->knights_client->getOutputData(net_msg);
-#ifdef DEBUG_NET_MSGS
-        if (!net_msg.empty()) {
-            OutputDebugString("client: ");
-            for (int i = 0; i < net_msg.size(); ++i) {
-                char buf[256] = {0};
-                sprintf(buf, "%d ", int (net_msg[i]));
-                OutputDebugString(buf);
-            }
-            OutputDebugString("\n");
-        }
-#endif
-
-        knights_server->receiveInputData(*it->server_conn, net_msg);
-
-        knights_server->getOutputData(*it->server_conn, net_msg);
-#ifdef DEBUG_NET_MSGS
-        if (!net_msg.empty()) {
-            OutputDebugString("server: ");
-            for (int i = 0; i < net_msg.size(); ++i) {
-                char buf[256] = {0};
-                sprintf(buf, "%d ", int (net_msg[i]));
-                OutputDebugString(buf);
-            }
-            OutputDebugString("\n");
-        }
-#endif
-        it->knights_client->receiveInputData(net_msg);
     }
 }
 
@@ -1280,7 +1161,7 @@ void KnightsAppImpl::processBroadcastMsgs()
     if (time_now - broadcast_last_time < 1000) return;
     broadcast_last_time = time_now;
     
-    const int num_players = knights_server ? knights_server->getNumberOfPlayers() : 0;
+    const int num_players = server_wrapper->getNumberOfPlayers();
 
     // check for incoming messages, send replies if necessary.
     std::string msg, address;

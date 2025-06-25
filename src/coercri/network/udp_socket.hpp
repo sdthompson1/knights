@@ -54,6 +54,10 @@
 
 namespace Coercri {
 
+    // Note: this class is not currently thread-safe. A given
+    // UDPSocket instance should only be accessed by one thread at a
+    // time.
+
     class UDPSocket : boost::noncopyable {
     public:
         // A UDPSocket can be bound or unbound. (See NetworkDriver::createUDPSocket.)

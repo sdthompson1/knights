@@ -9,7 +9,7 @@
  *   Stephen Thompson
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -48,6 +48,8 @@
 
 #include "enet/enet.h"
 
+#include "boost/thread.hpp"
+
 namespace Coercri {
 
     class EnetNetworkConnection;
@@ -68,7 +70,7 @@ namespace Coercri {
         virtual boost::shared_ptr<UDPSocket> createUDPSocket(int port, bool reuseaddr);
 
         virtual std::string resolveAddress(const std::string &ip_address);        
-        
+
     private:
         bool serviceHost(ENetHost *host);
         void createIncomingHostIfNeeded();
@@ -78,6 +80,7 @@ namespace Coercri {
         static bool is_enet_initialized;   // Don't allow more than one enet instance at the same time.
 
     private:
+        boost::mutex mutex;
         ENetHost *incoming_host, *outgoing_host;
         int server_port;
         bool server_enabled;

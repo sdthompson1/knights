@@ -6,7 +6,7 @@
  *   Stephen Thompson
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -56,7 +56,7 @@ namespace Coercri {
     }
 
     bool EnetNetworkDriver::is_enet_initialized = false;
-    
+
     EnetNetworkDriver::EnetNetworkDriver(int max_inc, int max_outgoing, bool compress)
         : incoming_host(0), outgoing_host(0), server_port(0), server_enabled(false), max_incoming(max_inc),
           use_compression(compress)
@@ -102,6 +102,7 @@ namespace Coercri {
 
     boost::shared_ptr<NetworkConnection> EnetNetworkDriver::openConnection(const std::string &hostname, int port_number)
     {
+        boost::unique_lock lock(mutex);
         boost::shared_ptr<EnetNetworkConnection> new_conn(new EnetNetworkConnection(outgoing_host, hostname, port_number));
         connections_out.push_back(new_conn);
         return new_conn;
@@ -109,11 +110,14 @@ namespace Coercri {
 
     void EnetNetworkDriver::setServerPort(int port)
     {
+        boost::unique_lock lock(mutex);
+
         if (server_enabled) throw CoercriError("Cannot set server port while server is enabled");
 
         server_port = port;
     }
 
+    // mutex should be locked when this is called
     void EnetNetworkDriver::createIncomingHostIfNeeded()
     {
         if (!incoming_host && server_enabled) {
@@ -131,6 +135,7 @@ namespace Coercri {
         }
     }
 
+    // mutex should be locked when this is called
     void EnetNetworkDriver::destroyIncomingHost()
     {
         if (incoming_host) {
@@ -141,6 +146,8 @@ namespace Coercri {
     
     void EnetNetworkDriver::enableServer(bool enabled)
     {
+        boost::unique_lock lock(mutex);
+
         server_enabled = enabled;
         
         createIncomingHostIfNeeded();
@@ -162,11 +169,14 @@ namespace Coercri {
     
     EnetNetworkDriver::Connections EnetNetworkDriver::pollIncomingConnections()
     {
+        boost::unique_lock lock(mutex);
+
         Connections result;
         std::swap(new_connections_in, result);
         return result;
     }
 
+    // mutex should be locked when this is called
     bool EnetNetworkDriver::serviceHost(ENetHost *host)
     {
         if (!host) return false;
@@ -198,13 +208,13 @@ namespace Coercri {
                     }
                 }
                 break;
-                
+
             case ENET_EVENT_TYPE_DISCONNECT:
                 // We've been disconnected. Note that we get this event for both timeouts and explicit disconnects.
                 {
                     EnetNetworkConnection *conn = static_cast<EnetNetworkConnection*>(event.peer->data);
                     conn->onDisconnect();  // Goes into disconnected state, and breaks link to ENetPeer object.
-                    
+
                     // Remove the connection from my vectors
                     connections_out.erase(std::remove_if(connections_out.begin(), connections_out.end(),
                                                          PtrEq<EnetNetworkConnection>(conn)),
@@ -223,7 +233,7 @@ namespace Coercri {
                     }
                 }
                 break;
-                
+
             case ENET_EVENT_TYPE_RECEIVE:
                 // A packet has been received.
                 {
@@ -238,6 +248,8 @@ namespace Coercri {
 
     bool EnetNetworkDriver::doEvents()
     {
+        boost::unique_lock lock(mutex);
+
         bool did_something = false;
 
         if (!connections_out.empty()) {
@@ -250,16 +262,21 @@ namespace Coercri {
 
     bool EnetNetworkDriver::outstandingConnections()
     {
+        boost::unique_lock lock(mutex);
+
         return !connections_in.empty() || !connections_out.empty() || !new_connections_in.empty();
     }
     
     boost::shared_ptr<UDPSocket> EnetNetworkDriver::createUDPSocket(int port, bool reuseaddr)
     {
+        // note: lock not needed as we are not accessing 'this' at all
         return boost::shared_ptr<UDPSocket>(new EnetUDPSocket(port, reuseaddr));
     }
 
     std::string EnetNetworkDriver::resolveAddress(const std::string &ip_address)
     {
+        // note: lock not needed as we are not accessing 'this' at all
+
         ENetAddress address;
         enet_address_set_host(&address, ip_address.c_str());
 

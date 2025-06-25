@@ -14,7 +14,7 @@
  *   Stephen Thompson
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -53,6 +53,9 @@
 #include <vector>
 
 namespace Coercri {
+
+    // Note: This class is now thread safe. Multiple threads can call
+    // methods concurrently and it should not be a problem.
 
     class NetworkConnection {
     public:
