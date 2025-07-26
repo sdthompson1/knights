@@ -1,6 +1,11 @@
 # Makefile for "Knights virtual server"
 
-# This will generate risc_vm.cpp and risc_vm.hpp.
+# This will regenerate risc_vm.cpp and risc_vm.hpp.
+
+# Note: You only need to do this if you have changed any of the
+# Knights C++ files listed in CXXFILES below. If you are just building
+# an unmodified copy of Knights from its original source code, then
+# running this Makefile won't be necessary.
 
 # Requirements:
 #  1) A working RISC-V compiler, and a working copy of risc2cpp (see
@@ -9,12 +14,19 @@
 #      - If the RISC-V compiler is not called `riscv32-unknown-elf-g++` then
 #        edit CXX below as required
 #  2) Boost includes (adjust -I option below as required)
-#  3) Lua (adjust -I option and LIBS below as required)
-#      - You need to build liblua.a for RISC-V. A command like the following
-#        (from within the Lua main directory) will suffice:
+#  3) Lua
+#      - You need to build liblua.a for RISC-V. First, download and unpack
+#        the Lua source code from lua.org.
+#      - Next, we need to configure Lua to build in 32 bit mode. Edit
+#        src/luaconf.h (in the Lua distribution), search for where LUA_32BITS
+#        is defined, and set it to 1 (instead of 0).
+#      - Then, use the following command (from within the Lua main directory)
+#        to build liblua.a:
 #            make CC=riscv32-unknown-elf-g++ generic
 #        Note that you need to set "CC" to a C++, not C, compiler, to get a
 #        C++-compatible build of liblua.a.
+#      - Finally, edit -I option and LIBS below, to point to the correct
+#        locations for your Lua src directory.
 
 # This Makefile can be sped up by using "-j" (e.g. make -j4). This
 # doesn't affect the (time-consuming) risc2cpp step, but it speeds up
@@ -31,7 +43,6 @@ CXX = riscv32-unknown-elf-g++
 # Adjust the include paths as needed.
 CXXFLAGS = -Iboost_1_88_0 -Ilua-5.4.7/src \
 	-I. -I../coercri -I../misc -I../rstream -I../shared -I../server -I../engine -I../protocol \
-	-DLUA_32BITS \
 	-DNDEBUG -DVIRTUAL_SERVER \
 	-O2 -ffast-math \
 	-Wl,--emit-relocs
