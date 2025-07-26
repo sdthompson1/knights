@@ -92,6 +92,19 @@ bool vs_game_thread_running()
     return g_game_thread_running;
 }
 
+void vs_get_random_data(void *ptr, int num_bytes)
+{
+    asm volatile(
+        "mv a0, %0\n\t"         // 'ptr' in a0
+        "mv a1, %1\n\t"         // 'num_bytes' in a1
+        "li a7, 5004\n\t"       // Syscall number in a7
+        "ecall"                 // Make syscall
+        :                       // No outputs
+        : "r" (ptr), "r" (num_bytes)   // Inputs: ptr, num_bytes
+        : "a0", "a1", "a7", "memory"   // Clobbered values
+    );
+}
+
 void vs_switch_to_main_thread(unsigned int param)
 {
     asm volatile(

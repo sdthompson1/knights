@@ -61,6 +61,8 @@ void vs_end_tick(unsigned int ms);
 // Returns true if the game thread is currently running.
 bool vs_game_thread_running();
 
+// Get random seed data (used during init)
+void vs_get_random_data(void *ptr, int num_bytes);
 
 // Functions called from game thread:
 

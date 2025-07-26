@@ -24,7 +24,8 @@
 // Main program for the Knights Virtual Server.
 
 // This should be compiled to a RISC-V executable which is then used
-// to produce risc_vm.hpp and risc_vm.cpp.
+// to produce risc_vm.hpp and risc_vm.cpp
+// (see Makefile in this directory).
 
 #include "knights_config.hpp"
 #include "knights_server.hpp"
@@ -35,12 +36,15 @@
 #include "timer/timer.hpp"
 
 #include <iostream>
+#include <random>
 
 // Timer class for the VM
 class VMTimer : public Coercri::Timer {
 public:
     virtual unsigned int getMsec();
+    virtual uint64_t getUsec();
     virtual void sleepMsec(int msec) { /* not used */ }
+    virtual void sleepUsec(int64_t usec) { /* not used */ }
 };
 
 unsigned int VMTimer::getMsec()
@@ -60,6 +64,11 @@ unsigned int VMTimer::getMsec()
         : "a0", "a1", "a7"  // Trashed registers
     );
     return tspec.sec * 1000u + tspec.nsec / 1000000u;
+}
+
+uint64_t VMTimer::getUsec()
+{
+    return static_cast<uint64_t>(getMsec()) * UINT64_C(1000);
 }
 
 
@@ -125,11 +134,12 @@ int main()
         // Create a Timer.
         boost::shared_ptr<Coercri::Timer> timer(new VMTimer);
 
-        // Make sure our RNG is working
-        // Note: We randomize using timer->getMsec. Using std::random_device is pointless
-        // because the VM has no entropy source other than the timer.
-        g_rng.initialize();
-        g_rng.setSeed(timer->getMsec());
+        // Seed the RNG
+        {
+            char buf[4 * std::mt19937::state_size];
+            vs_get_random_data(buf, sizeof(buf));
+            g_rng.initialize(buf, sizeof(buf));
+        }
 
         // Create the KnightsServer.
         KnightsServer server(timer,

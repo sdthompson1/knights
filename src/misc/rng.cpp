@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -25,44 +25,106 @@
 
 #include "rng.hpp"
 
-#include "boost/random/mersenne_twister.hpp"
+#ifndef VIRTUAL_SERVER
+#include "boost/thread/mutex.hpp"
+#include "boost/thread/locks.hpp"
+#endif
 
-#include <cstdlib>
-#include <ctime>
-using namespace std;
+#include <algorithm>
+#include <cstring>
+#include <random>
+#include <array>
+#include <stdexcept>
 
-namespace {
-    typedef boost::mt19937 gen_type;
-}
+RNG g_rng;
 
 class RNGImpl {
 public:
-    gen_type gen;
+    RNGImpl(std::seed_seq &seed);
+    float getFloat(float a, float b);
+    int getInt(int a, int b);
+
+private:
+#ifndef VIRTUAL_SERVER
+    boost::mutex mutex;
+#endif
+    std::mt19937 rng;
 };
 
-
-// define g_rng
-RNG g_rng;
+RNGImpl::RNGImpl(std::seed_seq &seed)
+    : rng(seed)
+{}
 
 void RNG::initialize()
 {
-    pimpl.reset(new RNGImpl);
+    // Seed the MT19937 state using std::random_device
+    std::random_device rd;
+    std::array<uint32_t, std::mt19937::state_size> seed_data;
+    std::generate(seed_data.begin(), seed_data.end(), std::ref(rd));
+    std::seed_seq seq(seed_data.begin(), seed_data.end());
+    pimpl = std::make_unique<RNGImpl>(seq);
 }
 
-bool RNG::isInitialized() const
+void RNG::initialize(const char *bytes, int num_bytes)
 {
-    return pimpl.get() != 0;
+    // We expect to be given something that fits in a
+    // std::array<uint32_t, std::mt19937::state_size>
+    if (num_bytes != std::mt19937::state_size * 4) {
+        throw std::logic_error("Seed size mismatch");
+    }
+
+    // Copy the input bytes to an array and use them to seed the generator
+    std::array<uint32_t, std::mt19937::state_size> seed_data;
+    memcpy(&seed_data[0], bytes, num_bytes);
+    std::seed_seq seq(seed_data.begin(), seed_data.end());
+    pimpl = std::make_unique<RNGImpl>(seq);
 }
 
-void RNG::setSeed(unsigned int seed)
+float RNGImpl::getFloat(float a, float b)
 {
-    pimpl->gen.seed(seed);
+    // b is supposed to be greater than a. If not, we will just return a.
+    if (b <= a) {
+        return a;
+    }
+
+    std::uniform_real_distribution<float> dist(a, b);
+    float x;
+
+    {
+#ifndef VIRTUAL_SERVER
+        boost::unique_lock lock(mutex);
+#endif
+        x = dist(rng);
+    }
+
+    // Some implementations of uniform_real_distribution might return values
+    // outside the expected range (e.g. they might return exactly 'b'). We don't
+    // want to return a value outside the [a,b) range, so we do an explicit
+    // range check:
+    if (a <= x && x < b) {
+        return x;
+    } else {
+        // This should happen only extremely rarely (if at all) so just returning
+        // 'a' in these (rare) cases should be fine
+        return a;
+    }
 }
 
-float RNG::getU01()
+int RNGImpl::getInt(int a, int b)
 {
-    const gen_type::result_type val = pimpl->gen();
-    const gen_type::result_type min = pimpl->gen.min();
-    const gen_type::result_type max = pimpl->gen.max();
-    return float(val - min) / (float(max - min) + 1.0f);
+    std::uniform_int_distribution<int> dist(a, b-1);
+#ifndef VIRTUAL_SERVER
+    boost::unique_lock lock(mutex);
+#endif
+    return dist(rng);
+}
+
+float RNG::getFloat(float a, float b)
+{
+    return pimpl->getFloat(a, b);
+}
+
+int RNG::getInt(int a, int b)
+{
+    return pimpl->getInt(a, b);
 }

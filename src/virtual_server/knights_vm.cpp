@@ -64,7 +64,7 @@ namespace {
     const int NEWLIB_ENOSYS = 88;    // Function not implemented
 }
 
-KnightsVM::KnightsVM(uint32_t initial_time_ms)
+KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
     : RiscVM(MAIN_STACK_TOP - 16)   // Start with 16 zero bytes pushed onto the main stack.
 {
     // There is no tick data initially
@@ -72,7 +72,7 @@ KnightsVM::KnightsVM(uint32_t initial_time_ms)
     vm_output_data = NULL;
 
     // Initial timer
-    timer_ms = initial_time_ms;
+    timer_ms = 0;
 
     // RStream files enabled initially
     rstream_enabled = true;
@@ -106,6 +106,9 @@ KnightsVM::KnightsVM(uint32_t initial_time_ms)
     alt_s2 = alt_s3 = alt_s4 = alt_s5 = alt_s6 = alt_s7 = alt_s8 = alt_s9 = alt_s10 = alt_s11 = 0;
     alt_t3 = alt_t4 = alt_t5 = alt_t6 = 0;
     alt_pc = 0;
+
+    // Random seed
+    random_data = std::move(random_data_);
 }
 
 int KnightsVM::runTick(const unsigned char *tick_data_begin,
@@ -427,6 +430,28 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         rstream_enabled = false;
         files.clear();  // Closes any files that are still open
         return ECALL_END_TICK;
+
+    case 5004:
+        // Get Random Data. Address = a0, num bytes = a1.
+        {
+#ifdef LOG_ECALLS
+            printf("GET_RANDOM_DATA\n");
+#endif
+            uint32_t addr = getA0();
+            uint32_t size = getA1();
+            if (size != random_data.size()) {
+                throw std::runtime_error("Random seed size is not correct");
+            }
+            for (uint32_t i = 0; i < size; ++i) {
+                writeByte(addr + i, random_data[i]);
+            }
+            setA0(0);
+
+            // Random data is only needed once
+            std::vector<unsigned char> empty;
+            random_data.swap(empty);
+        }
+        return ECALL_CONTINUE;
 
     default:
         // Unknown syscall.

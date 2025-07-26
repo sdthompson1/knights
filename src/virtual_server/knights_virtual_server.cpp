@@ -193,16 +193,12 @@ int main(int argc, const char **argv)
     unsigned int force_time = 0;  // Time (relative to last tick) at which next tick should be forced.
 
     // Create a random seed for the VM
-    // Use std::random_device, mixed with time(NULL) (in case random_device does not
-    // work on this platform)
-    unsigned int seed = std::time(NULL);
-    {
-        std::random_device rand;
-        seed ^= rand();
-    }
+    std::random_device rd;
+    std::vector<unsigned char> seed(4 * std::mt19937::state_size);
+    std::generate(seed.begin(), seed.end(), std::ref(rd));
 
     // Create the KnightsVM
-    KnightsVM vm(seed);
+    KnightsVM vm(std::move(seed));
 
     // Run an initial tick to force everything to load.
     {

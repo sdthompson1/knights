@@ -674,15 +674,8 @@ int main(int argc, char **argv)
 {
     std::string config_filename;
 
-    // initialize rng.
+    // initialize rng
     g_rng.initialize();
-    unsigned int seed = static_cast<unsigned int>(std::time(0));
-    {
-        std::random_device rand;
-        seed ^= rand();
-    }
-    g_rng.setSeed(seed);
-
 
     // Load the configuration. Exit if this fails.
     try {

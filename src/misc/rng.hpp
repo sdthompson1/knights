@@ -3,7 +3,7 @@
  *
  * This file is part of Knights.
  *
- * Copyright (C) Stephen Thompson, 2006 - 2024.
+ * Copyright (C) Stephen Thompson, 2006 - 2025.
  * Copyright (C) Kalle Marjola, 1994.
  *
  * Knights is free software: you can redistribute it and/or modify
@@ -21,59 +21,34 @@
  *
  */
 
-/*
- * Random number generator.
- *
- * getInt, getFloat return number in the range [a,b).
- *
- * Currently we use the Mersenne Twister RNG from Boost.
- *
- * The RNG is now setup to be thread specific. This is useful from a
- * debugging perspective because it means we can replay the exact
- * sequence of random numbers generated in a particular game, given
- * only the starting seed. [Note: this does not apply when VIRTUAL_SERVER
- * is defined.]
- *
- * There is still only one global access point to the RNG (g_rng); you
- * have to call initialize() once in each thread that wants random
- * numbers.
- * 
- */
-
 #ifndef RNG_HPP
 #define RNG_HPP
 
-#ifndef VIRTUAL_SERVER
-#include "boost/thread/tss.hpp"
-#endif
-
 #include <memory>
+
+// RNG implementation has been simplified as of July 2025. There is
+// now one "global" (and thread-safe) RNG implementation, instead of
+// one per thread.
 
 class RNGImpl;
 
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
-
 class RNG {
 public:
+    // Initialize using std::random_device
     void initialize();
-    bool isInitialized() const;
-    void setSeed(unsigned int seed);
-    float getU01();
-    bool getBool(float p = 0.5f) { return getU01() <= p; }
-    int getInt(int a, int b) { return a + int(getU01() * (b-a)); }
-    float getFloat(float a, float b) { return a + getU01() * (b-a); }
+
+    // Initialize using a provided sequence of bytes
+    // num_bytes must match the size of std::mt19937's state, else this will throw
+    void initialize(const char *bytes, int num_bytes);
+
+    // Generate random numbers
+    float getU01() { return getFloat(0, 1); }  // return random float in range [0,1)
+    bool getBool(float p = 0.5f) { return getU01() <= p; }  // return true with given probability
+    int getInt(int a, int b);           // return random int in range [a,b)
+    float getFloat(float a, float b);   // return random float in range [a,b)
 
 private:
-#ifdef VIRTUAL_SERVER
     std::unique_ptr<RNGImpl> pimpl;
-#else
-    boost::thread_specific_ptr<RNGImpl> pimpl;
-#endif
 };
 
 // for std::random_shuffle compatibility

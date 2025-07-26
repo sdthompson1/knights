@@ -47,9 +47,7 @@
 class KnightsVM : private RiscVM, private TickCallbacks {
 public:
     // Constructor.
-    // Initial timer should be set to a random value (to facilitate random seeding
-    // within the VM code).
-    explicit KnightsVM(uint32_t initial_time_ms);
+    KnightsVM(std::vector<unsigned char> && random_data_);
 
 
     // runTick starts (or resumes) VM execution.
@@ -136,6 +134,9 @@ private:
     uint32_t alt_s2, alt_s3, alt_s4, alt_s5, alt_s6, alt_s7, alt_s8, alt_s9, alt_s10, alt_s11;
     uint32_t alt_t3, alt_t4, alt_t5, alt_t6;
     uint32_t alt_pc;
+
+    // Random seed data (only used during first tick)
+    std::vector<unsigned char> random_data;
 };
 
 #endif

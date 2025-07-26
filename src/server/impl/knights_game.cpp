@@ -447,21 +447,6 @@ namespace {
                 // We can do whatever we want to kg (without needing to lock it) before we set that flag.
                 // After the flag is set, need to lock kg before accessing it.
 
-#ifndef VIRTUAL_SERVER
-                // If VIRTUAL_SERVER is *not* defined then each thread has its own
-                // RNG, therefore we need to initialize and seed it now.
-                g_rng.initialize();
-
-                // Construct seed from current time, and also using some
-                // extra randomness from std::random_device if available.
-                unsigned int seed;
-                seed = timer->getMsec();
-                seed += static_cast<unsigned int>(time(0));
-                std::random_device rand;
-                seed ^= rand();
-                g_rng.setSeed(seed);
-#endif
-
                 // Setup house colours and player names
                 // Also count how many players on each team.
                 std::vector<int> hse_cols;
