@@ -83,7 +83,9 @@ public:
                    bool approach_based_ctrls, bool action_bar_ctrls)
         : name(n), name2(n2),
           is_ready(false), finished_loading(false), ready_to_end(false), 
-          obs_flag(new_obs_flag), cancel_obs_mode_after_game(false), house_colour(0),
+          obs_flag(new_obs_flag), cancel_obs_mode_after_game(false),
+          requires_catchup(false),
+          house_colour(0),
           client_version(ver),
           observer_num(0), player_num(-1),
           ping_time(0),
@@ -99,13 +101,14 @@ public:
     bool ready_to_end;   // true=clicked mouse on winner/loser screen, false=still waiting.
     bool obs_flag;   // true=observer, false=player
     bool cancel_obs_mode_after_game;
+    bool requires_catchup;
     int house_colour;  // Must fit in a ubyte. Set to zero for observers (but beware, zero is also a valid house colour for non-observers!).
 
     int client_version;
     int observer_num;   // 0 if not an observer, or not set yet. >0 if set.
     int player_num;     // 0..num_players-1, or -1 if the game is not running.
-                        //  Also, observers have -1, unless they are eliminated players in which
-                        //  case they retain their original player_num.
+                        //  Also, observers have -1, unless they are eliminated players,
+                        //  in which case they retain their original player_num.
     int ping_time;
     
     std::vector<unsigned char> output_data;    
@@ -130,6 +133,7 @@ public:
     
     std::string quest_description;
     game_conn_vector connections;
+    game_conn_vector incoming_connections;
 
     bool game_over;
     bool pause_mode;
@@ -152,7 +156,7 @@ public:
     std::string game_name;
 
     std::vector<int> delete_observer_nums;
-    std::vector<int> players_to_eliminate;
+    std::vector<int> pending_disconnections;
     std::vector<UTF8String> all_player_names;
 
     // used during game startup
@@ -397,7 +401,92 @@ namespace {
         }
         kg.knights_config->changeNumberOfPlayers(CountPlayers(kg), CountTeams(kg), listener);
     }
-    
+
+    struct CmpByName {
+        bool operator()(const boost::shared_ptr<GameConnection> &lhs,
+                        const boost::shared_ptr<GameConnection> &rhs) const
+        {
+            return lhs->name.toUpper() < rhs->name.toUpper();
+        }
+    };
+
+    void AddNewPlayer(KnightsGameImpl &kg,
+                      boost::shared_ptr<GameConnection> conn,
+                      KnightsEngine *engine,
+                      ServerCallbacks *callbacks)
+    {
+        // Determine if the player is an observer, and find their house colour if required.
+        bool observer = false;
+        bool enter_game = false;
+        if (engine) {
+            observer = true;
+            enter_game = true;
+
+            std::vector<PlayerInfo> players;
+            engine->getPlayerList(players);
+
+            for (auto const& info : players) {
+                // Compare by name
+                if (info.name == conn->name) {
+                    // Found the player in the game
+                    if (info.player_state == PlayerState::DISCONNECTED || info.player_state == PlayerState::NORMAL) {
+                        // This player is actually playing, not just observing
+                        observer = false;
+                        conn->house_colour = info.house_colour_index;
+                        conn->player_num = info.player_num;
+                    }
+                    break;
+                }
+            }
+        }
+
+        conn->obs_flag = observer;
+
+        // Add to connections list
+        kg.connections.push_back(conn);
+
+        // Sort connections by name
+        // (this makes the player list appear in alphabetical order)
+        std::sort(kg.connections.begin(), kg.connections.end(), CmpByName());
+
+        // Send the SERVER_JOIN_GAME_ACCEPTED message (includes initial configuration messages e.g. menu settings)
+        Coercri::OutputByteBuf buf(conn->output_data);
+        SendJoinGameAccepted(kg, buf, conn->house_colour);
+
+        // Send any necessary SERVER_PLAYER_JOINED_THIS_GAME messages (but not to the player who just joined).
+        for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+            if (*it != conn) {
+                Coercri::OutputByteBuf out((*it)->output_data);
+                out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
+                out.writeString(conn->name.asUTF8());
+                out.writeUbyte(observer);
+                out.writeUbyte(conn->house_colour);
+                if (!conn->name2.empty()) {
+                    out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
+                    out.writeString(conn->name2.asUTF8());
+                    out.writeUbyte(observer);
+                    out.writeUbyte(conn->house_colour);
+                }
+            }
+        }
+
+        // If the game is running then send START_GAME or START_GAME_OBS immediately
+        if (enter_game) {
+            buf.writeUbyte(observer ? SERVER_START_GAME_OBS : SERVER_START_GAME);
+            buf.writeUbyte(observer ? kg.all_player_names.size() : 1);
+            buf.writeUbyte(kg.deathmatch_mode);
+            if (observer) {
+                for (std::vector<UTF8String>::const_iterator it = kg.all_player_names.begin(); it != kg.all_player_names.end(); ++it) {
+                    buf.writeString(it->asUTF8());
+                }
+            }
+            buf.writeUbyte(1);  // already_started flag (true)
+        }
+
+        // May need to update menu settings, since no of players has changed
+        UpdateNumPlayersAndTeams(kg);
+    }
+
     void ReturnToMenu(KnightsGameImpl &kg)
     {
         // This routine sends SERVER_GOTO_MENU to all players, and
@@ -758,8 +847,8 @@ namespace {
             return postUpdate(time_delta);
         }
 
-        // Prepare for a dungeon update, e.g. remove disconnected players, put
-        // eliminated players into observer mode, catch up new observers.
+        // Prepare for a dungeon update, e.g. put eliminated players into observer mode,
+        // catch up new observers (or reconnecting players).
         // Returns true if should continue to the main update, or false if game is paused.
         bool preUpdate()
         {
@@ -767,17 +856,25 @@ namespace {
             boost::lock_guard<boost::mutex> lock(kg.my_mutex);
 #endif
 
+            // Add any new players to the game.
+            for (boost::shared_ptr<GameConnection> conn : kg.incoming_connections) {
+                AddNewPlayer(kg, conn, engine.get(), callbacks.get());
+            }
+            kg.incoming_connections.clear();
+
             // Delete any "dead" observers.
             for (std::vector<int>::iterator it = kg.delete_observer_nums.begin(); it != kg.delete_observer_nums.end(); ++it) {
                 callbacks->rmObserverNum(*it);
             }
             kg.delete_observer_nums.clear();
 
-            // Delete any disconnected players
-            for (std::vector<int>::iterator it = kg.players_to_eliminate.begin(); it != kg.players_to_eliminate.end(); ++it) {
-                engine->eliminatePlayer(*it);
+            // Disconnect any leaving players.
+            bool player_list_update_needed = false;
+            for (int player_num : kg.pending_disconnections) {
+                engine->changePlayerState(player_num, PlayerState::DISCONNECTED);
+                player_list_update_needed = true;
             }
-            kg.players_to_eliminate.clear();
+            kg.pending_disconnections.clear();
 
             // Put eliminated players into obs mode (Trac #10)
             std::vector<int> put_into_obs_mode = callbacks->getPlayersToPutIntoObsMode();
@@ -807,14 +904,12 @@ namespace {
                 return false;  // Do not proceed any further
             }
 
-            // Check for observers that need to catch up
+            // Check for players that need to catch up
             for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                if ((*it)->obs_flag) {
-                    // If this player has not been allocated an observer_num yet, then assign them
-                    // one, and send the startup commands. (But only if they have finished loading.)
-                    if ((*it)->observer_num == 0 && (*it)->finished_loading) {
-                        std::vector<unsigned char> & buf = (*it)->output_data;
+                if ((*it)->requires_catchup && (*it)->finished_loading) {
+                    std::vector<unsigned char> & buf = (*it)->output_data;
 
+                    if ((*it)->obs_flag) {
                         for (int p = 0; p < nplayers; ++p) {
                             buf.push_back(SERVER_SWITCH_PLAYER);
                             buf.push_back(p);
@@ -833,8 +928,20 @@ namespace {
                         }
 
                         (*it)->observer_num = callbacks->allocObserverNum();
+
+                    } else {
+                        // Catchup for reconnecting players (as opposed to observers)
+                        engine->catchUp((*it)->player_num, *callbacks);
+                        engine->changePlayerState((*it)->player_num, PlayerState::NORMAL);
+                        player_list_update_needed = true;
                     }
+
+                    (*it)->requires_catchup = false;
                 }
+            }
+
+            if (player_list_update_needed) {
+                doPlayerListUpdate();
             }
 
             // Ready to proceed with the actual update!
@@ -882,6 +989,10 @@ namespace {
 
             // Copy output data back to GameConnection buffers
             for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
+                if (!(*it)->finished_loading) {
+                    // Skip players who haven't finished loading yet
+                    continue;
+                }
                 if ((*it)->obs_flag) {
                     if ((*it)->observer_num > 0) {
                         // Send observer cmds to that player. (We're assuming observation is always allowed at the moment.)
@@ -990,18 +1101,19 @@ namespace {
             std::vector<PlayerInfo> player_list;
             engine->getPlayerList(player_list);
 
-            // First job: remove any players who don't have a corresponding connection.
-            // (e.g. this can happen if a player disconnects after they are eliminated from the game.)
+            // Filter out former players who have left (i.e. they are no longer connected to the game).
+            // Note: Temporarily disconnected players (DISCONNECTED state) are an exception to
+            // this rule, because they might come back later.
             for (size_t idx = 0; idx < player_list.size(); ++idx) {
                 const int num = player_list[idx].player_num;
                 bool found = false;
-                for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    if ((*it)->player_num == num) {
+                for (auto const & connection : kg.connections) {
+                    if (connection->player_num == num) {
                         found = true;
                         break;
                     }
                 }
-                if (found) {
+                if (found || player_list[idx].player_state == PlayerState::DISCONNECTED) {
                     ++idx;
                 } else {
                     player_list.erase(player_list.begin() + idx);
@@ -1022,10 +1134,17 @@ namespace {
                 }
             }
 
-            // any eliminated player should have (Eliminated) after their name
+            // Show player status after their name if applicable
             for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                if (player_list[idx].eliminated) {
+                switch (player_list[idx].player_state) {
+                case PlayerState::NORMAL:
+                    break;
+                case PlayerState::ELIMINATED:
                     player_list[idx].name += UTF8String::fromUTF8(" (Eliminated)");
+                    break;
+                case PlayerState::DISCONNECTED:
+                    player_list[idx].name += UTF8String::fromUTF8(" (Disconnected)");
+                    break;
                 }
             }
 
@@ -1040,7 +1159,7 @@ namespace {
                     pi.kills = -1;
                     pi.deaths = -1;
                     pi.frags = -1000;
-                    pi.eliminated = false;
+                    pi.player_state = PlayerState::NORMAL;  // player_state doesn't matter for observers
                     player_list.push_back(pi);
                     pings[pi.name] = (*it)->ping_time;
                 }
@@ -1102,14 +1221,6 @@ namespace {
             }
         }
     }
-    
-    struct CmpByName {
-        bool operator()(const boost::shared_ptr<GameConnection> &lhs,
-                        const boost::shared_ptr<GameConnection> &rhs) const
-        {
-            return lhs->name.toUpper() < rhs->name.toUpper();
-        }
-    };
 
     void StartGameIfReady(KnightsGameImpl &kg)
     {
@@ -1163,8 +1274,8 @@ namespace {
                 (*it)->is_ready = false;
             }
 
-            // Clear 'players_to_eliminate' in case there is anything still in there from the previous game
-            kg.players_to_eliminate.clear();
+            // Clear 'pending_disconnections' in case there is anything still in there from the previous game
+            kg.pending_disconnections.clear();
             
             // Start the update thread.
             kg.update_thread_wants_to_exit = false;
@@ -1258,7 +1369,7 @@ namespace {
 
                 // Send startGame msgs
                 for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
-                    
+
                     unsigned char num_displays;
                     if (!(*it)->name2.empty()) num_displays = 2;  // split screen mode
                     else if ((*it)->obs_flag) num_displays = nplayers;  // observer mode
@@ -1270,6 +1381,7 @@ namespace {
                         buf.writeUbyte(SERVER_START_GAME);
                         buf.writeUbyte(num_displays);
                         buf.writeUbyte(kg.deathmatch_mode);
+                        buf.writeUbyte(0);  // already_started flag (false)
                     } else {
                         // Observer.
                         Coercri::OutputByteBuf buf((*it)->output_data);
@@ -1457,8 +1569,7 @@ GameConnection & KnightsGame::newClientConnection(const UTF8String &client_name,
     if (!pimpl->allow_split_screen && !client_name_2.empty()) throw UnexpectedError("Split screen mode not allowed");
     if (!client_name_2.empty() && !pimpl->connections.empty()) throw UnexpectedError("Cannot join in split screen mode while connections exist");
 
-    // If the game is running, they join as an observer, otherwise, they join as a player
-    const bool new_obs_flag =
+    const bool game_in_progress =
 #ifdef VIRTUAL_SERVER
         vs_game_thread_running();
 #else
@@ -1467,90 +1578,49 @@ GameConnection & KnightsGame::newClientConnection(const UTF8String &client_name,
 
     // create the GameConnection
     boost::shared_ptr<GameConnection> conn(new GameConnection(client_name, client_name_2, 
-                                                              new_obs_flag, client_version,
+                                                              false, client_version,
                                                               approach_based_controls, action_bar_controls));
-    pimpl->connections.push_back(conn);
 
-    // sort connections by name
-    // (this makes the player list appear in alphabetical order.)
-    std::sort(pimpl->connections.begin(), pimpl->connections.end(), CmpByName());
+    // If game in progress, push to "incoming_connections" and exit early
+    if (game_in_progress) {
+        pimpl->incoming_connections.push_back(conn);
+        conn->requires_catchup = true;
+        return *conn;
+    }
 
-    // modify the house colour if necessary.
-    if (!new_obs_flag) {
-        bool col_ok = false;
-        const int n_hse_cols = GetNumAvailHouseCols(*pimpl);
-        while (!col_ok) {
-            col_ok = true;
-            for (game_conn_vector::const_iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-                if (*it != conn && (*it)->house_colour == conn->house_colour && !(*it)->obs_flag) {
-                    col_ok = false;
-                    // try the next colour
-                    conn->house_colour ++;
-                    std::vector<Coercri::Color> hse_cols;
-                    pimpl->knights_config->getHouseColours(hse_cols);  // a bit wasteful as we only want the size. never mind.
-                    if (conn->house_colour == n_hse_cols - 1) {
-                        // run out of colours so will just have to accept the last one
-                        col_ok = true; 
-                    }
-                    break;
+    // Game not in progress.
+
+    // Assign the player a unique house colour if possible.
+    bool col_ok = false;
+    const int n_hse_cols = GetNumAvailHouseCols(*pimpl);
+    while (!col_ok) {
+        col_ok = true;
+        for (game_conn_vector::const_iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
+            if (*it != conn && (*it)->house_colour == conn->house_colour && !(*it)->obs_flag) {
+                col_ok = false;
+                // try the next colour
+                conn->house_colour ++;
+                std::vector<Coercri::Color> hse_cols;
+                pimpl->knights_config->getHouseColours(hse_cols);  // a bit wasteful as we only want the size. never mind.
+                if (conn->house_colour == n_hse_cols - 1) {
+                    // run out of colours so will just have to accept the last one
+                    col_ok = true;
                 }
+                break;
             }
         }
     }
 
-    // Send the SERVER_JOIN_GAME_ACCEPTED message (includes initial configuration messages e.g. menu settings)
-    Coercri::OutputByteBuf buf(conn->output_data);
-    SendJoinGameAccepted(*pimpl, buf, conn->house_colour);
+    // Add the player to 'connections' and send joining messages
+    AddNewPlayer(*pimpl, conn, nullptr, nullptr);
 
-    // Send any necessary SERVER_PLAYER_JOINED_THIS_GAME messages (but not to the player who just joined).
-    for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-        if (*it != conn) {
-            Coercri::OutputByteBuf out((*it)->output_data);
-            out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
-            out.writeString(client_name.asUTF8());
-            out.writeUbyte(new_obs_flag);
-            out.writeUbyte(conn->house_colour);
-            if (!client_name_2.empty()) {
-                out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
-                out.writeString(client_name_2.asUTF8());
-                out.writeUbyte(new_obs_flag);
-                out.writeUbyte(conn->house_colour);
-            }
-        }
-    }
-
-    // If the new player is an observer and the game is running then
-    // send him the START_GAME_OBS msg immediately
-    bool is_running;
-#ifdef VIRTUAL_SERVER
-    is_running = vs_game_thread_running();
-#else
-    is_running = pimpl->update_thread.joinable();
-#endif
-    if (new_obs_flag && is_running) {
-        // send the msg
-        buf.writeUbyte(SERVER_START_GAME_OBS);
-        buf.writeUbyte(pimpl->all_player_names.size());
-        buf.writeUbyte(pimpl->deathmatch_mode);
-        for (std::vector<UTF8String>::const_iterator it = pimpl->all_player_names.begin(); it != pimpl->all_player_names.end(); ++it) {
-            buf.writeString(it->asUTF8());
-        }
-        buf.writeUbyte(1);  // already_started flag (true)
-    }
-
-    if (!new_obs_flag) {
-        // May need to update menu settings, since no of players has changed
-        UpdateNumPlayersAndTeams(*pimpl);
-    }
-    
     return *conn;
 }
 
 void KnightsGame::clientLeftGame(GameConnection &conn)
 {
-    // This is called when a player has left the game (either because
-    // KnightsServer sent him a SERVER_LEAVE_GAME msg, or because he
-    // disconnected.)
+    // This makes the given client leave the game. (Either they are going
+    // back to the main lobby, or they are leaving the server entirely.)
 
     bool is_player = false;
     
@@ -1576,7 +1646,7 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
         if ((*where)->observer_num > 0) {
             pimpl->delete_observer_nums.push_back( (*where)->observer_num );
         }
-        
+
         // Erase the connection from our list. Note 'conn' is invalid from now on
         pimpl->connections.erase(where);
 
@@ -1596,18 +1666,19 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
 #endif
     if (is_player && is_running) {
         // The leaving client is one of the players (as opposed to an observer).
-        if (num_player_connections <= 1) {
-            // Only one player connection is left. We should just terminate the game at this point.
+        if (num_player_connections == 0) {
+            // All players disconnected; stop the game at this point
             StopGameAndReturnToMenu(*pimpl);
         } else {
-            // There are still players left in so eliminate that player and allow the game to continue.
+            // There are still (other) players connected to the game, so mark this player
+            // disconnected, and allow the game to continue.
 #ifndef VIRTUAL_SERVER
             boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-            pimpl->players_to_eliminate.push_back(player_num);
+            pimpl->pending_disconnections.push_back(player_num);
         }
     }
-    
+
     {
 #ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
@@ -1634,10 +1705,11 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
             UpdateNumPlayersAndTeams(*pimpl);
         }
     }
-    
+
     // If all remaining players are ready, then the game should start (Trac #25)
-    StartGameIfReady(*pimpl);    
+    StartGameIfReady(*pimpl);
 }
+
 
 void KnightsGame::sendChatMessage(GameConnection &conn, const std::string &msg_orig)
 {
@@ -1774,50 +1846,6 @@ void KnightsGame::readyToEnd(GameConnection &conn)
             out.writeString(conn.name.asUTF8());
         }
     }
-}
-
-bool KnightsGame::requestQuit(GameConnection &conn)
-{
-#ifdef VIRTUAL_SERVER
-    if (!vs_game_thread_running()) return false;   // Game is not running
-#else
-    if (!pimpl->update_thread.joinable()) return false;  // Game is not running
-#endif
-
-    bool obs_flag;
-    {
-#ifndef VIRTUAL_SERVER
-        boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
-        obs_flag = conn.obs_flag;
-    }
-    if (!obs_flag) {
-
-        if (pimpl->knights_log) {
-            pimpl->knights_log->logMessage(pimpl->game_name + "\tquit requested\t" + conn.name.asUTF8());
-        }
-
-        // If there are only two players then stop the game (with appropriate message), 
-        // otherwise, kick this player out (but the game continues).
-        if (getNumPlayers() > 2) {
-#ifndef VIRTUAL_SERVER
-            boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
-            pimpl->players_to_eliminate.push_back(conn.player_num);
-            return true;
-        } else {
-            {
-#ifndef VIRTUAL_SERVER
-                boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
-                Announcement(*pimpl, conn.name.asLatin1() + " quit the game.");
-            }
-            StopGameAndReturnToMenu(*pimpl);
-            return false;
-        }
-    }
-
-    return false;
 }
 
 void KnightsGame::setPauseMode(bool pm)

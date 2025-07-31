@@ -37,12 +37,14 @@ public:
     void appendMiniMapCmds(std::vector<ubyte> &vec) const;
     void clearMiniMapCmds() { mini_map_runs.clear(); }
     
-    virtual void setSize(int width, int height);
-    virtual void setColour(int x, int y, MiniMapColour col);
-    virtual void wipeMap();
-    virtual void mapKnightLocation(int n, int x, int y);
-    virtual void mapItemLocation(int x, int y, bool on);
-    
+    virtual void setSize(int width, int height) override;
+    virtual void setColour(int x, int y, MiniMapColour col) override;
+    virtual void wipeMap() override;
+    virtual void mapKnightLocation(int n, int x, int y) override;
+    virtual void mapItemLocation(int x, int y, bool on) override;
+
+    void prepareForCatchUp() { prev_kt_locn.clear(); }
+
 private:
     std::vector<ubyte> &out;
 

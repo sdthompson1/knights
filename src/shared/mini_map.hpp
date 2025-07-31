@@ -56,7 +56,6 @@ public:
     // Switch on or off an "item indicator" on the mini-map at
     // a given location. (used for sense items.)
     virtual void mapItemLocation(int x, int y, bool on) = 0;
-
 };
 
 #endif

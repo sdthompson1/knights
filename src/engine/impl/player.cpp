@@ -161,7 +161,8 @@ Player::Player(int plyr_num,
       anim(a),
       default_item(di), backpack_capacities(0), control_set(cs),
       secured_home_cc(sec_home_cc),
-      nskulls(0), nkills(0), frags(0), name(name_), elim_flag(false), respawn_type(R_NORMAL),
+      nskulls(0), nkills(0), frags(0), name(name_), player_state(PlayerState::NORMAL),
+      respawn_type(R_NORMAL),
       team_num(team_num_),
       teleport_flag(false), speech_bubble(false), approach_based_controls(true), action_bar_controls(false)
 {
@@ -511,15 +512,10 @@ bool Player::respawn()
 
                 // They don't have one -- Game Over
 
-                const bool already_eliminated = getElimFlag();
+                const bool already_eliminated = (getPlayerState() == PlayerState::ELIMINATED);
                 if (!already_eliminated) {
+
                     // Send "PlayerName has been eliminated" to all players.
-
-                    // NOTE: These messages ONLY get sent if the player is eliminated by dying in-game.
-                    // If they are eliminated "externally" (i.e. by quitting or leaving the game) then 
-                    // the external code is assumed to have already sent a "has quit" or "has left" type 
-                    // message, so we don't send further messages here. (Trac #36.)
-
                     std::ostringstream str_latin1;
                     str_latin1 << getName().asLatin1() << " has been eliminated.";
                     const int nleft = mediator.getNumPlayersRemaining() - 1;
@@ -529,10 +525,10 @@ bool Player::respawn()
                     mediator.getCallbacks().gameMsg(-1, str_latin1.str());
 
                     // Now eliminate the player.
-                    mediator.eliminatePlayer(*this);
+                    mediator.changePlayerState(*this, PlayerState::ELIMINATED);
                 }
                 return true;  // this counts as a "success" -- we do not want the respawn task to keep retrying.
-            
+
             } else {
 
                 // They do have a home. Use it as the respawn point.
@@ -546,7 +542,12 @@ bool Player::respawn()
     // OK so if we get to here, a respawn point has been chosen and put into the 
     // "dmap", "mc" and "facing" variables.
     // Note: these might be "null" (if the respawn is to be temporarily delayed).
-    
+
+    // If the player is disconnected, delay the respawn until they are back
+    if (getPlayerState() == PlayerState::DISCONNECTED) {
+        return false;
+    }
+
     // If the chosen spawn point is blocked this will move it to a nearby unblocked point
     // (or set mc to null if no unblocked point is available).
     mc = FindRespawnPoint(dmap, mc);

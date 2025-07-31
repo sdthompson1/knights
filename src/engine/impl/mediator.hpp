@@ -52,6 +52,7 @@
 
 #include "exception_base.hpp"
 #include "map_support.hpp"
+#include "player_state.hpp"
 #include "secure_result.hpp"
 
 #include "boost/shared_ptr.hpp"
@@ -220,7 +221,7 @@ public:
     // End-of-Game handling
     void winGame(const Player & p); // makes p win the game (everyone on p's team wins)
     void timeLimitExpired();        // all players lose, except for deathmatch games where plyr(s) with most frags win(s)
-    void eliminatePlayer(Player &);
+    void changePlayerState(Player &player, PlayerState new_state);
     bool gameRunning() const { return game_running; }
     int getNumPlayersRemaining() const
         { return remaining_players.size(); }

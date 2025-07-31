@@ -203,14 +203,14 @@ namespace {
     {
         const boost::shared_ptr<KnightsGame> the_game = conn.game;
         const std::string game_name = conn.game_name;
-                
+
         // read any pending data from the game before we get rid of his game connection...
         ReadDataFromKnightsGame(conn);
 
         // remove him from the game
         conn.game->clientLeftGame(*conn.game_conn);
         conn.game.reset();
-        conn.game_conn = 0;
+        conn.game_conn = nullptr;
         conn.game_name = "";
 
         // tell him that he has been booted out of the game
@@ -558,26 +558,6 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 }
                 break;
 
-            case CLIENT_QUIT:
-                if (conn.game) {
-                    const GameStatus old_status = conn.game->getStatus();
-                    const bool kick = conn.game->requestQuit(*conn.game_conn);  // might change status to SELECTING_QUEST
-
-                    // If >2 players then ESC-Q will kick you out of the game rather than stopping the game.
-                    // We handle that here.
-                    if (kick) {
-                        LeaveGame(pimpl->connections, conn);
-                    } else {
-                        // Not kicked out but the game status might still have changed
-                        const GameStatus new_status = conn.game->getStatus();
-                        if (old_status != new_status) {
-                            SendGameUpdate(pimpl->connections, conn.game_name, conn.game->getNumPlayers(),
-                                           conn.game->getNumObservers(), new_status);
-                        }
-                    }
-                }
-                break;
-
             case CLIENT_SET_PAUSE_MODE:
                 {
                     const bool p = buf.readUbyte() != 0;
@@ -727,7 +707,7 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
         conn.game_conn = 0;
         conn.game_name = "";
     }
-    
+
     // erase it from 'connections'
     connection_vector::iterator it = std::find_if(pimpl->connections.begin(), 
                                                   pimpl->connections.end(),

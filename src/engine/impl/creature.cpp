@@ -101,11 +101,13 @@ ImpactTask::ImpactResult ImpactTask::tryCreatureImpact(Creature &me)
     && !target_creature->isMoving()
     && !target_creature->isStunned()) {
 
-        // if the target is currently "doing something" (they have a control set)
-        // then we parrying is not allowed
+        // If the target is currently "doing something" (they have a control set)
+        // then parrying is not allowed.
+        // Also, if they are disconnected, then parrying is not allowed.
         const Player * target_player = target_creature->getPlayer();
         const bool doing_something = target_player && target_player->peekControl();
-        if (!doing_something) {
+        const bool disconnected = target_player && target_player->getPlayerState() == PlayerState::DISCONNECTED;
+        if (!doing_something && !disconnected) {
 
             // Now check that the target is carrying a weapon that allows parrying
             const ItemType *parry_weapon = target_creature->getItemInHand();

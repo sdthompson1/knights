@@ -33,6 +33,8 @@
 #ifndef KNIGHTS_ENGINE_HPP
 #define KNIGHTS_ENGINE_HPP
 
+#include "player_state.hpp"
+
 #include "utf8string.hpp"
 
 #include "gfx/color.hpp"
@@ -53,11 +55,12 @@ class UserControl;
 struct PlayerInfo {
     UTF8String name;
     Coercri::Color house_colour;
+    int house_colour_index;
     int player_num;
     int kills;
     int deaths;
-    int frags;
-    bool eliminated;
+    int frags;   // 'score' for deathmatch games
+    PlayerState player_state;
 };
 
 class KnightsEngine {
@@ -90,11 +93,10 @@ public:
     // Find out how many players are still active in the game
     int getNumPlayersRemaining() const;
 
-    // Eliminate a player -- used when somebody disconnects
-    void eliminatePlayer(int player);
+    // Change player state
+    void changePlayerState(int player, PlayerState new_state);
 
     // Get the player list
-    // Only players still in the game are included.
     // NOTE: the result is sorted by house colour, then name. (#172)
     void getPlayerList(std::vector<PlayerInfo> &player_list) const;
 

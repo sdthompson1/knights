@@ -61,7 +61,7 @@ enum ClientMessageCode {
     CLIENT_FINISHED_LOADING = 10,    // (I have loaded and am ready to start playing) no extra data 
     CLIENT_SEND_CONTROL = 11,        // followed by ubyte (bits 0-6: control num; bit 7: display num)
     CLIENT_READY_TO_END = 12,        // (I have clicked mouse on winner/loser screen and want to go to lobby) no extra data
-    CLIENT_QUIT = 13,                // (I have pressed escape and want to go to lobby) no extra data
+    //CLIENT_QUIT = 13,                // (I have pressed escape and want to go to lobby) no extra data
     CLIENT_SET_PAUSE_MODE = 14,      // followed by ubyte (paused-flag). only works for split screen mode currently.
     CLIENT_SEND_PASSWORD = 15,       // followed by string (the password).
     CLIENT_SET_OBS_FLAG = 17,        // followed by ubyte (0=I want to be a player, 1=I want to be an observer)
@@ -89,7 +89,7 @@ enum ServerMessageCode {
     SERVER_LEAVE_GAME = 8,           // no extra data
     SERVER_SET_MENU_SELECTION = 9,   // complex
     SERVER_SET_QUEST_DESCRIPTION = 10,  // followed by string
-    SERVER_START_GAME = 11,          // followed by ubyte (num_displays), ubyte (deathmatch flag). implicitly clears all ready-flags.
+    SERVER_START_GAME = 11,          // followed by ubyte (num_displays), ubyte (deathmatch flag), ubyte (already_started_flag). implicitly clears all ready-flags.
     SERVER_GOTO_MENU = 12,           // no extra data.
     SERVER_START_GAME_OBS = 13,      // followed by ubyte (num_displays), ubyte (deathmatch flag), NDisp strings (player names, for obs-mode)
                                      //   + ubyte (0 = at start of game, 1 = halfway through.)

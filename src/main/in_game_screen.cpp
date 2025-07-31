@@ -377,17 +377,13 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
 
     // Q in "pause mode" to request quit
     if (q_pressed && pause_mode) {
-        if (!player_names.empty()) {
-            // obs mode
-            // leave the game
-            knights_client->leaveGame();
-        } else {
-            // normal mode
-            // request to quit the game
-            knights_app.getGameManager().setSavedChat("");
-            knights_client->requestQuit();
-        }
-        prevent_drawing = true;  // prevents further drawing etc after the game has finished (and gfx deleted!)
+        knights_client->leaveGame();
+        // TODO - in single player / split screen games,
+        // this should return to quest menu instead
+        // (which will probably be implemented using a "vote to end game" mechanism)
+
+        pause_mode = false;
+        //prevent_drawing = true;  // prevents further drawing etc after the game has finished (and gfx deleted!)
         return;
     }
 

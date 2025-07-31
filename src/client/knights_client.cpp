@@ -235,10 +235,11 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             {
                 pimpl->ndisplays = buf.readUbyte();
                 const bool deathmatch_mode = buf.readUbyte() != 0;
+                const bool already_started = buf.readUbyte() != 0;
                 pimpl->player = 0;
                 if (client_cb) {
                     client_cb->startGame(pimpl->ndisplays, deathmatch_mode,
-                                         std::vector<UTF8String>(), false);
+                                         std::vector<UTF8String>(), already_started);
                 }
             }
             break;
@@ -968,11 +969,6 @@ void KnightsClient::requestSpeechBubble(bool show)
 void KnightsClient::readyToEnd()
 {
     pimpl->out.push_back(CLIENT_READY_TO_END);
-}
-
-void KnightsClient::requestQuit()
-{
-    pimpl->out.push_back(CLIENT_QUIT);
 }
 
 void KnightsClient::setPauseMode(bool p)

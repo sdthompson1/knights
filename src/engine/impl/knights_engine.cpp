@@ -49,6 +49,8 @@
 #include "time_limit_task.hpp"
 #include "view_manager.hpp"
 
+#include <utility>
+
 class KnightsEngineImpl {
 public:
     explicit KnightsEngineImpl(int nplayers)
@@ -93,9 +95,9 @@ public:
     // this holds the GVT at which the game will end (or zero if no time limit)
     int final_gvt;
     
-    // players to be eliminated are queued, because we have to call Mediator::eliminatePlayer()
+    // Player state changes are queued, because we have to call Mediator::changePlayerState()
     // from within update() (otherwise the callbacks won't have been set)
-    std::vector<int> players_to_eliminate;
+    std::vector<std::pair<int, PlayerState>> pending_state_changes;
 
     // ditto for speech bubble requests.
     std::map<int,bool> speech_bubble_requests;
@@ -254,12 +256,14 @@ void KnightsEngine::update(int time_delta, KnightsCallbacks &callbacks)
 {
     Mediator::instance().setCallbacks(&callbacks); 
 
-    for (std::vector<int>::const_iterator it = pimpl->players_to_eliminate.begin(); it != pimpl->players_to_eliminate.end(); ++it) {
-        if (*it >= 0 && *it < pimpl->players.size()) {
-            Mediator::instance().eliminatePlayer(*pimpl->players[*it]);
+    for (auto const& change : pimpl->pending_state_changes) {
+        int player = change.first;
+        PlayerState new_state = change.second;
+        if (player >= 0 && player < pimpl->players.size()) {
+            Mediator::instance().changePlayerState(*pimpl->players[player], new_state);
         }
     }
-    pimpl->players_to_eliminate.clear();
+    pimpl->pending_state_changes.clear();
 
     for (std::map<int, bool>::const_iterator it = pimpl->speech_bubble_requests.begin(); it != pimpl->speech_bubble_requests.end(); ++it) {
         boost::shared_ptr<Player> p = pimpl->players.at(it->first);
@@ -269,7 +273,7 @@ void KnightsEngine::update(int time_delta, KnightsCallbacks &callbacks)
     
     pimpl->doInitialUpdateIfNeeded();
     pimpl->task_manager.advanceToTime(pimpl->task_manager.getGVT() + time_delta);
-    Mediator::instance().setCallbacks(0);
+    Mediator::instance().setCallbacks(nullptr);
 }
 
 void KnightsEngineImpl::doInitialUpdateIfNeeded()
@@ -320,12 +324,15 @@ void KnightsEngineImpl::doInitialUpdateIfNeeded()
 
 void KnightsEngine::catchUp(int player, KnightsCallbacks &cb)
 {
+    cb.prepareForCatchUp(player);
+
     MiniMap &mini_map = cb.getMiniMap(player);
     StatusDisplay &status_display = cb.getStatusDisplay(player);
     DungeonView &dungeon_view = cb.getDungeonView(player);
 
     // If 'player' is eliminated then send this fact to everyone
-    if (pimpl->players[player]->getElimFlag()) {
+    PlayerState state = pimpl->players[player]->getPlayerState();
+    if (state == PlayerState::ELIMINATED) {
         cb.disableView(player);
     }
 
@@ -379,9 +386,9 @@ int KnightsEngine::getNumPlayersRemaining() const
     return Mediator::instance().getNumPlayersRemaining();
 }
 
-void KnightsEngine::eliminatePlayer(int player)
+void KnightsEngine::changePlayerState(int player, PlayerState new_state)
 {
-    pimpl->players_to_eliminate.push_back(player);
+    pimpl->pending_state_changes.push_back(std::make_pair(player, new_state));
 }
 
 namespace {
@@ -410,12 +417,13 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
     for (std::vector<boost::shared_ptr<Player> >::const_iterator it = pimpl->players.begin(); it != pimpl->players.end(); ++it, ++plyr_num) {
         PlayerInfo inf;
         inf.name = (*it)->getName();
-        inf.house_colour = house_colours.at(pimpl->house_col_idxs.at(plyr_num));
+        inf.house_colour_index = pimpl->house_col_idxs.at(plyr_num);
+        inf.house_colour = house_colours.at(inf.house_colour_index);
         inf.player_num = plyr_num;
         inf.kills = (*it)->getKills();
         inf.deaths = (*it)->getNSkulls();
         inf.frags = (*it)->getFrags();
-        inf.eliminated = (*it)->getElimFlag();
+        inf.player_state = (*it)->getPlayerState();
         player_list.push_back(inf);
     }
 

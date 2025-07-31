@@ -95,6 +95,10 @@ public:
     virtual void onElimination(int player_num) = 0;
     virtual void disableView(int player_num) = 0;
     virtual void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names) = 0;
+
+
+    // This is a slight hack needed to get catchUp to work properly
+    virtual void prepareForCatchUp(int player_num) { }
 };
 
 #endif

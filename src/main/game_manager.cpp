@@ -769,6 +769,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                    const std::vector<int> &house_cols,
                                    const std::vector<UTF8String> &observers)
 {
+    pimpl->game_in_progress = false;
     pimpl->my_obs_flag = false;
     pimpl->my_house_colour = my_house_colour;
     pimpl->is_split_screen = (pimpl->current_game_name == "#SplitScreenGame");
@@ -1021,7 +1022,7 @@ void GameManager::leaveGame()
 
     // unload gfx/sounds
     pimpl->knights_app.unloadGraphicsAndSounds();
-    
+
     pimpl->gui_invalid = true;
 }
 
@@ -1091,7 +1092,11 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
             pimpl->chat_list.add("Use arrow keys (left/right/up/down) to switch between players.");
         }
     } else {
-        pimpl->chat_list.add("Game started.");
+        if (already_started) {
+            pimpl->chat_list.add("You have reconnected to this game.");
+        } else {
+            pimpl->chat_list.add("Game started.");
+        }
     }
 
     // clear ready flags
@@ -1138,7 +1143,13 @@ void GameManager::gotoMenu()
 void GameManager::playerJoinedThisGame(const UTF8String &name, bool obs_flag, int house_col)
 {
     if (!obs_flag) {
-        pimpl->chat_list.add(name.asLatin1() + " has joined the game.");       
+        if (pimpl->game_in_progress) {
+            // The only way to join a game while it is in progress is via reconnect - there
+            // is no way for "new" players to enter a game in progress (currently)
+            pimpl->chat_list.add(name.asLatin1() + " has reconnected.");
+        } else {
+            pimpl->chat_list.add(name.asLatin1() + " has joined the game.");
+        }
         pimpl->game_namelist.add(name, false, false, house_col);
     } else {
         pimpl->chat_list.add(name.asLatin1() + " is now observing this game.");
@@ -1169,7 +1180,9 @@ void GameManager::playerLeftThisGame(const UTF8String &name, bool obs_flag)
         msg_latin1 += " has left the game.";
     }
     pimpl->chat_list.add(msg_latin1);
-    pimpl->game_namelist.remove(name);
+    if (!obs_flag) {
+        pimpl->game_namelist.remove(name);
+    }
     pimpl->gui_invalid = true;
 }
 

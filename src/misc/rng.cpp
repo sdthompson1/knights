@@ -70,7 +70,7 @@ void RNG::initialize(const char *bytes, int num_bytes)
     // We expect to be given something that fits in a
     // std::array<uint32_t, std::mt19937::state_size>
     if (num_bytes != std::mt19937::state_size * 4) {
-        throw std::logic_error("Seed size mismatch");
+        throw std::invalid_argument("Seed size mismatch");
     }
 
     // Copy the input bytes to an array and use them to seed the generator
@@ -82,9 +82,8 @@ void RNG::initialize(const char *bytes, int num_bytes)
 
 float RNGImpl::getFloat(float a, float b)
 {
-    // b is supposed to be greater than a. If not, we will just return a.
     if (b <= a) {
-        return a;
+        throw std::invalid_argument("RNG::getFloat: empty range");
     }
 
     std::uniform_real_distribution<float> dist(a, b);
@@ -112,6 +111,9 @@ float RNGImpl::getFloat(float a, float b)
 
 int RNGImpl::getInt(int a, int b)
 {
+    if (b <= a) {
+        throw std::invalid_argument("RNG::getInt: empty range");
+    }
     std::uniform_int_distribution<int> dist(a, b-1);
 #ifndef VIRTUAL_SERVER
     boost::unique_lock lock(mutex);

@@ -1,5 +1,5 @@
 /*
- * version.hpp
+ * player_state.hpp
  *
  * This file is part of Knights.
  *
@@ -21,20 +21,13 @@
  *
  */
 
-#ifndef VERSION_HPP
-#define VERSION_HPP
+#ifndef PLAYER_STATE_HPP
+#define PLAYER_STATE_HPP
 
-#define KNIGHTS_VERSION "028"
-#define KNIGHTS_VERSION_NUM 28
-#define COMPATIBLE_VERSION_NUM 28   // Lowest client version that can connect to this server
-
-#ifdef WIN32
-#define KNIGHTS_PLATFORM "Windows"
-#else
-#define KNIGHTS_PLATFORM "Unix"
-#endif
-
-#define KNIGHTS_WEBSITE "https://www.knightsgame.org.uk/"
-
+enum class PlayerState {
+    NORMAL,        // Player is still in the game and playing normally
+    ELIMINATED,    // Player has permanently died, and become an observer
+    DISCONNECTED   // Player has temporarily disconnected, and may or may not return
+};
 
 #endif

@@ -274,3 +274,9 @@ std::vector<int> ServerCallbacks::getPlayersToPutIntoObsMode()
     players_to_put_into_obs_mode.clear();
     return result;
 }
+
+void ServerCallbacks::prepareForCatchUp(int i)
+{
+    dungeon_view[i]->rmObserverNum(i);
+    mini_map[i]->prepareForCatchUp();
+}

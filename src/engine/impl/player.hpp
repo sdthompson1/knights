@@ -27,6 +27,7 @@
 #include "lua_func.hpp"
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
+#include "player_state.hpp"
 #include "status_display.hpp"
 #include "utf8string.hpp"
 
@@ -153,7 +154,8 @@ public:
     void setSpeechBubble(bool show);
     bool getSpeechBubble() const { return speech_bubble; }
     
-    // reset home (called by HomeManager, also called by eliminatePlayer to stop the player respawning)
+    // reset home (called by HomeManager, also called when player is out of the game
+    // to stop them respawning)
     // (Also called by Lua function "kts.SetHomeFor")
     // mc = pos just outside home; not the home square itself
     // facing = towards the home.
@@ -173,13 +175,14 @@ public:
     void getControlInfo(const Control *ctrl_in, ItemType *& itype_out,
                         weak_ptr<Tile> &tile_out, MapCoord &tile_mc_out) const;
     void computeAvailableControls();
+    void clearCurrentControls() { current_controls.clear(); }
 
     // get player name
     const UTF8String & getName() const { return name; }
 
-    // "eliminated" flag.
-    void setElimFlag() { elim_flag = true; }
-    bool getElimFlag() const { return elim_flag; }
+    // Player State
+    void setPlayerState(PlayerState new_state) { player_state = new_state; }
+    PlayerState getPlayerState() const { return player_state; }
 
     int getNSkulls() const { return nskulls; }
     int getKills() const { return nkills; }
@@ -254,7 +257,7 @@ private:
     int frags;
     
     UTF8String name;
-    bool elim_flag;
+    PlayerState player_state;
 
     RespawnType respawn_type;
     LuaFunc respawn_func;

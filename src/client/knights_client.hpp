@@ -120,7 +120,6 @@ public:
     void requestSpeechBubble(bool show);
     
     void readyToEnd();   // tell server that we are ready to exit winner/loser screen
-    void requestQuit();  // tell server that we want to quit game (go back to lobby).
 
     void setPauseMode(bool);  // only works for split screen games currently.
 

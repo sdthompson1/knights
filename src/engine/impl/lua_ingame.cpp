@@ -895,14 +895,14 @@ namespace {
     int IsEliminated(lua_State *lua)
     {
         Player & pl = CheckLuaPtr<Player>(lua, 1, "Player");
-        lua_pushboolean(lua, pl.getElimFlag());
+        lua_pushboolean(lua, pl.getPlayerState() == PlayerState::ELIMINATED);
         return 1;
     }
 
     int EliminatePlayer(lua_State *lua)
     {
         Player & pl = GetPlayerOrKnight(lua, 1);
-        Mediator::instance().eliminatePlayer(pl);
+        Mediator::instance().changePlayerState(pl, PlayerState::ELIMINATED);
         return 0;
     }
 

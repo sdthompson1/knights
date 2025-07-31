@@ -53,7 +53,7 @@ public:
     int allocObserverNum();
     void rmObserverNum(int observer_num);
     std::vector<int> getPlayersToPutIntoObsMode();  // clears the list afterwards
-    
+
     // query game over state
     bool isGameOver() const { return game_over; }
     int getWinnerNum() const { return winner_num; } // plyr num of the winner, valid if isGameOver() true. (-1 if no winner.)
@@ -83,6 +83,8 @@ public:
     virtual void onElimination(int player_num);
     virtual void disableView(int player_num);
     virtual void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names) { }
+
+    virtual void prepareForCatchUp(int player_num) override;
 
 private:
     void doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num, bool include_private) const;

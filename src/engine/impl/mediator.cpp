@@ -464,48 +464,81 @@ void Mediator::endGame(const std::vector<const Player *> &winners, std::string m
     task_manager.rmAllTasks();
 }
 
-void Mediator::eliminatePlayer(Player &pl)
+void Mediator::changePlayerState(Player &pl, PlayerState new_state)
 {
-    if (remaining_players.find(&pl) == remaining_players.end()) return;   // already eliminated!
+    switch (new_state) {
+    case PlayerState::NORMAL:
+        // Returning to NORMAL from DISCONNECTED is allowed.
+        // Going to NORMAL from any other state is blocked.
+        if (pl.getPlayerState() == PlayerState::DISCONNECTED) {
+            pl.setPlayerState(PlayerState::NORMAL);
 
-    shared_ptr<Knight> kt = pl.getKnight();
-    if (kt) {
-        // suicide him
-        runHook("HOOK_KNIGHT_DAMAGE", kt);
-        kt->onDeath(Creature::NORMAL_MODE, Originator(OT_None()));
-        kt->rmFromMap();
-    }
-
-    remaining_players.erase(&pl);
-    pl.resetHome(0, MapCoord(), D_NORTH);  // Stops him respawning
-
-    pl.setElimFlag();
-
-    bool two_teams_found = false;
-    int team = -1;
-    for (std::set<const Player*>::const_iterator it = remaining_players.begin(); it != remaining_players.end(); ++it) {
-        if (team == -1) {
-            team = (*it)->getTeamNum();
-        } else if (team != (*it)->getTeamNum()) {
-            // Two different teams found
-            two_teams_found = true;
-            break;
+            // Clear their available controls -- this will force available controls
+            // to be resent when KnightTask next runs.
+            pl.clearCurrentControls();
         }
-    }
-    const bool game_over = !two_teams_found;
+        break;
+
+    case PlayerState::DISCONNECTED:
+        // Going to DISCONNECTED from NORMAL is allowed.
+        // Going to DISCONNECTED from any other state is blocked.
+        if (pl.getPlayerState() == PlayerState::NORMAL) {
+            pl.setPlayerState(PlayerState::DISCONNECTED);
+        }
+        break;
+
+    case PlayerState::ELIMINATED:
+        // We can go to ELIMINATED from either NORMAL or DISCONNECTED,
+        // but going from ELIMINATED to itself is blocked.
+        if (pl.getPlayerState() != PlayerState::ELIMINATED) {
+
+            // Kill the knight if they still exist
+            shared_ptr<Knight> kt = pl.getKnight();
+            if (kt) {
+                // suicide him
+                runHook("HOOK_KNIGHT_DAMAGE", kt);
+                kt->onDeath(Creature::NORMAL_MODE, Originator(OT_None()));
+                kt->rmFromMap();
+            }
+
+            // Remove from remaining_players list and remove their home
+            // (which stops them respawning)
+            remaining_players.erase(&pl);
+            pl.resetHome(0, MapCoord(), D_NORTH);
+
+            // Change the state
+            pl.setPlayerState(PlayerState::ELIMINATED);
+
+            // If, post-elimination, only one team remains, the game ends
+            bool two_teams_found = false;
+            int team = -1;
+            for (auto player : remaining_players) {
+                if (team == -1) {
+                    team = player->getTeamNum();
+                } else if (team != player->getTeamNum()) {
+                    two_teams_found = true;
+                    break;
+                }
+            }
+
+            const bool game_over = !two_teams_found;
     
-    if (game_over) {
-        // end the game
-        if (remaining_players.empty()) {
-            endGame(std::vector<const Player *>(), "");
-        } else {
-            // All remaining players are on the same team so any one of them can be used in the call to winGame
-            winGame(**remaining_players.begin());
+            if (game_over) {
+                // End the game
+                if (remaining_players.empty()) {
+                    endGame(std::vector<const Player *>(), "");
+                } else {
+                    // All remaining players are on the same team so any one of them can be used in the call to winGame
+                    winGame(**remaining_players.begin());
+                }
+
+            } else {
+                // The game continues.
+                // Note: ServerCallbacks::onElimination puts the player into observer mode.
+                getCallbacks().onElimination(pl.getPlayerNum());
+            }
         }
-        
-    } else {
-        // this puts him into observer mode, but he is still in the game (as an observer).
-        getCallbacks().onElimination(pl.getPlayerNum());
+        break;
     }
 }
 

@@ -74,10 +74,9 @@ public:
     GameConnection & newClientConnection(const UTF8String &client_name, const UTF8String &client_name_2, 
                                          int client_version, bool approach_based_controls, bool action_bar_controls);
 
-    // remove a player/observer.
-    // the GameConnection is invalid after this call.
+    // Remove a player/observer from the game.
+    // The GameConnection is invalid after this call.
     void clientLeftGame(GameConnection &conn);
-
 
     // incoming msgs should be decoded by KnightsServer and either
     // handled there, or forwarded to one of the following methods:
@@ -86,8 +85,7 @@ public:
     void setHouseColour(GameConnection &, int hse_col);
     void finishedLoading(GameConnection &);
     void readyToEnd(GameConnection &);
-    bool requestQuit(GameConnection &);
-    void setPauseMode(bool p); 
+    void setPauseMode(bool p);
     void setMenuSelection(GameConnection &, int item_num, int new_choice_num);
     void randomQuest(GameConnection &);
     void requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids);
