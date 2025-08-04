@@ -402,14 +402,6 @@ namespace {
         kg.knights_config->changeNumberOfPlayers(CountPlayers(kg), CountTeams(kg), listener);
     }
 
-    struct CmpByName {
-        bool operator()(const boost::shared_ptr<GameConnection> &lhs,
-                        const boost::shared_ptr<GameConnection> &rhs) const
-        {
-            return lhs->name.toUpper() < rhs->name.toUpper();
-        }
-    };
-
     void AddNewPlayer(KnightsGameImpl &kg,
                       boost::shared_ptr<GameConnection> conn,
                       KnightsEngine *engine,
@@ -444,10 +436,6 @@ namespace {
 
         // Add to connections list
         kg.connections.push_back(conn);
-
-        // Sort connections by name
-        // (this makes the player list appear in alphabetical order)
-        std::sort(kg.connections.begin(), kg.connections.end(), CmpByName());
 
         // Send the SERVER_JOIN_GAME_ACCEPTED message (includes initial configuration messages e.g. menu settings)
         Coercri::OutputByteBuf buf(conn->output_data);
