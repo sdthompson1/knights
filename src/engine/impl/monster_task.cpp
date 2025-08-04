@@ -37,7 +37,7 @@ void MonsterTask::execute(TaskManager &tm)
     const int interval = mediator.cfgInt("monster_interval");
     
     int left = 999999, right = 0,
-        bottom = 999999, top = 0;
+        top = 999999, bottom = 0;
     Mediator &med(mediator);
     for (std::vector<Player*>::const_iterator it = med.getPlayers().begin();
     it != med.getPlayers().end(); ++it) {
@@ -47,11 +47,11 @@ void MonsterTask::execute(TaskManager &tm)
             if (x-radius < left) left = x-radius;
             if (x+1+radius > right) right = x+1+radius;
             const int y = kt->getPos().getY();
-            if (y-radius < bottom) bottom = y-radius;
-            if (y+1+radius > top) top = y+1+radius;
+            if (y-radius < top) top = y-radius;
+            if (y+1+radius > bottom) bottom = y+1+radius;
         }
     }
-    med.getMonsterManager().doMonsterGeneration(*med.getMap(), left, bottom, right, top);
+    med.getMonsterManager().doMonsterGeneration(*med.getMap(), left, top, right, bottom);
 
     tm.addTask(shared_from_this(), TP_LOW, tm.getGVT() + interval);
 }

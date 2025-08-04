@@ -41,11 +41,13 @@ SegmentSet::SegmentSet(const std::vector<const Segment *> &input)
 const Segment * SegmentSet::getSegment(int minhomes) const
 {
     int nsets = segments.size();
-    if (minhomes >= nsets) return 0;
+    if (minhomes >= nsets) return nullptr;
     if (minhomes < 0) minhomes = 0;
 
     int nsegments = 0;
     for (int i=minhomes; i<nsets; ++i) nsegments += segments[i].size();
+
+    if (nsegments == 0) return nullptr;
 
     int r = g_rng.getInt(0, nsegments);
     for (int i=minhomes; i<nsets; ++i) {

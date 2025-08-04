@@ -114,17 +114,21 @@ int MonsterManager::getTotalMonsterCount() const
 }
 
 namespace {
-    // generate a random square within the given box:
-    MapCoord GetRandomSquare(int left, int bottom, int right, int top)
+    // Generate a random square within the range [left,right) and [top,bottom)
+    // (for x and y), or a "null" MapCoord if either range is empty.
+    MapCoord GetRandomSquare(int left, int top, int right, int bottom)
     {
+        if (right <= left || bottom <= top) {
+            return MapCoord();
+        }
         const int x = g_rng.getInt(left, right);
-        const int y = g_rng.getInt(bottom, top);
+        const int y = g_rng.getInt(top, bottom);
         return MapCoord(x,y);
     }
 }
 
-void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
-                                         int right, int top)
+void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int top,
+                                         int right, int bottom)
 {
     vector<shared_ptr<Tile> > tiles;
 
@@ -145,7 +149,7 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
     for (int attempts=0; attempts<5; ++attempts) {
 
         // Pick a random square     
-        MapCoord mc = GetRandomSquare(left, bottom, right, top);
+        MapCoord mc = GetRandomSquare(left, top, right, bottom);
         if (!dmap.valid(mc)) continue;
 
         const bool zombie_activity_inhibited = zombieActivityInhibited(mc);
@@ -223,8 +227,8 @@ void MonsterManager::doMonsterGeneration(DungeonMap &dmap, int left, int bottom,
     // If we get here then all of the attempts failed... give up.
 }
 
-void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bottom,
-                                  int right, int top)
+void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int top,
+                                  int right, int bottom)
 {
     vector<shared_ptr<Tile> > tiles;
 
@@ -237,11 +241,11 @@ void MonsterManager::doNecromancy(int nzoms, DungeonMap &dmap, int left, int bot
         // Limit the number of attempts for each monster
         // (we allow quite a few attempts, since the idea is that the generation
         // should succeed if at all possible...)
-        for (int attempts=0; attempts<3*(right-left)*(top-bottom); ++attempts) {
+        for (int attempts=0; attempts<3*(right-left)*(bottom-top); ++attempts) {
             bool zombie_placed = false;
             
             // Pick a random square
-            MapCoord mc = GetRandomSquare(left, bottom, right, top);
+            MapCoord mc = GetRandomSquare(left, top, right, bottom);
             if (!dmap.valid(mc)) continue;
 
             // Get a list of tiles at the square

@@ -41,6 +41,7 @@ public:
     explicit SegmentSet(const std::vector<const Segment *> &segments);
 
     // minhomes = Minimum number of *non-special* homes required.
+    // (Returns nullptr if the request cannot be satisfied.)
     const Segment * getSegment(int minhomes) const;
     
 private:

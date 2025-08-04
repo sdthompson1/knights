@@ -102,14 +102,14 @@ public:
     //
     
     // This does one "round" of monster generation. A random tile
-    // within the given rectangle (which includes bl but excludes tr)
+    // within the given rectangle (which includes tl but excludes br)
     // is generated. If it corresponds to a "monster generator" or
     // zombie (decay/reanimate) tile, then the appropriate action is
     // taken, otherwise nothing happens.
-    void doMonsterGeneration(DungeonMap &dmap, int left, int bottom, int right, int top);
+    void doMonsterGeneration(DungeonMap &dmap, int left, int top, int right, int bottom);
 
     // necromancy (Necronomicon effect -- animates a number of zombies within range.)
-    void doNecromancy(int nzoms, DungeonMap &dmap, int left, int bottom, int right, int top);
+    void doNecromancy(int nzoms, DungeonMap &dmap, int left, int top, int right, int bottom);
     bool hasNecromancyBeenDone() const { return necromancy_flag; }
     
     
