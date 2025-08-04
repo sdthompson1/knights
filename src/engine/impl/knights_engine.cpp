@@ -398,15 +398,23 @@ void KnightsEngine::changePlayerState(int player, PlayerState new_state)
 
 namespace {
     struct ComparePlayerInfo {
+        ComparePlayerInfo(const std::map<int, UTF8String> &house_first_names) 
+            : house_first_names(house_first_names) {}
+        
         bool operator()(const PlayerInfo &lhs, const PlayerInfo &rhs) const
         {
-            // have to write in this strange way (call operator< directly)
-            // because some other operator< is coming in (from boost?)
-            // and causing ambiguity.
-            return lhs.house_colour.operator< (rhs.house_colour) ? true
-                : rhs.house_colour.operator< (lhs.house_colour) ? false
-                : lhs.name < rhs.name;
+            // Sort houses by the alphabetically first player name in each house
+            if (lhs.house_colour_index != rhs.house_colour_index) {
+                return house_first_names.at(lhs.house_colour_index)
+                    < house_first_names.at(rhs.house_colour_index);
+            }
+            
+            // Within the same house, sort by player name
+            return lhs.name < rhs.name;
         }
+        
+    private:
+        const std::map<int, UTF8String> &house_first_names;
     };
 }
 
@@ -432,7 +440,17 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
         player_list.push_back(inf);
     }
 
-    std::sort(player_list.begin(), player_list.end(), ComparePlayerInfo());
+    // Pre-compute the alphabetically first player name for each house
+    std::map<int, UTF8String> house_first_names;
+    for (const PlayerInfo &player : player_list) {
+        int house_idx = player.house_colour_index;
+        if (house_first_names.find(house_idx) == house_first_names.end() || 
+        player.name < house_first_names[house_idx]) {
+            house_first_names[house_idx] = player.name;
+        }
+    }
+
+    std::sort(player_list.begin(), player_list.end(), ComparePlayerInfo(house_first_names));
 }
 
 bool KnightsEngine::isPlayerListDirty()
