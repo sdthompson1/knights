@@ -1202,9 +1202,7 @@ void GameManager::playerLeftThisGame(const UTF8String &name, bool obs_flag)
         msg_latin1 += " has left the game.";
     }
     pimpl->chat_list.add(msg_latin1);
-    if (!obs_flag) {
-        pimpl->game_namelist.remove(name);
-    }
+    pimpl->game_namelist.remove(name);
     pimpl->gui_invalid = true;
 }
 
