@@ -145,7 +145,8 @@ void InGameScreen::setupDisplay()
                                    single_player,
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips,
-                                   chat_keys));
+                                   chat_keys,
+                                   knights_app.getGameManager().getPlayerStateLookup()));
     knights_client->setKnightsCallbacks(display.get());
 
     init_nplayers = 0;

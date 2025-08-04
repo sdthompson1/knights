@@ -64,6 +64,7 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
                             int phy_pixels_per_square, float dungeon_scale_factor,
                             const Coercri::Font &txt_font,
                             bool show_own_name,
+                            std::function<ClientState(const UTF8String&)> player_state_lookup,
                             int &room_tl_x, int &room_tl_y)
 {
     using std::list;
@@ -144,7 +145,7 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
             
             // Add the entities (always)
             entity_map.getEntityGfx(time_us, room_tl_x, room_tl_y, phy_pixels_per_square, entity_depth, gfx_buffer, txt_buffer, show_own_name,
-                                    speech_bubble, speech_depth);
+                                    speech_bubble, speech_depth, player_state_lookup);
 
             // Now draw all buffered graphics
             for (map<int, vector<GraphicElement> >::reverse_iterator it = gfx_buffer.rbegin();

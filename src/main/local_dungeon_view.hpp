@@ -29,6 +29,7 @@
 #ifndef LOCAL_DUNGEON_VIEW_HPP
 #define LOCAL_DUNGEON_VIEW_HPP
 
+#include "client_callbacks.hpp"
 #include "dungeon_view.hpp"
 #include "entity_map.hpp"
 #include "utf8string.hpp"
@@ -36,6 +37,7 @@
 #include "gfx/gfx_context.hpp" // coercri
 
 #include <cstdint>
+#include <functional>
 #include <list>
 #include <queue>
 #include <vector>
@@ -57,6 +59,7 @@ public:
               int phy_dungeon_width, int phy_dungeon_height,
               int phy_pixels_per_square, float dungeon_scale_factor,
               const Coercri::Font & txt_font, bool show_own_name,
+              std::function<ClientState(const UTF8String&)> player_state_lookup,
               int &room_tl_x, int &room_tl_y);
     boost::shared_ptr<ColourChange> getMyColourChange() const { return my_colour_change; }
     bool isApproached() const { return my_approached; }

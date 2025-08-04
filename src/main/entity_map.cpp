@@ -498,7 +498,8 @@ void EntityMap::addGraphic(const Data &ent, int64_t time_us, int tl_x, int tl_y,
                            vector<TextElement> &txt_buffer,
                            int pixels_per_square, bool add_entity_name,
                            const Graphic *speech_bubble,
-                           int speech_depth)
+                           int speech_depth,
+                           std::function<ClientState(const UTF8String&)> player_state_lookup)
 {
     const Anim *anim = ent.anim;
     if (anim) {
@@ -588,6 +589,9 @@ void EntityMap::addGraphic(const Data &ent, int64_t time_us, int tl_x, int tl_y,
                 te.sx = entity_x + (pixels_per_square/2);
                 te.sy = entity_y + (pixels_per_square/2);
                 te.text = ent.name;
+                if (player_state_lookup(ent.name) == ClientState::DISCONNECTED) {
+                    te.text += UTF8String::fromUTF8(" (Disconnected)");
+                }
                 txt_buffer.push_back(te);
             }
         }
@@ -599,13 +603,14 @@ void EntityMap::getEntityGfx(int64_t time_us, int tl_x, int tl_y, int pixels_per
                              vector<TextElement> &txt_buffer,
                              bool show_own_name,
                              const Graphic *speech_bubble,
-                             int speech_depth)
+                             int speech_depth,
+                             std::function<ClientState(const UTF8String&)> player_state_lookup)
 {
     update(time_us);
         
     for (map<unsigned short int,Data>::iterator it = entities.begin(); it != entities.end(); ++it) {
         addGraphic(it->second, time_us, tl_x, tl_y, entity_depth, gfx_buffer, txt_buffer,
                    pixels_per_square, show_own_name || it->first != 0,
-                   speech_bubble, speech_depth);
+                   speech_bubble, speech_depth, player_state_lookup);
     }
 }

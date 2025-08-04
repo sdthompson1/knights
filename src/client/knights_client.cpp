@@ -434,6 +434,27 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     inf.deaths = buf.readVarInt();
                     inf.frags = buf.readVarInt();
                     inf.ping = buf.readVarInt();
+                    
+                    // Read status byte: 0=NORMAL, 1=ELIMINATED, 2=DISCONNECTED, 3=OBSERVER
+                    const unsigned char status_byte = buf.readUbyte();
+                    switch (status_byte) {
+                    case 0:
+                        inf.client_state = ClientState::NORMAL;
+                        break;
+                    case 1:
+                        inf.client_state = ClientState::ELIMINATED;
+                        break;
+                    case 2:
+                        inf.client_state = ClientState::DISCONNECTED;
+                        break;
+                    case 3:
+                        inf.client_state = ClientState::OBSERVER;
+                        break;
+                    default:
+                        inf.client_state = ClientState::NORMAL;  // Default to NORMAL for unknown values
+                        break;
+                    }
+                    
                     player_list.push_back(inf);
                 }
                 if (client_cb) client_cb->playerList(player_list);

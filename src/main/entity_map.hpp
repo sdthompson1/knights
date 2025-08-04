@@ -29,10 +29,12 @@
 #ifndef ENTITY_MAP_HPP
 #define ENTITY_MAP_HPP
 
+#include "client_callbacks.hpp"
 #include "graphic_element.hpp"  // MSVC compiler gives a link error on getEntityMap if we don't have this...
 #include "map_support.hpp"
 
 #include <cstdint>
+#include <functional>
 #include <list>
 #include <map>
 #include <vector>
@@ -69,7 +71,8 @@ public:
     void getEntityGfx(int64_t time_us, int tl_x, int tl_y, int pixels_per_square, int entity_depth,
                       std::map<int, std::vector<GraphicElement> > &gfx_buffer,
                       std::vector<TextElement> &txt_buffer, bool show_own_name,
-                      const Graphic *speech_bubble, int speech_depth);
+                      const Graphic *speech_bubble, int speech_depth,
+                      std::function<ClientState(const UTF8String&)> player_state_lookup);
 
 private:
     // Commands are not executed immediately, but are stored up into a
@@ -134,7 +137,8 @@ private:
                     int pixels_per_square,
                     bool add_entity_name,
                     const Graphic *speech_bubble,
-                    int speech_depth);
+                    int speech_depth,
+                    std::function<ClientState(const UTF8String&)> player_state_lookup);
 
     void recomputeEntityMotion(std::map<unsigned short int,Data>::iterator it, int64_t time_us);
 

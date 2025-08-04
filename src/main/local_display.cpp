@@ -262,11 +262,13 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            bool sgl_plyr,
                            bool tut,
                            bool tool_tips,
-                           const std::string &chat_keys)
+                           const std::string &chat_keys,
+                           std::function<ClientState(const UTF8String&)> player_state_lookup)
     : config_map(cfg),
       approach_offset(aofs),
       potion_renderer(potion_rend),
       skull_renderer(skull_rend),
+      player_state_lookup(player_state_lookup),
 
       // cached config variables
       ref_vp_width(cfg.getInt("dpy_viewport_width")),
@@ -1147,6 +1149,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         dungeon_view[player_num]->draw(gc, gm, screen_flash, dungeon_x, dungeon_y, dungeon_width,
                                        dungeon_height, pixels_per_square, dungeon_scale_factor, *txt_font,
                                        observer_mode,  // Show my knight name in obs mode. In normal mode, show only names of opponents, not myself.
+                                       player_state_lookup,
                                        room_tl_x, room_tl_y);
 
         // Work out highlighting for action bar

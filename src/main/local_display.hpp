@@ -31,6 +31,7 @@
 #define LOCAL_DISPLAY_HPP
 
 #include "action_bar.hpp"
+#include "client_callbacks.hpp"
 #include "knights_callbacks.hpp"
 #include "map_support.hpp"
 #include "tutorial_window.hpp"
@@ -43,6 +44,7 @@
 #include "boost/scoped_ptr.hpp"
 
 #include <cstdint>
+#include <functional>
 
 class ActionBar;
 class ChatList;
@@ -97,7 +99,8 @@ public:
                  bool sgl_plyr,
                  bool tutorial,
                  bool tool_tips,
-                 const std::string &chat_keys);
+                 const std::string &chat_keys,
+                 std::function<ClientState(const UTF8String&)> player_state_lookup);
     ~LocalDisplay();
 
     //
@@ -234,6 +237,7 @@ private:
     const int approach_offset;
     const PotionRenderer *potion_renderer;
     const SkullRenderer *skull_renderer;
+    std::function<ClientState(const UTF8String&)> player_state_lookup;
 
     // cached config variables
     const int ref_vp_width, ref_vp_height, ref_gutter;

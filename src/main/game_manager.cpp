@@ -672,6 +672,18 @@ int GameManager::getNumAvailHouseColours() const
     return pimpl->avail_house_colours.size();
 }
 
+std::function<ClientState(const UTF8String&)> GameManager::getPlayerStateLookup() const
+{
+    return [this](const UTF8String& name) -> ClientState {
+        for (const auto& player : pimpl->saved_client_player_info) {
+            if (player.name == name) {
+                return player.client_state;
+            }
+        }
+        return ClientState::NORMAL; // fallback
+    };
+}
+
 bool GameManager::getMyObsFlag() const
 {
     return pimpl->my_obs_flag;
@@ -951,7 +963,17 @@ void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list)
     for (std::vector<ClientPlayerInfo>::const_iterator it = player_list.begin(); it != player_list.end(); ++it) {
         std::ostringstream str_latin1;
         str_latin1 << ColToText(it->house_colour) << " " << it->name.asLatin1();
-        if (pimpl->ready_to_end.find(it->name) != pimpl->ready_to_end.end()) str_latin1 << " (Ready)"; // indicate players who have clicked.
+
+        if (pimpl->ready_to_end.find(it->name) != pimpl->ready_to_end.end()) {
+            str_latin1 << " (Ready)"; // indicate players who have clicked.
+        } else if (it->client_state == ClientState::DISCONNECTED) {
+            str_latin1 << " (Disconnected)";
+        } else if (it->client_state == ClientState::ELIMINATED) {
+            str_latin1 << " (Eliminated)";
+        } else if (it->client_state == ClientState::OBSERVER) {
+            str_latin1 << " (Observer)";
+        }
+
         str_latin1 << "\t";
         if (pimpl->deathmatch_mode) {
             if (it->frags >= -999) str_latin1 << it->frags;

@@ -44,6 +44,13 @@ class ClientConfig;
 class Graphic;
 class Sound;
 
+enum class ClientState {
+    NORMAL = 0,        // Player is still in the game and playing normally
+    ELIMINATED = 1,    // Player has permanently died, and become an observer
+    DISCONNECTED = 2,  // Player has temporarily disconnected, and may or may not return
+    OBSERVER = 3       // Player is an observer
+};
+
 struct ClientPlayerInfo {
     UTF8String name;
     Coercri::Color house_colour;
@@ -51,6 +58,7 @@ struct ClientPlayerInfo {
     int deaths;
     int frags;
     int ping;
+    ClientState client_state;
 };
 
 class ClientCallbacks {

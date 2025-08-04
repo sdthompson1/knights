@@ -1134,26 +1134,12 @@ namespace {
                 }
             }
 
-            // Show player status after their name if applicable
-            for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                switch (player_list[idx].player_state) {
-                case PlayerState::NORMAL:
-                    break;
-                case PlayerState::ELIMINATED:
-                    player_list[idx].name += UTF8String::fromUTF8(" (Eliminated)");
-                    break;
-                case PlayerState::DISCONNECTED:
-                    player_list[idx].name += UTF8String::fromUTF8(" (Disconnected)");
-                    break;
-                }
-            }
-
             // now add observers to the list (Trac #26)
             for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                 if ((*it)->player_num == -1) {
                     ASSERT((*it)->obs_flag);  // when game is running, player_num == -1 implies obs_flag
                     PlayerInfo pi;
-                    pi.name = (*it)->name + UTF8String::fromUTF8(" (Observer)");
+                    pi.name = (*it)->name;
                     pi.house_colour = Coercri::Color(0,0,0);
                     pi.player_num = -1;
                     pi.kills = -1;
@@ -1182,6 +1168,25 @@ namespace {
                     buf.writeVarInt(player_list[idx].deaths);
                     buf.writeVarInt(player_list[idx].frags);
                     buf.writeVarInt(pings[player_list[idx].name]);
+                    
+                    // Add status byte: 0=NORMAL, 1=ELIMINATED, 2=DISCONNECTED, 3=OBSERVER
+                    unsigned char status_byte = 0;
+                    if (player_list[idx].player_num == -1) {
+                        status_byte = 3;  // Observer
+                    } else {
+                        switch (player_list[idx].player_state) {
+                        case PlayerState::NORMAL:
+                            status_byte = 0;
+                            break;
+                        case PlayerState::ELIMINATED:
+                            status_byte = 1;
+                            break;
+                        case PlayerState::DISCONNECTED:
+                            status_byte = 2;
+                            break;
+                        }
+                    }
+                    buf.writeUbyte(status_byte);
                 }
 
                 if (time_remaining > -1) {

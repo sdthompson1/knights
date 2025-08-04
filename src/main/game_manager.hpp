@@ -40,6 +40,7 @@
 
 #include "boost/shared_ptr.hpp"
 #include <deque>
+#include <functional>
 #include <vector>
 
 class GameManagerImpl;
@@ -167,6 +168,7 @@ public:
     ChatList & getQuestRequirementsList() const;
     Coercri::Color getAvailHouseColour(int) const;  // translate house-colour-code into RGB colour.
     int getNumAvailHouseColours() const;
+    std::function<ClientState(const UTF8String&)> getPlayerStateLookup() const;
     bool getMyObsFlag() const;
     bool getMyReadyFlag() const;
     int getMyHouseColour() const;
