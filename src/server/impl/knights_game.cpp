@@ -521,7 +521,6 @@ namespace {
               nplayers(0),
               game_over_sent(false),
               time_to_player_list_update(0),
-              prev_total_skulls(0),
               time_to_force_quit(0)
         {
             // note: mutex is locked at this point
@@ -869,10 +868,8 @@ namespace {
             kg.delete_observer_nums.clear();
 
             // Disconnect any leaving players.
-            bool player_list_update_needed = false;
             for (int player_num : kg.pending_disconnections) {
                 engine->changePlayerState(player_num, PlayerState::DISCONNECTED);
-                player_list_update_needed = true;
             }
             kg.pending_disconnections.clear();
 
@@ -933,15 +930,10 @@ namespace {
                         // Catchup for reconnecting players (as opposed to observers)
                         engine->catchUp((*it)->player_num, *callbacks);
                         engine->changePlayerState((*it)->player_num, PlayerState::NORMAL);
-                        player_list_update_needed = true;
                     }
 
                     (*it)->requires_catchup = false;
                 }
-            }
-
-            if (player_list_update_needed) {
-                doPlayerListUpdate();
             }
 
             // Ready to proceed with the actual update!
@@ -1034,12 +1026,10 @@ namespace {
             }
             callbacks->clearCmds();
 
-            // Do player list update every N seconds, or if someone has died (total skulls has changed).
-            const int total_skulls = engine->getSkullsPlusKills();
+            // Do player list update every N seconds, or if engine says it is "dirty"
             time_to_player_list_update -= time_delta;
-            if (time_to_player_list_update <= 0 || total_skulls != prev_total_skulls) {
+            if (engine->isPlayerListDirty() || time_to_player_list_update <= 0) {
                 doPlayerListUpdate();
-                prev_total_skulls = total_skulls;
                 if (time_to_player_list_update <= 0) time_to_player_list_update = 3000;  // 3 seconds
             }
 
@@ -1205,7 +1195,6 @@ namespace {
         int nplayers;
         bool game_over_sent;
         int time_to_player_list_update;
-        int prev_total_skulls;
         int time_to_force_quit;
     };
 

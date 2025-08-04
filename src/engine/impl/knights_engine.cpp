@@ -60,7 +60,8 @@ public:
           premapped(false),
           respawn_delay(-1),
           lockpick_itemtype(0), lockpick_init_time(-1), lockpick_interval(-1),
-          final_gvt(0)
+          final_gvt(0),
+          prev_n_skulls(-1), prev_n_disconn(-1)
     { } 
 
     // Keep a reference on the configuration
@@ -103,6 +104,10 @@ public:
     std::map<int,bool> speech_bubble_requests;
 
     std::vector<int> house_col_idxs;
+
+    // This is used for checking whether we need to update the player-list
+    int prev_n_skulls;
+    int prev_n_disconn;
 
     void doInitialUpdateIfNeeded();
 };
@@ -430,13 +435,21 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
     std::sort(player_list.begin(), player_list.end(), ComparePlayerInfo());
 }
 
-int KnightsEngine::getSkullsPlusKills() const
+bool KnightsEngine::isPlayerListDirty()
 {
-    int result = 0;
-    for (std::vector<boost::shared_ptr<Player> >::const_iterator it = pimpl->players.begin(); it != pimpl->players.end(); ++it) {
-        result += (*it)->getNSkulls() + (*it)->getKills();
+    int n_skulls = 0;
+    int n_disconn = 0;
+    for (auto const& player : pimpl->players) {
+        n_skulls += player->getNSkulls() + player->getKills();
+        n_disconn += (player->getPlayerState() == PlayerState::DISCONNECTED ? 1 : 0);
     }
-    return result;
+
+    bool dirty = (n_skulls != pimpl->prev_n_skulls || n_disconn != pimpl->prev_n_disconn);
+
+    pimpl->prev_n_skulls = n_skulls;
+    pimpl->prev_n_disconn = n_disconn;
+
+    return dirty;
 }
 
 int KnightsEngine::getTimeRemaining() const

@@ -982,7 +982,9 @@ void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list)
             str_latin1 << "\t";
             if (it->deaths >= 0) str_latin1 << it->deaths;
         }
-        str_latin1 << "\t" << it->ping;
+        if (it->client_state != ClientState::DISCONNECTED) {
+            str_latin1 << "\t" << it->ping;
+        }
         pimpl->ingame_player_list.add(str_latin1.str());
     }
     pimpl->saved_client_player_info = player_list;

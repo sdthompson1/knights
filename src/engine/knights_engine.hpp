@@ -90,7 +90,7 @@ public:
     // Send initial updates to an observer who has just joined the game.
     void catchUp(int player, KnightsCallbacks &cb);
 
-    // Find out how many players are still active in the game
+    // Find out how many players are still active in the game (i.e. are not eliminated)
     int getNumPlayersRemaining() const;
 
     // Change player state
@@ -100,9 +100,9 @@ public:
     // NOTE: the result is sorted by house colour, then name. (#172)
     void getPlayerList(std::vector<PlayerInfo> &player_list) const;
 
-    // Get total of skulls and kills across all players (including eliminated players).
-    // Used as a quick way of determining whether someone has died since last update:
-    int getSkullsPlusKills() const;
+    // Returns true if the player list needs an update (compared to the previous
+    // time isPlayerListDirty was called).
+    bool isPlayerListDirty();
 
     // Find out how much time is left (in milliseconds), or -1 if there is no time limit.
     int getTimeRemaining() const;
