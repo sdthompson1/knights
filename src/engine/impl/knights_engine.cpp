@@ -61,7 +61,7 @@ public:
           respawn_delay(-1),
           lockpick_itemtype(0), lockpick_init_time(-1), lockpick_interval(-1),
           final_gvt(0),
-          prev_n_skulls(-1), prev_n_disconn(-1)
+          prev_n_skulls(-1)
     { } 
 
     // Keep a reference on the configuration
@@ -107,7 +107,7 @@ public:
 
     // This is used for checking whether we need to update the player-list
     int prev_n_skulls;
-    int prev_n_disconn;
+    std::vector<PlayerState> prev_player_states;
 
     void doInitialUpdateIfNeeded();
 };
@@ -456,16 +456,23 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
 bool KnightsEngine::isPlayerListDirty()
 {
     int n_skulls = 0;
-    int n_disconn = 0;
-    for (auto const& player : pimpl->players) {
-        n_skulls += player->getNSkulls() + player->getKills();
-        n_disconn += (player->getPlayerState() == PlayerState::DISCONNECTED ? 1 : 0);
+    bool state_diff_found = false;
+
+    pimpl->prev_player_states.resize(pimpl->players.size());
+
+    for (size_t i = 0; i < pimpl->players.size(); ++i) {
+        const Player &player = *pimpl->players[i];
+
+        n_skulls += player.getNSkulls() + player.getKills();
+
+        if (player.getPlayerState() != pimpl->prev_player_states[i]) {
+            state_diff_found = true;
+        }
+        pimpl->prev_player_states[i] = player.getPlayerState();
     }
 
-    bool dirty = (n_skulls != pimpl->prev_n_skulls || n_disconn != pimpl->prev_n_disconn);
-
+    bool dirty = (n_skulls != pimpl->prev_n_skulls || state_diff_found);
     pimpl->prev_n_skulls = n_skulls;
-    pimpl->prev_n_disconn = n_disconn;
 
     return dirty;
 }
