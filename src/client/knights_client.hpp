@@ -42,6 +42,7 @@
 
 #include "core/utf8string.hpp"
 
+#include <memory>
 #include <vector>
 
 class ClientCallbacks;

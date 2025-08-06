@@ -26,14 +26,19 @@
 
 #include "knights_lobby.hpp"
 
+#include "boost/thread.hpp"
+
 #include <string>
 
+class KnightsConfig;
+class KnightsServer;
+class ServerConnection;
+
 namespace Coercri {
+    class NetworkConnection;
     class NetworkDriver;
     class Timer;
 }
-
-class KnightsConfig;
 
 // SimpleKnightsLobby implements the KnightsLobby interface and allows
 // for hosting of LAN or local-only games, or joining remote games
@@ -84,9 +89,11 @@ public:
     virtual int getNumberOfPlayers() const override;
 
 private:
+    friend class SimpleLobbyThread;
+
     // Background thread: used in "Host LAN Game" mode, to accept and
     // process incoming connections.
-    boost::mutex mutex;
+    mutable boost::mutex mutex;
     boost::thread background_thread;
     bool exit_flag;  // Tells background thread to exit
 

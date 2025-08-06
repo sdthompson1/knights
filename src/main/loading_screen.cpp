@@ -29,7 +29,6 @@
 #include "knights_app.hpp"
 #include "knights_client.hpp"
 #include "knights_config.hpp"
-#include "knights_server.hpp"
 #include "loading_screen.hpp"
 #include "options.hpp"
 #include "x_centre.hpp"

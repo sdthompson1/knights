@@ -23,6 +23,13 @@
 
 #include "misc.hpp"
 
+#include "knights_client.hpp"
+#include "knights_server.hpp"
+#include "simple_knights_lobby.hpp"
+
+#include "network/network_connection.hpp"
+#include "network/network_driver.hpp"
+
 // Background thread implementation
 class SimpleLobbyThread {
 public:
@@ -95,7 +102,7 @@ void SimpleLobbyThread::operator()()
                 SimpleKnightsLobby::IncomingConn in;
                 in.server_conn = &lobby.server->newClientConnection();
                 in.remote = conn;
-                wrapper.incoming_conns.push_back(in);
+                lobby.incoming_conns.push_back(in);
             }
         }
 
@@ -132,8 +139,8 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
     server->startNewGame(config, game_name);
     local_server_conn = &server->newClientConnection();
 
-    net_driver->setServerPort(port);
-    net_driver->enableServer(true);
+    net_driver.setServerPort(port);
+    net_driver.enableServer(true);
 
     boost::thread new_thread(SimpleLobbyThread(*this));
     background_thread = std::move(new_thread);
@@ -149,7 +156,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
       timer(timer),
       local_server_conn(nullptr)
 {
-    outgoing_conn = net_driver->openConnection(address, port);
+    outgoing_conn = net_driver.openConnection(address, port);
 }
 
 SimpleKnightsLobby::~SimpleKnightsLobby()
