@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Generates the Makefile for Knights.
 
 # We now use "Advanced Auto-Dependency Generation" from
@@ -7,13 +5,14 @@
 # This uses gcc to automatically generate the header file dependencies
 # and store them in .P files.
 
-# Note: This script must be run under Python2, not Python3 !
+# The generated Makefile will be printed on stdout.
 
 import os
 import os.path
 import re
 
 PROJECTS_MAIN = ['Coercri', 'guichan', 'KnightsClient', 'KnightsEngine',
+                 'KnightsLobby',
                  'KnightsMain', 'KnightsServer', 'KnightsShared', 
                  'Misc', 'RStream']
 PROJECTS_SERVER = ['KnightsEngine', 'KnightsServer', 'KnightsShared',
