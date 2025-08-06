@@ -72,6 +72,7 @@ public:
 
     // Get data waiting to be sent to a client
     // (this copies the internal output buffer to the given vector, then clears the buffer)
+    // (any existing contents of 'data' are replaced/overwritten)
     // Caller is responsible for making sure this data is sent to the client.
     void getOutputData(ServerConnection &conn, std::vector<ubyte> &data);
 

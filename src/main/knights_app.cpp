@@ -37,7 +37,6 @@
 #include "keyboard_controller.hpp"
 #include "knights_app.hpp"
 #include "knights_client.hpp"
-#include "knights_server_wrapper.hpp"
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
@@ -51,6 +50,7 @@
 #include "potion_renderer.hpp"
 #include "rng.hpp"
 #include "rstream.hpp"
+#include "simple_knights_lobby.hpp"
 #include "skull_renderer.hpp"
 #include "sound_manager.hpp"
 #include "title_screen.hpp"
@@ -82,7 +82,6 @@
 // boost
 #include "boost/filesystem.hpp"
 #include "boost/filesystem/fstream.hpp"
-#include "boost/scoped_ptr.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -214,9 +213,9 @@ public:
     boost::shared_ptr<Controller> left_controller, right_controller, net_game_controller;
 
     boost::shared_ptr<Coercri::Font> font;
-    boost::scoped_ptr<gcn::Font> gcn_font;
+    std::unique_ptr<gcn::Font> gcn_font;
 
-    boost::scoped_ptr<Options> options;
+    std::unique_ptr<Options> options;
     boost::filesystem::path options_filename;
     bool player_name_changed;  // has options->player_name been changed
 
@@ -230,21 +229,13 @@ public:
     std::unique_ptr<PotionRenderer> potion_renderer;
     std::unique_ptr<SkullRenderer> skull_renderer;
 
-
     // network driver
-    boost::scoped_ptr<Coercri::NetworkDriver> net_driver;
+    std::unique_ptr<Coercri::NetworkDriver> net_driver;
 
-    
-    // server object.
+    // knights lobby
     std::string server_config_filename;
-    std::unique_ptr<KnightsServerWrapper> server_wrapper;
-
-    // outgoing network connections
-    struct OutgoingConn {
-        boost::shared_ptr<KnightsClient> knights_client;
-        boost::shared_ptr<Coercri::NetworkConnection> remote;
-    };
-    std::vector<OutgoingConn> outgoing_conns;
+    std::unique_ptr<KnightsLobby> knights_lobby;
+    boost::shared_ptr<KnightsClient> knights_client;
 
     // broadcast socket
     boost::shared_ptr<Coercri::UDPSocket> broadcast_socket;
@@ -252,7 +243,7 @@ public:
     int server_port;
 
     // game manager
-    boost::scoped_ptr<GameManager> game_manager;
+    std::unique_ptr<GameManager> game_manager;
 
     // autostart mode
     bool autostart;
@@ -265,8 +256,6 @@ public:
     void popPotionSetup(lua_State*);
     void popSkullSetup(lua_State*);
 
-    void processIncomingNetMsgs();
-    void processOutgoingNetMsgs();
     void processBroadcastMsgs();
 };
 
@@ -366,9 +355,6 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     // use the enet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
     pimpl->net_driver->enableServer(false);  // start off disabled.
-
-    // create KnightsServerWrapper
-    pimpl->server_wrapper.reset(new KnightsServerWrapper(*pimpl->net_driver, pimpl->timer));
 
     // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
     curl_global_init(CURL_GLOBAL_NOTHING);
@@ -558,17 +544,9 @@ void KnightsApp::setPlayerName(const UTF8String &name)
 
 void KnightsApp::resetAll()
 {
-    // Clean up outgoing connections
-    for (auto &conn : pimpl->outgoing_conns) {
-        conn.knights_client->setClientCallbacks(nullptr);
-        conn.knights_client->setKnightsCallbacks(nullptr);
-        conn.knights_client->connectionClosed();
-        conn.remote->close();
-    }
-    pimpl->outgoing_conns.clear();
-
-    // Destroy the server if there is one
-    pimpl->server_wrapper->destroyServer();
+    // Destroy the KnightsLobby and KnightsClient if these exist
+    pimpl->knights_lobby.reset();
+    pimpl->knights_client.reset();
 
     // Shut down the GameManager (important to do this BEFORE accessing gfxmanager/soundmanager)
     destroyGameManager();
@@ -886,8 +864,9 @@ void KnightsApp::runKnights()
             // Read input from the network (e.g. server telling us to move a knight on-screen)
             // (Do this first, so that the frame we are about to draw can include the latest updates)
             while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
-            pimpl->processIncomingNetMsgs();
-            pimpl->server_wrapper->routeLocalPackets();
+            if (pimpl->knights_lobby) {
+                pimpl->knights_lobby->readIncomingMessages(*pimpl->knights_client);
+            }
 
             // Read window system events (e.g. mouse/keyboard control inputs)
             // Note: If we are not actively drawing frames then we are prepared to wait
@@ -903,9 +882,10 @@ void KnightsApp::runKnights()
 
             // Screen::update might have sent outgoing network messages (e.g. in response
             // to the user clicking the mouse). Send these to the server now
-            pimpl->processOutgoingNetMsgs();
-            pimpl->server_wrapper->routeLocalPackets();
-            while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
+            if (pimpl->knights_lobby) {
+                pimpl->knights_lobby->sendOutgoingMessages(*pimpl->knights_client);
+                while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
+            }
 
 
             // Work out if we need to draw.
@@ -1035,9 +1015,6 @@ void KnightsApp::runKnights()
         while (pimpl->net_driver->doEvents()) ;
         pimpl->timer->sleepMsec(100);
     }
-
-    // Get rid of the KnightsServerWrapper
-    pimpl->server_wrapper.reset();
 }
 
 
@@ -1045,90 +1022,36 @@ void KnightsApp::runKnights()
 // Network Game Handling
 //////////////////////////////////////////////
 
-boost::shared_ptr<KnightsClient> KnightsApp::openRemoteConnection(const std::string &address, int port)
-{
-    KnightsAppImpl::OutgoingConn out;
-    out.knights_client.reset(new KnightsClient);
-    out.remote = pimpl->net_driver->openConnection(address, port);
-    pimpl->outgoing_conns.push_back(out);
-    return out.knights_client;
-}
-
-boost::shared_ptr<KnightsClient> KnightsApp::openLocalConnection()
-{
-    return pimpl->server_wrapper->openLocalConnection();
-}
-
 const std::string & KnightsApp::getKnightsConfigFilename() const
 {
     return pimpl->server_config_filename;
 }
 
-void KnightsApp::createServer(int port,
-                              boost::shared_ptr<KnightsConfig> config,
-                              const std::string &game_name)
+boost::shared_ptr<KnightsClient> KnightsApp::startLocalGame(boost::shared_ptr<KnightsConfig> config,
+                                                            const std::string &game_name)
 {
-    pimpl->server_wrapper->createServer(port, config, game_name);
+    pimpl->knights_lobby.reset(new SimpleKnightsLobby(pimpl->timer, config, game_name));
+    pimpl->knights_client.reset(new KnightsClient);
+    return pimpl->knights_client;
 }
 
-void KnightsApp::createLocalServer(boost::shared_ptr<KnightsConfig> config,
-                                   const std::string &game_name)
+boost::shared_ptr<KnightsClient> KnightsApp::hostLanGame(int port,
+                                                         boost::shared_ptr<KnightsConfig> config,
+                                                         const std::string &game_name)
 {
-    pimpl->server_wrapper->createLocalServer(config, game_name);
+    pimpl->knights_lobby.reset(new SimpleKnightsLobby(*pimpl->net_driver, pimpl->timer, port, config, game_name));
+    pimpl->knights_client.reset(new KnightsClient);
+    return pimpl->knights_client;
 }
 
-void KnightsAppImpl::processIncomingNetMsgs()
+boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string &address,
+                                                              int port)
 {
-    // Check for any incoming network data and route it to the
-    // appropriate KnightsClient or KnightsServer object
-
-    std::vector<unsigned char> net_msg;
-
-    for (int i = 0; i < outgoing_conns.size(); ) {
-        OutgoingConn &out = outgoing_conns[i];
-        ASSERT(out.knights_client);
-
-        // see if there is any data, if so, route it to the KnightsClient
-        out.remote->receive(net_msg);
-        if (!net_msg.empty()) {
-            out.knights_client->receiveInputData(net_msg);
-        }
-
-        // if connection has dropped, then remove it from the list
-        const Coercri::NetworkConnection::State state = out.remote->getState();
-        if (state == Coercri::NetworkConnection::CLOSED || state == Coercri::NetworkConnection::FAILED) {
-            if (state == Coercri::NetworkConnection::CLOSED) {
-                out.knights_client->connectionClosed();
-            } else {
-                out.knights_client->connectionFailed();
-            }
-            outgoing_conns.erase(outgoing_conns.begin() + i);
-        } else {
-            ++i;
-        }
-    }
+    pimpl->knights_lobby.reset(new SimpleKnightsLobby(*pimpl->net_driver, pimpl->timer, address, port));
+    pimpl->knights_client.reset(new KnightsClient);
+    return pimpl->knights_client;
 }
 
-void KnightsAppImpl::processOutgoingNetMsgs()
-{
-    // Pick up any outgoing network data and route it to the
-    // appropriate NetworkConnection
-
-    // NOTE: we don't bother to check for dropped connections here,
-    // instead that is done in processIncomingNetMsgs.
-
-    bool did_something = false;
-    std::vector<unsigned char> net_msg;
-
-    for (std::vector<OutgoingConn>::iterator it = outgoing_conns.begin(); it != outgoing_conns.end(); ++it) {
-        ASSERT(it->knights_client && "processOutgoingNetMsgs");
-        it->knights_client->getOutputData(net_msg);
-        if (!net_msg.empty()) {
-            did_something = true;
-            it->remote->send(net_msg);
-        }
-    }
-}
 
 //////////////////////////////////////////////
 // Broadcast Replies
@@ -1151,7 +1074,7 @@ void KnightsAppImpl::processBroadcastMsgs()
     if (time_now - broadcast_last_time < 1000) return;
     broadcast_last_time = time_now;
     
-    const int num_players = server_wrapper->getNumberOfPlayers();
+    const int num_players = knights_lobby ? knights_lobby->getNumberOfPlayers() : 0;
 
     // check for incoming messages, send replies if necessary.
     std::string msg, address;

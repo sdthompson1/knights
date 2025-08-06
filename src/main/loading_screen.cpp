@@ -108,7 +108,8 @@ void LoadingScreen::update()
     
     if (server_port < 0) {
         // create server & game
-        knights_app->createLocalServer(loader->knights_config, "#SplitScreenGame");
+        boost::shared_ptr<KnightsClient> client =
+            knights_app->startLocalGame(loader->knights_config, "#SplitScreenGame");
 
         // set dummy player name.
         UTF8String dummy_player_name;
@@ -121,12 +122,11 @@ void LoadingScreen::update()
             action_bar_controls = false;
         }
 
-        // create a local client
-        boost::shared_ptr<KnightsClient> client = knights_app->openLocalConnection();
+        // set up the local client
         knights_app->createGameManager(client, single_player_mode, tutorial_mode, autostart_mode, dummy_player_name);
         client->setClientCallbacks(&knights_app->getGameManager());
         client->setPlayerNameAndControls(dummy_player_name, action_bar_controls);
-        
+
         // Join the game in split screen mode. This will take us to MenuScreen automatically.
         if (single_player_mode || tutorial_mode) {
             knights_app->getGameManager().tryJoinGame("#SplitScreenGame");
@@ -140,10 +140,10 @@ void LoadingScreen::update()
 
     } else {
         // create server & game
-        knights_app->createServer(server_port, loader->knights_config, "#LanGame");
+        boost::shared_ptr<KnightsClient> client =
+            knights_app->hostLanGame(server_port, loader->knights_config, "#LanGame");
 
-        // create a local client
-        boost::shared_ptr<KnightsClient> client = knights_app->openLocalConnection();
+        // set up the local client
         knights_app->createGameManager(client, false, false, false, player_name);
         client->setClientCallbacks(&knights_app->getGameManager());
 

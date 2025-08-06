@@ -137,38 +137,25 @@ public:
     
 
     //
-    // KnightsClient methods
+    // KnightsLobby methods
     //
-    // Create KnightsClient objects. Packets will be automatically
-    // routed to/from the network (or locally) as needed, and
-    // callbacks will be called automatically from within the main
-    // loop. All connections will be closed (and the corresponding
-    // KnightsClient objects deleted) when resetAll() is called.
+    // These create an appropriate KnightsLobby representing a new
+    // game, and return a KnightsClient object for the game code to
+    // use.
     //
-    // (Currently the code only ever creates one KnightsClient at a
-    // time, but it is theoretically possible to create multiple
-    // KnightsClients if required.)
-    //
-    
-    boost::shared_ptr<KnightsClient> openRemoteConnection(const std::string &address, int port);
-    boost::shared_ptr<KnightsClient> openLocalConnection();
-
-
-    //
-    // KnightsServer methods
-    //
-    // Create KnightsServer objects. In the case of createServer() we
-    // start listening for incoming connections on the given port, as
-    // well as "local" connections (via openLocalConnection). For
-    // createLocalServer() we will accept local connections only. Only
-    // one server can be created at a time. The server will be
-    // deleted (and any network connections closed) when resetAll is
-    // called.
+    // The KnightsLobby will be deleted when resetAll is called.
     //
 
     const std::string & getKnightsConfigFilename() const;
-    void createServer(int port, boost::shared_ptr<KnightsConfig> config, const std::string &game_name);
-    void createLocalServer(boost::shared_ptr<KnightsConfig> config, const std::string &game_name);
+
+    boost::shared_ptr<KnightsClient> startLocalGame(boost::shared_ptr<KnightsConfig> config,
+                                                    const std::string &game_name);
+    boost::shared_ptr<KnightsClient> hostLanGame(int port,
+                                                 boost::shared_ptr<KnightsConfig> config,
+                                                 const std::string &game_name);
+    boost::shared_ptr<KnightsClient> joinRemoteServer(const std::string &address,
+                                                      int port);
+
 
     //
     // LAN broadcast replies. (Reset when we return to title screen.)
@@ -176,7 +163,7 @@ public:
     //
     void startBroadcastReplies(int server_port);
 
-        
+
 private:
     void executeScreenChange();
     void setupControllers();

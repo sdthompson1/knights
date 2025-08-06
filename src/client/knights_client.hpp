@@ -112,9 +112,8 @@ public:
     void sendPassword(const std::string &password);
     
     // Send a control to my knight
-    // Note: continuous controls will act until cancelled (by a
-    // sendControl(0);) while discontinuous controls will act once
-    // only.
+    // Note: continuous controls will act until cancelled (by sending a
+    // `nullptr`), while discontinuous controls will act once only.
     void sendControl(int plyr, const UserControl *ctrl);
 
     // tell server whether i am 'typing' or not
