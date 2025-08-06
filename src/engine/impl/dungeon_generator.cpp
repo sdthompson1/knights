@@ -191,8 +191,8 @@ namespace {
         }
 
         // randomize blocks and edges
-        std::random_shuffle(blocks.begin(), blocks.end(), myrng);
-        std::random_shuffle(edges.begin(), edges.end(), myrng);
+        std::shuffle(blocks.begin(), blocks.end(), myrng);
+        std::shuffle(edges.begin(), edges.end(), myrng);
 
         // update width & height
         lwidth = new_lwidth;
@@ -285,7 +285,7 @@ namespace {
         
         // Shuffle the last M homes
         RNG_Wrapper myrng(g_rng);
-        std::random_shuffle(all_homes.end() - how_many_to_choose_from, all_homes.end(), myrng);
+        std::shuffle(all_homes.end() - how_many_to_choose_from, all_homes.end(), myrng);
 
         // Loop through that list.
         for (std::vector<HomeInfo>::const_iterator it = all_homes.end() - how_many_to_choose_from;
@@ -425,7 +425,7 @@ namespace {
         edges.erase(std::remove_if(edges.begin(), edges.end(), IsSpecial()), edges.end());
         std::copy(edges.begin(), edges.end(), std::back_inserter(blocks));
         edges.clear();
-        std::random_shuffle(blocks.begin(), blocks.end(), myrng);        
+        std::shuffle(blocks.begin(), blocks.end(), myrng);        
         
         // Place all remaining segments.
         while (!blocks.empty()) {
@@ -458,8 +458,8 @@ namespace {
         }
         
         // Shuffle the homes lists.
-        std::random_shuffle(assigned_homes.begin(), assigned_homes.end(), myrng);
-        std::random_shuffle(all_homes.begin(), all_homes.end(), myrng);
+        std::shuffle(assigned_homes.begin(), assigned_homes.end(), myrng);
+        std::shuffle(all_homes.begin(), all_homes.end(), myrng);
 
         // Check number of assigned homes equals number of players (unless H_NONE selected).
         ASSERT(home_type != H_NONE && assigned_homes.size() == nplayers

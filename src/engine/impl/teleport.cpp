@@ -167,7 +167,7 @@ shared_ptr<Knight> FindRandomOtherKnight(shared_ptr<Knight> me)
     std::vector<int> search_order(players.size());
     for (int i = 0; i < players.size(); ++i) search_order[i] = i;
     RNG_Wrapper myrng(g_rng);
-    std::random_shuffle(search_order.begin(), search_order.end(), myrng);
+    std::shuffle(search_order.begin(), search_order.end(), myrng);
 
     shared_ptr<Knight> result;
 

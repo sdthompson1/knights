@@ -69,9 +69,6 @@
 #include "sdl/sound/sdl_sound_driver.hpp"
 #include "timer/generic_timer.hpp"
 
-#ifdef WIN32
-#include "dx11/gfx/dx11_gfx_driver.hpp"
-#endif
 
 // curl
 #include <curl/curl.h>
@@ -435,9 +432,9 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
             getline(str, x);
         
             // Left trim
-            x.erase(x.begin(), find_if(x.begin(), x.end(), std::not1(std::ptr_fun<char,bool>(IsSpace))));
+            x.erase(x.begin(), find_if(x.begin(), x.end(), [](char c) { return !IsSpace(c); }));
             // Right trim
-            x.erase(find_if(x.rbegin(), x.rend(), std::not1(std::ptr_fun<char,bool>(IsSpace))).base(), x.end());
+            x.erase(find_if(x.rbegin(), x.rend(), [](char c) { return !IsSpace(c); }).base(), x.end());
             
             if (x.empty()) continue;
         

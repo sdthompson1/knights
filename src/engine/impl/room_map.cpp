@@ -28,7 +28,6 @@
 #include "rng.hpp"
 
 #include <algorithm>
-using namespace std;
 
 RoomMap::RoomMap()
     : ready(false)
@@ -52,7 +51,7 @@ void RoomMap::doneAddingRooms()
     // numbers (which are sent out to clients) are unpredictable and
     // do not give away any information.
     RNG_Wrapper myrng(g_rng);
-    random_shuffle(rooms.begin(), rooms.end(), myrng);        
+    std::shuffle(rooms.begin(), rooms.end(), myrng);        
 }
 
 void RoomMap::getRoomAtPos(const MapCoord &mc, int &r1, int &r2) const
@@ -64,7 +63,7 @@ void RoomMap::getRoomAtPos(const MapCoord &mc, int &r1, int &r2) const
 
     r1 = r2 = -1;
         
-    for (vector<RoomInfo>::const_iterator it = rooms.begin(); it != rooms.end(); ++it) {
+    for (std::vector<RoomInfo>::const_iterator it = rooms.begin(); it != rooms.end(); ++it) {
         if (mc.getX() >= it->pos.getX() && mc.getX() < it->pos.getX() + it->w
         && mc.getY() >= it->pos.getY() && mc.getY() < it->pos.getY() + it->h) {
             // Found the room.
@@ -83,7 +82,7 @@ void RoomMap::getRoomAtPos(const MapCoord &mc, int &r1, int &r2) const
 
 bool RoomMap::isCorner(const MapCoord &mc) const
 {
-    for (vector<RoomInfo>::const_iterator it = rooms.begin(); it != rooms.end(); ++it) {
+    for (std::vector<RoomInfo>::const_iterator it = rooms.begin(); it != rooms.end(); ++it) {
         if ((mc.getX()==it->pos.getX() || mc.getX() == it->pos.getX() + it->w - 1)
             && (mc.getY()==it->pos.getY() || mc.getY() == it->pos.getY() + it->h - 1)) {
             return true;
@@ -115,4 +114,3 @@ void RoomMap::getRoomLocation(int r, MapCoord &top_left, int &w, int &h) const
         h = rooms[r].h;
     }
 }
-

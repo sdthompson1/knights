@@ -51,11 +51,14 @@ private:
     std::unique_ptr<RNGImpl> pimpl;
 };
 
-// for std::random_shuffle compatibility
+// for std::shuffle compatibility
 class RNG_Wrapper {
 public:
     RNG_Wrapper(RNG &r_) : r(r_) { }
-    int operator()(int n) { return r.getInt(0, n); }
+    typedef unsigned int result_type;
+    static constexpr unsigned int min() { return 0; }
+    static constexpr unsigned int max() { return 0x0fffffff; }
+    unsigned int operator()() { return r.getInt(0, max() + 1); }
 private:
     RNG &r;
 };

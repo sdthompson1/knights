@@ -1057,7 +1057,7 @@ void MenuWrapper::randomQuest(MenuListener &listener)
         // Note: we are using the global rng (from the main thread), as opposed to
         // the rng's from the game threads. This should mean that the replay feature
         // is not messed up by the extra random numbers being generated here.
-        std::random_shuffle(item_nos.begin(), item_nos.end(), myrng);
+        std::shuffle(item_nos.begin(), item_nos.end(), myrng);
 
         // For each menu item in the random ordering:
         for (std::vector<int>::const_iterator item_no = item_nos.begin(); item_no != item_nos.end(); ++item_no) {
