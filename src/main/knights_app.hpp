@@ -30,6 +30,7 @@
 #ifndef KNIGHTS_APP_HPP
 #define KNIGHTS_APP_HPP
 
+#include "online_platform.hpp"
 #include "utf8string.hpp"
 
 // coercri
@@ -134,16 +135,31 @@ public:
                            bool autostart_mode, const UTF8String &my_player_name);
     void destroyGameManager();
     GameManager & getGameManager();
-    
+
+
+    //
+    // OnlinePlatform access
+    //
+#ifdef ONLINE_PLATFORM
+    OnlinePlatform & getOnlinePlatform();
+#endif
+
+    // Notify of changes to the current quest.
+    // This is used for feeding the game status back to the current PlatformLobby, if any.
+    //  - quest_msg_code = 0 means no quest in progress (i.e. status is "Selecting Quest")
+    //  - Otherwise, quest_msg_code is a localization string naming the current quest
+    void setQuestMessageCode(int quest_msg_code);
+
 
     //
     // KnightsLobby methods
     //
     // These create an appropriate KnightsLobby representing a new
     // game, and return a KnightsClient object for the game code to
-    // use.
+    // use. (For online platform games, a corresponding PlatformLobby
+    // is also created.)
     //
-    // The KnightsLobby will be deleted when resetAll is called.
+    // The lobby objects will be deleted when resetAll is called.
     //
 
     const std::string & getKnightsConfigFilename() const;
@@ -156,6 +172,14 @@ public:
     boost::shared_ptr<KnightsClient> joinRemoteServer(const std::string &address,
                                                       int port);
 
+#ifdef ONLINE_PLATFORM
+    boost::shared_ptr<KnightsClient> hostOnlinePlatformGame(boost::shared_ptr<KnightsConfig> config,
+                                                            OnlinePlatform::Visibility vis,
+                                                            const std::string &game_name);
+    boost::shared_ptr<KnightsClient> joinOnlinePlatformGame(const std::string &lobby_id,
+                                                            const std::string &game_name);
+#endif
+
 
     //
     // LAN broadcast replies. (Reset when we return to title screen.)
@@ -164,10 +188,18 @@ public:
     void startBroadcastReplies(int server_port);
 
 
+    //
+    // Localization strings (WIP)
+    //
+    const Coercri::UTF8String & getLocalizationString(int msg_code) const;
+    Coercri::UTF8String getLocalizationString(int msg_code, const Coercri::UTF8String &param1) const;
+
+
 private:
     void executeScreenChange();
     void setupControllers();
     void setupGfxResizer();
+    void readLocalizationStrings();
     
 private:
     boost::shared_ptr<KnightsAppImpl> pimpl;

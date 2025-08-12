@@ -27,6 +27,7 @@
 #include "host_lan_screen.hpp"
 #include "knights_app.hpp"
 #include "loading_screen.hpp"
+#include "online_multiplayer_screen.hpp"
 #include "start_game_screen.hpp"
 #include "title_screen.hpp"
 
@@ -51,9 +52,13 @@ private:
     scoped_ptr<GuiPanel> panel1, panel2;
     scoped_ptr<gcn::Container> container;
     scoped_ptr<gcn::Label> title;
-    scoped_ptr<gcn::Button> join_internet_game;    
+#ifdef ONLINE_PLATFORM
+    scoped_ptr<gcn::Button> online_multiplayer;
+#else
+    scoped_ptr<gcn::Button> join_internet_game;
     scoped_ptr<gcn::Button> host_lan_game;
     scoped_ptr<gcn::Button> join_lan_game;
+#endif
     scoped_ptr<gcn::Button> split_screen_mode;
     scoped_ptr<gcn::Button> single_player_mode;
     scoped_ptr<gcn::Button> exit;
@@ -70,7 +75,15 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
     const int x = pad;
     int y = pad;
     const int yinc = h + vspace;
-    
+
+#ifdef ONLINE_PLATFORM
+    online_multiplayer.reset(new GuiButton("Online Multiplayer"));
+    online_multiplayer->setSize(w,h);
+    online_multiplayer->addActionListener(this);
+    container->add(online_multiplayer.get(), x, y);
+    y += yinc;
+
+#else
     join_internet_game.reset(new GuiButton("Connect to Server"));
     join_internet_game->setSize(w,h);
     join_internet_game->addActionListener(this);
@@ -88,6 +101,7 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
     join_lan_game->addActionListener(this);
     container->add(join_lan_game.get(), x, y);
     y += yinc;
+#endif
 
     split_screen_mode.reset(new GuiButton("Split Screen Mode"));
     split_screen_mode->setSize(w,h);
@@ -133,7 +147,13 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
     if (event.getSource() == split_screen_mode.get()) {
         // Go to LoadingScreen in split-screen mode
         new_screen.reset(new LoadingScreen(-1, UTF8String(), false, true, false, false));
-        
+
+#ifdef ONLINE_PLATFORM
+    } else if (event.getSource() == online_multiplayer.get()) {
+        // Go to OnlineMultiplayerScreen
+        new_screen.reset(new OnlineMultiplayerScreen);
+
+#else
     } else if (event.getSource() == host_lan_game.get()) {
         // Go to HostLanScreen
         new_screen.reset(new HostLanScreen);
@@ -145,6 +165,7 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
     } else if (event.getSource() == join_internet_game.get()) {
         // Go to FindServerScreen in Internet mode.
         new_screen.reset(new FindServerScreen("Connect to Server", true));
+#endif
 
     } else if (event.getSource() == single_player_mode.get()) {
         // Go to LoadingScreen in single player mode

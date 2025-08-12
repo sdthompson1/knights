@@ -901,7 +901,7 @@ void FindServerScreenImpl::initiateConnection(const std::string &address, int po
         previous_address[internet?1:0] = address;
         previous_port[internet?1:0] = port;
 
-        std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, player_name));
+        std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, false, player_name));
         knights_app.requestScreenChange(std::move(connecting_screen));
     }
 }

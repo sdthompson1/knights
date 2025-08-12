@@ -161,13 +161,16 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
 
 SimpleKnightsLobby::~SimpleKnightsLobby()
 {
+    // Tell the background thread to close
     {
-        // Close the background thread
         boost::unique_lock lock(mutex);
         exit_flag = true;
-        if (background_thread.joinable()) {
-            background_thread.join();
-        }
+    }
+
+    // Unlock mutex while we wait for the background thread to close
+    // (as it will need to lock mutex to read the exit_flag)
+    if (background_thread.joinable()) {
+        background_thread.join();
     }
 
     // Close and clean up incoming connections

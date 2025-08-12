@@ -7,6 +7,7 @@
 
 # The generated Makefile will be printed on stdout.
 
+import argparse
 import os
 import os.path
 import re
@@ -14,7 +15,7 @@ import re
 PROJECTS_MAIN = ['Coercri', 'guichan', 'KnightsClient', 'KnightsEngine',
                  'KnightsLobby',
                  'KnightsMain', 'KnightsServer', 'KnightsShared', 
-                 'Misc', 'RStream']
+                 'Misc', 'OnlinePlatform', 'RStream']
 PROJECTS_SERVER = ['KnightsEngine', 'KnightsServer', 'KnightsShared',
                    'KnightsSvrMain', 'Misc', 'RStream']
 EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o', 
@@ -89,8 +90,21 @@ def get_srcs_with_inc_dirs(projects):
 
 # Main program
 
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Generate Makefile for Knights')
+parser.add_argument('--online-platform', type=str, help='Set online platform (currently only DUMMY is supported)')
+args = parser.parse_args()
+
+# Set ONLINE_PLATFORM_FLAGS based on argument
+if args.online_platform:
+    online_platform_flags = f"-DONLINE_PLATFORM -DONLINE_PLATFORM_{args.online_platform.upper()}"
+    online_platform_comment = "# Enable online platform support"
+else:
+    online_platform_flags = ""
+    online_platform_comment = "# Online platform support is disabled in this version of Knights,\n# hence ONLINE_PLATFORM_FLAGS is empty."
+
 # Start printing the Makefile.
-print ("""# Makefile for Knights
+print (f"""# Makefile for Knights
 # This file is generated automatically by makemakefile.py
 
 # NOTE: Audio can be disabled by adding -DDISABLE_SOUND to the CPPFLAGS.
@@ -113,7 +127,10 @@ SERVER_BINARY_NAME = knights_server
 CC = gcc
 CXX = g++
 
-CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG -DLUA_INCLUDES_REQUIRE_EXTERN_C
+{online_platform_comment}
+ONLINE_PLATFORM_FLAGS = {online_platform_flags}
+
+CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG -DLUA_INCLUDES_REQUIRE_EXTERN_C $(ONLINE_PLATFORM_FLAGS)
 CFLAGS = -O3 -ffast-math
 CXXFLAGS = $(CFLAGS)
 BOOST_LIBS = -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX)

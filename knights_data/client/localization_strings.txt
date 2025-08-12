@@ -1,0 +1,25 @@
+1 Selecting Quest
+2 Playing (%1)
+
+# Codes 101-199 are reserved for the quest names, with 100
+# being a default fallback
+100 Custom Quest
+101 Escape from the Dungeon
+102 Retrieve Book and Escape
+103 Retrieve Wand and Escape
+104 Destroy Book with Wand
+105 Duel to the Death
+106 Deathmatch
+
+150 Quest for Gems
+151 The Big Quest for Gems
+152 Shock Assault
+153 War of Survival
+154 The Dungeon of Death
+155 The Lost Book of the Gnome King
+156 The Tomb of the Liche Lord
+157 The Ancient Wand of Death
+158 The Way to the Paradise
+159 The Quest of Giants
+160 Run for the Freedom
+161 Knights Deathmatch

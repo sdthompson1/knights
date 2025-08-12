@@ -122,6 +122,7 @@ public:
                 bool single_player_, bool tutorial, bool autostart, const UTF8String &my_player_name);
 
     void setLanGame(bool);
+    void setOnlinePlatformGame(bool);
     
     // join game
     void tryJoinGame(const std::string &game_name);
@@ -158,6 +159,7 @@ public:
     void setMenuWidgetsEnabled(bool enabled);
     void getMenuStrings(std::vector<std::pair<std::string, std::string> > &menu_strings) const;
     bool getMenuWidgetInfo(gcn::Widget *source, int &item_num, int &choice_num) const;
+    int getQuestMessageCode() const;  // return a localization string code for name of current quest
     const std::string &getQuestDescription() const;
     
     // player lists etc.

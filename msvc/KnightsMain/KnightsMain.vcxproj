@@ -53,7 +53,7 @@
     <ClCompile>
       <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\lobby;..\..\src\misc;..\..\src\rstream;..\..\src\shared;..\..;..\..\curl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\lobby;..\..\src\misc;..\..\src\online_platform;..\..\src\rstream;..\..\src\shared;..\..;..\..\curl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -89,7 +89,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\lobby;..\..\src\misc;..\..\src\rstream;..\..\src\shared;..\..;..\..\curl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\lobby;..\..\src\misc;..\..\src\online_platform;..\..\src\rstream;..\..\src\shared;..\..;..\..\curl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -154,6 +154,7 @@
     <ClCompile Include="..\..\src\main\main.cpp" />
     <ClCompile Include="..\..\src\main\make_scroll_area.cpp" />
     <ClCompile Include="..\..\src\main\menu_screen.cpp" />
+    <ClCompile Include="..\..\src\main\online_multiplayer_screen.cpp" />
     <ClCompile Include="..\..\src\main\options.cpp" />
     <ClCompile Include="..\..\src\main\options_screen.cpp" />
     <ClCompile Include="..\..\src\main\password_screen.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="..\..\src\main\local_status_display.hpp" />
     <ClInclude Include="..\..\src\main\make_scroll_area.hpp" />
     <ClInclude Include="..\..\src\main\menu_screen.hpp" />
+    <ClInclude Include="..\..\src\main\online_multiplayer_screen.hpp" />
     <ClInclude Include="..\..\src\main\options.hpp" />
     <ClInclude Include="..\..\src\main\options_screen.hpp" />
     <ClInclude Include="..\..\src\main\password_screen.hpp" />

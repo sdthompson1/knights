@@ -336,7 +336,7 @@ public:
           timer(timer_), lobby_namelist(avail_house_colours),
           game_list_updated(false), game_namelist(avail_house_colours),
           my_house_colour(0), time_remaining(-1), my_obs_flag(false), my_ready_flag(false),
-          is_split_screen(false), is_lan_game(false),
+          is_split_screen(false), is_lan_game(false), is_online_platform_game(false),
           chat_list(ka.getConfigMap().getInt("max_chat_lines"), true, true),   // want formatting and timestamps
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
           quest_rqmts_list(9999, false, false),    // ditto
@@ -376,6 +376,7 @@ public:
     bool my_ready_flag;
     bool is_split_screen;
     bool is_lan_game;
+    bool is_online_platform_game;
     
     // chat
     ChatList chat_list;
@@ -767,7 +768,7 @@ void GameManager::connectionAccepted(int server_version)
     // Note: currently server version is ignored, although it might be used in future
     // for backwards compatibility purposes.
 
-    if (!pimpl->is_split_screen && !pimpl->is_lan_game) {
+    if (!pimpl->is_split_screen && !pimpl->is_lan_game && !pimpl->is_online_platform_game) {
         // Go to LobbyScreen
         std::unique_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
         pimpl->knights_app.requestScreenChange(std::move(lobby_screen));
@@ -786,6 +787,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->my_house_colour = my_house_colour;
     pimpl->is_split_screen = (pimpl->current_game_name == "#SplitScreenGame");
     pimpl->is_lan_game = (pimpl->current_game_name == "#LanGame");
+    pimpl->is_online_platform_game = (pimpl->current_game_name == "#OnlinePlatformGame");
 
     // update my player list, also set my_obs_flag if needed
     pimpl->game_namelist.clear();
@@ -827,10 +829,8 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     
     // Clear messages, and add new "Joined game" messages for lan games
     pimpl->chat_list.clear();
-    if (pimpl->is_lan_game) {
-        if (player_names.size() == 1) {
-            pimpl->chat_list.add("LAN game created.");
-        }
+    if (pimpl->is_lan_game && player_names.size() == 1) {
+        pimpl->chat_list.add("LAN game created.");
     }
 
     // Go to MenuScreen, if counts are zero.
@@ -1035,8 +1035,8 @@ void GameManager::leaveGame()
     pimpl->game_namelist.clear();
     pimpl->avail_house_colours.clear();
     
-    // go to lobby (for internet games) or title (for split screen and lan games)
-    if (pimpl->is_split_screen || pimpl->is_lan_game) {
+    // go to lobby (for internet games) or title (for split screen, lan, and online platform games)
+    if (pimpl->is_split_screen || pimpl->is_lan_game || pimpl->is_online_platform_game) {
         std::unique_ptr<Screen> title_screen(new TitleScreen);
         pimpl->knights_app.requestScreenChange(std::move(title_screen));
     } else {
@@ -1066,6 +1066,36 @@ void GameManager::setMenuSelection(int item_num, int choice_num, const std::vect
     pimpl->gui_invalid = true;
 }
 
+int GameManager::getQuestMessageCode() const
+{
+    // Our approach is to search through the menu choices until we find one that
+    // is equal to a known localization string. The quest message code is then the
+    // ID of that localization string.
+
+    for (int i = 0; i < pimpl->menu->getNumItems(); ++i) {
+        const MenuItem &item = pimpl->menu->getItem(i);
+
+        // We only care about dropdown items
+        if (item.isNumeric()) continue;
+
+        // Find the current setting
+        const int current_choice = pimpl->menu_choices[i].choice;
+        const std::string & choice_string = item.getChoiceString(current_choice);
+
+        // Codes 101-199 are reserved for quest names
+        for (int c = 101; c <= 199; ++c) {
+            Coercri::UTF8String loc_str = pimpl->knights_app.getLocalizationString(c);
+            if (!loc_str.empty() && loc_str.asUTF8() == choice_string) {
+                // Found it
+                return c;
+            }
+        }
+    }
+
+    // If not found, return 100 ("Custom Quest")
+    return 100;
+}
+
 void GameManager::setQuestDescription(const std::string &quest_descr)
 {
     pimpl->quest_description = quest_descr;
@@ -1087,13 +1117,13 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
 
     // Go to InGameScreen
     std::unique_ptr<Screen> in_game_screen(new InGameScreen(pimpl->knights_app,
-                                                          pimpl->knights_client, 
-                                                          pimpl->client_config,
-                                                          ndisplays,
-                                                          deathmatch_mode,
-                                                          player_names,
-                                                          pimpl->single_player,
-                                                          pimpl->tutorial_mode));
+                                                            pimpl->knights_client,
+                                                            pimpl->client_config,
+                                                            ndisplays,
+                                                            deathmatch_mode,
+                                                            player_names,
+                                                            pimpl->single_player,
+                                                            pimpl->tutorial_mode));
     pimpl->knights_app.requestScreenChange(std::move(in_game_screen));
     pimpl->deathmatch_mode = deathmatch_mode;
 
@@ -1138,6 +1168,9 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     pimpl->gui_invalid = true;
 
     pimpl->game_in_progress = true;
+
+    // Notify updated game status - quest is now in progress
+    pimpl->knights_app.setQuestMessageCode(getQuestMessageCode());
 }
 
 void GameManager::gotoMenu()
@@ -1159,6 +1192,9 @@ void GameManager::gotoMenu()
         pimpl->chat_list.add("\n");
 
         pimpl->gui_invalid = true;
+
+        // Notify updated game status - back to "Selecting Quest"
+        pimpl->knights_app.setQuestMessageCode(0);
     }
 
     pimpl->game_in_progress = false;
@@ -1263,4 +1299,9 @@ GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, bo
 void GameManager::setLanGame(bool x)
 {
     pimpl->is_lan_game = x;
+}
+
+void GameManager::setOnlinePlatformGame(bool x)
+{
+    pimpl->is_online_platform_game = x;
 }

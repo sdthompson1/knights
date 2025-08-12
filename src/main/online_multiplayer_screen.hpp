@@ -1,5 +1,5 @@
 /*
- * connecting_screen.hpp
+ * online_multiplayer_screen.hpp
  *
  * This file is part of Knights.
  *
@@ -21,30 +21,26 @@
  *
  */
 
-#ifndef CONNECTING_SCREEN_HPP
-#define CONNECTING_SCREEN_HPP
+#ifndef ONLINE_MULTIPLAYER_SCREEN_HPP
+#define ONLINE_MULTIPLAYER_SCREEN_HPP
+
+#ifdef ONLINE_PLATFORM
 
 #include "screen.hpp"
-#include "utf8string.hpp"
 
-#include "boost/shared_ptr.hpp"
 #include <string>
 
-class ConnectingScreenImpl;
+class OnlineMultiplayerScreenImpl;
 
-class ConnectingScreen : public Screen {
+class OnlineMultiplayerScreen : public Screen {
 public:
-    // Note: for online platform games, address should be the lobby_id, and
-    // port should be zero.
-    ConnectingScreen(const std::string &address,
-                     int port,
-                     bool join_lan_game,
-                     bool join_online_platform_game,
-                     const UTF8String &player_name);
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
+
 private:
-    boost::shared_ptr<ConnectingScreenImpl> pimpl;
+    boost::shared_ptr<OnlineMultiplayerScreenImpl> pimpl;
 };
+
+#endif
 
 #endif

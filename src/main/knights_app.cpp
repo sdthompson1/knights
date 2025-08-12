@@ -25,6 +25,7 @@
 
 #include "config_map.hpp"
 #include "credits_screen.hpp"
+#include "dummy_online_platform.hpp"
 #include "error_screen.hpp"
 #include "file_cache.hpp"
 #include "frame_timer.hpp"
@@ -86,6 +87,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <random>
+#include <sstream>
+#include <unordered_map>
 
 #ifdef __LP64__
 #include <stdint.h>
@@ -229,8 +232,13 @@ public:
     std::unique_ptr<PotionRenderer> potion_renderer;
     std::unique_ptr<SkullRenderer> skull_renderer;
 
-    // network driver
+    // online platform stuff and net driver
+#ifdef ONLINE_PLATFORM
+    std::unique_ptr<OnlinePlatform> online_platform;
+    std::unique_ptr<PlatformLobby> platform_lobby;
+#else
     std::unique_ptr<Coercri::NetworkDriver> net_driver;
+#endif
 
     // knights lobby
     std::string server_config_filename;
@@ -247,6 +255,9 @@ public:
 
     // autostart mode
     bool autostart;
+    
+    // localization strings
+    std::unordered_map<int, Coercri::UTF8String> localization_strings;
 
     // functions
     KnightsAppImpl() : running(true), player_name_changed(false) { }
@@ -257,6 +268,8 @@ public:
     void popSkullSetup(lua_State*);
 
     void processBroadcastMsgs();
+
+    void updateOnlinePlatform();
 };
 
 /////////////////////////////////////////////////////
@@ -313,6 +326,9 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
         lua_getglobal(lua, "SPEECH_BUBBLE");
         pimpl->speech_bubble = PopGraphic(lua, &pimpl->config_gfx);
     }
+    
+    // Read knights_data/client/localization_strings.txt
+    readLocalizationStrings();
 
     // initialize game options
     pimpl->options.reset(new Options);
@@ -352,13 +368,22 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     pimpl->timer.reset(new Coercri::GenericTimer);
     pimpl->ttf_loader.reset(new Coercri::FreetypeTTFLoader(pimpl->gfx_driver));
 
+#ifdef ONLINE_PLATFORM
+    // initialize online platform
+#ifdef ONLINE_PLATFORM_DUMMY
+    pimpl->online_platform.reset(new DummyOnlinePlatform);
+#else
+#error "Online platform not defined"
+#endif
+#else
     // use the enet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
     pimpl->net_driver->enableServer(false);  // start off disabled.
+#endif
 
     // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
     curl_global_init(CURL_GLOBAL_NOTHING);
-    
+
     // Open the game window.
     Coercri::WindowParams params;
     params.resizable = true;
@@ -548,6 +573,11 @@ void KnightsApp::resetAll()
     pimpl->knights_lobby.reset();
     pimpl->knights_client.reset();
 
+    // Exit the platform lobby if applicable
+#ifdef ONLINE_PLATFORM
+    pimpl->platform_lobby.reset();
+#endif
+
     // Shut down the GameManager (important to do this BEFORE accessing gfxmanager/soundmanager)
     destroyGameManager();
 
@@ -695,7 +725,11 @@ Coercri::Timer & KnightsApp::getTimer() const
 
 Coercri::NetworkDriver & KnightsApp::getNetworkDriver() const
 {
+#ifdef ONLINE_PLATFORM
+    return pimpl->online_platform->getNetworkDriver();
+#else
     return *pimpl->net_driver;
+#endif
 }
 
 const Options & KnightsApp::getOptions() const
@@ -860,10 +894,13 @@ void KnightsApp::runKnights()
             // Handle LAN broadcasts if necessary
             pimpl->processBroadcastMsgs();
 
+            // Update Online Platform
+            pimpl->updateOnlinePlatform();
+
 
             // Read input from the network (e.g. server telling us to move a knight on-screen)
             // (Do this first, so that the frame we are about to draw can include the latest updates)
-            while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
+            while (getNetworkDriver().doEvents()) {}
             if (pimpl->knights_lobby) {
                 pimpl->knights_lobby->readIncomingMessages(*pimpl->knights_client);
             }
@@ -884,7 +921,7 @@ void KnightsApp::runKnights()
             // to the user clicking the mouse). Send these to the server now
             if (pimpl->knights_lobby) {
                 pimpl->knights_lobby->sendOutgoingMessages(*pimpl->knights_client);
-                while (pimpl->net_driver && pimpl->net_driver->doEvents()) {}
+                while (getNetworkDriver().doEvents()) {}
             }
 
 
@@ -1011,8 +1048,8 @@ void KnightsApp::runKnights()
     // Wait up to ten seconds for network connections to be cleaned up.
     const int WAIT_SECONDS = 10;
     for (int i = 0; i < WAIT_SECONDS*10; ++i) {
-        if (!pimpl->net_driver->outstandingConnections()) break;
-        while (pimpl->net_driver->doEvents()) ;
+        if (!getNetworkDriver().outstandingConnections()) break;
+        while (getNetworkDriver().doEvents()) ;
         pimpl->timer->sleepMsec(100);
     }
 }
@@ -1039,7 +1076,7 @@ boost::shared_ptr<KnightsClient> KnightsApp::hostLanGame(int port,
                                                          boost::shared_ptr<KnightsConfig> config,
                                                          const std::string &game_name)
 {
-    pimpl->knights_lobby.reset(new SimpleKnightsLobby(*pimpl->net_driver, pimpl->timer, port, config, game_name));
+    pimpl->knights_lobby.reset(new SimpleKnightsLobby(getNetworkDriver(), pimpl->timer, port, config, game_name));
     pimpl->knights_client.reset(new KnightsClient);
     return pimpl->knights_client;
 }
@@ -1047,9 +1084,64 @@ boost::shared_ptr<KnightsClient> KnightsApp::hostLanGame(int port,
 boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string &address,
                                                               int port)
 {
-    pimpl->knights_lobby.reset(new SimpleKnightsLobby(*pimpl->net_driver, pimpl->timer, address, port));
+    pimpl->knights_lobby.reset(new SimpleKnightsLobby(getNetworkDriver(), pimpl->timer, address, port));
     pimpl->knights_client.reset(new KnightsClient);
     return pimpl->knights_client;
+}
+
+#ifdef ONLINE_PLATFORM
+
+boost::shared_ptr<KnightsClient> KnightsApp::hostOnlinePlatformGame(boost::shared_ptr<KnightsConfig> config,
+                                                                    OnlinePlatform::Visibility vis,
+                                                                    const std::string &game_name)
+{
+    pimpl->platform_lobby = pimpl->online_platform->createLobby(vis);
+    if (!pimpl->platform_lobby) {
+        throw std::runtime_error("Failed to create lobby");
+    }
+
+    // TODO: Replace with VMKnightsLobby when ready
+    pimpl->knights_lobby.reset(new SimpleKnightsLobby(getNetworkDriver(), pimpl->timer, 0, config, game_name));
+    pimpl->knights_client.reset(new KnightsClient);
+    return pimpl->knights_client;
+}
+
+boost::shared_ptr<KnightsClient> KnightsApp::joinOnlinePlatformGame(const std::string &lobby_id,
+                                                                    const std::string &game_name)
+{
+    pimpl->platform_lobby = pimpl->online_platform->joinLobby(lobby_id);
+    if (!pimpl->platform_lobby) {
+        throw std::runtime_error("Failed to join lobby");
+    }
+
+    // KnightsLobby creation is deferred until we know who the lobby leader is
+
+    pimpl->knights_client.reset(new KnightsClient);
+    return pimpl->knights_client;
+}
+
+#endif  // ONLINE_PLATFORM
+
+
+//////////////////////////////////////////////
+// Online Platform Update
+//////////////////////////////////////////////
+
+void KnightsAppImpl::updateOnlinePlatform()
+{
+#ifdef ONLINE_PLATFORM
+    if (platform_lobby && !knights_lobby) {
+        // We are in the state where we are joining a platform lobby,
+        // but we haven't found out who the lobby leader is yet. When
+        // we do find the leader, we can create the KnightsLobby and
+        // join the game.
+        std::string leader_id = platform_lobby->getLeaderId();
+        if (!leader_id.empty()) {
+            // We know the leader so we can now try to connect to them
+            knights_lobby.reset(new SimpleKnightsLobby(online_platform->getNetworkDriver(), timer, leader_id, 0));
+        }
+    }
+#endif
 }
 
 
@@ -1060,7 +1152,7 @@ boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string 
 void KnightsApp::startBroadcastReplies(int server_port)
 {
     // Listen for client requests on the BROADCAST_PORT.
-    pimpl->broadcast_socket = pimpl->net_driver->createUDPSocket(BROADCAST_PORT, true);
+    pimpl->broadcast_socket = getNetworkDriver().createUDPSocket(BROADCAST_PORT, true);
     pimpl->broadcast_last_time = 0;
     pimpl->server_port = server_port;
 }
@@ -1117,4 +1209,78 @@ GameManager & KnightsApp::getGameManager()
 {
     if (!pimpl->game_manager) throw UnexpectedError("GameManager unavailable");
     return *pimpl->game_manager;
+}
+
+#ifdef ONLINE_PLATFORM
+OnlinePlatform & KnightsApp::getOnlinePlatform()
+{
+    return *pimpl->online_platform;
+}
+#endif
+
+
+//////////////////////////////////////////////
+// setQuestMessageCode
+//////////////////////////////////////////////
+
+void KnightsApp::setQuestMessageCode(int quest_msg_code)
+{
+#ifdef ONLINE_PLATFORM
+    if (pimpl->platform_lobby
+    && pimpl->platform_lobby->getLeaderId() == pimpl->online_platform->getCurrentUserId()) {
+        pimpl->platform_lobby->setStatusCode(quest_msg_code);
+    }
+#endif
+}
+
+
+//////////////////////////////////////////////
+// Localization support
+//////////////////////////////////////////////
+
+void KnightsApp::readLocalizationStrings()
+{
+    RStream file("client/localization_strings.txt");
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue; // skip empty lines and comments
+
+        std::istringstream iss(line);
+        int code;
+        if (iss >> code) {
+            // Skip whitespace after the code
+            while (iss.peek() == ' ' || iss.peek() == '\t') {
+                iss.get();
+            }
+            // Rest of line is the message
+            std::string message;
+            if (std::getline(iss, message)) {
+                pimpl->localization_strings[code] = Coercri::UTF8String::fromUTF8(message);
+            }
+        }
+    }
+}
+
+const Coercri::UTF8String & KnightsApp::getLocalizationString(int msg_code) const
+{
+    static const Coercri::UTF8String empty_string;
+    auto iter = pimpl->localization_strings.find(msg_code);
+    if (iter == pimpl->localization_strings.end()) {
+        return empty_string;
+    } else {
+        return iter->second;
+    }
+}
+
+Coercri::UTF8String KnightsApp::getLocalizationString(int msg_code, const Coercri::UTF8String &param1) const
+{
+    const Coercri::UTF8String &base_str = getLocalizationString(msg_code);
+    std::string result = base_str.asUTF8();
+    
+    size_t pos = result.find("%1");
+    if (pos != std::string::npos) {
+        result.replace(pos, 2, param1.asUTF8());
+    }
+    
+    return Coercri::UTF8String::fromUTF8(result);
 }

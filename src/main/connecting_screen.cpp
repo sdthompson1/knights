@@ -43,7 +43,11 @@ using std::string;
 
 class ConnectingScreenImpl : public gcn::ActionListener {
 public:
-    ConnectingScreenImpl(const std::string &addr, int port, bool join_lan, const UTF8String &pname);
+    ConnectingScreenImpl(const std::string &addr,
+                         int port,
+                         bool join_lan,
+                         bool join_online_platform_game,
+                         const UTF8String &pname);
     void setupGui(KnightsApp &ka, gcn::Gui &gui);
     void setupConnection();
     void action(const gcn::ActionEvent &event);
@@ -52,6 +56,7 @@ private:
     std::string address;
     int port;
     bool join_lan_game;
+    bool join_online_platform_game;
     UTF8String player_name;
     
     bool setup_done;
@@ -65,8 +70,18 @@ private:
     boost::scoped_ptr<gcn::Button> cancel_button;
 };
 
-ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr, int port_, bool join_lan, const UTF8String &pname)
-    : address(addr), port(port_), join_lan_game(join_lan), player_name(pname), setup_done(false), knights_app(0)
+ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr,
+                                           int port,
+                                           bool join_lan,
+                                           bool join_online_platform,
+                                           const UTF8String &pname)
+    : address(addr),
+      port(port),
+      join_lan_game(join_lan),
+      join_online_platform_game(join_online_platform),
+      player_name(pname),
+      setup_done(false),
+      knights_app(nullptr)
 { }
 
 void ConnectingScreenImpl::setupGui(KnightsApp &ka, gcn::Gui &gui)
@@ -78,8 +93,12 @@ void ConnectingScreenImpl::setupGui(KnightsApp &ka, gcn::Gui &gui)
     
     const int pad = 10;
     int y = pad;
-    
-    label.reset(new gcn::Label("Connecting to " + address + "..."));
+
+    if (join_online_platform_game) {
+        label.reset(new gcn::Label("Connecting to game..."));
+    } else {
+        label.reset(new gcn::Label("Connecting to " + address + "..."));
+    }
     container->add(label.get(), pad, y);
     y += label->getHeight() + pad;
     
@@ -99,22 +118,36 @@ void ConnectingScreenImpl::setupConnection()
     if (setup_done) return;
     setup_done = true;
 
-    boost::shared_ptr<KnightsClient> client = knights_app->joinRemoteServer(address, port);
+    boost::shared_ptr<KnightsClient> client;
+    if (join_online_platform_game) {
+#ifdef ONLINE_PLATFORM
+        client = knights_app->joinOnlinePlatformGame(address, "#OnlinePlatformGame");
+#else
+        throw std::runtime_error("online platform not supported");
+#endif
+    } else {
+        client = knights_app->joinRemoteServer(address, port);
+    }
     knights_app->createGameManager(client, false, false, false, player_name);
     knights_app->getGameManager().setLanGame(join_lan_game);
+    knights_app->getGameManager().setOnlinePlatformGame(join_online_platform_game);
     client->setClientCallbacks(&knights_app->getGameManager());
     client->setPlayerNameAndControls(player_name, knights_app->getOptions().new_control_system);
 
-    std::ostringstream str;
-    if (address.find(':') != std::string::npos) {
-        str << "[" << address << "]:" << port;
-    } else {
-        str << address << ":" << port;
+    if (!join_online_platform_game) {
+        std::ostringstream str;
+        if (address.find(':') != std::string::npos) {
+            str << "[" << address << "]:" << port;
+        } else {
+            str << address << ":" << port;
+        }
+        knights_app->getGameManager().setServerName(str.str());
     }
-    knights_app->getGameManager().setServerName(str.str());
 
     if (join_lan_game) {
         knights_app->getGameManager().tryJoinGame("#LanGame");
+    } else if (join_online_platform_game) {
+        knights_app->getGameManager().tryJoinGame("#OnlinePlatformGame");
     }
 }
 
@@ -127,8 +160,8 @@ void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
 
-ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, const UTF8String &pname)
-     : pimpl(new ConnectingScreenImpl(addr, port, join_lan, pname))
+ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, bool join_online, const UTF8String &pname)
+    : pimpl(new ConnectingScreenImpl(addr, port, join_lan, join_online, pname))
 {
 }
 
