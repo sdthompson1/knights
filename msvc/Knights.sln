@@ -33,6 +33,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetworkTest", "NetworkTest\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KnightsLobby", "KnightsLobby\KnightsLobby.vcxproj", "{61A51FA4-8549-417B-B4EF-ACA1DC9B0616}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OnlinePlatform", "OnlinePlatform\OnlinePlatform.vcxproj", "{E6A98650-63FE-485D-B939-137DC175B201}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -87,6 +89,10 @@ Global
 		{61A51FA4-8549-417B-B4EF-ACA1DC9B0616}.Debug|x64.Build.0 = Debug|x64
 		{61A51FA4-8549-417B-B4EF-ACA1DC9B0616}.Release|x64.ActiveCfg = Release|x64
 		{61A51FA4-8549-417B-B4EF-ACA1DC9B0616}.Release|x64.Build.0 = Release|x64
+		{E6A98650-63FE-485D-B939-137DC175B201}.Debug|x64.ActiveCfg = Debug|x64
+		{E6A98650-63FE-485D-B939-137DC175B201}.Debug|x64.Build.0 = Debug|x64
+		{E6A98650-63FE-485D-B939-137DC175B201}.Release|x64.ActiveCfg = Release|x64
+		{E6A98650-63FE-485D-B939-137DC175B201}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
