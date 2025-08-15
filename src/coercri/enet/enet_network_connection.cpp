@@ -181,7 +181,7 @@ namespace Coercri {
         // out or otherwise failed.
         if (state == CONNECTED) {
             state = CLOSED;
-        } else {
+        } else if (state == PENDING) {
             state = FAILED;
         }
 
