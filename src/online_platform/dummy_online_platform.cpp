@@ -28,6 +28,7 @@
 #include "dummy_platform_lobby.hpp"
 
 #include "enet/enet_network_driver.hpp"
+#include "network/network_connection.hpp"
 
 #include <random>
 #include <sstream>
@@ -82,7 +83,7 @@ std::string DummyOnlinePlatform::getCurrentUserId() const
 
 Coercri::UTF8String DummyOnlinePlatform::lookupUserName(const std::string& platform_user_id) const
 {
-    return Coercri::UTF8String::fromUTF8(platform_user_id);
+    return Coercri::UTF8String::fromUTF8("Name-" + platform_user_id);
 }
 
 std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis)
@@ -96,7 +97,7 @@ std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis)
         if (receiveResponse(lobby_id)) {
             current_lobby_id = lobby_id;
             current_lobby_leader = current_user_id;
-            return std::make_unique<DummyPlatformLobby>(this, lobby_id, current_user_id);
+            return std::make_unique<DummyPlatformLobby>(this, lobby_id);
         }
     }
     return nullptr;
@@ -144,7 +145,7 @@ std::unique_ptr<PlatformLobby> DummyOnlinePlatform::joinLobby(const std::string&
         if (receiveResponse(leader_id)) {
             current_lobby_id = lobby_id;
             current_lobby_leader = leader_id;
-            return std::make_unique<DummyPlatformLobby>(this, lobby_id, leader_id);
+            return std::make_unique<DummyPlatformLobby>(this, lobby_id);
         }
     }
     return nullptr;
@@ -260,6 +261,26 @@ bool DummyOnlinePlatform::receiveResponse(std::string& response_data)
 // NetworkDriver implementation (modification of EnetNetworkDriver - makes
 // "fake" connections to localhost)
 
+class DummyNetworkConnectionWrapper : public Coercri::NetworkConnection {
+public:
+    DummyNetworkConnectionWrapper(boost::shared_ptr<Coercri::NetworkConnection> underlying,
+                                  const std::string &user_id)
+        : underlying(underlying),
+          user_id(user_id)
+    {}
+
+    virtual State getState() const { return underlying->getState(); }
+    virtual void close() { underlying->close(); }
+    virtual void receive(std::vector<unsigned char> &data) { underlying->receive(data); }
+    virtual void send(const std::vector<unsigned char> &data) { underlying->send(data); }
+    virtual std::string getAddress() { return user_id; }
+    virtual int getPingTime() { return underlying->getPingTime(); }
+
+private:
+    boost::shared_ptr<Coercri::NetworkConnection> underlying;
+    std::string user_id;
+};
+
 class DummyNetworkDriver : public Coercri::EnetNetworkDriver {
 public:
     explicit DummyNetworkDriver(const std::string & my_user_id)
@@ -269,13 +290,11 @@ public:
         Coercri::EnetNetworkDriver::setServerPort(userNameToPortNum(my_user_id));
     }
 
-    boost::shared_ptr<Coercri::NetworkConnection> openConnection(const std::string &username, int port)
+    boost::shared_ptr<Coercri::NetworkConnection> openConnection(const std::string &user_id, int)
     {
-        // Override port
-        port = userNameToPortNum(username);
-
         // Connect to localhost
-        return Coercri::EnetNetworkDriver::openConnection("localhost", port);
+        auto conn = Coercri::EnetNetworkDriver::openConnection("localhost", userNameToPortNum(user_id));
+        return boost::shared_ptr<Coercri::NetworkConnection>(new DummyNetworkConnectionWrapper(conn, user_id));
     }
 
     void setServerPort(int port) {
@@ -288,8 +307,6 @@ private:
         int p = std::stoi(name);
         return 10000 + (p % 2000);
     }
-
-    int my_port_num;
 };
 
 Coercri::NetworkDriver & DummyOnlinePlatform::getNetworkDriver()

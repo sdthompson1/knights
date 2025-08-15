@@ -46,6 +46,9 @@ public:
     // Called when client closes their existing connection.
     virtual void onCloseConnection(uint8_t client_number) { }
 
+    // Called when all client connections are being closed (e.g. due to host migration)
+    virtual void onCloseAllConnections() { }
+
     // Called when a client sends data to the server.
     // The implementation of this function may 'swap' the data to
     // another vector if they wish (to avoid copying).
@@ -73,12 +76,12 @@ class TickWriter {
 public:
     // The vector should live for at least as long as the TickWriter, and no-one else
     // should be writing the vector while the TickWriter is alive.
-    // Tick duration should be between 0 and 1000 ms inclusive.
-    TickWriter(std::vector<unsigned char> &tick_data, int tick_duration_ms);
+    explicit TickWriter(std::vector<unsigned char> &tick_data);
 
     // Write tick messages - these are the mirror images of the "on" methods in TickCallbacks.
     void writeNewConnection(uint8_t client_number, const std::string &platform_user_id);
     void writeCloseConnection(uint8_t client_number);
+    void writeCloseAllConnections();
     void writeClientSendData(uint8_t client_number, const std::vector<unsigned char> &data);
     void writeClientPingReport(uint8_t client_number, uint16_t ping_time_ms);
     void writeServerSendData(uint8_t client_number, const std::vector<unsigned char> &data);
@@ -87,7 +90,8 @@ public:
     bool wasMessageWritten() const { return last_msg_pos != -1; }
 
     // Finalize - this MUST be called before using the tick_data buffer.
-    void finalize();
+    // Tick duration should be between 0 and 127 ms inclusive.
+    void finalize(int tick_duration_ms);
 
 private:
     void beginNewMessage(int msg_type, int payload_length, uint8_t client_num);
@@ -95,7 +99,7 @@ private:
 private:
     std::vector<unsigned char> &tick_data;
     int last_msg_pos;      // -1 if no msgs written yet
-    int tick_duration_ms;
+    int tick_duration_header_pos;  // position where tick duration header starts
 };
 
 #endif

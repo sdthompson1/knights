@@ -756,7 +756,7 @@ namespace {
         int calculateUpdateDelay() const
         {
             const int delay = engine->getTimeToNextUpdate();
-            const int cap = 250;
+            const int cap = 127;
             if (delay > cap) {
                 // Make sure to do at least one update every "cap" ms,
                 // just to keep things moving.
@@ -1648,17 +1648,11 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
 #endif
     if (is_player && is_running) {
         // The leaving client is one of the players (as opposed to an observer).
-        if (num_player_connections == 0) {
-            // All players disconnected; stop the game at this point
-            StopGameAndReturnToMenu(*pimpl);
-        } else {
-            // There are still (other) players connected to the game, so mark this player
-            // disconnected, and allow the game to continue.
+        // Mark this player disconnected and allow the game to continue.
 #ifndef VIRTUAL_SERVER
-            boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+        boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
-            pimpl->pending_disconnections.push_back(player_num);
-        }
+        pimpl->pending_disconnections.push_back(player_num);
     }
 
     {

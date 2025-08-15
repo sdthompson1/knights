@@ -194,7 +194,7 @@ int main(int argc, const char **argv)
 
     // Create a random seed for the VM
     std::random_device rd;
-    std::vector<unsigned char> seed(4 * std::mt19937::state_size);
+    std::vector<unsigned char> seed(KnightsVM::SEED_SIZE);
     std::generate(seed.begin(), seed.end(), std::ref(rd));
 
     // Create the KnightsVM
@@ -206,7 +206,7 @@ int main(int argc, const char **argv)
         std::vector<unsigned char> tick_data;
         TickWriter writer(tick_data, 0);
         writer.finalize();
-        vm.runTick(tick_data.data(), tick_data.data() + tick_data.size(), NULL);
+        vm.runTicks(tick_data.data(), tick_data.data() + tick_data.size(), NULL);
         unsigned int time1 = timer.getMsec();
         std::cout << "Server running. Init took " << time1 - time0 << " ms." << std::endl;
     }
@@ -228,9 +228,9 @@ int main(int argc, const char **argv)
         if (!tick_data.empty()) {
             // Run the tick. This gives us the new value of "force_time".
             std::vector<unsigned char> vm_output_data;
-            force_time = vm.runTick(tick_data.data(),
-                                    tick_data.data() + tick_data.size(),
-                                    &vm_output_data);
+            force_time = vm.runTicks(tick_data.data(),
+                                     tick_data.data() + tick_data.size(),
+                                     &vm_output_data);
 
             // Push any output data to the network.
             network.handleVMOutput(vm_output_data);

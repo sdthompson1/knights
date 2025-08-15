@@ -27,19 +27,20 @@
 #ifdef ONLINE_PLATFORM_DUMMY
 
 #include "platform_lobby.hpp"
+#include <chrono>
 
 class DummyOnlinePlatform; // Forward declaration
 
 class DummyPlatformLobby : public PlatformLobby {
 public:
-    DummyPlatformLobby(DummyOnlinePlatform* platform, const std::string& lobby_id, const std::string& leader_id);
+    DummyPlatformLobby(DummyOnlinePlatform* platform, const std::string& lobby_id);
     virtual ~DummyPlatformLobby();
 
     // Returns the current lobby state
-    virtual State getState() const override;
+    virtual State getState() override;
     
     // Returns the lobby leader's platform user ID
-    virtual std::string getLeaderId() const override;
+    virtual std::string getLeaderId() override;
 
     // Set status code for the lobby - only the leader can do this
     virtual void setStatusCode(int status_code) override;
@@ -49,6 +50,7 @@ private:
     std::string lobby_id;
     std::string leader_id;
     State current_state;
+    std::chrono::steady_clock::time_point last_leader_query_time;
 };
 
 #endif

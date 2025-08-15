@@ -31,6 +31,7 @@
 
 #include "my_exceptions.hpp"
 
+#include <cstdint>
 #include <vector>
 
 //
@@ -175,6 +176,60 @@ enum ServerExtendedCode {
     SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR = 2,
     SERVER_EXT_DISABLE_VIEW = 3
 };
+
+
+
+//
+// Messages used by VMKnightsLobby system (host migration)
+//
+
+enum LeaderSyncMessage {
+    // Send VM registers and memory configuration
+    // Format: defined by KnightsVM::getVMConfig
+    LEADER_SEND_VM_CONFIG = 64,
+
+    // Send a single VM memory block (of size BLOCK_SIZE)
+    // Format: defined by KnightsVM::outputMemoryBlock
+    LEADER_SEND_MEMORY_BLOCK,
+
+    // Send a "segment" of catchup ticks
+    // Format: length (var int) + data
+    LEADER_SEND_CATCHUP_TICKS,
+
+    // Notify client that the sync is complete
+    // Format: no additional data
+    LEADER_SYNC_DONE
+};
+
+enum FollowerSyncMessage {
+    // Send hashes for current contents of VM memory blocks
+    // Format: defined by KnightsVM::getMemoryHashes
+    FOLLOWER_SEND_HASHES = 32,
+
+    // Acknowledge that we have received VM memory block(s)
+    // Format: number of blocks being acked (var int)
+    FOLLOWER_ACK_MEMORY_BLOCKS,
+
+    // Acknowledge that we have received "catchup ticks"
+    // Note: this might be received after sync done
+    // Format: number of tick segments acked (var int)
+    FOLLOWER_ACK_CATCHUP_TICKS
+};
+
+enum LeaderMessage {
+    // Send tick data for the next tick
+    // Format: length (var int) + data
+    LEADER_SEND_TICK_DATA = 48
+};
+
+enum FollowerMessage {
+    // Send commands from a KnightsClient
+    // Format: length (var int) + data
+    FOLLOWER_SEND_CLIENT_COMMANDS = 16
+};
+
+constexpr uint32_t HOST_MIGRATION_BLOCK_SHIFT = 12;
+constexpr uint32_t HOST_MIGRATION_BLOCK_SIZE_BYTES = (1 << HOST_MIGRATION_BLOCK_SHIFT);
 
 
 #endif

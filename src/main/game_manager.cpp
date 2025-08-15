@@ -787,7 +787,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->my_house_colour = my_house_colour;
     pimpl->is_split_screen = (pimpl->current_game_name == "#SplitScreenGame");
     pimpl->is_lan_game = (pimpl->current_game_name == "#LanGame");
-    pimpl->is_online_platform_game = (pimpl->current_game_name == "#OnlinePlatformGame");
+    pimpl->is_online_platform_game = (pimpl->current_game_name == "#VMGame");
 
     // update my player list, also set my_obs_flag if needed
     pimpl->game_namelist.clear();

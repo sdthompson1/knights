@@ -166,6 +166,7 @@
     <ClCompile Include="..\..\src\main\text_formatter.cpp" />
     <ClCompile Include="..\..\src\main\title_block.cpp" />
     <ClCompile Include="..\..\src\main\title_screen.cpp" />
+    <ClCompile Include="..\..\src\main\vm_loading_screen.cpp" />
     <ClCompile Include="..\..\src\main\x_centre.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +223,7 @@
     <ClInclude Include="..\..\src\main\text_formatter.hpp" />
     <ClInclude Include="..\..\src\main\title_block.hpp" />
     <ClInclude Include="..\..\src\main\title_screen.hpp" />
+    <ClInclude Include="..\..\src\main\vm_loading_screen.hpp" />
     <ClInclude Include="..\..\src\main\x_centre.hpp" />
   </ItemGroup>
   <ItemGroup>

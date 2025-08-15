@@ -55,6 +55,7 @@
 #include "skull_renderer.hpp"
 #include "sound_manager.hpp"
 #include "title_screen.hpp"
+#include "vm_knights_lobby.hpp"
 
 // coercri
 #include "core/coercri_error.hpp"
@@ -243,6 +244,10 @@ public:
     // knights lobby
     std::string server_config_filename;
     std::unique_ptr<KnightsLobby> knights_lobby;
+#ifdef USE_VM_LOBBY
+    VMKnightsLobby *vm_knights_lobby;
+    std::string vm_lobby_leader_id;
+#endif
     boost::shared_ptr<KnightsClient> knights_client;
 
     // broadcast socket
@@ -1089,39 +1094,31 @@ boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string 
     return pimpl->knights_client;
 }
 
-#ifdef ONLINE_PLATFORM
-
-boost::shared_ptr<KnightsClient> KnightsApp::hostOnlinePlatformGame(boost::shared_ptr<KnightsConfig> config,
-                                                                    OnlinePlatform::Visibility vis,
-                                                                    const std::string &game_name)
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lobby_id,
+                                                          OnlinePlatform::Visibility vis,
+                                                          std::unique_ptr<VMKnightsLobby> kts_lobby)
 {
-    pimpl->platform_lobby = pimpl->online_platform->createLobby(vis);
-    if (!pimpl->platform_lobby) {
-        throw std::runtime_error("Failed to create lobby");
+    // Create the platform lobby
+    if (lobby_id.empty()) {
+        pimpl->platform_lobby = pimpl->online_platform->createLobby(vis);
+    } else {
+        pimpl->platform_lobby = pimpl->online_platform->joinLobby(lobby_id);
     }
-
-    // TODO: Replace with VMKnightsLobby when ready
-    pimpl->knights_lobby.reset(new SimpleKnightsLobby(getNetworkDriver(), pimpl->timer, 0, config, game_name));
-    pimpl->knights_client.reset(new KnightsClient);
-    return pimpl->knights_client;
-}
-
-boost::shared_ptr<KnightsClient> KnightsApp::joinOnlinePlatformGame(const std::string &lobby_id,
-                                                                    const std::string &game_name)
-{
-    pimpl->platform_lobby = pimpl->online_platform->joinLobby(lobby_id);
     if (!pimpl->platform_lobby) {
         throw std::runtime_error("Failed to join lobby");
     }
 
-    // KnightsLobby creation is deferred until we know who the lobby leader is
+    // Install the given knights lobby
+    pimpl->vm_knights_lobby = kts_lobby.get();
+    pimpl->knights_lobby = std::move(kts_lobby);
+    pimpl->vm_lobby_leader_id.clear();
 
+    // Create the client
     pimpl->knights_client.reset(new KnightsClient);
     return pimpl->knights_client;
 }
-
-#endif  // ONLINE_PLATFORM
-
+#endif
 
 //////////////////////////////////////////////
 // Online Platform Update
@@ -1129,16 +1126,17 @@ boost::shared_ptr<KnightsClient> KnightsApp::joinOnlinePlatformGame(const std::s
 
 void KnightsAppImpl::updateOnlinePlatform()
 {
-#ifdef ONLINE_PLATFORM
-    if (platform_lobby && !knights_lobby) {
-        // We are in the state where we are joining a platform lobby,
-        // but we haven't found out who the lobby leader is yet. When
-        // we do find the leader, we can create the KnightsLobby and
-        // join the game.
-        std::string leader_id = platform_lobby->getLeaderId();
-        if (!leader_id.empty()) {
-            // We know the leader so we can now try to connect to them
-            knights_lobby.reset(new SimpleKnightsLobby(online_platform->getNetworkDriver(), timer, leader_id, 0));
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    if (platform_lobby && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
+
+        // Leader has changed
+
+        vm_lobby_leader_id = platform_lobby->getLeaderId();
+
+        if (vm_lobby_leader_id == online_platform->getCurrentUserId()) {
+            vm_knights_lobby->becomeLeader(0);  // Dummy port number
+        } else {
+            vm_knights_lobby->becomeFollower(vm_lobby_leader_id);
         }
     }
 #endif

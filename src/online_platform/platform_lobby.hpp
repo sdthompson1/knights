@@ -45,11 +45,11 @@ public:
     virtual ~PlatformLobby() = default;
     
     // Returns the current state of the lobby connection
-    virtual State getState() const = 0;
+    virtual State getState() = 0;
     
     // Returns the platform user ID of the current lobby leader
     // (Returns empty string if the leader is not known yet)
-    virtual std::string getLeaderId() const = 0;
+    virtual std::string getLeaderId() = 0;
 
     // Set status code for the lobby - only the leader can do this
     virtual void setStatusCode(int status_code) = 0;

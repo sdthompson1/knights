@@ -26,9 +26,10 @@
 #include "misc.hpp"
 #include "dummy_platform_lobby.hpp"
 #include "dummy_online_platform.hpp"
+#include <chrono>
 
-DummyPlatformLobby::DummyPlatformLobby(DummyOnlinePlatform* platform, const std::string& lobby_id, const std::string& leader_id)
-    : platform(platform), lobby_id(lobby_id), leader_id(leader_id), current_state(State::JOINED)
+DummyPlatformLobby::DummyPlatformLobby(DummyOnlinePlatform* platform, const std::string& lobby_id)
+    : platform(platform), lobby_id(lobby_id), current_state(State::JOINED)
 {
 }
 
@@ -42,13 +43,36 @@ DummyPlatformLobby::~DummyPlatformLobby()
     }
 }
 
-PlatformLobby::State DummyPlatformLobby::getState() const
+PlatformLobby::State DummyPlatformLobby::getState()
 {
     return current_state;
 }
 
-std::string DummyPlatformLobby::getLeaderId() const
+std::string DummyPlatformLobby::getLeaderId()
 {
+    auto now = std::chrono::steady_clock::now();
+    
+    // Only query the server at infrequent intervals
+    constexpr int QUERY_TIME_MS = 3000;
+    if (leader_id.empty() ||
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - last_leader_query_time).count() >= QUERY_TIME_MS) {
+        
+        if (platform) {
+            if (platform->sendMessage(DummyOnlinePlatform::MSG_GET_LOBBY_INFO, lobby_id)) {
+                std::string response_data;
+                if (platform->receiveResponse(response_data)) {
+                    // Parse response: leader_id (null-terminated) + num_players (4 bytes) + status_code (4 bytes)
+                    size_t null_pos = response_data.find('\0');
+                    if (null_pos != std::string::npos) {
+                        leader_id = response_data.substr(0, null_pos);
+                    }
+                }
+            }
+        }
+        
+        last_leader_query_time = now;
+    }
+    
     return leader_id;
 }
 

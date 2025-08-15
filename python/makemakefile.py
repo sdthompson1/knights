@@ -15,7 +15,7 @@ import re
 PROJECTS_MAIN = ['Coercri', 'guichan', 'KnightsClient', 'KnightsEngine',
                  'KnightsLobby',
                  'KnightsMain', 'KnightsServer', 'KnightsShared', 
-                 'Misc', 'OnlinePlatform', 'RStream']
+                 'Misc', 'RStream']
 PROJECTS_SERVER = ['KnightsEngine', 'KnightsServer', 'KnightsShared',
                    'KnightsSvrMain', 'Misc', 'RStream']
 EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o', 
@@ -24,8 +24,6 @@ EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o',
                      'src/coercri/enet/enet_udp_socket.o',
                      'src/coercri/timer/generic_timer.o',
                      'src/coercri/core/utf8string.o']
-
-PROJECTS_ALL = list(set(PROJECTS_MAIN + PROJECTS_SERVER))
 
 
 # add project path to a path and normalize
@@ -96,12 +94,20 @@ parser.add_argument('--online-platform', type=str, help='Set online platform (cu
 args = parser.parse_args()
 
 # Set ONLINE_PLATFORM_FLAGS based on argument
+# Note: if an online platform is set, then USE_VM_LOBBY is automatically enabled as well
 if args.online_platform:
-    online_platform_flags = f"-DONLINE_PLATFORM -DONLINE_PLATFORM_{args.online_platform.upper()}"
+    online_platform_flags = f"-DONLINE_PLATFORM -DONLINE_PLATFORM_{args.online_platform.upper()} -DUSE_VM_LOBBY"
     online_platform_comment = "# Enable online platform support"
+
+    # Extra projects when online platform enabled:
+    PROJECTS_MAIN += ['OnlinePlatform', 'VirtualServer']
+
 else:
     online_platform_flags = ""
     online_platform_comment = "# Online platform support is disabled in this version of Knights,\n# hence ONLINE_PLATFORM_FLAGS is empty."
+
+# Calculate PROJECTS_ALL
+PROJECTS_ALL = list(set(PROJECTS_MAIN + PROJECTS_SERVER))
 
 # Start printing the Makefile.
 print (f"""# Makefile for Knights

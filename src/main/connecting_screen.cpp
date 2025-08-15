@@ -46,7 +46,6 @@ public:
     ConnectingScreenImpl(const std::string &addr,
                          int port,
                          bool join_lan,
-                         bool join_online_platform_game,
                          const UTF8String &pname);
     void setupGui(KnightsApp &ka, gcn::Gui &gui);
     void setupConnection();
@@ -56,7 +55,6 @@ private:
     std::string address;
     int port;
     bool join_lan_game;
-    bool join_online_platform_game;
     UTF8String player_name;
     
     bool setup_done;
@@ -73,12 +71,10 @@ private:
 ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr,
                                            int port,
                                            bool join_lan,
-                                           bool join_online_platform,
                                            const UTF8String &pname)
     : address(addr),
       port(port),
       join_lan_game(join_lan),
-      join_online_platform_game(join_online_platform),
       player_name(pname),
       setup_done(false),
       knights_app(nullptr)
@@ -94,11 +90,7 @@ void ConnectingScreenImpl::setupGui(KnightsApp &ka, gcn::Gui &gui)
     const int pad = 10;
     int y = pad;
 
-    if (join_online_platform_game) {
-        label.reset(new gcn::Label("Connecting to game..."));
-    } else {
-        label.reset(new gcn::Label("Connecting to " + address + "..."));
-    }
+    label.reset(new gcn::Label("Connecting to " + address + "..."));
     container->add(label.get(), pad, y);
     y += label->getHeight() + pad;
     
@@ -119,35 +111,22 @@ void ConnectingScreenImpl::setupConnection()
     setup_done = true;
 
     boost::shared_ptr<KnightsClient> client;
-    if (join_online_platform_game) {
-#ifdef ONLINE_PLATFORM
-        client = knights_app->joinOnlinePlatformGame(address, "#OnlinePlatformGame");
-#else
-        throw std::runtime_error("online platform not supported");
-#endif
-    } else {
-        client = knights_app->joinRemoteServer(address, port);
-    }
+    client = knights_app->joinRemoteServer(address, port);
     knights_app->createGameManager(client, false, false, false, player_name);
     knights_app->getGameManager().setLanGame(join_lan_game);
-    knights_app->getGameManager().setOnlinePlatformGame(join_online_platform_game);
     client->setClientCallbacks(&knights_app->getGameManager());
     client->setPlayerNameAndControls(player_name, knights_app->getOptions().new_control_system);
 
-    if (!join_online_platform_game) {
-        std::ostringstream str;
-        if (address.find(':') != std::string::npos) {
-            str << "[" << address << "]:" << port;
-        } else {
-            str << address << ":" << port;
-        }
-        knights_app->getGameManager().setServerName(str.str());
+    std::ostringstream str;
+    if (address.find(':') != std::string::npos) {
+        str << "[" << address << "]:" << port;
+    } else {
+        str << address << ":" << port;
     }
+    knights_app->getGameManager().setServerName(str.str());
 
     if (join_lan_game) {
         knights_app->getGameManager().tryJoinGame("#LanGame");
-    } else if (join_online_platform_game) {
-        knights_app->getGameManager().tryJoinGame("#OnlinePlatformGame");
     }
 }
 
@@ -160,8 +139,8 @@ void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
 
-ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, bool join_online, const UTF8String &pname)
-    : pimpl(new ConnectingScreenImpl(addr, port, join_lan, join_online, pname))
+ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, const UTF8String &pname)
+    : pimpl(new ConnectingScreenImpl(addr, port, join_lan, pname))
 {
 }
 

@@ -15,45 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\lobby\follower_state.cpp">
+    <ClCompile Include="..\..\src\virtual_server\knights_vm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lobby\leader_state.cpp">
+    <ClCompile Include="..\..\src\virtual_server\risc_vm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lobby\simple_knights_lobby.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\lobby\sync_client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\lobby\sync_host.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\lobby\vm_knights_lobby.cpp">
+    <ClCompile Include="..\..\src\virtual_server\tick_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\lobby\follower_state.hpp">
+    <ClInclude Include="..\..\src\virtual_server\knights_vm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lobby\knights_lobby.hpp">
+    <ClInclude Include="..\..\src\virtual_server\risc_vm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lobby\leader_state.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\lobby\simple_knights_lobby.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\lobby\sync_client.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\lobby\sync_host.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\lobby\vm_knights_lobby.hpp">
+    <ClInclude Include="..\..\src\virtual_server\tick_data.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

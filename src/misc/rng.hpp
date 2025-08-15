@@ -39,7 +39,7 @@ public:
 
     // Initialize using a provided sequence of bytes
     // num_bytes must match the size of std::mt19937's state, else this will throw
-    void initialize(const char *bytes, int num_bytes);
+    void initialize(const unsigned char *bytes, int num_bytes);
 
     // Generate random numbers
     float getU01() { return getFloat(0, 1); }  // return random float in range [0,1)

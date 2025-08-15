@@ -64,6 +64,7 @@ class Lobby:
             if user_id == self.leader_user_id and len(self.members) > 0:
                 # Select the first remaining member as the new leader
                 self.leader_user_id = next(iter(self.members))
+                print(f"{self.leader_user_id} is now leader of lobby {self.lobby_id}")
             
             return True
         return False

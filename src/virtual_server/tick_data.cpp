@@ -25,6 +25,12 @@
 
 #include <stdexcept>
 
+//#define LOG_TICK_DATA
+
+#ifdef LOG_TICK_DATA
+#include <iostream>
+#endif
+
 namespace {
     const int MAX_LENGTH = 0x3fffff;   // approx 4 million
 
@@ -35,9 +41,10 @@ namespace {
     enum TickMessage {
         TM_NEW_CONNECTION = 0,
         TM_CLOSE_CONNECTION = 1,
-        TM_CLIENT_SEND_DATA = 2,
-        TM_CLIENT_PING_REPORT = 3,
-        TM_SERVER_SEND_DATA = 4
+        TM_CLOSE_ALL_CONNECTIONS = 2,
+        TM_CLIENT_SEND_DATA = 3,
+        TM_CLIENT_PING_REPORT = 4,
+        TM_SERVER_SEND_DATA = 5
     };
 
     unsigned char ReadUbyte(const unsigned char *&first,
@@ -118,16 +125,11 @@ const unsigned char * ReadTickData(const unsigned char *ptr,
     // If ptr==end there is no tick to process.
     if (ptr == end) return ptr;
 
-    // First we expect a Length giving the tick duration, shifted left one bit.
+    // First we expect a single byte giving the tick duration, shifted left one bit.
     // Also, if bit 0 is set, this indicates that there are tick messages.
-    int duration = ReadLength(ptr, end);
-    bool more_messages = (duration & 1);
-    duration >>= 1;
-
-    // Sanity check tick duration
-    if (duration < 0 || duration > 1000) {
-        throw std::runtime_error("Invalid tick duration");
-    }
+    int duration_byte = ReadUbyte(ptr, end);
+    bool more_messages = (duration_byte & 1);
+    int duration = duration_byte >> 1;
 
     // Send the "onNewTick" callback.
     callbacks.onNewTick(duration);
@@ -147,36 +149,59 @@ const unsigned char * ReadTickData(const unsigned char *ptr,
             payload_length = ReadLength(ptr, end);
         }
 
-        // All message types require a client number, so might as well decode this now
+        // All messages include a client number
+        // (even if it is not used by some message types!)
         uint8_t client_num = ReadUbyte(ptr, end);
 
         switch (message_type) {
         case TM_NEW_CONNECTION:
             {
                 std::string s = ReadString(ptr, end, payload_length);
+#ifdef LOG_TICK_DATA
+                std::cout << "Read TM_NEW_CONNECTION " << int(client_num) << " " << s << std::endl;
+#endif
                 callbacks.onNewConnection(client_num, s);
             }
             break;
 
         case TM_CLOSE_CONNECTION:
+#ifdef LOG_TICK_DATA
+            std::cout << "Read TM_CLOSE_CONNECTION " << int(client_num) << std::endl;
+#endif
             callbacks.onCloseConnection(client_num);
+            break;
+
+        case TM_CLOSE_ALL_CONNECTIONS:
+#ifdef LOG_TICK_DATA
+            std::cout << "Read TM_CLOSE_ALL_CONNECTIONS" << std::endl;
+#endif
+            callbacks.onCloseAllConnections();
             break;
 
         case TM_CLIENT_SEND_DATA:
             {
                 std::vector<unsigned char> v = ReadVector(ptr, end, payload_length);
+#ifdef LOG_TICK_DATA
+                std::cout << "Read TM_CLIENT_SEND_DATA " << int(client_num) << " " << v.size() << std::endl;
+#endif
                 callbacks.onClientSendData(client_num, v);
             }
             break;
 
         case TM_CLIENT_PING_REPORT:
             // Ping time is encoded in the payload length field
+#ifdef LOG_TICK_DATA
+            std::cout << "Read TM_CLIENT_PING_REPORT " << int(client_num) << std::endl;
+#endif
             callbacks.onClientPingReport(client_num, payload_length);
             break;
 
         case TM_SERVER_SEND_DATA:
             {
                 std::vector<unsigned char> v = ReadVector(ptr, end, payload_length);
+#ifdef LOG_TICK_DATA
+                std::cout << "Read TM_SERVER_SEND_DATA " << int(client_num) << " " << v.size() << std::endl;
+#endif
                 callbacks.onServerSendData(client_num, v);
             }
             break;
@@ -190,27 +215,20 @@ const unsigned char * ReadTickData(const unsigned char *ptr,
     return ptr;
 }
 
-TickWriter::TickWriter(std::vector<unsigned char> &tick_data_, int tick_duration_ms)
+TickWriter::TickWriter(std::vector<unsigned char> &tick_data_)
     : tick_data(tick_data_),
       last_msg_pos(-1),
-      tick_duration_ms(tick_duration_ms)
+      tick_duration_header_pos(-1)
 {
-    // Sanity checks
-    if (tick_duration_ms < 0) {
-        throw std::runtime_error("Tick duration cannot be negative");
-    }
-    if (tick_duration_ms > 1000) {
-        // Clip tick duration at 1 second to prevent overflows etc.
-        tick_duration_ms = 1000;
-    }
 }
 
 void TickWriter::beginNewMessage(int msg_type, int payload_length, uint8_t client_num)
 {
     if (last_msg_pos == -1) {
-        // No messages written yet, so let's write the tick duration header first.
-        // Set bit 0 to indicate presence of messages.
-        PushBackLength(tick_data, (tick_duration_ms << 1) | 1);
+        // No messages written yet, so reserve 1 byte for the tick duration header.
+        // We'll patch the actual value in finalize().
+        tick_duration_header_pos = tick_data.size();
+        tick_data.push_back(0);  // Reserve 1 byte for tick duration + message bit
     }
 
     // Sanity check that the tick buffer hasn't got too long
@@ -243,21 +261,36 @@ void TickWriter::beginNewMessage(int msg_type, int payload_length, uint8_t clien
     tick_data.push_back(client_num);
 }
 
-void TickWriter::finalize()
+void TickWriter::finalize(int tick_duration_ms)
 {
-    if (last_msg_pos == -1) {
+    // Sanity checks
+    if (tick_duration_ms < 0) {
+        throw std::runtime_error("Tick duration cannot be negative");
+    }
+    if (tick_duration_ms > 127) {
+        throw std::runtime_error("Tick duration cannot be greater than 127");
+    }
+    
+    if (tick_duration_header_pos == -1) {
         // No messages written, so write the tick duration, with bit 0 clear to
         // indicate no messages present.
-        PushBackLength(tick_data, tick_duration_ms << 1);
+        tick_data.push_back(tick_duration_ms << 1);
     } else {
-        // At least one message was written, so we need to go back and clear the
-        // "more_messages" bit for that message.
+        // At least one message was written, so patch the tick duration header
+        // with bit 0 set to indicate messages are present.
+        tick_data[tick_duration_header_pos] = (tick_duration_ms << 1) | 1;
+        
+        // Clear the "more_messages" bit for the last message
         tick_data[last_msg_pos] ^= 0x80;
     }
 }
 
 void TickWriter::writeNewConnection(uint8_t client_num, const std::string &platform_user_id)
 {
+#ifdef LOG_TICK_DATA
+    std::cout << "Write TM_NEW_CONNECTION " << int(client_num) << std::endl;
+#endif
+
     beginNewMessage(TM_NEW_CONNECTION, platform_user_id.size(), client_num);
     for (char c : platform_user_id) {
         tick_data.push_back(c);
@@ -266,27 +299,53 @@ void TickWriter::writeNewConnection(uint8_t client_num, const std::string &platf
 
 void TickWriter::writeCloseConnection(uint8_t client_num)
 {
+#ifdef LOG_TICK_DATA
+    std::cout << "Write TM_CLOSE_CONNECTION " << int(client_num) << std::endl;
+#endif
     beginNewMessage(TM_CLOSE_CONNECTION, 0, client_num);
+}
+
+void TickWriter::writeCloseAllConnections()
+{
+#ifdef LOG_TICK_DATA
+    std::cout << "Write TM_CLOSE_ALL_CONNECTIONS" << std::endl;
+#endif
+    beginNewMessage(TM_CLOSE_ALL_CONNECTIONS, 0, 0);
 }
 
 void TickWriter::writeClientSendData(uint8_t client_num, const std::vector<unsigned char> &data)
 {
-    beginNewMessage(TM_CLIENT_SEND_DATA, data.size(), client_num);
-    for (unsigned char c : data) {
-        tick_data.push_back(c);
+    if (!data.empty()) {
+
+#ifdef LOG_TICK_DATA
+        std::cout << "Write TM_CLIENT_SEND_DATA " << int(client_num) << " - " << data.size() << " bytes" << std::endl;
+#endif
+
+        beginNewMessage(TM_CLIENT_SEND_DATA, data.size(), client_num);
+        for (unsigned char c : data) {
+            tick_data.push_back(c);
+        }
     }
 }
 
 void TickWriter::writeClientPingReport(uint8_t client_num, uint16_t ping_time_ms)
 {
     // We encode the ping time in the "payload length" field
+#ifdef LOG_TICK_DATA
+    std::cout << "Write TM_CLIENT_PING_REPORT " << int(client_num) << std::endl;
+#endif
     beginNewMessage(TM_CLIENT_PING_REPORT, ping_time_ms, client_num);
 }
 
 void TickWriter::writeServerSendData(uint8_t client_num, const std::vector<unsigned char> &data)
 {
-    beginNewMessage(TM_SERVER_SEND_DATA, data.size(), client_num);
-    for (unsigned char c : data) {
-        tick_data.push_back(c);
+    if (!data.empty()) {
+#ifdef LOG_TICK_DATA
+        std::cout << "Write TM_SERVER_SEND_DATA " << int(client_num) << std::endl;
+#endif
+        beginNewMessage(TM_SERVER_SEND_DATA, data.size(), client_num);
+        for (unsigned char c : data) {
+            tick_data.push_back(c);
+        }
     }
 }

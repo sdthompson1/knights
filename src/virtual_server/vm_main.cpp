@@ -42,7 +42,7 @@
 class VMTimer : public Coercri::Timer {
 public:
     virtual unsigned int getMsec();
-    virtual uint64_t getUsec();
+    virtual uint64_t getUsec() { return static_cast<uint64_t>(getMsec()) * UINT64_C(1000); }
     virtual void sleepMsec(int msec) { /* not used */ }
     virtual void sleepUsec(int64_t usec) { /* not used */ }
 };
@@ -66,11 +66,6 @@ unsigned int VMTimer::getMsec()
     return tspec.sec * 1000u + tspec.nsec / 1000000u;
 }
 
-uint64_t VMTimer::getUsec()
-{
-    return static_cast<uint64_t>(getMsec()) * UINT64_C(1000);
-}
-
 
 // Tick callbacks
 class VMTickCallbacks : public TickCallbacks {
@@ -78,10 +73,11 @@ public:
     VMTickCallbacks(KnightsServer &server_,
                     std::vector<ServerConnection*> & conns)
         : server(server_), connections(conns) {}
-    void onNewConnection(uint8_t client_number, const std::string &platform_user_id);
-    void onCloseConnection(uint8_t client_number);
-    void onClientSendData(uint8_t client_number, std::vector<unsigned char> &data);
-    void onClientPingReport(uint8_t client_number, uint16_t ping_time_ms);
+    void onNewConnection(uint8_t client_number, const std::string &platform_user_id) override;
+    void onCloseConnection(uint8_t client_number) override;
+    void onCloseAllConnections() override;
+    void onClientSendData(uint8_t client_number, std::vector<unsigned char> &data) override;
+    void onClientPingReport(uint8_t client_number, uint16_t ping_time_ms) override;
 private:
     KnightsServer &server;
     std::vector<ServerConnection*> &connections;
@@ -109,6 +105,16 @@ void VMTickCallbacks::onCloseConnection(uint8_t num)
     }
 }
 
+void VMTickCallbacks::onCloseAllConnections()
+{
+    for (auto& conn : connections) {
+        if (conn) {
+            server.connectionClosed(*conn);
+            conn = NULL;
+        }
+    }
+}
+
 void VMTickCallbacks::onClientSendData(uint8_t num, std::vector<unsigned char> &data)
 {
     if (num < connections.size() && connections[num] != NULL) {
@@ -123,7 +129,7 @@ void VMTickCallbacks::onClientPingReport(uint8_t num, uint16_t ping_time_ms)
     if (num < connections.size() && connections[num] != NULL) {
         server.setPingTime(*connections[num], ping_time_ms);
     } else {
-        throw std::runtime_error("onClientPingReport error");
+        throw std::runtime_error("onClientPingReport error (client_num " + std::to_string(num) + ")");
     }
 }
 
@@ -136,7 +142,7 @@ int main()
 
         // Seed the RNG
         {
-            char buf[4 * std::mt19937::state_size];
+            unsigned char buf[32];
             vs_get_random_data(buf, sizeof(buf));
             g_rng.initialize(buf, sizeof(buf));
         }
@@ -171,7 +177,7 @@ int main()
             ReadTickData(tick_data.data(), tick_data.data() + tick_data.size(), callbacks);
 
             // Now run the game thread, if applicable
-            unsigned int sleep_time = 1000;
+            unsigned int sleep_time = 127;  // max allowed tick duration
             if (vs_game_thread_running()) {
                 sleep_time = vs_switch_to_game_thread();
             }
@@ -179,7 +185,7 @@ int main()
             // Now write outgoing data
             tick_data.clear();  // Re-use same vector for the output
             std::vector<unsigned char> buffer;   // Temp buffer for network packets
-            TickWriter writer(tick_data, 0);  // We don't care about tick_duration for the output, set it to zero
+            TickWriter writer(tick_data);
             for (int i = 0; i < connections.size(); ++i) {
                 if (connections[i]) {
                     server.getOutputData(*connections[i], buffer);
@@ -188,7 +194,7 @@ int main()
                     }
                 }
             }
-            writer.finalize();
+            writer.finalize(0);
 
             // Send the vm_output_data to "TICK:" file
             tick_file.write((const char*)tick_data.data(), tick_data.size());

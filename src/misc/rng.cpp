@@ -30,10 +30,8 @@
 #include "boost/thread/locks.hpp"
 #endif
 
-#include <algorithm>
 #include <cstring>
 #include <random>
-#include <array>
 #include <stdexcept>
 
 RNG g_rng;
@@ -57,26 +55,21 @@ RNGImpl::RNGImpl(std::seed_seq &seed)
 
 void RNG::initialize()
 {
-    // Seed the MT19937 state using std::random_device
+    // Generate 32 random seed bytes
     std::random_device rd;
-    std::array<uint32_t, std::mt19937::state_size> seed_data;
-    std::generate(seed_data.begin(), seed_data.end(), std::ref(rd));
-    std::seed_seq seq(seed_data.begin(), seed_data.end());
-    pimpl = std::make_unique<RNGImpl>(seq);
-}
-
-void RNG::initialize(const char *bytes, int num_bytes)
-{
-    // We expect to be given something that fits in a
-    // std::array<uint32_t, std::mt19937::state_size>
-    if (num_bytes != std::mt19937::state_size * 4) {
-        throw std::invalid_argument("Seed size mismatch");
+    unsigned char bytes[32];
+    for (int i = 0; i < sizeof(bytes); ++i) {
+        bytes[i] = rd();
     }
 
-    // Copy the input bytes to an array and use them to seed the generator
-    std::array<uint32_t, std::mt19937::state_size> seed_data;
-    memcpy(&seed_data[0], bytes, num_bytes);
-    std::seed_seq seq(seed_data.begin(), seed_data.end());
+    // Initialize using that seed
+    initialize(bytes, sizeof(bytes));
+}
+
+void RNG::initialize(const unsigned char *bytes, int num_bytes)
+{
+    // Initialize using the provided bytes
+    std::seed_seq seq(bytes, bytes + num_bytes);
     pimpl = std::make_unique<RNGImpl>(seq);
 }
 

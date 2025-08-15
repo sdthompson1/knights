@@ -36,8 +36,7 @@ class LuaError;
 class LoadingScreen : public Screen {
 public:
     // Set port to -1 and player_name to "" for local game.
-    // Set port to 0 for an online platform game.
-    explicit LoadingScreen(int port, const UTF8String & player_name, bool single_player, 
+    explicit LoadingScreen(int port, const UTF8String & player_name, bool single_player,
                            bool menu_strict,  // set for single player & split screen games, where there is a fixed no of players
                            bool tutorial,
                            bool autostart);

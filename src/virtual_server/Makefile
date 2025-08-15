@@ -25,8 +25,8 @@
 #            make CC=riscv32-unknown-elf-g++ generic
 #        Note that you need to set "CC" to a C++, not C, compiler, to get a
 #        C++-compatible build of liblua.a.
-#      - Finally, edit -I option and LIBS below, to point to the correct
-#        locations for your Lua src directory.
+#        Note: you also need to edit luaconf.h and set LUA_32BITS to 1 (not 0)
+#        as the 32-bit RISC-V compiler doesn't support 64-bit integers.
 
 # This Makefile can be sped up by using "-j" (e.g. make -j4). This
 # doesn't affect the (time-consuming) risc2cpp step, but it speeds up

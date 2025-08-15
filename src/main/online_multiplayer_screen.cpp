@@ -25,7 +25,7 @@
 
 #include "misc.hpp"
 
-#include "connecting_screen.hpp"
+#include "adjust_list_box_size.hpp"
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
@@ -37,6 +37,7 @@
 #include "start_game_screen.hpp"
 #include "tab_font.hpp"
 #include "title_block.hpp"
+#include "vm_loading_screen.hpp"
 
 #include "boost/scoped_ptr.hpp"
 #include "gcn/cg_font.hpp"
@@ -56,7 +57,8 @@ namespace {
 
     class GameList : public gcn::ListModel {
     public:
-        explicit GameList(OnlinePlatform &platform, KnightsApp &app);
+        explicit GameList(KnightsApp &app);
+        void refresh();
         virtual int getNumberOfElements();
         virtual std::string getElementAt(int i);
         const GameInfo * getGameAt(int i) const;
@@ -66,12 +68,17 @@ namespace {
         KnightsApp &knights_app;
     };
 
-    GameList::GameList(OnlinePlatform &platform, KnightsApp &app)
+    GameList::GameList(KnightsApp &app)
         : knights_app(app)
     {
-        // This constructor queries the OnlinePlatform for the latest lobby
-        // list, and creates a vector of GameInfos accordingly.
+        refresh();
+    }
+
+    void GameList::refresh()
+    {
+        OnlinePlatform &platform = knights_app.getOnlinePlatform();
         std::vector<std::string> lobbies = platform.getLobbyList();
+        games.clear();
         for (const auto & lobby_id : lobbies) {
             OnlinePlatform::LobbyInfo info = platform.getLobbyInfo(lobby_id);
             Coercri::UTF8String leader_name = platform.lookupUserName(info.leader_id);
@@ -178,7 +185,7 @@ namespace
 OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
     : knights_app(ka), window(win), gui(g), last_refresh_time(ka.getTimer().getMsec())
 {
-    game_list.reset(new GameList(ka.getOnlinePlatform(), ka));
+    game_list.reset(new GameList(ka));
 
     // Set up TabFont for formatting columns: Leader | Players | Status
     std::vector<int> widths;
@@ -222,6 +229,8 @@ OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::
     container->add(scroll_area.get(), pad, y);
     y += scroll_area->getHeight() + pad*3/2;
 
+    AdjustListBoxSize(*listbox, *scroll_area);
+
     create_game_button.reset(new GuiButton("Create New Game"));
     create_game_button->addActionListener(this);
     back_button.reset(new GuiButton("Back"));
@@ -250,30 +259,18 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
 
 void OnlineMultiplayerScreenImpl::joinGame(const std::string &lobby_id)
 {
-    // Go to ConnectingScreen
-    OnlinePlatform &op = knights_app.getOnlinePlatform();
-    Coercri::UTF8String my_player_name = op.lookupUserName(op.getCurrentUserId());
-
-    std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(lobby_id,
-                                                                   0,
-                                                                   false, // lan game
-                                                                   true,  // online platform game
-                                                                   my_player_name));
-    knights_app.requestScreenChange(std::move(connecting_screen));
+    // Go to VMLoadingScreen
+    OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
+    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen(lobby_id, vis));
+    knights_app.requestScreenChange(std::move(loading_screen));
 }
 
 void OnlineMultiplayerScreenImpl::createGame()
 {
-    // For now, go directly to LoadingScreen
+    // For now, go directly to VMLoadingScreen
     // TODO: Instead we should probably go to a create game screen where the user can set options
-    OnlinePlatform &op = knights_app.getOnlinePlatform();
-    Coercri::UTF8String my_player_name = op.lookupUserName(op.getCurrentUserId());
-
-    std::unique_ptr<Screen> loading_screen(new LoadingScreen(0, my_player_name,
-                                                             false,    // single player
-                                                             false,    // menu strict
-                                                             false,    // tutorial
-                                                             false));  // autostart
+    OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PUBLIC; // Temporary value
+    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen("", vis));
     knights_app.requestScreenChange(std::move(loading_screen));
 }
 
@@ -290,9 +287,9 @@ void OnlineMultiplayerScreenImpl::refreshGameList()
     }
     
     // Create new game list
-    game_list.reset(new GameList(knights_app.getOnlinePlatform(), knights_app));
-    listbox->setListModel(game_list.get());
-    
+    game_list->refresh();
+    AdjustListBoxSize(*listbox, *scroll_area);
+
     // Try to restore the selection if the lobby still exists
     if (!selected_lobby_id.empty()) {
         for (int i = 0; i < game_list->getNumberOfElements(); ++i) {

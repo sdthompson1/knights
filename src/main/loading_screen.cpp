@@ -140,27 +140,6 @@ void LoadingScreen::update()
             knights_app->getGameManager().tryJoinGameSplitScreen("#SplitScreenGame");
         }
 
-#ifdef ONLINE_PLATFORM
-    } else if (server_port == 0) {
-        // Online Platform Game
-
-        // create server & game
-        boost::shared_ptr<KnightsClient> client =
-            knights_app->hostOnlinePlatformGame(loader->knights_config,
-                                                OnlinePlatform::Visibility::PUBLIC,
-                                                "#OnlinePlatformGame");
-
-        // set up the local client
-        knights_app->createGameManager(client, false, false, false, player_name);
-        client->setClientCallbacks(&knights_app->getGameManager());
-
-        // Set our player name
-        client->setPlayerNameAndControls(player_name, knights_app->getOptions().new_control_system);
-
-        // Join the game -- this will take us to MenuScreen automatically
-        knights_app->getGameManager().tryJoinGame("#OnlinePlatformGame");
-#endif
-
     } else {
         // Host LAN Game
 

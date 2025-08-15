@@ -32,6 +32,35 @@
 #include <string>
 #include <vector>
 
+namespace Coercri {
+    class InputByteBuf;
+    class OutputByteBuf;
+}
+
+typedef uint64_t MemoryHash;
+
+struct MemoryBlock {
+    // Public data members
+    uint32_t base_address;
+    std::vector<uint32_t> contents;
+    MemoryHash hash;
+
+    // Default constructor
+    MemoryBlock() = default;
+
+    // Rule of five, but only implementing the ones we actually need
+    MemoryBlock(const MemoryBlock &other) = delete;
+    MemoryBlock(MemoryBlock &&other) noexcept
+        : base_address(other.base_address)
+        , contents(std::move(other.contents))
+        , hash(other.hash)
+    {}
+    MemoryBlock& operator=(const MemoryBlock &other) = delete;
+    MemoryBlock& operator=(MemoryBlock &&other) noexcept = delete;
+    ~MemoryBlock() = default;
+};
+
+
 
 // Knights Virtual Server - used with host migration.
 
@@ -44,13 +73,14 @@
 // To use this, risc_vm.hpp and risc_vm.cpp must first be generated.
 // See the Makefile in this directory.
 
-class KnightsVM : private RiscVM, private TickCallbacks {
+class KnightsVM : public RiscVM, private TickCallbacks {
 public:
-    // Constructor.
+    // Constructor. Pass SEED_SIZE bytes of random data
+    enum { SEED_SIZE = 32 };
     KnightsVM(std::vector<unsigned char> && random_data_);
 
 
-    // runTick starts (or resumes) VM execution.
+    // runTicks starts (or resumes) VM execution.
 
     // The data in the range "tick_data_begin" to "tick_data_end" will
     // be made available for the VM to read in the special "TICK:"
@@ -67,28 +97,66 @@ public:
     // Execution continues until the next END_TICK syscall. The
     // parameter to that syscall (representing the number of
     // milliseconds that the VM wants to sleep for) is returned from
-    // runTick. The host should wait until EITHER that amount of time
+    // runTicks. The host should wait until EITHER that amount of time
     // has passed, OR some significant event has occurred (e.g. new
     // network data arrived from a client), before starting the next
     // tick.
 
-    // Note: the return value from runTick is always in the 0 to 1000
+    // Note: the return value from runTicks is always in the 0 to 1000
     // range (inclusive).
 
     // The VM execution is guaranteed to be deterministic, so if two
     // VMs are given the same "initial_time_ms" in the constructor,
-    // and the same runTick calls are made (with identical tick data),
+    // and the same runTicks calls are made (with identical tick data),
     // and the same "RES:" files are available to both machines
     // (during the first tick), then the two VMs will end up in
     // exactly the same state.
 
-    int runTick(const unsigned char *tick_data_begin,
-                const unsigned char *tick_data_end,
-                std::vector<unsigned char> *vm_output_data);
+    // Note: The provided tick_data buffer can contain multiple ticks,
+    // in which case, all the ticks are executed sequentially. In this
+    // case the return value represents the value from the final tick
+    // in the sequence (the values returned by other ticks are lost).
+
+    int runTicks(const unsigned char *tick_data_begin,
+                 const unsigned char *tick_data_end,
+                 std::vector<unsigned char> *vm_output_data);
 
 
-    // TODO: Methods to save and restore snapshots.
+    // Sync Methods:
 
+    // Get current memory contents as a queue of MemoryBlocks
+    // Each memory block is (1 << block_shift) bytes in size
+    std::deque<MemoryBlock> getMemoryContents(uint32_t block_shift);
+
+    // Append register contents (etc.) to an OutputByteBuf
+    void getVMConfig(Coercri::OutputByteBuf &output) const;
+
+    // Read register contents etc. from 'input' and put them into the VM
+    void putVMConfig(Coercri::InputByteBuf &input);
+
+    // Get current memory hashes, append to 'output' in binary form
+    // Each memory block is (1 << block_shift) bytes in size
+    void getMemoryHashes(Coercri::OutputByteBuf &output, uint32_t block_shift);
+
+    // Read memory hashes from 'input', compare to current memory contents
+    // in memory_contents. If a hash matches, clear the block by setting its
+    // contents to empty. Otherwise, leave it intact.
+    // Each memory block is (1 << block_shift) bytes in size
+    static void compareMemoryHashes(Coercri::InputByteBuf &input,
+                                    std::deque<MemoryBlock> &my_blocks,
+                                    uint32_t block_shift);
+
+    // Serialize a MemoryBlock to a buffer (appends to 'output')
+    // This should only be called if !block.contents.empty()
+    static void outputMemoryBlock(const MemoryBlock &block, Coercri::OutputByteBuf &output);
+
+    // Deserialize a MemoryBlock and install it into the VM
+    void inputMemoryBlock(Coercri::InputByteBuf &input, uint32_t block_shift);
+
+
+    // Checksumming:
+
+    MemoryHash getHash();
 
 private:
     // Ecall handler
@@ -109,6 +177,13 @@ private:
     void onNewTick(unsigned int tick_duration) {
         timer_ms += tick_duration;
     }
+
+    // Sync helpers
+    uint32_t getLowestAddr() const;
+    void saveRegionStartingFrom(std::deque<MemoryBlock> &result, uint32_t addr, uint32_t block_size);
+    void adjustGuardPageAllocations(uint32_t old_guard_page_addr, uint32_t new_guard_page_addr);
+    void hashRegionStartingFrom(Coercri::OutputByteBuf &output, uint32_t addr, uint32_t block_size);
+
 
 private:
     // Tick data and vm_output_data references

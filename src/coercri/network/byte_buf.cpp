@@ -82,7 +82,14 @@ namespace Coercri {
         const int low = readUbyte();
         return (high * 256) + low;
     }
-    
+
+    unsigned int InputByteBuf::readUlong()
+    {
+        const unsigned int high = readUshort();
+        const unsigned int low = readUshort();
+        return (high << 16) + low;
+    }
+
     int InputByteBuf::readVarInt()
     {
         unsigned int val;
@@ -134,6 +141,14 @@ namespace Coercri {
         return s;
     }
 
+    void InputByteBuf::skip(int n)
+    {
+        if (n < 0 || getPos() + n > buf.size()) {
+            throw CoercriError("invalid skip amount");
+        }
+        iter += n;
+    }
+
 
     void OutputByteBuf::writeUbyte(int x)
     {
@@ -153,6 +168,12 @@ namespace Coercri {
     void OutputByteBuf::writeShort(int x)
     {
         if (x < -32768 || x > 32767) throw CoercriError("writeShort: out of range");
+        writeUshort(x & 0xffff);
+    }
+
+    void OutputByteBuf::writeUlong(unsigned int x)
+    {
+        writeUshort(x >> 16);
         writeUshort(x & 0xffff);
     }
 

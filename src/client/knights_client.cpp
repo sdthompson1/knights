@@ -41,6 +41,12 @@
 
 #include "network/byte_buf.hpp"  // coercri
 
+//#define LOG_MSGS
+
+#ifdef LOG_MSGS
+#include <iostream>
+#endif
+
 namespace {
     void ReadRoomCoord(Coercri::InputByteBuf &buf, int &x, int &y)
     {
@@ -512,6 +518,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 int width, height;
                 ReadRoomCoord(buf, width, height);
                 if (dungeon_view) dungeon_view->setCurrentRoom(room, width, height);
+
+#ifdef LOG_MSGS
+                std::cout << "\nSERVER_SET_CURRENT_ROOM " << room << " " << width << " " << height << std::endl;
+#endif
             }
             break;
 
@@ -540,6 +550,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                                                           anim, overlay, af, atz_diff, ainvis, ainvuln,
                                                           approached,
                                                           cur_ofs, motion_type, motion_time_remaining, name);
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_ADD_ENTITY " << id << " " << x << " " << y << std::endl;
+#endif
             }
             break;
 
@@ -547,6 +561,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             {
                 const int id = buf.readVarInt();
                 if (dungeon_view) dungeon_view->rmEntity(id);
+#ifdef LOG_MSGS
+                std::cout << "SERVER_RM_ENTITY " << id << std::endl;
+#endif
             }
             break;
 
@@ -556,6 +573,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 int x, y;
                 ReadRoomCoord(buf, x, y);
                 if (dungeon_view) dungeon_view->repositionEntity(id, x, y);
+#ifdef LOG_MSGS
+                std::cout << "SERVER_REPOSITION_ENTITY " << id << " " << x << " " << y << std::endl;
+#endif
             }
             break;
 
@@ -566,6 +586,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 buf.readNibbles(motion_type, missile_mode);
                 const int motion_duration = buf.readUshort();
                 if (dungeon_view) dungeon_view->moveEntity(id, MotionType(motion_type), motion_duration, missile_mode!=0);
+#ifdef LOG_MSGS
+                std::cout << "SERVER_MOVE_ENTITY " << id << " " << motion_type << " " << missile_mode << " " << motion_duration << std::endl;
+#endif
             }
             break;
 
@@ -575,6 +598,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const int initial_delay = buf.readUshort();
                 const int motion_duration = buf.readUshort();
                 if (dungeon_view) dungeon_view->flipEntityMotion(id, initial_delay, motion_duration);
+#ifdef LOG_MSGS
+                std::cout << "SERVER_FLIP_ENTITY_MOTION " << id << " " << initial_delay << " " << motion_duration << std::endl;
+#endif
             }
             break;
 
@@ -590,6 +616,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const bool currently_moving = ((z & 1) != 0);
                 const int atz_diff = buf.readShort();
                 if (dungeon_view) dungeon_view->setAnimData(id, anim, overlay, af, atz_diff, ainvis, ainvuln, currently_moving);
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SET_ANIM_DATA " << id << std::endl;
+#endif
             }
             break;
 
@@ -598,6 +627,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const int id = buf.readVarInt();
                 const MapDirection facing = MapDirection(buf.readUbyte());
                 if (dungeon_view) dungeon_view->setFacing(id, facing);
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SET_FACING " << id << " " << int(facing) << std::endl;
+#endif
             }
             break;
 
@@ -614,6 +646,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 int x, y;
                 ReadRoomCoord(buf, x, y);
                 if (dungeon_view) dungeon_view->clearTiles(x, y, true);
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_CLEAR_TILES " << x << " " << y << std::endl;
+#endif
             }
             break;
 
@@ -628,6 +664,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 boost::shared_ptr<ColourChange> cc;
                 if (cc_set) cc.reset(new ColourChange(buf));
                 if (dungeon_view) dungeon_view->setTile(x, y, depth, graphic, cc, true);
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SET_TILE " << x << " " << y << std::endl;
+#endif
             }
             break;
 

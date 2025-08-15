@@ -10,26 +10,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\lobby\follower_state.cpp" />
-    <ClCompile Include="..\..\src\lobby\leader_state.cpp" />
-    <ClCompile Include="..\..\src\lobby\simple_knights_lobby.cpp" />
-    <ClCompile Include="..\..\src\lobby\sync_client.cpp" />
-    <ClCompile Include="..\..\src\lobby\sync_host.cpp" />
-    <ClCompile Include="..\..\src\lobby\vm_knights_lobby.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\lobby\follower_state.hpp" />
-    <ClInclude Include="..\..\src\lobby\knights_lobby.hpp" />
-    <ClInclude Include="..\..\src\lobby\leader_state.hpp" />
-    <ClInclude Include="..\..\src\lobby\simple_knights_lobby.hpp" />
-    <ClInclude Include="..\..\src\lobby\sync_client.hpp" />
-    <ClInclude Include="..\..\src\lobby\sync_host.hpp" />
-    <ClInclude Include="..\..\src\lobby\vm_knights_lobby.hpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{61A51FA4-8549-417B-B4EF-ACA1DC9B0616}</ProjectGuid>
-    <RootNamespace>KnightsLobby</RootNamespace>
+    <ProjectGuid>{E6A98650-63FE-485D-B939-137DC175B201}</ProjectGuid>
+    <RootNamespace>VirtualServer</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -69,7 +52,7 @@
     <ClCompile>
       <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\misc;..\..\src\protocol;..\..\src\server;..\..\src\shared;..\..\src\virtual_server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\coercri;..\..\src\rstream;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -87,7 +70,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\misc;..\..\src\protocol;..\..\src\server;..\..\src\shared;..\..\src\virtual_server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\coercri;..\..\src\rstream;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -98,6 +81,16 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\virtual_server\knights_vm.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\tick_data.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\virtual_server\knights_vm.hpp" />
+    <ClInclude Include="..\..\src\virtual_server\risc_vm.hpp" />
+    <ClInclude Include="..\..\src\virtual_server\tick_data.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />

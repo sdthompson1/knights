@@ -61,6 +61,7 @@ class PotionRenderer;
 class Screen;
 class SkullRenderer;
 class SoundManager;
+class VMKnightsLobby;
 
 enum DisplayType {
     DT_DONT_CARE,
@@ -172,12 +173,12 @@ public:
     boost::shared_ptr<KnightsClient> joinRemoteServer(const std::string &address,
                                                       int port);
 
-#ifdef ONLINE_PLATFORM
-    boost::shared_ptr<KnightsClient> hostOnlinePlatformGame(boost::shared_ptr<KnightsConfig> config,
-                                                            OnlinePlatform::Visibility vis,
-                                                            const std::string &game_name);
-    boost::shared_ptr<KnightsClient> joinOnlinePlatformGame(const std::string &lobby_id,
-                                                            const std::string &game_name);
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    // If lobby_id empty this creates a new lobby (with given visibility),
+    // otherwise it joins an existing lobby
+    boost::shared_ptr<KnightsClient> createVMGame(const std::string &lobby_id,
+                                                  OnlinePlatform::Visibility vis,
+                                                  std::unique_ptr<VMKnightsLobby> kts_lobby);
 #endif
 
 

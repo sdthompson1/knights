@@ -26,12 +26,15 @@
 #include "rstream.hpp"
 #include "rstream_error.hpp"
 
+#include "network/byte_buf.hpp"
+
 #include <iostream>
 
 // Debugging options
 //#define LOG_ECALLS
 //#define LOG_BRK_CALLS
 #define LOG_UNKNOWN_CALLS
+//#define LOG_TICKS
 
 #if defined(LOG_ECALLS) || defined(LOG_BRK_CALLS) || defined(LOG_UNKNOWN_CALLS)
 #include <cstdio>
@@ -45,10 +48,10 @@ namespace {
     const uint32_t BASE_FILE_DESCRIPTOR = 4;
 
     // One plus address of last byte of the main stack area.
-    // We place this 64 KB below the top of memory, just to allow a little
+    // We place this BYTES_PER_PAGE below the top of memory, just to allow a little
     // bit of a buffer zone above the stack, before the addresses start
     // wrapping around.
-    const uint32_t MAIN_STACK_TOP = 0xffff0000;
+    const uint32_t MAIN_STACK_TOP = ~(RiscVM::BYTES_PER_PAGE - 1);
 
     // Resource limits - hard coded here.
     const int MAX_OPEN_FILES = 1000;
@@ -81,23 +84,24 @@ KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
     // to MAIN_STACK_TOP (exclusive).
     //
     // The buffer zone between the stack areas (allowing for a guard page) is
-    // from MAIN_STACK_TOP - MAX_STACK_BYTES - 0x10000 (inclusive)
+    // from MAIN_STACK_TOP - MAX_STACK_BYTES - BYTES_PER_PAGE (inclusive)
     // to MAIN_STACK_TOP - MAX_STACK_BYTES (exclusive).
     //
     // The secondary stack area is
-    // from MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x10000 (inclusive)
-    // to MAIN_STACK_TOP - MAX_STACK_BYTES - 0x10000 (exclusive).
+    // from MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE (inclusive)
+    // to MAIN_STACK_TOP - MAX_STACK_BYTES - BYTES_PER_PAGE (exclusive).
+    // (The latter is the lowest possible guard page address for the main stack.)
     //
     // The buffer zone below the secondary stack area (allowing for a guard page) is
-    // from MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x20000 (inclusive)
-    // to MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x10000 (exclusive).
+    // from MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE * 2 (inclusive)
+    // to MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE (exclusive).
     //
     // We will pre-allocate the top-most page of the secondary stack; this will
     // automatically prevent the main stack growing into the secondary stack area.
-    // Then place the secondary stack guard another 64 KB (0x10000 bytes) below that.
+    // Then place the secondary stack guard another 64 KB (or BYTES_PER_PAGE) below that.
     //
-    allocatePage(MAIN_STACK_TOP - MAX_STACK_BYTES - 0x20000);
-    second_stack_guard = MAIN_STACK_TOP - MAX_STACK_BYTES - 0x30000;
+    allocatePage(MAIN_STACK_TOP - MAX_STACK_BYTES - BYTES_PER_PAGE * 2);
+    second_stack_guard = MAIN_STACK_TOP - MAX_STACK_BYTES - BYTES_PER_PAGE * 3;
 
     // All "alternate" registers are zero initially.
     alt_ra = alt_sp = alt_gp = alt_tp = 0;
@@ -111,35 +115,65 @@ KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
     random_data = std::move(random_data_);
 }
 
-int KnightsVM::runTick(const unsigned char *tick_data_begin,
-                             const unsigned char *tick_data_end_,
-                             std::vector<unsigned char> *vm_output_data_)
+int KnightsVM::runTicks(const unsigned char *tick_data_begin,
+                        const unsigned char *tick_data_end_,
+                        std::vector<unsigned char> *vm_output_data_)
 {
-    // Interpret the tick data. The only thing we are interested in
-    // here is "onNewTick" which will advance timer_ms appropriately.
-    // This is the only way in which time can advance inside the VM!
-    ReadTickData(tick_data_begin, tick_data_end_, *this);
+    int sleep_time_ms = 1;
 
-    // Set up pointers so that we can handle reads and writes to the
-    // "TICK:" file.
-    tick_data_ptr = tick_data_begin;
-    tick_data_end = tick_data_end_;
-    vm_output_data = vm_output_data_;
+#ifdef LOG_TICKS
+    const unsigned char *base = tick_data_begin;
+    unsigned int prev_timer = timer_ms;
+#endif
 
-    // Now just keep calling execute() until we get an END_TICK syscall.
-    EcallResult ecall_result = ECALL_CONTINUE;
-    while (ecall_result == ECALL_CONTINUE) {
-        execute();
-        ecall_result = handleEcall();
+    while (tick_data_begin != tick_data_end_) {
+        // Interpret the tick data. The only thing we are interested in
+        // here is "onNewTick" which will advance timer_ms appropriately.
+        // This is the only way in which time can advance inside the VM!
+        const unsigned char *next_tick_begin = ReadTickData(tick_data_begin, tick_data_end_, *this);
+
+#ifdef LOG_TICKS
+        if (next_tick_begin - tick_data_begin > 1) {
+            std::cout << "Tick: " << timer_ms - prev_timer << " ms, " << next_tick_begin - tick_data_begin << " bytes";
+            if (vm_output_data_) {
+                std::cout << ", initial output size: " << vm_output_data_->size();
+            }
+            std::cout << std::endl;
+        }
+#endif
+
+        // Set up pointers so that we can handle reads and writes to the
+        // "TICK:" file.
+        tick_data_ptr = tick_data_begin;
+        tick_data_end = next_tick_begin;
+        vm_output_data = vm_output_data_;
+
+        // Now just keep calling execute() until we get an END_TICK syscall.
+        EcallResult ecall_result = ECALL_CONTINUE;
+        while (ecall_result == ECALL_CONTINUE) {
+            execute();
+            ecall_result = handleEcall();
+        }
+
+        // The sleep time is in A0.
+        // Limit this to the range 0 to 1000 inclusive. (Note getA0() is unsigned.)
+        if (getA0() > uint32_t(1000)) {
+            sleep_time_ms = 1000;
+        } else {
+            sleep_time_ms = int(getA0());
+        }
+
+        // Move on to next tick (if applicable).
+        tick_data_begin = next_tick_begin;
     }
 
-    // The sleep time is in A0.
-    // Limit this to the range 0 to 1000 inclusive. (Note getA0() is unsigned.)
-    if (getA0() > uint32_t(1000)) {
-        return 1000;
-    } else {
-        return int(getA0());
+#ifdef LOG_TICKS
+    if (vm_output_data_ && vm_output_data_->size() > 1) {
+        std::cout << "End of tick batch, " << vm_output_data_->size() << " output bytes collected" << std::endl;
     }
+#endif
+
+    return sleep_time_ms;
 }
 
 KnightsVM::EcallResult KnightsVM::handleEcall()
@@ -398,7 +432,7 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         alt_gp = getGP();
         alt_pc = getA0();
         alt_a0 = getA1();
-        alt_sp = MAIN_STACK_TOP - MAX_STACK_BYTES - 0x10000; // Top of secondary stack (see ctor for calculations)
+        alt_sp = MAIN_STACK_TOP - MAX_STACK_BYTES - BYTES_PER_PAGE; // Top of secondary stack (see ctor for calculations)
         return ECALL_CONTINUE;
 
     case 5001:
@@ -565,20 +599,514 @@ void KnightsVM::contextSwitch()
 
 void KnightsVM::handleInvalidAddress(uint32_t addr)
 {
-    if ((addr & 0xffff0000) == second_stack_guard) {
+    uint32_t page_num_mask = ~(BYTES_PER_PAGE - 1);
+    if ((addr & page_num_mask) == second_stack_guard) {
         allocatePage(second_stack_guard);
-        second_stack_guard -= 0x10000;
+        second_stack_guard -= BYTES_PER_PAGE;
         if (isPageAllocated(second_stack_guard)) {
             throw std::runtime_error("Thread stack guard page is allocated (shouldn't happen?)");
         }
 
         // Do not allow the secondary stack guard page to sink below its minimum allowed value.
         // (See comments in KnightsVM constructor for the calculations.)
-        if (second_stack_guard < MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - 0x20000) {
+        if (second_stack_guard < MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE * 2) {
             throw std::runtime_error("Thread stack overflow");
         }
 
     } else {
         RiscVM::handleInvalidAddress(addr);
     }
+}
+
+
+//
+// Sync functions
+//
+
+namespace {
+    // this is based on xxHash, see https://github.com/Cyan4973/xxHash/blob/dev/doc/xxhash_spec.md#xxh64-algorithm-description
+    constexpr uint64_t PRIME64_1 = UINT64_C(0x9E3779B185EBCA87);
+    constexpr uint64_t PRIME64_2 = UINT64_C(0xC2B2AE3D27D4EB4F);
+    constexpr uint64_t PRIME64_3 = UINT64_C(0x165667B19E3779F9);
+    constexpr uint64_t PRIME64_4 = UINT64_C(0x85EBCA77C2B2AE63);
+    constexpr uint64_t PRIME64_5 = UINT64_C(0x27D4EB2F165667C5);
+
+    uint64_t RotateLeft(uint64_t x, unsigned int bits)
+    {
+        return (x << bits) | (x >> (64 - bits));
+    }
+
+    void InitHash(uint64_t seed, uint64_t acc[4])
+    {
+        // Step 1. Initialize internal accumulators
+        acc[0] = seed + PRIME64_1 + PRIME64_2;
+        acc[1] = seed + PRIME64_2;
+        acc[2] = seed;
+        acc[3] = seed - PRIME64_1;
+    }
+
+    uint64_t HashRound(uint64_t accN, uint64_t laneN)
+    {
+        accN += (laneN * PRIME64_2);
+        accN = RotateLeft(accN, 31);
+        return accN * PRIME64_1;
+    }
+
+    void UpdateHash(uint64_t acc[4], const uint64_t lane[4])
+    {
+        // Step 2. Process stripes
+        for (int i = 0; i < 4; ++i) {
+            acc[i] = HashRound(acc[i], lane[i]);
+        }
+    }
+
+    uint64_t MergeAccumulator(uint64_t acc, uint64_t accN)
+    {
+        acc ^= HashRound(0, accN);
+        acc *= PRIME64_1;
+        return acc + PRIME64_4;
+    }
+
+    uint64_t FinalHash(const uint64_t acc[4])
+    {
+        // Step 3. Accumulator convergence
+        uint64_t hash = RotateLeft(acc[0], 1)
+            + RotateLeft(acc[1], 7)
+            + RotateLeft(acc[2], 12)
+            + RotateLeft(acc[3], 18);
+        for (int i = 0; i < 4; ++i) {
+            hash = MergeAccumulator(hash, acc[i]);
+        }
+
+        // Note: we don't bother adding input length because it is fixed in our case
+
+        // Step 6. Final mix (avalanche)
+        hash ^= (hash >> 33);
+        hash *= PRIME64_2;
+        hash ^= (hash >> 29);
+        hash *= PRIME64_3;
+        hash ^= (hash >> 32);
+
+        return hash;
+    }
+}
+
+uint32_t KnightsVM::getLowestAddr() const
+{
+    uint32_t lowest_addr = 0;
+    while (!isPageAllocated(lowest_addr)) {
+        lowest_addr += BYTES_PER_PAGE;
+    }
+    return lowest_addr;
+}
+
+std::deque<MemoryBlock> KnightsVM::getMemoryContents(uint32_t block_shift)
+{
+    uint32_t block_size = (1 << block_shift);
+
+    std::deque<MemoryBlock> result;
+
+    saveRegionStartingFrom(result, getLowestAddr(), block_size);
+    saveRegionStartingFrom(result, second_stack_guard + BYTES_PER_PAGE, block_size);
+    saveRegionStartingFrom(result, getGuardPageAddress() + BYTES_PER_PAGE, block_size);
+
+    return result;
+}
+
+void KnightsVM::saveRegionStartingFrom(std::deque<MemoryBlock> &result, uint32_t addr, uint32_t block_size)
+{
+    // Block size must be multiple of 32.
+    if ((block_size & 31) != 0) {
+        throw std::logic_error("Block size must be multiple of 32");
+    }
+
+    // Save all pages from the starting address until we hit an unallocated page.
+    while (isPageAllocated(addr)) {
+
+        // Note: This calculation shouldn't wrap around, because we leave the topmost memory
+        // page unallocated always.
+        uint32_t top_addr = addr + block_size;
+
+        MemoryBlock block;
+        block.base_address = addr;
+        block.contents.reserve(block_size >> 2);
+
+        uint64_t acc[4];
+        InitHash(addr, acc);
+
+        // Do 32 bytes (8 words) at a time
+        while (addr < top_addr) {
+
+            uint64_t lane[4];
+
+            for (int d = 0; d < 4; ++d) {
+                uint32_t word1 = readWord(addr);
+                block.contents.push_back(word1);
+                addr += 4;
+
+                uint32_t word2 = readWord(addr);
+                block.contents.push_back(word2);
+                addr += 4;
+
+                uint64_t combined_word = (static_cast<uint64_t>(word1) << 32) | static_cast<uint64_t>(word2);
+                lane[d] = combined_word;
+            }
+
+            UpdateHash(acc, lane);
+        }
+
+        block.hash = FinalHash(acc);
+
+        result.push_back(std::move(block));
+    }
+}
+
+void KnightsVM::getVMConfig(Coercri::OutputByteBuf &buf) const
+{
+    buf.writeUlong(getRA());
+    buf.writeUlong(getSP());
+    buf.writeUlong(getGP());
+    buf.writeUlong(getTP());
+    buf.writeUlong(getT0());
+    buf.writeUlong(getT1());
+    buf.writeUlong(getT2());
+    buf.writeUlong(getS0());
+    buf.writeUlong(getS1());
+    buf.writeUlong(getA0());
+    buf.writeUlong(getA1());
+    buf.writeUlong(getA2());
+    buf.writeUlong(getA3());
+    buf.writeUlong(getA4());
+    buf.writeUlong(getA5());
+    buf.writeUlong(getA6());
+    buf.writeUlong(getA7());
+    buf.writeUlong(getS2());
+    buf.writeUlong(getS3());
+    buf.writeUlong(getS4());
+    buf.writeUlong(getS5());
+    buf.writeUlong(getS6());
+    buf.writeUlong(getS7());
+    buf.writeUlong(getS8());
+    buf.writeUlong(getS9());
+    buf.writeUlong(getS10());
+    buf.writeUlong(getS11());
+    buf.writeUlong(getT3());
+    buf.writeUlong(getT4());
+    buf.writeUlong(getT5());
+    buf.writeUlong(getT6());
+    buf.writeUlong(getPC());
+    buf.writeUlong(getInitialProgramBreak());
+    buf.writeUlong(getProgramBreak());
+    buf.writeUlong(getGuardPageAddress());
+    buf.writeUlong(timer_ms);
+    buf.writeUlong(second_stack_guard);
+    buf.writeUlong(alt_ra);
+    buf.writeUlong(alt_sp);
+    buf.writeUlong(alt_gp);
+    buf.writeUlong(alt_tp);
+    buf.writeUlong(alt_t0);
+    buf.writeUlong(alt_t1);
+    buf.writeUlong(alt_t2);
+    buf.writeUlong(alt_s0);
+    buf.writeUlong(alt_s1);
+    buf.writeUlong(alt_a0);
+    buf.writeUlong(alt_a1);
+    buf.writeUlong(alt_a2);
+    buf.writeUlong(alt_a3);
+    buf.writeUlong(alt_a4);
+    buf.writeUlong(alt_a5);
+    buf.writeUlong(alt_a6);
+    buf.writeUlong(alt_a7);
+    buf.writeUlong(alt_s2);
+    buf.writeUlong(alt_s3);
+    buf.writeUlong(alt_s4);
+    buf.writeUlong(alt_s5);
+    buf.writeUlong(alt_s6);
+    buf.writeUlong(alt_s7);
+    buf.writeUlong(alt_s8);
+    buf.writeUlong(alt_s9);
+    buf.writeUlong(alt_s10);
+    buf.writeUlong(alt_s11);
+    buf.writeUlong(alt_t3);
+    buf.writeUlong(alt_t4);
+    buf.writeUlong(alt_t5);
+    buf.writeUlong(alt_t6);
+    buf.writeUlong(alt_pc);
+}
+
+void KnightsVM::putVMConfig(Coercri::InputByteBuf &buf)
+{
+    setRA(buf.readUlong());
+    setSP(buf.readUlong());
+    setGP(buf.readUlong());
+    setTP(buf.readUlong());
+    setT0(buf.readUlong());
+    setT1(buf.readUlong());
+    setT2(buf.readUlong());
+    setS0(buf.readUlong());
+    setS1(buf.readUlong());
+    setA0(buf.readUlong());
+    setA1(buf.readUlong());
+    setA2(buf.readUlong());
+    setA3(buf.readUlong());
+    setA4(buf.readUlong());
+    setA5(buf.readUlong());
+    setA6(buf.readUlong());
+    setA7(buf.readUlong());
+    setS2(buf.readUlong());
+    setS3(buf.readUlong());
+    setS4(buf.readUlong());
+    setS5(buf.readUlong());
+    setS6(buf.readUlong());
+    setS7(buf.readUlong());
+    setS8(buf.readUlong());
+    setS9(buf.readUlong());
+    setS10(buf.readUlong());
+    setS11(buf.readUlong());
+    setT3(buf.readUlong());
+    setT4(buf.readUlong());
+    setT5(buf.readUlong());
+    setT6(buf.readUlong());
+    setPC(buf.readUlong());
+
+    uint32_t initial_program_break = buf.readUlong();
+    if (getInitialProgramBreak() != initial_program_break) {
+        throw std::runtime_error("Sync error (program break mismatch)");
+    }
+
+    uint32_t program_break = buf.readUlong();
+    if (program_break < initial_program_break
+    || program_break > getInitialProgramBreak() + MAX_DATA_BYTES) {
+        throw std::runtime_error("Sync error (program break out of range)");
+    }
+    setProgramBreak(program_break); // This will allocate or free memory for us as required
+
+    uint32_t new_guard_page_address = buf.readUlong();
+    if (new_guard_page_address < MAIN_STACK_TOP - MAX_STACK_BYTES - BYTES_PER_PAGE
+    || new_guard_page_address > MAIN_STACK_TOP - 2 * BYTES_PER_PAGE
+    || (new_guard_page_address & (BYTES_PER_PAGE - 1)) != 0) {
+        throw std::runtime_error("Sync error (guard page out of range or misaligned)");
+    }
+    adjustGuardPageAllocations(getGuardPageAddress(), new_guard_page_address);
+    setGuardPageAddress(new_guard_page_address);
+
+    timer_ms = buf.readUlong();
+
+    uint32_t new_second_stack_guard = buf.readUlong();
+    if (new_second_stack_guard < MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE * 2
+    || new_second_stack_guard > MAIN_STACK_TOP - MAX_STACK_BYTES - BYTES_PER_PAGE * 3
+    || (new_second_stack_guard & (BYTES_PER_PAGE - 1)) != 0) {
+        throw std::runtime_error("Sync error (second stack guard out of range or misaligned)");
+    }
+    adjustGuardPageAllocations(second_stack_guard, new_second_stack_guard);
+    second_stack_guard = new_second_stack_guard;
+
+    alt_ra = buf.readUlong();
+    alt_sp = buf.readUlong();
+    alt_gp = buf.readUlong();
+    alt_tp = buf.readUlong();
+    alt_t0 = buf.readUlong();
+    alt_t1 = buf.readUlong();
+    alt_t2 = buf.readUlong();
+    alt_s0 = buf.readUlong();
+    alt_s1 = buf.readUlong();
+    alt_a0 = buf.readUlong();
+    alt_a1 = buf.readUlong();
+    alt_a2 = buf.readUlong();
+    alt_a3 = buf.readUlong();
+    alt_a4 = buf.readUlong();
+    alt_a5 = buf.readUlong();
+    alt_a6 = buf.readUlong();
+    alt_a7 = buf.readUlong();
+    alt_s2 = buf.readUlong();
+    alt_s3 = buf.readUlong();
+    alt_s4 = buf.readUlong();
+    alt_s5 = buf.readUlong();
+    alt_s6 = buf.readUlong();
+    alt_s7 = buf.readUlong();
+    alt_s8 = buf.readUlong();
+    alt_s9 = buf.readUlong();
+    alt_s10 = buf.readUlong();
+    alt_s11 = buf.readUlong();
+    alt_t3 = buf.readUlong();
+    alt_t4 = buf.readUlong();
+    alt_t5 = buf.readUlong();
+    alt_t6 = buf.readUlong();
+    alt_pc = buf.readUlong();
+}
+
+void KnightsVM::adjustGuardPageAllocations(uint32_t old_guard_page_address, uint32_t new_guard_page_address)
+{
+    while (old_guard_page_address < new_guard_page_address) {
+        old_guard_page_address += BYTES_PER_PAGE;
+        deallocatePage(old_guard_page_address);
+    }
+    while (old_guard_page_address > new_guard_page_address) {
+        allocatePage(old_guard_page_address);
+        old_guard_page_address -= BYTES_PER_PAGE;
+    }
+}
+
+void KnightsVM::getMemoryHashes(Coercri::OutputByteBuf &output, uint32_t block_shift)
+{
+    uint32_t block_size = (1 << block_shift);
+    hashRegionStartingFrom(output, getLowestAddr(), block_size);
+    hashRegionStartingFrom(output, second_stack_guard + BYTES_PER_PAGE, block_size);
+    hashRegionStartingFrom(output, getGuardPageAddress() + BYTES_PER_PAGE, block_size);
+}
+
+void KnightsVM::hashRegionStartingFrom(Coercri::OutputByteBuf &output, uint32_t addr, uint32_t block_size)
+{
+    if ((block_size & 31) != 0) {
+        throw std::logic_error("Block size must be multiple of 32");
+    }
+
+    while (isPageAllocated(addr)) {
+        uint32_t top_addr = addr + block_size;
+
+        uint64_t acc[4];
+        InitHash(addr, acc);
+
+        while (addr < top_addr) {
+
+            uint64_t lane[4];
+
+            for (int d = 0; d < 4; ++d) {
+                uint32_t word1 = readWord(addr);
+                uint32_t word2 = readWord(addr + 4);
+                addr += 8;
+
+                uint64_t combined_word = (static_cast<uint64_t>(word1) << 32) | static_cast<uint64_t>(word2);
+                lane[d] = combined_word;
+            }
+
+            UpdateHash(acc, lane);
+        }
+
+        uint64_t hash = FinalHash(acc);
+
+        output.writeUlong(static_cast<uint32_t>(hash));
+        output.writeUlong(static_cast<uint32_t>(hash >> 32));
+    }
+}
+
+void KnightsVM::compareMemoryHashes(Coercri::InputByteBuf &input,
+                                    std::deque<MemoryBlock> &my_blocks,
+                                    uint32_t block_shift)
+{
+    for (auto& block : my_blocks) {
+        uint32_t hash1 = input.readUlong();
+        uint32_t hash2 = input.readUlong();
+        uint64_t hash = static_cast<uint64_t>(hash1)
+            | (static_cast<uint64_t>(hash2) << 32);
+
+        if (hash == block.hash) {
+            // The follower already has this same block, so
+            // we don't need to send it.
+            // Use swap trick to free the vector's memory
+            std::vector<uint32_t> empty;
+            block.contents.swap(empty);
+        }
+    }
+}
+
+void KnightsVM::outputMemoryBlock(const MemoryBlock &block, Coercri::OutputByteBuf &output)
+{
+    output.writeUlong(block.base_address);
+    for (auto const & word : block.contents) {
+        output.writeUlong(word);
+    }
+}
+
+void KnightsVM::inputMemoryBlock(Coercri::InputByteBuf &input, uint32_t block_shift)
+{
+    uint32_t block_size = (1 << block_shift);
+    uint32_t base_addr = input.readUlong();
+    for (uint32_t offset = 0; offset < block_size; offset += 4) {
+        writeWord(base_addr + offset, input.readUlong());
+    }
+}
+
+MemoryHash KnightsVM::getHash()
+{
+    uint64_t acc[4];
+    InitHash(0, acc);
+
+    uint64_t lane[4];
+
+    lane[0] = (uint64_t(getRA()) << 32) | getSP();
+    lane[1] = (uint64_t(getGP()) << 32) | getTP();
+    lane[2] = (uint64_t(getT0()) << 32) | getT1();
+    lane[3] = (uint64_t(getT2()) << 32) | getS0();
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(getS1()) << 32) | getA0();
+    lane[1] = (uint64_t(getA1()) << 32) | getA2();
+    lane[2] = (uint64_t(getA3()) << 32) | getA4();
+    lane[3] = (uint64_t(getA5()) << 32) | getA6();
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(getA7()) << 32) | getS2();
+    lane[1] = (uint64_t(getS3()) << 32) | getS4();
+    lane[2] = (uint64_t(getS5()) << 32) | getS6();
+    lane[3] = (uint64_t(getS7()) << 32) | getS8();
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(getS9()) << 32) | getS10();
+    lane[1] = (uint64_t(getS11()) << 32) | getT3();
+    lane[2] = (uint64_t(getT4()) << 32) | getT5();
+    lane[3] = (uint64_t(getT6()) << 32) | getPC();
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(getInitialProgramBreak()) << 32) | getProgramBreak();
+    lane[1] = (uint64_t(getGuardPageAddress()) << 32) | timer_ms;
+    lane[2] = (uint64_t(second_stack_guard) << 32) | alt_ra;
+    lane[3] = (uint64_t(alt_sp) << 32) | alt_gp;
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(alt_tp) << 32) | alt_t0;
+    lane[1] = (uint64_t(alt_t1) << 32) | alt_t2;
+    lane[2] = (uint64_t(alt_s0) << 32) | alt_s1;
+    lane[3] = (uint64_t(alt_a0) << 32) | alt_a1;
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(alt_a2) << 32) | alt_a3;
+    lane[1] = (uint64_t(alt_a4) << 32) | alt_a5;
+    lane[2] = (uint64_t(alt_a6) << 32) | alt_a7;
+    lane[3] = (uint64_t(alt_s2) << 32) | alt_s3;
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(alt_s4) << 32) | alt_s5;
+    lane[1] = (uint64_t(alt_s6) << 32) | alt_s7;
+    lane[2] = (uint64_t(alt_s8) << 32) | alt_s9;
+    lane[3] = (uint64_t(alt_s10) << 32) | alt_s11;
+    UpdateHash(acc, lane);
+
+    lane[0] = (uint64_t(alt_t3) << 32) | alt_t4;
+    lane[1] = (uint64_t(alt_t5) << 32) | alt_t6;
+    lane[2] = alt_pc;
+    lane[3] = (rstream_enabled ? 4 : 0) | (files.empty() ? 2 : 0) | (random_data.empty() ? 1 : 0);
+    UpdateHash(acc, lane);
+
+    uint32_t addr = 0;
+    while (true) {
+        if (isPageAllocated(addr)) {
+            lane[0] = addr;
+            lane[1] = lane[2] = lane[3] = 0;
+            UpdateHash(acc, lane);
+
+            for (int32_t offset = 0; offset < BYTES_PER_PAGE; offset += 32) {
+                lane[0] = (uint64_t(readWord(addr + offset)) << 32) | readWord(addr + offset + 4);
+                lane[1] = (uint64_t(readWord(addr + offset + 8)) << 32) | readWord(addr + offset + 12);
+                lane[2] = (uint64_t(readWord(addr + offset + 16)) << 32) | readWord(addr + offset + 20);
+                lane[3] = (uint64_t(readWord(addr + offset + 24)) << 32) | readWord(addr + offset + 28);
+                UpdateHash(acc, lane);
+            }
+        }
+        uint32_t new_addr = addr + BYTES_PER_PAGE;
+        if (new_addr < addr) break;
+        addr = new_addr;
+    }
+
+    return FinalHash(acc);
 }

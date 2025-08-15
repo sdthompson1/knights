@@ -98,6 +98,7 @@ namespace Coercri {
         
         // Send data.
         // The contents of the vector are treated as a single packet.
+        // Note: Packets sent to a CLOSED or FAILED connection are silently dropped.
         virtual void send(const std::vector<unsigned char> &) = 0;
 
 
