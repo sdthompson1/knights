@@ -24,6 +24,7 @@
 #ifndef LOADING_SCREEN_HPP
 #define LOADING_SCREEN_HPP
 
+#include "player_id.hpp"
 #include "screen.hpp"
 
 #include "boost/thread.hpp"
@@ -35,11 +36,11 @@ class LuaError;
 
 class LoadingScreen : public Screen {
 public:
-    // Set port to -1 and player_name to "" for local game.
-    explicit LoadingScreen(int port, const UTF8String & player_name, bool single_player,
-                           bool menu_strict,  // set for single player & split screen games, where there is a fixed no of players
-                           bool tutorial,
-                           bool autostart);
+    // Set port to -1 and player_id to "" for local game.
+    LoadingScreen(int port, const PlayerID & player_id, bool single_player,
+                  bool menu_strict,  // set for single player & split screen games, where there is a fixed no of players
+                  bool tutorial,
+                  bool autostart);
     virtual ~LoadingScreen();
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window>, gcn::Gui &);
     virtual void update();
@@ -60,7 +61,7 @@ private:
 
     KnightsApp *knights_app;
     int server_port;
-    UTF8String player_name;
+    PlayerID player_id;
     bool single_player_mode;
     bool menu_strict_mode;
     bool tutorial_mode;

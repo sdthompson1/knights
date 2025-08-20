@@ -36,6 +36,7 @@
 class KnightsConfig;
 class KnightsGameImpl;
 class GameConnection;
+class PlayerID;
 
 #include "game_info.hpp"  // for GameStatus
 #include "utf8string.hpp"
@@ -70,8 +71,8 @@ public:
     
     // add players/observers.
     // will throw an exception if the same player is added twice.
-    // (if client_name_2 is non-empty will create a split-screen 2-player connection, if allowed.)
-    GameConnection & newClientConnection(const UTF8String &client_name, const UTF8String &client_name_2, 
+    // (if client_id_2 is non-empty will create a split-screen 2-player connection, if allowed.)
+    GameConnection & newClientConnection(const PlayerID &client_id, const PlayerID &client_id_2,
                                          int client_version, bool approach_based_controls, bool action_bar_controls);
 
     // Remove a player/observer from the game.
@@ -80,7 +81,7 @@ public:
 
     // incoming msgs should be decoded by KnightsServer and either
     // handled there, or forwarded to one of the following methods:
-    void sendChatMessage(GameConnection &, const std::string &msg);
+    void sendChatMessage(GameConnection &, const Coercri::UTF8String &msg);
     void setReady(GameConnection &, bool ready);
     void setHouseColour(GameConnection &, int hse_col);
     void finishedLoading(GameConnection &);

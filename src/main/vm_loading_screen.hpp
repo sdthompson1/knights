@@ -50,14 +50,14 @@ private:
     struct Loader {
         Loader(Coercri::NetworkDriver &net_driver,
                Coercri::Timer &timer,
-               const std::string &local_user_id,
+               const PlayerID &local_user_id,
                bool new_control_system);
         void operator()();
 
         // Inputs
         Coercri::NetworkDriver &net_driver;
         Coercri::Timer &timer;
-        std::string local_user_id;
+        PlayerID local_user_id;
         bool new_control_system;
 
         // Outputs

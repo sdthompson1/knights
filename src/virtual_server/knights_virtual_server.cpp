@@ -89,7 +89,7 @@ std::vector<unsigned char> TickNetwork::prepareTickData(unsigned int time_since_
 
     // Make an empty tick data buffer
     std::vector<unsigned char> tick_data;
-    TickWriter writer(tick_data, time_since_last_tick);
+    TickWriter writer(tick_data);
 
     // Pump network events
     while (net_driver->doEvents()) {}
@@ -113,8 +113,7 @@ std::vector<unsigned char> TickNetwork::prepareTickData(unsigned int time_since_
         } else {
             client_connections[idx] = conn;
         }
-        // NOTE: We set platform_user_id to "" for ENet connections.
-        writer.writeNewConnection(idx, "");
+        writer.writeNewConnection(idx, PlayerID());  // PlayerID is unknown as we are not using OnlinePlatform
     }
 
     // Process existing connections
@@ -142,7 +141,7 @@ std::vector<unsigned char> TickNetwork::prepareTickData(unsigned int time_since_
     // If we wrote at least one message, or force was true, then accept the new tick,
     // otherwise just clear the tick_data and we will try again next time.
     if (writer.wasMessageWritten() || force) {
-        writer.finalize();
+        writer.finalize(std::min((unsigned int)TickWriter::MAX_TICK_MS, time_since_last_tick));
         time_until_next_ping_report -= time_since_last_tick;
     } else {
         tick_data.clear();
@@ -204,8 +203,8 @@ int main(int argc, const char **argv)
     {
         unsigned int time0 = timer.getMsec();
         std::vector<unsigned char> tick_data;
-        TickWriter writer(tick_data, 0);
-        writer.finalize();
+        TickWriter writer(tick_data);
+        writer.finalize(0);
         vm.runTicks(tick_data.data(), tick_data.data() + tick_data.size(), NULL);
         unsigned int time1 = timer.getMsec();
         std::cout << "Server running. Init took " << time1 - time0 << " ms." << std::endl;

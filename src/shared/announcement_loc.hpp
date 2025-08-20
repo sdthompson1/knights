@@ -1,5 +1,5 @@
 /*
- * utf8string.hpp
+ * announcement_loc.hpp
  *
  * This file is part of Knights.
  *
@@ -21,11 +21,27 @@
  *
  */
 
-#ifndef KNIGHTS_UTF8STRING_HPP
-#define KNIGHTS_UTF8STRING_HPP
+#ifndef ANNOUNCEMENT_LOC_HPP
+#define ANNOUNCEMENT_LOC_HPP
 
-#include "core/utf8string.hpp"
+namespace Coercri {
+    class InputByteBuf;
+    class OutputByteBuf;
+}
 
-typedef Coercri::UTF8String UTF8String;
+class LocalKey;
+class LocalParam;
+
+#include <vector>
+
+// Note: This does *not* allow raw string params (LocalParam::Type::STRING)
+// as these are not safe for the client to consume without additional filtering.
+void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
+                          const LocalKey &key,
+                          const std::vector<LocalParam> &params);
+
+void ReadAnnouncementLoc(Coercri::InputByteBuf &buf,
+                         LocalKey &key,
+                         std::vector<LocalParam> &params);
 
 #endif

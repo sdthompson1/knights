@@ -41,10 +41,10 @@ public:
     virtual ~DummyOnlinePlatform() = default;
 
     // Returns a randomly generated user ID
-    virtual std::string getCurrentUserId() const override;
+    virtual PlayerID getCurrentUserId() override;
     
     // Returns the platform_user_id as a UTF8String
-    virtual Coercri::UTF8String lookupUserName(const std::string& platform_user_id) const override;
+    virtual Coercri::UTF8String lookupUserName(const PlayerID& platform_user_id) override;
 
     // Returns a new DummyPlatformLobby
     virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis) override;
@@ -71,9 +71,7 @@ public:
     static constexpr unsigned char MSG_SET_LOBBY_INFO = 0x07;
 
 private:
-    std::string current_user_id;
-    std::string current_lobby_id;
-    std::string current_lobby_leader;
+    PlayerID current_user_id;
     int socket_fd;
     bool connected;
 
@@ -81,7 +79,7 @@ private:
 
     bool connect_to_server();
 
-    void create_network_driver(const std::string & my_user_id);
+    void create_network_driver(const PlayerID & my_user_id);
 };
 
 #endif

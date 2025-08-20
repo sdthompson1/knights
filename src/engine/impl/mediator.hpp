@@ -54,6 +54,7 @@
 #include "map_support.hpp"
 #include "player_state.hpp"
 #include "secure_result.hpp"
+#include "utf8string.hpp"
 
 #include "boost/shared_ptr.hpp"
 using namespace boost;
@@ -74,6 +75,8 @@ class Item;
 class ItemType;
 class Knight;
 class KnightsCallbacks;
+class LocalKey;
+class LocalParam;
 class MapCoord;
 class MonsterManager;
 class MonsterType;
@@ -155,9 +158,10 @@ public:
     // is_err should be true if this is a Lua error message.
     //
 
-    void gameMsg(int player_num, const std::string &msg, bool is_err = false);
-    
-    
+    void gameMsgRaw(int player_num, const UTF8String &msg, bool is_err = false);
+    void gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err = false);
+
+
     //
     // "Event" routines:-
     //
@@ -282,7 +286,7 @@ private:
     Mediator(const Mediator &);              // not defined
 
 
-    void endGame(const std::vector<const Player*> &, std::string msg_latin1);
+    void endGame(const std::vector<const Player*> &, bool time_limit_expired);
     
 private:
 

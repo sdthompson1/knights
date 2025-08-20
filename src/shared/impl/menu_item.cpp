@@ -27,17 +27,27 @@
 
 MenuItem::MenuItem(Coercri::InputByteBuf &buf)
 {
-    title = buf.readString();
+    title = LocalKey(buf.readString());
     numeric = buf.readUbyte() != 0;
 
     if (numeric) {
         num_digits = buf.readVarInt();
-        suffix = buf.readString();
+        suffix = LocalKey(buf.readString());
     } else {
         const int nsettings = buf.readVarInt();
-        value_str.reserve(nsettings);
+        dropdown_entries.reserve(nsettings);
+
         for (int i = 0; i < nsettings; ++i) {
-            value_str.push_back(buf.readString());
+            LocalKeyOrInteger lki;
+            int flag = buf.readUbyte();
+            if (flag != 0) {
+                lki.is_integer = true;
+                lki.integer = buf.readVarInt();
+            } else {
+                lki.is_integer = false;
+                lki.local_key = LocalKey(buf.readString());
+            }
+            dropdown_entries.push_back(lki);
         }
     }
 
@@ -46,16 +56,22 @@ MenuItem::MenuItem(Coercri::InputByteBuf &buf)
 
 void MenuItem::serialize(Coercri::OutputByteBuf &buf) const
 {
-    buf.writeString(title);
+    buf.writeString(title.getKey());
     buf.writeUbyte(numeric ? 1 : 0);
 
     if (numeric) {
         buf.writeVarInt(num_digits);
-        buf.writeString(suffix);
+        buf.writeString(suffix.getKey());
     } else {
-        buf.writeVarInt(value_str.size());
-        for (std::vector<std::string>::const_iterator it = value_str.begin(); it != value_str.end(); ++it) {
-            buf.writeString(*it);
+        buf.writeVarInt(dropdown_entries.size());
+        for (auto const& lki : dropdown_entries) {
+            if (lki.is_integer) {
+                buf.writeUbyte(1);
+                buf.writeVarInt(lki.integer);
+            } else {
+                buf.writeUbyte(0);
+                buf.writeString(lki.local_key.getKey());
+            }
         }
     }
     

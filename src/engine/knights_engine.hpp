@@ -33,8 +33,8 @@
 #ifndef KNIGHTS_ENGINE_HPP
 #define KNIGHTS_ENGINE_HPP
 
+#include "player_id.hpp"
 #include "player_state.hpp"
-
 #include "utf8string.hpp"
 
 #include "gfx/color.hpp"
@@ -53,7 +53,7 @@ class StatusDisplay;
 class UserControl;
 
 struct PlayerInfo {
-    UTF8String name;
+    PlayerID id;
     Coercri::Color house_colour;
     int house_colour_index;
     int player_num;
@@ -67,11 +67,12 @@ class KnightsEngine {
 public:
     // Start up a new KnightsEngine. Requires KnightsConfig and menu settings.
     // Note that each KnightsGame should have a unique KnightsConfig.
+    // TODO: "msgs" output should be localized probably?
     KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                   const std::vector<int> &hse_cols,
-                  const std::vector<UTF8String> &player_names,
+                  const std::vector<PlayerID> &player_ids,
                   bool &deathmatch_mode,   // output.
-                  std::vector<std::string> &msgs);  // output.
+                  std::vector<UTF8String> &msgs);  // output.
     ~KnightsEngine();
 
     // Run one update step (for a given time).
@@ -97,7 +98,6 @@ public:
     void changePlayerState(int player, PlayerState new_state);
 
     // Get the player list
-    // NOTE: the result is sorted by house colour, then name. (#172)
     void getPlayerList(std::vector<PlayerInfo> &player_list) const;
 
     // Returns true if the player list needs an update (compared to the previous
@@ -114,7 +114,7 @@ public:
 
     void resetMap();
     void setPremapped(bool);
-    void gameStartupMsg(const std::string &msg);
+    void gameStartupMsg(const UTF8String &msg);
     void addStartingGear(ItemType *, const std::vector<int> &);
     void setItemRespawn(const std::vector<ItemType*> &items_to_respawn, int respawn_delay);
     void setLockpickSpawn(ItemType *lockpicks, int init_time, int interval);

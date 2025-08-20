@@ -180,7 +180,7 @@ bool CoroutineTask::doExec(TaskManager &tm)
             std::string err(p ? p : "<No err msg>");
             err += LuaTraceback(thread);
             lua_settop(thread, 0);  // clear its stack
-            mediator.getCallbacks().gameMsg(-1, err, true);  // display the error message
+            mediator.getCallbacks().gameMsgRaw(-1, UTF8String::fromUTF8Safe(err), true);  // display the error message
             return false;
         }
     }

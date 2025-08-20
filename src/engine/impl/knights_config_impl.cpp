@@ -501,7 +501,7 @@ void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
                                        EventManager &event_manager,
                                        TaskManager &task_manager,
                                        const std::vector<int> &hse_cols,
-                                       const std::vector<UTF8String> &player_names)
+                                       const std::vector<PlayerID> &player_ids)
 {
     // Add players
     players.clear();
@@ -512,7 +512,7 @@ void KnightsConfigImpl::initializeGame(HomeManager &home_manager,
                                                     default_item,
                                                     control_set,
                                                     secured_cc.at(hse_cols[i]),
-                                                    player_names[i],
+                                                    player_ids[i],
                                                     team_num));
         players.push_back(player);
     }

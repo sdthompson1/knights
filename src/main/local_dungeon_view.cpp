@@ -64,7 +64,7 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
                             int phy_pixels_per_square, float dungeon_scale_factor,
                             const Coercri::Font &txt_font,
                             bool show_own_name,
-                            std::function<ClientState(const UTF8String&)> player_state_lookup,
+                            std::function<UTF8String(const PlayerID&)> player_name_lookup,
                             int &room_tl_x, int &room_tl_y)
 {
     using std::list;
@@ -145,7 +145,7 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
             
             // Add the entities (always)
             entity_map.getEntityGfx(time_us, room_tl_x, room_tl_y, phy_pixels_per_square, entity_depth, gfx_buffer, txt_buffer, show_own_name,
-                                    speech_bubble, speech_depth, player_state_lookup);
+                                    speech_bubble, speech_depth, player_name_lookup);
 
             // Now draw all buffered graphics
             for (map<int, vector<GraphicElement> >::reverse_iterator it = gfx_buffer.rbegin();
@@ -243,14 +243,14 @@ void LocalDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight 
                                  bool ainvis, bool ainvuln,
                                  bool approached,
                                  int cur_ofs, MotionType motion_type, int motion_time_remaining_ms,
-                                 const UTF8String &name)
+                                 const PlayerID &player_id)
 {
     int64_t atz_diff_us = int64_t(atz_diff_ms) * 1000;
     int64_t motion_time_remaining_us = motion_time_remaining_ms * 1000;
     entity_map.addEntity(time_us, id, x, y, ht, facing, anim, ovr, af,
                          atz_diff_us ? atz_diff_us + time_us : 0,
                          ainvis, ainvuln,
-                         cur_ofs, motion_type, motion_time_remaining_us, name);
+                         cur_ofs, motion_type, motion_time_remaining_us, player_id);
     if (id == 0) {
         // my knight
         my_x = x;

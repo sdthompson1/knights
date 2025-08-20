@@ -26,6 +26,7 @@
 #include "misc.hpp"
 #include "dummy_platform_lobby.hpp"
 #include "dummy_online_platform.hpp"
+#include "localization.hpp"
 #include <chrono>
 
 DummyPlatformLobby::DummyPlatformLobby(DummyOnlinePlatform* platform, const std::string& lobby_id)
@@ -48,14 +49,14 @@ PlatformLobby::State DummyPlatformLobby::getState()
     return current_state;
 }
 
-std::string DummyPlatformLobby::getLeaderId()
+PlayerID DummyPlatformLobby::getLeaderId()
 {
     auto now = std::chrono::steady_clock::now();
     
     // Only query the server at infrequent intervals
     constexpr int QUERY_TIME_MS = 3000;
     if (leader_id.empty() ||
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - last_leader_query_time).count() >= QUERY_TIME_MS) {
+    std::chrono::duration_cast<std::chrono::milliseconds>(now - last_leader_query_time).count() >= QUERY_TIME_MS) {
         
         if (platform) {
             if (platform->sendMessage(DummyOnlinePlatform::MSG_GET_LOBBY_INFO, lobby_id)) {
@@ -64,7 +65,7 @@ std::string DummyPlatformLobby::getLeaderId()
                     // Parse response: leader_id (null-terminated) + num_players (4 bytes) + status_code (4 bytes)
                     size_t null_pos = response_data.find('\0');
                     if (null_pos != std::string::npos) {
-                        leader_id = response_data.substr(0, null_pos);
+                        leader_id = PlayerID(response_data.substr(0, null_pos));
                     }
                 }
             }
@@ -76,13 +77,33 @@ std::string DummyPlatformLobby::getLeaderId()
     return leader_id;
 }
 
-void DummyPlatformLobby::setStatusCode(int status_code)
+void DummyPlatformLobby::setGameStatus(const LocalKey &key, const std::vector<LocalParam> &params)
 {
     if (platform) {
-        // Send status_code - leader_id and num_players are managed server-side
+        // Build payload: status_key (null-terminated) + has_param (1 byte) + 
+        //               [optional param_key (null-terminated)]
         std::string payload;
-        payload.resize(4); // 4 bytes
-        *reinterpret_cast<int32_t*>(&payload[0]) = status_code;
+        
+        // Add status key
+        payload += key.getKey();
+        payload += '\0';
+        
+        // Check if we have exactly one LocalKey parameter (as per assumption)
+        bool has_param = false;
+        std::string param_key;
+        if (!params.empty() && params[0].getType() == LocalParam::Type::LOCAL_KEY) {
+            has_param = true;
+            param_key = params[0].getLocalKey().getKey();
+        }
+        
+        // Add has_param flag
+        payload += static_cast<char>(has_param ? 1 : 0);
+        
+        // Add parameter key if present
+        if (has_param) {
+            payload += param_key;
+            payload += '\0';
+        }
         
         platform->sendMessage(DummyOnlinePlatform::MSG_SET_LOBBY_INFO, payload);
         std::string response;

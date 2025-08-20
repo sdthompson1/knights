@@ -52,7 +52,7 @@
     <ClCompile>
       <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\src;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\src\coercri;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -70,7 +70,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\src;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\src\coercri;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -84,6 +84,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\misc\config_map.cpp" />
     <ClCompile Include="..\..\src\misc\find_knights_data_dir.cpp" />
+    <ClCompile Include="..\..\src\misc\localization.cpp" />
     <ClCompile Include="..\..\src\misc\metaserver_urls.cpp" />
     <ClCompile Include="..\..\src\misc\rng.cpp" />
     <ClCompile Include="..\..\src\misc\round.cpp" />
@@ -93,11 +94,13 @@
     <ClInclude Include="..\..\src\misc\copy_if.hpp" />
     <ClInclude Include="..\..\src\misc\exception_base.hpp" />
     <ClInclude Include="..\..\src\misc\find_knights_data_dir.hpp" />
+    <ClInclude Include="..\..\src\misc\localization.hpp" />
     <ClInclude Include="..\..\src\misc\metaserver_urls.hpp" />
     <ClInclude Include="..\..\src\misc\misc.hpp" />
     <ClInclude Include="..\..\src\misc\my_ctype.hpp" />
     <ClInclude Include="..\..\src\misc\my_exceptions.hpp" />
     <ClInclude Include="..\..\src\misc\net_msgs.hpp" />
+    <ClInclude Include="..\..\src\misc\player_id.hpp" />
     <ClInclude Include="..\..\src\misc\rng.hpp" />
     <ClInclude Include="..\..\src\misc\round.hpp" />
     <ClInclude Include="..\..\src\misc\version.hpp" />

@@ -26,6 +26,8 @@
 
 #include "screen.hpp"
 
+#include "utf8string.hpp"
+
 #include <string>
 #include <vector>
 
@@ -35,7 +37,7 @@ class MenuScreenImpl;
 class MenuScreen : public Screen {
 public:
     explicit MenuScreen(boost::shared_ptr<KnightsClient> knights_client, bool extended,
-                        std::string saved_chat = std::string());
+                        UTF8String saved_chat = UTF8String());
     virtual bool start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     virtual void update();
     
@@ -43,7 +45,7 @@ private:
     boost::shared_ptr<MenuScreenImpl> pimpl;
     boost::shared_ptr<KnightsClient> knights_client;
     bool extended;
-    std::string saved_chat;
+    UTF8String saved_chat;
 };
 
 #endif

@@ -32,7 +32,7 @@ class LobbyScreen : public Screen {
 public:
     // it's expected that both the KnightsClient and the GameManager have been created
     // before we go into the LobbyScreen.
-    // also, we should already have sent the CLIENT_SET_PLAYER_NAME msg if applicable.
+    // also, we should already have sent the CLIENT_SET_PLAYER_ID msg if applicable.
     explicit LobbyScreen(boost::shared_ptr<KnightsClient> cli, const std::string &svr_name);
     ~LobbyScreen();
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);

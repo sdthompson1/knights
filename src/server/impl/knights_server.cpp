@@ -26,6 +26,8 @@
 #include "knights_game.hpp"
 #include "knights_log.hpp"
 #include "knights_server.hpp"
+#include "localization.hpp"
+#include "player_id.hpp"
 #include "protocol.hpp"
 #include "sh_ptr_eq.hpp"
 #include "version.hpp"
@@ -38,8 +40,8 @@
 
 class ServerConnection {
 public:
-    explicit ServerConnection(const std::string &ip)
-        : wait_until(0), game_conn(0), client_version(0), 
+    explicit ServerConnection(const std::string &ip, const PlayerID &platform_user_id)
+        : wait_until(0), platform_user_id(platform_user_id), game_conn(nullptr), client_version(0),
           version_string_received(false), connection_accepted(false),
           failed_password_attempts(0), ip_addr(ip), error_sent(false),
           approach_based_controls(true), action_bar_controls(false)
@@ -49,9 +51,10 @@ public:
     std::vector<unsigned char> output_data;
     unsigned int wait_until;   // don't send output before this time. used for password checking. 0 = disabled.
 
-    // player name
-    UTF8String player_name;
-    
+    // player id
+    PlayerID player_id;
+    PlayerID platform_user_id;
+
     // connection to game
     // INVARIANT: either game and game_conn are both null, or they are both non-null.
     boost::shared_ptr<KnightsGame> game;
@@ -115,31 +118,31 @@ namespace {
         }
     }
 
-    void SendJoinGameDenied(ServerConnection &conn, const std::string &reason)
+    void SendJoinGameDenied(ServerConnection &conn, const LocalKey &reason)
     {
         ReadDataFromKnightsGame(conn);
         Coercri::OutputByteBuf buf(conn.output_data);
         buf.writeUbyte(SERVER_JOIN_GAME_DENIED);
-        buf.writeString(reason);
+        buf.writeString(reason.getKey());
     }
 
-    void SendError(ServerConnection &conn, const std::string &error, KnightsServerImpl &impl)
+    void SendError(ServerConnection &conn, const LocalKey &error, KnightsServerImpl &impl)
     {
         Coercri::OutputByteBuf buf(conn.output_data);
         buf.writeUbyte(SERVER_ERROR);
-        buf.writeString(error);
+        buf.writeString(error.getKey());
 
         if (impl.knights_log) {
-            impl.knights_log->logMessage(conn.game_name + "\terror\tplayer=" + conn.player_name.asUTF8() + ", error=" + error);
+            impl.knights_log->logMessage(conn.game_name + "\terror\tplayer=" + conn.player_id.asString() + ", error=" + error.getKey());
         }
 
         conn.error_sent = true;
     }
 
-    bool IsNameAvailable(const connection_vector &connections, const UTF8String &name)
+    bool IsIDAvailable(const connection_vector &connections, const PlayerID &id)
     {
         for (connection_vector::const_iterator it = connections.begin(); it != connections.end(); ++it) {
-            if ((*it)->player_name == name) return false;
+            if ((*it)->player_id == id) return false;
         }
         return true;
     }
@@ -150,7 +153,7 @@ namespace {
         for (connection_vector::iterator it = connections.begin(); it != connections.end(); ++it) {
             if ((*it)->connection_accepted || it->get() == &conn) {
                 out.writeUbyte(SERVER_UPDATE_PLAYER);
-                out.writeString((*it)->player_name.asUTF8());
+                out.writeString((*it)->player_id.asString());
                 out.writeString((*it)->game_name);
                 bool is_obs = false;
                 if ((*it)->game) {
@@ -178,7 +181,7 @@ namespace {
             if (it->get() != &conn) {
                 Coercri::OutputByteBuf out_other((*it)->output_data);
                 out_other.writeUbyte(SERVER_PLAYER_CONNECTED);
-                out_other.writeString(conn.player_name.asUTF8());
+                out_other.writeString(conn.player_id.asString());
             }
         }
 
@@ -220,8 +223,8 @@ namespace {
         for (connection_vector::iterator it = connections.begin(); it != connections.end(); ++it) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_UPDATE_PLAYER);
-            out.writeString(conn.player_name.asUTF8());
-            out.writeString("");
+            out.writeString(conn.player_id.asString());
+            out.writeString("");  // no game
             out.writeUbyte(0);
         }
 
@@ -251,9 +254,9 @@ KnightsServer::~KnightsServer()
 {
 }
 
-ServerConnection & KnightsServer::newClientConnection(std::string ip)
+ServerConnection & KnightsServer::newClientConnection(const std::string &ip, const PlayerID &platform_user_id)
 {
-    boost::shared_ptr<ServerConnection> new_conn(new ServerConnection(ip));
+    boost::shared_ptr<ServerConnection> new_conn(new ServerConnection(ip, platform_user_id));
     new_conn->unique_id = pimpl->conn_counter++;
     pimpl->connections.push_back(new_conn);
 
@@ -270,7 +273,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 {
     // This is where we decode incoming messages from the client
 
-    std::string error_msg;
+    LocalKey error_key;
     
     try {
     
@@ -284,7 +287,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 const std::string client_version_string = buf.readString();
                 const std::string expected = "Knights/";
                 if (client_version_string.substr(0, expected.length()) != expected) {
-                    throw ProtocolError("Invalid connection string");
+                    throw ProtocolError(LocalKey("invalid_connection_string"));
                 }
                 
                 // Parse the version number
@@ -297,12 +300,12 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 // Update Aug 2011: be slightly less strict, allow any client version between
                 // COMPATIBLE_VERSION_NUM and the current server version (inclusive)
                 if (ver < COMPATIBLE_VERSION_NUM) {
-                    throw ProtocolError("You are running an old version of Knights. Please download the latest version from " KNIGHTS_WEBSITE);
+                    throw ProtocolError(LocalKey("old_knights_version"));
                 } else if (ver > KNIGHTS_VERSION_NUM) {
-                    throw ProtocolError("Cannot connect because this server is running an older version of Knights.");
+                    throw ProtocolError(LocalKey("old_server"));
                 }
 
-                // Send him the MOTD
+                // Send him the MOTD [Disabled if VIRTUAL_SERVER]
                 // Note: old_motd_file is deprecated. It will not get used, thanks to the above version check.
                 const std::string & motd_file = (ver < KNIGHTS_VERSION_NUM) ? pimpl->old_motd_file : pimpl->motd_file;
                 if (!motd_file.empty()) {
@@ -316,7 +319,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         motd += '\n';
                     }
                     Coercri::OutputByteBuf buf(conn.output_data);
-                    buf.writeUbyte(SERVER_ANNOUNCEMENT);
+                    buf.writeUbyte(SERVER_ANNOUNCEMENT_RAW);
                     buf.writeString(motd);
                 }
                 
@@ -324,41 +327,52 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 conn.version_string_received = true;
                 continue;
             }
-        
+
             const ubyte msg = buf.readUbyte();
 
             // If the player name and password have not yet been accepted then the client can only send us two
-            // messages: CLIENT_SET_PLAYER_NAME and CLIENT_SEND_PASSWORD.
-            if (!conn.connection_accepted && msg != CLIENT_SET_PLAYER_NAME && msg != CLIENT_SEND_PASSWORD) {
+            // messages: CLIENT_SET_PLAYER_ID and CLIENT_SEND_PASSWORD.
+            if (!conn.connection_accepted && msg != CLIENT_SET_PLAYER_ID && msg != CLIENT_SEND_PASSWORD) {
                 // note: if an error has already been sent then do not send another 'access denied' error.
                 // (have had problems with useful error messages being overwritten by not-very-useful
                 // 'access denied' messages...)
                 if (conn.error_sent) {
                     return;
                 } else {
-                    throw ProtocolError("Access denied");
+                    throw ProtocolError(LocalKey("access_denied"));
                 }
             }
 
             switch (msg) {
 
-            case CLIENT_SET_PLAYER_NAME:
+            case CLIENT_SET_PLAYER_ID:
                 {
-                    const UTF8String new_name = UTF8String::fromUTF8Safe(buf.readString());
+                    const PlayerID new_id = PlayerID(buf.readString());
                     Coercri::OutputByteBuf out(conn.output_data);
-                    if (!conn.player_name.empty()) {
-                        SendError(conn, "Player name already set", *pimpl);
-                    } else if (new_name.empty()) {
-                        SendError(conn, "Bad player name", *pimpl);
-                    } else if (!IsNameAvailable(pimpl->connections, new_name)) {
-                        SendError(conn, "A player with the name \"" + new_name.asUTF8() + "\" is already connected.", *pimpl);
+
+                    if (!conn.player_id.empty()) {
+                        // They have already sent their ID
+                        SendError(conn, LocalKey("player_id_already_set"), *pimpl);
+
+                    } else if (!conn.platform_user_id.empty() && new_id != conn.platform_user_id) {
+                        // The ID they are setting doesn't match the ID provided by the platform
+                        SendError(conn, LocalKey("player_id_mismatch"), *pimpl);
+
+                    } else if (new_id.empty()) {
+                        // Claiming you have an empty ID is not allowed
+                        SendError(conn, LocalKey("player_id_is_empty"), *pimpl);
+
+                    } else if (!IsIDAvailable(pimpl->connections, new_id)) {
+                        // This player is already connected
+                        SendError(conn, LocalKey("already_connected"), *pimpl);
+
                     } else {
-                        // set the player name
-                        conn.player_name = new_name;
+                        // set the player id
+                        conn.player_id = new_id;
 
                         // write a log message
                         if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tplayer connected\taddr=" + conn.ip_addr + ", player=" + new_name.asUTF8());
+                            pimpl->knights_log->logMessage("\tplayer connected\taddr=" + conn.ip_addr + ", player=" + new_id.asString());
                         }
 
                         // If the server has a password then request the password. Otherwise proceed as if the
@@ -377,16 +391,16 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 {
                     const std::string their_password = buf.readString();
                     Coercri::OutputByteBuf out(conn.output_data);
-                    if (conn.player_name.empty()) {
-                        throw ProtocolError("Must set player name before sending password");
+                    if (conn.player_id.empty()) {
+                        throw ProtocolError(LocalKey("must_set_id"));
                     }
                     if (conn.failed_password_attempts == MAX_PASSWORD_ATTEMPTS) {
-                        throw ProtocolError("Too many failed password attempts");                    
+                        throw ProtocolError(LocalKey("password_incorrect"));
                     } else if (their_password == pimpl->password) {
                         Coercri::OutputByteBuf(conn.output_data);
                         SendStartupMessages(out, conn, pimpl->connections, pimpl->games);
                         if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tpassword accepted\tplayer=" + conn.player_name.asUTF8());
+                            pimpl->knights_log->logMessage("\tpassword accepted\tplayer=" + conn.player_id.asString());
                         }
                     } else {
                         ++conn.failed_password_attempts;
@@ -394,7 +408,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         out.writeUbyte(SERVER_REQUEST_PASSWORD);
                         out.writeUbyte(0);
                         if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tpassword rejected\tplayer=" + conn.player_name.asUTF8());
+                            pimpl->knights_log->logMessage("\tpassword rejected\tplayer=" + conn.player_id.asString());
                         }
                     }
                 }
@@ -408,30 +422,30 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
                     game_map::iterator it = pimpl->games.find(game_name);
                     if (conn.game) {
-                        SendJoinGameDenied(conn, "You are already connected to a game");
+                        SendJoinGameDenied(conn, LocalKey("already_in_game"));
                     } else if (it == pimpl->games.end()) {
-                        SendJoinGameDenied(conn, "The game \"" + game_name + "\" does not exist on this server.");
+                        SendJoinGameDenied(conn, LocalKey("game_not_found"));
                     } else if (split_screen && !it->second->isSplitScreenAllowed()) {
-                        SendJoinGameDenied(conn, "Split screen game not allowed");
+                        SendJoinGameDenied(conn, LocalKey("split_screen_not_allowed"));
                     } else if (split_screen && (it->second->getNumPlayers() > 0 || it->second->getNumObservers() > 0)) {
-                        SendJoinGameDenied(conn, "Cannot join split-screen if other players are already connected");
+                        SendJoinGameDenied(conn, LocalKey("split_screen_too_many"));
                     } else {
 
-                        UTF8String client_name, client_name_2;
+                        PlayerID client_id_1, client_id_2;
                     
                         if (split_screen) {
                             // dummy player names for the split screen mode
-                            client_name = UTF8String::fromUTF8("Player 1");
-                            client_name_2 = UTF8String::fromUTF8("Player 2");
+                            client_id_1 = PlayerID("Player 1");
+                            client_id_2 = PlayerID("Player 2");
                         } else {
-                            // name 1 comes from the connection object. name 2 is unset.
-                            client_name = conn.player_name;
+                            // id 1 comes from the connection object. id 2 is unset.
+                            client_id_1 = conn.player_id;
                         }
                         
                         // the following will send the SERVER_JOIN_GAME_ACCEPTED message and
                         // any necessary SERVER_PLAYER_JOINED_THIS_GAME messages.
                         // NOTE: This should not throw since we have checked all possible error conditions above.
-                        conn.game_conn = &it->second->newClientConnection(client_name, client_name_2,
+                        conn.game_conn = &it->second->newClientConnection(client_id_1, client_id_2,
                                                                           conn.client_version,
                                                                           conn.approach_based_controls,
                                                                           conn.action_bar_controls);
@@ -442,10 +456,10 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         for (connection_vector::iterator it2 = pimpl->connections.begin(); it2 != pimpl->connections.end(); ++it2) {
                             Coercri::OutputByteBuf out((*it2)->output_data);
                             out.writeUbyte(SERVER_UPDATE_PLAYER);
-                            out.writeString(client_name.asUTF8());
+                            out.writeString(client_id_1.asString());
                             out.writeString(game_name);
                             out.writeUbyte(conn.game->getObsFlag(*conn.game_conn));
-                            // NOTE: don't bother with supporting the split screen mode here, so no msg for client_name_2.
+                            // NOTE: don't bother with supporting the split screen mode here, so no msg for client_id_2.
                         }
 
                         // Also send SERVER_UPDATE_GAME messages.
@@ -465,7 +479,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
             
             case CLIENT_CHAT:
                 {
-                    const std::string msg = buf.readString();
+                    Coercri::UTF8String msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
 
                     if (conn.game) {
                         conn.game->sendChatMessage(*conn.game_conn, msg);
@@ -475,9 +489,9 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                             if (!(*it)->game) {
                                 Coercri::OutputByteBuf out_other((*it)->output_data);
                                 out_other.writeUbyte(SERVER_CHAT);
-                                out_other.writeString(conn.player_name.asUTF8());
+                                out_other.writeString(conn.player_id.asString());
                                 out_other.writeUbyte(0);
-                                out_other.writeString(msg);
+                                out_other.writeString(msg.asUTF8());
                             }
                         }
                     }
@@ -485,12 +499,12 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                     // log it
                     if (pimpl->knights_log) {
                         std::string log_msg = conn.game_name + "\tchat\t";
-                        log_msg += conn.player_name.asUTF8() + ": " + msg;
+                        log_msg += conn.player_id.asString() + ": " + msg.asUTF8();
                         pimpl->knights_log->logMessage(log_msg);
                     }
                 }
                 break;
-            
+
             case CLIENT_SET_READY:
                 {
                     const bool ready = buf.readUbyte() != 0;
@@ -580,7 +594,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                                 for (connection_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
                                     Coercri::OutputByteBuf out(conn.output_data);
                                     out.writeUbyte(SERVER_UPDATE_PLAYER);
-                                    out.writeString(conn.player_name.asUTF8());
+                                    out.writeString(conn.player_id.asString());
                                     out.writeString(conn.game_name);
                                     out.writeUbyte(new_flag ? 1 : 0);
                                 }
@@ -649,18 +663,21 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 break;
                 
             default:
-                throw ProtocolError("Unknown message code from client");
+                throw ProtocolError(LocalKey("unknown_client_message"));
             }
         }
 
         if (conn.game) conn.game->endOfMessagePacket();
 
         return;  // everything below here is error handling code.
-        
-    } catch (std::exception &e) {
-        error_msg = e.what();
+
+    } catch (ProtocolError &e) {
+        error_key = e.getLocalKey();
+
     } catch (...) {
-        error_msg = "Unknown Error";
+        // We can't send the what() message directly as a LocalKey,
+        // so "unknown_error" is the best we can do
+        error_key = LocalKey("unknown_error");
     }
 
     // Exception thrown. This is (probably) because the client sent us
@@ -670,7 +687,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
     // prevents any half-written messages from being sent out.
 
     conn.output_data.clear();
-    SendError(conn, error_msg, *pimpl);
+    SendError(conn, error_key, *pimpl);
 }
 
 void KnightsServer::getOutputData(ServerConnection &conn,
@@ -692,8 +709,8 @@ void KnightsServer::getOutputData(ServerConnection &conn,
 
 void KnightsServer::connectionClosed(ServerConnection &conn)
 {
-    // save the player's name & ip.
-    const UTF8String name = conn.player_name;
+    // save the player's ID & IP address.
+    const PlayerID id = conn.player_id;
     const std::string ip = conn.ip_addr;
     const std::string game_name = conn.game_name;
     boost::shared_ptr<KnightsGame> game = conn.game;
@@ -721,7 +738,7 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
         for (connection_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
             buf.writeUbyte(SERVER_PLAYER_DISCONNECTED);
-            buf.writeString(name.asUTF8());
+            buf.writeString(id.asString());
         }
         if (game) {
             SendGameUpdate(pimpl->connections, game_name, game->getNumPlayers(), game->getNumObservers(), game->getStatus());
@@ -730,7 +747,7 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
 
     // log a message
     if (pimpl->knights_log) {
-        pimpl->knights_log->logMessage(game_name + "\tplayer disconnected\taddr=" + ip + ", player=" + name.asUTF8());
+        pimpl->knights_log->logMessage(game_name + "\tplayer disconnected\taddr=" + ip + ", player=" + id.asString());
     }
 }
 

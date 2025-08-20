@@ -26,7 +26,12 @@
 
 #ifdef ONLINE_PLATFORM
 
-#include <string>
+#include "player_id.hpp"
+
+#include <vector>
+
+class LocalKey;
+class LocalParam;
 
 // A PlatformLobby is a group of players who have gathered together to play a game.
 // Players can create their own lobbies, or join or search for other lobbies, using
@@ -49,10 +54,10 @@ public:
     
     // Returns the platform user ID of the current lobby leader
     // (Returns empty string if the leader is not known yet)
-    virtual std::string getLeaderId() = 0;
+    virtual PlayerID getLeaderId() = 0;
 
-    // Set status code for the lobby - only the leader can do this
-    virtual void setStatusCode(int status_code) = 0;
+    // Set game status - only the leader can do this
+    virtual void setGameStatus(const LocalKey &key, const std::vector<LocalParam> &params) = 0;
 };
 
 #endif

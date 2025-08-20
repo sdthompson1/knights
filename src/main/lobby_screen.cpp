@@ -332,7 +332,7 @@ void LobbyScreenImpl::action(const gcn::ActionEvent &event)
         std::unique_ptr<Screen> title_screen(new TitleScreen);
         knights_app->requestScreenChange(std::move(title_screen));
     } else if (event.getSource() == chat_field.get()) {
-        client->sendChatMessage(chat_field->getText());
+        client->sendChatMessage(Coercri::UTF8String::fromLatin1(chat_field->getText()));
         chat_field->setText("");
         gui->logic();
         window->invalidateAll();

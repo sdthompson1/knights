@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "announcement_loc.hpp"
 #include "graphic.hpp"
 #include "protocol.hpp"
 #include "server_callbacks.hpp"
@@ -199,7 +200,17 @@ void ServerCallbacks::flashScreen(int plyr, int delay)
     buf.writeVarInt(delay);
 }
 
-void ServerCallbacks::gameMsg(int plyr, const std::string &msg, bool is_err)
+void ServerCallbacks::gameMsgRaw(int plyr, const Coercri::UTF8String &msg, bool is_err)
+{
+    gameMsgImpl(plyr, msg, LocalKey(), std::vector<LocalParam>(), is_err);
+}
+
+void ServerCallbacks::gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
+{
+    gameMsgImpl(plyr, UTF8String(), key, params, is_err);
+}
+
+void ServerCallbacks::gameMsgImpl(int plyr, const Coercri::UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
 {
     const int MAX_ERRORS = 50;
 
@@ -226,13 +237,17 @@ void ServerCallbacks::gameMsg(int plyr, const std::string &msg, bool is_err)
                 buf.writeUshort(0);
             }
 
-            buf.writeUbyte(SERVER_ANNOUNCEMENT);
-            buf.writeString(msg);
+            if (key == LocalKey()) {
+                buf.writeUbyte(SERVER_ANNOUNCEMENT_RAW);
+                buf.writeString(msg.asUTF8());
+            } else {
+                WriteAnnouncementLoc(buf, key, params);
+            }
         }
     }
 
     if (is_err && no_err_msgs == MAX_ERRORS) {
-        gameMsg(-1, "<Too many error messages, disabling error output for the rest of this game.>", false);
+        gameMsgLoc(-1, LocalKey("too_many_errors"), std::vector<LocalParam>(), false);
     }
 }
 

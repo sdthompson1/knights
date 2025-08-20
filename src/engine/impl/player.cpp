@@ -38,6 +38,7 @@
 #include "knight.hpp"
 #include "knight_task.hpp"
 #include "knights_callbacks.hpp"
+#include "localization.hpp"
 #include "mediator.hpp"
 #include "mini_map.hpp"
 #include "player.hpp"
@@ -152,7 +153,7 @@ Player::Player(int plyr_num,
                const Anim *a, ItemType * di,
                const std::vector<const Control*> &cs,
                shared_ptr<const ColourChange> sec_home_cc,
-               const UTF8String &name_,
+               const PlayerID &plyr_id,
                int team_num_)
     : player_num(plyr_num), control(0),
       current_room(-1), current_room_width(0), current_room_height(0),
@@ -161,7 +162,7 @@ Player::Player(int plyr_num,
       anim(a),
       default_item(di), backpack_capacities(0), control_set(cs),
       secured_home_cc(sec_home_cc),
-      nskulls(0), nkills(0), frags(0), name(name_), player_state(PlayerState::NORMAL),
+      nskulls(0), nkills(0), frags(0), player_id(plyr_id), player_state(PlayerState::NORMAL),
       respawn_type(R_NORMAL),
       team_num(team_num_),
       teleport_flag(false), speech_bubble(false), approach_based_controls(true), action_bar_controls(false)
@@ -470,9 +471,9 @@ bool Player::respawn()
 
             // lua stack = [errmsg]
 
-            Mediator::instance().gameMsg(
+            Mediator::instance().gameMsgRaw(
                 -1,
-                std::string("(Error in respawn function) ") + lua_tostring(lua, -1),
+                UTF8String::fromUTF8Safe(std::string("(Error in respawn function) ") + lua_tostring(lua, -1)),
                 true);
             lua_pop(lua, 1); // []
 
@@ -516,13 +517,17 @@ bool Player::respawn()
                 if (!already_eliminated) {
 
                     // Send "PlayerName has been eliminated" to all players.
-                    std::ostringstream str_latin1;
-                    str_latin1 << getName().asLatin1() << " has been eliminated.";
+                    std::vector<LocalParam> params;
+                    params.push_back(LocalParam(getPlayerID()));
                     const int nleft = mediator.getNumPlayersRemaining() - 1;
+                    LocalKey key;
                     if (nleft > 1) {
-                        str_latin1 << " " << nleft << " players are left.";
+                        params.push_back(LocalParam(nleft));
+                        key = LocalKey("player_eliminated_num");
+                    } else {
+                        key = LocalKey("player_eliminated");
                     }
-                    mediator.getCallbacks().gameMsg(-1, str_latin1.str());
+                    mediator.getCallbacks().gameMsgLoc(-1, key, params);
 
                     // Now eliminate the player.
                     mediator.changePlayerState(*this, PlayerState::ELIMINATED);

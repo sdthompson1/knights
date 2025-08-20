@@ -337,11 +337,11 @@ void ViewManager::reallyAddEntity(int plyr, shared_ptr<Entity> ent, unsigned sho
     int motion_time_remaining = ent->getArrivalTime() - gvt;
     if (motion_time_remaining < 0) motion_time_remaining = 0;
 
-    UTF8String name;
+    PlayerID player_id;
     bool show_speech_bubble = false;
     Knight *kt = dynamic_cast<Knight*>(ent.get());
     if (kt) {
-        name = kt->getPlayer()->getName();
+        player_id = kt->getPlayer()->getPlayerID();
         show_speech_bubble = kt->getPlayer()->getSpeechBubble();
     }
     dungeon_view.addEntity(id, x, y, ent->getHeight(), ent->getFacing(), anim, ovr, af,
@@ -349,7 +349,7 @@ void ViewManager::reallyAddEntity(int plyr, shared_ptr<Entity> ent, unsigned sho
                            ainvis, ainvuln,
                            ent->isApproaching(),
                            ent->getOffset(), ent->getMotionType(), motion_time_remaining,
-                           name);
+                           player_id);
     if (show_speech_bubble) dungeon_view.setSpeechBubble(id, true);
 }
 

@@ -44,6 +44,7 @@
 #include "lua_sandbox.hpp"
 #include "load_font.hpp"
 #include "loading_screen.hpp"
+#include "localization.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
@@ -246,7 +247,7 @@ public:
     std::unique_ptr<KnightsLobby> knights_lobby;
 #ifdef USE_VM_LOBBY
     VMKnightsLobby *vm_knights_lobby;
-    std::string vm_lobby_leader_id;
+    PlayerID vm_lobby_leader_id;
 #endif
     boost::shared_ptr<KnightsClient> knights_client;
 
@@ -260,9 +261,9 @@ public:
 
     // autostart mode
     bool autostart;
-    
+
     // localization strings
-    std::unordered_map<int, Coercri::UTF8String> localization_strings;
+    Localization localization;
 
     // functions
     KnightsAppImpl() : running(true), player_name_changed(false) { }
@@ -333,7 +334,10 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     }
     
     // Read knights_data/client/localization_strings.txt
-    readLocalizationStrings();
+    {
+        RStream file("client/localization_strings.txt");
+        pimpl->localization.readStrings(file);
+    }
 
     // initialize game options
     pimpl->options.reset(new Options);
@@ -380,7 +384,14 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
 #else
 #error "Online platform not defined"
 #endif
+
+    // use online platform for username lookup
+    pimpl->localization.setPlayerNameLookup([this](const PlayerID &id) {
+        return pimpl->online_platform->lookupUserName(id);
+    });
+
 #else
+    // online platform not available
     // use the enet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
     pimpl->net_driver->enableServer(false);  // start off disabled.
@@ -554,11 +565,13 @@ void KnightsApp::repeatLastMouseInput()
     pimpl->cg_listener->repeatLastMouseInput();
 }
 
+// Returns default player name for LAN games (as set in the options file)
 const UTF8String & KnightsApp::getPlayerName() const
 {
     return pimpl->options->player_name;
 }
 
+// Modifies default player name for LAN games (as set in the options file)
 void KnightsApp::setPlayerName(const UTF8String &name) 
 {
     if (name != pimpl->options->player_name) {
@@ -848,7 +861,7 @@ void KnightsApp::runKnights()
     std::unique_ptr<Screen> initial_screen;
 
     if (pimpl->autostart) {
-        initial_screen.reset(new LoadingScreen(-1, UTF8String(), true, true, false, true));  // single player on, menu-strict on, tutorial off, autostart on
+        initial_screen.reset(new LoadingScreen(-1, PlayerID(), true, true, false, true));  // single player on, menu-strict on, tutorial off, autostart on
     } else {
         // Go to title screen.
         if (pimpl->options->first_time) {
@@ -863,7 +876,7 @@ void KnightsApp::runKnights()
     executeScreenChange();
 
     // Error Handling system.
-    std::string error;
+    UTF8String error;
     int num_errors = 0;
 
     // Frame timing
@@ -877,7 +890,7 @@ void KnightsApp::runKnights()
         if (!error.empty() && num_errors > 100) {
             // Too many errors
             // Abort game.
-            throw UnexpectedError("FATAL: " + error);
+            throw UnexpectedError("FATAL: " + error.asUTF8());
         }
 
         try {
@@ -889,7 +902,7 @@ void KnightsApp::runKnights()
                 screen.reset(new ErrorScreen(error));
                 requestScreenChange(std::move(screen));
                 executeScreenChange();
-                error.clear();
+                error = UTF8String();
                 ++num_errors;
             }
 
@@ -974,11 +987,11 @@ void KnightsApp::runKnights()
             // These are big and better displayed on stdout than in a guichan dialog box:
             throw;
         } catch (std::exception &e) {
-            error = std::string("ERROR: ") + e.what();
+            error = UTF8String::fromUTF8Safe(std::string("ERROR: ") + e.what());
         } catch (gcn::Exception &e) {
-            error = std::string("Guichan Error: ") + e.getMessage();
+            error = UTF8String::fromUTF8Safe(std::string("Guichan Error: ") + e.getMessage());
         } catch (...) {
-            error = "Unknown Error";
+            error = UTF8String::fromUTF8("Unknown Error");
         }
     }
 
@@ -1102,6 +1115,11 @@ boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lob
     // Create the platform lobby
     if (lobby_id.empty()) {
         pimpl->platform_lobby = pimpl->online_platform->createLobby(vis);
+
+        // Set initial status
+        std::vector<LocalParam> no_params;
+        pimpl->platform_lobby->setGameStatus(LocalKey("selecting_quest"), no_params);
+
     } else {
         pimpl->platform_lobby = pimpl->online_platform->joinLobby(lobby_id);
     }
@@ -1112,7 +1130,7 @@ boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lob
     // Install the given knights lobby
     pimpl->vm_knights_lobby = kts_lobby.get();
     pimpl->knights_lobby = std::move(kts_lobby);
-    pimpl->vm_lobby_leader_id.clear();
+    pimpl->vm_lobby_leader_id = PlayerID();
 
     // Create the client
     pimpl->knights_client.reset(new KnightsClient);
@@ -1136,7 +1154,7 @@ void KnightsAppImpl::updateOnlinePlatform()
         if (vm_lobby_leader_id == online_platform->getCurrentUserId()) {
             vm_knights_lobby->becomeLeader(0);  // Dummy port number
         } else {
-            vm_knights_lobby->becomeFollower(vm_lobby_leader_id);
+            vm_knights_lobby->becomeFollower(vm_lobby_leader_id.asString(), 0);  // Use leader's PlayerID as the address
         }
     }
 #endif
@@ -1191,11 +1209,11 @@ void KnightsAppImpl::processBroadcastMsgs()
 //////////////////////////////////////////////
 
 void KnightsApp::createGameManager(boost::shared_ptr<KnightsClient> knights_client, bool single_player, 
-                                   bool tutorial_mode, bool autostart_mode, const UTF8String &my_player_name)
+                                   bool tutorial_mode, bool autostart_mode, const PlayerID &my_player_id)
 {
     if (pimpl->game_manager) throw UnexpectedError("GameManager created twice");
     pimpl->game_manager.reset(new GameManager(*this, knights_client, pimpl->timer, single_player, tutorial_mode,
-                                              autostart_mode, my_player_name));
+                                              autostart_mode, my_player_id));
 }
 
 void KnightsApp::destroyGameManager()
@@ -1221,64 +1239,25 @@ OnlinePlatform & KnightsApp::getOnlinePlatform()
 // setQuestMessageCode
 //////////////////////////////////////////////
 
-void KnightsApp::setQuestMessageCode(int quest_msg_code)
+void KnightsApp::setQuestMessageCode(const LocalKey & quest_key)
 {
 #ifdef ONLINE_PLATFORM
     if (pimpl->platform_lobby
     && pimpl->platform_lobby->getLeaderId() == pimpl->online_platform->getCurrentUserId()) {
-        pimpl->platform_lobby->setStatusCode(quest_msg_code);
+        LocalKey key;
+        std::vector<LocalParam> params;
+        if (quest_key == LocalKey()) {
+            key = LocalKey("selecting_quest");
+        } else {
+            key = LocalKey("playing_x");
+            params.push_back(LocalParam(quest_key));
+        }
+        pimpl->platform_lobby->setGameStatus(key, params);
     }
 #endif
 }
 
-
-//////////////////////////////////////////////
-// Localization support
-//////////////////////////////////////////////
-
-void KnightsApp::readLocalizationStrings()
+const Localization & KnightsApp::getLocalization() const
 {
-    RStream file("client/localization_strings.txt");
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.empty() || line[0] == '#') continue; // skip empty lines and comments
-
-        std::istringstream iss(line);
-        int code;
-        if (iss >> code) {
-            // Skip whitespace after the code
-            while (iss.peek() == ' ' || iss.peek() == '\t') {
-                iss.get();
-            }
-            // Rest of line is the message
-            std::string message;
-            if (std::getline(iss, message)) {
-                pimpl->localization_strings[code] = Coercri::UTF8String::fromUTF8(message);
-            }
-        }
-    }
-}
-
-const Coercri::UTF8String & KnightsApp::getLocalizationString(int msg_code) const
-{
-    static const Coercri::UTF8String empty_string;
-    auto iter = pimpl->localization_strings.find(msg_code);
-    if (iter == pimpl->localization_strings.end()) {
-        return empty_string;
-    } else {
-        return iter->second;
-    }
-}
-
-Coercri::UTF8String KnightsApp::getLocalizationString(int msg_code, const Coercri::UTF8String &param1) const
-{
-    const Coercri::UTF8String &base_str = getLocalizationString(msg_code);
-    std::string result = base_str.asUTF8();
-    
-    size_t pos = result.find("%1");
-    if (pos != std::string::npos) {
-        result.replace(pos, 2, param1.asUTF8());
-    }
-    
-    return Coercri::UTF8String::fromUTF8(result);
+    return pimpl->localization;
 }

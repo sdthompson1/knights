@@ -95,9 +95,9 @@ void KnightsConfig::changeNumberOfPlayers(int nplayers, int nteams, MenuListener
     pimpl->getMenuWrapper().changeNumberOfPlayers(nplayers, nteams, listener);
 }
 
-bool KnightsConfig::checkNumPlayersStrict(std::string &err_msg) const
+bool KnightsConfig::checkNumPlayersStrict(LocalKey &err_key, std::vector<LocalParam> &err_params) const
 {
-    return pimpl->getMenuWrapper().checkNumPlayersStrict(err_msg);
+    return pimpl->getMenuWrapper().checkNumPlayersStrict(err_key, err_params);
 }
 
 void KnightsConfig::resetMenu()
@@ -123,7 +123,7 @@ void KnightsConfig::initializeGame(HomeManager &home_manager,
                                    EventManager &event_manager,
                                    TaskManager &task_manager,
                                    const std::vector<int> &hse_cols,
-                                   const std::vector<UTF8String> &player_names) const
+                                   const std::vector<PlayerID> &player_ids) const
 {
     pimpl->initializeGame(home_manager,
                           players,
@@ -133,7 +133,7 @@ void KnightsConfig::initializeGame(HomeManager &home_manager,
                           event_manager,
                           task_manager,
                           hse_cols,
-                          player_names);
+                          player_ids);
 }
 
 boost::shared_ptr<const ConfigMap> KnightsConfig::getConfigMap() const

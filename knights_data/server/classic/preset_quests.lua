@@ -20,7 +20,7 @@
 
 quest_table = {
    gems = {
-      name = "Quest for Gems",
+      name_key = "quest_for_gems",
       description = function(S)
          return "Quest for Gems\n\n"
             .. "Deep within the dungeon are hidden four gems.\n\n"
@@ -47,7 +47,7 @@ quest_table = {
       }
    },
    big_gems = {
-      name = "The Big Quest for Gems",
+      name_key = "big_quest_for_gems",
       description = function(S)
          return "The Big Quest for Gems\n\n"
             .. "Deep within the vast dungeon are hidden six gems.\n\n"
@@ -74,7 +74,7 @@ quest_table = {
       }
    },
    shock = {
-      name = "Shock Assault",
+      name_key = "shock_assault",
       description = function(S)
          return "Shock Assault\n\n"
             .. "You must make a shock assault on the entry point of the other knight. "
@@ -106,7 +106,7 @@ quest_table = {
       }
    },
    survival = {
-      name = "War of Survival",
+      name_key = "war_of_survival",
       description = function(S)
          return "War of Survival\n\n"
             .. "You must secure all entry points with the wand so that your opponents cannot use them, "
@@ -134,7 +134,7 @@ quest_table = {
       }
    },
    dungeon_death = {
-      name = "The Dungeon of Death",
+      name_key = "dungeon_of_death",
       description = function(S)
          return "The Dungeon of Death\n\n"
             .. "Out of the vampire bat infested dungeon you must find an exit which "
@@ -161,7 +161,7 @@ quest_table = {
       }
    },
    gnomes = {
-      name = "The Lost Book of the Gnome King",
+      name_key = "lost_book_of_gnome",
       description = function(S)
          return "The Lost Book of the Gnome King\n\n"
             .. "The ancient Gnome King left his book of wisdom within this dungeon.\n\n"
@@ -188,7 +188,7 @@ quest_table = {
       }
    },
    liche = {
-      name = "The Tomb of the Liche Lord",
+      name_key = "tomb_of_liche",
       description = function(S)
          return "The Tomb of the Liche Lord\n\n"
             .. "The Liche Lord is gone but his spell book is still in our universe. "
@@ -215,7 +215,7 @@ quest_table = {
       }
    },
    wand_death = {
-      name = "The Ancient Wand of Death",
+      name_key = "ancient_wand_of_death",
       description = function(S)
          return "The Ancient Wand of Death\n\n"
             .. "The Wand of Destruction is hidden in this dungeon.\n\n"
@@ -244,7 +244,7 @@ quest_table = {
       }
    },
    paradise = {
-      name = "The Way to the Paradise",
+      name_key = "way_of_paradise",
       description = function(S)
          return "The Way to the Paradise\n\n"
             .. "Legend has it that any hero who strikes the Book of Knowledge with "
@@ -272,7 +272,7 @@ quest_table = {
       }
    },
    giants = {
-      name = "The Quest of Giants",
+      name_key = "quest_of_giants",
       description = function(S)
          return "The Quest of Giants\n\n"
             .. "You are put on the huge quest.\n\n"
@@ -301,7 +301,7 @@ quest_table = {
       }
    },
    freedom = {
-      name = "Run for the Freedom",
+      name_key = "run_for_freedom",
       description = function(S)
          return "Run for the Freedom\n\n"
             .. "You are trapped in the dungeon of vampire bats.\n\n"
@@ -328,7 +328,7 @@ quest_table = {
       }
    },
    deathmatch = {
-      name = "Knights Deathmatch",
+      name_key = "knights_deathmatch",
       min_teams = 2,    -- Deathmatch doesn't make sense with only one team (no-one can score any points!)
       settings = {
          mission = "deathmatch",
@@ -372,13 +372,13 @@ quest_order = {
 -- This is the function called by menus.lua to build the Quest menu
 function make_quest_choices()
    local result = {
-      { id="custom", text="Custom" }
+      { id="custom", text_key="custom" }
    }
    for i,v in ipairs(quest_order) do
       local q = quest_table[v]
       local item = {
          id = v,
-         text = q.name,
+         text_key = q.name_key,
          min_players = q.min_players,
          max_players = q.max_players,
          min_teams = q.min_teams,

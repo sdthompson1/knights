@@ -36,6 +36,7 @@
 #include "metaserver_urls.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
+#include "player_id.hpp"
 #include "rng.hpp"
 #include "rstream.hpp"
 #include "version.hpp"
@@ -312,7 +313,7 @@ bool ProcessIncomingNetMsgs()
     Coercri::NetworkDriver::Connections new_conns = net_driver->pollIncomingConnections();
     for (Coercri::NetworkDriver::Connections::const_iterator it = new_conns.begin(); it != new_conns.end(); ++it) {
         Conn conn;
-        conn.server_conn = &g_knights_server->newClientConnection((*it)->getAddress());
+        conn.server_conn = &g_knights_server->newClientConnection((*it)->getAddress(), PlayerID());
         conn.remote = *it;
         g_conns.push_back(conn);
         did_something = true;

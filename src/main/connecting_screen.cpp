@@ -28,6 +28,7 @@
 #include "knights_app.hpp"
 #include "knights_client.hpp"
 #include "options.hpp"
+#include "player_id.hpp"
 #include "start_game_screen.hpp"
 
 #include "gui_button.hpp"
@@ -46,7 +47,7 @@ public:
     ConnectingScreenImpl(const std::string &addr,
                          int port,
                          bool join_lan,
-                         const UTF8String &pname);
+                         const PlayerID &player_id);
     void setupGui(KnightsApp &ka, gcn::Gui &gui);
     void setupConnection();
     void action(const gcn::ActionEvent &event);
@@ -55,7 +56,7 @@ private:
     std::string address;
     int port;
     bool join_lan_game;
-    UTF8String player_name;
+    PlayerID player_id;
     
     bool setup_done;
 
@@ -71,11 +72,11 @@ private:
 ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr,
                                            int port,
                                            bool join_lan,
-                                           const UTF8String &pname)
+                                           const PlayerID &id)
     : address(addr),
       port(port),
       join_lan_game(join_lan),
-      player_name(pname),
+      player_id(id),
       setup_done(false),
       knights_app(nullptr)
 { }
@@ -112,10 +113,10 @@ void ConnectingScreenImpl::setupConnection()
 
     boost::shared_ptr<KnightsClient> client;
     client = knights_app->joinRemoteServer(address, port);
-    knights_app->createGameManager(client, false, false, false, player_name);
+    knights_app->createGameManager(client, false, false, false, player_id);
     knights_app->getGameManager().setLanGame(join_lan_game);
     client->setClientCallbacks(&knights_app->getGameManager());
-    client->setPlayerNameAndControls(player_name, knights_app->getOptions().new_control_system);
+    client->setPlayerIdAndControls(player_id, knights_app->getOptions().new_control_system);
 
     std::ostringstream str;
     if (address.find(':') != std::string::npos) {
@@ -139,8 +140,8 @@ void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
 
-ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, const UTF8String &pname)
-    : pimpl(new ConnectingScreenImpl(addr, port, join_lan, pname))
+ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, const PlayerID &id)
+    : pimpl(new ConnectingScreenImpl(addr, port, join_lan, id))
 {
 }
 

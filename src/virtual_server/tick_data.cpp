@@ -56,6 +56,14 @@ namespace {
         return *first++;
     }
 
+    int ReadUshort(const unsigned char *&first,
+                   const unsigned char *last)
+    {
+        int low = ReadUbyte(first, last);
+        int high = ReadUbyte(first, last);
+        return low | (high << 8);
+    }
+
     // Returns an integer between 0 and MAX_LENGTH inclusive
     int ReadLength(const unsigned char *&first,
                    const unsigned char *last)
@@ -125,11 +133,14 @@ const unsigned char * ReadTickData(const unsigned char *ptr,
     // If ptr==end there is no tick to process.
     if (ptr == end) return ptr;
 
-    // First we expect a single byte giving the tick duration, shifted left one bit.
+    // First we expect two bytes (little-endian) giving the tick duration, shifted left one bit.
     // Also, if bit 0 is set, this indicates that there are tick messages.
-    int duration_byte = ReadUbyte(ptr, end);
-    bool more_messages = (duration_byte & 1);
-    int duration = duration_byte >> 1;
+    int duration_word = ReadUshort(ptr, end);
+    bool more_messages = (duration_word & 1);
+    int duration = duration_word >> 1;
+    if (duration > TickWriter::MAX_TICK_MS) {
+        throw std::runtime_error("Tick duration too long");
+    }
 
     // Send the "onNewTick" callback.
     callbacks.onNewTick(duration);
@@ -160,7 +171,7 @@ const unsigned char * ReadTickData(const unsigned char *ptr,
 #ifdef LOG_TICK_DATA
                 std::cout << "Read TM_NEW_CONNECTION " << int(client_num) << " " << s << std::endl;
 #endif
-                callbacks.onNewConnection(client_num, s);
+                callbacks.onNewConnection(client_num, PlayerID(s));
             }
             break;
 
@@ -225,10 +236,11 @@ TickWriter::TickWriter(std::vector<unsigned char> &tick_data_)
 void TickWriter::beginNewMessage(int msg_type, int payload_length, uint8_t client_num)
 {
     if (last_msg_pos == -1) {
-        // No messages written yet, so reserve 1 byte for the tick duration header.
+        // No messages written yet, so reserve 2 bytes for the tick duration header.
         // We'll patch the actual value in finalize().
         tick_duration_header_pos = tick_data.size();
-        tick_data.push_back(0);  // Reserve 1 byte for tick duration + message bit
+        tick_data.push_back(0);
+        tick_data.push_back(0);  // Reserve 2 bytes for tick duration + message bit
     }
 
     // Sanity check that the tick buffer hasn't got too long
@@ -267,32 +279,42 @@ void TickWriter::finalize(int tick_duration_ms)
     if (tick_duration_ms < 0) {
         throw std::runtime_error("Tick duration cannot be negative");
     }
-    if (tick_duration_ms > 127) {
-        throw std::runtime_error("Tick duration cannot be greater than 127");
+    if (tick_duration_ms > MAX_TICK_MS) {
+        throw std::runtime_error("Tick duration is too long");
     }
-    
+
+    // First two bytes must be tick_duration_ms, shifted left one bit, and
+    // written little-endian.
+    int value = (tick_duration_ms << 1);
+    int lo_byte = (value & 0xff);
+    int hi_byte = ((value >> 8) & 0xff);
+
     if (tick_duration_header_pos == -1) {
         // No messages written, so write the tick duration, with bit 0 clear to
         // indicate no messages present.
-        tick_data.push_back(tick_duration_ms << 1);
+        tick_data.push_back(lo_byte);
+        tick_data.push_back(hi_byte);
     } else {
         // At least one message was written, so patch the tick duration header
         // with bit 0 set to indicate messages are present.
-        tick_data[tick_duration_header_pos] = (tick_duration_ms << 1) | 1;
+        tick_data[tick_duration_header_pos] = (lo_byte | 1);
+        tick_data[tick_duration_header_pos + 1] = hi_byte;
         
         // Clear the "more_messages" bit for the last message
-        tick_data[last_msg_pos] ^= 0x80;
+        tick_data[last_msg_pos] &= 0x7f;
     }
 }
 
-void TickWriter::writeNewConnection(uint8_t client_num, const std::string &platform_user_id)
+void TickWriter::writeNewConnection(uint8_t client_num, const PlayerID &platform_user_id)
 {
 #ifdef LOG_TICK_DATA
     std::cout << "Write TM_NEW_CONNECTION " << int(client_num) << std::endl;
 #endif
 
-    beginNewMessage(TM_NEW_CONNECTION, platform_user_id.size(), client_num);
-    for (char c : platform_user_id) {
+    const std::string &user_id = platform_user_id.asString();
+
+    beginNewMessage(TM_NEW_CONNECTION, user_id.size(), client_num);
+    for (char c : user_id) {
         tick_data.push_back(c);
     }
 }

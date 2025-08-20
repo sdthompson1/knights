@@ -146,7 +146,7 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 
     if (event.getSource() == split_screen_mode.get()) {
         // Go to LoadingScreen in split-screen mode
-        new_screen.reset(new LoadingScreen(-1, UTF8String(), false, true, false, false));
+        new_screen.reset(new LoadingScreen(-1, PlayerID(), false, true, false, false));
 
 #ifdef ONLINE_PLATFORM
     } else if (event.getSource() == online_multiplayer.get()) {
@@ -169,7 +169,7 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 
     } else if (event.getSource() == single_player_mode.get()) {
         // Go to LoadingScreen in single player mode
-        new_screen.reset(new LoadingScreen(-1, UTF8String(), true, true, false, false));
+        new_screen.reset(new LoadingScreen(-1, PlayerID(), true, true, false, false));
         
     } else if (event.getSource() == exit.get()) {
         // Go back to title screen

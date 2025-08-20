@@ -133,6 +133,7 @@ CXXFILES = \
 	engine/impl/user_control_lua_ctor.cpp \
 	engine/impl/view_manager.cpp \
 	misc/config_map.cpp \
+	misc/localization.cpp \
 	misc/rng.cpp \
 	misc/round.cpp \
 	rstream/rstream.cpp \
@@ -146,6 +147,7 @@ CXXFILES = \
 	server/impl/server_mini_map.cpp \
 	server/impl/server_status_display.cpp \
 	shared/impl/anim.cpp \
+	shared/impl/announcement_loc.cpp \
 	shared/impl/colour_change.cpp \
 	shared/impl/file_info.cpp \
 	shared/impl/graphic.cpp \

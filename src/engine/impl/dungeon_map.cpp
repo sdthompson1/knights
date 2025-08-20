@@ -538,10 +538,12 @@ private:
     {
         const std::string &name = di.item->getType().getCriticalMsg();
         if (!name.empty()) {
-            Mediator::instance().getCallbacks().gameMsg(-1, name + " has been respawned at a random location.");
+            // TODO: this should be localized at some point.
+            std::string msg = name + " has been respawned at a random location.";
+            Mediator::instance().getCallbacks().gameMsgRaw(-1, UTF8String::fromUTF8Safe(msg));
         }
     }
-    
+
 private:
     DungeonMap &dmap;
     int tries;

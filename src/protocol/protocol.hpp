@@ -29,6 +29,7 @@
 #ifndef PROTOCOL_HPP
 #define PROTOCOL_HPP
 
+#include "localization.hpp"
 #include "my_exceptions.hpp"
 
 #include <cstdint>
@@ -41,7 +42,14 @@
 
 class ProtocolError : public ExceptionBase {
 public:
-    explicit ProtocolError(const std::string &msg) : ExceptionBase(msg) { }
+    // TODO: The LocalKey should probably be moved up into ExceptionBase
+    explicit ProtocolError(const LocalKey &key)
+        : ExceptionBase(key.getKey()), local_key(key) { }
+
+    const LocalKey & getLocalKey() const { return local_key; }
+
+private:
+    LocalKey local_key;
 };
 
 
@@ -51,11 +59,11 @@ public:
 
 // Messages sent by the client
 enum ClientMessageCode {
-    CLIENT_SET_PLAYER_NAME = 1,      // followed by string (my player name). should be 1st cmd sent.
+    CLIENT_SET_PLAYER_ID = 1,        // followed by string (my player id). should be 1st cmd sent.
     CLIENT_JOIN_GAME = 3,            // followed by string (game name I want to join)
     CLIENT_JOIN_GAME_SPLIT_SCREEN = 4,   // followed by string (game name I want to join)
     CLIENT_LEAVE_GAME = 5,           // (I want to leave game and return to "unjoined" state). No extra data
-    CLIENT_CHAT = 6,                 // followed by string
+    CLIENT_CHAT = 6,                 // followed by UTF-8 string
     CLIENT_SET_READY = 7,            // followed by ubyte (ready-status)
     CLIENT_SET_HOUSE_COLOUR = 8,     // followed by ubyte (which house col to set).
     CLIENT_SET_MENU_SELECTION = 9,   // followed by 2 varints
@@ -77,47 +85,49 @@ enum ClientMessageCode {
 // Messages sent by the server
 enum ServerMessageCode {
 
-    SERVER_ERROR = 1,                // followed by string
+    SERVER_ERROR = 1,                // followed by string (localkey)
 
     SERVER_CONNECTION_ACCEPTED = 2,  // followed by varint (server version number)
     
     SERVER_JOIN_GAME_ACCEPTED = 3,   // complex
-    SERVER_JOIN_GAME_DENIED = 4,     // followed by string (reason)
+    SERVER_JOIN_GAME_DENIED = 4,     // followed by string (reason, as localkey)
     SERVER_NOTUSED = 5,              // was SERVER_INITIAL_PLAYER_LIST in version 011 and below
-    SERVER_PLAYER_CONNECTED = 6,     // followed by string (player name)
-    SERVER_PLAYER_DISCONNECTED = 7,  // followed by string (player name)
+    SERVER_PLAYER_CONNECTED = 6,     // followed by string (player id)
+    SERVER_PLAYER_DISCONNECTED = 7,  // followed by string (player id)
     
     SERVER_LEAVE_GAME = 8,           // no extra data
     SERVER_SET_MENU_SELECTION = 9,   // complex
-    SERVER_SET_QUEST_DESCRIPTION = 10,  // followed by string
+    SERVER_SET_QUEST_DESCRIPTION = 10,  // followed by string (localkey)
     SERVER_START_GAME = 11,          // followed by ubyte (num_displays), ubyte (deathmatch flag), ubyte (already_started_flag). implicitly clears all ready-flags.
     SERVER_GOTO_MENU = 12,           // no extra data.
     SERVER_START_GAME_OBS = 13,      // followed by ubyte (num_displays), ubyte (deathmatch flag), NDisp strings (player names, for obs-mode)
                                      //   + ubyte (0 = at start of game, 1 = halfway through.)
-    SERVER_GO_INTO_OBS_MODE = 14,    // followed by ubyte (num displays) + NDisp strings (player names, for obs-mode)
-    
-    SERVER_PLAYER_JOINED_THIS_GAME = 20,     // followed by string (name), ubyte (obs-flag), ubyte (house-col)
-    SERVER_PLAYER_LEFT_THIS_GAME = 21,       // followed by string (name), ubyte (obs-flag)
-    SERVER_SET_READY = 22,           // followed by string (name) and ubyte (ready status)
-    SERVER_SET_HOUSE_COLOUR = 23,    // followed by string (name), ubyte (which house col to set).
+    SERVER_GO_INTO_OBS_MODE = 14,    // followed by ubyte (num displays) + NDisp strings (player ids, for obs-mode)
+
+    SERVER_PLAYER_JOINED_THIS_GAME = 20,     // followed by string (player-id), ubyte (obs-flag), ubyte (house-col)
+    SERVER_PLAYER_LEFT_THIS_GAME = 21,       // followed by string (player-id), ubyte (obs-flag)
+    SERVER_SET_READY = 22,           // followed by string (player-id) and ubyte (ready status)
+    SERVER_SET_HOUSE_COLOUR = 23,    // followed by string (player-id), ubyte (which house col to set).
     SERVER_SET_AVAILABLE_HOUSE_COLOURS = 24,    // followed by ubyte (num hse cols) and the cols as (r,g,b) ubyte triples.
-    SERVER_SET_OBS_FLAG = 25,        // followed by string (player name), ubyte (1=obs 0=player).
+    SERVER_SET_OBS_FLAG = 25,        // followed by string (player-id), ubyte (1=obs 0=player).
     SERVER_DEACTIVATE_READY_FLAGS = 26,         // no additional data
-    
-    SERVER_CHAT = 30,                // followed by string (sender), ubyte (0=lobby 1=player 2=observer 3=team), string (msg)
-    SERVER_ANNOUNCEMENT = 31,        // followed by string (msg_latin1)
-    SERVER_POP_UP_WINDOW = 32,       // complex. only used in 1-player games.
+
+    SERVER_CHAT = 30,                // followed by string (player-id), ubyte (0=lobby 1=player 2=observer 3=team), string (utf-8 chat msg)
+    SERVER_ANNOUNCEMENT_RAW = 31,    // followed by string (raw utf-8 message). Be careful - the string can't necessarily be trusted.
+    SERVER_ANNOUNCEMENT_LOC = 32,    // followed by string (localkey) + ubyte (num params) + params; see announcement_loc.cpp for the param format
+
+    SERVER_POP_UP_WINDOW = 33,       // complex. only used in 1-player games.
     
     SERVER_REQUEST_PASSWORD = 35,    // followed by ubyte (first_attempt)
 
     SERVER_UPDATE_GAME = 36,         // followed by string (game name), varint (num_players), varint (num_observers), ubyte (status code)
     SERVER_DROP_GAME = 37,           // followed by string (game name)
-    SERVER_UPDATE_PLAYER = 38,       // followed by string (player name), string (game name), ubyte (1=obs 0=player)
+    SERVER_UPDATE_PLAYER = 38,       // followed by string (player id), string (game name), ubyte (1=obs 0=player)
 
     SERVER_PLAYER_LIST = 39,         // complex
     SERVER_TIME_REMAINING = 40,      // followed by varint (time remaining in milliseconds)
 
-    SERVER_READY_TO_END = 41,        // followed by string (name of the player who is ready to end)
+    SERVER_READY_TO_END = 41,        // followed by string (id of the player who is ready to end)
     
     // knights callbacks
     SERVER_PLAY_SOUND = 50,          // followed by varint (soundnum) + varint (frequency)
@@ -142,7 +152,7 @@ enum ServerMessageCode {
     SERVER_PLACE_ICON = 111,         // followed by room-coord, varint (gfx-id), ushort (duration)
     SERVER_FLASH_MESSAGE = 112,      // followed by string, ubyte (ntimes)
     SERVER_CANCEL_CONTINUOUS_MESSAGES = 113,  // no data
-    SERVER_ADD_CONTINUOUS_MESSAGE = 114,  // followed by string
+    SERVER_ADD_CONTINUOUS_MESSAGE = 114,  // followed by string (localkey)
     SERVER_SET_SPEECH_BUBBLE = 115,  // followed by varint (id), ubyte (show flag)
 
     // minimap
@@ -165,6 +175,7 @@ enum ServerMessageCode {
     
     // misc
     SERVER_SWITCH_PLAYER = 250,      // followed by ubyte (player number)
+    SERVER_LUA_ERROR = 251,          // followed by string (error dump)
 
     // extended messages
     // (will be ignored if the client doesn't know the message.)
@@ -172,7 +183,7 @@ enum ServerMessageCode {
 };
 
 enum ServerExtendedCode {
-    SERVER_EXT_SET_QUEST_HINTS = 1,
+    SERVER_EXT_SET_QUEST_HINTS = 1,   // TODO: These need to be localized
     SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR = 2,
     SERVER_EXT_DISABLE_VIEW = 3
 };

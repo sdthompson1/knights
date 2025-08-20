@@ -56,7 +56,7 @@ public:
     explicit KnightsEngineImpl(int nplayers)
         : view_manager(nplayers),
           initial_update_needed(true),
-          initial_msgs(0),
+          initial_msgs(nullptr),
           premapped(false),
           respawn_delay(-1),
           lockpick_itemtype(0), lockpick_init_time(-1), lockpick_interval(-1),
@@ -85,7 +85,7 @@ public:
 
     // setup variables (set by Lua functions during game startup)
     bool initial_update_needed;
-    std::vector<std::string> *initial_msgs;
+    std::vector<UTF8String> *initial_msgs;
     std::vector<std::pair<ItemType *, std::vector<int> > > starting_gears;
     bool premapped;
     std::vector<ItemType*> respawn_items;
@@ -115,9 +115,9 @@ public:
 
 KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
-                             const std::vector<UTF8String> &player_names,
+                             const std::vector<PlayerID> &player_ids,
                              bool &deathmatch_mode,
-                             std::vector<std::string> &messages)
+                             std::vector<UTF8String> &messages)
 {
     try {
 
@@ -142,7 +142,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                                pimpl->event_manager,
                                pimpl->task_manager,
                                hse_cols,
-                               player_names);
+                               player_ids);
         
         pimpl->house_col_idxs = hse_cols;
 
@@ -162,7 +162,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
             pimpl->initial_msgs = &messages;
             std::string err_msg;
             bool can_start = config->runGameStartup(err_msg);
-            pimpl->initial_msgs = 0;
+            pimpl->initial_msgs = nullptr;
             if (!can_start) {
                 throw LuaError(err_msg);
             }
@@ -202,7 +202,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
         
     } catch (...) {
 
-        pimpl->initial_msgs = 0;
+        pimpl->initial_msgs = nullptr;
         
         // If there was an error in ctor then make sure Mediator gets
         // destroyed properly.
@@ -396,28 +396,6 @@ void KnightsEngine::changePlayerState(int player, PlayerState new_state)
     pimpl->pending_state_changes.push_back(std::make_pair(player, new_state));
 }
 
-namespace {
-    struct ComparePlayerInfo {
-        ComparePlayerInfo(const std::map<int, UTF8String> &house_first_names) 
-            : house_first_names(house_first_names) {}
-        
-        bool operator()(const PlayerInfo &lhs, const PlayerInfo &rhs) const
-        {
-            // Sort houses by the alphabetically first player name in each house
-            if (lhs.house_colour_index != rhs.house_colour_index) {
-                return house_first_names.at(lhs.house_colour_index)
-                    < house_first_names.at(rhs.house_colour_index);
-            }
-            
-            // Within the same house, sort by player name
-            return lhs.name < rhs.name;
-        }
-        
-    private:
-        const std::map<int, UTF8String> &house_first_names;
-    };
-}
-
 void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
 {
     player_list.clear();
@@ -429,7 +407,7 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
     int plyr_num = 0;
     for (std::vector<boost::shared_ptr<Player> >::const_iterator it = pimpl->players.begin(); it != pimpl->players.end(); ++it, ++plyr_num) {
         PlayerInfo inf;
-        inf.name = (*it)->getName();
+        inf.id = (*it)->getPlayerID();
         inf.house_colour_index = pimpl->house_col_idxs.at(plyr_num);
         inf.house_colour = house_colours.at(inf.house_colour_index);
         inf.player_num = plyr_num;
@@ -439,18 +417,6 @@ void KnightsEngine::getPlayerList(std::vector<PlayerInfo> &player_list) const
         inf.player_state = (*it)->getPlayerState();
         player_list.push_back(inf);
     }
-
-    // Pre-compute the alphabetically first player name for each house
-    std::map<int, UTF8String> house_first_names;
-    for (const PlayerInfo &player : player_list) {
-        int house_idx = player.house_colour_index;
-        if (house_first_names.find(house_idx) == house_first_names.end() || 
-        player.name < house_first_names[house_idx]) {
-            house_first_names[house_idx] = player.name;
-        }
-    }
-
-    std::sort(player_list.begin(), player_list.end(), ComparePlayerInfo(house_first_names));
 }
 
 bool KnightsEngine::isPlayerListDirty()
@@ -493,7 +459,7 @@ void KnightsEngine::setPremapped(bool pm)
     pimpl->premapped = pm;
 }
 
-void KnightsEngine::gameStartupMsg(const std::string &msg)
+void KnightsEngine::gameStartupMsg(const UTF8String &msg)
 {
     if (pimpl->initial_msgs) {
         pimpl->initial_msgs->push_back(msg);

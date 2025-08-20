@@ -31,6 +31,7 @@
 #ifndef IN_GAME_SCREEN_HPP
 #define IN_GAME_SCREEN_HPP
 
+#include "player_id.hpp"
 #include "screen.hpp"
 
 #include "gfx/window_listener.hpp"  // coercri
@@ -53,7 +54,7 @@ public:
     InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> knights_client, 
                  boost::shared_ptr<const ClientConfig> config, int nplayers_,
                  bool deathmatch_mode,
-                 const std::vector<UTF8String> &player_names,
+                 const std::vector<PlayerID> &player_ids,
                  bool single_player_, bool tutorial);
     virtual bool start(KnightsApp &, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     virtual ~InGameScreen();
@@ -94,7 +95,7 @@ private:
     boost::scoped_ptr<gcn::Container> container;
 
     // held across initialization only:
-    std::vector<UTF8String> init_player_names;
+    std::vector<PlayerID> init_player_ids;
     int init_nplayers;
     bool deathmatch_mode;
 
@@ -108,7 +109,7 @@ private:
     Coercri::KeyCode global_chat_key, team_chat_key;
     bool waiting_to_focus_chat;
     bool waiting_to_chat_all;
-    std::string stored_chat_field_contents;
+    UTF8String stored_chat_field_contents;
 
     uint64_t prev_frame_timestamp_us;
     bool prev_frame_timestamp_valid;

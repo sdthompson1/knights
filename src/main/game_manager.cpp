@@ -102,7 +102,6 @@ namespace {
         if (nchars > 0) return buf + msg_latin1;
         else return msg_latin1;
     }
-
 }
 
 void ChatList::add(const std::string &msg_latin1_in)
@@ -174,29 +173,77 @@ bool ChatList::isUpdated()
     return result;
 }
 
-void NameList::add(const UTF8String &x, bool observer, bool ready, int house_col)
+NameList::NameList(const std::vector<Coercri::Color> &hc, KnightsApp &app)
+    : house_cols(hc)
+#ifdef ONLINE_PLATFORM
+    , online_platform(app.getOnlinePlatform())
+#endif
+{ }
+
+void NameList::add(const PlayerID &x, bool observer, bool ready, int house_col)
 {
     Name n;
-    n.name = x;
+    n.id = x;
     n.observer = observer;
     n.ready = ready;
     n.house_col = house_col;
     names.push_back(n);
-    std::sort(names.begin(), names.end());
+    sortNames();
 }
 
-void NameList::alter(const UTF8String &x, const bool *observer, const bool *ready, const int *house_col)
+void NameList::alter(const PlayerID &x, const bool *observer, const bool *ready, const int *house_col)
 {
     std::vector<NameList::Name>::iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
-        if (it->name == x) break;
+        if (it->id == x) break;
     }
     if (it != names.end()) {
         if (observer) it->observer = *observer;
         if (ready) it->ready = *ready;
         if (house_col) it->house_col = *house_col;
-        if (observer) std::sort(names.begin(), names.end());  // changing 'observer' flag might re-order the vector
+        if (observer != nullptr || house_col != nullptr) sortNames();
     }
+}
+
+void NameList::sortNames()
+{
+    struct CompareName {
+        CompareName(NameList &namelist,
+                    const std::map<int, UTF8String> &house_first_names)
+            : namelist(namelist), house_first_names(house_first_names) {}
+
+        bool operator()(const Name &lhs, const Name &rhs) const {
+            // Observers go to the bottom of the list
+            if (lhs.observer != rhs.observer) {
+                return rhs.observer;
+            }
+            // Non-observers are sorted by house colours
+            if (!lhs.observer && lhs.house_col != rhs.house_col) {
+                return house_first_names.at(lhs.house_col) < house_first_names.at(rhs.house_col);
+            }
+            // Otherwise sort alphabetically by name (case-insensitive)
+            UTF8String lhs_name = namelist.nameLookup(lhs.id);
+            UTF8String rhs_name = namelist.nameLookup(rhs.id);
+            return lhs_name.toUpper() < rhs_name.toUpper();
+        }
+
+        NameList &namelist;
+        const std::map<int, UTF8String> &house_first_names;
+    };
+
+    // Houses are sorted by the alphabetically first player within the house
+    std::map<int, UTF8String> house_first_names;
+    for (const Name & name : names) {
+        if (!name.observer) {
+            const auto &find = house_first_names.find(name.house_col);
+            UTF8String upper_name = nameLookup(name.id).toUpper();
+            if (find == house_first_names.end() || upper_name < find->second) {
+                house_first_names[name.house_col] = upper_name;
+            }
+        }
+    }
+
+    std::sort(names.begin(), names.end(), CompareName(*this, house_first_names));
 }
 
 void NameList::clearReady()
@@ -211,11 +258,11 @@ void NameList::clear()
     names.clear();
 }
 
-void NameList::remove(const UTF8String &x)
+void NameList::remove(const PlayerID &x)
 {
     std::vector<NameList::Name>::iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
-        if (it->name == x) break;
+        if (it->id == x) break;
     }
     if (it != names.end()) {
         names.erase(it);
@@ -230,7 +277,7 @@ int NameList::getNumberOfElements()
 std::string NameList::getElementAt(int i)
 {
     if (i < 0 || i >= names.size()) return "";
-    std::string result = names[i].name.asLatin1();
+    std::string result = nameLookup(names[i].id).asLatin1();
     if (names[i].observer) {
         result += " (Observer)";
     } else {
@@ -246,6 +293,15 @@ std::string NameList::getElementAt(int i)
     return result;
 }
 
+Coercri::UTF8String NameList::nameLookup(const PlayerID &id) const
+{
+#ifdef ONLINE_PLATFORM
+    return online_platform.lookupUserName(id);
+#else
+    return Coercri::UTF8String::fromUTF8Safe(id.asString());
+#endif
+}
+
 
 namespace {
     class MenuListModel : public gcn::ListModel {
@@ -258,10 +314,12 @@ namespace {
 
     class MenuWidgets {
     public:
-        MenuWidgets(const MenuItem &mi, gcn::ActionListener *listener, gcn::SelectionListener *listener2)
+        MenuWidgets(const Localization &loc, const MenuItem &mi, gcn::ActionListener *listener, gcn::SelectionListener *listener2)
             : menu_item(&mi)
         {
-            label.reset(new gcn::Label(menu_item->getTitleString()));
+            const LocalKey &title_key = menu_item->getTitleKey();
+            std::string title_latin1 = loc.get(title_key).asLatin1();
+            label.reset(new gcn::Label(title_latin1));
             label->adjustSize();
             if (menu_item->isNumeric()) {
                 // time entry (no of minutes) -- used for time limit
@@ -269,7 +327,8 @@ namespace {
                 textfield->adjustSize();
                 textfield->setWidth(textfield->getFont()->getWidth("9") * 
                                     (menu_item->getNumDigits() + 1));
-                label2.reset(new gcn::Label(menu_item->getSuffix()));
+                std::string loc_latin1 = loc.get(menu_item->getSuffix()).asLatin1();
+                label2.reset(new gcn::Label(loc_latin1));
                 textfield->addActionListener(listener);
             } else {
                 list_model.reset(new MenuListModel);
@@ -301,15 +360,25 @@ namespace {
         std::vector<int> allowed_choices;  // for dropdowns
     };
 
-    int GetMenuWidgetWidth(const gcn::Font &font, const MenuWidgets &widgets)
+    std::string LocalKeyOrIntegerToLatin1(const Localization &loc, const LocalKeyOrInteger &lki)
+    {
+        if (lki.is_integer) {
+            return std::to_string(lki.integer);
+        } else {
+            return loc.get(lki.local_key).asLatin1();
+        }
+    }
+
+    int GetMenuWidgetWidth(const Localization &loc, const gcn::Font &font, const MenuWidgets &widgets)
     {
         const MenuItem & item = *widgets.menu_item;
 
         if (widgets.dropdown) {
             int widest_text = 0;
             for (int i = 0; i < item.getNumChoices(); ++i) {
-                const std::string & text = item.getChoiceString(i);
-                const int text_width = font.getWidth(text);
+                const LocalKeyOrInteger & lki = item.getChoice(i);
+                std::string text_latin1 = LocalKeyOrIntegerToLatin1(loc, lki);
+                const int text_width = font.getWidth(text_latin1);
                 if (text_width > widest_text) widest_text = text_width;
             }
             return widest_text + 8 + font.getHeight();  // getHeight is to allow for the 'drop down button' which is approximately square.
@@ -331,21 +400,33 @@ namespace {
 class GameManagerImpl {
 public:
     GameManagerImpl(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer_, 
-                    bool sgl_plyr, bool tut, bool autostart, const UTF8String &plyr_nm) 
+                    bool sgl_plyr, bool tut, bool autostart, const PlayerID &my_player_id)
         : knights_app(ka), knights_client(kc), menu(0), gui_invalid(false), are_menu_widgets_enabled(true),
-          timer(timer_), lobby_namelist(avail_house_colours),
-          game_list_updated(false), game_namelist(avail_house_colours),
+          timer(timer_), lobby_namelist(avail_house_colours, ka),
+          game_list_updated(false), game_namelist(avail_house_colours, ka),
           my_house_colour(0), time_remaining(-1), my_obs_flag(false), my_ready_flag(false),
           is_split_screen(false), is_lan_game(false), is_online_platform_game(false),
           chat_list(ka.getConfigMap().getInt("max_chat_lines"), true, true),   // want formatting and timestamps
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
           quest_rqmts_list(9999, false, false),    // ditto
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
-          my_player_name(plyr_nm), doing_menu_widget_update(false), deathmatch_mode(false),
+          my_player_id(my_player_id), doing_menu_widget_update(false), deathmatch_mode(false),
           game_in_progress(false),
           download_count(0)
     { }
+
+    UTF8String usernameLookup(const PlayerID &id) const {
+#ifdef ONLINE_PLATFORM
+        return knights_app.getOnlinePlatform().lookupUserName(id);
+#else
+        return UTF8String::fromUTF8Safe(id.asString());
+#endif
+    }
     
+    std::string usernameLatin1(const PlayerID &id) const {
+        return usernameLookup(id).asLatin1();
+    }
+
     KnightsApp &knights_app;
     boost::shared_ptr<KnightsClient> knights_client;
     boost::shared_ptr<const ClientConfig> client_config;
@@ -353,7 +434,7 @@ public:
     const Menu *menu;
     std::vector<MenuWidgets> menu_widgets_map;  // item_num -> MenuWidgets
     std::vector<MenuChoices> menu_choices;      // item_num -> MenuChoices
-    std::string quest_description;
+    UTF8String quest_description;
     bool gui_invalid;
     bool are_menu_widgets_enabled;
 
@@ -385,14 +466,14 @@ public:
     ChatList ingame_player_list;
     ChatList quest_rqmts_list;
     std::vector<ClientPlayerInfo> saved_client_player_info;
-    std::set<UTF8String> ready_to_end; // names of players who have clicked mouse at end of game.
+    std::set<PlayerID> ready_to_end; // IDs of players who have clicked mouse at end of game.
 
     bool single_player;
     bool tutorial_mode;
     bool autostart_mode;
 
-    UTF8String my_player_name;
-    std::string saved_chat;
+    PlayerID my_player_id;
+    UTF8String saved_chat;
 
     bool doing_menu_widget_update;
     bool deathmatch_mode;
@@ -457,7 +538,7 @@ void GameManager::tryJoinGameSplitScreen(const std::string &game_name)
     pimpl->current_game_name = game_name;
 }
 
-const std::string & GameManager::getMenuTitle() const
+const LocalKey & GameManager::getMenuTitle() const
 {
     if (!pimpl->menu) throw UnexpectedError("no menu exists");
     return pimpl->menu->getTitle();
@@ -481,10 +562,11 @@ void GameManager::createMenuWidgets(gcn::ActionListener *listener,
     int max_label_w = 0, max_widget_w = 0;
     for (int i = 0; i < menu->getNumItems(); ++i) {
         const MenuItem &item = menu->getItem(i);
-        MenuWidgets menu_widgets(item, listener, listener2);
+        MenuWidgets menu_widgets(pimpl->knights_app.getLocalization(), item, listener, listener2);
         pimpl->menu_widgets_map.push_back(menu_widgets);
         max_label_w = std::max(max_label_w, menu_widgets.label->getWidth());
-        max_widget_w = std::max(max_widget_w, GetMenuWidgetWidth(*menu_widgets.label->getFont(), menu_widgets));
+        max_widget_w = std::max(max_widget_w,
+            GetMenuWidgetWidth(pimpl->knights_app.getLocalization(), *menu_widgets.label->getFont(), menu_widgets));
     }
 
     // resize widgets & add to container
@@ -534,16 +616,19 @@ void GameManager::getMenuStrings(std::vector<std::pair<std::string, std::string>
     const Menu * menu = pimpl->menu;
     if (!menu) throw UnexpectedError("cannot get menu strings");
 
+    const Localization & loc = pimpl->knights_app.getLocalization();
+
     for (int i = 0; i < menu->getNumItems(); ++i) {
         std::pair<std::string, std::string> p;
         const MenuItem &item = menu->getItem(i);
-        p.first = item.getTitleString();
+        p.first = loc.get(item.getTitleKey()).asLatin1();
         if (item.isNumeric()) {
             std::ostringstream str;
             str << pimpl->menu_choices[i].choice;
             p.second = str.str();
         } else {
-            p.second = item.getChoiceString(pimpl->menu_choices[i].choice);
+            const LocalKeyOrInteger &lki = item.getChoice(pimpl->menu_choices[i].choice);
+            p.second = LocalKeyOrIntegerToLatin1(loc, lki);
         }
         
         menu_strings.push_back(p);
@@ -610,7 +695,7 @@ namespace {
 void GameManager::updateMenuWidget(int item_num)
 {
     Sentinel sentinel(pimpl->doing_menu_widget_update);
-    
+
     ASSERT (item_num >= 0 && item_num < pimpl->menu_widgets_map.size());
 
     MenuWidgets & mw = pimpl->menu_widgets_map[item_num];
@@ -622,12 +707,15 @@ void GameManager::updateMenuWidget(int item_num)
     const gcn::Color fg_col = is_enabled ? gcn::Color(0,0,0) : gcn::Color(170,170,170);
 
     if (mw.dropdown) {
-        
+
+        const Localization &loc = pimpl->knights_app.getLocalization();
+
         mw.list_model->elts.clear();
         mw.list_model->vals.clear();
-            
+
         for (std::vector<int>::const_iterator it = mc.allowed_choices.begin(); it != mc.allowed_choices.end(); ++it) {
-            mw.list_model->elts.push_back(mw.menu_item->getChoiceString(*it));
+            const LocalKeyOrInteger &lki = mw.menu_item->getChoice(*it);
+            mw.list_model->elts.push_back(LocalKeyOrIntegerToLatin1(loc, lki));
             mw.list_model->vals.push_back(*it);
         }
             
@@ -673,16 +761,29 @@ int GameManager::getNumAvailHouseColours() const
     return pimpl->avail_house_colours.size();
 }
 
-std::function<ClientState(const UTF8String&)> GameManager::getPlayerStateLookup() const
+std::function<UTF8String(const PlayerID&)> GameManager::getPlayerNameLookup() const
 {
-    return [this](const UTF8String& name) -> ClientState {
+#ifdef ONLINE_PLATFORM
+    return [this](const PlayerID& id) -> UTF8String {
+
+        OnlinePlatform &online_platform = pimpl->knights_app.getOnlinePlatform();
+        const Localization &localization = pimpl->knights_app.getLocalization();
+
+        UTF8String name = online_platform.lookupUserName(id);
+
         for (const auto& player : pimpl->saved_client_player_info) {
-            if (player.name == name) {
-                return player.client_state;
+            if (player.id == id && player.client_state == ClientState::DISCONNECTED) {
+                return localization.get(LocalKey("x_disconnected"), name);
             }
         }
-        return ClientState::NORMAL; // fallback
+
+        return name;
     };
+#else
+    return [](const PlayerID &id) -> UTF8String {
+        return UTF8String::fromUTF8Safe(id.asString());
+    };
+#endif
 }
 
 bool GameManager::getMyObsFlag() const
@@ -730,7 +831,7 @@ ChatList & GameManager::getQuestRequirementsList() const
     return pimpl->quest_rqmts_list;
 }
 
-bool GameManager::setSavedChat(const std::string &s)
+bool GameManager::setSavedChat(const UTF8String &s)
 {
     const bool result = (pimpl->saved_chat != s);
     pimpl->saved_chat = s;
@@ -745,21 +846,35 @@ bool GameManager::setSavedChat(const std::string &s)
 void GameManager::connectionLost()
 {
     // Go to ErrorScreen
-    std::unique_ptr<Screen> error_screen(new ErrorScreen("The network connection has been lost"));
+    std::unique_ptr<Screen> error_screen(new ErrorScreen(UTF8String::fromUTF8("The network connection has been lost")));
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
 void GameManager::connectionFailed()
 {
     // Go to ErrorScreen
-    std::unique_ptr<Screen> error_screen(new ErrorScreen("Connection failed"));
+    std::unique_ptr<Screen> error_screen(new ErrorScreen(UTF8String::fromUTF8("Connection failed")));
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
-void GameManager::serverError(const std::string &error)
+void GameManager::serverError(const LocalKey &error)
 {
     // Go to ErrorScreen
-    std::unique_ptr<Screen> error_screen(new ErrorScreen("Error: " + error));
+    const Localization &loc = pimpl->knights_app.getLocalization();
+    std::vector<LocalParam> params;
+    params.push_back(LocalParam(error));
+    UTF8String msg = loc.get(LocalKey("error_is"), params);
+    std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
+    pimpl->knights_app.requestScreenChange(std::move(error_screen));
+}
+
+void GameManager::luaError(const std::string &error)
+{
+    // Go to ErrorScreen
+    // TODO: We probably shouldn't display the error directly unless some kind of
+    // debug mode is set
+    auto msg = UTF8String::fromUTF8Safe("Lua Error: " + error);
+    std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
@@ -777,10 +892,10 @@ void GameManager::connectionAccepted(int server_version)
 
 void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                    int my_house_colour,
-                                   const std::vector<UTF8String> &player_names,
+                                   const std::vector<PlayerID> &player_ids,
                                    const std::vector<bool> &ready_flags,
                                    const std::vector<int> &house_cols,
-                                   const std::vector<UTF8String> &observers)
+                                   const std::vector<PlayerID> &observers)
 {
     pimpl->game_in_progress = false;
     pimpl->my_obs_flag = false;
@@ -791,18 +906,19 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
 
     // update my player list, also set my_obs_flag if needed
     pimpl->game_namelist.clear();
-    for (int i = 0; i < player_names.size(); ++i) {
-        pimpl->game_namelist.add(player_names[i], false, ready_flags[i], house_cols[i]);
+    for (int i = 0; i < player_ids.size(); ++i) {
+        pimpl->game_namelist.add(player_ids[i], false, ready_flags[i], house_cols[i]);
     }
     for (int i = 0; i < observers.size(); ++i) {
         pimpl->game_namelist.add(observers[i], true, false, 0);
-        if (observers[i] == pimpl->my_player_name) pimpl->my_obs_flag = true;
+        if (observers[i] == pimpl->my_player_id) pimpl->my_obs_flag = true;
     }
 
     pimpl->gui_invalid = true;
     
     // Store a pointer to the config, and the menu
     pimpl->client_config = conf;
+    destroyMenuWidgets();
     pimpl->menu = conf->menu.get();
 
     // Resize the MenuChoices to the proper size
@@ -829,7 +945,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     
     // Clear messages, and add new "Joined game" messages for lan games
     pimpl->chat_list.clear();
-    if (pimpl->is_lan_game && player_names.size() == 1) {
+    if (pimpl->is_lan_game && player_ids.size() == 1) {
         pimpl->chat_list.add("LAN game created.");
     }
 
@@ -847,9 +963,13 @@ void GameManager::gotoMenuIfAllDownloaded()
     }
 }
 
-void GameManager::joinGameDenied(const std::string &reason)
+void GameManager::joinGameDenied(const LocalKey &reason)
 {
-    pimpl->chat_list.add("Could not join game! " + reason);
+    const Localization &loc = pimpl->knights_app.getLocalization();
+    std::vector<LocalParam> params;
+    params.push_back(LocalParam(reason));
+    UTF8String msg = loc.get(LocalKey("couldnt_join_game"), params);
+    pimpl->chat_list.add(msg.asLatin1());
     pimpl->current_game_name.clear();
     pimpl->gui_invalid = true;
 }
@@ -888,14 +1008,15 @@ void GameManager::passwordRequested(bool first_attempt)
     pimpl->knights_app.requestScreenChange(std::move(password_screen));
 }
 
-void GameManager::playerConnected(const UTF8String &name)
+void GameManager::playerConnected(const PlayerID &id)
 {
-    pimpl->lobby_namelist.add(name, false, false, 0);
+    pimpl->lobby_namelist.add(id, false, false, 0);
 
     // only show connection/disconnection messages if in main lobby.
     if (pimpl->current_game_name.empty()) {
         // Print msg
-        pimpl->chat_list.add(name.asLatin1() + " has connected.");
+        std::string name = pimpl->usernameLatin1(id);
+        pimpl->chat_list.add(name + " has connected.");
 
         // Pop window to front
         pimpl->knights_app.popWindowToFront();
@@ -904,12 +1025,13 @@ void GameManager::playerConnected(const UTF8String &name)
     pimpl->gui_invalid = true;
 }
 
-void GameManager::playerDisconnected(const UTF8String &name)
+void GameManager::playerDisconnected(const PlayerID &id)
 {
-    pimpl->lobby_namelist.remove(name);
+    pimpl->lobby_namelist.remove(id);
 
     if (pimpl->current_game_name.empty()) {
-        pimpl->chat_list.add(name.asLatin1() + " has disconnected.");
+        std::string name = pimpl->usernameLatin1(id);
+        pimpl->chat_list.add(name + " has disconnected.");
     }
 
     pimpl->gui_invalid = true;
@@ -948,7 +1070,7 @@ void GameManager::dropGame(const std::string &game_name)
     }
 }
 
-void GameManager::updatePlayer(const UTF8String &player, const std::string &game, bool obs_flag)
+void GameManager::updatePlayer(const PlayerID &player, const std::string &game, bool obs_flag)
 {
     pimpl->lobby_namelist.remove(player);
     if (game.empty()) {
@@ -957,14 +1079,61 @@ void GameManager::updatePlayer(const UTF8String &player, const std::string &game
     pimpl->gui_invalid = true;
 }
 
-void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list)
+void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list_orig)
 {
+    // First sort the player list
+    std::vector<ClientPlayerInfo> player_list = player_list_orig;
+
+    struct ComparePlayer {
+        ComparePlayer(GameManagerImpl &impl,
+                      const std::map<Coercri::Color, UTF8String> &house_first_names)
+            : impl(impl),
+              house_first_names(house_first_names) {}
+
+        bool operator()(const ClientPlayerInfo &lhs, const ClientPlayerInfo &rhs) const {
+            // Observers go to bottom of list
+            if (lhs.client_state == ClientState::OBSERVER && rhs.client_state != ClientState::OBSERVER) {
+                return false;
+            }
+            if (lhs.client_state != ClientState::OBSERVER && rhs.client_state == ClientState::OBSERVER) {
+                return true;
+            }
+            // Non-observers are sorted by house colours
+            if (lhs.client_state != ClientState::OBSERVER && lhs.house_colour != rhs.house_colour) {
+                return house_first_names.at(lhs.house_colour) < house_first_names.at(rhs.house_colour);
+            }
+            // Otherwise sort alphabetically by name (case-insensitive)
+            UTF8String lhs_name = impl.usernameLookup(lhs.id);
+            UTF8String rhs_name = impl.usernameLookup(rhs.id);
+            return lhs_name.toUpper() < rhs_name.toUpper();
+        }
+
+        GameManagerImpl &impl;
+        const std::map<Coercri::Color, UTF8String> &house_first_names;
+    };
+
+    // Houses are sorted by the alphabetically first player within the house
+    std::map<Coercri::Color, UTF8String> house_first_names;
+    for (const ClientPlayerInfo & info : player_list) {
+        if (info.client_state != ClientState::OBSERVER) {
+            const auto &find = house_first_names.find(info.house_colour);
+            UTF8String upper_name = pimpl->usernameLookup(info.id).toUpper();
+            if (find == house_first_names.end() || upper_name < find->second) {
+                house_first_names[info.house_colour] = upper_name;
+            }
+        }
+    }
+
+    std::sort(player_list.begin(), player_list.end(), ComparePlayer(*pimpl, house_first_names));
+
+    // Now transfer the sorted list to the UI (ingame_player_list).
     pimpl->ingame_player_list.clear();
     for (std::vector<ClientPlayerInfo>::const_iterator it = player_list.begin(); it != player_list.end(); ++it) {
         std::ostringstream str_latin1;
-        str_latin1 << ColToText(it->house_colour) << " " << it->name.asLatin1();
+        std::string name = pimpl->usernameLatin1(it->id);
+        str_latin1 << ColToText(it->house_colour) << " " << name;
 
-        if (pimpl->ready_to_end.find(it->name) != pimpl->ready_to_end.end()) {
+        if (pimpl->ready_to_end.find(it->id) != pimpl->ready_to_end.end()) {
             str_latin1 << " (Ready)"; // indicate players who have clicked.
         } else if (it->client_state == ClientState::DISCONNECTED) {
             str_latin1 << " (Disconnected)";
@@ -987,6 +1156,8 @@ void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list)
         }
         pimpl->ingame_player_list.add(str_latin1.str());
     }
+
+    // Also save the sorted list (in case we need it later) and set the gui_invalid flag.
     pimpl->saved_client_player_info = player_list;
     pimpl->gui_invalid = true;
 }
@@ -996,19 +1167,19 @@ void GameManager::setTimeRemaining(int milliseconds)
     pimpl->time_remaining = milliseconds;
 }
 
-void GameManager::playerIsReadyToEnd(const UTF8String &player)
+void GameManager::playerIsReadyToEnd(const PlayerID &player)
 {
     pimpl->ready_to_end.insert(player);
     playerList(pimpl->saved_client_player_info);
 }
 
-void GameManager::setObsFlag(const UTF8String &name, bool new_obs_flag)
+void GameManager::setObsFlag(const PlayerID &id, bool new_obs_flag)
 {
     // Update players list
-    pimpl->game_namelist.alter(name, &new_obs_flag, 0, 0);
-    
+    pimpl->game_namelist.alter(id, &new_obs_flag, 0, 0);
+
     // do message if needed
-    if (name == pimpl->my_player_name) {
+    if (id == pimpl->my_player_id) {
         pimpl->my_obs_flag = new_obs_flag;
         if (new_obs_flag) {
             pimpl->chat_list.add("You are now observing this game.");
@@ -1016,10 +1187,11 @@ void GameManager::setObsFlag(const UTF8String &name, bool new_obs_flag)
             pimpl->chat_list.add("You have joined the game.");
         }
     } else {
+        std::string name = pimpl->usernameLatin1(id);
         if (new_obs_flag) {
-            pimpl->chat_list.add(name.asLatin1() + " is now observing this game.");
+            pimpl->chat_list.add(name + " is now observing this game.");
         } else {
-            pimpl->chat_list.add(name.asLatin1() + " has joined the game.");
+            pimpl->chat_list.add(name + " has joined the game.");
         }
     }
 
@@ -1066,11 +1238,11 @@ void GameManager::setMenuSelection(int item_num, int choice_num, const std::vect
     pimpl->gui_invalid = true;
 }
 
-int GameManager::getQuestMessageCode() const
+LocalKey GameManager::getQuestMessageCode() const
 {
-    // Our approach is to search through the menu choices until we find one that
-    // is equal to a known localization string. The quest message code is then the
-    // ID of that localization string.
+    // Our approach is to grab the topmost localization string from
+    // the menu that isn't equal to LocalKey("custom"). This works
+    // well enough for now.
 
     for (int i = 0; i < pimpl->menu->getNumItems(); ++i) {
         const MenuItem &item = pimpl->menu->getItem(i);
@@ -1080,35 +1252,34 @@ int GameManager::getQuestMessageCode() const
 
         // Find the current setting
         const int current_choice = pimpl->menu_choices[i].choice;
-        const std::string & choice_string = item.getChoiceString(current_choice);
+        const LocalKeyOrInteger &lki = item.getChoice(current_choice);
 
-        // Codes 101-199 are reserved for quest names
-        for (int c = 101; c <= 199; ++c) {
-            Coercri::UTF8String loc_str = pimpl->knights_app.getLocalizationString(c);
-            if (!loc_str.empty() && loc_str.asUTF8() == choice_string) {
-                // Found it
-                return c;
+        // If it is a LocalKey, and not LocalKey("custom"), return it
+        if (!lki.is_integer) {
+            const LocalKey & choice_key = lki.local_key;
+            if (choice_key != LocalKey("custom")) {
+                return choice_key;
             }
         }
     }
 
-    // If not found, return 100 ("Custom Quest")
-    return 100;
+    // If not found, just return "none"...
+    return LocalKey("none");
 }
 
-void GameManager::setQuestDescription(const std::string &quest_descr)
+void GameManager::setQuestDescription(const UTF8String &quest_descr)
 {
     pimpl->quest_description = quest_descr;
     pimpl->gui_invalid = true;
 }
 
-const std::string & GameManager::getQuestDescription() const
+const UTF8String & GameManager::getQuestDescription() const
 {
     return pimpl->quest_description;
 }
 
 void GameManager::startGame(int ndisplays, bool deathmatch_mode,
-                            const std::vector<UTF8String> &player_names, bool already_started)
+                            const std::vector<PlayerID> &player_ids, bool already_started)
 {
     if (!pimpl->client_config) throw UnexpectedError("Cannot start game -- config not loaded");
 
@@ -1121,7 +1292,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
                                                             pimpl->client_config,
                                                             ndisplays,
                                                             deathmatch_mode,
-                                                            player_names,
+                                                            player_ids,
                                                             pimpl->single_player,
                                                             pimpl->tutorial_mode));
     pimpl->knights_app.requestScreenChange(std::move(in_game_screen));
@@ -1134,16 +1305,16 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
         pimpl->chat_list.add("\n");
         pimpl->chat_list.add("\n");
     }
-    pimpl->saved_chat.clear();
+    pimpl->saved_chat = UTF8String();
     
-    if (!player_names.empty()) {  // I am an observer
+    if (!player_ids.empty()) {  // I am an observer
         if (already_started) {
             pimpl->chat_list.add("You are now observing this game.");
         } else {
             pimpl->chat_list.add("Game started. You are observing this game.");
         }
-        if (player_names.size() > 2) {
-            pimpl->chat_list.add("Use arrow keys (left/right/up/down) to switch between players.");
+        if (player_ids.size() > 2) {
+            pimpl->chat_list.add("Use arrow keys (left/right and up/down) to switch between players.");
         }
     } else {
         if (already_started) {
@@ -1193,35 +1364,36 @@ void GameManager::gotoMenu()
 
         pimpl->gui_invalid = true;
 
-        // Notify updated game status - back to "Selecting Quest"
-        pimpl->knights_app.setQuestMessageCode(0);
+        // Notify updated game status - quest is now empty
+        pimpl->knights_app.setQuestMessageCode(LocalKey());
     }
 
     pimpl->game_in_progress = false;
 }
 
-void GameManager::playerJoinedThisGame(const UTF8String &name, bool obs_flag, int house_col)
+void GameManager::playerJoinedThisGame(const PlayerID &id, bool obs_flag, int house_col)
 {
+    std::string name = pimpl->usernameLatin1(id);
     if (!obs_flag) {
         if (pimpl->game_in_progress) {
             // The only way to join a game while it is in progress is via reconnect - there
             // is no way for "new" players to enter a game in progress (currently)
-            pimpl->chat_list.add(name.asLatin1() + " has reconnected.");
+            pimpl->chat_list.add(name + " has reconnected.");
         } else {
-            pimpl->chat_list.add(name.asLatin1() + " has joined the game.");
+            pimpl->chat_list.add(name + " has joined the game.");
         }
-        pimpl->game_namelist.add(name, false, false, house_col);
+        pimpl->game_namelist.add(id, false, false, house_col);
     } else {
-        pimpl->chat_list.add(name.asLatin1() + " is now observing this game.");
-        pimpl->game_namelist.add(name, true, false, house_col);
+        pimpl->chat_list.add(name + " is now observing this game.");
+        pimpl->game_namelist.add(id, true, false, house_col);
     }
     pimpl->gui_invalid = true;
 }
 
-void GameManager::setPlayerHouseColour(const UTF8String &name, int house_col)
+void GameManager::setPlayerHouseColour(const PlayerID &id, int house_col)
 {
-    pimpl->game_namelist.alter(name, 0, 0, &house_col);
-    if (name == pimpl->my_player_name) pimpl->my_house_colour = house_col;
+    pimpl->game_namelist.alter(id, 0, 0, &house_col);
+    if (id == pimpl->my_player_id) pimpl->my_house_colour = house_col;
     pimpl->gui_invalid = true;
 }
 
@@ -1231,28 +1403,29 @@ void GameManager::setAvailableHouseColours(const std::vector<Coercri::Color> &co
     pimpl->gui_invalid = true;
 }
 
-void GameManager::playerLeftThisGame(const UTF8String &name, bool obs_flag)
+void GameManager::playerLeftThisGame(const PlayerID &id, bool obs_flag)
 {
-    std::string msg_latin1 = name.asLatin1();
+    std::string msg_latin1 = pimpl->usernameLatin1(id);
     if (obs_flag) {
         msg_latin1 += " is no longer observing this game.";
     } else {
         msg_latin1 += " has left the game.";
     }
     pimpl->chat_list.add(msg_latin1);
-    pimpl->game_namelist.remove(name);
+    pimpl->game_namelist.remove(id);
     pimpl->gui_invalid = true;
 }
 
-void GameManager::setReady(const UTF8String &name, bool ready)
+void GameManager::setReady(const PlayerID &id, bool ready)
 {
+    std::string name = pimpl->usernameLatin1(id);
     if (ready) {
-        pimpl->chat_list.add(name.asLatin1() + " is ready to start.");
+        pimpl->chat_list.add(name + " is ready to start.");
     } else {
-        pimpl->chat_list.add(name.asLatin1() + " is no longer ready to start.");
+        pimpl->chat_list.add(name + " is no longer ready to start.");
     }
-    pimpl->game_namelist.alter(name, 0, &ready, 0);
-    if (name == pimpl->my_player_name) pimpl->my_ready_flag = ready;
+    pimpl->game_namelist.alter(id, 0, &ready, 0);
+    if (id == pimpl->my_player_id) pimpl->my_ready_flag = ready;
     pimpl->gui_invalid = true;
 }
 
@@ -1263,19 +1436,28 @@ void GameManager::deactivateReadyFlags()
     pimpl->gui_invalid = true;
 }
 
-void GameManager::chat(const UTF8String &whofrom, bool observer, bool team, const std::string &msg_latin1)
+void GameManager::chat(const PlayerID &whofrom, bool observer, bool team, const Coercri::UTF8String &msg)
 {
-    std::string out_latin1 = whofrom.asLatin1();
+    std::string out_latin1 = pimpl->usernameLatin1(whofrom);
     if (observer) out_latin1 += " (Observer)";
     if (team) out_latin1 += " (Team)";
     out_latin1 += ": ";
-    out_latin1 += msg_latin1;
+    out_latin1 += msg.asLatin1();
     pimpl->chat_list.add(out_latin1);
     pimpl->gui_invalid = true;
 }
 
-void GameManager::announcement(const std::string &msg_latin1, bool err)
+void GameManager::announcementLoc(const LocalKey &key, const std::vector<LocalParam> &params, bool err)
 {
+    const Localization &loc = pimpl->knights_app.getLocalization();
+    Coercri::UTF8String msg = loc.get(key, params);
+    announcementRaw(msg, err);
+}
+
+void GameManager::announcementRaw(const UTF8String &msg, bool err)
+{
+    std::string msg_latin1 = msg.asLatin1();
+
     pimpl->chat_list.add(msg_latin1);
     pimpl->gui_invalid = true;
 
@@ -1292,8 +1474,8 @@ void GameManager::announcement(const std::string &msg_latin1, bool err)
 //
 
 GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer, 
-                         bool single_player, bool tutorial_mode, bool autostart, const UTF8String &my_player_name)
-    : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, my_player_name))
+                         bool single_player, bool tutorial_mode, bool autostart, const PlayerID &my_player_id)
+    : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, my_player_id))
 { }
 
 void GameManager::setLanGame(bool x)

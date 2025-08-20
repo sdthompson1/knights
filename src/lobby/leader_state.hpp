@@ -26,6 +26,8 @@
 
 #ifdef USE_VM_LOBBY
 
+#include "player_id.hpp"
+
 class KnightsVM;
 class SyncHost;
 class TickWriter;
@@ -49,13 +51,13 @@ public:
     // It also opens a single connection to the VM representing the local player, but
     // does not issue the CLIENT_JOIN_GAME command (the caller must do that).
     LeaderState(Coercri::Timer &timer,
-                const std::string &local_user_id);
+                const PlayerID &local_user_id);
 
     // This is the same as the previous constructor except that it starts from an
     // existing KnightsVM state instead of booting up a new one. The existing KnightsVM
     // should have no active client connections when this is called.
     LeaderState(Coercri::Timer &timer,
-                const std::string &local_user_id,
+                const PlayerID &local_user_id,
                 std::unique_ptr<KnightsVM> knights_vm);
 
     // Destructor.
@@ -80,7 +82,7 @@ public:
     std::unique_ptr<KnightsVM> migrate();
 
 private:
-    void initialize(const std::string &local_user_id, int sleep_time_ms);
+    void initialize(const PlayerID &local_user_id, int sleep_time_ms);
     bool clientNumInUse(int client_num) const;
     void receiveFollowerMessages(int client_num, Coercri::NetworkConnection &connection);
     bool processVmOutputData(const std::vector<unsigned char> &vm_output_data);

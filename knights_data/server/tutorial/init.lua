@@ -275,13 +275,13 @@ end
 ----------------------------------------------------------------------
 
 kts.MENU = {
-   text = "TUTORIAL",
+   text_key = "tutorial",
    start_game_func = start_tutorial,
    items = { 
       {
          id = "quest",
-         text = "Quest",
-         choices = { 
+         text_key = "quest",
+         choices = {
             {
                id = "tutorial",
                text = "Tutorial"

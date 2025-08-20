@@ -63,31 +63,33 @@ public:
 
     
     // functions overridden from KnightsCallbacks
-    virtual DungeonView & getDungeonView(int plyr);
-    virtual MiniMap & getMiniMap(int plyr);
-    virtual StatusDisplay & getStatusDisplay(int plyr);
+    virtual DungeonView & getDungeonView(int plyr) override;
+    virtual MiniMap & getMiniMap(int plyr) override;
+    virtual StatusDisplay & getStatusDisplay(int plyr) override;
 
-    virtual void playSound(int plyr, const Sound &sound, int frequency);
+    virtual void playSound(int plyr, const Sound &sound, int frequency) override;
 
-    virtual void winGame(int plyr);
-    virtual void loseGame(int plyr);
+    virtual void winGame(int plyr) override;
+    virtual void loseGame(int plyr) override;
 
-    virtual void setAvailableControls(int plyr, const std::vector<std::pair<const UserControl*, bool> > &available_controls);
-    virtual void setMenuHighlight(int plyr, const UserControl *highlight);
+    virtual void setAvailableControls(int plyr, const std::vector<std::pair<const UserControl*, bool> > &available_controls) override;
+    virtual void setMenuHighlight(int plyr, const UserControl *highlight) override;
 
-    virtual void flashScreen(int plyr, int delay);
+    virtual void flashScreen(int plyr, int delay) override;
 
-    virtual void gameMsg(int plyr_num, const std::string &msg, bool is_err);
-    virtual void popUpWindow(const std::vector<TutorialWindow> &windows);
+    virtual void gameMsgRaw(int plyr_num, const Coercri::UTF8String &msg, bool is_err) override;
+    virtual void gameMsgLoc(int plyr_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) override;
+    virtual void popUpWindow(const std::vector<TutorialWindow> &windows) override;
 
-    virtual void onElimination(int player_num);
-    virtual void disableView(int player_num);
-    virtual void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names) { }
+    virtual void onElimination(int player_num) override;
+    virtual void disableView(int player_num) override;
+    virtual void goIntoObserverMode(int nplayers, const std::vector<PlayerID> &ids) override { }
 
     virtual void prepareForCatchUp(int player_num) override;
 
 private:
     void doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num, bool include_private) const;
+    void gameMsgImpl(int plyr, const Coercri::UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err);
 
 private:
     std::vector<boost::shared_ptr<ServerDungeonView> > dungeon_view;

@@ -50,6 +50,8 @@
 
 namespace Coercri {
 
+    static constexpr int MAX_STRING_LEN = 1000000;
+
     int InputByteBuf::readUbyte()
     {
         if (eof()) {
@@ -133,7 +135,7 @@ namespace Coercri {
     {
         std::string s;
         const std::ptrdiff_t size = readVarInt();
-        if (size < 0) throw CoercriError("readString: invalid length");
+        if (size < 0 || size > MAX_STRING_LEN) throw CoercriError("readString: invalid length");
         s.resize(std::min(size, buf.end() - iter));
         for (std::string::iterator it = s.begin(); it != s.end(); ++it) {
             *it = static_cast<char>(readUbyte());
@@ -217,6 +219,7 @@ namespace Coercri {
     
     void OutputByteBuf::writeString(const std::string &x)
     {
+        if (x.size() > MAX_STRING_LEN) throw CoercriError("writeString: invalid length");
         writeVarInt(x.size());
         for (std::string::const_iterator it = x.begin(); it != x.end(); ++it) {
             writeUbyte(static_cast<unsigned char>(*it));

@@ -54,8 +54,10 @@ class GfxManager;
 class Graphic;
 class GuiPanel2;
 class LocalDungeonView;
+class Localization;
 class LocalMiniMap;
 class LocalStatusDisplay;
+class PlayerID;
 class PotionRenderer;
 class SkullRenderer;
 class SoundManager;
@@ -68,7 +70,8 @@ class LocalDisplay : public KnightsCallbacks,
                      public gcn::MouseListener
 {
 public:
-    LocalDisplay(const ConfigMap &config_map_,
+    LocalDisplay(const Localization &localization,
+                 const ConfigMap &config_map_,
                  int approach_offset,
                  const Graphic *winner_image_,
                  const Graphic *loser_image_,
@@ -84,7 +87,7 @@ public:
                  const Controller *ctrlr2,
                  int nplyrs,
                  bool deathmatch_mode,
-                 const std::vector<UTF8String> &player_names_,
+                 const std::vector<PlayerID> &player_ids_,
                  ChatList &chat_list_,
                  ChatList &ingame_player_list_,
                  ChatList &quest_rqmts_list_,
@@ -100,7 +103,7 @@ public:
                  bool tutorial,
                  bool tool_tips,
                  const std::string &chat_keys,
-                 std::function<ClientState(const UTF8String&)> player_state_lookup);
+                 std::function<UTF8String(const PlayerID&)> player_name_lookup);
     ~LocalDisplay();
 
     //
@@ -174,9 +177,9 @@ public:
     void clearAllTutorialWindows() { while (tutorialActive()) clearTutorialWindow(); }
 
     int getNPlayers() const { return nplayers; }
-    const std::vector<UTF8String> & getPlayerNamesForObsMode() const { return names; }
+    const std::vector<PlayerID> & getPlayerIDsForObsMode() const { return ids; }
 
-    std::string getChatFieldContents() const;
+    Coercri::UTF8String getChatFieldContents() const;
     bool chatFieldSelected() const;
     void toggleChatMode(bool global);
     
@@ -185,29 +188,30 @@ public:
     // functions overridden from KnightsCallbacks
     //
     
-    DungeonView & getDungeonView(int plyr);
-    MiniMap & getMiniMap(int plyr);
-    StatusDisplay & getStatusDisplay(int plyr);
+    DungeonView & getDungeonView(int plyr) override;
+    MiniMap & getMiniMap(int plyr) override;
+    StatusDisplay & getStatusDisplay(int plyr) override;
 
-    void playSound(int plyr, const Sound &sound, int frequency);
+    void playSound(int plyr, const Sound &sound, int frequency) override;
     
-    void winGame(int plyr);
-    void loseGame(int plyr);
+    void winGame(int plyr) override;
+    void loseGame(int plyr) override;
     
-    void setAvailableControls(int plyr, const std::vector<std::pair<const UserControl*, bool> > &available_controls);
-    void setMenuHighlight(int plyr, const UserControl *highlight);
+    void setAvailableControls(int plyr, const std::vector<std::pair<const UserControl*, bool> > &available_controls) override;
+    void setMenuHighlight(int plyr, const UserControl *highlight) override;
     
-    void flashScreen(int plyr, int delay_ms);  // Note milliseconds not microseconds
+    void flashScreen(int plyr, int delay_ms) override;  // Note milliseconds not microseconds
 
-    void gameMsg(int plyr, const std::string &msg, bool is_err);
+    void gameMsgRaw(int plyr, const Coercri::UTF8String &msg, bool is_err) override;
+    void gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) override;
 
-    void popUpWindow(const std::vector<TutorialWindow> &windows);
-    void onElimination(int) { }
-    void disableView(int player_num);
-    void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names);
+    void popUpWindow(const std::vector<TutorialWindow> &windows) override;
+    void onElimination(int) override { }
+    void disableView(int player_num) override;
+    void goIntoObserverMode(int nplayers, const std::vector<PlayerID> &ids) override;
     
 private:
-    void initialize(int nplayers, const std::vector<UTF8String> &names, 
+    void initialize(int nplayers, const std::vector<PlayerID> &ids,
                     const Graphic *, const Graphic *, const Graphic *, const Graphic *);
     void setMenuControl(int plyr, MapDirection d, const UserControl *ctrl, const UserControl *prev);
     void setupGui(int chat_area_x, int chat_area_y, int chat_area_width, int chat_area_height,
@@ -233,11 +237,12 @@ private:
              int bias);    
     
 private:
+    const Localization &localization;
     const ConfigMap &config_map;
     const int approach_offset;
     const PotionRenderer *potion_renderer;
     const SkullRenderer *skull_renderer;
-    std::function<ClientState(const UTF8String&)> player_state_lookup;
+    std::function<UTF8String(const PlayerID&)> player_name_lookup;
 
     // cached config variables
     const int ref_vp_width, ref_vp_height, ref_gutter;
@@ -351,8 +356,8 @@ private:
 
     std::string time_limit_string;
     
-    // player names. used in "observer" mode.
-    std::vector<UTF8String> names;
+    // player ids. used in "observer" mode.
+    std::vector<PlayerID> ids;
     int nplayers;
     int curr_obs_player[2];
     std::vector<bool> obs_visible;

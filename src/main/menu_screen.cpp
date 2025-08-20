@@ -60,7 +60,7 @@ class MenuScreenImpl : public gcn::ActionListener, public gcn::SelectionListener
 public:
     MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extended_, KnightsApp &app, 
                    boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui,
-                   const std::string &saved_chat);
+                   const UTF8String &saved_chat);
     ~MenuScreenImpl();
     void action(const gcn::ActionEvent &event);
     void valueChanged(const gcn::SelectionEvent &event);
@@ -103,7 +103,7 @@ public:
 
 MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extended_, KnightsApp &app, 
                                boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui_,
-                               const std::string &saved_chat)
+                               const UTF8String &saved_chat)
     : knights_client(kc), knights_app(app), gui(gui_), window(win), extended(extended_),
       chat_reformatted(false)
 {
@@ -117,7 +117,8 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     const int gutter = 15;
     
     // Create title (don't add it yet)
-    title.reset(new gcn::Label(app.getGameManager().getMenuTitle()));
+    std::string menu_title_latin1 = app.getLocalization().get(app.getGameManager().getMenuTitle()).asLatin1();
+    title.reset(new gcn::Label(menu_title_latin1));
 
     // Add menu widgets
     const int menu_y = vpad_pretitle + title->getHeight() + vpad_posttitle;
@@ -194,7 +195,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
         chat_field->setWidth(width_rhs);
         chat_field->addActionListener(this);
         container->add(chat_field.get(), rhs_x, ybelow - chat_field->getHeight());
-        if (!saved_chat.empty()) chat_field->setText(saved_chat);
+        if (!saved_chat.empty()) chat_field->setText(saved_chat.asLatin1());
         ybelow -= chat_field->getHeight();
 
         chat_field_title.reset(new gcn::Label("Type here to chat"));
@@ -263,7 +264,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
 
     if (chat_field && !saved_chat.empty()) {
         chat_field->requestFocus();
-        chat_field->setCaretPosition(saved_chat.length());
+        chat_field->setCaretPosition(saved_chat.asLatin1().length());
     }
 }
 
@@ -297,7 +298,7 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
     }
 
     if (event.getSource() == chat_field.get() && !chat_field->getText().empty()) {
-        knights_client->sendChatMessage(chat_field->getText());
+        knights_client->sendChatMessage(Coercri::UTF8String::fromLatin1(chat_field->getText()));
         chat_field->setText("");
         gui.logic();
         window->invalidateAll();
@@ -359,7 +360,7 @@ void MenuScreenImpl::updateGui()
         }
     }
 
-    quest_description_box->setText(game_manager.getQuestDescription());
+    quest_description_box->setText(game_manager.getQuestDescription().asLatin1());
     quest_description_box->adjustHeight();
 
     if (players_listbox) AdjustListBoxSize(*players_listbox, *players_scrollarea);
@@ -386,14 +387,14 @@ void MenuScreenImpl::updateGui()
     window->invalidateAll();
 }
 
-MenuScreen::MenuScreen(boost::shared_ptr<KnightsClient> kc, bool extended_, std::string saved_chat_)
+MenuScreen::MenuScreen(boost::shared_ptr<KnightsClient> kc, bool extended_, UTF8String saved_chat_)
     : knights_client(kc), extended(extended_), saved_chat(saved_chat_)
 { }
 
 bool MenuScreen::start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)
 {
     pimpl.reset(new MenuScreenImpl(knights_client, extended, app, win, gui, saved_chat));
-    saved_chat.clear();
+    saved_chat = UTF8String();
     return true;
 }
 

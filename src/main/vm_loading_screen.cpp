@@ -36,7 +36,7 @@
 
 VMLoadingScreen::Loader::Loader(Coercri::NetworkDriver &net_driver,
                                 Coercri::Timer &timer,
-                                const std::string &local_user_id,
+                                const PlayerID &local_user_id,
                                 bool new_control_system)
     : net_driver(net_driver), timer(timer), local_user_id(local_user_id),
       new_control_system(new_control_system)
@@ -69,7 +69,7 @@ VMLoadingScreen::~VMLoadingScreen()
 bool VMLoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui&)
 {
     knights_app = &ka;
-    std::string local_user_id = ka.getOnlinePlatform().getCurrentUserId();
+    PlayerID local_user_id = ka.getOnlinePlatform().getCurrentUserId();
     bool new_control_system = ka.getOptions().new_control_system;
     loader = std::make_unique<Loader>(ka.getNetworkDriver(), ka.getTimer(), local_user_id, new_control_system);
     loader_thread = boost::thread(boost::ref(*loader));
@@ -86,7 +86,8 @@ void VMLoadingScreen::update()
     }
 
     if (!loader->error_msg.empty()) {
-        std::unique_ptr<Screen> error_screen(new ErrorScreen("Loading failed: " + loader->error_msg));
+        UTF8String msg = UTF8String::fromUTF8Safe("Loading failed: " + loader->error_msg);
+        std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
         knights_app->requestScreenChange(std::move(error_screen));
         return;
     }
@@ -96,12 +97,12 @@ void VMLoadingScreen::update()
     boost::shared_ptr<KnightsClient> client =
         knights_app->createVMGame(lobby_id, visibility, std::move(loader->vm_knights_lobby));
 
-    Coercri::UTF8String player_name = knights_app->getOnlinePlatform().lookupUserName(knights_app->getOnlinePlatform().getCurrentUserId());
+    PlayerID player_id = knights_app->getOnlinePlatform().getCurrentUserId();
 
-    knights_app->createGameManager(client, false, false, false, player_name);
+    knights_app->createGameManager(client, false, false, false, player_id);
     client->setClientCallbacks(&knights_app->getGameManager());
 
-    client->setPlayerNameAndControls(player_name, knights_app->getOptions().new_control_system);
+    client->setPlayerIdAndControls(player_id, knights_app->getOptions().new_control_system);
     knights_app->getGameManager().tryJoinGame("#VMGame");
 
     loader.reset();

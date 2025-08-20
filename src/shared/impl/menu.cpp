@@ -27,7 +27,7 @@
 
 Menu::Menu(Coercri::InputByteBuf &buf)
 {
-    title = buf.readString();
+    title = LocalKey(buf.readString());
     const int n_items = buf.readVarInt();
     items.reserve(n_items);
     for (int i = 0; i < n_items; ++i) {
@@ -37,7 +37,7 @@ Menu::Menu(Coercri::InputByteBuf &buf)
 
 void Menu::serialize(Coercri::OutputByteBuf &buf) const
 {
-    buf.writeString(title);
+    buf.writeString(title.getKey());
     buf.writeVarInt(items.size());
     for (std::vector<MenuItem>::const_iterator it = items.begin(); it != items.end(); ++it) {
         it->serialize(buf);

@@ -32,6 +32,8 @@
 #include "boost/shared_ptr.hpp"
 
 class KnightsEngine;
+class LocalKey;
+class LocalParam;
 class MenuListener;
 struct MenuWrapperImpl;
 
@@ -59,8 +61,8 @@ public:
     void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
 
     // Determine whether the quest is playable with strict constraints on no of players.
-    // If not, return a suitable error message.
-    bool checkNumPlayersStrict(std::string &err_msg) const;
+    // If not, return a suitable error message (as LocalKey and LocalParams).
+    bool checkNumPlayersStrict(LocalKey &err_key, std::vector<LocalParam> &err_params) const;
     
     
     // request a random quest. Changed menu items will be reported.

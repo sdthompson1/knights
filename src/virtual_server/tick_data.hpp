@@ -24,6 +24,8 @@
 #ifndef TICK_DATA_HPP
 #define TICK_DATA_HPP
 
+#include "player_id.hpp"
+
 #include <cstdint>
 #include <deque>
 #include <string>
@@ -41,7 +43,7 @@ public:
     virtual void onNewTick(unsigned int tick_duration_ms) { }
 
     // Called when a new client opens a connection to the server.
-    virtual void onNewConnection(uint8_t client_number, const std::string &platform_user_id) { }
+    virtual void onNewConnection(uint8_t client_number, const PlayerID &platform_user_id) { }
 
     // Called when client closes their existing connection.
     virtual void onCloseConnection(uint8_t client_number) { }
@@ -79,7 +81,7 @@ public:
     explicit TickWriter(std::vector<unsigned char> &tick_data);
 
     // Write tick messages - these are the mirror images of the "on" methods in TickCallbacks.
-    void writeNewConnection(uint8_t client_number, const std::string &platform_user_id);
+    void writeNewConnection(uint8_t client_number, const PlayerID &platform_user_id);
     void writeCloseConnection(uint8_t client_number);
     void writeCloseAllConnections();
     void writeClientSendData(uint8_t client_number, const std::vector<unsigned char> &data);
@@ -90,7 +92,8 @@ public:
     bool wasMessageWritten() const { return last_msg_pos != -1; }
 
     // Finalize - this MUST be called before using the tick_data buffer.
-    // Tick duration should be between 0 and 127 ms inclusive.
+    // Tick duration must be between 0 and MAX_TICK_MS inclusive.
+    static constexpr int MAX_TICK_MS = 2000;
     void finalize(int tick_duration_ms);
 
 private:

@@ -39,6 +39,7 @@ class Anim;
 class ColourChange;
 class Graphic;
 class Overlay;
+class PlayerID;
 
 class DungeonView {
 public:
@@ -76,7 +77,7 @@ public:
                            bool ainvis, bool ainvuln, // (anim data)
                            bool approached,
                            int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                           const UTF8String &name) = 0;
+                           const PlayerID &player_id) = 0;
     virtual void rmEntity(unsigned short int id) = 0;
 
     // move entity to a new square (instantaneously)

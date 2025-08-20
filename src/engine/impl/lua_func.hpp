@@ -58,19 +58,12 @@ public:
     // Run the function with a custom number of args and results.
     // nargs args are popped from stack, and nresults results are pushed.
     // (Caller MUST check that hasValue() is true before calling this)
-    void run(lua_State *lua, int nargs, int nresults);
+    void run(lua_State *lua, int nargs, int nresults) const;
 
-    // Run with int parameter and return string result. Stack is not changed.
-    // (Caller MUST check that hasValue() is true before calling this)
-    std::string runIntToString(int param) const;
-
-    // Pop lua value from top of stack and return string result.
-    // (Caller MUST check that hasValue() is true before calling this)
-    std::string runOneArgToString() const;
-    
-    // Run with a simple LuaExec. Reads N args from top of stack, but
-    // does not modify the stack. Returns nothing. (If the ref is none
-    // or nil, this function does nothing.)
+    // Run the function with a custom number of args, but no results.
+    // The args are not popped, and indeed this function does not
+    // modify the stack in any way. Returns nothing. (If the ref is
+    // none or nil, this function does nothing.)
     void runNArgsNoPop(lua_State *lua, int n) const;
 
     

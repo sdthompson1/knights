@@ -26,18 +26,18 @@
 
 #include "screen.hpp"
 
-#include <string>
+#include "utf8string.hpp"
 
 class ErrorScreenImpl;
 
 class ErrorScreen : public Screen {
 public:
-    explicit ErrorScreen(const std::string &msg_) : msg(msg_) { }
+    explicit ErrorScreen(const UTF8String &msg) : msg(msg) { }
     virtual bool start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
 
 private:
     boost::shared_ptr<ErrorScreenImpl> pimpl;
-    std::string msg;
+    UTF8String msg;
 };
 
 #endif

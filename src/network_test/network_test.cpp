@@ -82,15 +82,16 @@ public:
     void connectionLost() { Log("Connection lost"); }
     void connectionFailed() { Log("Connection failed"); }
 
-    void serverError(const std::string &error) { Log("Server error: %s", error.c_str()); }
+    void serverError(const LocalKey &error) { Log("Server error: %s", error.getKey().c_str()); }
+    void luaError(const std::string &error) { Log("Server error: %s", error.c_str()); }
     void connectionAccepted(int server_version) { Log("Connection accepted. Server version = %d", server_version); }
 
     void joinGameAccepted(boost::shared_ptr<const ClientConfig> config,
                           int my_house_colour,
-                          const std::vector<UTF8String> &player_names,
+                          const std::vector<PlayerID> &player_names,
                           const std::vector<bool> &ready_flags,
                           const std::vector<int> &house_cols,
-                          const std::vector<UTF8String> &observers)
+                          const std::vector<PlayerID> &observers)
     {
         Log("Join game accepted");
         join_game_accepted = true;
@@ -124,9 +125,9 @@ public:
     {
         Log("Set time remaining. Milliseconds = %d", milliseconds);
     }
-    void playerIsReadyToEnd(const UTF8String &player)
+    void playerIsReadyToEnd(const PlayerID &player)
     {
-        Log("Player is ready to end. Player name = %s", player.asUTF8().c_str());
+        Log("Player is ready to end. Player id = %s", player.asString().c_str());
     }
 
     void leaveGame() { Log("Leave game"); }
@@ -134,9 +135,9 @@ public:
     {
         Log("Set menu selection. Item = %d, Choice = %d", item, choice);
     }
-    void setQuestDescription(const std::string &quest_descr)
+    void setQuestDescription(const UTF8String &quest_descr)
     {
-        Log("Set quest description. Descr = %s", quest_descr.c_str());
+        Log("Set quest description. Descr = %s", quest_descr.asUTF8().c_str());
     }
 
     void startGame(int ndisplays, bool deathmatch_mode, const std::vector<UTF8String> &player_names, bool already_started)
@@ -176,13 +177,13 @@ public:
         Log("Set obs flag. Name = %s, val = %d", name.asUTF8().c_str(), new_obs_flag ? 1 : 0);
     }
     
-    void chat(const UTF8String &whofrom, bool observer, bool team, const std::string &msg)
+    void chat(const UTF8String &whofrom, bool observer, bool team, const Coercri::UTF8String &msg)
     {
-        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.asUTF8().c_str(), observer ? 1 : 0, team ? 1 : 0, msg.c_str());
+        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.asUTF8().c_str(), observer ? 1 : 0, team ? 1 : 0, msg.asUTF8().c_str());
     }
-    void announcement(const std::string &msg, bool is_err)
+    void announcement(const LocalKey &key, bool is_err)
     {
-        Log("Announcement: %s", msg.c_str());
+        Log("Announcement: %s", key.asString());
     }
 
 public:
@@ -280,7 +281,8 @@ public:
         Log("Set menu highlight, player = %d", player_num);
     }
     void flashScreen(int player_num, int delay) { Log("Flash screen"); }
-    void gameMsg(int player_num, const std::string &msg, bool is_err) { Log("Game msg. Player = %d, msg = %s", player_num, msg.c_str()); }
+    void gameMsgRaw(int player_num, const Coercri::UTF8String &msg, bool is_err) { Log("Game msg. Player = %d, msg = %s", player_num, msg.asUTF8().c_str()); }
+    void gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) { Log("Game msg. Player = %d, msg key = %s", player_num, key.getKey().c_str()); }
     void popUpWindow(const std::vector<TutorialWindow> &windows) { Log("Pop up window"); }
     void onElimination(int player_num) { Log("On elimination, player = %d", player_num); }
     void disableView(int player_num) { Log("Disable view, player = %d", player_num); }
@@ -365,7 +367,7 @@ void SendMessagesIfRequired()
 
     // First message must always be "set player name"
     if (!set_player_name_sent) {
-        g_client->setPlayerNameAndControls(UTF8String::fromUTF8("Network Testing Bot"), true);
+        g_client->setPlayerIdAndControls(PlayerId("Network Testing Bot"), true);
         g_client->joinGame("Game 1");
         set_player_name_sent = true;
         return;

@@ -73,7 +73,7 @@ public:
     VMTickCallbacks(KnightsServer &server_,
                     std::vector<ServerConnection*> & conns)
         : server(server_), connections(conns) {}
-    void onNewConnection(uint8_t client_number, const std::string &platform_user_id) override;
+    void onNewConnection(uint8_t client_number, const PlayerID &platform_user_id) override;
     void onCloseConnection(uint8_t client_number) override;
     void onCloseAllConnections() override;
     void onClientSendData(uint8_t client_number, std::vector<unsigned char> &data) override;
@@ -83,13 +83,13 @@ private:
     std::vector<ServerConnection*> &connections;
 };
 
-void VMTickCallbacks::onNewConnection(uint8_t num, const std::string&)
+void VMTickCallbacks::onNewConnection(uint8_t num, const PlayerID &platform_user_id)
 {
     if (connections.size() <= num) {
         connections.resize(int(num) + 1);
     }
     if (connections[num] == NULL) {
-        connections[num] = &server.newClientConnection();
+        connections[num] = &server.newClientConnection("", platform_user_id);
     } else {
         throw std::runtime_error("onNewConnection error");
     }
@@ -177,7 +177,7 @@ int main()
             ReadTickData(tick_data.data(), tick_data.data() + tick_data.size(), callbacks);
 
             // Now run the game thread, if applicable
-            unsigned int sleep_time = 127;  // max allowed tick duration
+            unsigned int sleep_time = 200;
             if (vs_game_thread_running()) {
                 sleep_time = vs_switch_to_game_thread();
             }

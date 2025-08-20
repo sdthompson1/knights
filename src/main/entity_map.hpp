@@ -51,7 +51,7 @@ public:
     void addEntity(int64_t time_us, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
                    const Anim *anim, const Overlay *ovr, int af, int64_t atz_us, bool ainvis, bool ainvuln,
                    int cur_ofs, MotionType motion_type, int64_t motion_time_remaining_us,
-                   const UTF8String &name);
+                   const PlayerID &player_id);
     void rmEntity(unsigned short int key);
     void moveEntity(int64_t time_us, unsigned short int key, MotionType motion_type, int64_t motion_duration_us, bool missile_mode);
     void flipEntityMotion(int64_t time_us, unsigned short int key, int64_t initial_delay_us, int64_t motion_duration_us);
@@ -72,7 +72,7 @@ public:
                       std::map<int, std::vector<GraphicElement> > &gfx_buffer,
                       std::vector<TextElement> &txt_buffer, bool show_own_name,
                       const Graphic *speech_bubble, int speech_depth,
-                      std::function<ClientState(const UTF8String&)> player_state_lookup);
+                      std::function<UTF8String(const PlayerID&)> player_name_lookup);
 
 private:
     // Commands are not executed immediately, but are stored up into a
@@ -117,7 +117,7 @@ private:
         MapDirection facing;
         bool approached;          // true if currently "approached" (and not moving)
         bool show_speech_bubble;
-        UTF8String name;
+        PlayerID player_id;
         
         int64_t start_time_us;   // time at which the cmd block was started
         int64_t finish_time_us;  // time at which the cmd block should be completed
@@ -138,7 +138,7 @@ private:
                     bool add_entity_name,
                     const Graphic *speech_bubble,
                     int speech_depth,
-                    std::function<ClientState(const UTF8String&)> player_state_lookup);
+                    std::function<UTF8String(const PlayerID&)> player_name_lookup);
 
     void recomputeEntityMotion(std::map<unsigned short int,Data>::iterator it, int64_t time_us);
 

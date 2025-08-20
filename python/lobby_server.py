@@ -28,6 +28,8 @@ import socket
 import struct
 import threading
 import time
+import tkinter as tk
+from tkinter import ttk, messagebox
 from typing import Dict, List, Set
 
 # Protocol constants
@@ -48,7 +50,8 @@ class Lobby:
         self.leader_user_id = leader_user_id
         self.members: Set[str] = {leader_user_id}
         self.created_time = time.time()
-        self.status_code = 0  # 0 or above
+        self.status_key = ""  # LocalKey string
+        self.param_key = None  # Optional parameter LocalKey string
     
     def add_member(self, user_id: str) -> bool:
         if user_id not in self.members:
@@ -74,6 +77,12 @@ class Lobby:
     
     def get_leader_id(self) -> str:
         return self.leader_user_id
+    
+    def set_leader(self, new_leader_id: str) -> bool:
+        if new_leader_id in self.members:
+            self.leader_user_id = new_leader_id
+            return True
+        return False
 
 class LobbyServer:
     def __init__(self, port: int = 12345):
@@ -83,6 +92,7 @@ class LobbyServer:
         self.user_lobbies: Dict[str, str] = {}  # user_id -> lobby_id
         self.next_lobby_id = 1
         self.lock = threading.Lock()
+        self.gui = None
     
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -258,10 +268,19 @@ class LobbyServer:
             
             lobby = self.lobbies[lobby_id]
             
-            # Format: leader_id (null-terminated) + num_players (4 bytes) + status_code (4 bytes)
+            # Format: leader_id (null-terminated) + num_players (4 bytes) + 
+            #         status_key (null-terminated) + has_param (1 byte) + 
+            #         [optional param_key (null-terminated)]
             response_data = lobby.get_leader_id().encode() + b'\0'
             response_data += struct.pack('<I', len(lobby.members))
-            response_data += struct.pack('<i', lobby.status_code)
+            response_data += lobby.status_key.encode() + b'\0'
+            
+            # Add has_param flag and optional param_key
+            if lobby.param_key is not None:
+                response_data += struct.pack('<B', 1)  # has_param = true
+                response_data += lobby.param_key.encode() + b'\0'
+            else:
+                response_data += struct.pack('<B', 0)  # has_param = false
         
         return self.create_success_response(response_data)
     
@@ -282,16 +301,46 @@ class LobbyServer:
             if lobby.get_leader_id() != user_id:
                 return self.create_error_response(b"Only lobby leader can set lobby info")
             
-            # Payload is status_code (4 bytes)
-            if len(payload) != 4:
-                return self.create_error_response(b"Invalid payload size")
-            
-            status_code = struct.unpack('<i', payload[0:4])[0]
-            
-            # Update lobby status code (leader_id and num_players are managed server-side)
-            lobby.status_code = status_code
+            # Parse payload: status_key (null-terminated) + has_param (1 byte) + 
+            #               [optional param_key (null-terminated)]
+            try:
+                pos = 0
+                
+                # Parse status key
+                null_pos = payload.find(b'\0', pos)
+                if null_pos == -1:
+                    return self.create_error_response(b"Invalid payload format")
+                
+                status_key = payload[pos:null_pos].decode('utf-8')
+                pos = null_pos + 1
+                
+                # Parse has_param flag
+                if pos >= len(payload):
+                    return self.create_error_response(b"Invalid payload format")
+                
+                has_param = payload[pos]
+                pos += 1
+                
+                # Parse optional param_key
+                param_key = None
+                if has_param:
+                    if pos >= len(payload):
+                        return self.create_error_response(b"Invalid payload format")
+                    
+                    null_pos = payload.find(b'\0', pos)
+                    if null_pos == -1:
+                        return self.create_error_response(b"Invalid payload format")
+                    
+                    param_key = payload[pos:null_pos].decode('utf-8')
+                
+                # Update lobby status (leader_id and num_players are managed server-side)
+                lobby.status_key = status_key
+                lobby.param_key = param_key
+                
+            except UnicodeDecodeError:
+                return self.create_error_response(b"Invalid UTF-8 encoding")
         
-        print(f"User {user_id} updated lobby {lobby_id} info: status_code={status_code}")
+        print(f"User {user_id} updated lobby {lobby_id} info: status_key='{status_key}', param_key='{param_key}'")
         return self.create_success_response(b"OK")
     
     def cleanup_client(self, client_socket: socket.socket):
@@ -320,7 +369,132 @@ class LobbyServer:
     
     def create_error_response(self, data: bytes) -> bytes:
         return struct.pack('<BI', STATUS_ERROR, len(data)) + data
+    
+    def change_leader(self, lobby_id: str, new_leader_id: str) -> bool:
+        with self.lock:
+            if lobby_id in self.lobbies:
+                lobby = self.lobbies[lobby_id]
+                if lobby.set_leader(new_leader_id):
+                    print(f"Leader of lobby {lobby_id} changed to {new_leader_id}")
+                    return True
+        return False
+
+class LobbyServerGUI:
+    def __init__(self, server: LobbyServer):
+        self.server = server
+        self.root = tk.Tk()
+        self.root.title("Lobby Server")
+        self.root.geometry("800x600")
+        
+        # Create main frames
+        self.players_frame = ttk.LabelFrame(self.root, text="Connected Players")
+        self.players_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        self.lobbies_frame = ttk.LabelFrame(self.root, text="Lobbies")
+        self.lobbies_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        # Players list
+        self.players_tree = ttk.Treeview(self.players_frame, columns=("User ID",), show="tree headings")
+        self.players_tree.heading("#0", text="")
+        self.players_tree.heading("User ID", text="User ID")
+        self.players_tree.pack(fill="both", expand=True, padx=5, pady=5)
+        
+        # Lobbies list
+        self.lobbies_tree = ttk.Treeview(self.lobbies_frame, columns=("ID", "Leader", "Members", "Status"), show="tree headings")
+        self.lobbies_tree.heading("#0", text="")
+        self.lobbies_tree.heading("ID", text="Lobby ID")
+        self.lobbies_tree.heading("Leader", text="Leader")
+        self.lobbies_tree.heading("Members", text="Members")
+        self.lobbies_tree.heading("Status", text="Status")
+        self.lobbies_tree.pack(fill="both", expand=True, padx=5, pady=5)
+        
+        # Control frame for leader change
+        self.control_frame = ttk.Frame(self.root)
+        self.control_frame.pack(fill="x", padx=10, pady=5)
+        
+        ttk.Label(self.control_frame, text="Change Leader:").grid(row=0, column=0, padx=5)
+        
+        self.lobby_var = tk.StringVar()
+        self.lobby_combo = ttk.Combobox(self.control_frame, textvariable=self.lobby_var, state="readonly")
+        self.lobby_combo.grid(row=0, column=1, padx=5)
+        
+        self.new_leader_var = tk.StringVar()
+        self.leader_combo = ttk.Combobox(self.control_frame, textvariable=self.new_leader_var, state="readonly")
+        self.leader_combo.grid(row=0, column=2, padx=5)
+        
+        self.change_button = ttk.Button(self.control_frame, text="Change Leader", command=self.change_leader)
+        self.change_button.grid(row=0, column=3, padx=5)
+        
+        # Bind lobby selection to update members
+        self.lobby_combo.bind("<<ComboboxSelected>>", self.on_lobby_selected)
+        
+        # Start update loop
+        self.update_display()
+    
+    def on_lobby_selected(self, event=None):
+        lobby_id = self.lobby_var.get()
+        if lobby_id:
+            with self.server.lock:
+                if lobby_id in self.server.lobbies:
+                    lobby = self.server.lobbies[lobby_id]
+                    members = list(lobby.members)
+                    self.leader_combo.configure(values=members)
+                    if members:
+                        self.new_leader_var.set(members[0])
+    
+    def change_leader(self):
+        lobby_id = self.lobby_var.get()
+        new_leader = self.new_leader_var.get()
+        
+        if not lobby_id or not new_leader:
+            messagebox.showwarning("Warning", "Please select both lobby and new leader")
+            return
+        
+        if self.server.change_leader(lobby_id, new_leader):
+            messagebox.showinfo("Success", f"Leader changed to {new_leader}")
+        else:
+            messagebox.showerror("Error", "Failed to change leader")
+    
+    def update_display(self):
+        # Clear current display
+        for item in self.players_tree.get_children():
+            self.players_tree.delete(item)
+        
+        for item in self.lobbies_tree.get_children():
+            self.lobbies_tree.delete(item)
+        
+        with self.server.lock:
+            # Update players list
+            connected_users = set(self.server.clients.values())
+            for user_id in connected_users:
+                self.players_tree.insert("", "end", values=(user_id,))
+            
+            # Update lobbies list
+            lobby_ids = []
+            for lobby_id, lobby in self.server.lobbies.items():
+                members_str = ", ".join(lobby.members)
+                status = lobby.status_key if lobby.status_key else "No status"
+                self.lobbies_tree.insert("", "end", values=(lobby_id, lobby.leader_user_id, members_str, status))
+                lobby_ids.append(lobby_id)
+            
+            # Update combo boxes
+            self.lobby_combo.configure(values=lobby_ids)
+        
+        # Schedule next update
+        self.root.after(1000, self.update_display)  # Update every second
+    
+    def start(self):
+        self.root.mainloop()
 
 if __name__ == '__main__':
     server = LobbyServer()
-    server.start()
+    
+    # Start server in a separate thread
+    server_thread = threading.Thread(target=server.start)
+    server_thread.daemon = True
+    server_thread.start()
+    
+    # Start GUI
+    gui = LobbyServerGUI(server)
+    server.gui = gui
+    gui.start()

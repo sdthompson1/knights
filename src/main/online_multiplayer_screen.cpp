@@ -47,12 +47,18 @@
 
 namespace {
     struct GameInfo {
-        GameInfo(const std::string &lobby_id, const Coercri::UTF8String &leader_name, int players, int status)
-            : lobby_id(lobby_id), leader_name(leader_name), num_players(players), status_code(status) { }
+        GameInfo(const std::string &lobby_id, const Coercri::UTF8String &leader_name, int players,
+                 const LocalKey &game_status_key,
+                 const std::vector<LocalParam> &game_status_params)
+            : lobby_id(lobby_id), leader_name(leader_name), num_players(players),
+              game_status_key(game_status_key),
+              game_status_params(game_status_params)
+        { }
         std::string lobby_id;
         Coercri::UTF8String leader_name;
         int num_players;
-        int status_code;
+        LocalKey game_status_key;
+        std::vector<LocalParam> game_status_params;
     };
 
     class GameList : public gcn::ListModel {
@@ -82,7 +88,8 @@ namespace {
         for (const auto & lobby_id : lobbies) {
             OnlinePlatform::LobbyInfo info = platform.getLobbyInfo(lobby_id);
             Coercri::UTF8String leader_name = platform.lookupUserName(info.leader_id);
-            games.push_back(GameInfo(lobby_id, leader_name, info.num_players, info.status_code));
+            games.push_back(GameInfo(lobby_id, leader_name, info.num_players,
+                                     info.game_status_key, info.game_status_params));
         }
     }
 
@@ -100,14 +107,8 @@ namespace {
             result += std::to_string(game.num_players);
             result += "\t";
 
-            Coercri::UTF8String status_msg;
-            if (game.status_code == 0) {
-                // Localization String 1 = "Selecting Quest"
-                status_msg = knights_app.getLocalizationString(1);
-            } else {
-                // Localization String 2 = "Playing (%1)"
-                status_msg = knights_app.getLocalizationString(2, knights_app.getLocalizationString(game.status_code));
-            }
+            const Localization &loc = knights_app.getLocalization();
+            Coercri::UTF8String status_msg = loc.get(game.game_status_key, game.game_status_params);
             result += status_msg.asLatin1();
 
             return result;

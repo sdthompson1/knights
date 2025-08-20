@@ -88,6 +88,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\shared\impl\anim.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\announcement_loc.cpp" />
     <ClCompile Include="..\..\src\shared\impl\colour_change.cpp" />
     <ClCompile Include="..\..\src\shared\impl\file_info.cpp" />
     <ClCompile Include="..\..\src\shared\impl\graphic.cpp" />
@@ -108,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\shared\anim.hpp" />
+    <ClInclude Include="..\..\src\shared\announcement_loc.hpp" />
     <ClInclude Include="..\..\src\shared\colour_change.hpp" />
     <ClInclude Include="..\..\src\shared\dungeon_view.hpp" />
     <ClInclude Include="..\..\src\shared\file_info.hpp" />

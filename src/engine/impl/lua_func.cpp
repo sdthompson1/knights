@@ -63,47 +63,6 @@ bool LuaFunc::execute(const ActionData &ad) const
     }
 }
 
-std::string LuaFunc::runIntToString(int param) const
-{
-    lua_State *lua = function_ref.getLuaState();
-    ASSERT(lua);
-    
-    function_ref.push(lua);  // [func]
-    lua_pushinteger(lua, param);  // [func param]
-    LuaExec(lua, 1, 1);   // [result]
-
-    const char * p = lua_tostring(lua, -1);
-    std::string result;
-    if (p) result = p;
-    else result = "<Not a string>";
-
-    lua_pop(lua, 1);  // []
-    return result;
-}
-
-std::string LuaFunc::runOneArgToString() const
-{
-    // we could factor out some common code between this and
-    // runIntToString, but doesn't seem worth it at the moment
-
-    // [arg]
-    
-    lua_State *lua = function_ref.getLuaState();
-    ASSERT(lua);
-    
-    function_ref.push(lua);  // [arg func]
-    lua_insert(lua, -2);     // [func arg]
-    LuaExec(lua, 1, 1);   // [result]
-
-    const char * p = lua_tostring(lua, -1);
-    std::string result;
-    if (p) result = p;
-    else result = "<Not a string>";
-
-    lua_pop(lua, 1);  // []
-    return result;
-}    
-
 void LuaFunc::runNArgsNoPop(lua_State *lua, int n) const
 {
     // [a1 .. an]
@@ -116,7 +75,7 @@ void LuaFunc::runNArgsNoPop(lua_State *lua, int n) const
     }
 }
 
-void LuaFunc::run(lua_State *lua, int nargs, int nresults)
+void LuaFunc::run(lua_State *lua, int nargs, int nresults) const
 {
     // [a1..an]
     ASSERT(hasValue());

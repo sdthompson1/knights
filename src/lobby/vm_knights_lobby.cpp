@@ -49,7 +49,7 @@ struct VMKnightsLobbyImpl {
     // constructor
     VMKnightsLobbyImpl(Coercri::NetworkDriver &net_driver,
                        Coercri::Timer &timer,
-                       const std::string &local_user_id,
+                       const PlayerID &local_user_id,
                        bool new_control_system)
         : net_driver(net_driver),
           timer(timer),
@@ -63,7 +63,7 @@ struct VMKnightsLobbyImpl {
     boost::thread background_thread;
     Coercri::NetworkDriver &net_driver;
     Coercri::Timer &timer;
-    std::string local_user_id;
+    PlayerID local_user_id;
     bool new_control_system;
     bool exit_flag;
     std::unique_ptr<LeaderState> leader;
@@ -72,7 +72,7 @@ struct VMKnightsLobbyImpl {
 
 VMKnightsLobby::VMKnightsLobby(Coercri::NetworkDriver &net_driver,
                                Coercri::Timer &timer,
-                               const std::string &local_user_id,
+                               const PlayerID &local_user_id,
                                bool new_control_system)
 {
     // Initialize pimpl fields
@@ -125,7 +125,7 @@ void VMKnightsLobby::becomeLeader(int port)
     }
 }
 
-void VMKnightsLobby::becomeFollower(const std::string &leader_user_id)
+void VMKnightsLobby::becomeFollower(const std::string &address, int port)
 {
     {
         boost::unique_lock<boost::mutex> lock(pimpl->mutex);
@@ -143,8 +143,8 @@ void VMKnightsLobby::becomeFollower(const std::string &leader_user_id)
             pimpl->leader.reset();
         }
 
-        // Create a new follower, connecting to the given user id
-        auto connection = pimpl->net_driver.openConnection(leader_user_id, 0);
+        // Create a new follower, connecting to the given address and port
+        auto connection = pimpl->net_driver.openConnection(address, port);
         pimpl->follower = std::make_unique<FollowerState>(std::move(vm), connection);
     }
 
@@ -154,7 +154,7 @@ void VMKnightsLobby::becomeFollower(const std::string &leader_user_id)
 void VMKnightsLobby::rejoinGame()
 {
     KnightsClient client;
-    client.setPlayerNameAndControls(Coercri::UTF8String::fromUTF8("TODO"), pimpl->new_control_system);
+    client.setPlayerIdAndControls(pimpl->local_user_id, pimpl->new_control_system);
     client.joinGame("#VMGame");
     sendOutgoingMessages(client);
 }

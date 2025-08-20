@@ -37,7 +37,7 @@ using namespace boost;
 
 class ErrorScreenImpl : public gcn::ActionListener {
 public:
-    ErrorScreenImpl(KnightsApp &app, gcn::Gui &gui, const std::string &msg)
+    ErrorScreenImpl(KnightsApp &app, gcn::Gui &gui, const UTF8String &msg)
         : knights_app(app)
     {
         // create container
@@ -48,7 +48,7 @@ public:
         const int hpad = 6, vpad = 6;
         
         // create label
-        label.reset(new gcn::Label(msg));
+        label.reset(new gcn::Label(msg.asLatin1()));
         container->add(label.get(), hpad, y);
         y += label->getHeight() + vpad;
         

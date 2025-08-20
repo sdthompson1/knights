@@ -46,6 +46,7 @@
 class GameManagerImpl;
 class KnightsApp;
 class KnightsClient;
+class OnlinePlatform;
 
 
 // internal structs, used in ChatList
@@ -65,8 +66,8 @@ public:
     void clear();
 
     // from gcn::ListModel
-    virtual int getNumberOfElements() { return formatted_lines.size(); }
-    virtual std::string getElementAt(int i) { if (i>=0 && i<formatted_lines.size()) return formatted_lines[i].text_latin1; else return ""; }
+    virtual int getNumberOfElements() override { return formatted_lines.size(); }
+    virtual std::string getElementAt(int i) override { if (i>=0 && i<formatted_lines.size()) return formatted_lines[i].text_latin1; else return ""; }
 
     bool isUpdated();  // clears is_updated flag afterwards. used for auto-scrolling to bottom.
     
@@ -86,40 +87,42 @@ private:
     bool do_timestamps;
 };
 
-// list of unique player names
+// list of unique player IDs, and corresponding names
 class NameList : public gcn::ListModel {
 public:
-    explicit NameList(const std::vector<Coercri::Color> &hc) : house_cols(hc) { }
-    void add(const UTF8String &x, bool observer, bool ready, int house_col);
-    void alter(const UTF8String &x, const bool *observer, const bool *ready, const int *house_col);  // ptr = null means don't change.
+    NameList(const std::vector<Coercri::Color> &hc, KnightsApp &app);
+    void add(const PlayerID &id, bool observer, bool ready, int house_col);
+    void alter(const PlayerID &id, const bool *observer, const bool *ready, const int *house_col);  // ptr = null means don't change.
     void clearReady();
     void clear();
-    void remove(const UTF8String &x);
+    void remove(const PlayerID &id);
 
     // overridden from gcn::ListModel
-    virtual int getNumberOfElements();
-    virtual std::string getElementAt(int i);   // latin1 encoding (with special sequences for "house colour blocks")
+    virtual int getNumberOfElements() override;
+    virtual std::string getElementAt(int i) override;   // latin1 encoding (with special sequences for "house colour blocks")
 
 private:
+    void sortNames();
+    Coercri::UTF8String nameLookup(const PlayerID &id) const;
+
     struct Name {
-        UTF8String name;
+        PlayerID id;
         bool observer;
         bool ready;
         int house_col;
-        bool operator<(const Name &other) const {
-            return observer < other.observer || 
-                (observer == other.observer && name.toUpper() < other.name.toUpper());
-        }
     };
     std::vector<Name> names;
     const std::vector<Coercri::Color> &house_cols;
+#ifdef ONLINE_PLATFORM
+    OnlinePlatform &online_platform;
+#endif
 };
 
 
 class GameManager : public ClientCallbacks {
 public:
     GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> client, boost::shared_ptr<Coercri::Timer> timer,
-                bool single_player_, bool tutorial, bool autostart, const UTF8String &my_player_name);
+                bool single_player_, bool tutorial, bool autostart, const PlayerID &my_player_id);
 
     void setLanGame(bool);
     void setOnlinePlatformGame(bool);
@@ -147,7 +150,7 @@ public:
 
     
     // quest selection menu
-    const std::string & getMenuTitle() const;
+    const LocalKey & getMenuTitle() const;
     void createMenuWidgets(gcn::ActionListener *listener,
                            gcn::SelectionListener *listener2,
                            int initial_x,
@@ -159,8 +162,8 @@ public:
     void setMenuWidgetsEnabled(bool enabled);
     void getMenuStrings(std::vector<std::pair<std::string, std::string> > &menu_strings) const;
     bool getMenuWidgetInfo(gcn::Widget *source, int &item_num, int &choice_num) const;
-    int getQuestMessageCode() const;  // return a localization string code for name of current quest
-    const std::string &getQuestDescription() const;
+    LocalKey getQuestMessageCode() const;  // return a localization key for name of current quest
+    const UTF8String &getQuestDescription() const;
     
     // player lists etc.
     NameList & getLobbyPlayersList() const;   // names of players in lobby
@@ -170,7 +173,7 @@ public:
     ChatList & getQuestRequirementsList() const;
     Coercri::Color getAvailHouseColour(int) const;  // translate house-colour-code into RGB colour.
     int getNumAvailHouseColours() const;
-    std::function<ClientState(const UTF8String&)> getPlayerStateLookup() const;
+    std::function<UTF8String(const PlayerID&)> getPlayerNameLookup() const;
     bool getMyObsFlag() const;
     bool getMyReadyFlag() const;
     int getMyHouseColour() const;
@@ -178,7 +181,7 @@ public:
 
     // Updates saved chat string, also returns true if the string has changed since last time.
     // See Trac #11 and #12.
-    bool setSavedChat(const std::string &);
+    bool setSavedChat(const UTF8String &);
 
     bool doingMenuWidgetUpdate() const; // Trac #72
     
@@ -187,51 +190,53 @@ public:
     // callback implementations
     //
     
-    virtual void connectionLost();     // goes to ErrorScreen
-    virtual void connectionFailed();   // goes to ErrorScreen
-    virtual void serverError(const std::string &error);    // goes to ErrorScreen
-    virtual void connectionAccepted(int server_version);   // goes to LobbyScreen
+    virtual void connectionLost() override;     // goes to ErrorScreen
+    virtual void connectionFailed() override;   // goes to ErrorScreen
+    virtual void serverError(const LocalKey &error) override;       // goes to ErrorScreen
+    virtual void luaError(const std::string &error) override;       // goes to ErrorScreen
+    virtual void connectionAccepted(int server_version) override;   // goes to LobbyScreen
     
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                   int my_house_colour,
-                                  const std::vector<UTF8String> &player_names,
+                                  const std::vector<PlayerID> &player_ids,
                                   const std::vector<bool> &ready_flags,
                                   const std::vector<int> &house_cols,
-                                  const std::vector<UTF8String> &observers);
-    virtual void joinGameDenied(const std::string &reason);     // goes to ErrorScreen
+                                  const std::vector<PlayerID> &observers) override;
+    virtual void joinGameDenied(const LocalKey &reason) override;     // goes to ErrorScreen
 
-    virtual void loadGraphic(const Graphic &g, const std::string &contents);
-    virtual void loadSound(const Sound &s, const std::string &contents);
+    virtual void loadGraphic(const Graphic &g, const std::string &contents) override;
+    virtual void loadSound(const Sound &s, const std::string &contents) override;
 
-    virtual void passwordRequested(bool first_attempt);
-    virtual void playerConnected(const UTF8String &name);
-    virtual void playerDisconnected(const UTF8String &name);
+    virtual void passwordRequested(bool first_attempt) override;
+    virtual void playerConnected(const PlayerID &id) override;
+    virtual void playerDisconnected(const PlayerID &id) override;
 
-    virtual void updateGame(const std::string &game_name, int num_players, int num_observers, GameStatus status);
-    virtual void dropGame(const std::string &game_name);
-    virtual void updatePlayer(const UTF8String &player, const std::string &game, bool obs_flag);
-    virtual void playerList(const std::vector<ClientPlayerInfo> &player_list);
-    virtual void setTimeRemaining(int milliseconds);
-    virtual void playerIsReadyToEnd(const UTF8String &player);
+    virtual void updateGame(const std::string &game_name, int num_players, int num_observers, GameStatus status) override;
+    virtual void dropGame(const std::string &game_name) override;
+    virtual void updatePlayer(const PlayerID &player, const std::string &game, bool obs_flag) override;
+    virtual void playerList(const std::vector<ClientPlayerInfo> &player_list) override;
+    virtual void setTimeRemaining(int milliseconds) override;
+    virtual void playerIsReadyToEnd(const PlayerID &player) override;
     
     virtual void leaveGame();     // goes to lobby
-    virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals);
-    virtual void setQuestDescription(const std::string &quest_descr);
+    virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals) override;
+    virtual void setQuestDescription(const UTF8String &quest_descr) override;
     virtual void startGame(int ndisplays, bool deathmatch_mode,
-                           const std::vector<UTF8String> &player_names, bool already_started);  // goes to InGameScreen
-    virtual void gotoMenu();     // goes to MenuScreen
+                           const std::vector<PlayerID> &player_ids, bool already_started) override;  // goes to InGameScreen
+    virtual void gotoMenu() override;     // goes to MenuScreen
 
-    virtual void playerJoinedThisGame(const UTF8String &name, bool obs_flag, int house_col);
-    virtual void playerLeftThisGame(const UTF8String &name, bool obs_flag);
-    virtual void setPlayerHouseColour(const UTF8String &name, int house_col);
-    virtual void setAvailableHouseColours(const std::vector<Coercri::Color> &cols);
-    virtual void setReady(const UTF8String &name, bool ready);
-    virtual void deactivateReadyFlags();
+    virtual void playerJoinedThisGame(const PlayerID &id, bool obs_flag, int house_col) override;
+    virtual void playerLeftThisGame(const PlayerID &id, bool obs_flag) override;
+    virtual void setPlayerHouseColour(const PlayerID &id, int house_col) override;
+    virtual void setAvailableHouseColours(const std::vector<Coercri::Color> &cols) override;
+    virtual void setReady(const PlayerID &id, bool ready) override;
+    virtual void deactivateReadyFlags() override;
 
-    virtual void setObsFlag(const UTF8String &name, bool new_obs_flag);
+    virtual void setObsFlag(const PlayerID &id, bool new_obs_flag) override;
     
-    virtual void chat(const UTF8String &whofrom, bool observer, bool team, const std::string &msg);
-    virtual void announcement(const std::string &msg, bool err);
+    virtual void chat(const PlayerID &id, bool observer, bool team, const Coercri::UTF8String &msg) override;
+    virtual void announcementLoc(const LocalKey &key, const std::vector<LocalParam> &params, bool err) override;
+    virtual void announcementRaw(const UTF8String &msg, bool err) override;
 
 
 private:

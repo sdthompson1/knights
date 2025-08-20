@@ -27,6 +27,7 @@
 #include "dungeon_generator.hpp"
 #include "dungeon_layout.hpp"
 #include "knights_engine.hpp"
+#include "localization.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_game_setup.hpp"
 #include "lua_userdata.hpp"
@@ -718,8 +719,13 @@ LuaStartupSentinel::~LuaStartupSentinel()
 }
 
 
-void GameStartupMsg(lua_State *lua, const std::string &msg)
+void GameStartupMsg(lua_State *lua, const UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params)
 {
     KnightsEngine &ke = GetKnightsEngine(lua);
-    ke.gameStartupMsg(msg);
+    if (!msg.empty()) {
+        ke.gameStartupMsg(msg);
+    } else {
+        // TODO: proper localization of startup msgs. For now just send the key.
+        ke.gameStartupMsg(UTF8String::fromUTF8Safe(key.getKey()));
+    }
 }

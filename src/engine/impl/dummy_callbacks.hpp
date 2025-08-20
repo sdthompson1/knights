@@ -26,64 +26,66 @@
 
 #include "dungeon_view.hpp"
 #include "mini_map.hpp"
+#include "player_id.hpp"
 #include "status_display.hpp"
 #include "knights_callbacks.hpp"
 
 class DummyDungeonView : public DungeonView {
 public:
-    virtual void setCurrentRoom(int,int,int) { }
+    virtual void setCurrentRoom(int,int,int) override { }
     virtual void addEntity(unsigned short int, int, int, MapHeight, MapDirection,
-        const Anim *, const Overlay *, int, int, bool, bool, bool, int, MotionType, int, const UTF8String &) { }
-    virtual void rmEntity(unsigned short int) { }
-    virtual void repositionEntity(unsigned short int, int, int) { }
-    virtual void moveEntity(unsigned short int, MotionType, int, bool) { }
-    virtual void flipEntityMotion(unsigned short int, int, int) { }
-    virtual void setAnimData(unsigned short int, const Anim *, const Overlay *, int, int, bool, bool, bool) { }
-    virtual void setFacing(unsigned short int, MapDirection) { }
-    virtual void setSpeechBubble(unsigned short int, bool) { }
-    virtual void clearTiles(int,int,bool) { }
-    virtual void setTile(int,int,int,const Graphic *, boost::shared_ptr<const ColourChange>,bool) { }
-    virtual void setItem(int, int, const Graphic *,bool) { }
-    virtual void placeIcon(int, int, const Graphic *, int) { }
-    virtual void flashMessage(const std::string&, int) { }
-    virtual void cancelContinuousMessages() { }
-    virtual void addContinuousMessage(const std::string&) { }
+        const Anim *, const Overlay *, int, int, bool, bool, bool, int, MotionType, int, const PlayerID &) override { }
+    virtual void rmEntity(unsigned short int) override { }
+    virtual void repositionEntity(unsigned short int, int, int) override { }
+    virtual void moveEntity(unsigned short int, MotionType, int, bool) override { }
+    virtual void flipEntityMotion(unsigned short int, int, int) override { }
+    virtual void setAnimData(unsigned short int, const Anim *, const Overlay *, int, int, bool, bool, bool) override { }
+    virtual void setFacing(unsigned short int, MapDirection) override { }
+    virtual void setSpeechBubble(unsigned short int, bool) override { }
+    virtual void clearTiles(int,int,bool) override { }
+    virtual void setTile(int,int,int,const Graphic *, boost::shared_ptr<const ColourChange>,bool) override { }
+    virtual void setItem(int, int, const Graphic *,bool) override { }
+    virtual void placeIcon(int, int, const Graphic *, int) override { }
+    virtual void flashMessage(const std::string&, int) override { }
+    virtual void cancelContinuousMessages() override { }
+    virtual void addContinuousMessage(const std::string&) override { }
 };
 
 class DummyMiniMap : public MiniMap {
 public:
-    virtual void setSize(int,int) { }
-    virtual void setColour(int, int, MiniMapColour) { }
-    virtual void wipeMap() { }
-    virtual void mapKnightLocation(int,int,int) { }
-    virtual void mapItemLocation(int,int,bool) { }
+    virtual void setSize(int,int) override { }
+    virtual void setColour(int, int, MiniMapColour) override { }
+    virtual void wipeMap() override { }
+    virtual void mapKnightLocation(int,int,int) override { }
+    virtual void mapItemLocation(int,int,bool) override { }
 };
 
 class DummyStatusDisplay : public StatusDisplay {
 public:
-    virtual void setBackpack(int, const Graphic *, const Graphic *, int, int) { }
-    virtual void addSkull() { }
-    virtual void setHealth(int) { }
-    virtual void setPotionMagic(PotionMagic, bool) { }
-    virtual void setQuestHints(const std::vector<std::string> &) { }
+    virtual void setBackpack(int, const Graphic *, const Graphic *, int, int) override { }
+    virtual void addSkull() override { }
+    virtual void setHealth(int) override { }
+    virtual void setPotionMagic(PotionMagic, bool) override { }
+    virtual void setQuestHints(const std::vector<std::string> &) override { }
 };
 
 class DummyCallbacks : public KnightsCallbacks {
 public:
-    virtual DungeonView & getDungeonView(int) { return dummy_dungeon_view; }
-    virtual MiniMap & getMiniMap(int) { return dummy_mini_map; }
-    virtual StatusDisplay & getStatusDisplay(int) { return dummy_status_display; }
-    virtual void playSound(int, const Sound&, int) { }
-    virtual void winGame(int) { }
-    virtual void loseGame(int) { }
-    virtual void setAvailableControls(int, const std::vector<std::pair<const UserControl*,bool> >&) { }
-    virtual void setMenuHighlight(int, const UserControl*) { }
-    virtual void flashScreen(int,int) { }
-    virtual void gameMsg(int,const std::string&,bool) { }
-    virtual void popUpWindow(const std::vector<TutorialWindow> &) { }
-    virtual void onElimination(int) { }
-    virtual void disableView(int) { }
-    virtual void goIntoObserverMode(int, const std::vector<UTF8String>&) { }
+    virtual DungeonView & getDungeonView(int) override { return dummy_dungeon_view; }
+    virtual MiniMap & getMiniMap(int) override { return dummy_mini_map; }
+    virtual StatusDisplay & getStatusDisplay(int) override { return dummy_status_display; }
+    virtual void playSound(int, const Sound&, int) override { }
+    virtual void winGame(int) override { }
+    virtual void loseGame(int) override { }
+    virtual void setAvailableControls(int, const std::vector<std::pair<const UserControl*,bool> >&) override { }
+    virtual void setMenuHighlight(int, const UserControl*) override { }
+    virtual void flashScreen(int,int) override { }
+    virtual void gameMsgRaw(int, const UTF8String&, bool) override { }
+    virtual void gameMsgLoc(int, const LocalKey&, const std::vector<LocalParam>&, bool) override { }
+    virtual void popUpWindow(const std::vector<TutorialWindow> &) override { }
+    virtual void onElimination(int) override { }
+    virtual void disableView(int) override { }
+    virtual void goIntoObserverMode(int, const std::vector<PlayerID>&) override { }
 private:
     DummyDungeonView dummy_dungeon_view;
     DummyMiniMap dummy_mini_map;

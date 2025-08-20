@@ -44,8 +44,6 @@
 #ifndef KNIGHTS_CONFIG_HPP
 #define KNIGHTS_CONFIG_HPP
 
-#include "utf8string.hpp"
-
 #include "gfx/color.hpp"
 
 #include "boost/shared_ptr.hpp"
@@ -62,11 +60,14 @@ class HomeManager;
 class ItemType;
 class KnightsConfigImpl;
 class KnightsEngine;
+class LocalKey;
+class LocalParam;
 class Menu;
 class MenuListener;
 class MonsterManager;
 class Overlay;
 class Player;
+class PlayerID;
 class Sound;
 class StuffManager;
 class TaskManager;
@@ -115,8 +116,8 @@ public:
     void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
 
     // check whether the game can be started under strict interpretation of no. of players constraints
-    bool checkNumPlayersStrict(std::string &err_msg) const;
-    
+    bool checkNumPlayersStrict(LocalKey &err_key, std::vector<LocalParam> &err_params) const;
+
     // call when all players have left game. resets settings to defaults.
     void resetMenu();
 
@@ -140,7 +141,7 @@ public:
                         EventManager &event_manager,
                         TaskManager &task_manager,
                         const std::vector<int> &hse_cols,
-                        const std::vector<UTF8String> &player_names) const;
+                        const std::vector<PlayerID> &player_ids) const;
     boost::shared_ptr<const ConfigMap> getConfigMap() const;
     boost::shared_ptr<lua_State> getLuaState();  // This will live for as long as the KnightsConfig lives.
 

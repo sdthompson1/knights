@@ -56,7 +56,10 @@ class KnightsAppImpl;
 class KnightsClient;
 class KnightsConfig;
 class KnightsServer;
+class Localization;
+class LocalKey;
 class Options;
+class PlayerID;
 class PotionRenderer;
 class Screen;
 class SkullRenderer;
@@ -133,7 +136,7 @@ public:
 
     // single player means PAUSE requests will be sent to server, and chat will be blocked.
     void createGameManager(boost::shared_ptr<KnightsClient> knights_client, bool single_player, bool tutorial_mode,
-                           bool autostart_mode, const UTF8String &my_player_name);
+                           bool autostart_mode, const PlayerID &my_player_id);
     void destroyGameManager();
     GameManager & getGameManager();
 
@@ -147,9 +150,10 @@ public:
 
     // Notify of changes to the current quest.
     // This is used for feeding the game status back to the current PlatformLobby, if any.
-    //  - quest_msg_code = 0 means no quest in progress (i.e. status is "Selecting Quest")
-    //  - Otherwise, quest_msg_code is a localization string naming the current quest
-    void setQuestMessageCode(int quest_msg_code);
+    //  - quest_key = "" means no quest in progress (i.e. status is "Selecting Quest")
+    //  - Otherwise, quest_key is a localization key naming the current quest (i.e. status
+    //    is "Selecting Quest: {0}"
+    void setQuestMessageCode(const LocalKey &quest_key);
 
 
     //
@@ -190,18 +194,16 @@ public:
 
 
     //
-    // Localization strings (WIP)
+    // Localization strings
     //
-    const Coercri::UTF8String & getLocalizationString(int msg_code) const;
-    Coercri::UTF8String getLocalizationString(int msg_code, const Coercri::UTF8String &param1) const;
+    const Localization & getLocalization() const;
 
 
 private:
     void executeScreenChange();
     void setupControllers();
     void setupGfxResizer();
-    void readLocalizationStrings();
-    
+
 private:
     boost::shared_ptr<KnightsAppImpl> pimpl;
 };

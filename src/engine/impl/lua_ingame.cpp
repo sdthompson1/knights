@@ -596,7 +596,7 @@ namespace {
     }
 
     // called by Print
-    std::string BuildMsg(lua_State *lua, int start)
+    UTF8String BuildMsg(lua_State *lua, int start)
     {
         std::string msg;
         const int top = lua_gettop(lua);
@@ -606,7 +606,7 @@ namespace {
             if (i > start) msg += " ";
             msg += x;
         }
-        return msg;
+        return UTF8String::fromUTF8Safe(msg);
     }
 
     // Input: (optional) player, followed by any number of args.
@@ -635,13 +635,13 @@ namespace {
             }
             
             // print the message
-            med.gameMsg(player_num, BuildMsg(lua, start));
+            med.gameMsgRaw(player_num, BuildMsg(lua, start));
 
         } catch (MediatorUnavailable&) {
             // print it to stdout instead
             // (Assumes no 'player' arg)
-            std::string msg = BuildMsg(lua, 1);
-            std::cout << msg << std::endl;
+            UTF8String msg = BuildMsg(lua, 1);
+            std::cout << msg.asUTF8() << std::endl;
         }
         return 0;
     }
@@ -882,13 +882,6 @@ namespace {
             NewLuaPtr<Player>(lua, *it);
             lua_rawseti(lua, -2, n++);
         }
-        return 1;
-    }
-
-    int GetPlayerName(lua_State *lua)
-    {
-        Player & plyr = GetPlayerOrKnight(lua, 1);
-        lua_pushstring(lua, plyr.getName().asLatin1().c_str());
         return 1;
     }
 
@@ -1360,9 +1353,6 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &GetAllPlayers);
     lua_setfield(lua, -2, "GetAllPlayers");
-
-    PushCFunction(lua, &GetPlayerName);
-    lua_setfield(lua, -2, "GetPlayerName");
 
     PushCFunction(lua, &IsEliminated);
     lua_setfield(lua, -2, "IsEliminated");

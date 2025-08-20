@@ -58,7 +58,7 @@ namespace {
 //
 
 LeaderState::LeaderState(Coercri::Timer &timer,
-                         const std::string &local_user_id)
+                         const PlayerID &local_user_id)
     : timer(timer)
 {
     // Make a random seed
@@ -81,7 +81,7 @@ LeaderState::LeaderState(Coercri::Timer &timer,
 }
 
 LeaderState::LeaderState(Coercri::Timer &timer,
-                         const std::string &local_user_id,
+                         const PlayerID &local_user_id,
                          std::unique_ptr<KnightsVM> vm)
     : timer(timer)
 {
@@ -89,7 +89,7 @@ LeaderState::LeaderState(Coercri::Timer &timer,
     initialize(local_user_id, 1);
 }
 
-void LeaderState::initialize(const std::string &local_user_id, int sleep_time_ms)
+void LeaderState::initialize(const PlayerID &local_user_id, int sleep_time_ms)
 {
     // Initialize tick data
     tick_data.clear();
@@ -166,7 +166,7 @@ void LeaderState::update(Coercri::NetworkDriver &net_driver,
                 // Open a new connection to the VM
                 // Note: getAddress, by convention, returns the platform user ID
                 // for platform P2P connections
-                tick_writer->writeNewConnection(client_num, conn->getAddress());
+                tick_writer->writeNewConnection(client_num, PlayerID(conn->getAddress()));
 
                 // Add the new follower
                 if (client_num >= followers.size()) {
@@ -221,7 +221,8 @@ void LeaderState::update(Coercri::NetworkDriver &net_driver,
         }
 
         // Finalize the current tick
-        tick_writer->finalize(std::min(127u, time_now_ms - last_tick_time_ms));
+        tick_writer->finalize(std::min((unsigned int)TickWriter::MAX_TICK_MS,
+                                       time_now_ms - last_tick_time_ms));
 
         // Send the tick to the VM
         std::vector<unsigned char> vm_output_data;

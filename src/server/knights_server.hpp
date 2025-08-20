@@ -65,7 +65,7 @@ public:
     // Call this when a new client connects
     // NOTE: ServerConnections are owned by KnightsServer and will be deleted by ~KnightsServer.
     // ip_addr is optional; if set it will be displayed in the log.
-    ServerConnection & newClientConnection(std::string ip_addr = std::string());
+    ServerConnection & newClientConnection(const std::string &ip_addr, const PlayerID &platform_user_id);
 
     // Call when data is received from a client
     void receiveInputData(ServerConnection &conn, const std::vector<ubyte> &data);

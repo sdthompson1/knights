@@ -44,7 +44,7 @@
 InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, 
                            boost::shared_ptr<const ClientConfig> cfg, int nplayers_,
                            bool deathmatch_mode_,
-                           const std::vector<UTF8String> &names,
+                           const std::vector<PlayerID> &ids,
                            bool sgl_plyr, bool tut)
     : single_player(sgl_plyr),
       tutorial_mode(tut),
@@ -58,7 +58,7 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
       knights_app(ka),
       knights_client(kc),
       client_config(cfg),
-      init_player_names(names),
+      init_player_ids(ids),
       mx(0), my(0), mleft(false), mright(false),
       focus_timer(0),
       waiting_to_focus_chat(false),
@@ -98,7 +98,7 @@ void InGameScreen::setupDisplay()
     // Create displays / callbacks.
     const Controller * left_controller = 0;
     const Controller * right_controller = 0;
-    if (init_player_names.empty()) {
+    if (init_player_ids.empty()) {
         if (init_nplayers == 1) {
             left_controller = &knights_app.getNetGameController();
         } else {
@@ -114,7 +114,8 @@ void InGameScreen::setupDisplay()
         + " or " +
         Coercri::KeyCodeToKeyName(options.team_chat_key);
 
-    display.reset(new LocalDisplay(knights_app.getConfigMap(),
+    display.reset(new LocalDisplay(knights_app.getLocalization(),
+                                   knights_app.getConfigMap(),
                                    client_config->approach_offset,
                                    knights_app.getWinnerImage(),
                                    knights_app.getLoserImage(),
@@ -130,7 +131,7 @@ void InGameScreen::setupDisplay()
                                    right_controller,
                                    init_nplayers,
                                    deathmatch_mode,
-                                   init_player_names,
+                                   init_player_ids,
                                    knights_app.getGameManager().getChatList(),
                                    knights_app.getGameManager().getIngamePlayerList(),
                                    knights_app.getGameManager().getQuestRequirementsList(),
@@ -146,11 +147,11 @@ void InGameScreen::setupDisplay()
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips,
                                    chat_keys,
-                                   knights_app.getGameManager().getPlayerStateLookup()));
+                                   knights_app.getGameManager().getPlayerNameLookup()));
     knights_client->setKnightsCallbacks(display.get());
 
     init_nplayers = 0;
-    init_player_names.clear();
+    init_player_ids.clear();
 
     global_chat_key = options.global_chat_key;
     team_chat_key = options.team_chat_key;
@@ -168,7 +169,7 @@ void InGameScreen::checkChatFocus()
             display->toggleChatMode(waiting_to_chat_all);
         }
 
-        stored_chat_field_contents = std::string();
+        stored_chat_field_contents = UTF8String();
     }
 }
 
@@ -183,12 +184,12 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
 
     checkChatFocus();
     
-    const std::vector<UTF8String> & player_names = display->getPlayerNamesForObsMode();
+    const std::vector<PlayerID> & player_ids = display->getPlayerIDsForObsMode();
     const int nplayers = display->getNPlayers();
     
     GfxManager &gm = knights_app.getGfxManager();
     
-    const bool is_split_screen = nplayers >= 2 && player_names.empty();
+    const bool is_split_screen = nplayers >= 2 && player_ids.empty();
     const bool is_gameplay_paused = (pause_mode && (is_split_screen || single_player));
 
     const int remaining_ms = knights_app.getGameManager().getTimeRemaining();
@@ -199,7 +200,7 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
                              remaining_us);
 
     if (nplayers >= 2) {
-        if (player_names.empty()) {
+        if (player_ids.empty()) {
 
             // Split screen mode
             const int w = gc.getWidth();
@@ -249,11 +250,11 @@ void InGameScreen::update()
 
     if (prevent_drawing) return;
 
-    const std::vector<UTF8String> & player_names = display->getPlayerNamesForObsMode();
+    const std::vector<PlayerID> & player_ids = display->getPlayerIDsForObsMode();
     const int nplayers = display->getNPlayers();    
 
     // Read controllers
-    if (player_names.empty()) { // NOT in observer mode
+    if (player_ids.empty()) { // NOT in observer mode
         ASSERT(nplayers == 1 || nplayers == 2);
         knights_client->sendControl(0, display->readControl(0, mx, my, mleft, mright));
         if (nplayers == 2) knights_client->sendControl(1, display->readControl(1, -1, -1, false, false));
@@ -264,7 +265,7 @@ void InGameScreen::update()
 
     // Save chat field contents (Trac #12)
     // Also: speech bubble (Trac #11)
-    const std::string chat_field_contents = display->getChatFieldContents();
+    const UTF8String chat_field_contents = display->getChatFieldContents();
     knights_app.getGameManager().setSavedChat(chat_field_contents);
     if (display->chatFieldSelected() && !speech_bubble_flag) {
         // Show speech bubble if it's not already visible
@@ -326,7 +327,7 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
 
     checkChatFocus();
 
-    const std::vector<UTF8String> & player_names = display->getPlayerNamesForObsMode();
+    const std::vector<PlayerID> & player_ids = display->getPlayerIDsForObsMode();
     const int nplayers = display->getNPlayers();
     
     const bool pressed = (type == Coercri::KEY_PRESSED);
@@ -368,7 +369,7 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
     // (Note this only actually pauses the gameplay in split screen mode...)
     if (escape_pressed) {
         pause_mode = !pause_mode;
-        if (nplayers == 2 && player_names.empty()  // split screen mode
+        if (nplayers == 2 && player_ids.empty()    // split screen mode
         || single_player) {                        // single player mode
             knights_client->setPauseMode(pause_mode);   // tell server to pause gameplay
         }
@@ -390,7 +391,7 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
 
     // Left/Right in Observe mode => change currently observed player (window 1)
     // Up/Down => the same, but for window 2 (#164)
-    if (player_names.size() > 2 && pressed) {
+    if (player_ids.size() > 2 && pressed) {
         switch (kc) {
         case Coercri::KC_LEFT:
             display->cycleObsPlayer(0, -1);
@@ -432,7 +433,7 @@ void InGameScreen::onLoseFocus()
 
 bool InGameScreen::start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)
 {
-    const bool obs_mode = !init_player_names.empty();
+    const bool obs_mode = !init_player_ids.empty();
     const bool two_player_splitscreen = !obs_mode && init_nplayers > 1;
     const bool fullscreen = app.getOptions().fullscreen;
     

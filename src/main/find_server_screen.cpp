@@ -36,6 +36,7 @@
 #include "metaserver_urls.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
+#include "player_id.hpp"
 #include "start_game_screen.hpp"
 #include "utf8string.hpp"
 
@@ -843,7 +844,7 @@ void FindServerScreenImpl::action(const gcn::ActionEvent &event)
             std::istringstream str(port_field->getText());
             str >> port;
             if (!str) {
-                std::unique_ptr<Screen> error_screen(new ErrorScreen("Bad port number"));
+                std::unique_ptr<Screen> error_screen(new ErrorScreen(UTF8String::fromUTF8("Bad port number")));
                 knights_app.requestScreenChange(std::move(error_screen));
                 return;
             }
@@ -889,19 +890,21 @@ void FindServerScreenImpl::doUpdate()
 void FindServerScreenImpl::initiateConnection(const std::string &address, int port)
 {
     if (!allow_conn) return;
-    
-    UTF8String player_name = name_field ? UTF8String::fromLatin1(name_field->getText()) : UTF8String();
 
-    if (player_name.empty()) {
+    std::string name_latin1 = name_field ? name_field->getText() : "";
+    UTF8String name_utf8 = UTF8String::fromLatin1(name_latin1);
+    PlayerID player_id = PlayerID(name_utf8.asUTF8());
+
+    if (name_latin1.empty()) {
         gotoErrorDialog("You must enter a player name");
     } else if (address.empty()) {
         gotoErrorDialog("You must enter an address to connect to");
     } else {
-        knights_app.setPlayerName(player_name); // make sure the new name gets saved when we exit
+        knights_app.setPlayerName(name_utf8); // make sure the new name gets saved when we exit
         previous_address[internet?1:0] = address;
         previous_port[internet?1:0] = port;
 
-        std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, player_name));
+        std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, player_id));
         knights_app.requestScreenChange(std::move(connecting_screen));
     }
 }

@@ -56,7 +56,7 @@ public:
     // the data files "internally" during its own boot-up process.
     VMKnightsLobby(Coercri::NetworkDriver &net_driver,
                    Coercri::Timer &timer,
-                   const std::string &local_user_id,
+                   const PlayerID &local_user_id,
                    bool new_control_system);
 
     // Destructor - this will shut down the VM, signal the background
@@ -70,8 +70,8 @@ public:
 
     // Call this to make the VMKnightsLobby become a follower, or to
     // change who we are currently following. This will open an
-    // outgoing connection to the given user id.
-    void becomeFollower(const std::string &leader_user_id);
+    // outgoing connection to the given address and port.
+    void becomeFollower(const std::string &address, int port);
 
     // Message send/receive implementations (from base class)
     virtual void readIncomingMessages(KnightsClient &) override;

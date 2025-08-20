@@ -71,7 +71,7 @@ int EntityMap::getFinalOffset(MotionType type)
 void EntityMap::addEntity(int64_t time_us, unsigned short int key, int x, int y, MapHeight h, MapDirection facing,
                           const Anim *anim, const Overlay *ovr, int af, int64_t atz_us, bool ainvis, bool ainvuln,
                           int cur_ofs, MotionType motion_type, int64_t motion_time_remaining_us,
-                          const UTF8String &name)
+                          const PlayerID &player_id)
 {
     Data d;
     d.x = x;
@@ -86,7 +86,7 @@ void EntityMap::addEntity(int64_t time_us, unsigned short int key, int x, int y,
     d.facing = facing;
     d.approached = (motion_type == MT_NOT_MOVING && cur_ofs != 0);
     d.show_speech_bubble = false;
-    d.name = name;
+    d.player_id = player_id;
     if (motion_type == MT_NOT_MOVING) {
         d.start_time_us = 0;
         d.finish_time_us = 0;
@@ -499,7 +499,7 @@ void EntityMap::addGraphic(const Data &ent, int64_t time_us, int tl_x, int tl_y,
                            int pixels_per_square, bool add_entity_name,
                            const Graphic *speech_bubble,
                            int speech_depth,
-                           std::function<ClientState(const UTF8String&)> player_state_lookup)
+                           std::function<UTF8String(const PlayerID&)> player_name_lookup)
 {
     const Anim *anim = ent.anim;
     if (anim) {
@@ -584,14 +584,11 @@ void EntityMap::addGraphic(const Data &ent, int64_t time_us, int tl_x, int tl_y,
                 gfx_buffer[speech_depth].push_back(ge);
             }
             
-            if (!ent.name.asUTF8().empty() && add_entity_name) {
+            if (!ent.player_id.empty() && add_entity_name) {
                 TextElement te;
                 te.sx = entity_x + (pixels_per_square/2);
                 te.sy = entity_y + (pixels_per_square/2);
-                te.text = ent.name;
-                if (player_state_lookup(ent.name) == ClientState::DISCONNECTED) {
-                    te.text += UTF8String::fromUTF8(" (Disconnected)");
-                }
+                te.text = player_name_lookup(ent.player_id);
                 txt_buffer.push_back(te);
             }
         }
@@ -604,13 +601,13 @@ void EntityMap::getEntityGfx(int64_t time_us, int tl_x, int tl_y, int pixels_per
                              bool show_own_name,
                              const Graphic *speech_bubble,
                              int speech_depth,
-                             std::function<ClientState(const UTF8String&)> player_state_lookup)
+                             std::function<UTF8String(const PlayerID&)> player_name_lookup)
 {
     update(time_us);
         
     for (map<unsigned short int,Data>::iterator it = entities.begin(); it != entities.end(); ++it) {
         addGraphic(it->second, time_us, tl_x, tl_y, entity_depth, gfx_buffer, txt_buffer,
                    pixels_per_square, show_own_name || it->first != 0,
-                   speech_bubble, speech_depth, player_state_lookup);
+                   speech_bubble, speech_depth, player_name_lookup);
     }
 }

@@ -25,6 +25,7 @@
 
 #include "knights_client.hpp"
 #include "knights_server.hpp"
+#include "player_id.hpp"
 #include "simple_knights_lobby.hpp"
 
 #include "network/network_connection.hpp"
@@ -100,7 +101,7 @@ void SimpleLobbyThread::operator()()
             Coercri::NetworkDriver::Connections new_conns = lobby.net_driver->pollIncomingConnections();
             for (auto &conn : new_conns) {
                 SimpleKnightsLobby::IncomingConn in;
-                in.server_conn = &lobby.server->newClientConnection();
+                in.server_conn = &lobby.server->newClientConnection(conn->getAddress(), PlayerID());
                 in.remote = conn;
                 lobby.incoming_conns.push_back(in);
             }
@@ -122,7 +123,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(boost::shared_ptr<Coercri::Timer> timer,
       server(new KnightsServer(timer, true, "", "", ""))  // allow split-screen
 {
     server->startNewGame(config, game_name);
-    local_server_conn = &server->newClientConnection();
+    local_server_conn = &server->newClientConnection("", PlayerID());
 }
 
 // Constructor for "Host LAN Game" mode
@@ -137,7 +138,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
       server(new KnightsServer(timer, false, "", "", ""))  // don't allow split-screen
 {
     server->startNewGame(config, game_name);
-    local_server_conn = &server->newClientConnection();
+    local_server_conn = &server->newClientConnection("", PlayerID());
 
     net_driver.setServerPort(port);
     net_driver.enableServer(true);

@@ -14,7 +14,7 @@
 # from the directory that contains knights_data, then you don't need
 # to pass a parameter.
 
-g++ -I../coercri -I../rstream \
+g++ -I../coercri -I../rstream -I../misc \
     ../coercri/enet/enet_network_connection.cpp \
     ../coercri/enet/enet_network_driver.cpp \
     ../coercri/enet/enet_udp_socket.cpp \

@@ -27,9 +27,9 @@
 #include "lua_func.hpp"
 #include "map_support.hpp"
 #include "mini_map_colour.hpp"
+#include "player_id.hpp"
 #include "player_state.hpp"
 #include "status_display.hpp"
-#include "utf8string.hpp"
 
 #include "boost/weak_ptr.hpp"
 using namespace boost;
@@ -74,7 +74,7 @@ public:
            const Anim * anim, ItemType * dflt_item, 
            const std::vector<const Control*> &control_set_,
            shared_ptr<const ColourChange> secured_home_cc,
-           const UTF8String &name_, int team_num_);
+           const PlayerID &player_id, int team_num_);
 
     // Respawn type
     enum RespawnType { R_NORMAL, R_RANDOM_SQUARE, R_DIFFERENT_EVERY_TIME };
@@ -177,8 +177,8 @@ public:
     void computeAvailableControls();
     void clearCurrentControls() { current_controls.clear(); }
 
-    // get player name
-    const UTF8String & getName() const { return name; }
+    // get player ID (e.g. Steam ID)
+    const PlayerID & getPlayerID() const { return player_id; }
 
     // Player State
     void setPlayerState(PlayerState new_state) { player_state = new_state; }
@@ -256,7 +256,7 @@ private:
     int nkills;
     int frags;
     
-    UTF8String name;
+    PlayerID player_id;
     PlayerState player_state;
 
     RespawnType respawn_type;

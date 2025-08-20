@@ -26,6 +26,7 @@
 #include "anim.hpp"
 #include "graphic.hpp"
 #include "overlay.hpp"
+#include "player_id.hpp"
 #include "protocol.hpp"
 #include "server_dungeon_view.hpp"
 
@@ -40,7 +41,7 @@ namespace {
     void WriteTileInfo(Coercri::OutputByteBuf &buf, int depth, bool cc)
     {
         int d = depth + 64;
-        if (d < 0 || d > 127) throw ProtocolError("WriteTileInfo: depth out of range");
+        if (d < 0 || d > 127) throw ProtocolError(LocalKey("invalid_id_server"));  // close enough!
         buf.writeUbyte(cc ? 128+d : d);
     }
 
@@ -182,7 +183,7 @@ void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight
                                   bool ainvis, bool ainvuln,
                                   bool approached,
                                   int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                                  const UTF8String &name)
+                                  const PlayerID &player_id)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_ADD_ENTITY);
@@ -196,7 +197,7 @@ void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight
     if (af != 0) buf.writeShort(ClampToShort(atz_diff));
     buf.writeUshort(ClampToUshort(cur_ofs));
     if (motion_type != MT_NOT_MOVING) buf.writeUshort(ClampToUshort(motion_time_remaining));
-    buf.writeString(name.asUTF8());
+    buf.writeString(player_id.asString());
 }
 
 void ServerDungeonView::rmEntity(unsigned short int id)

@@ -59,7 +59,7 @@ public:
               int phy_dungeon_width, int phy_dungeon_height,
               int phy_pixels_per_square, float dungeon_scale_factor,
               const Coercri::Font & txt_font, bool show_own_name,
-              std::function<ClientState(const UTF8String&)> player_state_lookup,
+              std::function<UTF8String(const PlayerID&)> player_name_lookup,
               int &room_tl_x, int &room_tl_y);
     boost::shared_ptr<ColourChange> getMyColourChange() const { return my_colour_change; }
     bool isApproached() const { return my_approached; }
@@ -69,32 +69,32 @@ public:
     // functions from DungeonView
     //
     
-    void setCurrentRoom(int r, int width, int height);
+    void setCurrentRoom(int r, int width, int height) override;
 
     void addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                    const Anim * anim, const Overlay *ovr, int af, int atz_diff_ms,
                    bool ainvis, bool ainvuln, // (anim data)
                    bool approached,
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                   const UTF8String &name);
-    void rmEntity(unsigned short int id);
-    void repositionEntity(unsigned short int id, int new_x, int new_y);
-    void moveEntity(unsigned short int id, MotionType motion_type, int motion_duration_ms, bool missile_mode);
-    void flipEntityMotion(unsigned short int id, int initial_delay_ms, int motion_duration_ms);
-    void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af, int atz_diff_ms, bool ainvis, bool ainvuln, bool currently_moving);
-    void setFacing(unsigned short int id, MapDirection new_facing);
-    void setSpeechBubble(unsigned short int id, bool show);
+                   const PlayerID &player_id) override;
+    void rmEntity(unsigned short int id) override;
+    void repositionEntity(unsigned short int id, int new_x, int new_y) override;
+    void moveEntity(unsigned short int id, MotionType motion_type, int motion_duration_ms, bool missile_mode) override;
+    void flipEntityMotion(unsigned short int id, int initial_delay_ms, int motion_duration_ms) override;
+    void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af, int atz_diff_ms, bool ainvis, bool ainvuln, bool currently_moving) override;
+    void setFacing(unsigned short int id, MapDirection new_facing) override;
+    void setSpeechBubble(unsigned short int id, bool show) override;
 
-    void clearTiles(int x, int y, bool);
-    void setTile(int x, int y, int depth, const Graphic *gfx, boost::shared_ptr<const ColourChange> cc, bool);
+    void clearTiles(int x, int y, bool) override;
+    void setTile(int x, int y, int depth, const Graphic *gfx, boost::shared_ptr<const ColourChange> cc, bool) override;
 
-    void setItem(int x, int y, const Graphic *gfx, bool);
+    void setItem(int x, int y, const Graphic *gfx, bool) override;
 
-    void placeIcon(int x, int y, const Graphic *gfx, int dur_ms);
+    void placeIcon(int x, int y, const Graphic *gfx, int dur_ms) override;
 
-    void flashMessage(const std::string &msg_latin1, int ntimes);
-    void cancelContinuousMessages();
-    void addContinuousMessage(const std::string &msg);
+    void flashMessage(const std::string &msg_latin1, int ntimes) override;
+    void cancelContinuousMessages() override;
+    void addContinuousMessage(const std::string &msg) override;
 
 private:
     // config map

@@ -126,7 +126,7 @@ namespace {
 
         impl.choice_val_to_choice_num[item_num].push(lua);  // [cval Ctbl]
         lua_insert(lua, -2);  // [Ctbl cval]
-        
+
         if (!lua_isnil(lua, -2)) {
             // Choice val -> choice num table exists
             // Must be a dropdown field
@@ -157,7 +157,27 @@ namespace {
         }
         lua_remove(lua, -2);   // [choice_val]
     }        
-        
+
+    LocalKeyOrInteger PopLocalKeyOrInteger(lua_State *lua)
+    {
+        LocalKeyOrInteger result;
+
+        if (lua_isnumber(lua, -1)) {
+            result.is_integer = true;
+            result.integer = lua_tointeger(lua, -1);
+        } else if (lua_isstring(lua, -1)) {
+            result.is_integer = false;
+            result.local_key = LocalKey(lua_tostring(lua, -1));
+        } else {
+            result.is_integer = false;
+            result.local_key = LocalKey();  // Will cause "Missing string" message
+        }
+
+        lua_pop(lua, 1);   // [S _ V N c choiceval]
+
+        return result;
+    }
+
     // ---------------------------------------------------------------------------
 
     // Some helper functions for dealing with the S table.
@@ -168,14 +188,14 @@ namespace {
     int ItemNumToChoiceNum(lua_State *lua, const MenuWrapperImpl &impl, int item_num)
     {
         ASSERT(item_num >= 0 && item_num < impl.menu.getNumItems());
-        
+
         const char *key = impl.item_num_to_key[item_num].c_str();
-        
+
         impl.s_table.push(lua);   // [S]
         lua_pushstring(lua, key);  // [S item_key]
         lua_gettable(lua, -2);   // [S choice_val]
         int result = PopChoiceVal(lua, impl, item_num);   // [S]
-                
+
         lua_pop(lua, 1);  // []
         return result;
     }
@@ -198,7 +218,7 @@ namespace {
         ASSERT(item_num >= 0 && item_num < impl.menu.getNumItems());
         ASSERT(impl.menu.getItem(item_num).isNumeric()
             || choice_num >= 0 && choice_num < impl.menu.getItem(item_num).getNumChoices());
-        
+
         impl.s_table.push(lua);  // [S]
         lua_pushstring(lua, impl.item_num_to_key[item_num].c_str());   // [S item_key]
         PushChoiceVal(lua, impl, item_num, choice_num);  // [S item_key choice_val]
@@ -214,10 +234,10 @@ namespace {
 
         const char * item_key = impl.item_num_to_key[item_num].c_str();
         const char * choice_string = 0;
-        
+
         PushChoiceVal(lua, impl, item_num, choice_num);  // [choiceval]
         choice_string = luaL_tolstring(lua, -1, 0);  // [choiceval string]
-                
+
         listener.settingChanged(item_num, item_key, choice_num, choice_string,
                                 impl.constraints[item_num]);
 
@@ -228,7 +248,17 @@ namespace {
     {
         impl.s_table.push(lua);    // [S]
         if (impl.describe_quest_func.hasValue()) {
-            return impl.describe_quest_func.runOneArgToString();   // []
+
+            impl.describe_quest_func.run(lua, 1, 1);  // [result]
+
+            const char *p = lua_tostring(lua, -1);
+            std::string result;
+            if (p) {
+                result = p;
+            }
+            lua_pop(lua, 1);   // []
+
+            return result;
         } else {
             lua_pop(lua, 1);  // []
             return std::string();
@@ -296,7 +326,7 @@ namespace {
         }
         item_num = find_key->second;
         std::vector<int> &constraint_vec = impl.constraints[item_num];
-        
+
         // convert the lua value (arg_pos+1) into a choice num
         // note: do this directly (rather than using PopChoiceVal) because we want to handle the case of
         // an invalid value being passed to us.
@@ -557,8 +587,8 @@ namespace {
         out.features.reset(lua, -1, "features");
     }
     
-    std::string PopChoice(lua_State *lua, int choice_num, const LuaFunc & func, ChoiceInfo &choice_info,
-                          const char *key)
+    LocalKeyOrInteger PopChoice(lua_State *lua, int choice_num, const LuaFunc & func, ChoiceInfo &choice_info,
+                                const char *key)
     {
         // [S _ ValToNum NumToVal choicetbl]
 
@@ -569,12 +599,14 @@ namespace {
         lua_pushvalue(lua, -1);   // [S _ V N c choiceval choiceval]
         lua_rawseti(lua, -4, choice_num);  // [S _ V N c choiceval]   (and set num->val mapping)
 
-        std::string result;
+        LocalKeyOrInteger result;
         if (func.hasValue()) {
             lua_pushvalue(lua, -1);  // [S _ V N c choiceval choiceval]
-            result = func.runOneArgToString();   // [S _ V N c choiceval]
+            func.run(lua, 1, 1);     // [S _ V N c choiceval result]
+            result = PopLocalKeyOrInteger(lua);   // [S _ V N c choiceval]
         } else {
-            result = LuaGetString(lua, -2, "text");  // [S _ V N c choiceval]
+            result.is_integer = false;
+            result.local_key = LocalKey(LuaGetString(lua, -2, "text_key"));  // [S _ V N c choiceval]
         }
 
         if (key) {
@@ -624,8 +656,8 @@ namespace {
         const std::string key = lua_tostring(lua, -1);
         lua_pop(lua, 1);  // [item]
 
-        const std::string title = LuaGetString(lua, -1, "text");
-        
+        const LocalKey title = LocalKey(LuaGetString(lua, -1, "text_key"));
+
         bool numeric = false;
         lua_getfield(lua, -1, "type");  // [item typestr]
         const char *p = lua_tostring(lua, -1);
@@ -658,7 +690,7 @@ namespace {
             // numeric box.
             
             const int digits = LuaGetInt(lua, -2, "digits");  // [item S]
-            const std::string suffix = LuaGetString(lua, -2, "suffix");  // [item S]
+            const LocalKey suffix = LocalKey(LuaGetString(lua, -2, "suffix_key"));  // [item S]
 
             // add to the menu
             menu.addItem(MenuItem(title, digits, suffix));
@@ -715,7 +747,7 @@ namespace {
             lua_newtable(lua);   // [item S choices val_to_num num_to_val]
             
             // get the value strings
-            std::vector<std::string> values;
+            std::vector<LocalKeyOrInteger> values;
             if (cmin_set) {
                 for (int i = choice_min; i <= choice_max; ++i) {
                     const int choice_num = i - choice_min;
@@ -723,11 +755,14 @@ namespace {
 
                     // The text string is just the choice_val (unless a 'show' function is present)
                     if (show_func.hasValue()) {
-                        values.push_back(show_func.runIntToString(i));
+                        lua_pushinteger(lua, choice_val);
+                        show_func.run(lua, 1, 1);
+                        values.push_back(PopLocalKeyOrInteger(lua));
                     } else {
-                        std::ostringstream str;
-                        str << choice_val;
-                        values.push_back(str.str());
+                        LocalKeyOrInteger lki;
+                        lki.is_integer = true;
+                        lki.integer = choice_val;
+                        values.push_back(lki);
                     }
 
                     // Set the entries in the choice_num/choice_val tables
@@ -771,7 +806,7 @@ namespace {
 
             impl.choice_num_to_choice_val.push_back(LuaRef(lua));  // [i S choices V]
             impl.choice_val_to_choice_num.push_back(LuaRef(lua));  // [i S choices]
-            
+
             lua_pop(lua, 1);  // [item S]
 
             // Add to the menu
@@ -830,7 +865,7 @@ namespace {
         // populate the Menu object
         Menu &menu = impl.menu;
 
-        menu.setTitle(LuaGetString(lua, -1, "text"));
+        menu.setTitle(LocalKey(LuaGetString(lua, -1, "text_key")));
 
         lua_getfield(lua, -1, "items"); // [menutbl itemstbl]
         if (lua_isnil(lua, -1)) {
@@ -997,35 +1032,48 @@ void MenuWrapper::changeNumberOfPlayers(int nplayers, int nteams, MenuListener &
     ValidateAndReport(GetLuaState(*pimpl), *pimpl, old, listener);
 }
 
-bool MenuWrapper::checkNumPlayersStrict(std::string &err_msg) const
+bool MenuWrapper::checkNumPlayersStrict(LocalKey &err_key, std::vector<LocalParam> &err_params) const
 {
     // NOTE: We assume menu is in an acceptable state.
-    // We simply want to check the min. players/teams constraints.
+    // We simply want to check the min players/teams constraints.
 
     lua_State *lua = GetLuaState(*pimpl);
 
     std::ostringstream str;
     bool ok = true;
-    
+
     for (int item = 0; item < pimpl->menu.getNumItems(); ++item) {
         if (!pimpl->item_info[item].choice_info.empty()) {
             const int choice = ItemNumToChoiceNum(lua, *pimpl, item);
             const ChoiceInfo &info = pimpl->item_info[item].choice_info[choice];
 
+            int error_num_value;
+            LocalKey error_num_key;
+
             if (pimpl->num_players < info.min_players) {
                 ok = false;
-                str << info.min_players << " players.";
+                error_num_value = info.min_players;
+                error_num_key = LocalKey("players");
             } else if (pimpl->num_teams < info.min_teams) {
                 ok = false;
-                str << info.min_teams << " teams.";
+                error_num_value = info.min_teams;
+                error_num_key = LocalKey("teams");
             }
 
             if (!ok) {
-                std::ostringstream str2;
                 const MenuItem &it = pimpl->menu.getItem(item);
-                str2 << "ERROR: " << it.getTitleString() << " = " << it.getChoiceString(choice)
-                     << " requires at least " << str.str();
-                err_msg = str2.str();
+                err_key = LocalKey("err_requires_at_least");
+                err_params.push_back(LocalParam(it.getTitleKey()));
+
+                LocalKeyOrInteger lki = it.getChoice(choice);
+                if (lki.is_integer) {
+                    err_params.push_back(LocalParam(lki.integer));
+                } else {
+                    err_params.push_back(LocalParam(lki.local_key));
+                }
+
+                err_params.push_back(LocalParam(error_num_value));
+                err_params.push_back(LocalParam(error_num_key));
                 return false;
             }
         }

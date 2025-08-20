@@ -32,6 +32,7 @@
 #include "home_manager.hpp"
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
+#include "localization.hpp"
 #include "lua_game_setup.hpp"
 #include "mediator.hpp"
 #include "monster_manager.hpp"
@@ -134,12 +135,21 @@ const std::string &Mediator::cfgString(const std::string &key) const
 // printing msgs
 //
 
-void Mediator::gameMsg(int player_num, const std::string &msg, bool is_err)
+void Mediator::gameMsgRaw(int player_num, const Coercri::UTF8String &msg, bool is_err)
 {
     if (callbacks) {
-        callbacks->gameMsg(player_num, msg, is_err);
+        callbacks->gameMsgRaw(player_num, msg, is_err);
     } else {
-        GameStartupMsg(lua_state.get(), msg);
+        GameStartupMsg(lua_state.get(), msg, LocalKey(), std::vector<LocalParam>());
+    }
+}
+
+void Mediator::gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
+{
+    if (callbacks) {
+        callbacks->gameMsgLoc(player_num, key, params, is_err);
+    } else {
+        GameStartupMsg(lua_state.get(), UTF8String(), key, params);
     }
 }
 
@@ -389,13 +399,13 @@ void Mediator::winGame(const Player &pl)
             winners.push_back(*it);
         }
     }
-    endGame(winners, "");
+    endGame(winners, false);
 }
 
 void Mediator::timeLimitExpired()
 {
     std::vector<const Player *> winners;
-    std::string msg;
+    bool time_limit_expired_msg = false;
     
     if (deathmatch_mode) {
 
@@ -415,13 +425,13 @@ void Mediator::timeLimitExpired()
         }
 
     } else {
-        msg = "Time limit expired! ";
+        time_limit_expired_msg = true;
     }
     
-    endGame(winners, msg);
+    endGame(winners, time_limit_expired_msg);
 }
 
-void Mediator::endGame(const std::vector<const Player *> &winners, std::string msg_latin1)
+void Mediator::endGame(const std::vector<const Player *> &winners, bool time_limit_expired)
 {
     game_running = false;
 
@@ -436,30 +446,41 @@ void Mediator::endGame(const std::vector<const Player *> &winners, std::string m
 
     // Send the message saying who has won.
 
+    LocalKey key;
+    std::vector<LocalParam> params;
+
     if (winners.empty()) {
-        msg_latin1 += "All players lose!";
+        if (time_limit_expired) {
+            key = LocalKey("time_expired");  // Time limit expired! All players lose!
+        } else {
+            key = LocalKey("all_lose");      // All players lose!
+        }
         
     } else if (winners.size() == 1) {
-        msg_latin1 += winners.front()->getName().asLatin1() + " is the winner!";
-        
+        // <N> is the winner!
+        key = LocalKey("is_winner");
+        params.push_back(LocalParam(winners.front()->getPlayerID()));
+
     } else {
-        for (int i = 0; i < int(winners.size()) - 2; ++i) {
-            msg_latin1 += winners[i]->getName().asLatin1() + ", ";
+        // <N>, <N> and <N> are the winners!
+        key = LocalKey("are_winners");
+        for (const Player * winner : winners) {
+            params.push_back(LocalParam(winner->getPlayerID()));
         }
-        msg_latin1 += winners[winners.size()-2]->getName().asLatin1() + " and ";
-        msg_latin1 += winners[winners.size()-1]->getName().asLatin1() + " are the winners!";
     }
-    
-    Mediator::getCallbacks().gameMsg(-1, msg_latin1);
+
+    Mediator::getCallbacks().gameMsgLoc(-1, key, params);
 
     // print length of game, in mins and seconds
     const int time = getGVT()/1000;
     const int mins = time / 60;
     const int secs = time % 60;
-    std::ostringstream str;
-    str << "Game completed in " << mins << "m " << secs << "s.";
-    Mediator::getCallbacks().gameMsg(-1, str.str());
-    
+    // Game completed in {0}m {1}s.
+    params.clear();
+    params.push_back(LocalParam(mins));
+    params.push_back(LocalParam(secs));
+    Mediator::getCallbacks().gameMsgLoc(-1, LocalKey("game_completed"), params);
+
     // kill all tasks, this prevents anything further from happening in-game.
     task_manager.rmAllTasks();
 }

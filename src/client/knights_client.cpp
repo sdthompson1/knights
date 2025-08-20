@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "anim.hpp"
+#include "announcement_loc.hpp"
 #include "client_callbacks.hpp"
 #include "client_config.hpp"
 #include "colour_change.hpp"
@@ -146,13 +147,23 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_ERROR:
             {
                 const std::string err = buf.readString();
-                if (client_cb) client_cb->serverError(err);
+                if (client_cb) client_cb->serverError(LocalKey(err));
+            }
+            break;
+
+        case SERVER_LUA_ERROR:
+            {
+                const std::string msg = buf.readString();
+                if (client_cb) client_cb->luaError(msg);
             }
             break;
 
         case SERVER_CONNECTION_ACCEPTED:
             {
                 const int server_version = buf.readVarInt();
+#ifdef LOG_MSGS
+                std::cout << "SERVER_CONNECTION_ACCEPTED" << std::endl;
+#endif
                 if (client_cb) client_cb->connectionAccepted(server_version);
             }
             break;
@@ -163,23 +174,28 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const int my_house_colour = buf.readUbyte();
 
                 const int n_plyrs = buf.readVarInt();
-                if (n_plyrs < 0) throw ProtocolError("n_players incorrect");
-                std::vector<UTF8String> players;
+                if (n_plyrs < 0) throw ProtocolError(LocalKey("n_players_incorrect"));
+                std::vector<PlayerID> players;
                 std::vector<bool> ready_flags;
                 std::vector<int> hse_cols;
                 for (int i = 0; i < n_plyrs; ++i) {
-                    players.push_back(UTF8String::fromUTF8Safe(buf.readString()));
+                    players.push_back(PlayerID(buf.readString()));
                     ready_flags.push_back(buf.readUbyte() != 0);
                     hse_cols.push_back(buf.readUbyte());
                 }
                 
                 const int n_obs = buf.readVarInt();
-                std::vector<UTF8String> observers;
-                if (n_obs < 0) throw ProtocolError("n_observers incorrect");
+                std::vector<PlayerID> observers;
+                if (n_obs < 0) throw ProtocolError(LocalKey("n_players_incorrect"));
                 observers.reserve(n_obs);
                 for (int i = 0; i < n_obs; ++i) {
-                    observers.push_back(UTF8String::fromUTF8Safe(buf.readString()));
+                    observers.push_back(PlayerID(buf.readString()));
                 }
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_JOIN_GAME_ACCEPTED" << std::endl;
+#endif
+
                 if (client_cb) client_cb->joinGameAccepted(pimpl->client_config,
                                                            my_house_colour,
                                                            players, ready_flags, hse_cols,
@@ -190,25 +206,25 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_JOIN_GAME_DENIED:
             {
                 const std::string reason = buf.readString();
-                if (client_cb) client_cb->joinGameDenied(reason);
+                if (client_cb) client_cb->joinGameDenied(LocalKey(reason));
             }
             break;
 
         case SERVER_NOTUSED:
-            throw ProtocolError("Cannot connect: This server is running an old version of Knights.");
+            throw ProtocolError(LocalKey("old_server"));
             break;
             
         case SERVER_PLAYER_CONNECTED:
             {
-                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
-                if (client_cb) client_cb->playerConnected(name);
+                const PlayerID id = PlayerID(buf.readString());
+                if (client_cb) client_cb->playerConnected(id);
             }
             break;
 
         case SERVER_PLAYER_DISCONNECTED:
             {
-                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
-                if (client_cb) client_cb->playerDisconnected(name);
+                const PlayerID id = PlayerID(buf.readString());
+                if (client_cb) client_cb->playerDisconnected(id);
             }
             break;
 
@@ -226,13 +242,18 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 for (int i = 0; i < num_allowed_vals; ++i) {
                     allowed_vals[i] = buf.readVarInt();
                 }
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SET_MENU_SELECTION" << std::endl;
+#endif
+
                 if (client_cb) client_cb->setMenuSelection(item_num, choice_num, allowed_vals);
             }
             break;
 
         case SERVER_SET_QUEST_DESCRIPTION:
             {
-                const std::string quest_descr = buf.readString();
+                auto quest_descr = Coercri::UTF8String::fromUTF8Safe(buf.readString());
                 if (client_cb) client_cb->setQuestDescription(quest_descr);
             }
             break;
@@ -243,9 +264,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const bool deathmatch_mode = buf.readUbyte() != 0;
                 const bool already_started = buf.readUbyte() != 0;
                 pimpl->player = 0;
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_START_GAME" << std::endl;
+#endif
+
                 if (client_cb) {
                     client_cb->startGame(pimpl->ndisplays, deathmatch_mode,
-                                         std::vector<UTF8String>(), already_started);
+                                         std::vector<PlayerID>(), already_started);
                 }
             }
             break;
@@ -255,15 +281,20 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 pimpl->ndisplays = buf.readUbyte();
                 const bool deathmatch_mode = buf.readUbyte() != 0;
                 pimpl->player = 0;
-                std::vector<UTF8String> player_names;
-                player_names.reserve(pimpl->ndisplays);
+                std::vector<PlayerID> player_ids;
+                player_ids.reserve(pimpl->ndisplays);
                 for (int i = 0; i < pimpl->ndisplays; ++i) {
-                    player_names.push_back(UTF8String::fromUTF8Safe(buf.readString()));
+                    player_ids.push_back(PlayerID(buf.readString()));
                 }
                 const bool already_started = buf.readUbyte() != 0;
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_START_GAME_OBS" << std::endl;
+#endif
+
                 if (client_cb) {
                     client_cb->startGame(pimpl->ndisplays, deathmatch_mode,
-                                         player_names, already_started);
+                                         player_ids, already_started);
                 }
             }
             break;
@@ -272,13 +303,18 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             {
                 pimpl->ndisplays = buf.readUbyte();
                 pimpl->player = 0;
-                std::vector<UTF8String> player_names;
-                player_names.reserve(pimpl->ndisplays);
+                std::vector<PlayerID> player_ids;
+                player_ids.reserve(pimpl->ndisplays);
                 for (int i = 0; i < pimpl->ndisplays; ++i) {
-                    player_names.push_back(UTF8String::fromUTF8Safe(buf.readString()));
+                    player_ids.push_back(PlayerID(buf.readString()));
                 }
-                if (knights_cb) knights_cb->goIntoObserverMode(pimpl->ndisplays, player_names);
-                if (client_cb) client_cb->announcement("** You have been eliminated from this game. You are now in observer mode. Use arrow keys (left/right/up/down) to switch between players.", false);
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_GO_INTO_OBS_MODE" << std::endl;
+#endif
+
+                if (knights_cb) knights_cb->goIntoObserverMode(pimpl->ndisplays, player_ids);
+                if (client_cb) client_cb->announcementLoc(LocalKey("you_are_eliminated"), std::vector<LocalParam>(), false);
             }
             break;
 
@@ -288,34 +324,34 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_PLAYER_JOINED_THIS_GAME:
             {
-                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID id = PlayerID(buf.readString());
                 const bool obs_flag = buf.readUbyte() != 0;
                 const int house_col = buf.readUbyte();
-                if (client_cb) client_cb->playerJoinedThisGame(name, obs_flag, house_col);
+                if (client_cb) client_cb->playerJoinedThisGame(id, obs_flag, house_col);
             }
             break;
 
         case SERVER_PLAYER_LEFT_THIS_GAME:
             {
-                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID id = PlayerID(buf.readString());
                 const bool obs_flag = buf.readUbyte() != 0;
-                if (client_cb) client_cb->playerLeftThisGame(name, obs_flag);
+                if (client_cb) client_cb->playerLeftThisGame(id, obs_flag);
             }
             break;
 
         case SERVER_SET_READY:
             {
-                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID id = PlayerID(buf.readString());
                 const int ready = buf.readUbyte();
-                if (client_cb) client_cb->setReady(name, ready != 0);
+                if (client_cb) client_cb->setReady(id, ready != 0);
             }
             break;
 
         case SERVER_SET_HOUSE_COLOUR:
             {
-                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID id = PlayerID(buf.readString());
                 const int x = buf.readUbyte();
-                if (client_cb) client_cb->setPlayerHouseColour(name, x);
+                if (client_cb) client_cb->setPlayerHouseColour(id, x);
             }
             break;
 
@@ -336,8 +372,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_OBS_FLAG:
             {
-                const UTF8String player = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID player = PlayerID(buf.readString());
                 const bool new_obs_flag = (buf.readUbyte() != 0);
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SET_OBS_FLAG" << std::endl;
+#endif
+
                 if (client_cb) client_cb->setObsFlag(player, new_obs_flag);
             }
             break;
@@ -348,23 +389,33 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_CHAT:
             {
-                const UTF8String whofrom = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID whofrom = PlayerID(buf.readString());
 
-                // we currently don't parse all the chat codes, we only look for 2 (Observer)
-                // and use this to print "(Observer)" after the player's name...
-                // Also: 3 = (Team)
+                // Chat codes recognized here:
+                // 2 = (Observer)
+                // 3 = (Team)
                 const int chat_code = buf.readUbyte();
                 const bool is_observer = (chat_code == 2);
                 const bool is_team = (chat_code == 3);
-                const std::string msg = buf.readString();
+                const Coercri::UTF8String msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
                 if (client_cb) client_cb->chat(whofrom, is_observer, is_team, msg);
             }
             break;
 
-        case SERVER_ANNOUNCEMENT:
+        case SERVER_ANNOUNCEMENT_RAW:
             {
-                const std::string msg = buf.readString();
-                if (client_cb) client_cb->announcement(msg, pimpl->next_announcement_is_error);
+                auto msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
+                if (client_cb) client_cb->announcementRaw(msg, pimpl->next_announcement_is_error);
+                pimpl->next_announcement_is_error = false;
+            }
+            break;
+
+        case SERVER_ANNOUNCEMENT_LOC:
+            {
+                LocalKey key;
+                std::vector<LocalParam> params;
+                ReadAnnouncementLoc(buf, key, params);
+                if (client_cb) client_cb->announcementLoc(key, params, pimpl->next_announcement_is_error);
                 pimpl->next_announcement_is_error = false;
             }
             break;
@@ -418,10 +469,10 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_UPDATE_PLAYER:
             {
-                const UTF8String player_name = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID player_id = PlayerID(buf.readString());
                 const std::string game_name = buf.readString();
                 const bool obs_flag = buf.readUbyte() != 0;
-                if (client_cb) client_cb->updatePlayer(player_name, game_name, obs_flag);
+                if (client_cb) client_cb->updatePlayer(player_id, game_name, obs_flag);
             }
             break;
 
@@ -432,7 +483,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 player_list.reserve(nplayers);
                 for (int i = 0; i < nplayers; ++i) {
                     ClientPlayerInfo inf;
-                    inf.name = UTF8String::fromUTF8Safe(buf.readString());
+                    inf.id = PlayerID(buf.readString());
                     inf.house_colour.r = buf.readUbyte();
                     inf.house_colour.g = buf.readUbyte();
                     inf.house_colour.b = buf.readUbyte();
@@ -545,11 +596,11 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const int atz_diff = af == 0 ? 0 : buf.readShort();
                 const int cur_ofs = buf.readUshort();
                 const int motion_time_remaining = motion_type == MT_NOT_MOVING ? 0 : buf.readUshort();
-                const UTF8String name = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID player_id = PlayerID(buf.readString());
                 if (dungeon_view) dungeon_view->addEntity(id, x, y, MapHeight(ht), MapDirection(facing),
                                                           anim, overlay, af, atz_diff, ainvis, ainvuln,
                                                           approached,
-                                                          cur_ofs, motion_type, motion_time_remaining, name);
+                                                          cur_ofs, motion_type, motion_time_remaining, player_id);
 
 #ifdef LOG_MSGS
                 std::cout << "SERVER_ADD_ENTITY " << id << " " << x << " " << y << std::endl;
@@ -790,9 +841,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_SEND_GRAPHICS:
             {
                 const int num_gfx = buf.readVarInt();
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SEND_GRAPHICS " << num_gfx << std::endl;
+#endif
+
                 for (int i = 0; i < num_gfx; ++i) {
                     const Graphic *g = pimpl->readGraphic(buf);
-                    if (!g) throw ProtocolError("Invalid id in SERVER_SEND_GRAPHICS");
+                    if (!g) throw ProtocolError(LocalKey("invalid_id_server"));
                     
                     // read the buffer into a string.
                     // (Might be better to create a custom istream object that can read from
@@ -807,9 +863,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_SEND_SOUNDS:
             {
                 const int num_sounds = buf.readVarInt();
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SEND_SOUNDS " << num_sounds << std::endl;
+#endif
+
                 for (int i = 0; i < num_sounds; ++i) {
                     const Sound *s = pimpl->readSound(buf);
-                    if (!s) throw ProtocolError("Invalid id in SERVER_SEND_SOUNDS");
+                    if (!s) throw ProtocolError(LocalKey("invalid_id_server"));
                     std::string contents = buf.readString();
                     if (client_cb) client_cb->loadSound(*s, contents);
                 }
@@ -819,8 +880,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_SWITCH_PLAYER:
             {
                 const int new_player = buf.readUbyte();
-                if (new_player >= pimpl->ndisplays) throw ProtocolError("display number out of range");
+                if (new_player >= pimpl->ndisplays) throw ProtocolError(LocalKey("dpy_num_out_of_range"));
                 pimpl->player = new_player;
+
+#ifdef LOG_MSGS
+                std::cout << "SERVER_SWITCH_PLAYER " << int(new_player) << std::endl;
+#endif
+
                 if (knights_cb) {
                     dungeon_view = &knights_cb->getDungeonView(new_player);
                     mini_map = &knights_cb->getMiniMap(new_player);
@@ -838,7 +904,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_READY_TO_END:
             {
-                const UTF8String player = UTF8String::fromUTF8Safe(buf.readString());
+                const PlayerID player = PlayerID(buf.readString());
                 if (client_cb) client_cb->playerIsReadyToEnd(player);
             }
             break;
@@ -886,13 +952,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
                 // If we read MORE than the payload then something has gone wrong.
                 if (pos_now != should_be) {
-                    throw ProtocolError("Bad EXT code from server");
+                    throw ProtocolError(LocalKey("bad_server_message"));
                 }
             }
             break;
             
         default:
-            throw ProtocolError("Unknown message code from server");
+            throw ProtocolError(LocalKey("unknown_server_message"));
         }
     }
 }
@@ -913,11 +979,11 @@ void KnightsClient::connectionFailed()
     if (pimpl->client_callbacks) pimpl->client_callbacks->connectionFailed();
 }
 
-void KnightsClient::setPlayerNameAndControls(const UTF8String &name, bool action_bar_ctrls)
+void KnightsClient::setPlayerIdAndControls(const PlayerID &id, bool action_bar_ctrls)
 {
     Coercri::OutputByteBuf buf(pimpl->out);
-    buf.writeUbyte(CLIENT_SET_PLAYER_NAME);
-    buf.writeString(name.asUTF8());
+    buf.writeUbyte(CLIENT_SET_PLAYER_ID);
+    buf.writeString(id.asString());
     buf.writeUbyte(CLIENT_SET_ACTION_BAR_CONTROLS);
     buf.writeUbyte(action_bar_ctrls ? 1 : 0);
 }
@@ -941,11 +1007,11 @@ void KnightsClient::leaveGame()
     pimpl->out.push_back(CLIENT_LEAVE_GAME);
 }
 
-void KnightsClient::sendChatMessage(const std::string &msg)
+void KnightsClient::sendChatMessage(const Coercri::UTF8String &msg)
 {
     Coercri::OutputByteBuf buf(pimpl->out);
     buf.writeUbyte(CLIENT_CHAT);
-    buf.writeString(msg);
+    buf.writeString(msg.asUTF8());
 }
 
 void KnightsClient::setReady(bool ready)
@@ -1000,9 +1066,9 @@ void KnightsClient::sendControl(int plyr, const UserControl *ctrl)
     int id = 0;
     if (ctrl) {
         id = ctrl->getID();
-        if (id < 1 || id > 127) throw ProtocolError("control ID out of range (sendControl)");
+        if (id < 1 || id > 127) throw ProtocolError(LocalKey("invalid_id_client"));
     }
-    if (plyr < 0 || plyr > 1) throw ProtocolError("player number out of range (sendControl)");
+    if (plyr < 0 || plyr > 1) throw ProtocolError(LocalKey("invalid_id_client"));
 
     // optimization: do not send "repeats" of continuous controls.
     if (ctrl == 0 || ctrl->isContinuous()) {
@@ -1086,7 +1152,7 @@ void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 const Graphic * KnightsClientImpl::readGraphic(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->graphics.size())) throw ProtocolError("graphic id out of range");
+    if (id < 0 || id > int(client_config->graphics.size())) throw ProtocolError(LocalKey("invalid_id_server"));
     if (id == 0) return 0;
     return client_config->graphics.at(id-1);
 }
@@ -1094,7 +1160,7 @@ const Graphic * KnightsClientImpl::readGraphic(Coercri::InputByteBuf &buf) const
 const Anim * KnightsClientImpl::readAnim(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->anims.size())) throw ProtocolError("anim id out of range");
+    if (id < 0 || id > int(client_config->anims.size())) throw ProtocolError(LocalKey("invalid_id_server"));
     if (id == 0) return 0;
     return client_config->anims.at(id-1);
 }
@@ -1102,7 +1168,7 @@ const Anim * KnightsClientImpl::readAnim(Coercri::InputByteBuf &buf) const
 const Overlay * KnightsClientImpl::readOverlay(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->overlays.size())) throw ProtocolError("overlay id out of range");
+    if (id < 0 || id > int(client_config->overlays.size())) throw ProtocolError(LocalKey("invalid_id_server"));
     if (id == 0) return 0;
     return client_config->overlays.at(id-1);
 }
@@ -1110,7 +1176,7 @@ const Overlay * KnightsClientImpl::readOverlay(Coercri::InputByteBuf &buf) const
 const Sound * KnightsClientImpl::readSound(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->sounds.size())) throw ProtocolError("sound id out of range");
+    if (id < 0 || id > int(client_config->sounds.size())) throw ProtocolError(LocalKey("invalid_id_server"));
     if (id == 0) return 0;
     return client_config->sounds.at(id-1);
 }
@@ -1123,7 +1189,7 @@ const UserControl * KnightsClientImpl::getControl(int id) const
     } else if (id <= int(client_config->standard_controls.size() + client_config->other_controls.size())) {
         return client_config->other_controls.at(id - 1 - client_config->standard_controls.size()); 
     } else {
-        throw ProtocolError("control id out of range");
+        throw ProtocolError(LocalKey("invalid_id_server"));
     }
 }
 

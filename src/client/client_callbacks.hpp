@@ -32,6 +32,7 @@
 #define CLIENT_CALLBACKS_HPP
 
 #include "game_info.hpp"
+#include "player_id.hpp"
 #include "utf8string.hpp"
 
 #include "gfx/color.hpp" // coercri
@@ -42,6 +43,8 @@
 
 class ClientConfig;
 class Graphic;
+class LocalKey;
+class LocalParam;
 class Sound;
 
 enum class ClientState {
@@ -52,7 +55,7 @@ enum class ClientState {
 };
 
 struct ClientPlayerInfo {
-    UTF8String name;
+    PlayerID id;
     Coercri::Color house_colour;
     int kills;
     int deaths;
@@ -74,7 +77,8 @@ public:
     virtual void connectionFailed() = 0;
 
     // special
-    virtual void serverError(const std::string &error) = 0;
+    virtual void serverError(const LocalKey &error) = 0;
+    virtual void luaError(const std::string &error) = 0;
     virtual void connectionAccepted(int server_version) = 0;
     
     
@@ -86,11 +90,11 @@ public:
     // NOTE: The returned ClientConfig will remain valid for as long as we are connected to the game
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                   int my_house_colour,
-                                  const std::vector<UTF8String> &player_names,
+                                  const std::vector<PlayerID> &player_ids,
                                   const std::vector<bool> &ready_flags,
                                   const std::vector<int> &house_cols,
-                                  const std::vector<UTF8String> &observers) = 0;
-    virtual void joinGameDenied(const std::string &reason) = 0;
+                                  const std::vector<PlayerID> &observers) = 0;
+    virtual void joinGameDenied(const LocalKey &reason) = 0;
 
     // loading of gfx/sounds from the server.
     virtual void loadGraphic(const Graphic &g, const std::string &contents) = 0;
@@ -100,8 +104,8 @@ public:
     virtual void passwordRequested(bool first_attempt) = 0;
     
     // called when other players connect to or disconnect from the server.
-    virtual void playerConnected(const UTF8String &name) = 0;
-    virtual void playerDisconnected(const UTF8String &name) = 0;
+    virtual void playerConnected(const PlayerID &id) = 0;
+    virtual void playerDisconnected(const PlayerID &id) = 0;
 
 
     //
@@ -110,10 +114,10 @@ public:
     
     virtual void updateGame(const std::string &game_name, int num_players, int num_observers, GameStatus status) = 0;
     virtual void dropGame(const std::string &game_name) = 0;
-    virtual void updatePlayer(const UTF8String &player, const std::string &game, bool obs_flag) = 0;
+    virtual void updatePlayer(const PlayerID &player, const std::string &game, bool obs_flag) = 0;
     virtual void playerList(const std::vector<ClientPlayerInfo> &player_list) = 0;
     virtual void setTimeRemaining(int milliseconds) = 0;
-    virtual void playerIsReadyToEnd(const UTF8String &player) = 0;
+    virtual void playerIsReadyToEnd(const PlayerID &player) = 0;
     
     //
     // "Post-join-game" callbacks
@@ -121,30 +125,31 @@ public:
 
     // called when I leave the game.
     virtual void leaveGame() = 0;
-    
+
     // menu
     virtual void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values) = 0;
-    virtual void setQuestDescription(const std::string &quest_descr) = 0;
+    virtual void setQuestDescription(const UTF8String &quest_descr) = 0;
 
     // switching between menu and in-game states
-    virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<UTF8String> &player_names, bool already_started) = 0;
+    virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<PlayerID> &player_ids, bool already_started) = 0;
     virtual void gotoMenu() = 0;
     
     // called when players join/leave my current game, or change state.
     // player_num is 0 or 1 for active players, or -1 for observers.
-    virtual void playerJoinedThisGame(const UTF8String &name, bool obs_flag, int house_col) = 0;
-    virtual void playerLeftThisGame(const UTF8String &name, bool obs_flag) = 0;
-    virtual void setPlayerHouseColour(const UTF8String &name, int house_col) = 0;
+    virtual void playerJoinedThisGame(const PlayerID &id, bool obs_flag, int house_col) = 0;
+    virtual void playerLeftThisGame(const PlayerID &id, bool obs_flag) = 0;
+    virtual void setPlayerHouseColour(const PlayerID &id, int house_col) = 0;
     virtual void setAvailableHouseColours(const std::vector<Coercri::Color> &cols) = 0;
-    virtual void setReady(const UTF8String &name, bool ready) = 0;
+    virtual void setReady(const PlayerID &id, bool ready) = 0;
     virtual void deactivateReadyFlags() = 0;
 
     // called when a player, in the current game, changes from observer to player or vice versa
-    virtual void setObsFlag(const UTF8String &name, bool new_obs_flag) = 0;
+    virtual void setObsFlag(const PlayerID &id, bool new_obs_flag) = 0;
     
     // chat, and "announcements".
-    virtual void chat(const UTF8String &whofrom, bool observer, bool team, const std::string &msg) = 0;
-    virtual void announcement(const std::string &msg, bool is_err) = 0;
+    virtual void chat(const PlayerID &whofrom, bool observer, bool team, const UTF8String &msg) = 0;
+    virtual void announcementLoc(const LocalKey &msg, const std::vector<LocalParam> &params, bool is_err) = 0;
+    virtual void announcementRaw(const Coercri::UTF8String &msg, bool is_err) = 0;
 };
 
 #endif

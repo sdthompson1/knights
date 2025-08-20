@@ -22,7 +22,7 @@
 -- This function displays "0" as "None" in some menu fields (e.g. Number of Gems)
 function show_zero_as_none(n)
     if n == 0 then
-        return "None"
+        return "none"
     else
         return n
     end
@@ -30,7 +30,7 @@ end
 
 kts.MENU = {
 
-    text = "QUEST SELECTION",
+    text_key = "quest_sel",
 
     initialize_func = function(S)
         -- Setup a quest for gems to begin with.
@@ -54,7 +54,7 @@ kts.MENU = {
     items = {
         {
             id = "quest",
-            text = "Quest",
+            text_key = "quest",
             on_select = predefined_quest_func,   -- defined in preset_quests.lua
             choices = make_quest_choices(),      -- defined in preset_quests.lua
             randomize = function(S)
@@ -67,11 +67,11 @@ kts.MENU = {
 
         {
             id = "mission",
-            text = "Mission Type",
+            text_key = "mission_type",
             choices = {
                 {
                     id = "escape",
-                    text = "Escape from the Dungeon",
+                    text_key = "escape_from_dungeon",
                     constrain = function(S)
                         S.IsNot("exit", "none")
                         S.Is("book", "none")
@@ -79,7 +79,7 @@ kts.MENU = {
                 },
                 {
                     id = "retrieve_book",
-                    text = "Retrieve Book and Escape",
+                    text_key = "retrieve_book_escape",
                     constrain = function(S)
                         S.IsNot("exit", "none")   -- must have exit
                         S.IsNot("book", "none")   -- must have book
@@ -91,7 +91,7 @@ kts.MENU = {
                 },
                 {
                     id = "retrieve_wand",
-                    text = "Retrieve Wand and Escape",
+                    text_key = "retrieve_wand_escape",
                     constrain = function(S)
                         S.IsNot("exit", "none")
                         S.Is("book", "none")
@@ -104,7 +104,7 @@ kts.MENU = {
                 },
                 {
                     id = "destroy_book",
-                    text = "Destroy Book with Wand",
+                    text_key = "destroy_book_wand",
                     constrain = function(S)
                         S.Is("exit", "none")
                         S.IsNot("book", "none")
@@ -122,7 +122,7 @@ kts.MENU = {
                 },
                 {
                     id = "duel_to_death",
-                    text = "Duel to the Death",
+                    text_key = "duel_to_death",
                     min_teams = 2,
                     constrain = function(S)
                         S.Is("exit", "none")
@@ -134,7 +134,7 @@ kts.MENU = {
                 },
                 {
                     id = "deathmatch",
-                    text = "Deathmatch",
+                    text_key = "deathmatch",
                     min_teams = 2,
                     constrain = function(S)
                         S.Is("exit", "none")
@@ -150,36 +150,36 @@ kts.MENU = {
         },
         {
             id = "book",
-            text = "Type of Book",
+            text_key = "type_of_book",
             choices = {
                 {
                     id = "none",
-                    text = "No Book in the Dungeon"
+                    text_key = "book_none"
                 },
                 {
                     id = "knowledge",
-                    text = "Ancient Book of Knowledge",
+                    text_key = "book_knowledge",
                     features = function(S)
                         add_item(i_book_of_knowledge, 1, item_weights)
                     end
                 },
                 {
                     id = "ashur",
-                    text = "Lost Book of Ashur",
+                    text_key = "book_ashur",
                     features = function(S)
                         add_item(i_basic_book, 1, item_weights)
                     end
                 },
                 {
                     id = "necronomicon",
-                    text = "Necronomicon",
+                    text_key = "book_necronomicon",
                     features = function(S)
                         add_segment(liche_tombs)
                     end
                 },
                 {
                     id = "gnomes",
-                    text = "Tome of Gnomes",
+                    text_key = "book_gnomes",
                     features = function(S)
                         add_segment(gnome_rooms)
                     end
@@ -188,29 +188,29 @@ kts.MENU = {
         },
         {
             id = "wand",
-            text = "Type of Wand",
+            text_key = "type_of_wand",
             choices = {
                 {
                     id = "none",
-                    text = "No Wands in the Dungeon"
+                    text_key = "wand_none"
                 },
                 {
                     id = "destruction",
-                    text = "Wand of Destruction",
+                    text_key = "wand_destruction",
                     features = function(S)
                         add_item(i_wand_of_destruction, S.num_wands, item_weights)
                     end
                 },
                 {
                     id = "open_ways",
-                    text = "Wand of Open Ways",
+                    text_key = "wand_open_ways",
                     features = function(S)
                         add_item(i_wand_of_open_ways, S.num_wands, item_weights)
                     end
                 },
                 {
                     id = "securing",
-                    text = "Wand of Securing",
+                    text_key = "wand_securing",
                     features = function(S)
                         add_item(i_wand_of_securing, S.num_wands, item_weights)
                         hint("Secure all entry points using the Wand of Securing", 1, 2)
@@ -219,7 +219,7 @@ kts.MENU = {
                 },
                 {
                     id = "undeath",
-                    text = "Wand of Undeath",
+                    text_key = "wand_undeath",
                     features = function(S)
                         add_item(i_wand_of_undeath, S.num_wands, item_weights)
                     end
@@ -228,7 +228,7 @@ kts.MENU = {
         },
         {
             id = "num_wands",
-            text = "Number of Wands",
+            text_key = "num_of_wands",
             choice_min = 0,
             choice_max = 8,
             show = show_zero_as_none,
@@ -246,7 +246,7 @@ kts.MENU = {
         },
         {
             id = "num_gems",
-            text = "Number of Gems",
+            text_key = "num_of_gems",
             choice_min = 0,
             choice_max = 6,
             show = show_zero_as_none,
@@ -259,7 +259,7 @@ kts.MENU = {
         },
         {
             id = "gems_needed",
-            text = "Gems Needed",
+            text_key = "gems_needed",
             choice_min = 0,
             choice_max = 6,
             show = show_zero_as_none,
@@ -277,52 +277,52 @@ kts.MENU = {
 
         {
             id = "dungeon",
-            text = "Dungeon Type",
+            text_key = "dungeon_type",
             choices = {
                 { id = "tiny",
-                  text = "Tiny",
+                  text_key = "tiny",
                   features = function(S)
                       set_layout(d_tiny)
                   end
                 },
                 { id = "small",
-                  text = "Small",
+                  text_key = "small",
                   features = function(S)
                       set_layout(d_small)
                   end
                 },
                 { id = "basic",
-                  text = "Basic",
+                  text_key = "basic",
                   features = function(S)
                       set_layout(d_basic)
                   end
                 },
                 { id = "big",
-                  text = "Big",
+                  text_key = "big",
                   features = function(S)
                       set_layout(d_big)
                   end
                 },
                 { id = "huge",
-                  text = "Huge",
+                  text_key = "huge",
                   features = function(S)
                       set_layout(d_huge)
                   end
                 },
                 { id = "snake",
-                  text = "Snake",
+                  text_key = "snake",
                   features = function(S)
                       set_layout(d_snake)
                   end
                 },
                 { id = "long_snake",
-                  text = "Long Snake",
+                  text_key = "long_snake",
                   features = function(S)
                       set_layout(d_long_snake)
                   end
                 },
                 { id = "ring",
-                  text = "Ring",
+                  text_key = "ring",
                   features = function(S)
                       set_layout(d_ring)
                   end
@@ -331,15 +331,15 @@ kts.MENU = {
         },
         {
             id = "premapped",
-            text = "Premapped",
+            text_key = "premapped",
             choices = {
                 {
                     id = false,
-                    text = "No"
+                    text_key = "no"
                 },
                 {
                     id = true,
-                    text = "Yes",
+                    text_key = "yes",
                     features = function(S)
                         set_premapped()
                     end
@@ -348,18 +348,18 @@ kts.MENU = {
         },
         {
             id = "entry",
-            text = "Entry Point",
+            text_key = "entry_point",
             choices = {
                 {
                     id = "random",
-                    text = "Total Random",
+                    text_key = "total_random",
                     features = function(S)
                         set_entry("random")
                     end
                 },
                 {
                     id = "close",
-                    text = "Close to Other",
+                    text_key = "close_to_other",
                     features = function(S)
                         set_entry("close")
                     end,
@@ -367,7 +367,7 @@ kts.MENU = {
                 },
                 {
                     id = "away",
-                    text = "Away from Other",
+                    text_key = "away_from_other",
                     features = function(S)
                         set_entry("away")
                     end,
@@ -375,7 +375,7 @@ kts.MENU = {
                 },
                 {
                     id = "different",
-                    text = "Different every time",
+                    text_key = "different_every_time",
                     features = function(S)
                         set_entry("different")
                     end
@@ -384,18 +384,18 @@ kts.MENU = {
         },
         {
             id = "exit",
-            text = "Exit Point",
+            text_key = "exit_point",
             choices = {
                 {
                     id = "none",
-                    text = "No Escape",
+                    text_key = "no_escape",
                     features = function(S)
                         set_exit("none")
                     end
                 },
                 {
                     id = "same",
-                    text = "Same as Entry",
+                    text_key = "same_as_entry",
                     features = function(S)
                         set_exit("self")
                         hint("Escape via your entry point", 5, 1)
@@ -403,7 +403,7 @@ kts.MENU = {
                 },
                 {
                     id = "other",
-                    text = "Other's Entry",
+                    text_key = "others_entry",
                     min_players = 2,
                     max_players = 2,
                     features = function(S)
@@ -413,7 +413,7 @@ kts.MENU = {
                 },
                 {
                     id = "random",
-                    text = "Total Random",
+                    text_key = "total_random",
                     features = function(S)
                         set_exit("random")
                         hint("Escape via the unknown exit point", 5, 1)
@@ -421,7 +421,7 @@ kts.MENU = {
                 },
                 {
                     id = "guarded",
-                    text = "Guarded",
+                    text_key = "guarded",
                     features = function(S)
                         add_segment(guarded_exits)
                         set_exit("special")
@@ -432,22 +432,22 @@ kts.MENU = {
         },
         {
             id = "gear",
-            text = "Starting Gear",
+            text_key = "starting_gear",
             choices = {
                 {
                     id = "none",
-                    text = "Sword Only"
+                    text_key = "sword_only"
                 },
                 {
                     id = "daggers",
-                    text = "Daggers",
+                    text_key = "daggers",
                     features = function(S)
                         add_gear(starting_daggers)
                     end
                 },
                 {
                     id = "traps",
-                    text = "Traps",
+                    text_key = "traps",
                     features = function(S)
                         add_gear(starting_poison_traps)
                         add_gear(starting_blade_traps)
@@ -455,7 +455,7 @@ kts.MENU = {
                 },
                 {
                     id = "both",
-                    text = "Daggers and Traps",
+                    text_key = "daggers_and_traps",
                     features = function(S)
                         add_gear(starting_daggers)
                         add_gear(starting_poison_traps)
@@ -466,7 +466,7 @@ kts.MENU = {
         },
         {
             id = "num_keys",
-            text = "Number of Keys",
+            text_key = "num_of_keys",
             choice_min = 1,
             choice_max = 3,
             features = function(S)
@@ -478,14 +478,14 @@ kts.MENU = {
         },
         {
             id = "pretrapped",
-            text = "Pretrapped Chests",
+            text_key = "pretrapped_chests",
             choices = {
                 {
                     id = false,
-                    text = "No"
+                    text_key = "no"
                 },
                 { id = true,
-                  text = "Yes",
+                  text_key = "yes",
                   features = function(S)
                       set_pretrapped()
                   end
@@ -494,7 +494,7 @@ kts.MENU = {
         },
         {
             id = "stuff",
-            text = "Amount of Stuff",
+            text_key = "amount_of_stuff",
             choice_min = 1,
             choice_max = 5,
             features = function(S)
@@ -507,29 +507,29 @@ kts.MENU = {
         },
         {
             id = "stuff_respawn",
-            text = "Stuff Respawning",
+            text_key = "stuff_respawning",
             choices = {
                 {
                     id = "none",
-                    text = "None"
+                    text_key = "none"
                 },
                 {
                     id = "slow",
-                    text = "Slow",
+                    text_key = "slow",
                     features = function(S)
                         set_stuff_respawning(respawn_items_list, 960 * 1000)
                     end
                 },
                 {
                     id = "medium",
-                    text = "Medium",
+                    text_key = "medium",
                     features = function(S)
                         set_stuff_respawning(respawn_items_list, 480 * 1000)
                     end
                 },
                 {
                     id = "fast",
-                    text = "Fast",
+                    text_key = "fast",
                     features = function(S)
                         set_stuff_respawning(respawn_items_list, 240 * 1000)
                     end
@@ -541,7 +541,7 @@ kts.MENU = {
 
         {
             id = "zombies",
-            text = "Zombie Activity",
+            text_key = "zombie_activity",
             choice_min = 0,
             choice_max = 5,
             features = function(S)
@@ -551,7 +551,7 @@ kts.MENU = {
         },
         {
             id = "bats",
-            text = "Vampire Bats",
+            text_key = "vampire_bats",
             choice_min = 0,
             choice_max = 5,
             features = function(S)
@@ -578,10 +578,10 @@ kts.MENU = {
 
         {
             id = "time",
-            text = "Time Limit",
+            text_key = "time_limit",
             type = "numeric",
             digits = 2,
-            suffix = "mins",
+            suffix_key = "mins",
             features = function(S)
                 set_time_limit(60 * S.time)
             end

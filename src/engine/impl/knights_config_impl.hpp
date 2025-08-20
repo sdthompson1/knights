@@ -29,7 +29,6 @@
 #include "lua_func.hpp"
 #include "map_support.hpp"
 #include "overlay.hpp"       // needed for N_OVERLAY_FRAME
-#include "utf8string.hpp"
 
 // coercri
 #include "gfx/color.hpp"
@@ -57,6 +56,7 @@ class MenuWrapper;
 class MonsterManager;
 class MonsterType;
 class Player;
+class PlayerID;
 class Segment;
 class Sound;
 class StuffManager;
@@ -93,7 +93,7 @@ public:
                         EventManager &event_manager,
                         TaskManager &task_manager,
                         const std::vector<int> &hse_cols,
-                        const std::vector<UTF8String> &player_names);
+                        const std::vector<PlayerID> &player_ids);
     const Menu & getMenu() const;
     MenuWrapper & getMenuWrapper() { return *menu_wrapper; }
     void resetMenu();

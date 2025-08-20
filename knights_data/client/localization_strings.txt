@@ -1,25 +1,144 @@
-1 Selecting Quest
-2 Playing (%1)
+# Error messages
+unknown_error                   Unknown error
+access_denied                   Access denied
+invalid_connection_string       Invalid connection string
+player_id_already_set           Player ID already set
+player_id_mismatch              Player ID mismatch
+player_id_empty                 Player ID is empty
+already_connected               A player with your name or ID is already connected
+must_set_id                     Must set player ID before sending password
+password_incorrect              Too many failed password attempts
+already_in_game                 You are already connected to a game
+game_not_found                  Game not found on server
+split_screen_not_allowed        Split screen game not allowed
+split_screen_too_many           Cannot join split-screen if other players are already connected
+unknown_client_message          Unknown message code from client
+unknown_server_message          Unknown message code from server
+old_knights_version             You are running an old version of Knights. Please download the latest version from https://www.knightsgame.org.uk/
+old_server                      Cannot connect because this server is running an older version of Knights.
+update_thread_failed            Update thread failed to start
+bad_server_message              Incorrect server message format
+invalid_id_server               Invalid ID in server message
+invalid_id_client               Invalid ID in client message
+dpy_num_out_of_range            Display number out of range
+n_players_incorrect             Number of players incorrect
+couldnt_start_game              Couldn't start game! {0}
+couldnt_join_game               Could not join game! {0}
+error_is                        Error: {0}
 
-# Codes 101-199 are reserved for the quest names, with 100
-# being a default fallback
-100 Custom Quest
-101 Escape from the Dungeon
-102 Retrieve Book and Escape
-103 Retrieve Wand and Escape
-104 Destroy Book with Wand
-105 Duel to the Death
-106 Deathmatch
 
-150 Quest for Gems
-151 The Big Quest for Gems
-152 Shock Assault
-153 War of Survival
-154 The Dungeon of Death
-155 The Lost Book of the Gnome King
-156 The Tomb of the Liche Lord
-157 The Ancient Wand of Death
-158 The Way to the Paradise
-159 The Quest of Giants
-160 Run for the Freedom
-161 Knights Deathmatch
+# Game statuses (for multiplayer game list screen)
+selecting_quest   Selecting Quest
+playing_x         Playing ({0})
+
+
+# In-game messages
+team_chat_avail         Note: Team chat is available. Type /t at the start of your message to send to your team only.
+cant_change_obs         Cannot change observer status at this time. Please wait until the game has finished.
+too_many_errors         <Too many error messages, disabling error output for the rest of this game.>
+player_eliminated       Player {0} has been eliminated.
+player_eliminated_num   Player {0} has been eliminated. {1} players are left.
+you_are_eliminated      ** You have been eliminated from this game. You are now in observer mode. Use arrow keys (left/right and up/down) to switch between players.
+time_expired            Time limit expired! All players lose!
+all_lose                All players lose!
+is_winner               {0} is the winner!
+are_winners             {0...} are the winners!
+game_completed          Game completed in {0}m {1}s.
+x_disconnected          {0} (Disconnected)
+
+
+# Menu strings
+quest_sel             QUEST SELECTION
+tutorial              TUTORIAL
+quest                 Quest
+mission_type          Mission Type
+type_of_book          Type of Book
+type_of_wand          Type of Wand
+num_of_wands          Number of Wands
+num_of_gems           Number of Gems
+gems_needed           Gems Needed
+dungeon_type          Dungeon Type
+premapped             Premapped
+entry_point           Entry Point
+exit_point            Exit Point
+starting_gear         Starting Gear
+num_of_keys           Number of Keys
+pretrapped_chests     Pretrapped Chests
+amount_of_stuff       Amount of Stuff
+stuff_respawning      Stuff Respawning
+zombie_activity       Zombie Activity
+vampire_bats          Vampire Bats
+time_limit            Time Limit
+mins                  mins
+
+custom                      Custom
+quest_for_gems              Quest for Gems
+big_quest_for_gems          The Big Quest for Gems
+shock_assault               Shock Assault
+war_of_survival             War of Survival
+dungeon_of_death            The Dungeon of Death
+lost_book_of_gnome          The Lost Book of the Gnome King
+tomb_of_liche               The Tomb of the Liche Lord
+ancient_wand_of_death       The Ancient Wand of Death
+way_to_paradise             The Way to the Paradise
+quest_of_giants             The Quest of Giants
+run_for_freedom             Run for the Freedom
+knights_deathmatch          Knights Deathmatch
+
+escape_from_dungeon   Escape from the Dungeon
+retrieve_book_escape  Retrieve Book and Escape
+retrieve_wand_escape  Retrieve Wand and Escape
+destroy_book_wand     Destroy Book with Wand
+duel_to_death         Duel to the Death
+deathmatch            Deathmatch
+
+book_none             No Book in the Dungeon
+book_knowledge        Ancient Book of Knowledge
+book_ashur            Lost Book of Ashur
+book_necronomicon     Necronomicon
+book_gnomes           Tome of Gnomes
+
+wand_none             No Wands in the Dungeon
+wand_destruction      Wand of Destruction
+wand_open_ways        Wand of Open Ways
+wand_securing         Wand of Securing
+wand_undeath          Wand of Undeath
+
+tiny                  Tiny
+small                 Small
+basic                 Basic
+big                   Big
+huge                  Huge
+snake                 Snake
+long_snake            Long Snake
+ring                  Ring
+
+yes                   Yes
+no                    No
+
+total_random          Total Random
+close_to_other        Close to Other
+away_from_other       Away from Other
+different_every_time  Different every time
+
+no_escape             No Escape
+same_as_entry         Same as Entry
+others_entry          Other's Entry
+guarded               Guarded
+
+sword_only            Sword Only
+daggers               Daggers
+traps                 Traps
+daggers_and_traps     Daggers and Traps
+
+none                  None
+slow                  Slow
+medium                Medium
+fast                  Fast
+
+err_requires_at_least    ERROR: {0} = {1} requires at least {2} {3}.
+players                  players
+teams                    teams
+
+player_set_menu       {0} set "{1}" to "{2}".
+player_set_random     {0} selected a Random Quest.

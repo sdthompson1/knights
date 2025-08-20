@@ -38,9 +38,9 @@
 #ifndef KNIGHTS_CLIENT_HPP
 #define KNIGHTS_CLIENT_HPP
 
-#include "boost/noncopyable.hpp"
+#include "utf8string.hpp"
 
-#include "core/utf8string.hpp"
+#include "boost/noncopyable.hpp"
 
 #include <memory>
 #include <vector>
@@ -48,6 +48,7 @@
 class ClientCallbacks;
 class KnightsCallbacks;
 class KnightsClientImpl;
+class PlayerID;
 class UserControl;
 
 class KnightsClient : boost::noncopyable {
@@ -92,12 +93,12 @@ public:
     // output buffer)
     // 
 
-    void setPlayerNameAndControls(const Coercri::UTF8String &plyr_name, bool action_bar_ctrls);   // should be 1st cmd sent
+    void setPlayerIdAndControls(const PlayerID &id, bool action_bar_ctrls);   // should be 1st cmd sent
     void joinGame(const std::string &game_name);   // attempt to join a game.
     void joinGameSplitScreen(const std::string &game_name);  // used for split screen mode.
     void leaveGame();   // attempt to leave a game (go back to "unjoined" state).
 
-    void sendChatMessage(const std::string &msg);
+    void sendChatMessage(const UTF8String &msg);
 
     void setReady(bool ready);  // change my ready status (used in menu screen)
     void setHouseColour(int hse_col);

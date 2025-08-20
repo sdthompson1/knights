@@ -36,6 +36,7 @@
 #include "local_dungeon_view.hpp"
 #include "local_mini_map.hpp"
 #include "local_status_display.hpp"
+#include "localization.hpp"
 #include "make_scroll_area.hpp"
 #include "my_exceptions.hpp"
 #include "round.hpp"
@@ -235,7 +236,8 @@ private:
 };
 
 
-LocalDisplay::LocalDisplay(const ConfigMap &cfg,
+LocalDisplay::LocalDisplay(const Localization &localization,
+                           const ConfigMap &cfg,
                            int aofs,
                            const Graphic *winner_image_,
                            const Graphic *loser_image_,
@@ -251,7 +253,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            const Controller *ctrlr2,
                            int nplyrs,
                            bool dm_mode,
-                           const std::vector<UTF8String> &player_names,
+                           const std::vector<PlayerID> &player_ids,
                            ChatList &chat_list_,
                            ChatList &ingame_player_list_,
                            ChatList &quest_rqmts_list_,
@@ -263,12 +265,13 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
                            bool tut,
                            bool tool_tips,
                            const std::string &chat_keys,
-                           std::function<ClientState(const UTF8String&)> player_state_lookup)
-    : config_map(cfg),
+                           std::function<UTF8String(const PlayerID&)> player_name_lookup)
+    : localization(localization),
+      config_map(cfg),
       approach_offset(aofs),
       potion_renderer(potion_rend),
       skull_renderer(skull_rend),
-      player_state_lookup(player_state_lookup),
+      player_name_lookup(player_name_lookup),
 
       // cached config variables
       ref_vp_width(cfg.getInt("dpy_viewport_width")),
@@ -344,7 +347,7 @@ LocalDisplay::LocalDisplay(const ConfigMap &cfg,
         chat_flag[i] = false;
     }
 
-    initialize(nplyrs, player_names, menu_gfx_centre, menu_gfx_empty, menu_gfx_highlight, speech_bubble);
+    initialize(nplyrs, player_ids, menu_gfx_centre, menu_gfx_empty, menu_gfx_highlight, speech_bubble);
 }
 
 LocalDisplay::~LocalDisplay()
@@ -365,7 +368,7 @@ void LocalDisplay::disableView(int p)
 }
 
 void LocalDisplay::goIntoObserverMode(int nplyrs,
-                                      const std::vector<UTF8String> &player_names)
+                                      const std::vector<PlayerID> &player_ids)
 {
     dungeon_view.clear();
     mini_map.clear();
@@ -376,10 +379,10 @@ void LocalDisplay::goIntoObserverMode(int nplyrs,
     game_over_time_us.clear();
     flash_screen_start_us.clear();
 
-    initialize(nplyrs, player_names, 0, 0, 0, speech_bubble);
+    initialize(nplyrs, player_ids, 0, 0, 0, speech_bubble);
 }
 
-void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_names,
+void LocalDisplay::initialize(int nplyrs, const std::vector<PlayerID> &player_ids,
                               const Graphic *menu_gfx_centre,
                               const Graphic *menu_gfx_empty,
                               const Graphic *menu_gfx_highlight,
@@ -390,7 +393,7 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_
     curr_obs_player[0] = 0;
     curr_obs_player[1] = nplayers >= 2 ? 1 : 0;
     obs_visible.assign(nplayers, true);  // all screens visible initially
-    names = player_names;
+    ids = player_ids;
 
     dungeon_view.resize(nplyrs);
     mini_map.resize(nplyrs);
@@ -400,8 +403,8 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<UTF8String> &player_
     game_over_time_us.resize(nplyrs);
     flash_screen_start_us.resize(nplyrs);
     
-    // If names are set then we must be in "observer mode"
-    observer_mode = !names.empty();
+    // If player ids are set then we must be in "observer mode"
+    observer_mode = !ids.empty();
 
     if (!observer_mode && (controller1->usingActionBar() || tutorial_mode)) {
         action_bar.reset(new ActionBar(config_map, menu_gfx_empty, menu_gfx_highlight));
@@ -778,11 +781,11 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
 void LocalDisplay::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == chat_field.get() || event.getSource() == send_button.get()) {
-        const std::string msg = getChatFieldContents();
+        const UTF8String msg = getChatFieldContents();
 
         bool empty = true;
-        for (std::string::const_iterator it = msg.begin(); it != msg.end(); ++it) {
-            if (*it != ' ') {
+        for (char c : msg.asUTF8()) {
+            if (c != ' ') {
                 empty = false;
                 break;
             }
@@ -1070,7 +1073,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
 
     // draw the player name if necessary.
     if (observer_mode && my_font) {
-        const int w = my_font->getTextWidth(names[player_num]);
+        const UTF8String name = player_name_lookup(ids[player_num]);
+        const int w = my_font->getTextWidth(name);
         int x;
         if (draw_winner_loser_screen) {
             x = vp_x + vp_width/2;  // centre of window
@@ -1078,7 +1082,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             x = dungeon_x + dungeon_width/2;  // centre of dungeon area
         }
         x -= w/2;
-        gc.drawText(x, vp_y + obs_margin, *my_font, names[player_num], Coercri::Color(255,255,255));
+        gc.drawText(x, vp_y + obs_margin, *my_font, name, Coercri::Color(255,255,255));
     }
 
     // Draw Winner/Loser screen
@@ -1149,7 +1153,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         dungeon_view[player_num]->draw(gc, gm, screen_flash, dungeon_x, dungeon_y, dungeon_width,
                                        dungeon_height, pixels_per_square, dungeon_scale_factor, *txt_font,
                                        observer_mode,  // Show my knight name in obs mode. In normal mode, show only names of opponents, not myself.
-                                       player_state_lookup,
+                                       player_name_lookup,
                                        room_tl_x, room_tl_y);
 
         // Work out highlighting for action bar
@@ -1897,9 +1901,16 @@ void LocalDisplay::flashScreen(int plyr, int delay_ms)
     }
 }
 
-void LocalDisplay::gameMsg(int plyr, const std::string &msg, bool is_err)
+void LocalDisplay::gameMsgRaw(int plyr, const Coercri::UTF8String &msg, bool is_err)
 {
-    chat_list.add(msg);
+    // TODO: Review usage of raw messages
+    chat_list.add(msg.asLatin1());  // chat_list only supports latin1 encoding for now
+}
+
+void LocalDisplay::gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
+{
+    const Coercri::UTF8String msg = localization.get(key, params);
+    chat_list.add(msg.asLatin1());  // chat_list only supports latin1 encoding for now
 }
 
 void LocalDisplay::popUpWindow(const std::vector<TutorialWindow> &windows)
@@ -1950,10 +1961,10 @@ void LocalDisplay::setWidgetEnabled(gcn::Widget &widget, bool enabled)
         : gcn::Color(0x77, 0x77, 0x55));
 }
 
-std::string LocalDisplay::getChatFieldContents() const
+Coercri::UTF8String LocalDisplay::getChatFieldContents() const
 {
-    if (chat_field && chat_field->getText() != chat_msg) return chat_field->getText();
-    else return std::string();
+    if (chat_field && chat_field->getText() != chat_msg) return Coercri::UTF8String::fromLatin1(chat_field->getText());
+    else return Coercri::UTF8String();
 }
 
 bool LocalDisplay::chatFieldSelected() const

@@ -29,66 +29,72 @@
 #ifndef MENU_ITEM_HPP
 #define MENU_ITEM_HPP
 
+#include "localization.hpp"
+
 #include "network/byte_buf.hpp"  // coercri
 
 #include <stdexcept>
 #include <string>
 #include <vector>
 
+struct LocalKeyOrInteger {
+    bool is_integer;
+    int integer;
+    LocalKey local_key;
+};
+
 class MenuItem {
 public:
     // general properties
-    const std::string & getTitleString() const { return title; }
+    const LocalKey & getTitleKey() const { return title; }
     bool getSpaceAfter() const { return space_after; }
     
     // type (numeric or dropdown)
+    // (Note: "numeric" means a field like "Time Limit" where the user enters a number)
     bool isNumeric() const { return numeric; }
 
     // properties for numeric fields
     int getNumDigits() const { return num_digits; }
-    const std::string &getSuffix() const { return suffix; }
+    const LocalKey &getSuffix() const { return suffix; }  // e.g. "mins" for Time Limit field
 
     // properties for dropdown fields
-    int getNumChoices() const { return value_str.size(); }
-    const std::string & getChoiceString(int i) const { return value_str.at(i); }
+    int getNumChoices() const { return dropdown_entries.size(); }
+    const LocalKeyOrInteger & getChoice(int i) const { return dropdown_entries.at(i); }
 
     
     // construction - dropdown
-    MenuItem(const std::string &title_,
-             std::vector<std::string> &settings)  // swapped into place
-        : title(title_), numeric(false), space_after(false)
+    MenuItem(const LocalKey &title, const std::vector<LocalKeyOrInteger> &settings)
+        : title(title), numeric(false), space_after(false)
     {
         if (settings.empty()) throw std::invalid_argument("MenuItem with no choices!");
-        value_str.swap(settings);
+        dropdown_entries = settings;
     }
 
     // construction - numeric
-    MenuItem(const std::string &title_,
-             int num_digits_,
-             const std::string &suffix_)
-        : title(title_), numeric(true),
-          num_digits(num_digits_), suffix(suffix_),
+    MenuItem(const LocalKey &title, int num_digits, const LocalKey &suffix)
+        : title(title), numeric(true),
+          num_digits(num_digits), suffix(suffix),
           space_after(false)
     { }
 
     // space_after is set after the fact
     void addSpaceAfter() { space_after = true; }
-    
+
     // serialization
     explicit MenuItem(Coercri::InputByteBuf &buf);
     void serialize(Coercri::OutputByteBuf &buf) const;
 
 private:
     // general properties
-    std::string title;
+    LocalKey title;
     bool numeric;
 
     // numeric properties
     int num_digits;
-    std::string suffix;
+    LocalKey suffix;
 
     // dropdown properties
-    std::vector<std::string> value_str;
+    std::vector<LocalKeyOrInteger> dropdown_entries;
 
     // spacing
     bool space_after;

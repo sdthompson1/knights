@@ -28,7 +28,12 @@ class KnightsEngine;
 
 struct lua_State;
 
+#include "utf8string.hpp"
+
 #include <string>
+
+class LocalKey;
+class LocalParam;
 
 
 // Adds Lua functions for game setup (dungeon generation, monster
@@ -48,7 +53,8 @@ private:
 };
 
 
-// this is a workaround to allow msgs to be printed during game startup
-void GameStartupMsg(lua_State *lua, const std::string &msg);
+// This is a workaround to allow msgs to be printed during game startup.
+// Either msg, or key and params, should be passed, but not both.
+void GameStartupMsg(lua_State *lua, const UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params);
 
 #endif

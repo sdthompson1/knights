@@ -32,6 +32,8 @@
 
 #include "platform_lobby.hpp"
 
+#include "localization.hpp"
+#include "player_id.hpp"
 #include "utf8string.hpp"
 
 namespace Coercri {
@@ -48,10 +50,10 @@ public:
     // User Ids:
 
     // Return the platform user ID of the current user (e.g. their Steam ID)
-    virtual std::string getCurrentUserId() const = 0;
+    virtual PlayerID getCurrentUserId() = 0;
     
     // Convert a platform user ID to a human-readable user name
-    virtual Coercri::UTF8String lookupUserName(const std::string& platform_user_id) const = 0;
+    virtual Coercri::UTF8String lookupUserName(const PlayerID& platform_user_id) = 0;
 
 
     // Lobbies:
@@ -67,15 +69,16 @@ public:
         // Note: this might be slightly out of date. Use
         // PlatformLobby::getLeaderId for the latest information (but
         // you can only do that once you join the lobby).
-        std::string leader_id;
+        PlayerID leader_id;
 
         // Number of players currently in the lobby
         int num_players;
 
-        // Current game status code
+        // Current game status (as local key + params)
         // (Used for showing the current quest on the lobby search screen.
         // See also KnightsApp::setQuestMessageCode.)
-        int status_code;
+        LocalKey game_status_key;
+        std::vector<LocalParam> game_status_params;
     };
 
     // Create a new lobby
