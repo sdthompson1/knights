@@ -129,7 +129,6 @@ CXXFILES = \
 	engine/impl/teleport.cpp \
 	engine/impl/tile.cpp \
 	engine/impl/time_limit_task.cpp \
-	engine/impl/tutorial_manager.cpp \
 	engine/impl/user_control_lua_ctor.cpp \
 	engine/impl/view_manager.cpp \
 	misc/config_map.cpp \
