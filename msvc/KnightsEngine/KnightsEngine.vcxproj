@@ -154,7 +154,6 @@
     <ClCompile Include="..\..\src\engine\impl\teleport.cpp" />
     <ClCompile Include="..\..\src\engine\impl\tile.cpp" />
     <ClCompile Include="..\..\src\engine\impl\time_limit_task.cpp" />
-    <ClCompile Include="..\..\src\engine\impl\tutorial_manager.cpp" />
     <ClCompile Include="..\..\src\engine\impl\user_control_lua_ctor.cpp" />
     <ClCompile Include="..\..\src\engine\impl\view_manager.cpp" />
   </ItemGroup>
@@ -230,7 +229,6 @@
     <ClInclude Include="..\..\src\engine\impl\tile.hpp" />
     <ClInclude Include="..\..\src\engine\impl\time_limit_task.hpp" />
     <ClInclude Include="..\..\src\engine\impl\trap.hpp" />
-    <ClInclude Include="..\..\src\engine\impl\tutorial_manager.hpp" />
     <ClInclude Include="..\..\src\engine\impl\view_manager.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

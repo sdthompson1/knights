@@ -63,9 +63,7 @@ i_hammer = kts.ItemType {
     melee_downswing_time = 4*ts,
     melee_damage = rng_range(1, 4),
     melee_stun_time = rng_time_range(4, 6),
-    melee_tile_damage = 1000,
-
-    tutorial = TUT_HAMMER
+    melee_tile_damage = 1000
 }
 
 i_staff = kts.ItemType {
@@ -74,7 +72,6 @@ i_staff = kts.ItemType {
     overlay = kts.Overlay { g_staff_north, g_staff_east, g_staff_south, g_staff_west },
     parry_chance = 0.9,
     open_traps = true,
-    tutorial = TUT_STAFF,
 
     -- version 027: staffs can now be used as a weapon, with zero damage
     -- (per KnightRider's request).
@@ -109,8 +106,6 @@ i_axe = kts.ItemType {
     missile_downswing_time = 3*ts,
     missile_damage    = rng_range(0, 2),
     missile_stun_time = rng_time_range(2, 4),
-
-    tutorial = TUT_AXE,
 
     control = kts.Control {
        action = kts.ThrowOrShoot,
@@ -165,9 +160,7 @@ i_dagger = kts.ItemType {
         name = "Throw Daggers",
 
         can_do_while_moving = true
-    },
-
-    tutorial = TUT_DAGGERS
+    }
 }
 
 -- used by the crossbow
@@ -185,9 +178,7 @@ i_bolts = kts.ItemType {
     missile_hit_multiplier = 1,
     missile_access_chance = 0.5,
     missile_damage = rng_range(1, 4),
-    missile_stun_time = rng_time_range(3, 6),
-
-    tutorial = TUT_BOLTS
+    missile_stun_time = rng_time_range(3, 6)
 }
 
 i_crossbow = kts.ItemType {
@@ -198,8 +189,6 @@ i_crossbow = kts.ItemType {
     reload_time = ts*26,
     reload_action      = snd_click,
     reload_action_time = ts,
-
-    tutorial = TUT_CROSSBOW,
 
     control = kts.Control {
        action = kts.ThrowOrShoot,
@@ -355,8 +344,7 @@ i_bear_trap = kts.ItemType {
         menu_direction = "left",
         action_bar_slot = 8,
         name = "Set Bear Trap"
-    },
-    tutorial = TUT_BEAR_TRAP
+    }
 }
 
 i_bear_trap_open = kts.ItemType {
@@ -390,8 +378,7 @@ i_poison_trap = kts.ItemType {
        menu_direction = "left",
        action_bar_slot = 8,
        name = "Set Poison Needle Trap",
-    },
-    tutorial = TUT_POISON_TRAP
+    }
 }
 
 i_blade_trap = kts.ItemType {
@@ -412,8 +399,7 @@ i_blade_trap = kts.ItemType {
        menu_direction = "right",
        action_bar_slot = 9,
        name = "Set Spring Blade Trap"
-    },
-    tutorial = TUT_BLADE_TRAP
+    }
 }
 
 
@@ -423,8 +409,7 @@ i_blade_trap = kts.ItemType {
 
 basic_key = {
     type = "backpack",
-    graphic = g_key,
-    tutorial = TUT_KEY
+    graphic = g_key
 }
 
 i_key1 = kts.ItemType (
@@ -469,8 +454,7 @@ i_lockpicks = kts.ItemType(
        menu_direction = "up",
        action_bar_slot = 8,
        name = "Use Lock Picks"
-    },
-    tutorial = TUT_LOCKPICKS
+    }
   }
 ))
 
@@ -484,7 +468,6 @@ i_gem = kts.ItemType {
     graphic = g_gem,
     backpack_graphic = g_menu_drop_gem,
     backpack_slot = 30,
-    tutorial = TUT_GEM,
     critical = "A gem"
 }
 
@@ -500,8 +483,7 @@ i_potion = kts.ItemType {
        snd_drink()
        kts.Delay(750)
        potion_effect()
-    end,
-    tutorial = TUT_POTION
+    end
 }
 
 i_scroll = kts.ItemType {
@@ -510,6 +492,5 @@ i_scroll = kts.ItemType {
     on_pick_up = function()
        zap()
        scroll_effect()
-    end,
-    tutorial = TUT_SCROLL
+    end
 }

@@ -196,7 +196,7 @@ void Lockable::onActivate(DungeonMap &dmap, const MapCoord &mc, shared_ptr<Creat
         success = doClose(dmap, mc, cr, originator, act_type);
     }
     Tile::onActivate(dmap, mc, cr, originator, act_type);
-    if (doing_open) Mediator::instance().onOpenLockable(mc); // handles tutorial message (only) currently
+    if (doing_open) Mediator::instance().onOpenLockable(mc);
 }
 
 void Lockable::close(DungeonMap &dmap, const MapCoord &mc, const Originator &originator)

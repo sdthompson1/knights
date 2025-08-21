@@ -210,9 +210,6 @@
     <ClCompile Include="..\..\src\engine\impl\time_limit_task.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\engine\impl\tutorial_manager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\engine\impl\user_control_lua_ctor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -432,9 +429,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\engine\impl\trap.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\engine\impl\tutorial_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\engine\impl\view_manager.hpp">

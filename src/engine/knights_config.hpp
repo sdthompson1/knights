@@ -71,7 +71,6 @@ class PlayerID;
 class Sound;
 class StuffManager;
 class TaskManager;
-class TutorialManager;
 class UserControl;
 
 struct lua_State;

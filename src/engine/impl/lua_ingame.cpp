@@ -50,7 +50,6 @@
 #include "player.hpp"
 #include "rng.hpp"
 #include "teleport.hpp"
-#include "tutorial_manager.hpp"
 #include "tutorial_window.hpp"
 
 #include "include_lua.hpp"
@@ -1172,43 +1171,6 @@ namespace {
         return 0;
     }
 
-    int StartTutorialManager(lua_State *lua)
-    {
-        boost::shared_ptr<TutorialManager> tm(new TutorialManager);
-
-        // tutorial table at stack position 1
-        
-        lua_len(lua, 1);  // [len]
-        const int sz = lua_tointeger(lua, -1);
-        lua_pop(lua, 1);  // []
-
-        if (sz % 3 != 0) luaL_error(lua, "Tutorial list size must be a multiple of 3");
-
-        for (int i = 0; i < sz; i += 3) {
-            lua_pushinteger(lua, i+1);  // [1]
-            lua_gettable(lua, 1);       // [key]
-            const int t_key = lua_tointeger(lua, -1);
-            lua_pop(lua, 1);  // []
-
-            lua_pushinteger(lua, i+2);  // [2]
-            lua_gettable(lua, 1);   // [title]
-            const char * title_c = lua_tostring(lua, -1);
-            std::string title = title_c ? title_c : "";
-            lua_pop(lua, 1);  // []
-        
-            lua_pushinteger(lua, i+3);  // [3]
-            lua_gettable(lua, 1); // [msg]
-            const char * msg_c = lua_tostring(lua, -1);
-            std::string msg = msg_c ? msg_c : "";
-            lua_pop(lua, 1);  // []
-
-            tm->addTutorialKey(t_key, title, msg);
-        }
-
-        Mediator::instance().setTutorialManager(tm);
-        
-        return 0;
-    }
 
     //
     // Traps
@@ -1439,9 +1401,6 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &PopUpWindow);
     lua_setfield(lua, -2, "PopUpWindow");
-
-    PushCFunction(lua, &StartTutorialManager);
-    lua_setfield(lua, -2, "StartTutorialManager");
 
 
     // Traps

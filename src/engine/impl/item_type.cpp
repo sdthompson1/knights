@@ -82,7 +82,6 @@ ItemType::ItemType(lua_State *lua, int idx)
     reload_time = LuaGetInt(lua, idx, "reload_time");
     stack_graphic = LuaGetPtr<Graphic>(lua, idx, "stack_graphic");
     if (!stack_graphic) stack_graphic = graphic;
-    tutorial_key = LuaGetInt(lua, idx, "tutorial");
     is = LuaGetItemSize(lua, idx, "type", IS_NOPICKUP);
 
     lua_getfield(lua, idx, "critical");  // [crit]
@@ -133,7 +132,6 @@ ItemType::ItemType(const Graphic *gfx, ItemSize item_size,
     reload_action_time = 0;
     reload_time = 0;
     stack_graphic = graphic;
-    tutorial_key = 0;
     is = item_size;
     loaded = 0;
 }
@@ -268,9 +266,6 @@ void ItemType::newIndex(lua_State *lua)
     } else if (k == "stack_graphic") {
         stack_graphic = ReadLuaPtr<Graphic>(lua, 3);
         if (!stack_graphic) stack_graphic = graphic;
-
-    } else if (k == "tutorial") {
-        tutorial_key = lua_tointeger(lua, 3);
 
     } else if (k == "type") {
         lua_pushvalue(lua, 3);

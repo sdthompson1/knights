@@ -126,8 +126,6 @@ Tile::Tile(lua_State *lua)
     readStairsDown(lua);
     lua_pop(lua, 1);
 
-    tutorial_key = LuaGetInt(lua, -1, "tutorial");  // default 0
-
     lua_getfield(lua, -1, "map_as");
     popMapAs(lua);
 }
@@ -217,7 +215,6 @@ Tile::Tile(const LuaFunc &walk_over, const LuaFunc &activate)
     item_category = -1;  // items allowed
     items_mode = ALLOWED;
     is_stair = stair_top = false;
-    tutorial_key = 0;
     use_col = false;
 }
 
@@ -297,10 +294,6 @@ void Tile::newIndex(lua_State *lua)
         lua_pushvalue(lua, 3);
         readStairsDown(lua);
         lua_pop(lua, 1);
-
-    } else if (k == "tutorial") {
-        tutorial_key = lua_tointeger(lua, 3);
-
     }
 }
 

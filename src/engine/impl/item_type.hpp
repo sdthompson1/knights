@@ -172,8 +172,6 @@ public:
     void runMeleeAction(shared_ptr<Creature> actor, shared_ptr<Creature> victim);
     void runMeleeAction(shared_ptr<Creature> actor, DungeonMap &, const MapCoord &,
                         shared_ptr<Tile> target);
-
-    int getTutorialKey() const { return tutorial_key; }
     
 private:
     const Graphic * graphic;   // used while on the ground
@@ -226,8 +224,6 @@ private:
     LuaFunc on_drop;
     LuaFunc on_walk_over;
     LuaFunc on_hit;
-
-    int tutorial_key;
 
     LuaRef table_ref;
 };

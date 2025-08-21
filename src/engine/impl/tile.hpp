@@ -172,9 +172,6 @@ public:
     // 0 = Use the standard checks (see dungeon_generator.cpp)
     int getConnectivityCheck() const { return connectivity_check; }
 
-    // Tutorial Key (or 0 if unset)
-    int getTutorialKey() const { return tutorial_key; }
-
     // Reflection/Rotation
     shared_ptr<Tile> getReflect();   // X reflection of this tile
     shared_ptr<Tile> getRotate();    // 90 degree clockwise rotation of this tile
@@ -238,8 +235,6 @@ private:
 
     const Control * control;
     
-    int tutorial_key;
-
     boost::weak_ptr<Tile> reflect, rotate;
     boost::weak_ptr<Tile> original_tile;
 

@@ -201,19 +201,16 @@ wood_door = table_merge(door_base, {
     on_hit      = snd_tile_bash,
     on_destroy  = destroy1,
     lock_chance = 0.1,
-    keymax      = 3,
-    tutorial = TUT_DOOR
+    keymax      = 3
 })
 iron_door = table_merge(door_base, {
     lock_chance = 1.0,   -- always locked
     keymax      = 3,
-    on_hit      = snd_tile_clunk,
-    tutorial    = TUT_IRON_DOOR
+    on_hit      = snd_tile_clunk
 })
 gate = {
     access      = gate_acc,
-    on_hit      = snd_tile_clunk,
-    tutorial    = TUT_PORTCULLIS,
+    on_hit      = snd_tile_clunk
 }
 door_horiz = table_merge(wood_door, {
     depth = -4, 
@@ -295,7 +292,6 @@ home = {
     type = "home",
     unsecured_colour = 0,      -- black
     on_hit = snd_tile_clunk,
-    tutorial = TUT_HOME,
     on_approach = check_escape_quest
 }
 home_south = table_merge( home, {
@@ -346,8 +342,7 @@ t_crystal_ball = kts.Tile {           -- 15
     graphic = g_crystal_ball,
     on_approach  = kts.CrystalStart,
     on_withdraw  = kts.CrystalStop,
-    on_hit = snd_tile_clunk,
-    tutorial = TUT_CRYSTAL_BALL,
+    on_hit = snd_tile_clunk
 }
 set_open_closed(t_crystal_ball, t_wall_pillar)
 
@@ -358,8 +353,7 @@ switch = {
     access = switch_acc,
     on_hit = function() kts.Activate(); snd_tile_bash() end,
     control = kts.Control (table_merge( door_control_tbl, { name = "Pull Lever" })),
-    items = 0,
-    tutorial = TUT_SWITCH
+    items = 0
 }
 t_switch_up   = kts.Tile( table_merge( switch, {     -- 18
     graphic = g_switch_up, 
@@ -419,8 +413,7 @@ chest = {
     on_open_or_close = snd_door,
     on_unlock_fail   = function() locked_msg(); snd_lock() end,
     on_hit      = snd_tile_bash,
-    depth       = -4,
-    tutorial = TUT_CHEST
+    depth       = -4
 }
 
 t_chest_north = kts.Tile( table_merge( chest, {  -- 25, 35
@@ -503,9 +496,7 @@ open_pit =
         -- connectivity check. (Actually some open pits are passable, because they can be 
         -- closed by switches, but we can't easily check this, so we err on the side of 
         -- caution and mark it "impassable" always.)
-        connectivity_check = -1,
-
-        tutorial = TUT_PIT
+        connectivity_check = -1
     }
 
 t_open_pit_vert   = kts.Tile( table_merge( open_pit, {     -- 47
@@ -583,13 +574,11 @@ pentagram_base = table_merge( floor, {
           zap()
           pentagram_effect()
        end
-    end,
-    tutorial = TUT_PENTAGRAM
+    end
 })
 
 t_dead_pentagram = kts.Tile(table_merge( floor, {   -- 76
-    graphic      = g_pentagram,
-    tutorial = TUT_PENTAGRAM,
+    graphic      = g_pentagram
 }))
 t_live_pentagram = kts.Tile(pentagram_base)   -- 1 in my room tables. (76 in original Knights.)
 t_special_pentagram = kts.Tile(table_merge( pentagram_base, {  -- 90

@@ -87,7 +87,6 @@ class Sound;
 class StuffManager;
 class TaskManager;
 class Tile;
-class TutorialManager;
 class ViewManager;
 
 struct lua_State;
@@ -265,11 +264,6 @@ public:
     void setDeathmatchMode(bool d) { deathmatch_mode = d; }
     bool getDeathmatchMode() const { return deathmatch_mode; }
 
-    //
-    // Add tutorial manager -- can be called in middle of game if required
-    //
-    void setTutorialManager(boost::shared_ptr<TutorialManager> tm) { tutorial_manager = tm; }
-    
 private:
     // Note -- Mediator is not responsible for creating all of these
     // objects. That is done by the higher-ups (ie KnightsEngine).
@@ -303,9 +297,6 @@ private:
     TaskManager &task_manager;
     ViewManager &view_manager;  
 
-    // The tutorial manager is optional
-    boost::shared_ptr<TutorialManager> tutorial_manager;
-    
     // Other variables
     shared_ptr<DungeonMap> dmap;
     shared_ptr<CoordTransform> coord_transform;

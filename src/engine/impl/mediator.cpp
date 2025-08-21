@@ -41,7 +41,6 @@
 #include "player_task.hpp"
 #include "quest_hint_manager.hpp"
 #include "task_manager.hpp"
-#include "tutorial_manager.hpp"
 #include "view_manager.hpp"
 
 #ifndef VIRTUAL_SERVER
@@ -164,12 +163,6 @@ void Mediator::onAddEntity(shared_ptr<Entity> entity)
     Creature *cr = dynamic_cast<Creature*>(entity.get());
     if (cr) {
         event_manager.onAddCreature(*cr);
-        if (tutorial_manager) {
-            Knight *kt = dynamic_cast<Knight*>(cr);
-            if (kt && kt->getPlayer()) {
-                tutorial_manager->onMoveKnight(*kt->getPlayer());
-            }
-        }
     }
 }
 
@@ -186,12 +179,6 @@ void Mediator::onRepositionEntity(shared_ptr<Entity> entity)
     Creature *cr = dynamic_cast<Creature*>(entity.get());
     if (cr) {
         event_manager.postRepositionCreature(*cr);
-        if (tutorial_manager) {
-            Knight *kt = dynamic_cast<Knight*>(cr);
-            if (kt && kt->getPlayer()) {
-                tutorial_manager->onMoveKnight(*kt->getPlayer());
-            }
-        }
     }
 }
 
@@ -259,7 +246,7 @@ void Mediator::onChangeItemGraphic(const DungeonMap &dmap, const MapCoord &mc, c
 
 void Mediator::onPickup(const Player &pl, const ItemType &it)
 {
-    if (tutorial_manager) tutorial_manager->onPickup(pl, it);
+    // no longer used
 }
 
 
@@ -338,19 +325,11 @@ void Mediator::onMonsterDeath(const MonsterType &type)
 
 void Mediator::onOpenLockable(const MapCoord &mc)
 {
-    // This is used to show the 'Item' message after a chest is opened
-    if (tutorial_manager && !players.empty() && players[0]) {
-        // we assume there is only one player in the tutorial
-        tutorial_manager->onOpenLockable(*players[0], mc);
-    }
+    // no longer used
 }
 
 void Mediator::onKnightDeath(Player &player, const DungeonMap &dmap, const MapCoord &mc)
 {
-    if (tutorial_manager) {
-        tutorial_manager->onKnightDeath(player, dmap, mc);
-    }
-
     home_manager.onKnightDeath(player);
 }
 

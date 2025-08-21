@@ -23,7 +23,6 @@ use_strict()
 
 dofile("table_merge.lua")
 dofile("misc_config.lua")
-dofile("tutorial.lua")
 dofile("graphics.lua")
 dofile("sounds.lua")
 dofile("quest_funcs.lua")
