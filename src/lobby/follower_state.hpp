@@ -70,8 +70,6 @@ public:
         return connection_to_leader->getState();
     }
 
-    int artificial_delay; // TODO remove this
-
 private:
     // VM state
     std::unique_ptr<KnightsVM> knights_vm;
