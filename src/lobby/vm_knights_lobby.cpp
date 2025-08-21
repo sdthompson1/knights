@@ -199,6 +199,17 @@ int VMKnightsLobby::getNumberOfPlayers() const
     return 0;
 }
 
+Coercri::NetworkConnection::State VMKnightsLobby::getConnectionState() const
+{
+    if (pimpl->leader) {
+        // The leader is permanently "connected"
+        return Coercri::NetworkConnection::CONNECTED;
+    } else {
+        return pimpl->follower->getConnectionState();
+    }
+}
+
+
 // The main method for the background thread
 void VMKnightsLobbyThread::operator()()
 {

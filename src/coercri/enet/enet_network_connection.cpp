@@ -44,6 +44,10 @@
 
 #include <iterator>
 
+#ifdef ENET_BANDWIDTH_LIMIT   // testing/debugging feature
+#define BANDWIDTH_DOWN (1000 * 1000)     // in bytes/sec
+#endif
+
 namespace Coercri {
 
     EnetNetworkConnection::EnetNetworkConnection(ENetHost *host, const std::string &hostname, int port)
@@ -59,12 +63,22 @@ namespace Coercri {
         }
 
         peer->data = this;
+
+#ifdef ENET_BANDWIDTH_LIMIT
+        renew_time = time(nullptr);
+        bandwidth_down_remaining = BANDWIDTH_DOWN;
+#endif
     }
 
     EnetNetworkConnection::EnetNetworkConnection(ENetPeer *peer_)
         : peer(peer_), state(CONNECTED)
     {
         peer->data = this;
+
+#ifdef ENET_BANDWIDTH_LIMIT
+        renew_time = time(nullptr);
+        bandwidth_down_remaining = BANDWIDTH_DOWN;
+#endif
     }
 
     EnetNetworkConnection::~EnetNetworkConnection()
@@ -128,6 +142,22 @@ namespace Coercri {
 
         buf.clear();
         while (!queued_packets.empty()) {
+
+#ifdef ENET_BANDWIDTH_LIMIT
+            if (time(nullptr) > renew_time) {
+                bandwidth_down_remaining = BANDWIDTH_DOWN;
+                renew_time = time(nullptr);
+            }
+            if (queued_packets.front()->dataLength > BANDWIDTH_DOWN) {
+                throw std::runtime_error("packet larger than bandwidth limit");
+            }
+            if (queued_packets.front()->dataLength > bandwidth_down_remaining) {
+                return;
+            }
+            bandwidth_down_remaining -= queued_packets.front()->dataLength;
+            if (bandwidth_down_remaining < 0) bandwidth_down_remaining = 0;
+#endif
+
             unsigned char* ptr = static_cast<unsigned char*>(queued_packets.front()->data);
             std::copy(ptr, ptr + queued_packets.front()->dataLength, std::back_inserter(buf));
             enet_packet_destroy(queued_packets.front());

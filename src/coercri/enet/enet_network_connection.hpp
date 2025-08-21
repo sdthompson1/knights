@@ -89,6 +89,11 @@ namespace Coercri {
         State state;
         std::queue<ENetPacket*> queued_packets;  // incoming packets
         std::queue<std::vector<unsigned char> > outgoing_packets;   // waiting to be transmitted when we go from PENDING to CONNECTED
+
+#ifdef ENET_BANDWIDTH_LIMIT  // if defined, implements a receive bandwidth limitation, for testing
+        time_t renew_time;
+        int bandwidth_down_remaining;
+#endif
     };
 
 }

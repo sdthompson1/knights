@@ -47,7 +47,7 @@ game_completed          Game completed in {0}m {1}s.
 x_disconnected          {0} (Disconnected)
 
 
-# Menu strings
+# Quest selection menu
 quest_sel             QUEST SELECTION
 tutorial              TUTORIAL
 quest                 Quest
@@ -142,3 +142,10 @@ teams                    teams
 
 player_set_menu       {0} set "{1}" to "{2}".
 player_set_random     {0} selected a Random Quest.
+
+
+# Other UI strings
+connecting_to_game              Connecting to game...
+host_migration_in_progress      Host migration in progress...
+x_is_now_leader                 {0} is now hosting this game.
+you_are_now_leader              You are now hosting this game.

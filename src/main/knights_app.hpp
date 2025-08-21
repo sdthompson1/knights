@@ -183,6 +183,12 @@ public:
     boost::shared_ptr<KnightsClient> createVMGame(const std::string &lobby_id,
                                                   OnlinePlatform::Visibility vis,
                                                   std::unique_ptr<VMKnightsLobby> kts_lobby);
+
+    // This flag is used for determining which message(s) to print when you rejoin a game.
+    // (Unfortunately there doesn't seem to be any other way of doing this than by
+    // setting a flag.)
+    bool getHostMigrationFlag() const;
+    PlayerID getCurrentLeader() const;
 #endif
 
 

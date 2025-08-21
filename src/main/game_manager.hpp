@@ -184,7 +184,7 @@ public:
     bool setSavedChat(const UTF8String &);
 
     bool doingMenuWidgetUpdate() const; // Trac #72
-    
+
 
     //
     // callback implementations

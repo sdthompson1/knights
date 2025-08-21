@@ -47,9 +47,7 @@ FollowerState::FollowerState(std::unique_ptr<KnightsVM> vm,
 
 FollowerState::~FollowerState()
 {
-    if (connection_to_leader) {
-        connection_to_leader->close();
-    }
+    connection_to_leader->close();
 }
 
 void FollowerState::receiveClientMessages(std::vector<unsigned char> &data)

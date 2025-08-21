@@ -35,6 +35,7 @@
 #include "gfx_resizer_nearest_nbr.hpp"
 #include "gfx_resizer_scale2x.hpp"
 #include "graphic.hpp"
+#include "host_migration_screen.hpp"
 #include "keyboard_controller.hpp"
 #include "knights_app.hpp"
 #include "knights_client.hpp"
@@ -248,6 +249,7 @@ public:
 #ifdef USE_VM_LOBBY
     VMKnightsLobby *vm_knights_lobby;
     PlayerID vm_lobby_leader_id;
+    bool host_migration_flag;
 #endif
     boost::shared_ptr<KnightsClient> knights_client;
 
@@ -395,6 +397,10 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     // use the enet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
     pimpl->net_driver->enableServer(false);  // start off disabled.
+#endif
+
+#ifdef USE_VM_LOBBY
+    pimpl->host_migration_flag = false;
 #endif
 
     // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
@@ -606,6 +612,10 @@ void KnightsApp::resetAll()
     pimpl->broadcast_socket.reset();
     pimpl->broadcast_last_time = 0;
     pimpl->server_port = 0;
+
+#ifdef USE_VM_LOBBY
+    pimpl->host_migration_flag = false;
+#endif
 }    
 
 void KnightsApp::unloadGraphicsAndSounds()
@@ -1116,15 +1126,20 @@ boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lob
     if (lobby_id.empty()) {
         pimpl->platform_lobby = pimpl->online_platform->createLobby(vis);
 
-        // Set initial status
-        std::vector<LocalParam> no_params;
-        pimpl->platform_lobby->setGameStatus(LocalKey("selecting_quest"), no_params);
+        if (pimpl->platform_lobby) {
+            // Set initial status
+            std::vector<LocalParam> no_params;
+            pimpl->platform_lobby->setGameStatus(LocalKey("selecting_quest"), no_params);
+        } else {
+            throw std::runtime_error("Failed to create lobby");
+        }
 
     } else {
         pimpl->platform_lobby = pimpl->online_platform->joinLobby(lobby_id);
-    }
-    if (!pimpl->platform_lobby) {
-        throw std::runtime_error("Failed to join lobby");
+
+        if (!pimpl->platform_lobby) {
+            throw std::runtime_error("Failed to join lobby");
+        }
     }
 
     // Install the given knights lobby
@@ -1135,6 +1150,20 @@ boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lob
     // Create the client
     pimpl->knights_client.reset(new KnightsClient);
     return pimpl->knights_client;
+}
+
+bool KnightsApp::getHostMigrationFlag() const
+{
+    return pimpl->host_migration_flag;
+}
+
+PlayerID KnightsApp::getCurrentLeader() const
+{
+    if (pimpl->platform_lobby) {
+        return pimpl->platform_lobby->getLeaderId();
+    } else {
+        return PlayerID();
+    }
 }
 #endif
 
@@ -1147,6 +1176,8 @@ void KnightsAppImpl::updateOnlinePlatform()
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     if (platform_lobby && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
 
+        bool first_time = vm_lobby_leader_id.empty();
+
         // Leader has changed
 
         vm_lobby_leader_id = platform_lobby->getLeaderId();
@@ -1156,6 +1187,14 @@ void KnightsAppImpl::updateOnlinePlatform()
         } else {
             vm_knights_lobby->becomeFollower(vm_lobby_leader_id.asString(), 0);  // Use leader's PlayerID as the address
         }
+
+        // Show the "Host migration in progress" screen while we wait
+        const char *msg_key = first_time ? "connecting_to_game" : "host_migration_in_progress";
+        requested_screen = std::make_unique<HostMigrationScreen>(LocalKey(msg_key));
+
+        // Set host_migration_flag immediately after starting a host migration.
+        // (The flag gets cleared when resetAll is called i.e. when we disconnect from the server.)
+        if (!first_time) host_migration_flag = true;
     }
 #endif
 }

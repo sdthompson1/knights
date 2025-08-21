@@ -26,6 +26,8 @@
 
 #ifdef USE_VM_LOBBY
 
+#include "network/network_connection.hpp"
+
 #include "boost/shared_ptr.hpp"
 
 #include <memory>
@@ -35,7 +37,6 @@ class KnightsVM;
 class SyncClient;
 
 namespace Coercri {
-    class NetworkConnection;
     class NetworkDriver;
     class Timer;
 }
@@ -63,6 +64,13 @@ public:
     // Pull out the KnightsVM, closing all connections to it.
     // This will leave the FollowerState unusable, so it should be destroyed soon after.
     std::unique_ptr<KnightsVM> migrate();
+
+    // Get current network connection state
+    Coercri::NetworkConnection::State getConnectionState() const {
+        return connection_to_leader->getState();
+    }
+
+    int artificial_delay; // TODO remove this
 
 private:
     // VM state

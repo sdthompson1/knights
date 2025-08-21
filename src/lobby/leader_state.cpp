@@ -186,15 +186,15 @@ void LeaderState::update(Coercri::NetworkDriver &net_driver,
 
             bool error = false;
 
-            //try {
+            try {
                 if (followers[client_num]->getState() == Coercri::NetworkConnection::CONNECTED) {
                     receiveFollowerMessages(client_num, *followers[client_num]);
                 } else {
                     error = true;
                 }
-            //} catch (...) {
-            //    error = true;
-            //}
+            } catch (...) {
+                error = true;
+            }
 
             if (error) {
                 // Remove this follower

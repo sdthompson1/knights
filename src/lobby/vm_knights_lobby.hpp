@@ -28,6 +28,8 @@
 
 #include "knights_lobby.hpp"
 
+#include "network/network_connection.hpp"
+
 class VMKnightsLobbyImpl;
 
 namespace Coercri {
@@ -79,6 +81,10 @@ public:
 
     // This just returns 0 currently
     virtual int getNumberOfPlayers() const override;
+
+    // Determine connection status. Returns CONNECTED for the leader, and
+    // returns the actual connection status for a follower.
+    Coercri::NetworkConnection::State getConnectionState() const;
 
 private:
     void rejoinGame();

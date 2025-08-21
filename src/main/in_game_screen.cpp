@@ -54,7 +54,6 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
       speech_bubble_flag(false),
       init_nplayers(nplayers_),
       deathmatch_mode(deathmatch_mode_),
-      prevent_drawing(false),
       knights_app(ka),
       knights_client(kc),
       client_config(cfg),
@@ -248,8 +247,6 @@ void InGameScreen::update()
 {
     if (!container) return;  // just in case
 
-    if (prevent_drawing) return;
-
     const std::vector<PlayerID> & player_ids = display->getPlayerIDsForObsMode();
     const int nplayers = display->getNPlayers();    
 
@@ -306,7 +303,7 @@ void InGameScreen::onMouseDown(int x, int y, Coercri::MouseButton b)
     else if (b == Coercri::MB_RIGHT) mright = true;
 
     if (display->isGameOver() && !display->getReadyFlag() && 
-    !prevent_drawing && b == Coercri::MB_LEFT) {
+    b == Coercri::MB_LEFT) {
         knights_client->readyToEnd();
         display->setReadyFlag();
     }
@@ -321,9 +318,6 @@ void InGameScreen::onMouseUp(int x, int y, Coercri::MouseButton b)
 void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier)
 {
     if (auto_mouse) window->showMousePointer(false);
-
-    // Keys only work when in game
-    if (prevent_drawing) return;
 
     checkChatFocus();
 
@@ -385,7 +379,6 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
         // (which will probably be implemented using a "vote to end game" mechanism)
 
         pause_mode = false;
-        //prevent_drawing = true;  // prevents further drawing etc after the game has finished (and gfx deleted!)
         return;
     }
 

@@ -947,7 +947,20 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->chat_list.clear();
     if (pimpl->is_lan_game && player_ids.size() == 1) {
         pimpl->chat_list.add("LAN game created.");
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    } else if (pimpl->is_online_platform_game && pimpl->knights_app.getHostMigrationFlag()) {
+        // Add message showing the new leader after host migration
+        PlayerID leader_id = pimpl->knights_app.getCurrentLeader();
+        Coercri::UTF8String msg;
+        if (leader_id == pimpl->knights_app.getOnlinePlatform().getCurrentUserId()) {
+            msg = pimpl->knights_app.getLocalization().get(LocalKey("you_are_now_leader"));
+        } else {
+            std::vector<LocalParam> params(1, LocalParam(leader_id));
+            msg = pimpl->knights_app.getLocalization().get(LocalKey("x_is_now_leader"), params);
+        }
+        pimpl->chat_list.add(msg.asLatin1());
     }
+#endif
 
     // Go to MenuScreen, if counts are zero.
     gotoMenuIfAllDownloaded();
@@ -1318,7 +1331,10 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
         }
     } else {
         if (already_started) {
-            pimpl->chat_list.add("You have reconnected to this game.");
+#ifdef USE_VM_LOBBY
+            if (!pimpl->knights_app.getHostMigrationFlag())
+#endif
+                pimpl->chat_list.add("You have reconnected to this game.");
         } else {
             pimpl->chat_list.add("Game started.");
         }
