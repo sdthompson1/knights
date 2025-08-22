@@ -26,7 +26,7 @@
 
 #ifdef USE_VM_LOBBY
 
-#include "knights_vm.hpp"  // for MemoryBlock
+#include "memory_block_compressor.hpp"
 
 namespace Coercri {
     class NetworkConnection;
@@ -63,14 +63,18 @@ private:
 private:
     Coercri::NetworkConnection &connection;
 
+    MemoryBlockCompressor compressor;
+
     std::deque<MemoryBlock> memory_blocks;  // VM memory snapshot
 
     bool hashes_received;
 
-    int num_blocks_outstanding;  // Number of blocks sent but not acked yet
+    int num_block_groups_outstanding;  // Number of block groups sent but not acked yet
 
     std::deque<std::vector<unsigned char>> catchup_ticks_to_send;  // In approx 4K chunks
     int num_tick_segments_outstanding;
+
+    int total_bytes_sent;
 };
 
 #endif  // USE_VM_LOBBY

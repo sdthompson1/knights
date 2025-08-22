@@ -146,13 +146,6 @@ public:
                                     std::deque<MemoryBlock> &my_blocks,
                                     uint32_t block_shift);
 
-    // Serialize a MemoryBlock to a buffer (appends to 'output')
-    // This should only be called if !block.contents.empty()
-    static void outputMemoryBlock(const MemoryBlock &block, Coercri::OutputByteBuf &output);
-
-    // Deserialize a MemoryBlock and install it into the VM
-    void inputMemoryBlock(Coercri::InputByteBuf &input, uint32_t block_shift);
-
 
     // Checksumming:
 

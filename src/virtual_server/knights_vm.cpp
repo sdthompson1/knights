@@ -1010,23 +1010,6 @@ void KnightsVM::compareMemoryHashes(Coercri::InputByteBuf &input,
     }
 }
 
-void KnightsVM::outputMemoryBlock(const MemoryBlock &block, Coercri::OutputByteBuf &output)
-{
-    output.writeUlong(block.base_address);
-    for (auto const & word : block.contents) {
-        output.writeUlong(word);
-    }
-}
-
-void KnightsVM::inputMemoryBlock(Coercri::InputByteBuf &input, uint32_t block_shift)
-{
-    uint32_t block_size = (1 << block_shift);
-    uint32_t base_addr = input.readUlong();
-    for (uint32_t offset = 0; offset < block_size; offset += 4) {
-        writeWord(base_addr + offset, input.readUlong());
-    }
-}
-
 MemoryHash KnightsVM::getHash()
 {
     uint64_t acc[4];

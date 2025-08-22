@@ -239,8 +239,7 @@ enum FollowerMessage {
     FOLLOWER_SEND_CLIENT_COMMANDS = 16
 };
 
-constexpr uint32_t HOST_MIGRATION_BLOCK_SHIFT = 12;
+constexpr uint32_t HOST_MIGRATION_BLOCK_SHIFT = 9;
 constexpr uint32_t HOST_MIGRATION_BLOCK_SIZE_BYTES = (1 << HOST_MIGRATION_BLOCK_SHIFT);
-
 
 #endif

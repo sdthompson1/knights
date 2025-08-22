@@ -23,6 +23,8 @@
 
 #include "misc.hpp"
 
+#ifdef USE_VM_LOBBY
+
 #include "host_migration_screen.hpp"
 #include "knights_app.hpp"
 #include "title_screen.hpp"
@@ -96,3 +98,5 @@ bool HostMigrationScreen::start(KnightsApp &knights_app, boost::shared_ptr<Coerc
     pimpl->createGui(knights_app, gui);
     return true;
 }
+
+#endif  // USE_VM_LOBBY

@@ -49,7 +49,7 @@ bool SyncClient::processMessagesFromLeader(Coercri::InputByteBuf &buf,
                                            const std::vector<unsigned char> &in_msg,
                                            std::vector<unsigned char> &vm_output_data)
 {
-    int num_blocks_received = 0;
+    int num_block_groups_received = 0;
     int tick_segments_received = 0;
     bool done = false;
 
@@ -83,14 +83,17 @@ bool SyncClient::processMessagesFromLeader(Coercri::InputByteBuf &buf,
         case LEADER_SEND_MEMORY_BLOCK:
 
 #ifdef LOG_SYNC_MSGS
-            //std::cout << "Received LEADER_SEND_MEMORY_BLOCK" << std::endl;
+            std::cout << "Received LEADER_SEND_MEMORY_BLOCK" << std::endl;
 #endif
 
             if (!vm_config_received) {
                 throw std::runtime_error("Sync error (config not yet received)");
             }
-            vm.inputMemoryBlock(buf, HOST_MIGRATION_BLOCK_SHIFT);
-            ++num_blocks_received;
+            {
+                size_t amount_read = decompressor.readCompressedBlockGroup(in_msg, buf.getPos(), vm);
+                buf.skip(amount_read);
+            }
+            ++num_block_groups_received;
             break;
 
         case LEADER_SEND_CATCHUP_TICKS:
@@ -125,12 +128,12 @@ bool SyncClient::processMessagesFromLeader(Coercri::InputByteBuf &buf,
         }
     }
 
-    if (num_blocks_received > 0) {
+    if (num_block_groups_received > 0) {
 #ifdef LOG_SYNC_MSGS
-        std::cout << "Send FOLLOWER_ACK_MEMORY_BLOCKS " << num_blocks_received << std::endl;
+        std::cout << "Send FOLLOWER_ACK_MEMORY_BLOCKS " << num_block_groups_received << std::endl;
 #endif
         output.writeUbyte(FOLLOWER_ACK_MEMORY_BLOCKS);
-        output.writeVarInt(num_blocks_received);
+        output.writeVarInt(num_block_groups_received);
     }
     if (tick_segments_received > 0) {
 #ifdef LOG_SYNC_MSGS

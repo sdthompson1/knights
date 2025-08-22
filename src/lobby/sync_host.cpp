@@ -37,7 +37,7 @@
 #endif
 
 namespace {
-    constexpr int MAX_BLOCKS_AND_SEGMENTS_OUTSTANDING = 200;
+    constexpr int MAX_BLOCKS_AND_SEGMENTS_OUTSTANDING = 100;
     constexpr int TICK_SEGMENT_SIZE = 4000;   // in bytes
     constexpr int TICK_MARGIN_SEGMENTS = 20;
 }
@@ -46,8 +46,9 @@ SyncHost::SyncHost(Coercri::NetworkConnection &conn,
                    KnightsVM &vm)
     : connection(conn),
       hashes_received(false),
-      num_blocks_outstanding(0),
-      num_tick_segments_outstanding(0)
+      num_block_groups_outstanding(0),
+      num_tick_segments_outstanding(0),
+      total_bytes_sent(0)
 {
     // Send the follower our VM config (i.e. register values and such like)
     std::vector<unsigned char> msg;
@@ -62,6 +63,7 @@ SyncHost::SyncHost(Coercri::NetworkConnection &conn,
     vm.getVMConfig(buf);
 
     connection.send(msg);
+    total_bytes_sent += msg.size();
 
     // Also save a copy of the VM's memory at this point in time
     memory_blocks = vm.getMemoryContents(HOST_MIGRATION_BLOCK_SHIFT);
@@ -135,17 +137,17 @@ void SyncHost::receiveHashes(Coercri::InputByteBuf &buf)
 
 void SyncHost::receiveMemoryBlockAck(Coercri::InputByteBuf &buf)
 {
-    int num_blocks_acked = buf.readVarInt();
+    int num_block_groups_acked = buf.readVarInt();
 
 #ifdef LOG_SYNC_MSGS
-    std::cout << "Received FOLLOWER_ACK_MEMORY_BLOCKS for " << num_blocks_acked << " blocks" << std::endl;
+    std::cout << "Received FOLLOWER_ACK_MEMORY_BLOCKS for " << num_block_groups_acked << " block groups" << std::endl;
 #endif
 
-    if (num_blocks_acked < 1 || num_blocks_acked > num_blocks_outstanding) {
+    if (num_block_groups_acked < 1 || num_block_groups_acked > num_block_groups_outstanding) {
         throw std::runtime_error("Sync error (Invalid ack message)");
     }
 
-    num_blocks_outstanding -= num_blocks_acked;
+    num_block_groups_outstanding -= num_block_groups_acked;
 }
 
 void SyncHost::receiveCatchupTickAck(Coercri::InputByteBuf &buf)
@@ -169,23 +171,23 @@ bool SyncHost::sendResponseToClient()
     std::vector<unsigned char> msg;
     Coercri::OutputByteBuf buf(msg);
 
-    while (num_blocks_outstanding + num_tick_segments_outstanding < MAX_BLOCKS_AND_SEGMENTS_OUTSTANDING) {
+    while (num_block_groups_outstanding + num_tick_segments_outstanding < MAX_BLOCKS_AND_SEGMENTS_OUTSTANDING) {
         if (!memory_blocks.empty()) {
 
 #ifdef LOG_SYNC_MSGS
-            std::cout << "Sending LEADER_SEND_MEMORY_BLOCK for base addr " <<
+            std::cout << "Sending LEADER_SEND_MEMORY_BLOCK starting at " <<
                 std::hex << memory_blocks.front().base_address << std::dec << std::endl;
 #endif
 
             buf.writeUbyte(LEADER_SEND_MEMORY_BLOCK);
-            KnightsVM::outputMemoryBlock(memory_blocks.front(), buf);
+            compressor.appendCompressedBlockGroup(memory_blocks, msg);
 
             connection.send(msg);
+            total_bytes_sent += msg.size();
             msg.clear();
 
-            memory_blocks.pop_front();
             trimMemoryBlocks();
-            ++num_blocks_outstanding;
+            ++num_block_groups_outstanding;
 
         } else if (!catchup_ticks_to_send.empty()) {
 
@@ -200,6 +202,7 @@ bool SyncHost::sendResponseToClient()
             }
 
             connection.send(msg);
+            total_bytes_sent += msg.size();
             msg.clear();
 
             catchup_ticks_to_send.pop_front();
@@ -214,16 +217,17 @@ bool SyncHost::sendResponseToClient()
     // Only declare victory once all blocks acknowledged, and all tick segments
     // barring some margin acknowledged
     bool sync_done = false;
-    if (num_blocks_outstanding == 0 && num_tick_segments_outstanding < TICK_MARGIN_SEGMENTS) {
-
-#ifdef LOG_SYNC_MSGS
-        std::cout << "Sending LEADER_SYNC_DONE" << std::endl;
-#endif
+    if (num_block_groups_outstanding == 0 && num_tick_segments_outstanding < TICK_MARGIN_SEGMENTS) {
 
         sync_done = true;
         buf.writeUbyte(LEADER_SYNC_DONE);
         connection.send(msg);
+        total_bytes_sent += msg.size();
         msg.clear();
+
+#ifdef LOG_SYNC_MSGS
+        std::cout << "Sending LEADER_SYNC_DONE, total bytes sent = " << total_bytes_sent << std::endl;
+#endif
     }
 
     return sync_done;

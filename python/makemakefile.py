@@ -185,6 +185,8 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
         pkgflags += " `pkg-config sdl2 --cflags`"
     if srcfile.startswith("src/coercri/gfx/"):
         pkgflags += " `pkg-config freetype2 --cflags`"
+    if srcfile.startswith("src/lobby/") and args.online_platform:
+        pkgflags += " `pkg-config zlib --cflags`"
 
     print (get_obj_file(srcfile) + ": " + srcfile)
     if srcfile.endswith(".cpp"):
@@ -196,18 +198,22 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     print ("\t      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \\")
     print ("\t  rm -f $*.d")
 
-pkg_link_flags = "`pkg-config libcurl --libs` `pkg-config lua-c++ --libs` `pkg-config libenet --libs`"
+pkg_link_flags_server = "`pkg-config libcurl --libs` `pkg-config lua-c++ --libs` `pkg-config libenet --libs`"
+zlib_flag = ""
+if args.online_platform:
+    zlib_flag = "`pkg-config zlib --libs` "
+pkg_link_flags_knights = "`pkg-config sdl2 --libs` `pkg-config freetype2 --libs` " + zlib_flag + pkg_link_flags_server
 
 # Print target for Knights binary
 print ("""
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` """ + pkg_link_flags + """ -lfontconfig -lX11 $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ """ + pkg_link_flags_knights + """ -lfontconfig -lX11 $(BOOST_LIBS)
 """)
 
 # Print target for Server binary
 print ("""
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ """ + pkg_link_flags + """ $(BOOST_LIBS)
+\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ """ + pkg_link_flags_server + """ $(BOOST_LIBS)
 """)
 
 

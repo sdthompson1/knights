@@ -959,8 +959,8 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
             msg = pimpl->knights_app.getLocalization().get(LocalKey("x_is_now_leader"), params);
         }
         pimpl->chat_list.add(msg.asLatin1());
-    }
 #endif
+    }
 
     // Go to MenuScreen, if counts are zero.
     gotoMenuIfAllDownloaded();

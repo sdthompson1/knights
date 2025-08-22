@@ -26,6 +26,7 @@
 
 #ifdef USE_VM_LOBBY
 
+#include "memory_block_decompressor.hpp"
 #include <vector>
 
 class KnightsVM;
@@ -51,6 +52,7 @@ private:
                              std::vector<unsigned char> &vm_output_data);
 
 private:
+    MemoryBlockDecompressor decompressor;
     Coercri::NetworkConnection &connection;
     KnightsVM &vm;
     bool vm_config_received;

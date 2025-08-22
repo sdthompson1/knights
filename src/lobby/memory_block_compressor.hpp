@@ -1,5 +1,5 @@
 /*
- * host_migration_screen.hpp
+ * memory_block_compressor.hpp
  *
  * This file is part of Knights.
  *
@@ -21,25 +21,34 @@
  *
  */
 
-#ifndef HOST_MIGRATION_SCREEN_HPP
-#define HOST_MIGRATION_SCREEN_HPP
+#ifndef MEMORY_BLOCK_COMPRESSOR_HPP
+#define MEMORY_BLOCK_COMPRESSOR_HPP
 
 #ifdef USE_VM_LOBBY
 
-#include "screen.hpp"
+#include "knights_vm.hpp"  // for MemoryBlock
 
-class HostMigrationScreenImpl;
-class LocalKey;
+#include <zlib.h>
 
-class HostMigrationScreen : public Screen {
+class MemoryBlockCompressor {
 public:
-    explicit HostMigrationScreen(const LocalKey &msg);
-    virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
+    MemoryBlockCompressor();
+    ~MemoryBlockCompressor();
+
+    // Pop some number of blocks (at least one) from the queue, and convert them to a
+    // compressed byte vector that can be sent over the network.
+    // The compressed data is appended to the given output vector.
+    void appendCompressedBlockGroup(std::deque<MemoryBlock> &blocks,
+                                    std::vector<unsigned char> &output);
 
 private:
-    boost::shared_ptr<HostMigrationScreenImpl> pimpl;
+    MemoryBlockCompressor(const MemoryBlockCompressor &) = delete;
+    void operator=(const MemoryBlockCompressor &) = delete;
+
+private:
+    z_stream compression_stream;
 };
 
 #endif  // USE_VM_LOBBY
 
-#endif  // HOST_MIGRATION_SCREEN_HPP
+#endif  // MEMORY_BLOCK_COMPRESSOR_HPP
