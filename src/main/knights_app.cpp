@@ -1188,6 +1188,11 @@ void KnightsAppImpl::updateOnlinePlatform()
             vm_knights_lobby->becomeFollower(vm_lobby_leader_id.asString(), 0);  // Use leader's PlayerID as the address
         }
 
+        // Unload graphics and sounds, as they will be reloaded when we rejoin the
+        // new server
+        gfx_manager->deleteAllGraphics();
+        sound_manager->clear();
+
         // Show the "Host migration in progress" screen while we wait
         const char *msg_key = first_time ? "connecting_to_game" : "host_migration_in_progress";
         requested_screen = std::make_unique<HostMigrationScreen>(LocalKey(msg_key));
