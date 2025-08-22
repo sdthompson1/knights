@@ -48,7 +48,7 @@
 namespace {
     constexpr int MAX_FOLLOWERS = 20;
     const int SHORT_FLUSH_DELAY_MS = 30;
-    const int LONG_FLUSH_DELAY_MS = 500;
+    const int LONG_FLUSH_DELAY_MS = 200;
     constexpr int PING_UPDATE_INTERVAL_MS = 3000;
 }
 
@@ -153,6 +153,9 @@ void LeaderState::update(Coercri::NetworkDriver &net_driver,
             // Only accept the new connection if we have room
             if (followers.size() < MAX_FOLLOWERS) {
 
+                // Need to flush any pending tick data before we capture the VM state
+                flushTickData();
+
                 // Find a slot
                 int client_num = 0;
                 while (clientNumInUse(client_num)) {
@@ -242,37 +245,12 @@ void LeaderState::update(Coercri::NetworkDriver &net_driver,
         next_tick_deadline_ms = time_now_ms + sleep_time_ms;
     }
 
-    // Flush tick data to followers (so that they can keep up their
+    // Flush tick data to followers (so that they can keep their
     // local VM in step with ours), if required.
     int time_since_last_flush_ms = time_now_ms - last_flush_time_ms;
     int required_delay_ms = tick_data_contains_output ? SHORT_FLUSH_DELAY_MS : LONG_FLUSH_DELAY_MS;
-    if (time_since_last_flush_ms > required_delay_ms && !tick_data.empty()) {
-
-        // Prepare the message for sending
-        std::vector<unsigned char> msg;
-        Coercri::OutputByteBuf buf(msg);
-        buf.writeUbyte(LEADER_SEND_TICK_DATA);
-        buf.writeVarInt(tick_data.size());
-        msg.insert(msg.end(), tick_data.begin(), tick_data.end());
-
-        // Send it to all followers
-        for (size_t i = 0; i < followers.size(); ++i) {
-            if (followers[i]) {
-                if (follower_sync[i]) {
-                    // Add to sync queue
-                    follower_sync[i]->addCatchupTicks(tick_data);
-                } else {
-                    // Send immediately
-                    followers[i]->send(msg);
-                }
-            }
-        }
-
-        // Reset for the next batch of ticks
-        tick_data.clear();
-        current_tick_beginning_index = 0;
-        tick_data_contains_output = false;
-        tick_writer.reset(new TickWriter(tick_data));
+    if (time_since_last_flush_ms > required_delay_ms) {
+        flushTickData();
     }
 }
 
@@ -280,6 +258,40 @@ bool LeaderState::clientNumInUse(int client_num) const
 {
     return client_num == 0
         || (client_num < followers.size() && followers[client_num]);
+}
+
+void LeaderState::flushTickData()
+{
+    if (tick_data.empty()) return;  // Nothing to do
+
+    // Prepare the message for sending
+    std::vector<unsigned char> msg;
+    Coercri::OutputByteBuf buf(msg);
+    buf.writeUbyte(LEADER_SEND_TICK_DATA);
+    buf.writeVarInt(tick_data.size());
+    msg.insert(msg.end(), tick_data.begin(), tick_data.end());
+
+    // Send it to all followers
+    for (size_t i = 0; i < followers.size(); ++i) {
+        if (followers[i]) {
+            if (follower_sync[i]) {
+                // Add to sync queue
+                follower_sync[i]->addCatchupTicks(tick_data);
+            } else {
+                // Send immediately
+                followers[i]->send(msg);
+            }
+        }
+    }
+
+    // Reset for the next batch of ticks
+    tick_data.clear();
+    current_tick_beginning_index = 0;
+    tick_data_contains_output = false;
+    tick_writer.reset(new TickWriter(tick_data));
+
+    // Record time of this flush
+    last_flush_time_ms = timer.getMsec();
 }
 
 
@@ -354,8 +366,8 @@ public:
     void onServerSendData(uint8_t client_num, std::vector<unsigned char> &data) override {
         if (client_num == local_client_num) {
             local_player_packets.insert(local_player_packets.end(), data.begin(), data.end());
-            data_sent = true;
         }
+        data_sent = true;
     }
 
     bool dataWasSent() const {

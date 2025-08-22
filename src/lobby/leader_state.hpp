@@ -86,6 +86,7 @@ private:
     bool clientNumInUse(int client_num) const;
     void receiveFollowerMessages(int client_num, Coercri::NetworkConnection &connection);
     bool processVmOutputData(const std::vector<unsigned char> &vm_output_data);
+    void flushTickData();
 
 private:
     Coercri::Timer &timer;
