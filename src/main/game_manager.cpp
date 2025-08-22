@@ -60,7 +60,7 @@
 namespace {
     struct ChatPrinter : Printer {
         ChatPrinter(std::deque<FormattedLine> &o, const gcn::Font *f) : output(o), font(f), printed(false) { }
-        
+
         virtual int getTextWidth(const std::string &text_latin1) { return font ? font->getWidth(text_latin1) : 0; }
         virtual int getTextHeight() { return 1; }  // we want to count lines not pixels.
         virtual void printLine(const std::string &text_latin1, int, bool) {
@@ -325,7 +325,7 @@ namespace {
                 // time entry (no of minutes) -- used for time limit
                 textfield.reset(new GuiNumericField(menu_item->getNumDigits()));
                 textfield->adjustSize();
-                textfield->setWidth(textfield->getFont()->getWidth("9") * 
+                textfield->setWidth(textfield->getFont()->getWidth("9") *
                                     (menu_item->getNumDigits() + 1));
                 std::string loc_latin1 = loc.get(menu_item->getSuffix()).asLatin1();
                 label2.reset(new gcn::Label(loc_latin1));
@@ -399,7 +399,7 @@ namespace {
 
 class GameManagerImpl {
 public:
-    GameManagerImpl(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer_, 
+    GameManagerImpl(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer_,
                     bool sgl_plyr, bool tut, bool autostart, const PlayerID &my_player_id)
         : knights_app(ka), knights_client(kc), menu(0), gui_invalid(false), are_menu_widgets_enabled(true),
           timer(timer_), lobby_namelist(avail_house_colours, ka),
@@ -422,7 +422,7 @@ public:
         return UTF8String::fromUTF8Safe(id.asString());
 #endif
     }
-    
+
     std::string usernameLatin1(const PlayerID &id) const {
         return usernameLookup(id).asLatin1();
     }
@@ -430,7 +430,7 @@ public:
     KnightsApp &knights_app;
     boost::shared_ptr<KnightsClient> knights_client;
     boost::shared_ptr<const ClientConfig> client_config;
-    
+
     const Menu *menu;
     std::vector<MenuWidgets> menu_widgets_map;  // item_num -> MenuWidgets
     std::vector<MenuChoices> menu_choices;      // item_num -> MenuChoices
@@ -458,7 +458,7 @@ public:
     bool is_split_screen;
     bool is_lan_game;
     bool is_online_platform_game;
-    
+
     // chat
     ChatList chat_list;
 
@@ -508,7 +508,7 @@ bool GameManager::isGameListUpdated()
         // Make sure it's sorted
         std::sort(pimpl->game_infos.begin(), pimpl->game_infos.end());
     }
-    
+
     return result;
 }
 
@@ -533,7 +533,7 @@ void GameManager::tryJoinGame(const std::string &game_name)
 
 void GameManager::tryJoinGameSplitScreen(const std::string &game_name)
 {
-    if (!pimpl->current_game_name.empty()) return;    
+    if (!pimpl->current_game_name.empty()) return;
     pimpl->knights_client->joinGameSplitScreen(game_name);
     pimpl->current_game_name = game_name;
 }
@@ -554,10 +554,10 @@ void GameManager::createMenuWidgets(gcn::ActionListener *listener,
     const int pad = 10;  // gap between labels and dropdowns.
     const int vspace = 2;
     const int extra_vspace = 10;
-    
+
     const Menu *menu = pimpl->menu;
     if (!menu) throw UnexpectedError("cannot create menu widgets");
-    
+
     // create widgets, work out widths
     int max_label_w = 0, max_widget_w = 0;
     for (int i = 0; i < menu->getNumItems(); ++i) {
@@ -584,7 +584,7 @@ void GameManager::createMenuWidgets(gcn::ActionListener *listener,
             container.add(mw.textfield.get(), initial_x + max_label_w + pad, y);
             container.add(mw.label2.get(), mw.textfield->getX() + mw.textfield->getWidth() + pad, y+1);
         }
-    
+
         y += std::max(mw.label->getHeight(), GetMenuWidgetHeight(mw)) + vspace;
         if (item.getSpaceAfter()) y += extra_vspace;
     }
@@ -604,10 +604,10 @@ void GameManager::destroyMenuWidgets()
 void GameManager::setMenuWidgetsEnabled(bool enabled)
 {
     // note: this routine is called by MenuScreen::updateGui as needed.
-    
+
     if (pimpl->are_menu_widgets_enabled == enabled) return;
     pimpl->are_menu_widgets_enabled = enabled;
-    
+
     updateAllMenuWidgets();
 }
 
@@ -630,7 +630,7 @@ void GameManager::getMenuStrings(std::vector<std::pair<std::string, std::string>
             const LocalKeyOrInteger &lki = item.getChoice(pimpl->menu_choices[i].choice);
             p.second = LocalKeyOrIntegerToLatin1(loc, lki);
         }
-        
+
         menu_strings.push_back(p);
         if (item.getSpaceAfter()) {
             menu_strings.push_back(std::make_pair(std::string(), std::string()));
@@ -646,7 +646,7 @@ bool GameManager::getMenuWidgetInfo(gcn::Widget *source, int &out_item, int &out
     for (int i = 0; i < menu->getNumItems(); ++i) {
         const MenuItem &item = menu->getItem(i);
         const MenuWidgets &mw = pimpl->menu_widgets_map[i];
-        
+
         const gcn::DropDown *dropdown = mw.dropdown.get();
         const GuiNumericField *textfield = mw.textfield.get();
         if (dropdown == source) {
@@ -718,7 +718,7 @@ void GameManager::updateMenuWidget(int item_num)
             mw.list_model->elts.push_back(LocalKeyOrIntegerToLatin1(loc, lki));
             mw.list_model->vals.push_back(*it);
         }
-            
+
         for (int idx = 0; idx < mw.list_model->vals.size(); ++idx) {
             const int val_at_idx = mw.list_model->vals[idx];
             if (val_at_idx == mc.choice) {
@@ -739,7 +739,7 @@ void GameManager::updateMenuWidget(int item_num)
         mw.textfield->setEnabled(is_enabled);
         mw.textfield->setForegroundColor(fg_col);
     }
-        
+
     pimpl->gui_invalid = true;
 }
 
@@ -915,7 +915,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     }
 
     pimpl->gui_invalid = true;
-    
+
     // Store a pointer to the config, and the menu
     pimpl->client_config = conf;
     destroyMenuWidgets();
@@ -942,7 +942,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->knights_client->requestGraphics(gfx_ids);
     pimpl->knights_client->requestSounds(sound_ids);
     pimpl->download_count = gfx_ids.size() + sound_ids.size();
-    
+
     // Clear messages, and add new "Joined game" messages for lan games
     pimpl->chat_list.clear();
     if (pimpl->is_lan_game && player_ids.size() == 1) {
@@ -1058,7 +1058,7 @@ void GameManager::updateGame(const std::string &game_name, int num_players, int 
             break;
         }
     }
-            
+
     if (it == pimpl->game_infos.end()) {
         pimpl->game_infos.push_back(GameInfo());
         it = pimpl->game_infos.end();
@@ -1219,7 +1219,7 @@ void GameManager::leaveGame()
     pimpl->current_game_name.clear();
     pimpl->game_namelist.clear();
     pimpl->avail_house_colours.clear();
-    
+
     // go to lobby (for internet games) or title (for split screen, lan, and online platform games)
     if (pimpl->is_split_screen || pimpl->is_lan_game || pimpl->is_online_platform_game) {
         std::unique_ptr<Screen> title_screen(new TitleScreen);
@@ -1241,7 +1241,7 @@ void GameManager::setMenuSelection(int item_num, int choice_num, const std::vect
     MenuChoices &mc = pimpl->menu_choices.at(item_num); // will throw if bad item_num given by server
     mc.allowed_choices = allowed_vals;
     mc.choice = choice_num;
-    
+
     // Update GUI
     // Note: May be slightly inefficient to update *everything* every time there is a SET_MENU_SELECTION.
     // But it does at least guarantee that the menu is in a consistent state, w/ no race conditions if
@@ -1319,7 +1319,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
         pimpl->chat_list.add("\n");
     }
     pimpl->saved_chat = UTF8String();
-    
+
     if (!player_ids.empty()) {  // I am an observer
         if (already_started) {
             pimpl->chat_list.add("You are now observing this game.");
@@ -1351,7 +1351,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
 
     // clear quest requirements
     pimpl->quest_rqmts_list.clear();
-    
+
     pimpl->gui_invalid = true;
 
     pimpl->game_in_progress = true;
@@ -1368,7 +1368,7 @@ void GameManager::gotoMenu()
         pimpl->knights_app.requestScreenChange(std::move(title_screen));
     } else if (pimpl->autostart_mode) {
         // In autostart mode we quit once the first game has finished
-        pimpl->knights_app.requestQuit();        
+        pimpl->knights_app.requestQuit();
     } else {
         // Normal game. Go back to the quest selection menu
         std::unique_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen, pimpl->saved_chat));
@@ -1478,7 +1478,7 @@ void GameManager::announcementRaw(const UTF8String &msg, bool err)
     pimpl->gui_invalid = true;
 
     if (err && pimpl->single_player && !pimpl->game_in_progress) {
-        // This is needed because there is no way to display error messages on the 
+        // This is needed because there is no way to display error messages on the
         // quest selection screen in single player mode
         throw std::runtime_error(msg_latin1);
     }
@@ -1489,7 +1489,7 @@ void GameManager::announcementRaw(const UTF8String &msg, bool err)
 // ctor/dtor
 //
 
-GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer, 
+GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer,
                          bool single_player, bool tutorial_mode, bool autostart, const PlayerID &my_player_id)
     : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, my_player_id))
 { }
