@@ -64,6 +64,7 @@ struct VMKnightsLobbyImpl {
                        const PlayerID &local_user_id,
                        bool new_control_system)
         : exit_flag(false),
+          error_flag(false),
           net_driver(net_driver),
           timer(timer),
           local_user_id(local_user_id),
@@ -94,6 +95,7 @@ struct VMKnightsLobbyImpl {
     boost::mutex mutex;
     boost::thread background_thread;
     bool exit_flag;
+    bool error_flag;
 
     // refs
     Coercri::NetworkDriver &net_driver;
@@ -242,6 +244,11 @@ void VMKnightsLobby::readIncomingMessages(KnightsClient &client)
         if (pimpl->follower && !pimpl->failure_reported) {
             connection_failed = applyRetryLogic();
         }
+
+        // Check if thread has closed
+        if (pimpl->error_flag) {
+            throw std::runtime_error("Error in game thread");
+        }
     }
 
     // Send received data to the client
@@ -360,28 +367,34 @@ bool VMKnightsLobby::connected() const
 // The main method for the background thread
 void VMKnightsLobbyThread::operator()()
 {
-    while (true) {
+    try {
+        while (true) {
 
-        // Before commencing main loop, ensure net_driver is updated
-        while (impl.net_driver.doEvents()) { }
+            // Before commencing main loop, ensure net_driver is updated
+            while (impl.net_driver.doEvents()) { }
 
-        {
-            // Lock mutex while main loop active
-            boost::unique_lock<boost::mutex> lock(impl.mutex);
+            {
+                // Lock mutex while main loop active
+                boost::unique_lock<boost::mutex> lock(impl.mutex);
 
-            // Check if we need to exit
-            if (impl.exit_flag) break;
+                // Check if we need to exit
+                if (impl.exit_flag) break;
 
-            // Tick the VM, send/receive network messages, do other background tasks
-            if (impl.leader) {
-                impl.leader->update(impl.net_driver, impl.timer);
-            } else if (impl.follower) {
-                impl.follower->update(impl.net_driver, impl.timer);
+                // Tick the VM, send/receive network messages, do other background tasks
+                if (impl.leader) {
+                    impl.leader->update(impl.net_driver, impl.timer);
+                } else if (impl.follower) {
+                    impl.follower->update(impl.net_driver, impl.timer);
+                }
             }
+
+            // Sleep for a short interval between loop iterations
+            impl.timer.sleepMsec(3);
         }
 
-        // Sleep for a short interval between loop iterations
-        impl.timer.sleepMsec(3);
+    } catch (...) {
+        boost::unique_lock<boost::mutex> lock(impl.mutex);
+        impl.error_flag = true;
     }
 }
 

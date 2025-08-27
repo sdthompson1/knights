@@ -46,70 +46,77 @@ private:
 
 void SimpleLobbyThread::operator()()
 {
-    std::vector<unsigned char> net_msg;
+    try {
+        std::vector<unsigned char> net_msg;
 
-    while (true) {
-        net_msg.clear();
+        while (true) {
+            net_msg.clear();
 
-        // Update network driver
-        while (lobby.net_driver->doEvents()) { }
+            // Update network driver
+            while (lobby.net_driver->doEvents()) { }
 
-        {
-            // Lock mutex during this section
-            boost::unique_lock(lobby.mutex);
+            {
+                // Lock mutex during this section
+                boost::unique_lock lock(lobby.mutex);
 
-            // Check if main thread is telling us to exit
-            if (lobby.exit_flag) {
-                break;
-            }
-
-            // Tell the server what the ping times are
-            for (auto &conn : lobby.incoming_conns) {
-                lobby.server->setPingTime(*conn.server_conn, conn.remote->getPingTime());
-            }
-
-            // Receive incoming messages from our remote clients
-            // Also remove any remote clients who have disconnected
-            for (int i = 0; i < lobby.incoming_conns.size(); /* incremented below */) {
-                auto &in = lobby.incoming_conns[i];
-
-                in.remote->receive(net_msg);
-                if (!net_msg.empty()) {
-                    lobby.server->receiveInputData(*in.server_conn, net_msg);
+                // Check if main thread is telling us to exit
+                if (lobby.exit_flag) {
+                    break;
                 }
 
-                const Coercri::NetworkConnection::State state = in.remote->getState();
-                if (state == Coercri::NetworkConnection::CLOSED) {
-                    // Connection lost: remove it from the list, and
-                    // inform the server.
-                    lobby.server->connectionClosed(*in.server_conn);
-                    lobby.incoming_conns.erase(lobby.incoming_conns.begin() + i);
-                } else {
-                    ++i;
+                // Tell the server what the ping times are
+                for (auto &conn : lobby.incoming_conns) {
+                    lobby.server->setPingTime(*conn.server_conn, conn.remote->getPingTime());
+                }
+
+                // Receive incoming messages from our remote clients
+                // Also remove any remote clients who have disconnected
+                for (int i = 0; i < lobby.incoming_conns.size(); /* incremented below */) {
+                    auto &in = lobby.incoming_conns[i];
+
+                    in.remote->receive(net_msg);
+                    if (!net_msg.empty()) {
+                        lobby.server->receiveInputData(*in.server_conn, net_msg);
+                    }
+
+                    const Coercri::NetworkConnection::State state = in.remote->getState();
+                    if (state == Coercri::NetworkConnection::CLOSED) {
+                        // Connection lost: remove it from the list, and
+                        // inform the server.
+                        lobby.server->connectionClosed(*in.server_conn);
+                        lobby.incoming_conns.erase(lobby.incoming_conns.begin() + i);
+                    } else {
+                        ++i;
+                    }
+                }
+
+                // Send outgoing messages to our remote clients
+                for (auto &conn : lobby.incoming_conns) {
+                    lobby.server->getOutputData(*conn.server_conn, net_msg);
+                    if (!net_msg.empty()) {
+                        conn.remote->send(net_msg);
+                    }
+                }
+
+                // Listen for new incoming connections
+                Coercri::NetworkDriver::Connections new_conns = lobby.net_driver->pollIncomingConnections();
+                for (auto &conn : new_conns) {
+                    SimpleKnightsLobby::IncomingConn in;
+                    in.server_conn = &lobby.server->newClientConnection(conn->getAddress(), PlayerID());
+                    in.remote = conn;
+                    lobby.incoming_conns.push_back(in);
                 }
             }
 
-            // Send outgoing messages to our remote clients
-            for (auto &conn : lobby.incoming_conns) {
-                lobby.server->getOutputData(*conn.server_conn, net_msg);
-                if (!net_msg.empty()) {
-                    conn.remote->send(net_msg);
-                }
-            }
-
-            // Listen for new incoming connections
-            Coercri::NetworkDriver::Connections new_conns = lobby.net_driver->pollIncomingConnections();
-            for (auto &conn : new_conns) {
-                SimpleKnightsLobby::IncomingConn in;
-                in.server_conn = &lobby.server->newClientConnection(conn->getAddress(), PlayerID());
-                in.remote = conn;
-                lobby.incoming_conns.push_back(in);
-            }
+            // Sleep to conserve CPU. We use a relatively short sleep so as not to
+            // impact ping times too much.
+            lobby.timer->sleepMsec(3);
         }
 
-        // Sleep to conserve CPU. We use a relatively short sleep so as not to
-        // impact ping times too much.
-        lobby.timer->sleepMsec(3);
+    } catch (...) {
+        // Signal error to main thread
+        boost::unique_lock lock(lobby.mutex);
+        lobby.error_flag = true;
     }
 }
 
@@ -118,6 +125,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(boost::shared_ptr<Coercri::Timer> timer,
                                        boost::shared_ptr<KnightsConfig> config,
                                        const std::string &game_name)
     : exit_flag(false),
+      error_flag(false),
       net_driver(nullptr),
       timer(timer),
       server(new KnightsServer(timer, true, "", "", ""))  // allow split-screen
@@ -133,6 +141,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
                                        boost::shared_ptr<KnightsConfig> config,
                                        const std::string &game_name)
     : exit_flag(false),
+      error_flag(false),
       net_driver(&net_driver),
       timer(timer),
       server(new KnightsServer(timer, false, "", "", ""))  // don't allow split-screen
@@ -153,6 +162,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
                                        const std::string &address,
                                        int port)
     : exit_flag(false),
+      error_flag(false),
       net_driver(&net_driver),
       timer(timer),
       local_server_conn(nullptr)
@@ -224,6 +234,11 @@ void SimpleKnightsLobby::readIncomingMessages(KnightsClient &client)
             }
             outgoing_conn.reset();
         }
+    }
+
+    // Check if background thread has exited
+    if (error_flag) {
+        throw std::runtime_error("Error in game thread");
     }
 }
 

@@ -303,22 +303,30 @@ namespace {
         { }
 
         void operator()() {
-            std::string hostname;
-            {
-                // Only one thread is allowed to call resolveAddress() at a time
-                boost::lock_guard<boost::mutex> lock(net_driver_mutex);
-                hostname = net_driver.resolveAddress(ip_address);
+            try {
+
+                std::string hostname;
+                {
+                    // Only one thread is allowed to call resolveAddress() at a time
+                    boost::lock_guard<boost::mutex> lock(net_driver_mutex);
+                    hostname = net_driver.resolveAddress(ip_address);
+                }
+
+                boost::unique_lock lock(*mutex);
+                for (std::vector<ServerInfo>::iterator it = server_infos->begin(); it != server_infos->end(); ++it) {
+                    if (it->ip_address == ip_address) {
+                        it->hostname = hostname;
+                    }
+                }
+
+            } catch (...) {
+                // Ignore any errors
             }
 
-            boost::lock_guard<boost::mutex> lock(*mutex);
-            for (std::vector<ServerInfo>::iterator it = server_infos->begin(); it != server_infos->end(); ++it) {
-                if (it->ip_address == ip_address) {
-                    it->hostname = hostname;
-                }
-            }
+            boost::unique_lock lock(*mutex);
             *hostname_lookup_complete = true;
         }
-        
+
     private:
         Coercri::NetworkDriver &net_driver;
         boost::shared_ptr<boost::mutex> mutex;
