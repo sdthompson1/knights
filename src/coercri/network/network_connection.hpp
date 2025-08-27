@@ -69,7 +69,7 @@ namespace Coercri {
             FAILED      // (Client side only) The connection request timed out or was refused.
         };
 
-        
+
         // Query current connection state
         // NOTE: a CLOSED or FAILED connection may still be able to read data (if there has been buffering).
         // In particular it is always possible to read to the end of the current packet.

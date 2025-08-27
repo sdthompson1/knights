@@ -184,10 +184,15 @@ public:
                                                   OnlinePlatform::Visibility vis,
                                                   std::unique_ptr<VMKnightsLobby> kts_lobby);
 
-    // This flag is used for determining which message(s) to print when you rejoin a game.
-    // (Unfortunately there doesn't seem to be any other way of doing this than by
-    // setting a flag.)
-    bool getHostMigrationFlag() const;
+    enum class HostMigrationState {
+        NOT_IN_GAME,   // Not in any game and not attempting to join
+        IN_GAME,       // Currently in a game
+        CONNECTING,    // Initial attempt to connect
+        RECONNECTING,  // We lost connection to leader, attempting to restore
+        MIGRATING      // We are migrating to a new leader
+    };
+    HostMigrationState getHostMigrationState() const;
+    void setHostMigrationStateInGame();
     PlayerID getCurrentLeader() const;
 #endif
 

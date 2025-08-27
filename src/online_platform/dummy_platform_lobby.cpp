@@ -46,34 +46,13 @@ DummyPlatformLobby::~DummyPlatformLobby()
 
 PlatformLobby::State DummyPlatformLobby::getState()
 {
+    updateCachedInfo();
     return current_state;
 }
 
 PlayerID DummyPlatformLobby::getLeaderId()
 {
-    auto now = std::chrono::steady_clock::now();
-    
-    // Only query the server at infrequent intervals
-    constexpr int QUERY_TIME_MS = 3000;
-    if (leader_id.empty() ||
-    std::chrono::duration_cast<std::chrono::milliseconds>(now - last_leader_query_time).count() >= QUERY_TIME_MS) {
-        
-        if (platform) {
-            if (platform->sendMessage(DummyOnlinePlatform::MSG_GET_LOBBY_INFO, lobby_id)) {
-                std::string response_data;
-                if (platform->receiveResponse(response_data)) {
-                    // Parse response: leader_id (null-terminated) + num_players (4 bytes) + status_code (4 bytes)
-                    size_t null_pos = response_data.find('\0');
-                    if (null_pos != std::string::npos) {
-                        leader_id = PlayerID(response_data.substr(0, null_pos));
-                    }
-                }
-            }
-        }
-        
-        last_leader_query_time = now;
-    }
-    
+    updateCachedInfo();
     return leader_id;
 }
 
@@ -108,6 +87,74 @@ void DummyPlatformLobby::setGameStatus(const LocalKey &key, const std::vector<Lo
         platform->sendMessage(DummyOnlinePlatform::MSG_SET_LOBBY_INFO, payload);
         std::string response;
         platform->receiveResponse(response);
+    }
+}
+
+void DummyPlatformLobby::updateCachedInfo()
+{
+    auto now = std::chrono::steady_clock::now();
+    
+    // Only query the server at infrequent intervals
+    constexpr int QUERY_TIME_MS = 3000;
+    if (leader_id.empty() ||
+    std::chrono::duration_cast<std::chrono::milliseconds>(now - last_query_time).count() >= QUERY_TIME_MS) {
+        
+        if (platform) {
+            if (platform->sendMessage(DummyOnlinePlatform::MSG_GET_LOBBY_INFO, lobby_id)) {
+                std::string response_data;
+                if (platform->receiveResponse(response_data)) {
+                    // Parse response: leader_id (null-terminated) + num_players (4 bytes) + 
+                    //                status_key (null-terminated) + has_param (1 byte) + 
+                    //                [optional param_key (null-terminated)] + lobby_state (null-terminated)
+                    size_t pos = 0;
+                    
+                    // Parse leader_id
+                    size_t null_pos = response_data.find('\0', pos);
+                    if (null_pos != std::string::npos) {
+                        leader_id = PlayerID(response_data.substr(pos, null_pos - pos));
+                        pos = null_pos + 1;
+                        
+                        // Skip num_players (4 bytes)
+                        pos += 4;
+                        
+                        // Skip status_key (null-terminated)
+                        null_pos = response_data.find('\0', pos);
+                        if (null_pos != std::string::npos) {
+                            pos = null_pos + 1;
+                            
+                            // Skip has_param (1 byte) and optional param_key
+                            if (pos < response_data.length()) {
+                                bool has_param = response_data[pos] != 0;
+                                pos += 1;
+                                
+                                if (has_param) {
+                                    // Skip param_key (null-terminated)
+                                    null_pos = response_data.find('\0', pos);
+                                    if (null_pos != std::string::npos) {
+                                        pos = null_pos + 1;
+                                    }
+                                }
+                                
+                                // Parse lobby_state
+                                if (pos < response_data.length()) {
+                                    null_pos = response_data.find('\0', pos);
+                                    if (null_pos != std::string::npos) {
+                                        std::string state_str = response_data.substr(pos, null_pos - pos);
+                                        if (state_str == "JOINED") {
+                                            current_state = State::JOINED;
+                                        } else if (state_str == "FAILED") {
+                                            current_state = State::FAILED;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        last_query_time = now;
     }
 }
 

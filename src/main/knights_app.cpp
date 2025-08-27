@@ -249,7 +249,7 @@ public:
 #ifdef USE_VM_LOBBY
     VMKnightsLobby *vm_knights_lobby;
     PlayerID vm_lobby_leader_id;
-    bool host_migration_flag;
+    KnightsApp::HostMigrationState host_migration_state;
 #endif
     boost::shared_ptr<KnightsClient> knights_client;
 
@@ -400,7 +400,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
 #endif
 
 #ifdef USE_VM_LOBBY
-    pimpl->host_migration_flag = false;
+    pimpl->host_migration_state = HostMigrationState::NOT_IN_GAME;
 #endif
 
     // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
@@ -614,7 +614,7 @@ void KnightsApp::resetAll()
     pimpl->server_port = 0;
 
 #ifdef USE_VM_LOBBY
-    pimpl->host_migration_flag = false;
+    pimpl->host_migration_state = HostMigrationState::NOT_IN_GAME;
 #endif
 }    
 
@@ -1152,9 +1152,14 @@ boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lob
     return pimpl->knights_client;
 }
 
-bool KnightsApp::getHostMigrationFlag() const
+KnightsApp::HostMigrationState KnightsApp::getHostMigrationState() const
 {
-    return pimpl->host_migration_flag;
+    return pimpl->host_migration_state;
+}
+
+void KnightsApp::setHostMigrationStateInGame()
+{
+    pimpl->host_migration_state = HostMigrationState::IN_GAME;
 }
 
 PlayerID KnightsApp::getCurrentLeader() const
@@ -1174,9 +1179,11 @@ PlayerID KnightsApp::getCurrentLeader() const
 void KnightsAppImpl::updateOnlinePlatform()
 {
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    if (platform_lobby && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
+    if (platform_lobby && platform_lobby->getState() == PlatformLobby::State::FAILED) {
+        // We were kicked out of the lobby for some reason. Go to ErrorScreen.
+        requested_screen = std::make_unique<ErrorScreen>(UTF8String::fromUTF8("Lobby connection lost"));
 
-        bool first_time = vm_lobby_leader_id.empty();
+    } else if (platform_lobby && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
 
         // Leader has changed
 
@@ -1194,12 +1201,24 @@ void KnightsAppImpl::updateOnlinePlatform()
         sound_manager->clear();
 
         // Show the "Host migration in progress" screen while we wait
-        const char *msg_key = first_time ? "connecting_to_game" : "host_migration_in_progress";
+        const char *msg_key;
+        if (host_migration_state == KnightsApp::HostMigrationState::NOT_IN_GAME) {
+            host_migration_state = KnightsApp::HostMigrationState::CONNECTING;
+            msg_key = "connecting_to_game";
+        } else {
+            host_migration_state = KnightsApp::HostMigrationState::MIGRATING;
+            msg_key = "host_migration_in_progress";
+        }
         requested_screen = std::make_unique<HostMigrationScreen>(LocalKey(msg_key));
 
-        // Set host_migration_flag immediately after starting a host migration.
-        // (The flag gets cleared when resetAll is called i.e. when we disconnect from the server.)
-        if (!first_time) host_migration_flag = true;
+    } else if (platform_lobby
+               && host_migration_state == KnightsApp::HostMigrationState::IN_GAME
+               && !vm_knights_lobby->connected()) {
+
+        // Lost connection, and the VMKnightsLobby is attempting to reconnect.
+        // Here we just change the screen.
+        host_migration_state = KnightsApp::HostMigrationState::RECONNECTING;
+        requested_screen = std::make_unique<HostMigrationScreen>(LocalKey("connection_lost_reconnecting"));
     }
 #endif
 }

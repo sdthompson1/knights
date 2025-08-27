@@ -51,7 +51,7 @@
 namespace Coercri {
 
     EnetNetworkConnection::EnetNetworkConnection(ENetHost *host, const std::string &hostname, int port)
-        : peer(0), state(PENDING)
+        : peer(nullptr), state(PENDING)
     {
         ENetAddress address;
         enet_address_set_host(&address, hostname.c_str());
@@ -59,10 +59,11 @@ namespace Coercri {
 
         peer = enet_host_connect(host, &address, 1, 0);  // open 1 channel only. no user data supplied.
         if (!peer) {
-            throw CoercriError("EnetNetworkConnection: enet_host_connect failed");
+            // enet_host_connect failed; go to FAILED state
+            state = FAILED;
+        } else {
+            peer->data = this;
         }
-
-        peer->data = this;
 
 #ifdef ENET_BANDWIDTH_LIMIT
         renew_time = time(nullptr);
@@ -93,7 +94,7 @@ namespace Coercri {
             // one last shot at sending a DISCONNECT message before
             // resetting).
             enet_peer_disconnect_now(peer, 0);
-            peer->data = 0;
+            peer->data = nullptr;
         }
     }
 
@@ -216,7 +217,9 @@ namespace Coercri {
         }
 
         // Break the link to the peer.
-        peer->data = 0;
-        peer = 0;
+        if (peer) {
+            peer->data = nullptr;
+            peer = nullptr;
+        }
     }
 }

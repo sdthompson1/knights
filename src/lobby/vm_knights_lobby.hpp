@@ -82,12 +82,13 @@ public:
     // This just returns 0 currently
     virtual int getNumberOfPlayers() const override;
 
-    // Determine connection status. Returns CONNECTED for the leader, and
-    // returns the actual connection status for a follower.
-    Coercri::NetworkConnection::State getConnectionState() const;
+    // True if we are the leader, or if we are a follower and we have an established
+    // connection to the leader.
+    bool connected() const;
 
 private:
     void rejoinGame();
+    bool applyRetryLogic();
 
 private:
     std::unique_ptr<VMKnightsLobbyImpl> pimpl;

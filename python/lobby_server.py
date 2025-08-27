@@ -52,6 +52,7 @@ class Lobby:
         self.created_time = time.time()
         self.status_key = ""  # LocalKey string
         self.param_key = None  # Optional parameter LocalKey string
+        self.lobby_state = "JOINED"  # Lobby state: "JOINED" or "FAILED"
     
     def add_member(self, user_id: str) -> bool:
         if user_id not in self.members:
@@ -81,6 +82,12 @@ class Lobby:
     def set_leader(self, new_leader_id: str) -> bool:
         if new_leader_id in self.members:
             self.leader_user_id = new_leader_id
+            return True
+        return False
+    
+    def set_state(self, new_state: str) -> bool:
+        if new_state in ["JOINED", "FAILED"]:
+            self.lobby_state = new_state
             return True
         return False
 
@@ -270,7 +277,7 @@ class LobbyServer:
             
             # Format: leader_id (null-terminated) + num_players (4 bytes) + 
             #         status_key (null-terminated) + has_param (1 byte) + 
-            #         [optional param_key (null-terminated)]
+            #         [optional param_key (null-terminated)] + lobby_state (null-terminated)
             response_data = lobby.get_leader_id().encode() + b'\0'
             response_data += struct.pack('<I', len(lobby.members))
             response_data += lobby.status_key.encode() + b'\0'
@@ -281,6 +288,9 @@ class LobbyServer:
                 response_data += lobby.param_key.encode() + b'\0'
             else:
                 response_data += struct.pack('<B', 0)  # has_param = false
+            
+            # Add lobby state
+            response_data += lobby.lobby_state.encode() + b'\0'
         
         return self.create_success_response(response_data)
     
@@ -378,6 +388,15 @@ class LobbyServer:
                     print(f"Leader of lobby {lobby_id} changed to {new_leader_id}")
                     return True
         return False
+    
+    def set_lobby_state(self, lobby_id: str, new_state: str) -> bool:
+        with self.lock:
+            if lobby_id in self.lobbies:
+                lobby = self.lobbies[lobby_id]
+                if lobby.set_state(new_state):
+                    print(f"Lobby {lobby_id} state changed to {new_state}")
+                    return True
+        return False
 
 class LobbyServerGUI:
     def __init__(self, server: LobbyServer):
@@ -425,6 +444,22 @@ class LobbyServerGUI:
         self.change_button = ttk.Button(self.control_frame, text="Change Leader", command=self.change_leader)
         self.change_button.grid(row=0, column=3, padx=5)
         
+        # Control frame for lobby state
+        self.state_frame = ttk.Frame(self.root)
+        self.state_frame.pack(fill="x", padx=10, pady=5)
+        
+        ttk.Label(self.state_frame, text="Set Lobby State:").grid(row=0, column=0, padx=5)
+        
+        self.state_lobby_var = tk.StringVar()
+        self.state_lobby_combo = ttk.Combobox(self.state_frame, textvariable=self.state_lobby_var, state="readonly")
+        self.state_lobby_combo.grid(row=0, column=1, padx=5)
+        
+        self.joined_button = ttk.Button(self.state_frame, text="Set JOINED", command=lambda: self.set_lobby_state("JOINED"))
+        self.joined_button.grid(row=0, column=2, padx=5)
+        
+        self.failed_button = ttk.Button(self.state_frame, text="Set FAILED", command=lambda: self.set_lobby_state("FAILED"))
+        self.failed_button.grid(row=0, column=3, padx=5)
+        
         # Bind lobby selection to update members
         self.lobby_combo.bind("<<ComboboxSelected>>", self.on_lobby_selected)
         
@@ -455,6 +490,18 @@ class LobbyServerGUI:
         else:
             messagebox.showerror("Error", "Failed to change leader")
     
+    def set_lobby_state(self, new_state: str):
+        lobby_id = self.state_lobby_var.get()
+        
+        if not lobby_id:
+            messagebox.showwarning("Warning", "Please select a lobby")
+            return
+        
+        if self.server.set_lobby_state(lobby_id, new_state):
+            messagebox.showinfo("Success", f"Lobby {lobby_id} state set to {new_state}")
+        else:
+            messagebox.showerror("Error", f"Failed to set lobby state to {new_state}")
+    
     def update_display(self):
         # Clear current display
         for item in self.players_tree.get_children():
@@ -473,12 +520,13 @@ class LobbyServerGUI:
             lobby_ids = []
             for lobby_id, lobby in self.server.lobbies.items():
                 members_str = ", ".join(lobby.members)
-                status = lobby.status_key if lobby.status_key else "No status"
+                status = f"{lobby.status_key if lobby.status_key else 'No status'} ({lobby.lobby_state})"
                 self.lobbies_tree.insert("", "end", values=(lobby_id, lobby.leader_user_id, members_str, status))
                 lobby_ids.append(lobby_id)
             
             # Update combo boxes
             self.lobby_combo.configure(values=lobby_ids)
+            self.state_lobby_combo.configure(values=lobby_ids)
         
         # Schedule next update
         self.root.after(1000, self.update_display)  # Update every second

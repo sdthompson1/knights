@@ -51,7 +51,9 @@ private:
     std::string lobby_id;
     PlayerID leader_id;
     State current_state;
-    std::chrono::steady_clock::time_point last_leader_query_time;
+    std::chrono::steady_clock::time_point last_query_time;
+    
+    void updateCachedInfo();
 };
 
 #endif

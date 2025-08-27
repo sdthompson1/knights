@@ -948,7 +948,8 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     if (pimpl->is_lan_game && player_ids.size() == 1) {
         pimpl->chat_list.add("LAN game created.");
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    } else if (pimpl->is_online_platform_game && pimpl->knights_app.getHostMigrationFlag()) {
+    } else if (pimpl->is_online_platform_game
+               && pimpl->knights_app.getHostMigrationState() == KnightsApp::HostMigrationState::MIGRATING) {
         // Add message showing the new leader after host migration
         PlayerID leader_id = pimpl->knights_app.getCurrentLeader();
         Coercri::UTF8String msg;
@@ -1332,7 +1333,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     } else {
         if (already_started) {
 #ifdef USE_VM_LOBBY
-            if (!pimpl->knights_app.getHostMigrationFlag())
+            if (pimpl->knights_app.getHostMigrationState() != KnightsApp::HostMigrationState::MIGRATING)
 #endif
                 pimpl->chat_list.add("You have reconnected to this game.");
         } else {
@@ -1358,6 +1359,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
 
     // Notify updated game status - quest is now in progress
     pimpl->knights_app.setQuestMessageCode(getQuestMessageCode());
+    pimpl->knights_app.setHostMigrationStateInGame();
 }
 
 void GameManager::gotoMenu()
