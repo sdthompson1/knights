@@ -486,7 +486,7 @@ class LobbyServerGUI:
             return
         
         if self.server.change_leader(lobby_id, new_leader):
-            messagebox.showinfo("Success", f"Leader changed to {new_leader}")
+            pass
         else:
             messagebox.showerror("Error", "Failed to change leader")
     
