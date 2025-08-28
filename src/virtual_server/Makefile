@@ -173,7 +173,9 @@ OBJFILES = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CXXFILES))
 OBJDIRS = $(sort $(dir $(OBJFILES)))
 
 # Default target
-all: risc_vm.hpp risc_vm.cpp
+# Note: technically this builds several risc_vm-*.cpp files, not just risc_vm-0.cpp,
+# but listing only risc_vm-0.cpp here is simpler/easier...
+all: risc_vm.hpp risc_vm-0.cpp
 
 # Rule to create build directories
 $(OBJDIRS):
@@ -188,17 +190,13 @@ $(RISCV_EXE): $(OBJFILES)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 # Run risc2cpp
-risc_vm.hpp risc_vm.cpp &: $(RISCV_EXE)
+risc_vm.hpp risc_vm-0.cpp &: $(RISCV_EXE)
 	@echo "Running risc2cpp (this may take some time)..."
-	risc2cpp -O2 $(RISCV_EXE) risc_vm.hpp risc_vm.cpp
+	risc2cpp -O2 $(RISCV_EXE) risc_vm --split-cpp 25
 
-# "clean" - clean everything except risc_vm.hpp and risc_vm.cpp.
+# Clean all built files
 clean:
-	rm -rf $(BUILD_DIR)
-
-# "cleanall" - gets rid of risc_vm.hpp and risc_vm.cpp as well.
-cleanall: clean
-	rm -f risc_vm.hpp risc_vm.cpp
+	rm -rf $(BUILD_DIR) risc_vm.hpp risc_vm-*.{cpp,o,P,d}
 
 # Phony targets list.
-.PHONY: all clean cleanall
+.PHONY: all clean

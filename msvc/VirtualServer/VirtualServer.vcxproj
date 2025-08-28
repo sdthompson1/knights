@@ -83,7 +83,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\virtual_server\knights_vm.cpp" />
-    <ClCompile Include="..\..\src\virtual_server\risc_vm.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-0.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-1.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-2.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-3.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-4.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-5.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-6.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-7.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-8.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-9.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-10.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-11.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-12.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-13.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-14.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-15.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-16.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-17.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-18.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-19.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-20.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-21.cpp" />
     <ClCompile Include="..\..\src\virtual_server\tick_data.cpp" />
   </ItemGroup>
   <ItemGroup>

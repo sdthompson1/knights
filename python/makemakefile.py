@@ -137,7 +137,7 @@ CXX = g++
 ONLINE_PLATFORM_FLAGS = {online_platform_flags}
 
 CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG -DLUA_INCLUDES_REQUIRE_EXTERN_C $(ONLINE_PLATFORM_FLAGS)
-CFLAGS = -O3 -ffast-math
+CFLAGS = -O2 -ffast-math
 CXXFLAGS = $(CFLAGS)
 BOOST_LIBS = -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX)
 
