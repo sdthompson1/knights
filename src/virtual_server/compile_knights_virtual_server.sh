@@ -4,10 +4,10 @@
 # implements a standalone Knights server using the KnightsVM
 # infrastructure. This might be useful for testing or debugging.
 
-# Pass option "-O2" for an optimized build (if you are brave!).
+# Pass option "-O2" for an optimized build.
 
-# Please note building is very slow. An unoptimized build takes around
-# 30 seconds to 1 minute; an optimized build takes around 8 hours (!).
+# Please note that building is relatively slow. An unoptimized build
+# takes around 1 minute. With "-O2", it takes around 2 minutes.
 
 # After building, you can run "knights_virtual_server", passing the
 # path to "knights_data" as a parameter. Alternatively, if you run it
@@ -25,7 +25,7 @@ g++ -I../coercri -I../rstream -I../misc \
     knights_virtual_server.cpp \
     knights_vm.cpp \
     tick_data.cpp \
-    risc_vm.cpp \
+    risc_vm-*.cpp \
     -g $1 \
     -lenet -lboost_filesystem \
     -o knights_virtual_server

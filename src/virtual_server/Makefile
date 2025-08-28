@@ -1,13 +1,19 @@
 # Makefile for "Knights virtual server"
 
-# This will regenerate risc_vm.cpp and risc_vm.hpp.
+# This will generate risc_vm-*.cpp and risc_vm.hpp.
 
-# Note: You only need to do this if you have changed any of the
-# Knights C++ files listed in CXXFILES below. If you are just building
-# an unmodified copy of Knights from its original source code, then
-# running this Makefile won't be necessary.
+# Note: This is only needed when building Knights for an "online
+# platform" such as Steam. This open source distribution of Knights
+# does not include any of the Steam-related code (due to licensing
+# restrictions), and therefore, you will not need to use or care about
+# this Makefile if you are just trying to build the normal open source
+# version of Knights. If you do want to build an online platform
+# version, you will need to port the Knights code yourself to your
+# chosen platform, or else you can use the "DUMMY" online platform for
+# experimentation and testing purposes. See also the
+# "--online-platform" option to the makemakefile.py Python program.
 
-# Requirements:
+# Requirements (for this Makefile):
 #  1) A working RISC-V compiler, and a working copy of risc2cpp (see
 #     https://github.com/sdthompson1/risc2cpp)
 #      - Make sure these are both available on PATH
@@ -17,16 +23,16 @@
 #  3) Lua
 #      - You need to build liblua.a for RISC-V. First, download and unpack
 #        the Lua source code from lua.org.
-#      - Next, we need to configure Lua to build in 32 bit mode. Edit
-#        src/luaconf.h (in the Lua distribution), search for where LUA_32BITS
-#        is defined, and set it to 1 (instead of 0).
 #      - Then, use the following command (from within the Lua main directory)
 #        to build liblua.a:
-#            make CC=riscv32-unknown-elf-g++ generic
-#        Note that you need to set "CC" to a C++, not C, compiler, to get a
-#        C++-compatible build of liblua.a.
-#        Note: you also need to edit luaconf.h and set LUA_32BITS to 1 (not 0)
-#        as the 32-bit RISC-V compiler doesn't support 64-bit integers.
+#        make CC=riscv32-unknown-elf-g++ generic MYCFLAGS="-include climits"
+#         - Note 1: we need to set "CC" to a C++, not C, compiler, to get a
+#           C++-compatible build of liblua.a.
+#         - Note 2: the "-include climits" is needed to work around a slight
+#           issue with the Lua build system - without this extra flag, the
+#           LLONG_MAX constant is not defined, and the build fails.
+#      - Finally, adjust the -I and LIBS settings (below) to point to the
+#        correct location(s) for your Lua build.
 
 # This Makefile can be sped up by using "-j" (e.g. make -j4). This
 # doesn't affect the (time-consuming) risc2cpp step, but it speeds up
@@ -41,15 +47,16 @@ CXX = riscv32-unknown-elf-g++
 
 # Compile flags
 # Adjust the include paths as needed.
-CXXFLAGS = -Iboost_1_88_0 -Ilua-5.4.7/src \
+CXXFLAGS = -Iboost_1_88_0 -Ilua-5.4.8/src \
 	-I. -I../coercri -I../misc -I../rstream -I../shared -I../server -I../engine -I../protocol \
 	-DNDEBUG -DVIRTUAL_SERVER \
 	-O2 -ffast-math \
-	-Wl,--emit-relocs
+	-Wl,--emit-relocs \
+	-include climits
 
 # Library paths
 # Adjust to point to wherever you built the RISC-V Lua library.
-LIBS = lua-5.4.7/src/liblua.a
+LIBS = lua-5.4.8/src/liblua.a
 
 # Additional link flags ("emit-relocs" is required for risc2cpp)
 LDFLAGS = -Wl,--emit-relocs
