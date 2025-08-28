@@ -196,7 +196,9 @@ risc_vm.hpp risc_vm-0.cpp &: $(RISCV_EXE)
 
 # Clean all built files
 clean:
-	rm -rf $(BUILD_DIR) risc_vm.hpp risc_vm-*.{cpp,o,P,d}
+	rm -rf $(BUILD_DIR)
+	rm -f risc_vm.hpp
+	rm -f risc_vm-*.cpp risc_vm-*.o risc_vm-*.P risc_vm-*.d
 
 # Phony targets list.
 .PHONY: all clean
