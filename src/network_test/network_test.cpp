@@ -34,6 +34,7 @@
 #include "dungeon_view.hpp"
 #include "knights_callbacks.hpp"
 #include "knights_client.hpp"
+#include "localization.hpp"
 #include "mini_map.hpp"
 #include "status_display.hpp"
 
@@ -79,111 +80,115 @@ class TestClientCallbacks : public ClientCallbacks {
 public:
     TestClientCallbacks() : join_game_accepted(false), game_started(false) { }
 
-    void connectionLost() { Log("Connection lost"); }
-    void connectionFailed() { Log("Connection failed"); }
+    void connectionLost() override { Log("Connection lost"); }
+    void connectionFailed() override { Log("Connection failed"); }
 
-    void serverError(const LocalKey &error) { Log("Server error: %s", error.getKey().c_str()); }
-    void luaError(const std::string &error) { Log("Server error: %s", error.c_str()); }
-    void connectionAccepted(int server_version) { Log("Connection accepted. Server version = %d", server_version); }
+    void serverError(const LocalKey &error) override { Log("Server error: %s", error.getKey().c_str()); }
+    void luaError(const std::string &error) override { Log("Server error: %s", error.c_str()); }
+    void connectionAccepted(int server_version) override { Log("Connection accepted. Server version = %d", server_version); }
 
     void joinGameAccepted(boost::shared_ptr<const ClientConfig> config,
                           int my_house_colour,
-                          const std::vector<PlayerID> &player_names,
+                          const std::vector<PlayerID> &player_ids,
                           const std::vector<bool> &ready_flags,
                           const std::vector<int> &house_cols,
-                          const std::vector<PlayerID> &observers)
+                          const std::vector<PlayerID> &observers) override
     {
         Log("Join game accepted");
         join_game_accepted = true;
     }
-    void joinGameDenied(const std::string &reason) { Log("Join game denied. Reason = %s", reason.c_str()); }
-    void loadGraphic(const Graphic &g, const std::string &) { Log("Loading graphic"); }
-    void loadSound(const Sound &s, const std::string &) { Log("Loading sound"); }
+    void joinGameDenied(const LocalKey &reason) override { Log("Join game denied. Reason = %s", reason.getKey().c_str()); }
+    void loadGraphic(const Graphic &g, const std::string &) override { Log("Loading graphic"); }
+    void loadSound(const Sound &s, const std::string &) override { Log("Loading sound"); }
 
-    void passwordRequested(bool first_attempt) { Log("Please enter password"); }
+    void passwordRequested(bool first_attempt) override { Log("Please enter password"); }
 
-    void playerConnected(const UTF8String &name) { Log("Player connected. Name = %s", name.asUTF8().c_str()); }
-    void playerDisconnected(const UTF8String &name) { Log("Player disconnected. Name = %s", name.asUTF8().c_str()); }
+    void playerConnected(const PlayerID &id) override { Log("Player connected. ID = %s", id.asString().c_str()); }
+    void playerDisconnected(const PlayerID &id) override { Log("Player disconnected. ID = %s", id.asString().c_str()); }
 
-    void updateGame(const std::string &game_name, int num_players, int num_observers, GameStatus status)
+    void updateGame(const std::string &game_name, int num_players, int num_observers, GameStatus status) override
     {
         Log("Update game. Game name = %s", game_name.c_str());
     }
-    void dropGame(const std::string &game_name)
+    void dropGame(const std::string &game_name) override
     {
         Log("Drop game. Game name = %s", game_name.c_str());
     }
-    void updatePlayer(const UTF8String &player, const std::string &game, bool obs_flag)
+    void updatePlayer(const PlayerID &player, const std::string &game, bool obs_flag) override
     {
-        Log("Update player. Player name = %s", player.asUTF8().c_str());
+        Log("Update player. Player ID = %s", player.asString().c_str());
     }
-    void playerList(const std::vector<ClientPlayerInfo> &player_list)
+    void playerList(const std::vector<ClientPlayerInfo> &player_list) override
     {
         Log("Player list. Size = %d", player_list.size());
     }
-    void setTimeRemaining(int milliseconds)
+    void setTimeRemaining(int milliseconds) override
     {
         Log("Set time remaining. Milliseconds = %d", milliseconds);
     }
-    void playerIsReadyToEnd(const PlayerID &player)
+    void playerIsReadyToEnd(const PlayerID &player) override
     {
         Log("Player is ready to end. Player id = %s", player.asString().c_str());
     }
 
-    void leaveGame() { Log("Leave game"); }
-    void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values)
+    void leaveGame() override { Log("Leave game"); }
+    void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values) override
     {
         Log("Set menu selection. Item = %d, Choice = %d", item, choice);
     }
-    void setQuestDescription(const UTF8String &quest_descr)
+    void setQuestDescription(const UTF8String &quest_descr) override
     {
         Log("Set quest description. Descr = %s", quest_descr.asUTF8().c_str());
     }
 
-    void startGame(int ndisplays, bool deathmatch_mode, const std::vector<UTF8String> &player_names, bool already_started)
+    void startGame(int ndisplays, bool deathmatch_mode, const std::vector<PlayerID> &player_ids, bool already_started) override
     {
         Log("Start game. Ndisplays = %d", ndisplays);
         game_started = true;
     }
-    void gotoMenu() { Log("Goto menu"); }
+    void gotoMenu() override { Log("Goto menu"); }
 
-    void playerJoinedThisGame(const UTF8String &name, bool obs_flag, int house_col)
+    void playerJoinedThisGame(const PlayerID &id, bool obs_flag, int house_col) override
     {
-        Log("Player joined this game. Name = %s", name.asUTF8().c_str());
+        Log("Player joined this game. ID = %s", id.asString().c_str());
     }
-    void playerLeftThisGame(const UTF8String &name, bool obs_flag)
+    void playerLeftThisGame(const PlayerID &id, bool obs_flag) override
     {
-        Log("Player left this game. Name = %s", name.asUTF8().c_str());
+        Log("Player left this game. ID = %s", id.asString().c_str());
     }
-    void setPlayerHouseColour(const UTF8String &name, int house_col)
+    void setPlayerHouseColour(const PlayerID &id, int house_col) override
     {
-        Log("Set player house colour. Name = %s", name.asUTF8().c_str());
+        Log("Set player house colour. ID = %s", id.asString().c_str());
     }
-    void setAvailableHouseColours(const std::vector<Coercri::Color> &cols)
+    void setAvailableHouseColours(const std::vector<Coercri::Color> &cols) override
     {
         Log("Set available house colours");
     }
-    void setReady(const UTF8String &name, bool ready)
+    void setReady(const PlayerID &id, bool ready) override
     {
-        Log("Set ready. Name = %s, val = %d", name.asUTF8().c_str(), ready ? 1 : 0);
+        Log("Set ready. ID = %s, val = %d", id.asString().c_str(), ready ? 1 : 0);
     }
-    void deactivateReadyFlags()
+    void deactivateReadyFlags() override
     {
         Log("Deactivate ready flags.");
     }
 
-    void setObsFlag(const UTF8String &name, bool new_obs_flag)
+    void setObsFlag(const PlayerID &id, bool new_obs_flag) override
     {
-        Log("Set obs flag. Name = %s, val = %d", name.asUTF8().c_str(), new_obs_flag ? 1 : 0);
+        Log("Set obs flag. ID = %s, val = %d", id.asString().c_str(), new_obs_flag ? 1 : 0);
     }
     
-    void chat(const UTF8String &whofrom, bool observer, bool team, const Coercri::UTF8String &msg)
+    void chat(const PlayerID &whofrom, bool observer, bool team, const Coercri::UTF8String &msg) override
     {
-        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.asUTF8().c_str(), observer ? 1 : 0, team ? 1 : 0, msg.asUTF8().c_str());
+        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.asString().c_str(), observer ? 1 : 0, team ? 1 : 0, msg.asUTF8().c_str());
     }
-    void announcement(const LocalKey &key, bool is_err)
+    void announcementLoc(const LocalKey& msg, const std::vector<LocalParam>& params, bool is_err) override
     {
-        Log("Announcement: %s", key.asString());
+        Log("Announcement (Loc): %s", msg.getKey().c_str());
+    }
+    void announcementRaw(const Coercri::UTF8String& msg, bool is_err) override
+    {
+        Log("Announcement (Raw): %s", msg.asUTF8().c_str());
     }
 
 public:
@@ -193,52 +198,52 @@ public:
 
 class TestDungeonView : public DungeonView {
 public:
-    void setCurrentRoom(int r, int width, int height) { Log("Set current room"); }
+    void setCurrentRoom(int r, int width, int height) override { Log("Set current room"); }
     void addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                    const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                    bool ainvis, bool ainvuln, // (anim data)
                    bool approached,
                    int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                   const UTF8String &name)
+                   const PlayerID &player_id) override
     {
         Log("dview: Add entity");
     }
-    void rmEntity(unsigned short int id) { Log("dview: Remove entity"); }
-    void repositionEntity(unsigned short int id, int new_x, int new_y) { Log("dview: Reposition entity"); }
-    void moveEntity(unsigned short int id, MotionType motion_type, int motion_duration, bool missile_mode)
+    void rmEntity(unsigned short int id) override { Log("dview: Remove entity"); }
+    void repositionEntity(unsigned short int id, int new_x, int new_y) override { Log("dview: Reposition entity"); }
+    void moveEntity(unsigned short int id, MotionType motion_type, int motion_duration, bool missile_mode) override
     {
         Log("dview: move entity");
     }
-    void flipEntityMotion(unsigned short int id, int initial_delay, int motion_duration)
+    void flipEntityMotion(unsigned short int id, int initial_delay, int motion_duration) override
     {
         Log("dview: flip entity motion");
     }
     void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af, int atz_diff,
-                     bool ainvis, bool ainvuln, bool currently_moving)
+                     bool ainvis, bool ainvuln, bool currently_moving) override
     {
         Log("dview: set anim data");
     }
-    void setFacing(unsigned short int id, MapDirection new_facing)
+    void setFacing(unsigned short int id, MapDirection new_facing) override
     {
         Log("dview: set facing");
     }
-    void setSpeechBubble(unsigned short int id, bool show)
+    void setSpeechBubble(unsigned short int id, bool show) override
     {
         Log("dview: set speech bubble");
     }
 
-    void clearTiles(int x, int y, bool force) { Log("dview: clear tiles"); }
-    void setTile(int x, int y, int depth, const Graphic *gfx, boost::shared_ptr<const ColourChange>, bool force) 
+    void clearTiles(int x, int y, bool force) override { Log("dview: clear tiles"); }
+    void setTile(int x, int y, int depth, const Graphic *gfx, boost::shared_ptr<const ColourChange>, bool force) override
     { 
         Log("dview: set tile"); 
     }
 
-    void setItem(int x, int y, const Graphic *gfx, bool force) { Log("dview: set item"); }
-    void placeIcon(int x, int y, const Graphic *gfx, int dur) { Log("dview: place icon"); }
+    void setItem(int x, int y, const Graphic *gfx, bool force) override { Log("dview: set item"); }
+    void placeIcon(int x, int y, const Graphic *gfx, int dur) override { Log("dview: place icon"); }
 
-    void flashMessage(const std::string &msg, int ntimes) { Log("dview: flash msg: %s", msg.c_str()); }
-    void cancelContinuousMessages() { Log("dview: cancel continuous messages"); }
-    void addContinuousMessage(const std::string &msg) { Log("dview: add cts msg: %s", msg.c_str()); }
+    void flashMessage(const std::string &msg, int ntimes) override { Log("dview: flash msg: %s", msg.c_str()); }
+    void cancelContinuousMessages() override { Log("dview: cancel continuous messages"); }
+    void addContinuousMessage(const std::string &msg) override { Log("dview: add cts msg: %s", msg.c_str()); }
 };
 
 class TestMiniMap : public MiniMap {
@@ -264,29 +269,29 @@ public:
 
 class TestKnightsCallbacks : public KnightsCallbacks {
 public:
-    virtual DungeonView & getDungeonView(int p) { return dungeon_view; }
-    virtual MiniMap & getMiniMap(int p) { return mini_map; }
-    virtual StatusDisplay & getStatusDisplay(int p) { return status_display; }
+    virtual DungeonView & getDungeonView(int p) override { return dungeon_view; }
+    virtual MiniMap & getMiniMap(int p) override { return mini_map; }
+    virtual StatusDisplay & getStatusDisplay(int p) override { return status_display; }
 
-    void playSound(int player_num, const Sound &sound, int frequency) { Log("Play sound"); }
-    void winGame(int player_num) { Log("Win game. Player = %d", player_num); }
-    void loseGame(int player_num) { Log("Lose game. Player = %d", player_num); }
+    void playSound(int player_num, const Sound &sound, int frequency) override { Log("Play sound"); }
+    void winGame(int player_num) override { Log("Win game. Player = %d", player_num); }
+    void loseGame(int player_num) override { Log("Lose game. Player = %d", player_num); }
     
-    void setAvailableControls(int player_num, const std::vector<std::pair<const UserControl*, bool> > &available_controls)
+    void setAvailableControls(int player_num, const std::vector<std::pair<const UserControl*, bool> > &available_controls) override
     {
         Log("Set available controls. Player = %d", player_num);
     }
-    void setMenuHighlight(int player_num, const UserControl *highlight)
+    void setMenuHighlight(int player_num, const UserControl *highlight) override
     {
         Log("Set menu highlight, player = %d", player_num);
     }
-    void flashScreen(int player_num, int delay) { Log("Flash screen"); }
-    void gameMsgRaw(int player_num, const Coercri::UTF8String &msg, bool is_err) { Log("Game msg. Player = %d, msg = %s", player_num, msg.asUTF8().c_str()); }
-    void gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) { Log("Game msg. Player = %d, msg key = %s", player_num, key.getKey().c_str()); }
-    void popUpWindow(const std::vector<TutorialWindow> &windows) { Log("Pop up window"); }
-    void onElimination(int player_num) { Log("On elimination, player = %d", player_num); }
-    void disableView(int player_num) { Log("Disable view, player = %d", player_num); }
-    void goIntoObserverMode(int nplayers, const std::vector<UTF8String> &names) { Log("Go into observer mode"); }
+    void flashScreen(int player_num, int delay) override { Log("Flash screen"); }
+    void gameMsgRaw(int player_num, const Coercri::UTF8String &msg, bool is_err) override { Log("Game msg. Player = %d, msg = %s", player_num, msg.asUTF8().c_str()); }
+    void gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) override { Log("Game msg. Player = %d, msg key = %s", player_num, key.getKey().c_str()); }
+    void popUpWindow(const std::vector<TutorialWindow> &windows) override { Log("Pop up window"); }
+    void onElimination(int player_num) override { Log("On elimination, player = %d", player_num); }
+    void disableView(int player_num) override { Log("Disable view, player = %d", player_num); }
+    void goIntoObserverMode(int nplayers, const std::vector<PlayerID> &player_ids) override { Log("Go into observer mode"); }
 
 private:
     TestDungeonView dungeon_view;
@@ -367,7 +372,7 @@ void SendMessagesIfRequired()
 
     // First message must always be "set player name"
     if (!set_player_name_sent) {
-        g_client->setPlayerIdAndControls(PlayerId("Network Testing Bot"), true);
+        g_client->setPlayerIdAndControls(PlayerID("Network Testing Bot"), true);
         g_client->joinGame("Game 1");
         set_player_name_sent = true;
         return;

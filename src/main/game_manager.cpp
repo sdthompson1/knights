@@ -1359,7 +1359,9 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
 
     // Notify updated game status - quest is now in progress
     pimpl->knights_app.setQuestMessageCode(getQuestMessageCode());
+#ifdef ONLINE_PLATFORM
     pimpl->knights_app.setHostMigrationStateInGame();
+#endif
 }
 
 void GameManager::gotoMenu()

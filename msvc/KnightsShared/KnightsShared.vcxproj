@@ -137,6 +137,11 @@
     <ClInclude Include="..\..\src\shared\tutorial_window.hpp" />
     <ClInclude Include="..\..\src\shared\user_control.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Misc\Misc.vcxproj">
+      <Project>{bc217bea-9135-4266-b150-75f0450b2366}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets" Condition="Exists('..\packages\SDL.redist.1.2.15.15\build\native\SDL.redist.targets')" />
