@@ -171,7 +171,7 @@ void VMKnightsLobby::becomeLeader(int port)
     pimpl->disableRetryLogic();
 
 #ifdef LOG_VM_LOBBY
-        std::cout << "Became leader." << std::endl;
+    std::cout << "Became leader." << std::endl;
 #endif
 }
 

@@ -106,9 +106,18 @@ std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis)
 std::vector<std::string> DummyOnlinePlatform::getLobbyList()
 {
     std::vector<std::string> result;
-    
+
     if (!connected) return result;
-    
+
+    // Check cache: if we have data from less than 5 seconds ago, return cached result
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - last_lobby_list_time);
+
+    if (elapsed.count() < 5 && !cached_lobby_list.empty()) {
+        return cached_lobby_list;
+    }
+
+    // Otherwise, fetch from server
     if (sendMessage(MSG_GET_LOBBY_LIST, "")) {
         std::string response_data;
         if (receiveResponse(response_data)) {
@@ -119,7 +128,7 @@ std::vector<std::string> DummyOnlinePlatform::getLobbyList()
                 // but it should be fine here because this is debug-only code!
                 uint32_t count = *reinterpret_cast<const uint32_t*>(response_data.data());
                 size_t pos = 4;
-                
+
                 for (uint32_t i = 0; i < count && pos < response_data.size(); ++i) {
                     size_t null_pos = response_data.find('\0', pos);
                     if (null_pos != std::string::npos) {
@@ -130,9 +139,13 @@ std::vector<std::string> DummyOnlinePlatform::getLobbyList()
                     }
                 }
             }
+
+            // Cache the result and timestamp
+            cached_lobby_list = result;
+            last_lobby_list_time = now;
         }
     }
-    
+
     return result;
 }
 

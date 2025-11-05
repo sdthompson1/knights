@@ -92,6 +92,15 @@ void VMLoadingScreen::update()
         return;
     }
 
+    // Wait until the platform lobby has joined before attempting to join the game.
+    // (Otherwise, we might create a new game as leader, go to menu screen, and then a couple
+    // of seconds later join the lobby, discover we are actually a follower, then resync into
+    // the game. We would rather avoid that initial menu screen and go directly into the game.)
+
+    if (knights_app->platformLobbyIsJoining()) {
+        return;
+    }
+
     // Create the game
 
     boost::shared_ptr<KnightsClient> client =
@@ -104,6 +113,9 @@ void VMLoadingScreen::update()
 
     client->setPlayerIdAndControls(player_id, knights_app->getOptions().new_control_system);
     knights_app->getGameManager().tryJoinGame("#VMGame");
+
+    // Resetting the loader means that VMLoadingScreen::update() will not run again.
+    // (We wait for the KnightsApp to move us to another screen instead.)
 
     loader.reset();
 }

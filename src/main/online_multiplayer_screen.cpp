@@ -308,9 +308,12 @@ void OnlineMultiplayerScreenImpl::refreshGameList()
 
 void OnlineMultiplayerScreenImpl::update()
 {
+    // Online platform caches the getLobbyList results so refreshing
+    // the UI relatively frequently (every 200ms) should be OK
+    const unsigned int refresh_interval = 200;
+
     const unsigned int current_time = knights_app.getTimer().getMsec();
-    const unsigned int refresh_interval = 5000; // 5 seconds in milliseconds
-    
+
     if (current_time - last_refresh_time >= refresh_interval) {
         refreshGameList();
         last_refresh_time = current_time;

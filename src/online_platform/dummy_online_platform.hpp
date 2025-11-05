@@ -27,6 +27,7 @@
 #ifdef ONLINE_PLATFORM_DUMMY
 
 #include "online_platform.hpp"
+#include <chrono>
 
 // DummyOnlinePlatform implements the OnlinePlatform interface by
 // connecting to a TCP lobby server running on the local machine. This
@@ -39,6 +40,9 @@ class DummyOnlinePlatform : public OnlinePlatform {
 public:
     DummyOnlinePlatform();
     virtual ~DummyOnlinePlatform() = default;
+
+    // Update is not needed for this implementation
+    virtual void update() override { }
 
     // Returns a randomly generated user ID
     virtual PlayerID getCurrentUserId() override;
@@ -60,7 +64,7 @@ public:
 
     // P2P connections (faked using normal Coercri NetworkConnections)
     virtual Coercri::NetworkDriver & getNetworkDriver() override;
-    
+
     // Public methods for DummyPlatformLobby to use
     bool sendMessage(unsigned char msg_type, const std::string& payload);
     bool receiveResponse(std::string& response_data);
@@ -76,6 +80,10 @@ private:
     bool connected;
 
     std::unique_ptr<Coercri::NetworkDriver> network_driver;
+
+    // Cache for lobby list
+    std::vector<std::string> cached_lobby_list;
+    std::chrono::steady_clock::time_point last_lobby_list_time;
 
     bool connect_to_server();
 

@@ -24,6 +24,7 @@
 #ifndef PLAYER_ID_HPP
 #define PLAYER_ID_HPP
 
+#include <functional>
 #include <string>
 
 // Class representing a user/player ID.
@@ -54,5 +55,15 @@ public:
 private:
     std::string id;
 };
+
+// Hash function specialization to allow PlayerID to be used as a key in unordered_map
+namespace std {
+    template<>
+    struct hash<PlayerID> {
+        std::size_t operator()(const PlayerID &p) const {
+            return std::hash<std::string>()(p.asString());
+        }
+    };
+}
 
 #endif      // PLAYER_ID_HPP

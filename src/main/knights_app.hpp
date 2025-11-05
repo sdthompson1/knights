@@ -194,6 +194,10 @@ public:
     HostMigrationState getHostMigrationState() const;
     void setHostMigrationStateInGame();
     PlayerID getCurrentLeader() const;
+
+    // This returns true after createVMGame is called, but before we have
+    // fully joined the platform lobby (e.g. Steam lobby)
+    bool platformLobbyIsJoining() const;
 #endif
 
 

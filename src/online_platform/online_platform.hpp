@@ -47,6 +47,13 @@ public:
     virtual ~OnlinePlatform() = default;
 
 
+    // Update:
+
+    // This should be called every frame (or at least every 100ms or so) to
+    // keep the online platform backend up to date
+    virtual void update() = 0;
+
+
     // User Ids:
 
     // Return the platform user ID of the current user (e.g. their Steam ID)
@@ -85,6 +92,8 @@ public:
     virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis) = 0;
 
     // Search for lobbies to join. Returns a vector of lobby ID strings.
+    // Note: this can be called frequently (e.g. every 200ms) as results are cached.
+    // (TODO: Add a method to request a manual refresh of the list.)
     // (TODO: maybe add more sorting or filtering options.)
     virtual std::vector<std::string> getLobbyList() = 0;
 

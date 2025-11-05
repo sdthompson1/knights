@@ -1170,6 +1170,11 @@ PlayerID KnightsApp::getCurrentLeader() const
         return PlayerID();
     }
 }
+
+bool KnightsApp::platformLobbyIsJoining() const
+{
+    return pimpl->platform_lobby && pimpl->platform_lobby->getState() == PlatformLobby::State::JOINING;
+}
 #endif
 
 //////////////////////////////////////////////
@@ -1178,12 +1183,17 @@ PlayerID KnightsApp::getCurrentLeader() const
 
 void KnightsAppImpl::updateOnlinePlatform()
 {
-#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+#ifdef ONLINE_PLATFORM
+    online_platform->update();
+
+#ifdef USE_VM_LOBBY
     if (platform_lobby && platform_lobby->getState() == PlatformLobby::State::FAILED) {
         // We were kicked out of the lobby for some reason. Go to ErrorScreen.
         requested_screen = std::make_unique<ErrorScreen>(UTF8String::fromUTF8("Lobby connection lost"));
 
-    } else if (platform_lobby && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
+    } else if (platform_lobby
+               && !platform_lobby->getLeaderId().empty()
+               && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
 
         // Leader has changed
 
@@ -1220,6 +1230,7 @@ void KnightsAppImpl::updateOnlinePlatform()
         host_migration_state = KnightsApp::HostMigrationState::RECONNECTING;
         requested_screen = std::make_unique<HostMigrationScreen>(LocalKey("connection_lost_reconnecting"));
     }
+#endif
 #endif
 }
 
