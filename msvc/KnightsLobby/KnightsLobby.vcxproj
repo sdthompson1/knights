@@ -24,8 +24,8 @@
     <ClInclude Include="..\..\src\lobby\follower_state.hpp" />
     <ClInclude Include="..\..\src\lobby\knights_lobby.hpp" />
     <ClInclude Include="..\..\src\lobby\leader_state.hpp" />
-    <ClCompile Include="..\..\src\lobby\memory_block_compressor.hpp" />
-    <ClCompile Include="..\..\src\lobby\memory_block_decompressor.hpp" />
+    <ClInclude Include="..\..\src\lobby\memory_block_compressor.hpp" />
+    <ClInclude Include="..\..\src\lobby\memory_block_decompressor.hpp" />
     <ClInclude Include="..\..\src\lobby\simple_knights_lobby.hpp" />
     <ClInclude Include="..\..\src\lobby\sync_client.hpp" />
     <ClInclude Include="..\..\src\lobby\sync_host.hpp" />
