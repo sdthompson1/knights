@@ -949,7 +949,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
         pimpl->chat_list.add("LAN game created.");
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     } else if (pimpl->is_online_platform_game
-               && pimpl->knights_app.getHostMigrationState() == KnightsApp::HostMigrationState::MIGRATING) {
+               && pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING) {
         // Add message showing the new leader after host migration
         PlayerID leader_id = pimpl->knights_app.getCurrentLeader();
         Coercri::UTF8String msg;
@@ -1333,7 +1333,7 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     } else {
         if (already_started) {
 #ifdef USE_VM_LOBBY
-            if (pimpl->knights_app.getHostMigrationState() != KnightsApp::HostMigrationState::MIGRATING)
+            if (pimpl->knights_app.getHostMigrationState() != HostMigrationState::MIGRATING)
 #endif
                 pimpl->chat_list.add("You have reconnected to this game.");
         } else {
@@ -1497,13 +1497,3 @@ GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, bo
                          bool single_player, bool tutorial_mode, bool autostart, const PlayerID &my_player_id)
     : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, my_player_id))
 { }
-
-void GameManager::setLanGame(bool x)
-{
-    pimpl->is_lan_game = x;
-}
-
-void GameManager::setOnlinePlatformGame(bool x)
-{
-    pimpl->is_online_platform_game = x;
-}

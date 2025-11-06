@@ -162,7 +162,7 @@ namespace {
         void mouseClicked(gcn::MouseEvent &mouse_event)
         {
             gcn::ListBox::mouseClicked(mouse_event);  // make sure guichan's mouseClicked gets called
-            
+
             if (mouse_event.getButton() == gcn::MouseEvent::LEFT && mouse_event.getClickCount() == 2) {
                 // Find the game name
                 const int sel = getSelected();

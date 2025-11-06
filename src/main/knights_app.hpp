@@ -30,6 +30,7 @@
 #ifndef KNIGHTS_APP_HPP
 #define KNIGHTS_APP_HPP
 
+#include "lobby_controller.hpp"  // for HostMigrationState enum
 #include "online_platform.hpp"
 #include "utf8string.hpp"
 
@@ -183,21 +184,9 @@ public:
     boost::shared_ptr<KnightsClient> createVMGame(const std::string &lobby_id,
                                                   OnlinePlatform::Visibility vis,
                                                   std::unique_ptr<VMKnightsLobby> kts_lobby);
-
-    enum class HostMigrationState {
-        NOT_IN_GAME,   // Not in any game and not attempting to join
-        IN_GAME,       // Currently in a game
-        CONNECTING,    // Initial attempt to connect
-        RECONNECTING,  // We lost connection to leader, attempting to restore
-        MIGRATING      // We are migrating to a new leader
-    };
     HostMigrationState getHostMigrationState() const;
     void setHostMigrationStateInGame();
     PlayerID getCurrentLeader() const;
-
-    // This returns true after createVMGame is called, but before we have
-    // fully joined the platform lobby (e.g. Steam lobby)
-    bool platformLobbyIsJoining() const;
 #endif
 
 

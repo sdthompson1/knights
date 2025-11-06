@@ -114,7 +114,6 @@ void ConnectingScreenImpl::setupConnection()
     boost::shared_ptr<KnightsClient> client;
     client = knights_app->joinRemoteServer(address, port);
     knights_app->createGameManager(client, false, false, false, player_id);
-    knights_app->getGameManager().setLanGame(join_lan_game);
     client->setClientCallbacks(&knights_app->getGameManager());
     client->setPlayerIdAndControls(player_id, knights_app->getOptions().new_control_system);
 
