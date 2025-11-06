@@ -1191,11 +1191,12 @@ void KnightsAppImpl::processBroadcastMsgs()
 //////////////////////////////////////////////
 
 void KnightsApp::createGameManager(boost::shared_ptr<KnightsClient> knights_client, bool single_player, 
-                                   bool tutorial_mode, bool autostart_mode, const PlayerID &my_player_id)
+                                   bool tutorial_mode, bool autostart_mode, bool allow_lobby,
+                                   const PlayerID &my_player_id)
 {
     if (pimpl->game_manager) throw UnexpectedError("GameManager created twice");
     pimpl->game_manager.reset(new GameManager(*this, knights_client, pimpl->timer, single_player, tutorial_mode,
-                                              autostart_mode, my_player_id));
+                                              autostart_mode, allow_lobby, my_player_id));
 }
 
 void KnightsApp::destroyGameManager()

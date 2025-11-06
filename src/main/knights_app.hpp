@@ -136,8 +136,10 @@ public:
     //
 
     // single player means PAUSE requests will be sent to server, and chat will be blocked.
-    void createGameManager(boost::shared_ptr<KnightsClient> knights_client, bool single_player, bool tutorial_mode,
-                           bool autostart_mode, const PlayerID &my_player_id);
+    void createGameManager(boost::shared_ptr<KnightsClient> knights_client,
+                           bool single_player, bool tutorial_mode,
+                           bool autostart_mode, bool allow_lobby,
+                           const PlayerID &my_player_id);
     void destroyGameManager();
     GameManager & getGameManager();
 

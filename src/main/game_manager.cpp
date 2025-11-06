@@ -400,7 +400,8 @@ namespace {
 class GameManagerImpl {
 public:
     GameManagerImpl(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer_,
-                    bool sgl_plyr, bool tut, bool autostart, const PlayerID &my_player_id)
+                    bool sgl_plyr, bool tut, bool autostart, bool allow_lobby,
+                    const PlayerID &my_player_id)
         : knights_app(ka), knights_client(kc), menu(0), gui_invalid(false), are_menu_widgets_enabled(true),
           timer(timer_), lobby_namelist(avail_house_colours, ka),
           game_list_updated(false), game_namelist(avail_house_colours, ka),
@@ -410,6 +411,7 @@ public:
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
           quest_rqmts_list(9999, false, false),    // ditto
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
+          allow_lobby_screen(allow_lobby),
           my_player_id(my_player_id), doing_menu_widget_update(false), deathmatch_mode(false),
           game_in_progress(false),
           download_count(0)
@@ -471,6 +473,7 @@ public:
     bool single_player;
     bool tutorial_mode;
     bool autostart_mode;
+    bool allow_lobby_screen;
 
     PlayerID my_player_id;
     UTF8String saved_chat;
@@ -883,7 +886,7 @@ void GameManager::connectionAccepted(int server_version)
     // Note: currently server version is ignored, although it might be used in future
     // for backwards compatibility purposes.
 
-    if (!pimpl->is_split_screen && !pimpl->is_lan_game && !pimpl->is_online_platform_game) {
+    if (pimpl->allow_lobby_screen) {
         // Go to LobbyScreen
         std::unique_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
         pimpl->knights_app.requestScreenChange(std::move(lobby_screen));
@@ -1222,7 +1225,7 @@ void GameManager::leaveGame()
     pimpl->avail_house_colours.clear();
 
     // go to lobby (for internet games) or title (for split screen, lan, and online platform games)
-    if (pimpl->is_split_screen || pimpl->is_lan_game || pimpl->is_online_platform_game) {
+    if (!pimpl->allow_lobby_screen) {
         std::unique_ptr<Screen> title_screen(new TitleScreen);
         pimpl->knights_app.requestScreenChange(std::move(title_screen));
     } else {
@@ -1494,6 +1497,7 @@ void GameManager::announcementRaw(const UTF8String &msg, bool err)
 //
 
 GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer,
-                         bool single_player, bool tutorial_mode, bool autostart, const PlayerID &my_player_id)
-    : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, my_player_id))
+                         bool single_player, bool tutorial_mode, bool autostart, bool allow_lobby,
+                         const PlayerID &my_player_id)
+    : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, allow_lobby, my_player_id))
 { }
