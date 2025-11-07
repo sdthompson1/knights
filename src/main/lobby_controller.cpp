@@ -167,6 +167,7 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
             knights_client->setPlayerIdAndControls(online_platform.getCurrentUserId(),
                                                    new_control_system);
             knights_client->joinGame("#VMGame");
+            sendOutgoingMessages();
         }
         
         vm_lobby_leader_id = platform_lobby->getLeaderId();
