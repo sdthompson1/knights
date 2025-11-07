@@ -26,13 +26,29 @@
 #include "file_cache.hpp"
 #include "rstream.hpp"
 
+#include <cctype>
 #include <sstream>
+
+namespace {
+    void ValidateStdFileName(const std::string &name)
+    {
+        // This check prevents having a standard file name of something like
+        // "../foo/bar", which would allow standard files outside of the "std_files"
+        // directory to be loaded!
+        for (const char c : name) {
+            if (!isalnum(c) && c != '_' && c != '.') {
+                throw std::runtime_error("Invalid standard file name '" + name + "' (only alphanumeric, underscore, dot allowed)");
+            }
+        }
+    }
+}
 
 boost::shared_ptr<std::istream> FileCache::openFile(const FileInfo &file) const
 {
     boost::shared_ptr<std::istream> result;
     
     if (file.isStandardFile()) {
+        ValidateStdFileName(file.getPath());
         result.reset(new RStream(std::string("client/std_files/") + file.getPath()));
     } else if (stored_fi.get() && *stored_fi == file) {
         result.reset(new std::istringstream(stored_contents));
