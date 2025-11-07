@@ -275,7 +275,7 @@ end
 ----------------------------------------------------------------------
 
 kts.MENU = {
-   text_key = "tutorial",
+   text_key = "tutorial_upper",
    start_game_func = start_tutorial,
    items = { 
       {
@@ -284,7 +284,7 @@ kts.MENU = {
          choices = {
             {
                id = "tutorial",
-               text = "Tutorial"
+               text_key = "tutorial"
             }
          }
       }

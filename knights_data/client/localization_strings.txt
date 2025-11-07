@@ -49,7 +49,8 @@ x_disconnected          {0} (Disconnected)
 
 # Quest selection menu
 quest_sel             QUEST SELECTION
-tutorial              TUTORIAL
+tutorial_upper        TUTORIAL
+tutorial              Tutorial
 quest                 Quest
 mission_type          Mission Type
 type_of_book          Type of Book
