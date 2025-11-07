@@ -75,7 +75,7 @@ function invuln_dur()
     -- Again, this was reworked in version 027 of Knights to give a
     -- distribution closer to the original Amiga game.
 
-    local choice = kts.RandomRange(100)
+    local choice = kts.RandomRange(1, 100)
 
     if choice <= 30 then
         return 1000 * kts.RandomRange(1, 13)
