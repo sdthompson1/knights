@@ -931,12 +931,20 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     std::vector<int> gfx_ids;
     for (std::vector<const Graphic *>::const_iterator it = conf->graphics.begin(); it != conf->graphics.end(); ++it) {
         if (!pimpl->knights_app.getGfxManager().loadGraphic(**it)) {
+            if ((*it)->getFileInfo().isStandardFile()) {
+                // Standard files cannot be requested - the client is expected to have them locally
+                throw std::runtime_error("Error loading file: " + (*it)->getFileInfo().getPath());
+            }
             gfx_ids.push_back((*it)->getID());
         }
     }
     std::vector<int> sound_ids;
     for (std::vector<const Sound *>::const_iterator it = conf->sounds.begin(); it != conf->sounds.end(); ++it) {
         if (!pimpl->knights_app.getSoundManager().loadSound(**it)) {
+            if ((*it)->getFileInfo().isStandardFile()) {
+                // Standard files cannot be requested - the client is expected to have them locally
+                throw std::runtime_error("Error loading file: " + (*it)->getFileInfo().getPath());
+            }
             sound_ids.push_back((*it)->getID());
         }
     }

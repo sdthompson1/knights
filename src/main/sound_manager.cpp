@@ -29,12 +29,17 @@
 
 bool SoundManager::loadSound(const Sound &sound)
 {
-    if (!sound_driver) return false;
-
     if (sound_map.find(&sound) == sound_map.end()) {
         boost::shared_ptr<std::istream> str = file_cache.openFile(sound.getFileInfo());
         if (str) {
-            sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
+            if (sound_driver) {
+                sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
+            } else {
+                // No sound driver available (maybe this machine doesn't have audio)
+                // but at least we have verified that the sound file exists, which should
+                // be enough
+                sound_map.insert(std::make_pair(&sound, nullptr));
+            }
         } else {
             return false;
         }
