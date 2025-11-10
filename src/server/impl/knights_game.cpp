@@ -478,6 +478,18 @@ namespace {
                 }
             }
             buf.writeUbyte(1);  // already_started flag (true)
+
+            // If the game is over, and this is a player (not
+            // observer), then send SERVER_WIN_GAME or
+            // SERVER_LOSE_GAME to this player (to put them on the
+            // winner/loser screen)
+            if (kg.game_over && conn->player_num >= 0) {
+                if (callbacks->isLoser(conn->player_num)) {
+                    buf.writeUbyte(SERVER_LOSE_GAME);
+                } else {
+                    buf.writeUbyte(SERVER_WIN_GAME);
+                }
+            }
         }
 
         // May need to update menu settings, since no of players has changed

@@ -1320,7 +1320,15 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
                                                             player_ids,
                                                             pimpl->single_player,
                                                             pimpl->tutorial_mode));
-    pimpl->knights_app.requestScreenChange(std::move(in_game_screen));
+
+    // We need to execute the screen change immediately ("true"
+    // parameter) because the server might immediately start sending
+    // us gameplay messages, and we need to be ready to receive them.
+    // That means our KnightsCallbacks must be created and ready - and
+    // the KnightsCallbacks are only created once the InGameScreen
+    // starts up!
+    pimpl->knights_app.requestScreenChange(std::move(in_game_screen), true);
+
     pimpl->deathmatch_mode = deathmatch_mode;
 
     // add separator lines to chat (or clear it, if single player mode)

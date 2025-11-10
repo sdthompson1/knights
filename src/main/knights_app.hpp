@@ -82,7 +82,10 @@ public:
     void runKnights();
 
     // Screen change and Quit requests
-    void requestScreenChange(std::unique_ptr<Screen> screen);
+    // Note: "immediate = true" will immediately destroy the current Screen and install
+    // the new one. (If using this, be careful, and make sure that no code that needs
+    // the existing Screen is running.)
+    void requestScreenChange(std::unique_ptr<Screen> screen, bool immediate = false);
     void requestQuit();
 
     // Pop window to front

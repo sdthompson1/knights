@@ -57,6 +57,9 @@ public:
     // query game over state
     bool isGameOver() const { return game_over; }
     int getWinnerNum() const { return winner_num; } // plyr num of the winner, valid if isGameOver() true. (-1 if no winner.)
+    bool isLoser(int plyr) const {
+        return plyr >= 0 && plyr < loser.size() ? loser[plyr] : false;
+    }
     
     // clear queued cmds.
     void clearCmds();

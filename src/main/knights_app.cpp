@@ -514,9 +514,12 @@ void KnightsApp::getWindowedModeSize(int &width, int &height)
 // Screen handling
 //////////////////////////////////////////////
 
-void KnightsApp::requestScreenChange(std::unique_ptr<Screen> screen)
+void KnightsApp::requestScreenChange(std::unique_ptr<Screen> screen, bool immediate)
 {
     pimpl->requested_screen = std::move(screen);
+    if (immediate) {
+        executeScreenChange();
+    }
 }
 
 void KnightsApp::executeScreenChange()

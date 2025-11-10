@@ -133,14 +133,16 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
     Coercri::InputByteBuf buf(data);
 
-    // some aliases (to save typing):
-    ClientCallbacks * client_cb = pimpl->client_callbacks;
-    KnightsCallbacks * knights_cb = pimpl->knights_callbacks;
-    DungeonView * dungeon_view = knights_cb ? &knights_cb->getDungeonView(pimpl->player) : 0;
-    MiniMap * mini_map = knights_cb ? &knights_cb->getMiniMap(pimpl->player) : 0;
-    StatusDisplay * status_display = knights_cb ? &knights_cb->getStatusDisplay(pimpl->player) : 0;
-    
     while (!buf.eof()) {
+        // Some aliases (to save typing)
+        // (Note: these must be inside the while-loop as the callback functions might
+        // themselves modify the ClientCallbacks and/or KnightsCallbacks pointers)
+        ClientCallbacks * client_cb = pimpl->client_callbacks;
+        KnightsCallbacks * knights_cb = pimpl->knights_callbacks;
+        DungeonView * dungeon_view = knights_cb ? &knights_cb->getDungeonView(pimpl->player) : 0;
+        MiniMap * mini_map = knights_cb ? &knights_cb->getMiniMap(pimpl->player) : 0;
+        StatusDisplay * status_display = knights_cb ? &knights_cb->getStatusDisplay(pimpl->player) : 0;
+
         const unsigned char msg_code = buf.readUbyte();
         switch (msg_code) {
            
