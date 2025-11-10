@@ -139,6 +139,7 @@ private:
 
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<PlatformLobby> platform_lobby;
+    bool created_by_me;  // True if the platform lobby was originally created by the current user
 #endif
 
 #ifdef USE_VM_LOBBY

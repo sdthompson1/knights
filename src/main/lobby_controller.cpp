@@ -34,6 +34,9 @@ LobbyController::LobbyController()
     vm_knights_lobby = nullptr;
     host_migration_state = HostMigrationState::NOT_IN_GAME;
 #endif
+#ifdef ONLINE_PLATFORM
+    created_by_me = false;
+#endif
 }
 
 void LobbyController::resetAll()
@@ -43,6 +46,7 @@ void LobbyController::resetAll()
 
 #ifdef ONLINE_PLATFORM
     platform_lobby.reset();
+    created_by_me = false;
 #endif
 
 #ifdef USE_VM_LOBBY
@@ -97,6 +101,7 @@ boost::shared_ptr<KnightsClient>
     // Create the platform lobby
     if (lobby_id.empty()) {
         platform_lobby = online_platform.createLobby(vis);
+        created_by_me = true;
 
         if (platform_lobby) {
             // Set initial status
@@ -108,6 +113,7 @@ boost::shared_ptr<KnightsClient>
 
     } else {
         platform_lobby = online_platform.joinLobby(lobby_id);
+        created_by_me = false;
 
         if (!platform_lobby) {
             throw std::runtime_error("Failed to join lobby");
@@ -153,7 +159,15 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
 {
     if (platform_lobby && platform_lobby->getState() == PlatformLobby::State::FAILED) {
         // We were kicked out of the lobby for some reason. Go to ErrorScreen.
-        err_msg = UTF8String::fromUTF8("Lobby connection lost");
+        if (host_migration_state == HostMigrationState::NOT_IN_GAME) {
+            if (created_by_me) {
+                err_msg = UTF8String::fromUTF8("Failed to create lobby");
+            } else {
+                err_msg = UTF8String::fromUTF8("Failed to join lobby");
+            }
+        } else {
+            err_msg = UTF8String::fromUTF8("Lobby connection lost");
+        }
 
     } else if (platform_lobby
                && platform_lobby->getState() == PlatformLobby::State::JOINED
