@@ -959,8 +959,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     if (pimpl->is_lan_game && player_ids.size() == 1) {
         pimpl->chat_list.add("LAN game created.");
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    } else if (pimpl->is_online_platform_game
-               && pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING) {
+    } else if (pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING) {
         // Add message showing the new leader after host migration
         PlayerID leader_id = pimpl->knights_app.getCurrentLeader();
         Coercri::UTF8String msg;
@@ -1038,7 +1037,7 @@ void GameManager::playerConnected(const PlayerID &id)
     pimpl->lobby_namelist.add(id, false, false, 0);
 
     // only show connection/disconnection messages if in main lobby.
-    if (pimpl->current_game_name.empty()) {
+    if (pimpl->allow_lobby_screen && pimpl->current_game_name.empty()) {
         // Print msg
         std::string name = pimpl->usernameLatin1(id);
         pimpl->chat_list.add(name + " has connected.");
@@ -1054,7 +1053,7 @@ void GameManager::playerDisconnected(const PlayerID &id)
 {
     pimpl->lobby_namelist.remove(id);
 
-    if (pimpl->current_game_name.empty()) {
+    if (pimpl->allow_lobby_screen && pimpl->current_game_name.empty()) {
         std::string name = pimpl->usernameLatin1(id);
         pimpl->chat_list.add(name + " has disconnected.");
     }
