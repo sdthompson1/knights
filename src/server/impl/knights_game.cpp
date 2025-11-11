@@ -1312,7 +1312,10 @@ namespace {
 
             // Clear 'pending_disconnections' in case there is anything still in there from the previous game
             kg.pending_disconnections.clear();
-            
+
+            // Reset game_over to false for the new game
+            kg.game_over = false;
+
             // Start the update thread.
             kg.update_thread_wants_to_exit = false;
             kg.emergency_exit = false;
