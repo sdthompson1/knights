@@ -264,7 +264,7 @@ namespace {
     }        
     
     void SendJoinGameAccepted(KnightsGameImpl &impl, Coercri::OutputByteBuf &buf,
-                              int my_house_colour)
+                              int my_house_colour, bool already_started)
     {
         // Send JOIN_GAME_ACCEPTED
         buf.writeUbyte(SERVER_JOIN_GAME_ACCEPTED);
@@ -362,7 +362,11 @@ namespace {
                 buf.writeString((*it)->id1.asString());
             }
         }
-        
+
+        // Final byte of SERVER_JOIN_GAME_ACCEPTED tells whether the game has already
+        // been started
+        buf.writeUbyte(already_started ? 1 : 0);
+
         // Send the current menu selections
         MyMenuListener listener;
         listener.addBuf(buf);
@@ -448,7 +452,7 @@ namespace {
 
         // Send the SERVER_JOIN_GAME_ACCEPTED message (includes initial configuration messages e.g. menu settings)
         Coercri::OutputByteBuf buf(conn->output_data);
-        SendJoinGameAccepted(kg, buf, conn->house_colour);
+        SendJoinGameAccepted(kg, buf, conn->house_colour, enter_game);
 
         // Send any necessary SERVER_PLAYER_JOINED_THIS_GAME messages (but not to the player who just joined).
         for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {

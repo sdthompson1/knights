@@ -194,6 +194,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     observers.push_back(PlayerID(buf.readString()));
                 }
 
+                bool already_started = (buf.readUbyte() != 0);
+
 #ifdef LOG_MSGS
                 std::cout << "SERVER_JOIN_GAME_ACCEPTED" << std::endl;
 #endif
@@ -201,7 +203,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 if (client_cb) client_cb->joinGameAccepted(pimpl->client_config,
                                                            my_house_colour,
                                                            players, ready_flags, hse_cols,
-                                                           observers);
+                                                           observers,
+                                                           already_started);
             }
             break;
 

@@ -199,7 +199,8 @@ public:
                                   const std::vector<PlayerID> &player_ids,
                                   const std::vector<bool> &ready_flags,
                                   const std::vector<int> &house_cols,
-                                  const std::vector<PlayerID> &observers) override;
+                                  const std::vector<PlayerID> &observers,
+                                  bool already_started) override;
     virtual void joinGameDenied(const LocalKey &reason) override;     // goes to ErrorScreen
 
     virtual void loadGraphic(const Graphic &g, const std::string &contents) override;

@@ -429,6 +429,8 @@ public:
         return usernameLookup(id).asLatin1();
     }
 
+    void showNewLeader();
+
     KnightsApp &knights_app;
     boost::shared_ptr<KnightsClient> knights_client;
     boost::shared_ptr<const ClientConfig> client_config;
@@ -486,6 +488,22 @@ public:
     // Number of graphics/sounds that we are waiting for the server to send.
     int download_count;
 };
+
+void GameManagerImpl::showNewLeader()
+{
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    // Add message showing the new leader after host migration
+    PlayerID leader_id = knights_app.getCurrentLeader();
+    Coercri::UTF8String msg;
+    if (leader_id == knights_app.getOnlinePlatform().getCurrentUserId()) {
+        msg = knights_app.getLocalization().get(LocalKey("you_are_now_leader"));
+    } else {
+        std::vector<LocalParam> params(1, LocalParam(leader_id));
+        msg = knights_app.getLocalization().get(LocalKey("x_is_now_leader"), params);
+    }
+    chat_list.add(msg.asLatin1());
+#endif
+}
 
 void GameManager::setServerName(const std::string &sname)
 {
@@ -898,7 +916,8 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                    const std::vector<PlayerID> &player_ids,
                                    const std::vector<bool> &ready_flags,
                                    const std::vector<int> &house_cols,
-                                   const std::vector<PlayerID> &observers)
+                                   const std::vector<PlayerID> &observers,
+                                   bool already_started)
 {
     pimpl->game_in_progress = false;
     pimpl->my_obs_flag = false;
@@ -955,26 +974,35 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->download_count = gfx_ids.size() + sound_ids.size();
 
     // Clear messages, and add new "Joined game" messages for lan games
-    pimpl->chat_list.clear();
+    bool should_clear = true;
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    should_clear = !(pimpl->knights_app.getHostMigrationState() == HostMigrationState::RECONNECTING
+                     || pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING);
+#endif
+    if (should_clear) {
+        pimpl->chat_list.clear();
+    }
     if (pimpl->is_lan_game && player_ids.size() == 1) {
         pimpl->chat_list.add("LAN game created.");
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    } else if (pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING) {
-        // Add message showing the new leader after host migration
-        PlayerID leader_id = pimpl->knights_app.getCurrentLeader();
-        Coercri::UTF8String msg;
-        if (leader_id == pimpl->knights_app.getOnlinePlatform().getCurrentUserId()) {
-            msg = pimpl->knights_app.getLocalization().get(LocalKey("you_are_now_leader"));
-        } else {
-            std::vector<LocalParam> params(1, LocalParam(leader_id));
-            msg = pimpl->knights_app.getLocalization().get(LocalKey("x_is_now_leader"), params);
-        }
-        pimpl->chat_list.add(msg.asLatin1());
+    } else if (pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING
+               && !already_started) {
+        // If not already started, then show the new leader here. Otherwise, show it
+        // in the startGame call.
+        pimpl->showNewLeader();
 #endif
     }
 
     // Go to MenuScreen, if counts are zero.
     gotoMenuIfAllDownloaded();
+
+#ifdef ONLINE_PLATFORM
+    if (!already_started) {
+        // If not already started, set host migration state to IN_GAME here; otherwise,
+        // set it in the startGame call.
+        pimpl->knights_app.setHostMigrationStateInGame();
+    }
+#endif
 }
 
 void GameManager::gotoMenuIfAllDownloaded()
@@ -1333,13 +1361,27 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     // add separator lines to chat (or clear it, if single player mode)
     if (pimpl->single_player) {
         pimpl->chat_list.clear();
-    } else {
+    } else if (!already_started) {
         pimpl->chat_list.add("\n");
         pimpl->chat_list.add("\n");
     }
     pimpl->saved_chat = UTF8String();
 
-    if (!player_ids.empty()) {  // I am an observer
+    bool host_migration_occurred = false;
+    bool i_am_observer = !player_ids.empty();  // for this particular msg the server only sends player_ids to observers
+
+#ifdef USE_VM_LOBBY
+    host_migration_occurred =
+        already_started &&
+        pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING;
+#endif
+
+    if (host_migration_occurred) {
+        // Host migration completed - show the new host
+        pimpl->showNewLeader();
+
+    } else if (i_am_observer) {
+        // Observer, either starting new game or rejoining existing one
         if (already_started) {
             pimpl->chat_list.add("You are now observing this game.");
         } else {
@@ -1348,15 +1390,14 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
         if (player_ids.size() > 2) {
             pimpl->chat_list.add("Use arrow keys (left/right and up/down) to switch between players.");
         }
+
+    } else if (already_started) {
+        // Player, rejoining an existing game
+        pimpl->chat_list.add("You have reconnected to this game.");
+
     } else {
-        if (already_started) {
-#ifdef USE_VM_LOBBY
-            if (pimpl->knights_app.getHostMigrationState() != HostMigrationState::MIGRATING)
-#endif
-                pimpl->chat_list.add("You have reconnected to this game.");
-        } else {
-            pimpl->chat_list.add("Game started.");
-        }
+        // Player, starting a new game
+        pimpl->chat_list.add("Game started.");
     }
 
     // clear ready flags
@@ -1377,7 +1418,9 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
 
     // Notify updated game status - quest is now in progress
     pimpl->knights_app.setQuestMessageCode(getQuestMessageCode());
+
 #ifdef ONLINE_PLATFORM
+    // We are now in HostMigrationState::IN_GAME, if we weren't already
     pimpl->knights_app.setHostMigrationStateInGame();
 #endif
 }

@@ -93,7 +93,8 @@ public:
                                   const std::vector<PlayerID> &player_ids,
                                   const std::vector<bool> &ready_flags,
                                   const std::vector<int> &house_cols,
-                                  const std::vector<PlayerID> &observers) = 0;
+                                  const std::vector<PlayerID> &observers,
+                                  bool already_started) = 0;
     virtual void joinGameDenied(const LocalKey &reason) = 0;
 
     // loading of gfx/sounds from the server.
