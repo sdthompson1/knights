@@ -88,6 +88,8 @@ public:
     void requestScreenChange(std::unique_ptr<Screen> screen, bool immediate = false);
     void requestQuit();
 
+    bool screenChangePending() const;
+
     // Pop window to front
     void popWindowToFront();
     

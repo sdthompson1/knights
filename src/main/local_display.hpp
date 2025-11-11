@@ -103,6 +103,7 @@ public:
                  bool tutorial,
                  bool tool_tips,
                  const std::string &chat_keys,
+                 const UTF8String &initial_chat_field_contents,
                  std::function<UTF8String(const PlayerID&)> player_name_lookup);
     ~LocalDisplay();
 

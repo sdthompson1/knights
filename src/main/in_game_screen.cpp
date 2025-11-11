@@ -45,7 +45,8 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
                            boost::shared_ptr<const ClientConfig> cfg, int nplayers_,
                            bool deathmatch_mode_,
                            const std::vector<PlayerID> &ids,
-                           bool sgl_plyr, bool tut)
+                           bool sgl_plyr, bool tut,
+                           const UTF8String &initial_chat_field_contents)
     : single_player(sgl_plyr),
       tutorial_mode(tut),
       pause_mode(false),
@@ -63,7 +64,8 @@ InGameScreen::InGameScreen(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc,
       waiting_to_focus_chat(false),
       waiting_to_chat_all(false),
       prev_frame_timestamp_us(0),
-      prev_frame_timestamp_valid(false)
+      prev_frame_timestamp_valid(false),
+      stored_chat_field_contents(initial_chat_field_contents)
 {
 }
 
@@ -146,6 +148,7 @@ void InGameScreen::setupDisplay()
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips,
                                    chat_keys,
+                                   stored_chat_field_contents,
                                    knights_app.getGameManager().getPlayerNameLookup()));
     knights_client->setKnightsCallbacks(display.get());
 
@@ -154,6 +157,8 @@ void InGameScreen::setupDisplay()
 
     global_chat_key = options.global_chat_key;
     team_chat_key = options.team_chat_key;
+
+    stored_chat_field_contents = UTF8String();
 }
 
 void InGameScreen::checkChatFocus()
@@ -262,8 +267,10 @@ void InGameScreen::update()
 
     // Save chat field contents (Trac #12)
     // Also: speech bubble (Trac #11)
-    const UTF8String chat_field_contents = display->getChatFieldContents();
-    knights_app.getGameManager().setSavedChat(chat_field_contents);
+    if (!knights_app.screenChangePending()) {
+        const UTF8String chat_field_contents = display->getChatFieldContents();
+        knights_app.getGameManager().setSavedChat(chat_field_contents);
+    }
     if (display->chatFieldSelected() && !speech_bubble_flag) {
         // Show speech bubble if it's not already visible
         speech_bubble_flag = true;
@@ -445,6 +452,10 @@ bool InGameScreen::start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win
     
     setupDisplay();
     knights_client->finishedLoading();
-    
+
+    // Disable speech bubble if it's active (e.g. from a previous host migration)
+    // so that we get the UI into a consistent state
+    knights_client->requestSpeechBubble(false);
+
     return true;
 }

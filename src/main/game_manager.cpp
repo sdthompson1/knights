@@ -919,7 +919,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                    const std::vector<PlayerID> &observers,
                                    bool already_started)
 {
-    pimpl->game_in_progress = false;
+    pimpl->game_in_progress = already_started;
     pimpl->my_obs_flag = false;
     pimpl->my_house_colour = my_house_colour;
     pimpl->is_split_screen = (pimpl->current_game_name == "#SplitScreenGame");
@@ -1009,8 +1009,8 @@ void GameManager::gotoMenuIfAllDownloaded()
 {
     if (pimpl->download_count == 0    // wait until all files are downloaded
     && !pimpl->tutorial_mode          // tutorial should never go into menu screen
-    && !pimpl->game_in_progress) {    // don't go to menu screen if observation of a game is in progress (#214)
-        std::unique_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen));
+    && !pimpl->game_in_progress) {    // don't go to menu screen if observation of a game is in progress (#214), or if we just host-migrated into an in-progress game
+        std::unique_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen, pimpl->saved_chat));
         pimpl->knights_app.requestScreenChange(std::move(menu_screen));
     }
 }
@@ -1338,6 +1338,11 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     // reset the "end of game" timer for a new game
     pimpl->time_remaining = -1;
 
+    // Clear chat if this is a fresh game started from scratch
+    if (!already_started) {
+        pimpl->saved_chat = UTF8String();
+    }
+
     // Go to InGameScreen
     std::unique_ptr<Screen> in_game_screen(new InGameScreen(pimpl->knights_app,
                                                             pimpl->knights_client,
@@ -1346,7 +1351,8 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
                                                             deathmatch_mode,
                                                             player_ids,
                                                             pimpl->single_player,
-                                                            pimpl->tutorial_mode));
+                                                            pimpl->tutorial_mode,
+                                                            pimpl->saved_chat));
 
     // We need to execute the screen change immediately ("true"
     // parameter) because the server might immediately start sending
@@ -1365,7 +1371,6 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
         pimpl->chat_list.add("\n");
         pimpl->chat_list.add("\n");
     }
-    pimpl->saved_chat = UTF8String();
 
     bool host_migration_occurred = false;
     bool i_am_observer = !player_ids.empty();  // for this particular msg the server only sends player_ids to observers

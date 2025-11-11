@@ -410,4 +410,10 @@ void MenuScreen::update()
                             1, pimpl->chat_listbox->getFont()->getHeight());
         pimpl->chat_scrollarea->showWidgetPart(pimpl->chat_listbox.get(), rect);
     }
+
+    // Save our chat field contents into GameManager (so that it can be preserved across
+    // host migrations if applicable)
+    if (extended && !pimpl->knights_app.screenChangePending()) {
+        pimpl->knights_app.getGameManager().setSavedChat(Coercri::UTF8String::fromLatin1(pimpl->chat_field->getText()));
+    }
 }

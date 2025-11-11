@@ -522,9 +522,15 @@ void KnightsApp::requestScreenChange(std::unique_ptr<Screen> screen, bool immedi
     }
 }
 
+bool KnightsApp::screenChangePending() const
+{
+    return pimpl->requested_screen.get() != pimpl->current_screen.get()
+        && pimpl->requested_screen.get();
+}
+
 void KnightsApp::executeScreenChange()
 {
-    if (pimpl->requested_screen.get() != pimpl->current_screen.get() && pimpl->requested_screen.get()) {
+    if (screenChangePending()) {
         // Completely destroy the gui, then re-create it. This seems to be necessary
         // to avoid certain dangling reference problems (Trac #18).
         pimpl->window->rmWindowListener(pimpl->cg_listener.get());
@@ -932,8 +938,7 @@ void KnightsApp::runKnights()
             // Work out if we need to draw.
             // (Draw if window needsRepaint(), but not if the screen is about to change.)
             bool need_draw = pimpl->window->needsRepaint();
-            if (pimpl->requested_screen.get() != pimpl->current_screen.get()
-            && pimpl->requested_screen.get()) {
+            if (screenChangePending()) {
                 need_draw = false;
             }
 

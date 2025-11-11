@@ -55,7 +55,8 @@ public:
                  boost::shared_ptr<const ClientConfig> config, int nplayers_,
                  bool deathmatch_mode,
                  const std::vector<PlayerID> &player_ids,
-                 bool single_player_, bool tutorial);
+                 bool single_player_, bool tutorial,
+                 const UTF8String &initial_chat_field_contents);
     virtual bool start(KnightsApp &, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     virtual ~InGameScreen();
     virtual void update();
@@ -83,8 +84,6 @@ private:
     bool speech_bubble_flag;
 
     boost::shared_ptr<LocalDisplay> display;
-
-    bool prevent_drawing;
 
     boost::shared_ptr<Coercri::Window> window;
 
