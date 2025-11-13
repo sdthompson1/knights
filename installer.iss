@@ -24,8 +24,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "msvc\x64\Release\KnightsMain.exe"; DestDir: "{app}"; DestName: "Knights.exe"; Flags: ignoreversion
-Source: "msvc\x64\Release\boost_filesystem-vc143-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "msvc\x64\Release\boost_thread-vc143-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\boost_filesystem-vc144-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "msvc\x64\Release\boost_thread-vc144-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\brotlicommon.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\brotlidec.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\bz2.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -39,9 +39,9 @@ Source: "msvc\x64\Release\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 ; note: the below lines might need to be updated if you have a different version of Visual Studio
 ; or you have installed it in a non-standard place
-Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.38.33135\x64\Microsoft.VC143.CRT\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.38.33135\x64\Microsoft.VC143.CRT\VCRUNTIME140_1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.38.33135\x64\Microsoft.VC143.CRT\MSVCP140.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\VCRUNTIME140_1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\MSVCP140.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "COPYRIGHT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README-SDL.txt"; DestDir: "{app}"; Flags: ignoreversion
