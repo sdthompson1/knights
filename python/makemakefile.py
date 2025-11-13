@@ -137,8 +137,9 @@ CXX = g++
 ONLINE_PLATFORM_FLAGS = {online_platform_flags}
 
 CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG -DLUA_INCLUDES_REQUIRE_EXTERN_C $(ONLINE_PLATFORM_FLAGS)
-CFLAGS = -O2 -ffast-math
+CFLAGS = -O2 -ffast-math -pthread
 CXXFLAGS = $(CFLAGS) -std=c++20
+LDFLAGS = -pthread
 BOOST_LIBS = -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX)
 
 INSTALL = install
@@ -207,13 +208,13 @@ pkg_link_flags_knights = "`pkg-config sdl2 --libs` `pkg-config freetype2 --libs`
 # Print target for Knights binary
 print ("""
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ """ + pkg_link_flags_knights + """ -lfontconfig -lX11 $(BOOST_LIBS)
+\t$(CXX) $(LDFLAGS) -o $@ $^ """ + pkg_link_flags_knights + """ -lfontconfig -lX11 $(BOOST_LIBS)
 """)
 
 # Print target for Server binary
 print ("""
 $(SERVER_BINARY_NAME): $(OFILES_SERVER)
-\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ """ + pkg_link_flags_server + """ $(BOOST_LIBS)
+\t$(CXX) $(LDFLAGS) -o $@ $^ """ + pkg_link_flags_server + """ $(BOOST_LIBS)
 """)
 
 
