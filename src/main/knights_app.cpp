@@ -56,6 +56,7 @@
 #include "sound_manager.hpp"
 #include "title_screen.hpp"
 #include "vm_knights_lobby.hpp"
+#include "vm_loading_screen.hpp"
 
 // coercri
 #include "core/coercri_error.hpp"
