@@ -81,9 +81,13 @@ LoadingScreen::LoadingScreen(int port, const PlayerID &id, bool single_player, b
 
 LoadingScreen::~LoadingScreen()
 {
-    // We shouldn't really be able to get here unless the loader has finished,
-    // but just in case it is still running:
-    loader_thread.join();
+    // The loading screen might potentially be destroyed while the loader thread is
+    // still running (e.g. if someone accepts an invite while they are on the loading screen).
+    // In that case, we must wait for the loader thread to finish (as there is no way
+    // to interrupt it).
+    if (loader_thread.joinable()) {
+        loader_thread.join();
+    }
 }
 
 void LoadingScreen::update()

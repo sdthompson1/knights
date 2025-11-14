@@ -64,7 +64,15 @@ VMLoadingScreen::VMLoadingScreen(const std::string &lobby_id, OnlinePlatform::Vi
 { }
 
 VMLoadingScreen::~VMLoadingScreen()
-{ }
+{
+    // The loading screen might potentially be destroyed while the loader thread is
+    // still running (e.g. if someone accepts an invite while they are on the loading screen).
+    // In that case, we must wait for the loader thread to finish (as there is no way
+    // to interrupt it).
+    if (loader_thread.joinable()) {
+        loader_thread.join();
+    }
+}
 
 bool VMLoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui&)
 {
