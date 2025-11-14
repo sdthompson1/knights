@@ -218,7 +218,6 @@ private:
     void executeScreenChange();
     void setupControllers();
     void setupGfxResizer();
-    void checkLobbyJoin();
 
 private:
     boost::shared_ptr<KnightsAppImpl> pimpl;

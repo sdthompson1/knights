@@ -849,21 +849,6 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
     }
 }
 
-void KnightsApp::checkLobbyJoin()
-{
-#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    // Check if lobby join is required (e.g. we accepted an invite)
-    std::string invited_lobby_id = pimpl->online_platform->getRequestedLobbyToJoin();
-    if (!invited_lobby_id.empty()) {
-        // Leave any game we are currently in
-        resetAll();
-        // Go to VMLoadingScreen
-        OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
-        requestScreenChange(std::make_unique<VMLoadingScreen>(invited_lobby_id, vis));
-    }
-#endif
-}
-
 
 //////////////////////////////////////////////
 // Main Routine (runKnights)
@@ -927,7 +912,6 @@ void KnightsApp::runKnights()
 
             // Update Online Platform
             pimpl->updateOnlinePlatform();
-            checkLobbyJoin();
 
 
             // Read input from the network (e.g. server telling us to move a knight on-screen)
@@ -1161,17 +1145,25 @@ void KnightsAppImpl::updateOnlinePlatform()
     lobby_controller.checkHostMigration(*online_platform, options->new_control_system,
                                         err_msg, host_migration_key, del_gfx_sounds);
 
-    // Delete gfx and sounds if requested
+    // Host migration: Delete gfx and sounds if requested
     if (del_gfx_sounds) {
         gfx_manager->deleteAllGraphics();
         sound_manager->clear();
     }
 
-    // Change the screen if requested
+    // Host migration: Change the screen if requested
     if (!err_msg.empty()) {
         requested_screen = std::make_unique<ErrorScreen>(err_msg);
     } else if (host_migration_key != LocalKey()) {
         requested_screen = std::make_unique<HostMigrationScreen>(host_migration_key);
+    }
+
+    // Check lobby join (e.g. we accepted an invite)
+    std::string invited_lobby_id = online_platform->getRequestedLobbyToJoin();
+    if (!invited_lobby_id.empty()) {
+        // Go to VMLoadingScreen
+        OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
+        requested_screen = std::make_unique<VMLoadingScreen>(invited_lobby_id, vis);
     }
 #endif
 #endif

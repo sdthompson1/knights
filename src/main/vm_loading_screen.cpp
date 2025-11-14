@@ -76,6 +76,10 @@ VMLoadingScreen::~VMLoadingScreen()
 
 bool VMLoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui&)
 {
+    // Exit any existing game first (in case we got here via accepting an invite)
+    ka.resetAll();
+
+    // Now start loading the new game (in background thread)
     knights_app = &ka;
     PlayerID local_user_id = ka.getOnlinePlatform().getCurrentUserId();
     bool new_control_system = ka.getOptions().new_control_system;
