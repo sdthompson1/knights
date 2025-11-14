@@ -102,6 +102,8 @@ public:
     void setHostMigrationStateInGame();  // Called by GameManager to notify that game has begun
     PlayerID getCurrentLeader() const;
 
+    void inviteFriendToLobby();
+
     // This is called periodically (by KnightsApp::updateOnlinePlatform)
     // On output, if err_msg non-empty, should go to ErrorScreen
     // On output, if host_migration_key non-empty, should go to HostMigrationScreen

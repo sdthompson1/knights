@@ -848,6 +848,22 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
     }
 }
 
+void KnightsApp::checkLobbyJoin()
+{
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    // Check if lobby join is required (e.g. we accepted an invite)
+    std::string invited_lobby_id = pimpl->online_platform->getRequestedLobbyToJoin();
+    if (!invited_lobby_id.empty()) {
+        // Leave any game we are currently in
+        resetAll();
+        // Go to VMLoadingScreen
+        OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
+        requestScreenChange(std::make_unique<VMLoadingScreen>(invited_lobby_id, vis));
+    }
+#endif
+}
+
+
 //////////////////////////////////////////////
 // Main Routine (runKnights)
 //////////////////////////////////////////////
@@ -910,6 +926,7 @@ void KnightsApp::runKnights()
 
             // Update Online Platform
             pimpl->updateOnlinePlatform();
+            checkLobbyJoin();
 
 
             // Read input from the network (e.g. server telling us to move a knight on-screen)
@@ -938,6 +955,11 @@ void KnightsApp::runKnights()
             // Work out if we need to draw.
             // (Draw if window needsRepaint(), but not if the screen is about to change.)
             bool need_draw = pimpl->window->needsRepaint();
+#ifdef ONLINE_PLATFORM
+            if (!need_draw && pimpl->online_platform->needsRepaint()) {
+                need_draw = true;
+            }
+#endif
             if (screenChangePending()) {
                 need_draw = false;
             }
@@ -1114,6 +1136,11 @@ PlayerID KnightsApp::getCurrentLeader() const
 {
     return pimpl->lobby_controller.getCurrentLeader();
 }
+
+void KnightsApp::inviteFriendToLobby()
+{
+    pimpl->lobby_controller.inviteFriendToLobby();
+}
 #endif
 
 //////////////////////////////////////////////
@@ -1126,11 +1153,10 @@ void KnightsAppImpl::updateOnlinePlatform()
     online_platform->update();
 
 #ifdef USE_VM_LOBBY
+    // Check host migration
     UTF8String err_msg;
     LocalKey host_migration_key;
     bool del_gfx_sounds = false;
-
-    // Check host migration
     lobby_controller.checkHostMigration(*online_platform, options->new_control_system,
                                         err_msg, host_migration_key, del_gfx_sounds);
 
@@ -1198,13 +1224,17 @@ void KnightsAppImpl::processBroadcastMsgs()
 // Game Manager
 //////////////////////////////////////////////
 
-void KnightsApp::createGameManager(boost::shared_ptr<KnightsClient> knights_client, bool single_player, 
-                                   bool tutorial_mode, bool autostart_mode, bool allow_lobby,
+void KnightsApp::createGameManager(boost::shared_ptr<KnightsClient> knights_client,
+                                   bool single_player,
+                                   bool tutorial_mode,
+                                   bool autostart_mode,
+                                   bool allow_lobby,
+                                   bool can_invite,
                                    const PlayerID &my_player_id)
 {
     if (pimpl->game_manager) throw UnexpectedError("GameManager created twice");
     pimpl->game_manager.reset(new GameManager(*this, knights_client, pimpl->timer, single_player, tutorial_mode,
-                                              autostart_mode, allow_lobby, my_player_id));
+                                              autostart_mode, allow_lobby, can_invite, my_player_id));
 }
 
 void KnightsApp::destroyGameManager()

@@ -400,18 +400,19 @@ namespace {
 class GameManagerImpl {
 public:
     GameManagerImpl(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer_,
-                    bool sgl_plyr, bool tut, bool autostart, bool allow_lobby,
+                    bool sgl_plyr, bool tut, bool autostart, bool allow_lobby, bool can_invite,
                     const PlayerID &my_player_id)
         : knights_app(ka), knights_client(kc), menu(0), gui_invalid(false), are_menu_widgets_enabled(true),
           timer(timer_), lobby_namelist(avail_house_colours, ka),
           game_list_updated(false), game_namelist(avail_house_colours, ka),
           my_house_colour(0), time_remaining(-1), my_obs_flag(false), my_ready_flag(false),
-          is_split_screen(false), is_lan_game(false), is_online_platform_game(false),
+          is_split_screen(false), is_lan_game(false),
           chat_list(ka.getConfigMap().getInt("max_chat_lines"), true, true),   // want formatting and timestamps
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
           quest_rqmts_list(9999, false, false),    // ditto
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
           allow_lobby_screen(allow_lobby),
+          can_invite(can_invite),
           my_player_id(my_player_id), doing_menu_widget_update(false), deathmatch_mode(false),
           game_in_progress(false),
           download_count(0)
@@ -461,7 +462,6 @@ public:
     bool my_ready_flag;
     bool is_split_screen;
     bool is_lan_game;
-    bool is_online_platform_game;
 
     // chat
     ChatList chat_list;
@@ -476,6 +476,7 @@ public:
     bool tutorial_mode;
     bool autostart_mode;
     bool allow_lobby_screen;
+    bool can_invite;
 
     PlayerID my_player_id;
     UTF8String saved_chat;
@@ -924,7 +925,6 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->my_house_colour = my_house_colour;
     pimpl->is_split_screen = (pimpl->current_game_name == "#SplitScreenGame");
     pimpl->is_lan_game = (pimpl->current_game_name == "#LanGame");
-    pimpl->is_online_platform_game = (pimpl->current_game_name == "#VMGame");
 
     // update my player list, also set my_obs_flag if needed
     pimpl->game_namelist.clear();
@@ -1010,7 +1010,11 @@ void GameManager::gotoMenuIfAllDownloaded()
     if (pimpl->download_count == 0    // wait until all files are downloaded
     && !pimpl->tutorial_mode          // tutorial should never go into menu screen
     && !pimpl->game_in_progress) {    // don't go to menu screen if observation of a game is in progress (#214), or if we just host-migrated into an in-progress game
-        std::unique_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen, pimpl->saved_chat));
+        std::unique_ptr<Screen> menu_screen(new MenuScreen(
+            pimpl->knights_client,
+            !pimpl->is_split_screen,
+            pimpl->can_invite,
+            pimpl->saved_chat));
         pimpl->knights_app.requestScreenChange(std::move(menu_screen));
     }
 }
@@ -1441,7 +1445,11 @@ void GameManager::gotoMenu()
         pimpl->knights_app.requestQuit();
     } else {
         // Normal game. Go back to the quest selection menu
-        std::unique_ptr<Screen> menu_screen(new MenuScreen(pimpl->knights_client, !pimpl->is_split_screen, pimpl->saved_chat));
+        std::unique_ptr<Screen> menu_screen(new MenuScreen(
+            pimpl->knights_client,
+            !pimpl->is_split_screen,
+            pimpl->can_invite,
+            pimpl->saved_chat));
         pimpl->knights_app.requestScreenChange(std::move(menu_screen));
 
         // add separator lines to chat list.
@@ -1559,8 +1567,15 @@ void GameManager::announcementRaw(const UTF8String &msg, bool err)
 // ctor/dtor
 //
 
-GameManager::GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer,
-                         bool single_player, bool tutorial_mode, bool autostart, bool allow_lobby,
+GameManager::GameManager(KnightsApp &ka,
+                         boost::shared_ptr<KnightsClient> kc,
+                         boost::shared_ptr<Coercri::Timer> timer,
+                         bool single_player,
+                         bool tutorial_mode,
+                         bool autostart,
+                         bool allow_lobby,
+                         bool can_invite,
                          const PlayerID &my_player_id)
-    : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart, allow_lobby, my_player_id))
+    : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart,
+                                allow_lobby, can_invite, my_player_id))
 { }

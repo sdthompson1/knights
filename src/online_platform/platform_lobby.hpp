@@ -58,6 +58,9 @@ public:
 
     // Set game status - only the leader can do this
     virtual void setGameStatus(const LocalKey &key, const std::vector<LocalParam> &params) = 0;
+
+    // Open the platform UI for inviting friends to this lobby (if available).
+    virtual void openInviteUI() { }
 };
 
 #endif

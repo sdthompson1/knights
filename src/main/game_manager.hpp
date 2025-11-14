@@ -121,8 +121,14 @@ private:
 
 class GameManager : public ClientCallbacks {
 public:
-    GameManager(KnightsApp &ka, boost::shared_ptr<KnightsClient> client, boost::shared_ptr<Coercri::Timer> timer,
-                bool single_player_, bool tutorial, bool autostart, bool allow_lobby_screen,
+    GameManager(KnightsApp &ka,
+                boost::shared_ptr<KnightsClient> client,
+                boost::shared_ptr<Coercri::Timer> timer,
+                bool single_player,
+                bool tutorial,
+                bool autostart,
+                bool allow_lobby_screen,
+                bool can_invite,
                 const PlayerID &my_player_id);
 
     void tryJoinGame(const std::string &game_name);

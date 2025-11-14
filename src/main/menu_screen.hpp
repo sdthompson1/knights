@@ -36,7 +36,8 @@ class MenuScreenImpl;
 
 class MenuScreen : public Screen {
 public:
-    explicit MenuScreen(boost::shared_ptr<KnightsClient> knights_client, bool extended,
+    explicit MenuScreen(boost::shared_ptr<KnightsClient> knights_client,
+                        bool extended, bool can_invite,
                         UTF8String saved_chat = UTF8String());
     virtual bool start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     virtual void update();
@@ -45,6 +46,7 @@ private:
     boost::shared_ptr<MenuScreenImpl> pimpl;
     boost::shared_ptr<KnightsClient> knights_client;
     bool extended;
+    bool can_invite;
     UTF8String saved_chat;
 };
 

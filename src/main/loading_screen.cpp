@@ -128,6 +128,7 @@ void LoadingScreen::update()
         // set up the local client
         knights_app->createGameManager(client, single_player_mode, tutorial_mode, autostart_mode,
                                        false,  // allow_lobby_screen
+                                       false,  // can_invite
                                        dummy_player_id);
         client->setClientCallbacks(&knights_app->getGameManager());
         client->setPlayerIdAndControls(dummy_player_id, action_bar_controls);
@@ -151,7 +152,13 @@ void LoadingScreen::update()
             knights_app->hostLanGame(server_port, loader->knights_config, "#LanGame");
 
         // set up the local client
-        knights_app->createGameManager(client, false, false, false, false, player_id);
+        knights_app->createGameManager(client,
+                                       false,  // single_player
+                                       false,  // tutorial
+                                       false,  // autostart
+                                       false,  // allow_lobby_screen
+                                       false,  // can_invite
+                                       player_id);
         client->setClientCallbacks(&knights_app->getGameManager());
 
         // Start responding to broadcasts

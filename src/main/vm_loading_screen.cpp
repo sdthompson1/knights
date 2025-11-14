@@ -99,7 +99,13 @@ void VMLoadingScreen::update()
 
     PlayerID player_id = knights_app->getOnlinePlatform().getCurrentUserId();
 
-    knights_app->createGameManager(client, false, false, false, false, player_id);
+    knights_app->createGameManager(client,
+                                   false,  // single_player
+                                   false,  // tutorial
+                                   false,  // autostart
+                                   false,  // allow_lobby_screen
+                                   true,   // can_invite (We assume VM games are using an online platform, and hence can invite)
+                                   player_id);
     client->setClientCallbacks(&knights_app->getGameManager());
 
     // Note: We don't send the "request join game" message initially; this happens later,

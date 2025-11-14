@@ -58,7 +58,9 @@ namespace {
 
 class MenuScreenImpl : public gcn::ActionListener, public gcn::SelectionListener {
 public:
-    MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extended_, KnightsApp &app, 
+    MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
+                   bool extended, bool can_invite,
+                   KnightsApp &app,
                    boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui,
                    const UTF8String &saved_chat);
     ~MenuScreenImpl();
@@ -87,6 +89,9 @@ public:
     boost::scoped_ptr<gcn::DropDown> house_colour_dropdown;
     boost::scoped_ptr<HouseColourListModel> house_colour_list_model;
     boost::scoped_ptr<GuiButton> join_button;
+#ifdef ONLINE_PLATFORM
+    std::unique_ptr<GuiButton> invite_button;
+#endif
     boost::scoped_ptr<gcn::ListBox> players_listbox;
     std::unique_ptr<gcn::ScrollArea> players_scrollarea;
     boost::scoped_ptr<gcn::Label> players_title;
@@ -98,13 +103,17 @@ public:
     boost::scoped_ptr<HouseColourFont> house_colour_font;
     
     bool extended;
+    bool can_invite;
     bool chat_reformatted;
 };
 
-MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extended_, KnightsApp &app, 
+MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
+                               bool extended, bool can_invite,
+                               KnightsApp &app,
                                boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui_,
                                const UTF8String &saved_chat)
-    : knights_client(kc), knights_app(app), gui(gui_), window(win), extended(extended_),
+    : knights_client(kc), knights_app(app), gui(gui_), window(win),
+      extended(extended), can_invite(can_invite),
       chat_reformatted(false)
 {
     // create container
@@ -230,17 +239,30 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc, bool extende
     container->add(exit_button.get(), container_width - pad - exit_button->getWidth(), y + button_yofs);
     if (extended) {
         const int exit_button_gap = 30;
-        
+
         ready_checkbox.reset(new gcn::CheckBox("Ready to Start"));
         ready_checkbox->addActionListener(this);
         container->add(ready_checkbox.get(), pad, y + 2);
+
+        int x = exit_button->getX() - exit_button_gap;
+
+#ifdef ONLINE_PLATFORM
+        if (can_invite) {
+            invite_button.reset(new GuiButton("Invite Friend"));
+            invite_button->addActionListener(this);
+            container->add(invite_button.get(), x - invite_button->getWidth(), y + button_yofs);
+            x -= invite_button->getWidth() + exit_button_gap;
+        }
+#endif
+
         join_button.reset(new GuiButton("Join Game"));
         join_button->addActionListener(this);
-        container->add(join_button.get(), exit_button->getX() - join_button->getWidth() - exit_button_gap, y + button_yofs);
+        container->add(join_button.get(), x - join_button->getWidth(), y + button_yofs);
         join_button->setVisible(false);
+
         observe_button.reset(new GuiButton("Observe"));
         observe_button->addActionListener(this);
-        container->add(observe_button.get(), exit_button->getX() - observe_button->getWidth() - exit_button_gap, y + button_yofs);
+        container->add(observe_button.get(), x - observe_button->getWidth(), y + button_yofs);
 
         observer_label.reset(new gcn::Label("You are observing this game. Click \"Join Game\" if you wish to play."));
         container->add(observer_label.get(), pad, y + 2);
@@ -316,6 +338,13 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
         return;
     }
 
+#ifdef ONLINE_PLATFORM
+    if (event.getSource() == invite_button.get()) {
+        knights_app.inviteFriendToLobby();
+        return;
+    }
+#endif
+    
     if (event.getSource() == observe_button.get()) {
         knights_client->setObsFlag(true);
         return;
@@ -387,13 +416,15 @@ void MenuScreenImpl::updateGui()
     window->invalidateAll();
 }
 
-MenuScreen::MenuScreen(boost::shared_ptr<KnightsClient> kc, bool extended_, UTF8String saved_chat_)
-    : knights_client(kc), extended(extended_), saved_chat(saved_chat_)
+MenuScreen::MenuScreen(boost::shared_ptr<KnightsClient> kc,
+                       bool extended, bool can_invite,
+                       UTF8String saved_chat)
+    : knights_client(kc), extended(extended), can_invite(can_invite), saved_chat(saved_chat)
 { }
 
 bool MenuScreen::start(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)
 {
-    pimpl.reset(new MenuScreenImpl(knights_client, extended, app, win, gui, saved_chat));
+    pimpl.reset(new MenuScreenImpl(knights_client, extended, can_invite, app, win, gui, saved_chat));
     saved_chat = UTF8String();
     return true;
 }

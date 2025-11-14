@@ -142,8 +142,11 @@ public:
 
     // single player means PAUSE requests will be sent to server, and chat will be blocked.
     void createGameManager(boost::shared_ptr<KnightsClient> knights_client,
-                           bool single_player, bool tutorial_mode,
-                           bool autostart_mode, bool allow_lobby,
+                           bool single_player,
+                           bool tutorial_mode,
+                           bool autostart_mode,
+                           bool allow_lobby,
+                           bool can_invite,
                            const PlayerID &my_player_id);
     void destroyGameManager();
     GameManager & getGameManager();
@@ -194,6 +197,7 @@ public:
     HostMigrationState getHostMigrationState() const;
     void setHostMigrationStateInGame();
     PlayerID getCurrentLeader() const;
+    void inviteFriendToLobby();
 #endif
 
 
@@ -214,6 +218,7 @@ private:
     void executeScreenChange();
     void setupControllers();
     void setupGfxResizer();
+    void checkLobbyJoin();
 
 private:
     boost::shared_ptr<KnightsAppImpl> pimpl;

@@ -103,6 +103,12 @@ public:
     // Join a lobby (by lobby ID)
     virtual std::unique_ptr<PlatformLobby> joinLobby(const std::string& lobby_id) = 0;
 
+    // This returns a non-empty string (lobby id) if the online platform is requesting that
+    // the game should join a particular lobby (because of accepting an invite or similar).
+    // The non-empty string will only be returned once - subsequent calls will return an
+    // empty string again (until the next invite is accepted, that is).
+    virtual std::string getRequestedLobbyToJoin() { return ""; }
+
 
     // P2P Network Connections:
 
@@ -112,6 +118,14 @@ public:
     // addresses should be the platform_user_id of the player you want
     // to connect to.
     virtual Coercri::NetworkDriver & getNetworkDriver() = 0;
+
+
+    // Overlay:
+
+    // For platforms that have an overlay (i.e. Steam) this function
+    // will return true if the overlay needs to be repainted right
+    // now. For other platforms it always returns false.
+    virtual bool needsRepaint() { return false; }
 
 };
 

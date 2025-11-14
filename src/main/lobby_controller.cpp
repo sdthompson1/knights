@@ -151,6 +151,13 @@ PlayerID LobbyController::getCurrentLeader() const
     }
 }
 
+void LobbyController::inviteFriendToLobby()
+{
+    if (platform_lobby) {
+        platform_lobby->openInviteUI();
+    }
+}
+
 void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
                                          bool new_control_system,
                                          UTF8String &err_msg,
