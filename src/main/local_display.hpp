@@ -377,7 +377,8 @@ private:
 
     bool action_bar_tool_tips;
     bool deathmatch_mode;
-    std::string chat_msg;
+    std::string chat_msg;  // a fixed string, contains message "Press TAB to chat" or similar
+    UTF8String initial_chat_field_contents;  // if non-empty, setupGui will set chat field to this string, then clear this string
 
     bool quest_rqmts_minimized;
     bool force_setup_gui;  // used to force gui update when the quest rqmts area is minimized.

@@ -328,6 +328,7 @@ LocalDisplay::LocalDisplay(const Localization &localization,
       deathmatch_mode(dm_mode),
 
       chat_msg("<Click here or press " + chat_keys + " to chat>"),
+      initial_chat_field_contents(initial_chat_field_contents),
 
       quest_rqmts_minimized(false),
       force_setup_gui(false)
@@ -347,13 +348,6 @@ LocalDisplay::LocalDisplay(const Localization &localization,
         lmb_down[i] = false;
         chat_flag[i] = false;
     }
-
-    // Create a dummy TextField to hold the initial chat field contents.
-    // This will be resized/positioned appropriately by setupGui.
-    chat_field.reset(new gcn::TextField);
-    chat_field->setVisible(false);
-    chat_field->setText(initial_chat_field_contents.asLatin1());
-    chat_field->setCaretPosition(chat_field->getText().size());
 
     initialize(nplyrs, player_ids, menu_gfx_centre, menu_gfx_empty, menu_gfx_highlight, speech_bubble);
 }
@@ -549,8 +543,16 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         clear_button->setFocusable(false);
         container.add(clear_button.get(), send_button->getX() - clear_button->getWidth() - 2, chat_y);
 
-        const std::string old_chat_text = chat_field->getText();
-        int old_caret_position = chat_field->getCaretPosition();
+        std::string old_chat_text;
+        int old_caret_position = 0;
+        if (!initial_chat_field_contents.empty()) {
+            old_chat_text = initial_chat_field_contents.asLatin1();
+            initial_chat_field_contents = UTF8String();
+            old_caret_position = old_chat_text.size();
+        } else if (chat_field) {
+            old_chat_text = chat_field->getText();
+            old_caret_position = chat_field->getCaretPosition();
+        }
         chat_field.reset(new gcn::TextField);
         chat_field->setText(old_chat_text);
         chat_field->setCaretPosition(old_caret_position);
