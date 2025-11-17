@@ -24,7 +24,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "msvc\x64\Release\KnightsMain.exe"; DestDir: "{app}"; DestName: "Knights.exe"; Flags: ignoreversion
-Source: "msvc\x64\Release\boost_filesystem-vc144-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\boost_thread-vc144-mt-x64-1_84.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\brotlicommon.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "msvc\x64\Release\brotlidec.dll"; DestDir: "{app}"; Flags: ignoreversion

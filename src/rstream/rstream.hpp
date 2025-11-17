@@ -28,8 +28,7 @@
 #include <fstream>
 
 #ifndef VIRTUAL_SERVER
-#include "boost/filesystem.hpp"
-#include "boost/filesystem/fstream.hpp"
+#include <filesystem>
 #endif
 
 /*
@@ -97,7 +96,7 @@ public:
 
 #ifndef VIRTUAL_SERVER
     // Initialize function - must be called before creating any RStreams
-    static void Initialize(const boost::filesystem::path &base_path_);
+    static void Initialize(const std::filesystem::path &base_path_);
 #endif
 
     // Static function to tell whether a given resource exists.
@@ -119,17 +118,13 @@ private:
     // at the moment we only implement by using a filebuf. could add a
     // custom stream buffer to do more sophisticated stuff. (but still
     // want rstream itself to inherit from istream.)
-#ifdef VIRTUAL_SERVER
     std::filebuf my_filebuf;
-#else
-    boost::filesystem::filebuf my_filebuf;
-#endif
     enum { BUFSIZE = 1024 };
     char buffer[BUFSIZE];
 
     // static members
 #ifndef VIRTUAL_SERVER
-    static boost::filesystem::path base_path;
+    static std::filesystem::path base_path;
     static bool initialized;
 #endif
 };

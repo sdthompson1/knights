@@ -140,7 +140,7 @@ CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG -DLUA_INCLUDES_REQUI
 CFLAGS = -O2 -ffast-math -pthread
 CXXFLAGS = $(CFLAGS) -std=c++20
 LDFLAGS = -pthread
-BOOST_LIBS = -lboost_thread$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_system$(BOOST_SUFFIX)
+BOOST_LIBS = -lboost_thread$(BOOST_SUFFIX)
 
 INSTALL = install
 

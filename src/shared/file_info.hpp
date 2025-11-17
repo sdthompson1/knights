@@ -56,7 +56,7 @@ public:
     
 private:
     // This is a resource pathname i.e. it will be passed to RStream constructor eventually.
-    // Therefore, it is a std::string rather than a boost::filesystem::path.
+    // Therefore, it is a std::string rather than a std::filesystem::path.
     std::string pathname;
 
     // false: file is on server, must be downloaded by client (or read from cache, if client does caching).

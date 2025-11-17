@@ -727,7 +727,7 @@ int main(int argc, char **argv)
     try {
 
         // Get resource dir.
-        boost::filesystem::path rdir;
+        std::filesystem::path rdir;
         if (!g_config->getKnightsDataDir().empty()) {
             rdir = g_config->getKnightsDataDir();
         } else {

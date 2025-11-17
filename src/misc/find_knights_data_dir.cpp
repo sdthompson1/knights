@@ -25,17 +25,17 @@
 
 #include <iostream>
 
-boost::filesystem::path FindKnightsDataDir()
+std::filesystem::path FindKnightsDataDir()
 {
-    boost::filesystem::path p = "knights_data";
+    std::filesystem::path p = "knights_data";
 
 #ifdef DATA_DIR
 #define _QUOTEME(x) #x
 #define QUOTEME(x) _QUOTEME(x)
-    boost::filesystem::path p2 = QUOTEME(DATA_DIR);
+    std::filesystem::path p2 = QUOTEME(DATA_DIR);
 
     // In the case where p doesn't exist, but p2 does, we want to use p2 instead of p
-    if (boost::filesystem::exists(p2) && !boost::filesystem::exists(p)) {
+    if (std::filesystem::exists(p2) && !std::filesystem::exists(p)) {
         p = p2;
     }
 #endif

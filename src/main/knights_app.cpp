@@ -82,10 +82,6 @@
 // lua
 #include "include_lua.hpp"
 
-// boost
-#include "boost/filesystem.hpp"
-#include "boost/filesystem/fstream.hpp"
-
 #include <cstdlib>
 #include <iostream>
 #include <random>
@@ -221,7 +217,7 @@ public:
     std::unique_ptr<gcn::Font> gcn_font;
 
     std::unique_ptr<Options> options;
-    boost::filesystem::path options_filename;
+    std::filesystem::path options_filename;
     bool player_name_changed;  // has options->player_name been changed
 
     ConfigMap config_map;
@@ -276,7 +272,7 @@ public:
 // Constructor (One-Time Initialization)
 /////////////////////////////////////////////////////
 
-KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &resource_dir, const std::string &config_filename,
+KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &resource_dir, const std::string &config_filename,
                        bool autostart)
     : pimpl(new KnightsAppImpl)
 {
@@ -352,7 +348,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const boost::filesystem::path &
     pimpl->options_filename /= ".knights_config";
 #endif
     if (!pimpl->options_filename.empty()) {
-        boost::filesystem::ifstream str(pimpl->options_filename);
+        std::ifstream str(pimpl->options_filename);
         *pimpl->options = LoadOptions(str);
     }
     

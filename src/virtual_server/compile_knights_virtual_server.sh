@@ -27,5 +27,5 @@ g++ -I../coercri -I../rstream -I../misc \
     tick_data.cpp \
     risc_vm-*.cpp \
     -g $1 \
-    -lenet -lboost_filesystem \
+    -lenet \
     -o knights_virtual_server

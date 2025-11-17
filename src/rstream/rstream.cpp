@@ -27,12 +27,10 @@
 #include <vector>
 
 #ifndef VIRTUAL_SERVER
-namespace bfs = boost::filesystem;
-
-bfs::path RStream::base_path;
+std::filesystem::path RStream::base_path;
 bool RStream::initialized = false;
 
-void RStream::Initialize(const boost::filesystem::path &base_path_)
+void RStream::Initialize(const std::filesystem::path &base_path_)
 {
     if (initialized) {
         throw RStreamError("N/A", "Resource Loader Initialized Twice");
@@ -42,9 +40,9 @@ void RStream::Initialize(const boost::filesystem::path &base_path_)
     // However, if it is relative, we canonicalize it w.r.t. the current directory.
 
     // NOTE: If the basepath does not exist, the following call to canonical() will throw.
-    
-    base_path = bfs::canonical(base_path_);
-    
+
+    base_path = std::filesystem::canonical(base_path_);
+
     initialized = true;
 }
 #endif
@@ -107,9 +105,9 @@ bool RStream::Exists(const char *resource_path)
     std::ifstream str(("RES:" + normalized).c_str(), std::ios::binary);
     return bool(str);
 #else
-    // Check if the path exists using boost::filesystem
-    boost::filesystem::path path_to_open = base_path / normalized;
-    return exists(path_to_open);
+    // Check if the path exists using std::filesystem
+    std::filesystem::path path_to_open = base_path / normalized;
+    return std::filesystem::exists(path_to_open);
 #endif
 }
 

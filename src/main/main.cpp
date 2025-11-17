@@ -77,7 +77,7 @@ namespace {
     // or PrintVersionAndExit if "-v" option was given.
     void ParseCmdLineArgs(int argc, char const * const * argv,
                           DisplayType & display_type,
-                          boost::filesystem::path & data_dir,
+                          std::filesystem::path & data_dir,
                           std::string & config_filename,
                           bool & autostart)
     {
@@ -123,9 +123,9 @@ int main(int argc, char * argv[])
     std::wstring rdir(app_path, pathlen);
     rdir += L"\\knights_data";
 
-    const boost::filesystem::path default_data_dir = rdir;
+    const std::filesystem::path default_data_dir = rdir;
 #else
-    const boost::filesystem::path default_data_dir = FindKnightsDataDir();
+    const std::filesystem::path default_data_dir = FindKnightsDataDir();
 #endif
 
     std::string err_msg;
@@ -139,7 +139,7 @@ int main(int argc, char * argv[])
         std::string config_filename = "main.lua";
         bool autostart = false;
 
-        boost::filesystem::path data_dir = default_data_dir;
+        std::filesystem::path data_dir = default_data_dir;
 
         // Parse the cmd line arguments
         ParseCmdLineArgs(argc, argv, display_type, data_dir, config_filename, autostart);

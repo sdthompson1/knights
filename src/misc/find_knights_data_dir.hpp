@@ -24,11 +24,11 @@
 #ifndef FIND_KNIGHTS_DATA_DIR_HPP
 #define FIND_KNIGHTS_DATA_DIR_HPP
 
-#include "boost/filesystem.hpp"
+#include <filesystem>
 
 // Finds the default location of "knights_data".
 // (This will either be "knights_data" in the current directory, or DATA_DIR.)
 
-boost::filesystem::path FindKnightsDataDir();
+std::filesystem::path FindKnightsDataDir();
 
 #endif

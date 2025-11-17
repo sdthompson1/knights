@@ -178,7 +178,7 @@ void TickNetwork::onServerSendData(uint8_t client_number, std::vector<unsigned c
 
 int main(int argc, const char **argv)
 {
-    boost::filesystem::path data_dir = "knights_data";
+    std::filesystem::path data_dir = "knights_data";
     if (argc > 1) {
         data_dir = argv[1];
     }
