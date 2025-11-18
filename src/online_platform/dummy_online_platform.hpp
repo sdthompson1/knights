@@ -58,6 +58,7 @@ public:
     virtual void clearLobbyFilters() override;
     virtual void addChecksumFilter(uint64_t checksum) override;
     virtual std::vector<std::string> getLobbyList() override;
+    void refreshLobbyList() override;
 
     // Get lobby info
     virtual LobbyInfo getLobbyInfo(const std::string &lobby_id) override;

@@ -104,6 +104,11 @@ public:
     // (TODO: Add a method to request a manual refresh of the list.)
     virtual std::vector<std::string> getLobbyList() = 0;
 
+    // Force a manual refresh of the cached getLobbyList results.
+    // (Note: this can be called as often as desired - the underlying implementation
+    // will rate-limit if necessary.)
+    virtual void refreshLobbyList() = 0;
+
     // Get lobby info (by lobby ID)
     virtual LobbyInfo getLobbyInfo(const std::string &lobby_id) = 0;
 

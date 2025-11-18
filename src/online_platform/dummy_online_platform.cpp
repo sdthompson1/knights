@@ -172,6 +172,12 @@ std::vector<std::string> DummyOnlinePlatform::getLobbyList()
     return result;
 }
 
+void DummyOnlinePlatform::refreshLobbyList()
+{
+    // Force a refresh by resetting last_lobby_list_time
+    last_lobby_list_time = std::chrono::steady_clock::now() - std::chrono::seconds(120);
+}
+
 std::unique_ptr<PlatformLobby> DummyOnlinePlatform::joinLobby(const std::string& lobby_id)
 {
     if (!connected) return nullptr;

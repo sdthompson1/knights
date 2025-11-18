@@ -207,6 +207,7 @@ private:
     std::unique_ptr<gcn::ScrollArea> scroll_area;
     boost::scoped_ptr<gcn::ListBox> listbox;
     boost::scoped_ptr<gcn::CheckBox> show_incompatible_checkbox;
+    boost::scoped_ptr<gcn::Button> refresh_button;
     boost::scoped_ptr<gcn::Button> back_button;
     boost::scoped_ptr<gcn::Button> create_game_button;
     boost::shared_ptr<gcn::Font> cg_font;
@@ -402,11 +403,16 @@ void OnlineMultiplayerScreenImpl::createFullGui()
 
     AdjustListBoxSize(*listbox, *scroll_area);
 
+    refresh_button.reset(new GuiButton("Refresh List"));
+    refresh_button->addActionListener(this);
+    container->add(refresh_button.get(), pad + width - refresh_button->getWidth(), y);
+
     show_incompatible_checkbox.reset(new gcn::CheckBox("Show incompatible games"));
     show_incompatible_checkbox->addActionListener(this);
     show_incompatible_checkbox->setSelected(g_show_incompatible);
-    container->add(show_incompatible_checkbox.get(), pad, y);
-    y += show_incompatible_checkbox->getHeight() + pad;
+    container->add(show_incompatible_checkbox.get(), pad, y + refresh_button->getHeight() / 2 - show_incompatible_checkbox->getHeight() / 2);
+
+    y += refresh_button->getHeight() + pad;
 
     create_game_button.reset(new GuiButton("Create New Game"));
     create_game_button->addActionListener(this);
@@ -444,6 +450,10 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
 
         // Remember setting for next time this UI is opened
         g_show_incompatible = show_incompatible_checkbox->isSelected();
+
+    } else if (event.getSource() == refresh_button.get()) {
+        knights_app.getOnlinePlatform().refreshLobbyList();
+        refreshGameList();
     }
 }
 
