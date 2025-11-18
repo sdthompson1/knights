@@ -45,9 +45,10 @@ STATUS_SUCCESS = 0x00
 STATUS_ERROR = 0x01
 
 class Lobby:
-    def __init__(self, lobby_id: str, leader_user_id: str):
+    def __init__(self, lobby_id: str, leader_user_id: str, checksum: bytes):
         self.lobby_id = lobby_id
         self.leader_user_id = leader_user_id
+        self.checksum = checksum
         self.members: Set[str] = {leader_user_id}
         self.created_time = time.time()
         self.status_key = ""  # LocalKey string
@@ -198,7 +199,7 @@ class LobbyServer:
             lobby_id = str(self.next_lobby_id)
             self.next_lobby_id += 1
             
-            lobby = Lobby(lobby_id, user_id)
+            lobby = Lobby(lobby_id, user_id, payload)
             self.lobbies[lobby_id] = lobby
             self.user_lobbies[user_id] = lobby_id
         
@@ -210,12 +211,14 @@ class LobbyServer:
             return self.create_error_response(b"Not logged in")
         
         with self.lock:
-            lobby_ids = list(self.lobbies.keys())
-        
-        # Format: number of lobbies (4 bytes) + lobby IDs (null-terminated strings)
-        response_data = struct.pack('<I', len(lobby_ids))
-        for lobby_id in lobby_ids:
+            lobby_ids_and_checksums = [(k, v.checksum) for k,v in self.lobbies.items()]
+            print("Lobby ids and checksums", lobby_ids_and_checksums)
+
+        # Format: number of lobbies (4 bytes) + lobby IDs and checksums (null-terminated strings)
+        response_data = struct.pack('<I', len(lobby_ids_and_checksums))
+        for (lobby_id, checksum) in lobby_ids_and_checksums:
             response_data += lobby_id.encode() + b'\0'
+            response_data += checksum + b'\0'
         
         return self.create_success_response(response_data)
     
@@ -275,11 +278,14 @@ class LobbyServer:
             
             lobby = self.lobbies[lobby_id]
             
-            # Format: leader_id (null-terminated) + num_players (4 bytes) + 
-            #         status_key (null-terminated) + has_param (1 byte) + 
-            #         [optional param_key (null-terminated)] + lobby_state (null-terminated)
+            # Format: leader_id (null-terminated) + num_players (4 bytes) +
+            #         checksum (null-terminated) +
+            #         status_key (null-terminated) +
+            #         has_param (1 byte) +
+            #         [optional param_key (null-terminated)]
             response_data = lobby.get_leader_id().encode() + b'\0'
             response_data += struct.pack('<I', len(lobby.members))
+            response_data += lobby.checksum + b'\0'
             response_data += lobby.status_key.encode() + b'\0'
             
             # Add has_param flag and optional param_key
@@ -288,10 +294,7 @@ class LobbyServer:
                 response_data += lobby.param_key.encode() + b'\0'
             else:
                 response_data += struct.pack('<B', 0)  # has_param = false
-            
-            # Add lobby state
-            response_data += lobby.lobby_state.encode() + b'\0'
-        
+
         return self.create_success_response(response_data)
     
     def handle_set_lobby_info(self, client_socket: socket.socket, payload: bytes) -> bytes:

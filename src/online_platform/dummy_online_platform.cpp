@@ -35,7 +35,6 @@
 #include <random>
 #include <sstream>
 #include <cstring>
-#include <iostream>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -88,19 +87,31 @@ Coercri::UTF8String DummyOnlinePlatform::lookupUserName(const PlayerID& platform
     return Coercri::UTF8String::fromUTF8("@" + platform_user_id.asString());
 }
 
-std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis)
+std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis, uint64_t checksum)
 {
     // Note: 'vis' parameter is ignored for DummyOnlinePlaform
 
     if (!connected) return nullptr;
-    
-    if (sendMessage(MSG_CREATE_LOBBY, "")) {
+
+    std::ostringstream oss;
+    oss << checksum;
+    if (sendMessage(MSG_CREATE_LOBBY, oss.str())) {
         std::string lobby_id;
         if (receiveResponse(lobby_id)) {
             return std::make_unique<DummyPlatformLobby>(this, lobby_id);
         }
     }
     return nullptr;
+}
+
+void DummyOnlinePlatform::clearLobbyFilters()
+{
+    filter_checksum.reset();
+}
+
+void DummyOnlinePlatform::addChecksumFilter(uint64_t checksum)
+{
+    filter_checksum = checksum;
 }
 
 std::vector<std::string> DummyOnlinePlatform::getLobbyList()
@@ -113,7 +124,7 @@ std::vector<std::string> DummyOnlinePlatform::getLobbyList()
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - last_lobby_list_time);
 
-    if (elapsed.count() < 5 && !cached_lobby_list.empty()) {
+    if (elapsed.count() < 5) {
         return cached_lobby_list;
     }
 
@@ -128,12 +139,24 @@ std::vector<std::string> DummyOnlinePlatform::getLobbyList()
                 // but it should be fine here because this is debug-only code!
                 uint32_t count = *reinterpret_cast<const uint32_t*>(response_data.data());
                 size_t pos = 4;
-
                 for (uint32_t i = 0; i < count && pos < response_data.size(); ++i) {
                     size_t null_pos = response_data.find('\0', pos);
                     if (null_pos != std::string::npos) {
-                        result.push_back(response_data.substr(pos, null_pos - pos));
+                        std::string lobby_id = response_data.substr(pos, null_pos - pos);
                         pos = null_pos + 1;
+                        null_pos = response_data.find('\0', pos);
+                        if (null_pos != std::string::npos) {
+                            std::string checksum_str = response_data.substr(pos, null_pos - pos);
+                            pos = null_pos + 1;
+                            std::istringstream iss(checksum_str);
+                            uint64_t checksum = 0;
+                            iss >> checksum;
+                            if (!filter_checksum.has_value() || *filter_checksum == checksum) {
+                                result.push_back(lobby_id);
+                            }
+                        } else {
+                            break;
+                        }
                     } else {
                         break;
                     }
@@ -173,7 +196,8 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
     if (sendMessage(MSG_GET_LOBBY_INFO, lobby_id)) {
         std::string response_data;
         if (receiveResponse(response_data)) {
-            // Parse response: leader_id (null-terminated) + num_players (4 bytes) + 
+            // Parse response: leader_id (null-terminated) + num_players (4 bytes) +
+            //                 checksum (null-terminated) +
             //                 status_key (null-terminated) + has_param (1 byte) + 
             //                 [optional param_key (null-terminated)]
             size_t pos = 0;
@@ -181,30 +205,40 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
             if (null_pos != std::string::npos) {
                 info.leader_id = PlayerID(response_data.substr(pos, null_pos - pos));
                 pos = null_pos + 1;
+            }
 
-                if (pos + 4 <= response_data.size()) {
-                    info.num_players = *reinterpret_cast<const uint32_t*>(response_data.data() + pos);
-                    pos += 4;
+            if (pos + 4 <= response_data.size()) {
+                info.num_players = *reinterpret_cast<const uint32_t*>(response_data.data() + pos);
+                pos += 4;
+            }
 
-                    // Parse status key
+            // Parse checksum
+            null_pos = response_data.find('\0', pos);
+            if (null_pos != std::string::npos) {
+                std::string checksum_str = response_data.substr(pos, null_pos - pos);
+                pos = null_pos + 1;
+                std::istringstream iss(checksum_str);
+                iss >> info.checksum;
+            }
+
+            // Parse status key
+            null_pos = response_data.find('\0', pos);
+            if (null_pos != std::string::npos) {
+                info.game_status_key = LocalKey(response_data.substr(pos, null_pos - pos));
+                pos = null_pos + 1;
+            }
+
+            // Check if there's a parameter
+            if (pos < response_data.size()) {
+                uint8_t has_param = response_data[pos];
+                pos += 1;
+
+                if (has_param && pos < response_data.size()) {
                     null_pos = response_data.find('\0', pos);
                     if (null_pos != std::string::npos) {
-                        info.game_status_key = LocalKey(response_data.substr(pos, null_pos - pos));
+                        LocalKey param_key(response_data.substr(pos, null_pos - pos));
                         pos = null_pos + 1;
-
-                        // Check if there's a parameter
-                        if (pos < response_data.size()) {
-                            uint8_t has_param = response_data[pos];
-                            pos += 1;
-
-                            if (has_param && pos < response_data.size()) {
-                                null_pos = response_data.find('\0', pos);
-                                if (null_pos != std::string::npos) {
-                                    LocalKey param_key(response_data.substr(pos, null_pos - pos));
-                                    info.game_status_params.push_back(LocalParam(param_key));
-                                }
-                            }
-                        }
+                        info.game_status_params.push_back(LocalParam(param_key));
                     }
                 }
             }

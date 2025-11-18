@@ -25,6 +25,7 @@
 
 #include "rstream.hpp"
 #include "rstream_error.hpp"
+#include "xxhash.hpp"
 
 #include "network/byte_buf.hpp"
 
@@ -523,15 +524,29 @@ KnightsVM::PathType KnightsVM::interpretPath(std::string &resource_filename)
 
 int KnightsVM::openRstreamFile(const std::string &resource_filename)
 {
+    // Not allowed to read RStream files after first tick
     if (!rstream_enabled) {
-        // Not allowed to read RStream files after first tick
         return -NEWLIB_ENOENT;
     }
 
+    // Normalize the filename
+    std::string normalized_filename;
+    try {
+        normalized_filename = RStream::NormalizePath(resource_filename);
+    } catch (RStreamError&) {
+        return -NEWLIB_ENOENT;
+    }
+
+    // The VM should only be accessing server/ files
+    if (!normalized_filename.starts_with("server/")) {
+        return -NEWLIB_ENOENT;
+    }
+
+    // Try to open the file
     bool error = false;
     std::unique_ptr<RStream> str;
     try {
-        str.reset(new RStream(resource_filename));
+        str.reset(new RStream(normalized_filename));
     } catch (RStreamError&) {
         // Ignore RStream errors, pass them back to the VM instead
         error = true;
@@ -623,74 +638,6 @@ void KnightsVM::handleInvalidAddress(uint32_t addr)
 // Sync functions
 //
 
-namespace {
-    // this is based on xxHash, see https://github.com/Cyan4973/xxHash/blob/dev/doc/xxhash_spec.md#xxh64-algorithm-description
-    constexpr uint64_t PRIME64_1 = UINT64_C(0x9E3779B185EBCA87);
-    constexpr uint64_t PRIME64_2 = UINT64_C(0xC2B2AE3D27D4EB4F);
-    constexpr uint64_t PRIME64_3 = UINT64_C(0x165667B19E3779F9);
-    constexpr uint64_t PRIME64_4 = UINT64_C(0x85EBCA77C2B2AE63);
-    constexpr uint64_t PRIME64_5 = UINT64_C(0x27D4EB2F165667C5);
-
-    uint64_t RotateLeft(uint64_t x, unsigned int bits)
-    {
-        return (x << bits) | (x >> (64 - bits));
-    }
-
-    void InitHash(uint64_t seed, uint64_t acc[4])
-    {
-        // Step 1. Initialize internal accumulators
-        acc[0] = seed + PRIME64_1 + PRIME64_2;
-        acc[1] = seed + PRIME64_2;
-        acc[2] = seed;
-        acc[3] = seed - PRIME64_1;
-    }
-
-    uint64_t HashRound(uint64_t accN, uint64_t laneN)
-    {
-        accN += (laneN * PRIME64_2);
-        accN = RotateLeft(accN, 31);
-        return accN * PRIME64_1;
-    }
-
-    void UpdateHash(uint64_t acc[4], const uint64_t lane[4])
-    {
-        // Step 2. Process stripes
-        for (int i = 0; i < 4; ++i) {
-            acc[i] = HashRound(acc[i], lane[i]);
-        }
-    }
-
-    uint64_t MergeAccumulator(uint64_t acc, uint64_t accN)
-    {
-        acc ^= HashRound(0, accN);
-        acc *= PRIME64_1;
-        return acc + PRIME64_4;
-    }
-
-    uint64_t FinalHash(const uint64_t acc[4])
-    {
-        // Step 3. Accumulator convergence
-        uint64_t hash = RotateLeft(acc[0], 1)
-            + RotateLeft(acc[1], 7)
-            + RotateLeft(acc[2], 12)
-            + RotateLeft(acc[3], 18);
-        for (int i = 0; i < 4; ++i) {
-            hash = MergeAccumulator(hash, acc[i]);
-        }
-
-        // Note: we don't bother adding input length because it is fixed in our case
-
-        // Step 6. Final mix (avalanche)
-        hash ^= (hash >> 33);
-        hash *= PRIME64_2;
-        hash ^= (hash >> 29);
-        hash *= PRIME64_3;
-        hash ^= (hash >> 32);
-
-        return hash;
-    }
-}
-
 uint32_t KnightsVM::getLowestAddr() const
 {
     uint32_t lowest_addr = 0;
@@ -731,8 +678,7 @@ void KnightsVM::saveRegionStartingFrom(std::deque<MemoryBlock> &result, uint32_t
         block.base_address = addr;
         block.contents.reserve(block_size >> 2);
 
-        uint64_t acc[4];
-        InitHash(addr, acc);
+        XXHash hasher(addr);
 
         // Do 32 bytes (8 words) at a time
         while (addr < top_addr) {
@@ -752,10 +698,10 @@ void KnightsVM::saveRegionStartingFrom(std::deque<MemoryBlock> &result, uint32_t
                 lane[d] = combined_word;
             }
 
-            UpdateHash(acc, lane);
+            hasher.updateHash(lane);
         }
 
-        block.hash = FinalHash(acc);
+        block.hash = hasher.finalHash();
 
         result.push_back(std::move(block));
     }
@@ -964,8 +910,7 @@ void KnightsVM::hashRegionStartingFrom(Coercri::OutputByteBuf &output, uint32_t 
     while (isPageAllocated(addr)) {
         uint32_t top_addr = addr + block_size;
 
-        uint64_t acc[4];
-        InitHash(addr, acc);
+        XXHash hasher(addr);
 
         while (addr < top_addr) {
 
@@ -980,10 +925,10 @@ void KnightsVM::hashRegionStartingFrom(Coercri::OutputByteBuf &output, uint32_t 
                 lane[d] = combined_word;
             }
 
-            UpdateHash(acc, lane);
+            hasher.updateHash(lane);
         }
 
-        uint64_t hash = FinalHash(acc);
+        uint64_t hash = hasher.finalHash();
 
         output.writeUlong(static_cast<uint32_t>(hash));
         output.writeUlong(static_cast<uint32_t>(hash >> 32));
@@ -1012,8 +957,7 @@ void KnightsVM::compareMemoryHashes(Coercri::InputByteBuf &input,
 
 MemoryHash KnightsVM::getHash()
 {
-    uint64_t acc[4];
-    InitHash(0, acc);
+    XXHash hasher(0);
 
     uint64_t lane[4];
 
@@ -1021,69 +965,69 @@ MemoryHash KnightsVM::getHash()
     lane[1] = (uint64_t(getGP()) << 32) | getTP();
     lane[2] = (uint64_t(getT0()) << 32) | getT1();
     lane[3] = (uint64_t(getT2()) << 32) | getS0();
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(getS1()) << 32) | getA0();
     lane[1] = (uint64_t(getA1()) << 32) | getA2();
     lane[2] = (uint64_t(getA3()) << 32) | getA4();
     lane[3] = (uint64_t(getA5()) << 32) | getA6();
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(getA7()) << 32) | getS2();
     lane[1] = (uint64_t(getS3()) << 32) | getS4();
     lane[2] = (uint64_t(getS5()) << 32) | getS6();
     lane[3] = (uint64_t(getS7()) << 32) | getS8();
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(getS9()) << 32) | getS10();
     lane[1] = (uint64_t(getS11()) << 32) | getT3();
     lane[2] = (uint64_t(getT4()) << 32) | getT5();
     lane[3] = (uint64_t(getT6()) << 32) | getPC();
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(getInitialProgramBreak()) << 32) | getProgramBreak();
     lane[1] = (uint64_t(getGuardPageAddress()) << 32) | timer_ms;
     lane[2] = (uint64_t(second_stack_guard) << 32) | alt_ra;
     lane[3] = (uint64_t(alt_sp) << 32) | alt_gp;
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(alt_tp) << 32) | alt_t0;
     lane[1] = (uint64_t(alt_t1) << 32) | alt_t2;
     lane[2] = (uint64_t(alt_s0) << 32) | alt_s1;
     lane[3] = (uint64_t(alt_a0) << 32) | alt_a1;
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(alt_a2) << 32) | alt_a3;
     lane[1] = (uint64_t(alt_a4) << 32) | alt_a5;
     lane[2] = (uint64_t(alt_a6) << 32) | alt_a7;
     lane[3] = (uint64_t(alt_s2) << 32) | alt_s3;
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(alt_s4) << 32) | alt_s5;
     lane[1] = (uint64_t(alt_s6) << 32) | alt_s7;
     lane[2] = (uint64_t(alt_s8) << 32) | alt_s9;
     lane[3] = (uint64_t(alt_s10) << 32) | alt_s11;
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     lane[0] = (uint64_t(alt_t3) << 32) | alt_t4;
     lane[1] = (uint64_t(alt_t5) << 32) | alt_t6;
     lane[2] = alt_pc;
     lane[3] = (rstream_enabled ? 4 : 0) | (files.empty() ? 2 : 0) | (random_data.empty() ? 1 : 0);
-    UpdateHash(acc, lane);
+    hasher.updateHash(lane);
 
     uint32_t addr = 0;
     while (true) {
         if (isPageAllocated(addr)) {
             lane[0] = addr;
             lane[1] = lane[2] = lane[3] = 0;
-            UpdateHash(acc, lane);
+            hasher.updateHash(lane);
 
             for (int32_t offset = 0; offset < BYTES_PER_PAGE; offset += 32) {
                 lane[0] = (uint64_t(readWord(addr + offset)) << 32) | readWord(addr + offset + 4);
                 lane[1] = (uint64_t(readWord(addr + offset + 8)) << 32) | readWord(addr + offset + 12);
                 lane[2] = (uint64_t(readWord(addr + offset + 16)) << 32) | readWord(addr + offset + 20);
                 lane[3] = (uint64_t(readWord(addr + offset + 24)) << 32) | readWord(addr + offset + 28);
-                UpdateHash(acc, lane);
+                hasher.updateHash(lane);
             }
         }
         uint32_t new_addr = addr + BYTES_PER_PAGE;
@@ -1091,5 +1035,5 @@ MemoryHash KnightsVM::getHash()
         addr = new_addr;
     }
 
-    return FinalHash(acc);
+    return hasher.finalHash();
 }

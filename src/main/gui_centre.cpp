@@ -28,7 +28,7 @@ GuiCentre::GuiCentre(gcn::Widget *c)
 {
     setBackgroundColor(gcn::Color(0,0,0));
     setScrollbarWidth(15);
-    widgetResized(gcn::Event(0));
+    widgetResized(gcn::Event(nullptr));
     addWidgetListener(this);
 }
 

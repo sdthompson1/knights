@@ -57,10 +57,13 @@ void VMLoadingScreen::Loader::operator()()
     }
 }
 
-VMLoadingScreen::VMLoadingScreen(const std::string &lobby_id, OnlinePlatform::Visibility vis)
+VMLoadingScreen::VMLoadingScreen(const std::string &lobby_id,
+                                 OnlinePlatform::Visibility vis,
+                                 uint64_t my_checksum)
     : knights_app(nullptr),
       lobby_id(lobby_id),
-      visibility(vis)
+      visibility(vis),
+      my_checksum(my_checksum)
 { }
 
 VMLoadingScreen::~VMLoadingScreen()
@@ -107,7 +110,10 @@ void VMLoadingScreen::update()
     // Create the game
 
     boost::shared_ptr<KnightsClient> client =
-        knights_app->createVMGame(lobby_id, visibility, std::move(loader->vm_knights_lobby));
+        knights_app->createVMGame(lobby_id,
+                                  visibility,
+                                  std::move(loader->vm_knights_lobby),
+                                  my_checksum);
 
     PlayerID player_id = knights_app->getOnlinePlatform().getCurrentUserId();
 

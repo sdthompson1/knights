@@ -39,7 +39,9 @@ namespace Coercri {
 
 class VMLoadingScreen : public Screen {
 public:
-    VMLoadingScreen(const std::string &lobby_id, OnlinePlatform::Visibility vis);
+    VMLoadingScreen(const std::string &lobby_id,
+                    OnlinePlatform::Visibility vis,
+                    uint64_t my_checksum);
     ~VMLoadingScreen();
 
     virtual bool start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui&) override;
@@ -68,6 +70,7 @@ private:
     KnightsApp *knights_app;
     std::string lobby_id;
     OnlinePlatform::Visibility visibility;
+    uint64_t my_checksum;
 
     std::unique_ptr<Loader> loader;
     boost::thread loader_thread;

@@ -142,6 +142,7 @@ CXXFILES = \
 	misc/localization.cpp \
 	misc/rng.cpp \
 	misc/round.cpp \
+	misc/xxhash.cpp \
 	rstream/rstream.cpp \
 	rstream/rstream_error.cpp \
 	rstream/rstream_find.cpp \

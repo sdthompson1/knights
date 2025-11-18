@@ -29,6 +29,7 @@
 
 #ifndef VIRTUAL_SERVER
 #include <filesystem>
+class XXHash;
 #endif
 
 /*
@@ -110,6 +111,13 @@ public:
     // wanted, it must be checked for by the caller.
     static std::string NormalizePath(const char *resource_path);
     static std::string NormalizePath(const std::string &resource_path);
+
+#ifndef VIRTUAL_SERVER
+    // Recursively hash all files in a directory.
+    // Adds file contents, names, and sizes to the given "hasher".
+    // Throws RStreamError if path is invalid or directory doesn't exist.
+    static void HashDirectory(const std::string &resource_path, XXHash &hasher);
+#endif
 
 private:
     void construct(const char *);

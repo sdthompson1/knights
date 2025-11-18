@@ -96,11 +96,12 @@ boost::shared_ptr<KnightsClient>
     LobbyController::createVMGame(OnlinePlatform &online_platform,
                                   const std::string &lobby_id,
                                   OnlinePlatform::Visibility vis,
-                                  std::unique_ptr<VMKnightsLobby> kts_lobby)
+                                  std::unique_ptr<VMKnightsLobby> kts_lobby,
+                                  uint64_t my_checksum)
 {
     // Create the platform lobby
     if (lobby_id.empty()) {
-        platform_lobby = online_platform.createLobby(vis);
+        platform_lobby = online_platform.createLobby(vis, my_checksum);
         created_by_me = true;
 
         if (platform_lobby) {

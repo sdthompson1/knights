@@ -34,12 +34,15 @@
 #include "make_scroll_area.hpp"
 #include "online_multiplayer_screen.hpp"
 #include "online_platform.hpp"
+#include "rstream.hpp"
 #include "start_game_screen.hpp"
 #include "tab_font.hpp"
 #include "title_block.hpp"
 #include "vm_loading_screen.hpp"
+#include "xxhash.hpp"
 
 #include "boost/scoped_ptr.hpp"
+#include "boost/thread.hpp"
 #include "gcn/cg_font.hpp"
 #include <vector>
 #include <string>
@@ -49,16 +52,19 @@ namespace {
     struct GameInfo {
         GameInfo(const std::string &lobby_id, const Coercri::UTF8String &leader_name, int players,
                  const LocalKey &game_status_key,
-                 const std::vector<LocalParam> &game_status_params)
+                 const std::vector<LocalParam> &game_status_params,
+                 uint64_t chksum)
             : lobby_id(lobby_id), leader_name(leader_name), num_players(players),
               game_status_key(game_status_key),
-              game_status_params(game_status_params)
+              game_status_params(game_status_params),
+              checksum(chksum)
         { }
         std::string lobby_id;
         Coercri::UTF8String leader_name;
         int num_players;
         LocalKey game_status_key;
         std::vector<LocalParam> game_status_params;
+        uint64_t checksum;
     };
 
     class GameList : public gcn::ListModel {
@@ -89,7 +95,7 @@ namespace {
             OnlinePlatform::LobbyInfo info = platform.getLobbyInfo(lobby_id);
             Coercri::UTF8String leader_name = platform.lookupUserName(info.leader_id);
             games.push_back(GameInfo(lobby_id, leader_name, info.num_players,
-                                     info.game_status_key, info.game_status_params));
+                                     info.game_status_key, info.game_status_params, info.checksum));
         }
     }
 
@@ -129,21 +135,59 @@ namespace {
         MyGameListBox(KnightsApp &ka, const GameList &gl, OnlineMultiplayerScreenImpl &impl)
             : knights_app(ka), game_list(gl), screen_impl(impl) { }
         virtual void mouseClicked(gcn::MouseEvent &mouse_event);
+        virtual void draw(gcn::Graphics* graphics);
     private:
         KnightsApp &knights_app;
         const GameList &game_list;
         OnlineMultiplayerScreenImpl &screen_impl;
     };
+
+    class ChecksumThread {
+    public:
+        explicit ChecksumThread(boost::mutex &mutex,
+                                uint64_t &checksum,
+                                bool &checksum_done,
+                                std::string &&build_id)
+            : mutex(mutex), checksum(checksum), checksum_done(checksum_done) {}
+        void operator()();
+    private:
+        boost::mutex &mutex;
+        uint64_t &checksum;
+        bool &checksum_done;
+        std::string build_id;
+    };
+
+    void ChecksumThread::operator()()
+    {
+        // Construct a hash of knights_data/server file contents,
+        // together with build ID from the online platform.
+        XXHash hasher(0);
+        hasher.updateHashPartial(reinterpret_cast<uint8_t*>(build_id.data()), build_id.length());
+        RStream::HashDirectory("server", hasher);
+        uint64_t value = hasher.finalHash();
+
+        // Write result back to the main thread
+        boost::unique_lock lock(mutex);
+        checksum = value;
+        checksum_done = true;
+    }
+
+    bool g_show_incompatible = false;
 }
 
 class OnlineMultiplayerScreenImpl : public gcn::ActionListener {
 public:
     OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g);
+    ~OnlineMultiplayerScreenImpl();
+    void createFullGui();
     void action(const gcn::ActionEvent &event);
+    void setLobbyFilters(bool show_incompat);
     void joinGame(const std::string &lobby_id);
     void createGame();
     void update();
     void refreshGameList();
+
+    uint64_t myChecksum() const { return my_checksum; }
 
 private:
     KnightsApp &knights_app;
@@ -162,10 +206,16 @@ private:
     boost::scoped_ptr<TitleBlock> games_titleblock;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
     boost::scoped_ptr<gcn::ListBox> listbox;
+    boost::scoped_ptr<gcn::CheckBox> show_incompatible_checkbox;
     boost::scoped_ptr<gcn::Button> back_button;
     boost::scoped_ptr<gcn::Button> create_game_button;
     boost::shared_ptr<gcn::Font> cg_font;
     std::unique_ptr<gcn::Font> tab_font;
+
+    boost::mutex mutex;  // Protects my_checksum and checksum_done
+    uint64_t my_checksum;
+    bool checksum_done = false;
+    boost::thread checksum_thread;
 };
 
 namespace
@@ -177,16 +227,136 @@ namespace
         if (mouse_event.getButton() == gcn::MouseEvent::LEFT && mouse_event.getClickCount() == 2) {
             const GameInfo *gi = game_list.getGameAt(getSelected());
             if (gi) {
-                screen_impl.joinGame(gi->lobby_id);
+                bool is_incompatible = (gi->checksum != screen_impl.myChecksum());
+                if (is_incompatible) {
+                    throw std::runtime_error("This game is running a different version of Knights or using modified game data");
+                } else {
+                    screen_impl.joinGame(gi->lobby_id);
+                }
             }
+        }
+    }
+
+    void MyGameListBox::draw(gcn::Graphics* graphics)
+    {
+        graphics->setColor(getBackgroundColor());
+        graphics->fillRectangle(gcn::Rectangle(0, 0, getWidth(), getHeight()));
+
+        if (mListModel == NULL)
+        {
+            return;
+        }
+
+        graphics->setFont(getFont());
+
+        // Check the current clip area so we don't draw unnecessary items
+        // that are not visible.
+        const gcn::ClipRectangle currentClipArea = graphics->getCurrentClipArea();
+        int rowHeight = getRowHeight();
+
+        // Calculate the number of rows to draw by checking the clip area.
+        // The addition of two makes covers a partial visible row at the top
+        // and a partial visible row at the bottom.
+        int numberOfRows = currentClipArea.height / rowHeight + 2;
+
+        if (numberOfRows > mListModel->getNumberOfElements())
+        {
+            numberOfRows = mListModel->getNumberOfElements();
+        }
+
+        // Calculate which row to start drawing. If the list box
+        // has a negative y coordinate value we should check if
+        // we should drop rows in the begining of the list as
+        // they might not be visible. A negative y value is very
+        // common if the list box for instance resides in a scroll
+        // area and the user has scrolled the list box downwards.
+        int startRow;
+        if (getY() < 0)
+        {
+            startRow = -1 * (getY() / rowHeight);
+        }
+        else
+        {
+            startRow = 0;
+        }
+
+        int i;
+        // The y coordinate where we start to draw the text is
+        // simply the y coordinate multiplied with the font height.
+        int y = rowHeight * startRow;
+
+        for (i = startRow; i < startRow + numberOfRows; ++i)
+        {
+            // Check if this game has an incompatible checksum
+            const GameInfo *game_info = game_list.getGameAt(i);
+            bool is_incompatible = (game_info && game_info->checksum != screen_impl.myChecksum());
+
+            if (i == mSelected)
+            {
+                graphics->setColor(getSelectionColor());
+                graphics->fillRectangle(gcn::Rectangle(0, y, getWidth(), rowHeight));
+            }
+
+            // Set text color: red for incompatible, normal foreground color otherwise
+            if (is_incompatible)
+            {
+                graphics->setColor(gcn::Color(255, 0, 0));  // Red
+            }
+            else
+            {
+                graphics->setColor(getForegroundColor());
+            }
+
+            // If the row height is greater than the font height we
+            // draw the text with a center vertical alignment.
+            if (rowHeight > getFont()->getHeight())
+            {
+                graphics->drawText(mListModel->getElementAt(i), 1, y + rowHeight / 2 - getFont()->getHeight() / 2);
+            }
+            else
+            {
+                graphics->drawText(mListModel->getElementAt(i), 1, y);
+            }
+
+            y += rowHeight;
         }
     }
 }
 
 OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
-    : knights_app(ka), window(win), gui(g), last_refresh_time(ka.getTimer().getMsec())
+    : knights_app(ka), window(win), gui(g), last_refresh_time(ka.getTimer().getMsec() - 10000)
 {
-    game_list.reset(new GameList(ka));
+    // Set up skeleton GUI (rest will be created once our checksum is known)
+    container.reset(new gcn::Container);
+    container->setOpaque(false);
+    centre.reset(new GuiCentre(container.get()));
+    gui.setTop(centre.get());
+
+    // Start a background thread to checksum all knights_data files
+    ChecksumThread thr(mutex, my_checksum, checksum_done, knights_app.getOnlinePlatform().getBuildId());
+    checksum_thread = std::move(boost::thread(thr));
+}
+
+OnlineMultiplayerScreenImpl::~OnlineMultiplayerScreenImpl()
+{
+    if (checksum_thread.joinable()) {
+        checksum_thread.join();
+    }
+}
+
+void OnlineMultiplayerScreenImpl::createFullGui()
+{
+    // Remove the skeleton GUI as it is no longer needed
+    gui.setTop(nullptr);
+    centre.reset();
+    container.reset();
+
+    // Initialize lobby filters based on initial setting for
+    // incompatible games checkbox
+    setLobbyFilters(g_show_incompatible);
+
+    // Create game list (using the initial filters)
+    game_list.reset(new GameList(knights_app));
 
     // Set up TabFont for formatting columns: Leader | Players | Status
     std::vector<int> widths;
@@ -194,7 +364,7 @@ OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::
     widths.push_back(80);   // Player count column  
     widths.push_back(320);  // Status column
     
-    cg_font.reset(new Coercri::CGFont(ka.getFont()));
+    cg_font.reset(new Coercri::CGFont(knights_app.getFont()));
     tab_font.reset(new TabFont(cg_font, widths));
 
     container.reset(new gcn::Container);
@@ -232,6 +402,12 @@ OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::
 
     AdjustListBoxSize(*listbox, *scroll_area);
 
+    show_incompatible_checkbox.reset(new gcn::CheckBox("Show incompatible games"));
+    show_incompatible_checkbox->addActionListener(this);
+    show_incompatible_checkbox->setSelected(g_show_incompatible);
+    container->add(show_incompatible_checkbox.get(), pad, y);
+    y += show_incompatible_checkbox->getHeight() + pad;
+
     create_game_button.reset(new GuiButton("Create New Game"));
     create_game_button->addActionListener(this);
     back_button.reset(new GuiButton("Back"));
@@ -243,7 +419,14 @@ OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
+
+    // This sequence is needed to get the GUI to display:
+    int w, h;
+    window->getSize(w, h);
+    centre->setSize(w, h);
     gui.setTop(centre.get());
+    gui.logic();
+    window->invalidateAll();
 }
 
 void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
@@ -255,6 +438,21 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
 
     } else if (event.getSource() == create_game_button.get()) {
         createGame();
+
+    } else if (event.getSource() == show_incompatible_checkbox.get()) {
+        setLobbyFilters(show_incompatible_checkbox->isSelected());
+
+        // Remember setting for next time this UI is opened
+        g_show_incompatible = show_incompatible_checkbox->isSelected();
+    }
+}
+
+void OnlineMultiplayerScreenImpl::setLobbyFilters(bool show_incompat)
+{
+    OnlinePlatform &platform = knights_app.getOnlinePlatform();
+    platform.clearLobbyFilters();
+    if (!show_incompat) {
+        platform.addChecksumFilter(myChecksum());
     }
 }
 
@@ -262,7 +460,7 @@ void OnlineMultiplayerScreenImpl::joinGame(const std::string &lobby_id)
 {
     // Go to VMLoadingScreen
     OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
-    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen(lobby_id, vis));
+    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen(lobby_id, vis, my_checksum));
     knights_app.requestScreenChange(std::move(loading_screen));
 }
 
@@ -271,7 +469,7 @@ void OnlineMultiplayerScreenImpl::createGame()
     // For now, go directly to VMLoadingScreen
     // TODO: Instead we should probably go to a create game screen where the user can set options
     OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PUBLIC; // Temporary value
-    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen("", vis));
+    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen("", vis, my_checksum));
     knights_app.requestScreenChange(std::move(loading_screen));
 }
 
@@ -308,12 +506,21 @@ void OnlineMultiplayerScreenImpl::refreshGameList()
 
 void OnlineMultiplayerScreenImpl::update()
 {
-    // Online platform caches the getLobbyList results so refreshing
+    // Hold off until the checksum is ready.
+    if (checksum_thread.joinable()) {
+        boost::unique_lock lock(mutex);
+        if (!checksum_done) return;
+        checksum_thread.join();
+
+        // Once checksum is available, activate the GUI
+        createFullGui();
+    }
+
+    // Refresh the GameList if required.
+    // Note: Online platform caches the getLobbyList results so refreshing
     // the UI relatively frequently (every 200ms) should be OK
     const unsigned int refresh_interval = 200;
-
     const unsigned int current_time = knights_app.getTimer().getMsec();
-
     if (current_time - last_refresh_time >= refresh_interval) {
         refreshGameList();
         last_refresh_time = current_time;

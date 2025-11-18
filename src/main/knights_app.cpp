@@ -1098,9 +1098,14 @@ boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
 boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lobby_id,
                                                           OnlinePlatform::Visibility vis,
-                                                          std::unique_ptr<VMKnightsLobby> kts_lobby)
+                                                          std::unique_ptr<VMKnightsLobby> kts_lobby,
+                                                          uint64_t my_checksum)
 {
-    return pimpl->lobby_controller.createVMGame(*pimpl->online_platform, lobby_id, vis, std::move(kts_lobby));
+    return pimpl->lobby_controller.createVMGame(*pimpl->online_platform,
+                                                lobby_id,
+                                                vis,
+                                                std::move(kts_lobby),
+                                                my_checksum);
 }
 
 HostMigrationState KnightsApp::getHostMigrationState() const
@@ -1159,7 +1164,8 @@ void KnightsAppImpl::updateOnlinePlatform()
     if (!invited_lobby_id.empty()) {
         // Go to VMLoadingScreen
         OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
-        requested_screen = std::make_unique<VMLoadingScreen>(invited_lobby_id, vis);
+        uint64_t my_checksum = 0;  // Dummy value
+        requested_screen = std::make_unique<VMLoadingScreen>(invited_lobby_id, vis, my_checksum);
     }
 #endif
 #endif

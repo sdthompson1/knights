@@ -86,15 +86,22 @@ public:
         // See also KnightsApp::setQuestMessageCode.)
         LocalKey game_status_key;
         std::vector<LocalParam> game_status_params;
+
+        // Game data and build checksum (uint64_t)
+        uint64_t checksum;
     };
 
     // Create a new lobby
-    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis) = 0;
+    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis, uint64_t checksum) = 0;
+
+    // Set lobby filter. If filters are enabled, getLobbyList will return results filtered
+    // accordingly, but note that the list might not update immediately.
+    virtual void clearLobbyFilters() = 0;
+    virtual void addChecksumFilter(uint64_t checksum) = 0;
 
     // Search for lobbies to join. Returns a vector of lobby ID strings.
     // Note: this can be called frequently (e.g. every 200ms) as results are cached.
     // (TODO: Add a method to request a manual refresh of the list.)
-    // (TODO: maybe add more sorting or filtering options.)
     virtual std::vector<std::string> getLobbyList() = 0;
 
     // Get lobby info (by lobby ID)
@@ -127,6 +134,12 @@ public:
     // now. For other platforms it always returns false.
     virtual bool needsRepaint() { return false; }
 
+
+    // Build ID:
+
+    // Get a build ID string for the current build, from the online platform.
+    // If this is not available, an empty string will be returned.
+    virtual std::string getBuildId() { return ""; }
 };
 
 #endif  // ONLINE_PLATFORM

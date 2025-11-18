@@ -190,10 +190,12 @@ public:
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     // If lobby_id empty this creates a new lobby (with given visibility),
-    // otherwise it joins an existing lobby
+    // otherwise it joins an existing lobby.
+    // Note: my_checksum only needs to be provided when creating a lobby. It is ignored when joining.
     boost::shared_ptr<KnightsClient> createVMGame(const std::string &lobby_id,
                                                   OnlinePlatform::Visibility vis,
-                                                  std::unique_ptr<VMKnightsLobby> kts_lobby);
+                                                  std::unique_ptr<VMKnightsLobby> kts_lobby,
+                                                  uint64_t my_checksum);
     HostMigrationState getHostMigrationState() const;
     void setHostMigrationStateInGame();
     PlayerID getCurrentLeader() const;

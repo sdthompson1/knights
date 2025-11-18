@@ -28,6 +28,7 @@
 
 #include "online_platform.hpp"
 #include <chrono>
+#include <optional>
 
 // DummyOnlinePlatform implements the OnlinePlatform interface by
 // connecting to a TCP lobby server running on the local machine. This
@@ -51,9 +52,11 @@ public:
     virtual Coercri::UTF8String lookupUserName(const PlayerID& platform_user_id) override;
 
     // Returns a new DummyPlatformLobby
-    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis) override;
+    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis, uint64_t checksum) override;
 
-    // Queries the lobby server for the latest lobby list
+    // Lobby search and filtering
+    virtual void clearLobbyFilters() override;
+    virtual void addChecksumFilter(uint64_t checksum) override;
     virtual std::vector<std::string> getLobbyList() override;
 
     // Get lobby info
@@ -80,6 +83,9 @@ private:
     bool connected;
 
     std::unique_ptr<Coercri::NetworkDriver> network_driver;
+
+    // Lobby filter settings
+    std::optional<uint64_t> filter_checksum;
 
     // Cache for lobby list
     std::vector<std::string> cached_lobby_list;
