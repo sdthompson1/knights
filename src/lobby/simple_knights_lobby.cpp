@@ -113,10 +113,15 @@ void SimpleLobbyThread::operator()()
             lobby.timer->sleepMsec(3);
         }
 
+    } catch (const std::exception &e) {
+        // Signal error to main thread
+        boost::unique_lock lock(lobby.mutex);
+        lobby.error_msg = e.what()[0] == 0 ? "std::exception" : e.what();
+
     } catch (...) {
         // Signal error to main thread
         boost::unique_lock lock(lobby.mutex);
-        lobby.error_flag = true;
+        lobby.error_msg = "Unknown error";
     }
 }
 
@@ -125,7 +130,6 @@ SimpleKnightsLobby::SimpleKnightsLobby(boost::shared_ptr<Coercri::Timer> timer,
                                        boost::shared_ptr<KnightsConfig> config,
                                        const std::string &game_name)
     : exit_flag(false),
-      error_flag(false),
       net_driver(nullptr),
       timer(timer),
       server(new KnightsServer(timer, true, "", "", ""))  // allow split-screen
@@ -141,7 +145,6 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
                                        boost::shared_ptr<KnightsConfig> config,
                                        const std::string &game_name)
     : exit_flag(false),
-      error_flag(false),
       net_driver(&net_driver),
       timer(timer),
       server(new KnightsServer(timer, false, "", "", ""))  // don't allow split-screen
@@ -162,7 +165,6 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
                                        const std::string &address,
                                        int port)
     : exit_flag(false),
-      error_flag(false),
       net_driver(&net_driver),
       timer(timer),
       local_server_conn(nullptr)
@@ -237,8 +239,8 @@ void SimpleKnightsLobby::readIncomingMessages(KnightsClient &client)
     }
 
     // Check if background thread has exited
-    if (error_flag) {
-        throw std::runtime_error("Error in game thread");
+    if (!error_msg.empty()) {
+        throw std::runtime_error(error_msg);
     }
 }
 

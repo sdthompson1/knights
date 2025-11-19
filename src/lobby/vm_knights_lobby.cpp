@@ -64,7 +64,7 @@ struct VMKnightsLobbyImpl {
                        const PlayerID &local_user_id,
                        bool new_control_system)
         : exit_flag(false),
-          error_flag(false),
+          error_msg(""),
           net_driver(net_driver),
           timer(timer),
           local_user_id(local_user_id),
@@ -95,7 +95,7 @@ struct VMKnightsLobbyImpl {
     boost::mutex mutex;
     boost::thread background_thread;
     bool exit_flag;
-    bool error_flag;
+    std::string error_msg;
 
     // refs
     Coercri::NetworkDriver &net_driver;
@@ -246,8 +246,8 @@ void VMKnightsLobby::readIncomingMessages(KnightsClient &client)
         }
 
         // Check if thread has closed
-        if (pimpl->error_flag) {
-            throw std::runtime_error("Error in game thread");
+        if (!pimpl->error_msg.empty()) {
+            throw std::runtime_error(pimpl->error_msg);
         }
     }
 
@@ -392,9 +392,13 @@ void VMKnightsLobbyThread::operator()()
             impl.timer.sleepMsec(3);
         }
 
+    } catch (const std::exception &e) {
+        boost::unique_lock<boost::mutex> lock(impl.mutex);
+        impl.error_msg = e.what()[0] == 0 ? "std::exception" : e.what();
+
     } catch (...) {
         boost::unique_lock<boost::mutex> lock(impl.mutex);
-        impl.error_flag = true;
+        impl.error_msg = "Unknown error";
     }
 }
 

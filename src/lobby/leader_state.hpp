@@ -27,6 +27,7 @@
 #ifdef USE_VM_LOBBY
 
 #include "player_id.hpp"
+#include "knights_vm.hpp"
 
 class KnightsVM;
 class SyncHost;

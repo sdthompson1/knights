@@ -96,7 +96,7 @@ private:
     mutable boost::mutex mutex;
     boost::thread background_thread;
     bool exit_flag;  // Tells background thread to exit
-    bool error_flag;  // Background thread has reported an error
+    std::string error_msg;  // Non-empty means background thread has reported an error
 
     Coercri::NetworkDriver *net_driver;  // NULL for a "Local Game"
     boost::shared_ptr<Coercri::Timer> timer;

@@ -22,6 +22,8 @@
 
 #include "xxhash.hpp"
 
+#include "network/byte_buf.hpp"
+
 #include <algorithm>
 #include <cstring>
 
@@ -122,4 +124,26 @@ uint64_t XXHash::finalHash() const
     hash ^= (hash >> 32);
 
     return hash;
+}
+
+XXHash::XXHash(Coercri::InputByteBuf &buf)
+{
+    for (int i = 0; i < 4; ++i) {
+        uint32_t low = buf.readUlong();
+        uint32_t high = buf.readUlong();
+        acc[i] = uint64_t(low) | (uint64_t(high) << 32);
+    }
+    uint32_t low = buf.readUlong();
+    uint32_t high = buf.readUlong();
+    total_length = uint64_t(low) | (uint64_t(high) << 32);
+}
+
+void XXHash::writeInternalState(Coercri::OutputByteBuf &buf) const
+{
+    for (int i = 0; i < 4; ++i) {
+        buf.writeUlong(acc[i] & 0xffffffffu);
+        buf.writeUlong(acc[i] >> 32);
+    }
+    buf.writeUlong(total_length & 0xffffffffu);
+    buf.writeUlong(total_length >> 32);
 }

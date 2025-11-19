@@ -26,6 +26,7 @@
 
 #include "risc_vm.hpp"  // This is built by src/virtual_server/Makefile
 #include "tick_data.hpp"
+#include "xxhash.hpp"
 
 #include <istream>
 #include <memory>
@@ -38,6 +39,19 @@ namespace Coercri {
 }
 
 typedef uint64_t MemoryHash;
+
+struct Checkpoint {
+    uint32_t timer_ms;   // VM time at which checksum was completed
+    MemoryHash checksum; // The checksum value
+
+    // comparison operators
+    bool operator==(const Checkpoint &other) const {
+        return timer_ms == other.timer_ms && checksum == other.checksum;
+    }
+    bool operator!=(const Checkpoint &other) const {
+        return !(*this == other);
+    }
+};
 
 struct MemoryBlock {
     // Public data members
@@ -149,7 +163,9 @@ public:
 
     // Checksumming:
 
-    MemoryHash getHash();
+    // This returns all Checkpoints that have occurred since the last
+    // call to getCheckpoints.
+    std::vector<Checkpoint> getCheckpoints();
 
 private:
     // Ecall handler
@@ -169,6 +185,7 @@ private:
     // TickCallbacks handlers - we are only interested in onNewTick, to get the time.
     void onNewTick(unsigned int tick_duration) {
         timer_ms += tick_duration;
+        updateRollingChecksum();
     }
 
     // Sync helpers
@@ -177,6 +194,8 @@ private:
     void adjustGuardPageAllocations(uint32_t old_guard_page_addr, uint32_t new_guard_page_addr);
     void hashRegionStartingFrom(Coercri::OutputByteBuf &output, uint32_t addr, uint32_t block_size);
 
+    // Checksum helpers
+    void updateRollingChecksum();
 
 private:
     // Tick data and vm_output_data references
@@ -205,6 +224,12 @@ private:
 
     // Random seed data (only used during first tick)
     std::vector<unsigned char> random_data;
+
+    // Checksumming
+    std::vector<Checkpoint> checkpoints;
+    uint32_t checksum_addr;
+    uint32_t next_checksum_timer_ms;
+    XXHash hasher;
 };
 
 #endif

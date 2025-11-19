@@ -25,7 +25,6 @@
 
 #include "rstream.hpp"
 #include "rstream_error.hpp"
-#include "xxhash.hpp"
 
 #include "network/byte_buf.hpp"
 
@@ -70,6 +69,7 @@ namespace {
 
 KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
     : RiscVM(MAIN_STACK_TOP - 16)   // Start with 16 zero bytes pushed onto the main stack.
+    , hasher(0)
 {
     // There is no tick data initially
     tick_data_ptr = tick_data_end = NULL;
@@ -114,6 +114,10 @@ KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
 
     // Random seed
     random_data = std::move(random_data_);
+
+    // Checksumming
+    next_checksum_timer_ms = 1;
+    checksum_addr = 0;
 }
 
 int KnightsVM::runTicks(const unsigned char *tick_data_begin,
@@ -778,6 +782,9 @@ void KnightsVM::getVMConfig(Coercri::OutputByteBuf &buf) const
     buf.writeUlong(alt_t5);
     buf.writeUlong(alt_t6);
     buf.writeUlong(alt_pc);
+    buf.writeUlong(checksum_addr);
+    buf.writeUlong(next_checksum_timer_ms);
+    hasher.writeInternalState(buf);
 }
 
 void KnightsVM::putVMConfig(Coercri::InputByteBuf &buf)
@@ -879,6 +886,10 @@ void KnightsVM::putVMConfig(Coercri::InputByteBuf &buf)
     alt_t5 = buf.readUlong();
     alt_t6 = buf.readUlong();
     alt_pc = buf.readUlong();
+
+    checksum_addr = buf.readUlong();
+    next_checksum_timer_ms = buf.readUlong();
+    hasher = XXHash(buf);
 }
 
 void KnightsVM::adjustGuardPageAllocations(uint32_t old_guard_page_address, uint32_t new_guard_page_address)
@@ -955,85 +966,126 @@ void KnightsVM::compareMemoryHashes(Coercri::InputByteBuf &input,
     }
 }
 
-MemoryHash KnightsVM::getHash()
+void KnightsVM::updateRollingChecksum()
 {
-    XXHash hasher(0);
+    // Update the rolling checksum every 100ms of VM time.
+    int32_t time_delta = int32_t(timer_ms - next_checksum_timer_ms);
+    if (time_delta < 0) {
+        return;
+    }
+
+    constexpr uint32_t CHECKSUM_INTERVAL_MS = 100;
+    next_checksum_timer_ms = timer_ms + CHECKSUM_INTERVAL_MS;
 
     uint64_t lane[4];
 
-    lane[0] = (uint64_t(getRA()) << 32) | getSP();
-    lane[1] = (uint64_t(getGP()) << 32) | getTP();
-    lane[2] = (uint64_t(getT0()) << 32) | getT1();
-    lane[3] = (uint64_t(getT2()) << 32) | getS0();
-    hasher.updateHash(lane);
+    // If this is the first block to be checksummed then initialize
+    // the hasher and add all the initial register contents
 
-    lane[0] = (uint64_t(getS1()) << 32) | getA0();
-    lane[1] = (uint64_t(getA1()) << 32) | getA2();
-    lane[2] = (uint64_t(getA3()) << 32) | getA4();
-    lane[3] = (uint64_t(getA5()) << 32) | getA6();
-    hasher.updateHash(lane);
+    if (checksum_addr == 0) {
+        hasher = XXHash(timer_ms);  // Use timer_ms as seed
 
-    lane[0] = (uint64_t(getA7()) << 32) | getS2();
-    lane[1] = (uint64_t(getS3()) << 32) | getS4();
-    lane[2] = (uint64_t(getS5()) << 32) | getS6();
-    lane[3] = (uint64_t(getS7()) << 32) | getS8();
-    hasher.updateHash(lane);
+        lane[0] = (uint64_t(getRA()) << 32) | getSP();
+        lane[1] = (uint64_t(getGP()) << 32) | getTP();
+        lane[2] = (uint64_t(getT0()) << 32) | getT1();
+        lane[3] = (uint64_t(getT2()) << 32) | getS0();
+        hasher.updateHash(lane);
 
-    lane[0] = (uint64_t(getS9()) << 32) | getS10();
-    lane[1] = (uint64_t(getS11()) << 32) | getT3();
-    lane[2] = (uint64_t(getT4()) << 32) | getT5();
-    lane[3] = (uint64_t(getT6()) << 32) | getPC();
-    hasher.updateHash(lane);
+        lane[0] = (uint64_t(getS1()) << 32) | getA0();
+        lane[1] = (uint64_t(getA1()) << 32) | getA2();
+        lane[2] = (uint64_t(getA3()) << 32) | getA4();
+        lane[3] = (uint64_t(getA5()) << 32) | getA6();
+        hasher.updateHash(lane);
 
-    lane[0] = (uint64_t(getInitialProgramBreak()) << 32) | getProgramBreak();
-    lane[1] = (uint64_t(getGuardPageAddress()) << 32) | timer_ms;
-    lane[2] = (uint64_t(second_stack_guard) << 32) | alt_ra;
-    lane[3] = (uint64_t(alt_sp) << 32) | alt_gp;
-    hasher.updateHash(lane);
+        lane[0] = (uint64_t(getA7()) << 32) | getS2();
+        lane[1] = (uint64_t(getS3()) << 32) | getS4();
+        lane[2] = (uint64_t(getS5()) << 32) | getS6();
+        lane[3] = (uint64_t(getS7()) << 32) | getS8();
+        hasher.updateHash(lane);
 
-    lane[0] = (uint64_t(alt_tp) << 32) | alt_t0;
-    lane[1] = (uint64_t(alt_t1) << 32) | alt_t2;
-    lane[2] = (uint64_t(alt_s0) << 32) | alt_s1;
-    lane[3] = (uint64_t(alt_a0) << 32) | alt_a1;
-    hasher.updateHash(lane);
+        lane[0] = (uint64_t(getS9()) << 32) | getS10();
+        lane[1] = (uint64_t(getS11()) << 32) | getT3();
+        lane[2] = (uint64_t(getT4()) << 32) | getT5();
+        lane[3] = (uint64_t(getT6()) << 32) | getPC();
+        hasher.updateHash(lane);
 
-    lane[0] = (uint64_t(alt_a2) << 32) | alt_a3;
-    lane[1] = (uint64_t(alt_a4) << 32) | alt_a5;
-    lane[2] = (uint64_t(alt_a6) << 32) | alt_a7;
-    lane[3] = (uint64_t(alt_s2) << 32) | alt_s3;
-    hasher.updateHash(lane);
+        lane[0] = (uint64_t(getInitialProgramBreak()) << 32) | getProgramBreak();
+        lane[1] = (uint64_t(getGuardPageAddress()) << 32) | timer_ms;
+        lane[2] = (uint64_t(second_stack_guard) << 32) | alt_ra;
+        lane[3] = (uint64_t(alt_sp) << 32) | alt_gp;
+        hasher.updateHash(lane);
 
-    lane[0] = (uint64_t(alt_s4) << 32) | alt_s5;
-    lane[1] = (uint64_t(alt_s6) << 32) | alt_s7;
-    lane[2] = (uint64_t(alt_s8) << 32) | alt_s9;
-    lane[3] = (uint64_t(alt_s10) << 32) | alt_s11;
-    hasher.updateHash(lane);
+        lane[0] = (uint64_t(alt_tp) << 32) | alt_t0;
+        lane[1] = (uint64_t(alt_t1) << 32) | alt_t2;
+        lane[2] = (uint64_t(alt_s0) << 32) | alt_s1;
+        lane[3] = (uint64_t(alt_a0) << 32) | alt_a1;
+        hasher.updateHash(lane);
 
-    lane[0] = (uint64_t(alt_t3) << 32) | alt_t4;
-    lane[1] = (uint64_t(alt_t5) << 32) | alt_t6;
-    lane[2] = alt_pc;
-    lane[3] = (rstream_enabled ? 4 : 0) | (files.empty() ? 2 : 0) | (random_data.empty() ? 1 : 0);
-    hasher.updateHash(lane);
+        lane[0] = (uint64_t(alt_a2) << 32) | alt_a3;
+        lane[1] = (uint64_t(alt_a4) << 32) | alt_a5;
+        lane[2] = (uint64_t(alt_a6) << 32) | alt_a7;
+        lane[3] = (uint64_t(alt_s2) << 32) | alt_s3;
+        hasher.updateHash(lane);
 
-    uint32_t addr = 0;
-    while (true) {
-        if (isPageAllocated(addr)) {
-            lane[0] = addr;
-            lane[1] = lane[2] = lane[3] = 0;
-            hasher.updateHash(lane);
+        lane[0] = (uint64_t(alt_s4) << 32) | alt_s5;
+        lane[1] = (uint64_t(alt_s6) << 32) | alt_s7;
+        lane[2] = (uint64_t(alt_s8) << 32) | alt_s9;
+        lane[3] = (uint64_t(alt_s10) << 32) | alt_s11;
+        hasher.updateHash(lane);
 
-            for (int32_t offset = 0; offset < BYTES_PER_PAGE; offset += 32) {
-                lane[0] = (uint64_t(readWord(addr + offset)) << 32) | readWord(addr + offset + 4);
-                lane[1] = (uint64_t(readWord(addr + offset + 8)) << 32) | readWord(addr + offset + 12);
-                lane[2] = (uint64_t(readWord(addr + offset + 16)) << 32) | readWord(addr + offset + 20);
-                lane[3] = (uint64_t(readWord(addr + offset + 24)) << 32) | readWord(addr + offset + 28);
-                hasher.updateHash(lane);
-            }
-        }
-        uint32_t new_addr = addr + BYTES_PER_PAGE;
-        if (new_addr < addr) break;
-        addr = new_addr;
+        lane[0] = (uint64_t(alt_t3) << 32) | alt_t4;
+        lane[1] = (uint64_t(alt_t5) << 32) | alt_t6;
+        lane[2] = alt_pc;
+        lane[3] = (rstream_enabled ? 4 : 0) | (files.empty() ? 2 : 0) | (random_data.empty() ? 1 : 0);
+        hasher.updateHash(lane);
     }
 
-    return hasher.finalHash();
+    // Now advance forward until we find the next allocated page
+    bool all_done = false;
+    do {
+        // Advance to next page
+        checksum_addr += BYTES_PER_PAGE;
+
+        // Optimization: Skip ahead because we know (in our memory layout) that
+        // no page between getProgramBreak() and min_second_stack_guard will be allocated
+        uint32_t min_second_stack_guard = MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE * 2;
+        if (checksum_addr > getProgramBreak() && checksum_addr < min_second_stack_guard) {
+            checksum_addr = min_second_stack_guard;
+        }
+
+        // If the checksum addr reached zero that means we have traversed the entire
+        // memory space, i.e. the checksumming is complete
+        if (checksum_addr == 0) {
+            all_done = true;
+            break;
+        }
+    } while (!isPageAllocated(checksum_addr));
+
+    if (all_done) {
+        // We're done; add the new checkpoint to the queue.
+        Checkpoint chk;
+        chk.timer_ms = timer_ms;
+        chk.checksum = hasher.finalHash();
+        checkpoints.push_back(chk);
+
+    } else {
+        // We found a new page to add; add the address and contents to the hasher.
+        lane[0] = checksum_addr;
+        lane[1] = lane[2] = lane[3] = 0;
+        hasher.updateHash(lane);
+        for (int32_t offset = 0; offset < BYTES_PER_PAGE; offset += 32) {
+            lane[0] = (uint64_t(readWord(checksum_addr + offset)) << 32) | readWord(checksum_addr + offset + 4);
+            lane[1] = (uint64_t(readWord(checksum_addr + offset + 8)) << 32) | readWord(checksum_addr + offset + 12);
+            lane[2] = (uint64_t(readWord(checksum_addr + offset + 16)) << 32) | readWord(checksum_addr + offset + 20);
+            lane[3] = (uint64_t(readWord(checksum_addr + offset + 24)) << 32) | readWord(checksum_addr + offset + 28);
+            hasher.updateHash(lane);
+        }
+    }
+}
+
+std::vector<Checkpoint> KnightsVM::getCheckpoints()
+{
+    std::vector<Checkpoint> result;
+    result.swap(checkpoints);
+    return result;
 }

@@ -230,7 +230,11 @@ enum FollowerSyncMessage {
 enum LeaderMessage {
     // Send tick data for the next tick
     // Format: length (var int) + data
-    LEADER_SEND_TICK_DATA = 48
+    LEADER_SEND_TICK_DATA = 48,
+
+    // Send desync checksums
+    // Format: timer_ms (uint32) + checksum (uint32 low, uint32 high)
+    LEADER_SEND_CHECKSUM = 49
 };
 
 enum FollowerMessage {

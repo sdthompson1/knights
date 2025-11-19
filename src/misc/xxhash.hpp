@@ -26,6 +26,11 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace Coercri {
+    class InputByteBuf;
+    class OutputByteBuf;
+}
+
 // XXHash64 implementation
 // Based on xxHash, see https://github.com/Cyan4973/xxHash/blob/dev/doc/xxhash_spec.md#xxh64-algorithm-description
 class XXHash {
@@ -41,6 +46,10 @@ public:
 
     // Finalize and return the hash value
     uint64_t finalHash() const;
+
+    // Serialize and deserialize internal state
+    explicit XXHash(Coercri::InputByteBuf &buf);
+    void writeInternalState(Coercri::OutputByteBuf &buf) const;
 
 private:
     uint64_t acc[4];

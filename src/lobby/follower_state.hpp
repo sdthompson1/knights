@@ -26,11 +26,14 @@
 
 #ifdef USE_VM_LOBBY
 
+#include "knights_vm.hpp"
+
 #include "network/network_connection.hpp"
 
 #include "boost/shared_ptr.hpp"
 
 #include <memory>
+#include <queue>
 #include <vector>
 
 class KnightsVM;
@@ -71,6 +74,9 @@ public:
     }
 
 private:
+    void checkForDesync();
+
+private:
     // VM state
     std::unique_ptr<KnightsVM> knights_vm;
 
@@ -84,6 +90,10 @@ private:
 
     // Sync client
     std::unique_ptr<SyncClient> sync_client;
+
+    // Stored checksums (awaiting LEADER_SEND_CHECKSUM to verify)
+    std::queue<Checkpoint> local_checkpoints;
+    std::queue<Checkpoint> leader_checkpoints;
 };
 
 #endif  // USE_VM_LOBBY

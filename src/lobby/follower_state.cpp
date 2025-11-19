@@ -34,7 +34,6 @@
 #include "network/network_connection.hpp"
 
 // virtual_server includes
-#include "knights_vm.hpp"
 #include "tick_data.hpp"
 
 FollowerState::FollowerState(std::unique_ptr<KnightsVM> vm,
@@ -134,7 +133,23 @@ void FollowerState::update(Coercri::NetworkDriver &net_driver, Coercri::Timer &t
                                          net_msg.data() + buf.getPos() + length,
                                          &vm_output_data);
 
+                    // Grab latest checksums from the VM
+                    std::vector<Checkpoint> checkpoints = knights_vm->getCheckpoints();
+                    for (const Checkpoint & checkpoint : checkpoints) {
+                        local_checkpoints.push(checkpoint);
+                    }
+
                     buf.skip(length);
+                }
+                break;
+
+            case LEADER_SEND_CHECKSUM:
+                {
+                    Checkpoint checkpoint;
+                    checkpoint.timer_ms = buf.readUlong();
+                    checkpoint.checksum = buf.readUlong();
+                    checkpoint.checksum |= (uint64_t(buf.readUlong()) << 32);
+                    leader_checkpoints.push(checkpoint);
                 }
                 break;
 
@@ -142,6 +157,8 @@ void FollowerState::update(Coercri::NetworkDriver &net_driver, Coercri::Timer &t
                 throw std::runtime_error("invalid message from leader");
             }
         }
+
+        checkForDesync();
     }
 
     // Now fish out any server messages meant for the local player, and
@@ -159,6 +176,17 @@ void FollowerState::update(Coercri::NetworkDriver &net_driver, Coercri::Timer &t
     if (!sync_client && !delayed_packets.empty()) {
         connection_to_leader->send(delayed_packets);
         delayed_packets.clear();
+    }
+}
+
+void FollowerState::checkForDesync()
+{
+    while (!local_checkpoints.empty() && !leader_checkpoints.empty()) {
+        if (local_checkpoints.front() != leader_checkpoints.front()) {
+            throw std::runtime_error("Desync");
+        }
+        local_checkpoints.pop();
+        leader_checkpoints.pop();
     }
 }
 

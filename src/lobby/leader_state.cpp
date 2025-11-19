@@ -30,9 +30,6 @@
 #include "leader_state.hpp"
 #include "sync_host.hpp"
 
-// virtual_server includes
-#include "knights_vm.hpp"
-
 // protocol includes
 #include "protocol.hpp"
 
@@ -270,6 +267,15 @@ void LeaderState::flushTickData()
     buf.writeUbyte(LEADER_SEND_TICK_DATA);
     buf.writeVarInt(tick_data.size());
     msg.insert(msg.end(), tick_data.begin(), tick_data.end());
+
+    // Send any desync checksums as well
+    std::vector<Checkpoint> checkpoints = knights_vm->getCheckpoints();
+    for (const Checkpoint & checkpoint : checkpoints) {
+        buf.writeUbyte(LEADER_SEND_CHECKSUM);
+        buf.writeUlong(checkpoint.timer_ms);
+        buf.writeUlong(uint32_t(checkpoint.checksum & 0xffffffff));
+        buf.writeUlong(uint32_t(checkpoint.checksum >> 32));
+    }
 
     // Send it to all followers
     for (size_t i = 0; i < followers.size(); ++i) {
