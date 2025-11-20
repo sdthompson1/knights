@@ -1,7 +1,3 @@
-This software uses various library code from third parties. Some of
-those libraries require me to distribute the licence along with
-Knights. In particular:
-
-SDL: licensed under the zlib licence, see zlib.txt.
-
-Freetype: licensed under the FreeType License, see FTL.txt.
+This folder contains the licences for all third party libraries used
+by Knights. See ACKNOWLEDGMENTS.txt in the parent directory for
+details.

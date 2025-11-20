@@ -7,21 +7,26 @@ to pursue their goals and to complete their assigned quests.
 
 The original game was written by Kalle Marjola (a.k.a. "Reaper") and
 all graphics, sound effects and room layouts are his work. You can
-visit his website at http://iki.fi/marjola/.
+visit his website at https://iki.fi/marjola/.
 
 This version has been programmed in C++ from scratch by Stephen
 Thompson and has many improvements compared to the original, such as
 support for multiple players (more than two) and network games.
 
+This is the open source version. A Steam version of the game is also
+available, with additional features such as Steam matchmaking and
+friends invites.
+
 For full instructions on how to play, please refer to the manual
 (manual.html in this directory, or
-http://www.knightsgame.org.uk/manual.html on the Web).
+https://www.knightsgame.org.uk/manual.html on the Web).
 
 Starting from release 026, Knights is licensed under the GNU General
 Public Licence as published by the Free Software Foundation, either
 version 2 of the Licence, or, at your option, any later version. See
 COPYRIGHT.txt for full copyright information and GPL2.txt and/or
-GPL3.txt for copies of the Licence itself.
+GPL3.txt for copies of the Licence itself. (This licensing does not
+apply to the Steam version of the game.)
 
 -----
 Stephen Thompson

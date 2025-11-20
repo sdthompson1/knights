@@ -23,7 +23,7 @@
 
 /*
  * GfxResizerScale2x: Uses the Scale2x and/or Scale3x algorithms developed by Andrea Mazzoleni.
- * See http://scale2x.sourceforge.net/ for details.
+ * See https://www.scale2x.it/algorithm for details.
  * 
  */
 

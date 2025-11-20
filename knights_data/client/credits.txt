@@ -30,11 +30,14 @@ or check out the moddb profile:
 https://www.moddb.com/games/knights
 
 
+Coming Soon to Steam!
+
+
 %l
 Copyright (C) Stephen Thompson, 2006 - 2025.
 Copyright (C) Kalle Marjola, 1994.
 
-Knights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
+This version of Knights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
 
 Knights is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
@@ -43,16 +46,16 @@ You should have received a copy of the GNU General Public License along with Kni
 
 This program uses the following software libraries, which are copyright by their respective authors:
 
-Scale2x (scale2x.sourceforge.net), a graphics scaling algorithm by Andrea Mazzoleni.
-SDL 2 (www.libsdl.org), by Sam Lantinga and others. Licensed under the Zlib Licence.
-FreeType (www.freetype.org), by The FreeType Project. Licensed under the FreeType Licence.
-Guichan (guichan.sourceforge.net), by Olof Naessen and Per Larsson. Licensed under a BSD-style licence.
-Boost (www.boost.org), licensed under the Boost Software Licence.
-ENet (enet.bespin.org), by Lee Salzman. Licensed under a BSD-style licence.
-libcurl (curl.haxx.se), by Daniel Stenberg and others. Licensed under a BSD-style licence.
-Lua (www.lua.org), a scripting language, licensed under the MIT licence.
-UTF8-CPP by Nemanja Trifunovic.
-Please refer to the "docs" directory for further details.
+SDL 2 (www.libsdl.org), by Sam Lantinga and others.
+FreeType (www.freetype.org), by The FreeType Project.
+Guichan (github.com/darkbitsorg/guichan), by Olof Naessen and Per Larsson.
+Boost (www.boost.org).
+ENet (enet.bespin.org), by Lee Salzman.
+libcurl (curl.se), by Daniel Stenberg and others.
+Lua (www.lua.org), a scripting language.
+UTF8-CPP (github.com/nemtrif/utfcpp), by Nemanja Trifunovic.
+zlib (https://zlib.net/), a compression library by Jean-loup Gailly and Mark Adler.
+Please refer to the "docs" directory for further details (including licence information).
 
 
 

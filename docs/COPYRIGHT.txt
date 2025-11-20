@@ -19,7 +19,13 @@ You should have received a copy of the GNU General Public License
 along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 
 
-If you are connecting to an online Knights server you should also be
-aware that all server usage (including chat messages) may be recorded
-in the server logs. If you do not agree with this then please do not
-connect to an online Knights server.
+Please note that the above licence does not apply to the Steam version
+of Knights which has been separately licensed to Valve Corporation
+under different terms.
+
+
+If you are connecting to an online Knights server, please note that
+servers are run by their respective owners and are not affiliated with
+the Knights authors in any way. If in doubt, please contact the server
+owners for information about terms and conditions of use, privacy
+policies, etc.
