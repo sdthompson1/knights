@@ -382,6 +382,12 @@ void OnlineMultiplayerScreenImpl::createFullGui()
 
     games_label.reset(new gcn::Label("Available Games (double-click to join):"));
     container->add(games_label.get(), pad, y);
+
+    show_incompatible_checkbox.reset(new gcn::CheckBox("Show incompatible games"));
+    show_incompatible_checkbox->addActionListener(this);
+    show_incompatible_checkbox->setSelected(g_show_incompatible);
+    container->add(show_incompatible_checkbox.get(), pad + width - show_incompatible_checkbox->getWidth(), y + games_label->getHeight()/2 - show_incompatible_checkbox->getHeight()/2);
+
     y += games_label->getHeight() + pad;
 
     std::vector<std::string> titles;
@@ -399,26 +405,20 @@ void OnlineMultiplayerScreenImpl::createFullGui()
     listbox->setWidth(width);
     scroll_area = MakeScrollArea(*listbox, width, 300 - games_titleblock->getHeight());
     container->add(scroll_area.get(), pad, y);
-    y += scroll_area->getHeight() + pad*3/2;
+    y += scroll_area->getHeight() + pad;
 
     AdjustListBoxSize(*listbox, *scroll_area);
 
-    refresh_button.reset(new GuiButton("Refresh List"));
-    refresh_button->addActionListener(this);
-    container->add(refresh_button.get(), pad + width - refresh_button->getWidth(), y);
-
-    show_incompatible_checkbox.reset(new gcn::CheckBox("Show incompatible games"));
-    show_incompatible_checkbox->addActionListener(this);
-    show_incompatible_checkbox->setSelected(g_show_incompatible);
-    container->add(show_incompatible_checkbox.get(), pad, y + refresh_button->getHeight() / 2 - show_incompatible_checkbox->getHeight() / 2);
-
-    y += refresh_button->getHeight() + pad;
+    y += pad/2;
 
     create_game_button.reset(new GuiButton("Create New Game"));
     create_game_button->addActionListener(this);
+    refresh_button.reset(new GuiButton("Refresh List"));
+    refresh_button->addActionListener(this);
     back_button.reset(new GuiButton("Back"));
     back_button->addActionListener(this);
     container->add(create_game_button.get(), pad, y);
+    container->add(refresh_button.get(), 25 + create_game_button->getWidth() + pad, y);
     container->add(back_button.get(), pad + width - back_button->getWidth(), y);
 
     container->setSize(2*pad + width, y + back_button->getHeight() + pad);
