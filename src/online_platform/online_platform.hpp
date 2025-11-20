@@ -40,8 +40,12 @@ namespace Coercri {
     class NetworkDriver;
 }
 
-// The OnlinePlatform interface represents an online gaming platform such as Steam.
+// This class might be thrown as an exception by the OnlinePlatform
+// ctor, or by OnlinePlatform::update(), if the platform wants the
+// game to exit immediately.
+class OnlinePlatformExitRequested { };
 
+// The OnlinePlatform interface represents an online gaming platform such as Steam.
 class OnlinePlatform {
 public:
     virtual ~OnlinePlatform() = default;

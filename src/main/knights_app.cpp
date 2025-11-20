@@ -977,6 +977,11 @@ void KnightsApp::runKnights()
             num_errors = 0;
 
 
+#ifdef ONLINE_PLATFORM
+        } catch (OnlinePlatformExitRequested&) {
+            // Re-throw to allow the app to exit
+            throw;
+#endif
         } catch (LuaError&) {
             // These are big and better displayed on stdout than in a guichan dialog box:
             throw;

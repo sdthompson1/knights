@@ -148,6 +148,11 @@ int main(int argc, char * argv[])
         KnightsApp app(display_type, data_dir, config_filename, autostart);
         app.runKnights();
 
+#ifdef ONLINE_PLATFORM
+    } catch (OnlinePlatformExitRequested&) {
+        // Ignore and allow the game to exit
+#endif
+
     } catch (PrintUsageAndExit &) {
         std::cout << "Usage: " << argv[0] << " [options]\n";
         std::cout << "\n";
