@@ -32,13 +32,6 @@
 
 #include <map>
 
-// definition copied from ldo.c
-struct lua_longjmp {
-  struct lua_longjmp *previous;
-  int b;
-  volatile int status;  /* error code */
-};
-
 namespace {
 
 #ifndef VIRTUAL_SERVER

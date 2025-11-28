@@ -40,13 +40,71 @@ namespace {
     {
         throw LuaPanic(lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "<No err msg>");
     }
-    
+
     struct LuaDeleter {
         void operator()(lua_State *lua)
         {
             lua_close(lua);
         }
     };
+
+    // Flag used by VerifyLuaUsesExceptions
+    bool g_caught_lua_longjmp = false;
+
+    // Test function that triggers a Lua error and checks if it's thrown as C++ exception
+    int TestLuaExceptionFunc(lua_State* L)
+    {
+        try {
+            // Trigger a Lua error from within a Lua context
+            // If Lua is C++-compiled, this throws lua_longjmp*
+            // If Lua is C-compiled, this does actual longjmp
+            luaL_error(L, "test error");
+            return 0;
+        } catch (lua_longjmp*) {
+            // Good! Lua threw lua_longjmp* as a C++ exception
+            g_caught_lua_longjmp = true;
+            // Re-throw so lua_pcall can handle it properly
+            throw;
+        }
+    }
+
+    // Test that Lua errors are thrown as C++ exceptions (lua_longjmp*), not actual longjmp
+    // This verifies that Lua was compiled with C++ exception support
+    void VerifyLuaUsesExceptions()
+    {
+        lua_State* test_lua = luaL_newstate();
+        if (!test_lua) {
+            throw LuaError("Failed to create test Lua state for verification");
+        }
+
+        g_caught_lua_longjmp = false;
+
+        // Push the test function and call it with lua_pcall
+        lua_pushcfunction(test_lua, &TestLuaExceptionFunc);
+        int result = lua_pcall(test_lua, 0, 0, 0);
+
+        lua_close(test_lua);
+
+        // lua_pcall should return an error status
+        if (result == 0) {
+            throw std::runtime_error(
+                "FATAL: Lua error verification unexpected success. "
+                "This should not happen."
+            );
+        }
+
+        if (!g_caught_lua_longjmp) {
+            // We didn't catch lua_longjmp*, which means Lua used actual longjmp
+            throw std::runtime_error(
+                "FATAL: Lua error handling verification failed. "
+                "Lua does not appear to be compiled with C++ exception support. "
+                "This will cause undefined behavior when Lua errors occur through C++ code. "
+                "Please link against a C++-compiled version of Lua."
+            );
+        }
+
+        // Success - Lua is using C++ exceptions
+    }
     
 #ifndef NDEBUG
     void CheckSorted(const char ** whitelist)
@@ -244,6 +302,13 @@ namespace {
 
 boost::shared_ptr<lua_State> MakeLuaSandbox()
 {
+    // Verify Lua is compiled with C++ exception support (run once)
+    static bool verified = false;
+    if (!verified) {
+        VerifyLuaUsesExceptions();
+        verified = true;
+    }
+
     boost::shared_ptr<lua_State> lua(luaL_newstate(), LuaDeleter());
 
     if (!lua) {

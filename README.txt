@@ -15,6 +15,17 @@ code, but includes additional features enabled by the Steam platform,
 such as matchmaking and friends invites.
 
 
+How to Build
+------------
+
+For Windows build instructions please read docs/building.html.
+
+For Linux, a Makefile is provided. This should work "out of the box"
+on Debian, but it might require some tweaks for other distributions;
+please read the comments at the top of the Makefile for further
+information.
+
+
 Licence
 -------
 
@@ -27,12 +38,6 @@ docs/GPL3.txt for copies of the Licence itself.
 (Please note that the above notice applies only to this open source
 version of Knights. The Steam version of Knights is licensed
 separately and the GPL does not apply in that case.)
-
-
-Building Instructions
----------------------
-
-Instructions for building can be found in docs/building.html.
 
 
 -----

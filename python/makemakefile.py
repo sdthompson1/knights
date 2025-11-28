@@ -104,22 +104,113 @@ if args.online_platform:
 
 else:
     online_platform_flags = ""
-    online_platform_comment = "# Online platform support is disabled in this version of Knights,\n# hence ONLINE_PLATFORM_FLAGS is empty."
+    online_platform_comment = "# Support for online platforms (like Steam) is disabled in this version\n# of Knights, hence ONLINE_PLATFORM_FLAGS is empty."
 
 # Calculate PROJECTS_ALL
 PROJECTS_ALL = list(set(PROJECTS_MAIN + PROJECTS_SERVER))
 
 # Start printing the Makefile.
 print (f"""# Makefile for Knights
-# This file is generated automatically by makemakefile.py
+# (This file is generated automatically by makemakefile.py)
+#
+#
+# HOW TO BUILD KNIGHTS:
+#
+# First, make sure you have all needed dependencies installed (see
+# distribution specific notes below). Then you can just type "make"
+# to build the knights and knights_server executables.
+#
+#
+# DISTRIBUTION SPECIFIC NOTES:
+#
+# Debian (and derivatives):
+#
+#   The following command (as root) will install the required dependencies
+#   for building Knights:
+#     apt install libboost-dev libboost-thread-dev libsdl2-dev \\
+#       libcurl4-openssl-dev libfreetype6-dev libfontconfig-dev \\
+#       liblua5.4-dev libenet-dev pkg-config
+#   (Note: your distribution might have a newer Lua version available,
+#   in which case it should be fine to use that instead.)
+#
+#
+# Arch Linux:
+#
+#   The following command should install the required dependencies:
+#     pacman -S base-devel boost boost-libs sdl2 curl freetype2 \\
+#       fontconfig lua enet
+#
+#   For Arch you need to edit LUA_CFLAGS and LUA_LIBS below.
+#   Simply change "lua-c++" to "lua++". (This is needed because Arch
+#   uses a different package name for the Lua pkg-config files.)
+#
+#
+# Other distributions:
+#
+#   Use whatever method is available on your distribution for installing
+#   the required libraries: boost, SDL2, curl, freetype, fontconfig,
+#   enet, and lua.
+#
+#   Note that Knights requires a C++ (not C) version of Lua.
+#   Some Linux distributions only provide a C version, which is not
+#   suitable for Knights because it does not handle C++ exceptions
+#   correctly.
+#   To check, you can try "pkg-config --list-all" to see if a package
+#   like "lua-c++" or "lua++" is available. If so, edit LUA_CFLAGS
+#   and LUA_LIBS below to supply the correct package name for your
+#   system. Otherwise, you can build a C++ version of Lua yourself,
+#   as follows:
+#    - Download Lua from https://lua.org/download.html
+#    - Unpack the tgz file
+#    - Run "make CC=g++" from within the lua-5.n.n directory
+#      (this will build liblua.a in lua-5.n.n/src/)
+#    - Now change LUA_CFLAGS and LUA_LIBS (in this Makefile, below)
+#      to the following:
+#        LUA_CFLAGS = -I/path/to/lua-5.n.n/src
+#        LUA_LIBS = -L/path/to/lua-5.n.n/src -llua
+#    - Now you should be able to build Knights.
+#    - You can now safely delete your lua-5.n.n directory if desired
+#      (the above method links Lua statically, so the Lua library
+#      file is not required at runtime).
+#
+#
+# INSTALLING:
+#
+# This makefile supports "make install" which by default installs Knights
+# into /usr/local. "make uninstall" is also supported if you want to
+# remove Knights again.
+#
+# To install into a different directory you can either just edit PREFIX
+# below, or you can pass a modified PREFIX as an argument to make, as in:
+# "make PREFIX=/some/dir", "make install PREFIX=/some/dir", and
+# "make uninstall PREFIX=/some/dir" (note that the same PREFIX must be
+# passed to all three make commands).
+#
+#
+# TROUBLESHOOTING:
+#
+# If you run "knights" and it prints a "could not open file" error on
+# startup, this is probably because the game cannot locate the
+# "knights_data" directory. Try changing to the directory containing
+# knights_data before running the game, or else run it as
+# "knights -d /path/to/knights_data". (Note: if knights is installed
+# using "make install", this won't be necessary because the path to
+# knights_data is "baked into" the game in that case.)
+#
+# If (when building) you get Boost related link errors, try changing
+# "BOOST_SUFFIX =" (below) to "BOOST_SUFFIX = -mt" instead. This will
+# add a "-mt" suffix to the Boost library names (which is apparently
+# needed on some distributions).
+#
+# If you get undefined references to "clock_gettime@@GLIBC_2.2.5" or
+# similar, try adding "-lrt" to BOOST_LIBS below. (This is not a Boost
+# library by the way, but BOOST_LIBS is a convenient place to put it!)
+#
+# If you want to disable audio, you can add -DDISABLE_SOUND to CPPFLAGS
+# (below) - this might be useful if audio doesn't work on your system
+# for some reason.
+#
 
-# NOTE: Audio can be disabled by adding -DDISABLE_SOUND to the CPPFLAGS.
-# This is useful if audio doesn't work on your system for some reason.
-
-# NOTE: On some Linux distributions the Boost libraries require a "-mt" suffix.
-# If you get a link error, try changing "BOOST_SUFFIX =" to "BOOST_SUFFIX = -mt" below.
-# (Also, if you have Boost in a non-standard location then you may
-# need to add some -I flags to CPPFLAGS, and/or edit BOOST_LIBS.)
 
 PREFIX = /usr/local
 BIN_DIR = $(PREFIX)/bin
@@ -133,13 +224,17 @@ SERVER_BINARY_NAME = knights_server
 CC = gcc
 CXX = g++
 
+LUA_CFLAGS = `pkg-config lua-c++ --cflags`
+LUA_LIBS = `pkg-config lua-c++ --libs`
+
 {online_platform_comment}
 ONLINE_PLATFORM_FLAGS = {online_platform_flags}
 
-CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG -DLUA_INCLUDES_REQUIRE_EXTERN_C $(ONLINE_PLATFORM_FLAGS)
+CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG $(ONLINE_PLATFORM_FLAGS)
 CFLAGS = -O2 -ffast-math -pthread
 CXXFLAGS = $(CFLAGS) -std=c++20
 LDFLAGS = -pthread
+
 BOOST_LIBS = -lboost_thread$(BOOST_SUFFIX)
 
 INSTALL = install
@@ -181,7 +276,7 @@ build: $(KNIGHTS_BINARY_NAME) $(SERVER_BINARY_NAME)
 for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     incflags = make_include_flags(incdirs)
 
-    pkgflags = "`pkg-config libcurl --cflags` `pkg-config lua-c++ --cflags` `pkg-config libenet --cflags`"
+    pkgflags = "`pkg-config libcurl --cflags` $(LUA_CFLAGS) `pkg-config libenet --cflags`"
     if srcfile.startswith("src/coercri/sdl/") or srcfile.startswith("src/main/") or srcfile.startswith("src/rstream/rstream_rwops"):
         pkgflags += " `pkg-config sdl2 --cflags`"
     if srcfile.startswith("src/coercri/gfx/"):
@@ -199,7 +294,7 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     print ("\t      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \\")
     print ("\t  rm -f $*.d")
 
-pkg_link_flags_server = "`pkg-config libcurl --libs` `pkg-config lua-c++ --libs` `pkg-config libenet --libs`"
+pkg_link_flags_server = "`pkg-config libcurl --libs` $(LUA_LIBS) `pkg-config libenet --libs`"
 zlib_flag = ""
 if args.online_platform:
     zlib_flag = "`pkg-config zlib --libs` "
