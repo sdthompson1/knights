@@ -213,8 +213,10 @@ kts.MENU = {
                     text_key = "wand_securing",
                     features = function(S)
                         add_item(i_wand_of_securing, S.num_wands, item_weights)
-                        hint("Secure all entry points using the Wand of Securing", 1, 2)
-                        hint("Destroy all enemy knights", 2, 2)
+                        if S.num_players > 1 then
+                            hint("Secure all entry points using the Wand of Securing", 1, 2)
+                            hint("Destroy all enemy knights", 2, 2)
+                        end
                     end
                 },
                 {
