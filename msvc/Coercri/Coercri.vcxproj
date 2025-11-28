@@ -102,6 +102,7 @@
     <ClCompile Include="..\..\src\coercri\enet\enet_udp_socket.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\istream_rwops.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_error.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\core\sdl_pref_path.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_context.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="..\..\src\coercri\gfx\font.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\core\istream_rwops.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\core\sdl_error.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\core\sdl_pref_path.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\gfx\delete_sdl_surface.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\gfx\pixels.hpp" />

@@ -68,6 +68,7 @@
 #include "gfx/window_listener.hpp"
 #include "network/network_connection.hpp"
 #include "network/udp_socket.hpp"
+#include "sdl/core/sdl_pref_path.hpp"
 #include "sdl/gfx/sdl_gfx_driver.hpp"
 #include "sdl/sound/sdl_sound_driver.hpp"
 #include "timer/generic_timer.hpp"
@@ -258,6 +259,7 @@ public:
     // functions
     KnightsAppImpl() : running(true), player_name_changed(false) { }
 
+    void initOptions();
     void saveOptions();
     
     void popPotionSetup(lua_State*);
@@ -331,26 +333,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     // initialize game options
     pimpl->options.reset(new Options);
-#ifdef WIN32
-    // options stored in "app data" directory
-    wchar_t path[MAX_PATH];
-    if(SUCCEEDED(SHGetFolderPathW(NULL, 
-                                  CSIDL_APPDATA,
-                                  NULL,
-                                  0,
-                                  path))) {
-        pimpl->options_filename = path;
-        pimpl->options_filename += "/knights_config.txt";
-    }
-#else
-    // options stored in home directory (assume getenv("HOME") will work)
-    pimpl->options_filename = std::getenv("HOME");
-    pimpl->options_filename /= ".knights_config";
-#endif
-    if (!pimpl->options_filename.empty()) {
-        std::ifstream str(pimpl->options_filename);
-        *pimpl->options = LoadOptions(str);
-    }
+    pimpl->initOptions();
     
     // Set up Coercri
     pimpl->gfx_driver.reset(new Coercri::SDLGfxDriver);
@@ -754,6 +737,46 @@ void KnightsApp::setAndSaveOptions(const Options &opts)
     pimpl->saveOptions();
     setupControllers();
     setupGfxResizer();
+}
+
+void KnightsAppImpl::initOptions()
+{
+    // Determine the options filename using SDL's pref path
+    if (auto pref_path = Coercri::GetPrefPath("Knights", "Knights")) {
+        options_filename = *pref_path / "config.txt";
+    }
+
+    // Try to load from the new location first
+    if (!options_filename.empty()) {
+        std::ifstream str(options_filename);
+        if (str) {
+            *options = LoadOptions(str);
+            return;
+        }
+    }
+
+    // Fall back to legacy location if new location doesn't exist
+    std::filesystem::path legacy_filename;
+#ifdef WIN32
+    wchar_t path[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, path))) {
+        legacy_filename = path;
+        legacy_filename /= "knights_config.txt";
+    }
+#else
+    const char *home = std::getenv("HOME");
+    if (home) {
+        legacy_filename = home;
+        legacy_filename /= ".knights_config";
+    }
+#endif
+
+    if (!legacy_filename.empty()) {
+        std::ifstream str(legacy_filename);
+        if (str) {
+            *options = LoadOptions(str);
+        }
+    }
 }
 
 void KnightsAppImpl::saveOptions()

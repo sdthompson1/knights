@@ -75,6 +75,9 @@
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\coercri\sdl\core\sdl_pref_path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -210,6 +213,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\sdl\core\sdl_error.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\coercri\sdl\core\sdl_pref_path.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.hpp">
