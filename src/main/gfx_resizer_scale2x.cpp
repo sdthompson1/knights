@@ -40,34 +40,34 @@ using namespace std;
 namespace {
 
     // The Scale2x algorithm
-    
-    boost::shared_ptr<Coercri::PixelArray> Scale2x(boost::shared_ptr<const Coercri::PixelArray> original)
+
+    Coercri::PixelArray Scale2x(const Coercri::PixelArray &original)
     {
-        const int width = original->getWidth();
-        const int height = original->getHeight();
-        
-        boost::shared_ptr<Coercri::PixelArray> output(new Coercri::PixelArray(width*2, height*2));
-        
+        const int width = original.getWidth();
+        const int height = original.getHeight();
+
+        Coercri::PixelArray output(width*2, height*2);
+
         for (int y=0; y<height; ++y) {
             for (int x=0; x<width; ++x) {
                 using Coercri::Color;
-                
+
                 const int yminus = y == 0 ? 0 : y-1;
                 const int yplus = y == height-1 ? height-1 : y+1;
                 const int xminus = x == 0 ? 0 : x-1;
                 const int xplus = x == width-1 ? width-1 : x+1;
 
-                const Color& b = (*original)(x, yminus);
-                const Color& d = (*original)(xminus, y);
-                const Color& e = (*original)(x, y);
-                const Color& f = (*original)(xplus, y);
-                const Color& h = (*original)(x, yplus);
-                
-                Color& e0 = (*output)(x*2, y*2);
-                Color& e1 = (*output)(x*2+1, y*2); 
-                Color& e2 = (*output)(x*2, y*2+1);
-                Color& e3 = (*output)(x*2+1, y*2+1);
-                
+                const Color& b = original(x, yminus);
+                const Color& d = original(xminus, y);
+                const Color& e = original(x, y);
+                const Color& f = original(xplus, y);
+                const Color& h = original(x, yplus);
+
+                Color& e0 = output(x*2, y*2);
+                Color& e1 = output(x*2+1, y*2);
+                Color& e2 = output(x*2, y*2+1);
+                Color& e3 = output(x*2+1, y*2+1);
+
                 if (b != h && d != f) {
                     e0 = d == b ? d : e;
                     e1 = b == f ? f : e;
@@ -78,48 +78,48 @@ namespace {
                 }
             }
         }
-        
+
         return output;
     }
 
-    
+
     // The Scale3x algorithm
 
-    boost::shared_ptr<Coercri::PixelArray> Scale3x(boost::shared_ptr<const Coercri::PixelArray> original)
+    Coercri::PixelArray Scale3x(const Coercri::PixelArray &original)
     {
-        const int width = original->getWidth();
-        const int height = original->getHeight();
+        const int width = original.getWidth();
+        const int height = original.getHeight();
 
-        boost::shared_ptr<Coercri::PixelArray> output(new Coercri::PixelArray(width*3, height*3));
-        
+        Coercri::PixelArray output(width*3, height*3);
+
         for (int y=0; y<height; ++y) {
             for (int x=0; x<width; ++x) {
                 using Coercri::Color;
-                
+
                 const int yminus = y == 0 ? 0 : y-1;
                 const int yplus = y == height-1 ? height-1 : y+1;
                 const int xminus = x == 0 ? 0 : x-1;
                 const int xplus = x == width-1 ? width-1 : x+1;
 
-                const Color& a = (*original)(xminus, yminus);
-                const Color& b = (*original)(x,      yminus);
-                const Color& c = (*original)(xplus,  yminus);
-                const Color& d = (*original)(xminus, y);
-                const Color& e = (*original)(x,      y);
-                const Color& f = (*original)(xplus,  y);
-                const Color& g = (*original)(xminus, yplus);
-                const Color& h = (*original)(x,      yplus);
-                const Color& i = (*original)(xplus,  yplus);
+                const Color& a = original(xminus, yminus);
+                const Color& b = original(x,      yminus);
+                const Color& c = original(xplus,  yminus);
+                const Color& d = original(xminus, y);
+                const Color& e = original(x,      y);
+                const Color& f = original(xplus,  y);
+                const Color& g = original(xminus, yplus);
+                const Color& h = original(x,      yplus);
+                const Color& i = original(xplus,  yplus);
 
-                Color& e0 = (*output)(x*3,   y*3);
-                Color& e1 = (*output)(x*3+1, y*3);
-                Color& e2 = (*output)(x*3+2, y*3);
-                Color& e3 = (*output)(x*3,   y*3+1);
-                Color& e4 = (*output)(x*3+1, y*3+1);
-                Color& e5 = (*output)(x*3+2, y*3+1);
-                Color& e6 = (*output)(x*3,   y*3+2);
-                Color& e7 = (*output)(x*3+1, y*3+2);
-                Color& e8 = (*output)(x*3+2, y*3+2);
+                Color& e0 = output(x*3,   y*3);
+                Color& e1 = output(x*3+1, y*3);
+                Color& e2 = output(x*3+2, y*3);
+                Color& e3 = output(x*3,   y*3+1);
+                Color& e4 = output(x*3+1, y*3+1);
+                Color& e5 = output(x*3+2, y*3+1);
+                Color& e6 = output(x*3,   y*3+2);
+                Color& e7 = output(x*3+1, y*3+2);
+                Color& e8 = output(x*3+2, y*3+2);
 
                 if (b != h && d != f) {
                     e0 = d == b ? d : e;
@@ -202,25 +202,25 @@ void GfxResizerScale2x::roundScaleFactor(float ideal_scale_factor, float &rounde
     }
 }
 
-boost::shared_ptr<const Coercri::PixelArray> GfxResizerScale2x::resize(boost::shared_ptr<const Coercri::PixelArray> original,
-                                                                       int new_width, int new_height) const
+Coercri::PixelArray GfxResizerScale2x::resize(const Coercri::PixelArray &original,
+                                              int new_width, int new_height) const
 {
     // We assume that they are scaling to a size we support.
     // (In other words, they should have called roundScaleFactor to get an acceptable scale factor before calling this routine...
     // but the Knights code always works this way, at least at the moment.)
-    ASSERT(new_height >= original->getHeight());
-    ASSERT(new_width >= original->getWidth());
-    ASSERT(new_height / original->getHeight() == new_width / original->getWidth());
+    ASSERT(new_height >= original.getHeight());
+    ASSERT(new_width >= original.getWidth());
+    ASSERT(new_height / original.getHeight() == new_width / original.getWidth());
 
-    int factor = Round(new_height / original->getHeight());
+    int factor = Round(new_height / original.getHeight());
 
     // We arbitrarily decide to do the scale3x before the scale2x. (Could try this either way around,
     // although arguably 6x or higher magnification is unlikely in practice anyway...)
 
-    boost::shared_ptr<const Coercri::PixelArray> result = original;
-    int old_width = original->getWidth();
-    int old_height = original->getHeight();
-    
+    Coercri::PixelArray result = original;
+    int old_width = original.getWidth();
+    int old_height = original.getHeight();
+
     while (factor % 3 == 0) {
         result = Scale3x(result);
         old_width *= 3;
@@ -239,6 +239,6 @@ boost::shared_ptr<const Coercri::PixelArray> GfxResizerScale2x::resize(boost::sh
     // e.g. trying to scale by 5x.
     ASSERT(old_width*factor == new_width);
     ASSERT(old_height*factor == new_height);
-    
+
     return result;
 }

@@ -52,14 +52,13 @@
 #ifndef COERCRI_LOAD_BMP_HPP
 #define COERCRI_LOAD_BMP_HPP
 
-#include "boost/shared_ptr.hpp"
+#include "pixel_array.hpp"
+
 #include <iosfwd>
 
 namespace Coercri {
 
-    class PixelArray;
-
-    boost::shared_ptr<PixelArray> LoadBMP(std::istream &str);
+    PixelArray LoadBMP(std::istream &str);
 
 }
 

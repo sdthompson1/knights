@@ -73,9 +73,8 @@ namespace Coercri {
         return (c[0] + (c[1]<<8) + (c[2]<<16) + (c[3]<<24));
     }
 
-    boost::shared_ptr<PixelArray> LoadBMP(std::istream &str)
+    PixelArray LoadBMP(std::istream &str)
     {
-        boost::shared_ptr<PixelArray> result;
 
         // Check stream is valid
         if (!str) {
@@ -148,17 +147,17 @@ namespace Coercri {
             palette[i] = Color(r,g,b);
         }
 
-        result.reset(new PixelArray(bitmap_width, bitmap_height));
+        PixelArray result(bitmap_width, bitmap_height);
 
         // calculate the number of padding bytes at the end of each row.
         const int bytes_per_row = (bits_per_pixel/8) * bitmap_width;
         const int left_over = bytes_per_row % 4;
         const int padding = (left_over==0) ? 0 : 4 - left_over;
-        
+
         // Read the data. (BMPs are stored bottom-to-top so the y loop runs backwards.)
         for (int y = int(bitmap_height) - 1; y >= 0; --y) {
             for (int x = 0; x < int(bitmap_width); ++x) {
-                Color& col = (*result)(x,y);
+                Color& col = result(x,y);
                 if (bits_per_pixel == 24) {
                     // don't forget: BGR order!
                     col.b = ReadByte(str);

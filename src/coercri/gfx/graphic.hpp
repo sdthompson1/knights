@@ -57,7 +57,7 @@ namespace Coercri {
         virtual int getWidth() const = 0;
         virtual int getHeight() const = 0;
         virtual void getHandle(int &x, int &y) const = 0;
-        virtual boost::shared_ptr<const PixelArray> getPixels() const = 0;
+        virtual const PixelArray& getPixels() const = 0;
     };
 
 }

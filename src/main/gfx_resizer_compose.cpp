@@ -67,17 +67,19 @@ void GfxResizerCompose::roundScaleFactor(float ideal_scale_factor, float &final_
     final_up *= intermed;
 }
 
-boost::shared_ptr<const Coercri::PixelArray> GfxResizerCompose::resize(boost::shared_ptr<const Coercri::PixelArray> original,
-                                                                       int new_width, int new_height) const
+Coercri::PixelArray GfxResizerCompose::resize(const Coercri::PixelArray &original,
+                                              int new_width, int new_height) const
 {
-    const float ideal_scale_factor = float(new_height)/float(original->getHeight());
+    const float ideal_scale_factor = float(new_height)/float(original.getHeight());
 
     const float intermed_scale_factor = intermedScaleFactor(ideal_scale_factor);
-    const int intermed_width = Round(original->getWidth() * intermed_scale_factor);
-    const int intermed_height = Round(original->getHeight() * intermed_scale_factor);
+    const int intermed_width = Round(original.getWidth() * intermed_scale_factor);
+    const int intermed_height = Round(original.getHeight() * intermed_scale_factor);
 
-    boost::shared_ptr<const Coercri::PixelArray> intermed = original;
-    if (right) intermed = right->resize(original, intermed_width, intermed_height);
-    boost::shared_ptr<const Coercri::PixelArray> final = left->resize(intermed, new_width, new_height);
-    return final;
+    if (right) {
+        Coercri::PixelArray intermed = right->resize(original, intermed_width, intermed_height);
+        return left->resize(intermed, new_width, new_height);
+    } else {
+        return left->resize(original, new_width, new_height);
+    }
 }

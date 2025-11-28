@@ -57,7 +57,7 @@ namespace Coercri {
 
     class SDLGraphic : public Graphic {
     public:
-        SDLGraphic(boost::shared_ptr<const PixelArray> pixels, int hx, int hy);
+        SDLGraphic(PixelArray &&pixels, int hx, int hy);
         ~SDLGraphic();
 
         void blit(SDLWindow *window, SDL_Renderer *renderer, int x, int y) const;
@@ -67,7 +67,7 @@ namespace Coercri {
         int getWidth() const;
         int getHeight() const;
         void getHandle(int &x, int &y) const;
-        boost::shared_ptr<const PixelArray> getPixels() const;
+        const PixelArray& getPixels() const override;
 
         // this is called when the SDLWindow that this Graphic is "using" is being destroyed.
         void notifyWindowDestroyed(SDLWindow *window) const;
@@ -78,7 +78,7 @@ namespace Coercri {
         void createTexture(SDLWindow *window, SDL_Renderer *renderer) const;
 
     private:
-        boost::shared_ptr<const PixelArray> pixels;
+        PixelArray pixels;
         int hx, hy;
 
         // cached values:

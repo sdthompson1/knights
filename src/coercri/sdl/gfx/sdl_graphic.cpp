@@ -46,10 +46,9 @@
 
 namespace Coercri {
 
-    SDLGraphic::SDLGraphic(boost::shared_ptr<const PixelArray> p, int hx_, int hy_)
-        : pixels(p), hx(hx_), hy(hy_), used_window(nullptr), used_renderer(nullptr)
+    SDLGraphic::SDLGraphic(PixelArray &&p, int hx_, int hy_)
+        : pixels(std::move(p)), hx(hx_), hy(hy_), used_window(nullptr), used_renderer(nullptr)
     {
-        if (!pixels) throw CoercriError("Null pixel_array used for graphic");
     }
 
     SDLGraphic::~SDLGraphic()
@@ -73,7 +72,7 @@ namespace Coercri {
             if (renderer == nullptr) {
                 texture.reset();
             } else {
-                boost::shared_ptr<SDL_Surface> surface = sdl_surface_from_pixels(*pixels);
+                boost::shared_ptr<SDL_Surface> surface = sdl_surface_from_pixels(pixels);
                 texture.reset( SDL_CreateTextureFromSurface( renderer,
                                                              surface.get() ),
                                DeleteSDLTexture() );
@@ -105,8 +104,8 @@ namespace Coercri {
         SDL_Rect dest_rect;
         dest_rect.x = x - hx;
         dest_rect.y = y - hy;
-        dest_rect.w = pixels->getWidth();
-        dest_rect.h = pixels->getHeight();
+        dest_rect.w = pixels.getWidth();
+        dest_rect.h = pixels.getHeight();
 
         SDL_RenderCopy(renderer, texture.get(), NULL, &dest_rect);
     }
@@ -121,20 +120,20 @@ namespace Coercri {
         SDL_Rect dest_rect;
         dest_rect.x = x - hx;
         dest_rect.y = y - hy;
-        dest_rect.w = pixels->getWidth();
-        dest_rect.h = pixels->getHeight();
+        dest_rect.w = pixels.getWidth();
+        dest_rect.h = pixels.getHeight();
 
         SDL_RenderCopy(renderer, texture.get(), NULL, &dest_rect);
     }
 
     int SDLGraphic::getWidth() const
     {
-        return pixels->getWidth();
+        return pixels.getWidth();
     }
 
     int SDLGraphic::getHeight() const
     {
-        return pixels->getHeight();
+        return pixels.getHeight();
     }
 
     void SDLGraphic::getHandle(int &x, int &y) const
@@ -143,7 +142,7 @@ namespace Coercri {
         y = hy;
     }
 
-    boost::shared_ptr<const PixelArray> SDLGraphic::getPixels() const
+    const PixelArray& SDLGraphic::getPixels() const
     {
         return pixels;
     }

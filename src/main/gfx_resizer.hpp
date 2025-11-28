@@ -32,8 +32,6 @@
 
 #include "gfx/pixel_array.hpp"   // coercri
 
-#include "boost/shared_ptr.hpp"
-
 class GfxResizer {
 public:
     virtual ~GfxResizer() { }
@@ -46,15 +44,15 @@ public:
 
     // NOTE: At the moment we have a restriction that this always returns integer factors, OR
     // is completely unrestricted (because of the way getResizedRectangle works; see display.cpp)
-    
+
     virtual void roundScaleFactor(float ideal_scale_factor, float &rounded_down, float &rounded_up) const
     {
         rounded_down = rounded_up = ideal_scale_factor;
     }
-    
+
     // Resize a PixelArray
-    virtual boost::shared_ptr<const Coercri::PixelArray> resize(boost::shared_ptr<const Coercri::PixelArray> original, 
-                                                                int new_width, int new_height) const = 0;
+    virtual Coercri::PixelArray resize(const Coercri::PixelArray &original,
+                                       int new_width, int new_height) const = 0;
 };
 
 #endif

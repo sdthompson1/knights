@@ -77,21 +77,21 @@ bool GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
         // Open the file. Only BMP format supported for now.
         boost::shared_ptr<std::istream> str = file_cache.openFile(gfx.getFileInfo());
         if (!str) return false; // Not in cache!
-        
-        boost::shared_ptr<const Coercri::PixelArray> pixels = Coercri::LoadBMP(*str);
+
+        Coercri::PixelArray pixels = Coercri::LoadBMP(*str);
 
         // Apply colour key if necessary
         if (gfx.getR() != -1) {
             ColourChange cc;
-            cc.add(Colour(gfx.getR(), gfx.getG(), gfx.getB(), 255), 
+            cc.add(Colour(gfx.getR(), gfx.getG(), gfx.getB(), 255),
                    Colour(gfx.getR(), gfx.getG(), gfx.getB(), 0));   // make it transparent
             pixels = CreateGraphicWithCC(pixels, cc);
         }
-        
+
         // Create the graphic
         boost::shared_ptr<Coercri::Graphic> new_graphic
-            = gfx_driver->createGraphic(pixels, gfx.getHX(), gfx.getHY());
-        
+            = gfx_driver->createGraphic(std::move(pixels), gfx.getHX(), gfx.getHY());
+
         // Add to the map
         GfxPtrWithFlag g;
         g.gfx = new_graphic;
@@ -145,10 +145,10 @@ boost::shared_ptr<Coercri::Graphic> GfxManager::createGraphic(const GraphicKey &
     // NOTE: This routine should be called with either a resize or a colour-change,
     // but not both at the same time.
     // (Semitransparency counts as part of the colour-change.)
-    boost::shared_ptr<const Coercri::PixelArray> new_pixels;
+    Coercri::PixelArray new_pixels(0, 0);
     int new_hx, new_hy;
     key.original->getHandle(new_hx, new_hy);
-    
+
     if (key.cc.empty() && !key.semitransparent) {
         // Resize only
         ASSERT(key.new_width != key.original->getWidth() || key.new_height != key.original->getHeight());
@@ -162,12 +162,11 @@ boost::shared_ptr<Coercri::Graphic> GfxManager::createGraphic(const GraphicKey &
         ASSERT(key.new_width == key.original->getWidth() && key.new_height == key.original->getHeight());
 
         // Call the colour-changing routine
-        new_pixels = CreateGraphicWithCC(key.original->getPixels(), key.cc, 
+        new_pixels = CreateGraphicWithCC(key.original->getPixels(), key.cc,
             key.semitransparent ? invis_alpha : 255);
     }
-    
-    boost::shared_ptr<Coercri::Graphic> new_graphic(gfx_driver->createGraphic(new_pixels, new_hx, new_hy));
-    return new_graphic;
+
+    return gfx_driver->createGraphic(std::move(new_pixels), new_hx, new_hy);
 }
 
 const Coercri::Graphic & GfxManager::getGraphic(const GraphicKey &key)

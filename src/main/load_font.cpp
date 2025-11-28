@@ -45,7 +45,7 @@ boost::shared_ptr<Coercri::Font> LoadFont(boost::shared_ptr<Coercri::GfxDriver> 
     for (std::vector<std::string>::const_iterator it = bitmap_font_names.begin(); it != bitmap_font_names.end(); ++it) {
         try {
             RStream str(*it);
-            boost::shared_ptr<Coercri::PixelArray> pix = Coercri::LoadBMP(str);
+            Coercri::PixelArray pix = Coercri::LoadBMP(str);
             boost::shared_ptr<Coercri::Font> result(new Coercri::BitmapFont(driver, pix));
             return result;
         } catch (...) { }

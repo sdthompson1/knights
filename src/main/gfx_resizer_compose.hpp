@@ -32,6 +32,8 @@
 
 #include "gfx_resizer.hpp"
 
+#include "boost/shared_ptr.hpp"
+
 class GfxResizerCompose : public GfxResizer {
 public:
     // NOTE: Can set right=NULL, cannot set left=NULL though.
@@ -40,12 +42,12 @@ public:
 
     virtual void roundScaleFactor(float ideal_scale_factor, float &rounded_down, float &rounded_up) const;
 
-    virtual boost::shared_ptr<const Coercri::PixelArray> resize(boost::shared_ptr<const Coercri::PixelArray> original,
-                                                                int new_width, int new_height) const;
+    virtual Coercri::PixelArray resize(const Coercri::PixelArray &original,
+                                       int new_width, int new_height) const override;
 
 private:
     float intermedScaleFactor(float ideal_scale_factor) const;
-    
+
     boost::shared_ptr<GfxResizer> left, right;
     bool lock_to_int;
 };

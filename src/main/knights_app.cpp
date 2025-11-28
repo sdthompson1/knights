@@ -405,17 +405,17 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     // Set the window icon
     {
         RStream str("client/knights_icon_48.bmp");
-        boost::shared_ptr<Coercri::PixelArray> parr = Coercri::LoadBMP(str);
+        Coercri::PixelArray parr = Coercri::LoadBMP(str);
         // do color keying
-        for (int j = 0; j < parr->getHeight(); ++j) {
-            for (int i = 0; i < parr->getWidth(); ++i) {
-                if ((*parr)(i, j) == Coercri::Color(255, 0, 255, 255)) {
-                    (*parr)(i, j) = Coercri::Color(0, 0, 0, 0);
+        for (int j = 0; j < parr.getHeight(); ++j) {
+            for (int i = 0; i < parr.getWidth(); ++i) {
+                if (parr(i, j) == Coercri::Color(255, 0, 255, 255)) {
+                    parr(i, j) = Coercri::Color(0, 0, 0, 0);
                 }
             }
         }
         try {
-            pimpl->window->setIcon(*parr);
+            pimpl->window->setIcon(parr);
         } catch (const Coercri::CoercriError &) {
             // ignore
         }

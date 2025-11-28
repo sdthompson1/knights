@@ -87,7 +87,7 @@ namespace Coercri {
         // There is no kerning when this ctor is used.
         //
         explicit BitmapFont(boost::shared_ptr<GfxDriver> driver,
-                            boost::shared_ptr<PixelArray> pix);
+                            const PixelArray &pix);
 
         
         // New constructor. Ctor takes a kern table and the (uniform)

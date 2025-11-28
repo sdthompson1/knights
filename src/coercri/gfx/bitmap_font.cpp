@@ -63,28 +63,28 @@ namespace Coercri {
     }
 
     BitmapFont::BitmapFont(boost::shared_ptr<GfxDriver> driver,
-                           boost::shared_ptr<PixelArray> pixels)
+                           const PixelArray &pixels)
         : gfx_driver(driver)
     {
-        const int w = pixels->getWidth();
-        text_height = pixels->getHeight() - 1; // top row is not part of the font proper.
+        const int w = pixels.getWidth();
+        text_height = pixels.getHeight() - 1; // top row is not part of the font proper.
 
         int ch = 32;
         int ofs = 0;
 
         for (int i = 0; i < w; ++i) {
-            const Color &pixel = (*pixels)(i, 0);
-            if (pixel.r==255 && pixel.g==0 && pixel.b==255) {                
-                
+            const Color &pixel = pixels(i, 0);
+            if (pixel.r==255 && pixel.g==0 && pixel.b==255) {
+
                 if (ch != 32) {
                     // Normal (non-space) character
                     const int width = i - ofs;
 
                     setupCharacter(ch, width, text_height, 0, 0, width);
-                
+
                     for (int y = 0; y < text_height; ++y) {
                         for (int x = 0; x < width; ++x) {
-                            const Color &col = (*pixels)(x + ofs, y + 1);
+                            const Color &col = pixels(x + ofs, y + 1);
                             unsigned char a = 255;
                             if (col.r == 0 && col.g == 0 && col.b == 0) {
                                 a = 0;
@@ -99,14 +99,14 @@ namespace Coercri {
                     // Spaces are a special case: width is determined
                     // from the offset of character 33, and no data is
                     // stored
-                    
+
                     setupCharacter(32, 0, 0, 0, 0, ofs);
                 }
 
                 // Advance to next character
                 ++ch;
                 for (; i < w; ++i) {
-                    const Color& pix2 = (*pixels)(i, 0);
+                    const Color& pix2 = pixels(i, 0);
                     if (pix2.r == 0 && pix2.g == 0 && pix2.b == 0) {
                         ofs = i;
                         break;
@@ -162,15 +162,15 @@ namespace Coercri {
         // Turn the 'pixels' array into a Graphic for each character.
         for (int ch = 0; ch <= 255; ++ch) {
             if (characters[ch]) {
-                boost::shared_ptr<PixelArray> pixels(new PixelArray(characters[ch]->width, characters[ch]->height));
+                PixelArray pixels(characters[ch]->width, characters[ch]->height);
                 int idx = 0;
                 for (int y = 0; y < characters[ch]->height; ++y) {
                     for (int x = 0; x < characters[ch]->width; ++x) {
-                        (*pixels)(x, y) = Color(255, 255, 255, characters[ch]->pixels[idx]);
+                        pixels(x, y) = Color(255, 255, 255, characters[ch]->pixels[idx]);
                         idx++;
                     }
                 }
-                characters[ch]->graphic = gfx_driver->createGraphic(pixels);
+                characters[ch]->graphic = gfx_driver->createGraphic(std::move(pixels));
                 std::vector<unsigned char> empty;
                 empty.swap(characters[ch]->pixels);
             }

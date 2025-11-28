@@ -28,19 +28,19 @@
 #include "graphic_transform.hpp"
 #include "round.hpp"
 
-boost::shared_ptr<const Coercri::PixelArray> CreateGraphicWithCC(boost::shared_ptr<const Coercri::PixelArray> pixels,
-                                                                 const ColourChange &cc,
-                                                                 unsigned char max_alpha)
+Coercri::PixelArray CreateGraphicWithCC(const Coercri::PixelArray &pixels,
+                                        const ColourChange &cc,
+                                        unsigned char max_alpha)
 {
-    const int width = pixels->getWidth();
-    const int height = pixels->getHeight();
-    boost::shared_ptr<Coercri::PixelArray> new_pixels(new Coercri::PixelArray(width, height));
+    const int width = pixels.getWidth();
+    const int height = pixels.getHeight();
+    Coercri::PixelArray new_pixels(width, height);
 
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            const Coercri::Color &in = (*pixels)(x,y);
+            const Coercri::Color &in = pixels(x,y);
             Colour result;
-            Coercri::Color &out = (*new_pixels)(x,y);
+            Coercri::Color &out = new_pixels(x,y);
             if (cc.lookup(Colour(in.r, in.g, in.b, in.a), result)) {
                 out.r = result.r;
                 out.g = result.g;
@@ -58,12 +58,12 @@ boost::shared_ptr<const Coercri::PixelArray> CreateGraphicWithCC(boost::shared_p
     return new_pixels;
 }
 
-boost::shared_ptr<const Coercri::PixelArray> CreateResizedGraphic(const GfxResizer &resizer,
-                                                           boost::shared_ptr<const Coercri::PixelArray> original,
-                                                           int new_width, int new_height,
-                                                           int old_hx, int old_hy, int &new_hx, int &new_hy)
+Coercri::PixelArray CreateResizedGraphic(const GfxResizer &resizer,
+                                         const Coercri::PixelArray &original,
+                                         int new_width, int new_height,
+                                         int old_hx, int old_hy, int &new_hx, int &new_hy)
 {
-    const int old_width = original->getWidth();
+    const int old_width = original.getWidth();
     const float scale = float(new_width) / float(old_width);
     new_hx = Round(float(old_hx) * scale);
     new_hy = Round(float(old_hy) * scale);

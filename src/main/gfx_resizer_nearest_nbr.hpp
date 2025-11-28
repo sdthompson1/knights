@@ -33,8 +33,8 @@
 
 class GfxResizerNearestNbr : public GfxResizer {
 public:
-    virtual boost::shared_ptr<const Coercri::PixelArray> resize(boost::shared_ptr<const Coercri::PixelArray> original,
-                                                                int new_width, int new_height) const;
+    virtual Coercri::PixelArray resize(const Coercri::PixelArray &original,
+                                       int new_width, int new_height) const override;
 };
 
 #endif

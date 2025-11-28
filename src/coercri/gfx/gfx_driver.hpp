@@ -85,8 +85,8 @@ namespace Coercri {
         // the desktop width and height will be used instead.)
         virtual boost::shared_ptr<Window> createWindow(const WindowParams &params) = 0;
 
-        // Create a Graphic from a PixelArray.
-        virtual boost::shared_ptr<Graphic> createGraphic(boost::shared_ptr<const PixelArray> pixels,
+        // Create a Graphic from a PixelArray (takes ownership via move).
+        virtual boost::shared_ptr<Graphic> createGraphic(PixelArray &&pixels,
                                                          int hx = 0,
                                                          int hy = 0) = 0;
 

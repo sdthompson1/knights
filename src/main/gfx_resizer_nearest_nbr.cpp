@@ -25,30 +25,30 @@
 
 #include "gfx_resizer_nearest_nbr.hpp"
 
-boost::shared_ptr<const Coercri::PixelArray> GfxResizerNearestNbr::resize(boost::shared_ptr<const Coercri::PixelArray> original,
-                                                                          int new_width, int new_height) const
+Coercri::PixelArray GfxResizerNearestNbr::resize(const Coercri::PixelArray &original,
+                                                 int new_width, int new_height) const
 {
     const float new_width_f = float(new_width);
     const float new_height_f = float(new_height);
-    const float old_width_f = float(original->getWidth());
-    const float old_height_f = float(original->getHeight());
+    const float old_width_f = float(original.getWidth());
+    const float old_height_f = float(original.getHeight());
     const float scale_w = old_width_f / new_width_f;
     const float scale_h = old_height_f / new_height_f;
 
-    boost::shared_ptr<Coercri::PixelArray> new_pixels(new Coercri::PixelArray(new_width, new_height));
+    Coercri::PixelArray new_pixels(new_width, new_height);
 
     for (int y=0; y<new_height; ++y) {
         for (int x=0; x<new_width; ++x) {
-            
+
             int old_x = int(float(x + 0.5f) * scale_w);
             int old_y = int(float(y + 0.5f) * scale_h);
-            
-            if (old_x >= original->getWidth()) old_x = original->getWidth() - 1;
-            if (old_y >= original->getHeight()) old_y = original->getHeight() - 1;
+
+            if (old_x >= original.getWidth()) old_x = original.getWidth() - 1;
+            if (old_y >= original.getHeight()) old_y = original.getHeight() - 1;
 
             ASSERT(old_x >= 0 && old_y >= 0);
 
-            (*new_pixels)(x,y) = (*original)(old_x, old_y);
+            new_pixels(x,y) = original(old_x, old_y);
         }
     }
 

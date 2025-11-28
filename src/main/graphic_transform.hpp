@@ -31,20 +31,18 @@
 
 #include "gfx/pixel_array.hpp"  // coercri
 
-#include "boost/shared_ptr.hpp"
-
 class ColourChange;
 class GfxResizer;
 
 // alpha of the new graphic = max(original alpha, max_alpha)
 // This is used for drawing invisible teammates
-boost::shared_ptr<const Coercri::PixelArray> CreateGraphicWithCC(boost::shared_ptr<const Coercri::PixelArray> original,
-                                                          const ColourChange &cc,
-                                                          unsigned char max_alpha = 255);
+Coercri::PixelArray CreateGraphicWithCC(const Coercri::PixelArray &original,
+                                        const ColourChange &cc,
+                                        unsigned char max_alpha = 255);
 
-boost::shared_ptr<const Coercri::PixelArray> CreateResizedGraphic(const GfxResizer &resizer,
-                                                           boost::shared_ptr<const Coercri::PixelArray> original,
-                                                           int new_width, int new_height,
-                                                           int old_hx, int old_hy, int &new_hx, int &new_hy);
+Coercri::PixelArray CreateResizedGraphic(const GfxResizer &resizer,
+                                         const Coercri::PixelArray &original,
+                                         int new_width, int new_height,
+                                         int old_hx, int old_hy, int &new_hx, int &new_hy);
 
 #endif
