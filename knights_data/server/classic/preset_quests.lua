@@ -244,7 +244,7 @@ quest_table = {
       }
    },
    paradise = {
-      name_key = "way_of_paradise",
+      name_key = "way_to_paradise",
       description = function(S)
          return "The Way to the Paradise\n\n"
             .. "Legend has it that any hero who strikes the Book of Knowledge with "
