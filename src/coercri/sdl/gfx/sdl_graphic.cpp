@@ -175,6 +175,12 @@ namespace Coercri {
             throw CoercriError("setPixels called on non-Dynamic graphic");
         }
 
+        if (x < 0 || y < 0 ||
+            x + src.getWidth() > pixels.getWidth() ||
+            y + src.getHeight() > pixels.getHeight()) {
+            throw CoercriError("setPixels: source rectangle out of bounds");
+        }
+
         // Update the CPU-side pixel array
         for (int sy = 0; sy < src.getHeight(); ++sy) {
             for (int sx = 0; sx < src.getWidth(); ++sx) {
