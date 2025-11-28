@@ -453,9 +453,9 @@ namespace Coercri {
         return result;
     }
 
-    boost::shared_ptr<Graphic> SDLGfxDriver::createGraphic(PixelArray &&pixels, int hx, int hy)
+    boost::shared_ptr<Graphic> SDLGfxDriver::createGraphic(PixelArray &&pixels, int hx, int hy, GraphicFlags flags)
     {
-        return boost::shared_ptr<Graphic>(new SDLGraphic(std::move(pixels), hx, hy));
+        return boost::shared_ptr<Graphic>(new SDLGraphic(std::move(pixels), hx, hy, flags));
     }
 
     bool SDLGfxDriver::pollEvents()

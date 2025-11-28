@@ -57,17 +57,18 @@ namespace Coercri {
 
     class SDLGraphic : public Graphic {
     public:
-        SDLGraphic(PixelArray &&pixels, int hx, int hy);
+        SDLGraphic(PixelArray &&pixels, int hx, int hy, GraphicFlags flags = GraphicFlags::None);
         ~SDLGraphic();
 
         void blit(SDLWindow *window, SDL_Renderer *renderer, int x, int y) const;
         void blitModulated(SDLWindow *window, SDL_Renderer *renderer, int x, int y, Color col) const;
 
         // overridden from Graphic:
-        int getWidth() const;
-        int getHeight() const;
-        void getHandle(int &x, int &y) const;
+        int getWidth() const override;
+        int getHeight() const override;
+        void getHandle(int &x, int &y) const override;
         const PixelArray& getPixels() const override;
+        void setPixels(int x, int y, const PixelArray &src) override;
 
         // this is called when the SDLWindow that this Graphic is "using" is being destroyed.
         void notifyWindowDestroyed(SDLWindow *window) const;
@@ -80,6 +81,7 @@ namespace Coercri {
     private:
         PixelArray pixels;
         int hx, hy;
+        GraphicFlags flags;
 
         // cached values:
         mutable SDLWindow *used_window;

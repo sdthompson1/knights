@@ -57,7 +57,8 @@ namespace Coercri {
 
         // Functions overridden from GfxDriver
         virtual boost::shared_ptr<Window> createWindow(const WindowParams &params) override;
-        virtual boost::shared_ptr<Graphic> createGraphic(PixelArray &&pixels, int hx = 0, int hy = 0) override;
+        virtual boost::shared_ptr<Graphic> createGraphic(PixelArray &&pixels, int hx = 0, int hy = 0,
+                                                         GraphicFlags flags = GraphicFlags::None) override;
         virtual bool pollEvents() override;
         virtual bool waitEventMsec(int ms) override;
         

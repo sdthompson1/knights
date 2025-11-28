@@ -40,14 +40,15 @@
 
 #include "delete_sdl_surface.hpp"
 #include "sdl_graphic.hpp"
-#include "sdl_surface_from_pixels.hpp"
 #include "sdl_window.hpp"
 #include "../../core/coercri_error.hpp"
 
+#include <vector>
+
 namespace Coercri {
 
-    SDLGraphic::SDLGraphic(PixelArray &&p, int hx_, int hy_)
-        : pixels(std::move(p)), hx(hx_), hy(hy_), used_window(nullptr), used_renderer(nullptr)
+    SDLGraphic::SDLGraphic(PixelArray &&p, int hx_, int hy_, GraphicFlags flags_)
+        : pixels(std::move(p)), hx(hx_), hy(hy_), flags(flags_), used_window(nullptr), used_renderer(nullptr)
     {
     }
 
@@ -72,10 +73,31 @@ namespace Coercri {
             if (renderer == nullptr) {
                 texture.reset();
             } else {
-                boost::shared_ptr<SDL_Surface> surface = sdl_surface_from_pixels(pixels);
-                texture.reset( SDL_CreateTextureFromSurface( renderer,
-                                                             surface.get() ),
-                               DeleteSDLTexture() );
+                // Create texture (streaming for Dynamic, static otherwise)
+                SDL_TextureAccess access = hasFlag(flags, GraphicFlags::Dynamic)
+                    ? SDL_TEXTUREACCESS_STREAMING
+                    : SDL_TEXTUREACCESS_STATIC;
+
+                texture.reset(
+                    SDL_CreateTexture(renderer,
+                                      SDL_PIXELFORMAT_RGBA8888,
+                                      access,
+                                      pixels.getWidth(),
+                                      pixels.getHeight()),
+                    DeleteSDLTexture());
+                SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND);
+
+                // Convert pixel data to Uint32 array and upload to texture
+                const int w = pixels.getWidth();
+                const int h = pixels.getHeight();
+                std::vector<Uint32> tempPixels(w * h);
+                for (int y = 0; y < h; ++y) {
+                    for (int x = 0; x < w; ++x) {
+                        const Color &c = pixels(x, y);
+                        tempPixels[y * w + x] = (Uint32(c.r) << 24) | (Uint32(c.g) << 16) | (Uint32(c.b) << 8) | Uint32(c.a);
+                    }
+                }
+                SDL_UpdateTexture(texture.get(), nullptr, tempPixels.data(), w * sizeof(Uint32));
             }
 
             used_window = window;
@@ -145,5 +167,42 @@ namespace Coercri {
     const PixelArray& SDLGraphic::getPixels() const
     {
         return pixels;
+    }
+
+    void SDLGraphic::setPixels(int x, int y, const PixelArray &src)
+    {
+        if (!hasFlag(flags, GraphicFlags::Dynamic)) {
+            throw CoercriError("setPixels called on non-Dynamic graphic");
+        }
+
+        // Update the CPU-side pixel array
+        for (int sy = 0; sy < src.getHeight(); ++sy) {
+            for (int sx = 0; sx < src.getWidth(); ++sx) {
+                pixels(x + sx, y + sy) = src(sx, sy);
+            }
+        }
+
+        // Update the GPU texture if it exists
+        if (texture) {
+            SDL_Rect rect;
+            rect.x = x;
+            rect.y = y;
+            rect.w = src.getWidth();
+            rect.h = src.getHeight();
+
+            void *texPixels;
+            int pitch;
+            if (SDL_LockTexture(texture.get(), &rect, &texPixels, &pitch) == 0) {
+                unsigned char *dst = static_cast<unsigned char*>(texPixels);
+                for (int sy = 0; sy < src.getHeight(); ++sy) {
+                    Uint32 *row = reinterpret_cast<Uint32*>(dst + sy * pitch);
+                    for (int sx = 0; sx < src.getWidth(); ++sx) {
+                        const Color &c = src(sx, sy);
+                        row[sx] = (Uint32(c.r) << 24) | (Uint32(c.g) << 16) | (Uint32(c.b) << 8) | Uint32(c.a);
+                    }
+                }
+                SDL_UnlockTexture(texture.get());
+            }
+        }
     }
 }

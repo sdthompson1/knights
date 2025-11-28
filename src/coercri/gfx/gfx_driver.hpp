@@ -46,6 +46,8 @@
 #ifndef COERCRI_GFX_DRIVER_HPP
 #define COERCRI_GFX_DRIVER_HPP
 
+#include "graphic.hpp"
+
 #include "boost/noncopyable.hpp"
 #include "boost/shared_ptr.hpp"
 
@@ -55,7 +57,6 @@
 namespace Coercri {
 
     class Font;
-    class Graphic;
     class PixelArray;
     class Window;
 
@@ -86,9 +87,11 @@ namespace Coercri {
         virtual boost::shared_ptr<Window> createWindow(const WindowParams &params) = 0;
 
         // Create a Graphic from a PixelArray (takes ownership via move).
+        // If GraphicFlags::Dynamic is set, the texture can be modified via setPixels().
         virtual boost::shared_ptr<Graphic> createGraphic(PixelArray &&pixels,
                                                          int hx = 0,
-                                                         int hy = 0) = 0;
+                                                         int hy = 0,
+                                                         GraphicFlags flags = GraphicFlags::None) = 0;
 
         // Poll for events, runs any WindowListeners that have been attached to windows
         // Returns TRUE if an event was processed.

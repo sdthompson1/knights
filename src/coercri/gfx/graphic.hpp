@@ -49,7 +49,28 @@
 namespace Coercri {
 
     class PixelArray;
-    
+
+    // Flags for graphic creation
+    enum class GraphicFlags : unsigned {
+        None = 0,
+        Dynamic = 1 << 0   // Texture can be modified after creation via setPixels()
+    };
+
+    inline GraphicFlags operator|(GraphicFlags a, GraphicFlags b)
+    {
+        return static_cast<GraphicFlags>(static_cast<unsigned>(a) | static_cast<unsigned>(b));
+    }
+
+    inline GraphicFlags operator&(GraphicFlags a, GraphicFlags b)
+    {
+        return static_cast<GraphicFlags>(static_cast<unsigned>(a) & static_cast<unsigned>(b));
+    }
+
+    inline bool hasFlag(GraphicFlags flags, GraphicFlags flag)
+    {
+        return (static_cast<unsigned>(flags) & static_cast<unsigned>(flag)) != 0;
+    }
+
     class Graphic {
     public:
         virtual ~Graphic() { }
@@ -58,6 +79,9 @@ namespace Coercri {
         virtual int getHeight() const = 0;
         virtual void getHandle(int &x, int &y) const = 0;
         virtual const PixelArray& getPixels() const = 0;
+
+        // Update a region of the graphic's pixels (only valid for Dynamic graphics)
+        virtual void setPixels(int x, int y, const PixelArray &pixels) = 0;
     };
 
 }
