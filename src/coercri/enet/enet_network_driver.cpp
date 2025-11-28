@@ -53,6 +53,16 @@ namespace Coercri {
             bool operator()(const boost::shared_ptr<T> &q) const { return q.get() == p; }
             T* p;
         };
+
+        template<class T>
+        struct WeakPtrExpiredOrEquals {
+            WeakPtrExpiredOrEquals(T *p_) : p(p_) { }
+            bool operator()(const boost::weak_ptr<T> &q) const {
+                boost::shared_ptr<T> qq = q.lock();
+                return !qq || qq.get() == p;
+            }
+            T* p;
+        };
     }
 
     bool EnetNetworkDriver::is_enet_initialized = false;
@@ -83,17 +93,24 @@ namespace Coercri {
 
     EnetNetworkDriver::~EnetNetworkDriver()
     {
-        // Before deleting the hosts we should tell all the EnetNetworkConnections that they are about
-        // to be disconnected. This will stop them trying to call enet_peer_disconnect on a peer
-        // that no longer exists.
-        for (EnetConnections::iterator it = connections_in.begin(); it != connections_in.end(); ++it) {
-            (*it)->onDisconnect();
+        // If any connections still exist then tell them that they are
+        // about to be disconnected. This will clear their "peer"
+        // pointer, which stops them calling enet_peer_disconnect on a
+        // peer that no longer exists.
+        // This is defensive programming because the caller really
+        // ought to destroy all NetworkConnections before destroying the
+        // NetworkDriver, but in case they don't, the following code
+        // will prevent a crash!
+        for (auto &weak_conn : connections_in) {
+            auto conn = weak_conn.lock();
+            if (conn) conn->onDisconnect();
         }
-        for (EnetConnections::iterator it = connections_out.begin(); it != connections_out.end(); ++it) {
-            (*it)->onDisconnect();
+        for (auto &weak_conn : connections_out) {
+            auto conn = weak_conn.lock();
+            if (conn) conn->onDisconnect();
         }
 
-        // Now close down ENet.
+        // Close down ENet
         if (outgoing_host) enet_host_destroy(outgoing_host);
         if (incoming_host) enet_host_destroy(incoming_host);
         enet_deinitialize();
@@ -153,15 +170,25 @@ namespace Coercri {
         createIncomingHostIfNeeded();
         
         if (!server_enabled && incoming_host) {
-            if (!connections_in.empty()) {
-                // There are existing connections -- close them.
-                // We don't destroy the host immediately in this case; instead we wait for
-                // ENet to clean things up, and then destroy the host in serviceHost().
-                for (EnetConnections::iterator it = connections_in.begin(); it != connections_in.end(); ++it) {
-                    (*it)->close();
+
+            // Close any existing connections (into the old server)
+            // if applicable.
+            bool found_existing_connection = false;
+            for (auto& conn_weak : connections_in) {
+                boost::shared_ptr<EnetNetworkConnection> conn = conn_weak.lock();
+                if (conn) {
+                    conn->close();
+                    found_existing_connection = true;
                 }
-            } else {
-                // No connections to close. We can just destroy the host right away.
+            }
+
+            // Note: if existing connections were found, we don't
+            // destroy the host immediately; instead we wait for ENet
+            // to clean things up, and then destroy the host in
+            // serviceHost().
+            // If existing connections were *not* found, then we can
+            // destroy the host right away.
+            if (!found_existing_connection) {
                 destroyIncomingHost();
             }
         }
@@ -216,11 +243,12 @@ namespace Coercri {
                     conn->onDisconnect();  // Goes into disconnected state, and breaks link to ENetPeer object.
 
                     // Remove the connection from my vectors
+                    // (also remove any "expired" weak_ptrs at the same time)
                     connections_out.erase(std::remove_if(connections_out.begin(), connections_out.end(),
-                                                         PtrEq<EnetNetworkConnection>(conn)),
+                                                         WeakPtrExpiredOrEquals<EnetNetworkConnection>(conn)),
                                           connections_out.end());
                     connections_in.erase(std::remove_if(connections_in.begin(), connections_in.end(),
-                                                        PtrEq<EnetNetworkConnection>(conn)),
+                                                        WeakPtrExpiredOrEquals<EnetNetworkConnection>(conn)),
                                          connections_in.end());
                     new_connections_in.erase(std::remove_if(new_connections_in.begin(), new_connections_in.end(),
                                                             PtrEq<NetworkConnection>(conn)),
@@ -253,10 +281,22 @@ namespace Coercri {
         bool did_something = false;
 
         if (!connections_out.empty()) {
+            // Update the outgoing connections
             did_something = serviceHost(outgoing_host) || did_something;
         }
-        
+
+        // Update the incoming connections (if server enabled)
         did_something = serviceHost(incoming_host) || did_something;
+
+        // Clean up expired weak ptrs
+        connections_out.erase(std::remove_if(connections_out.begin(), connections_out.end(),
+                                             WeakPtrExpiredOrEquals<EnetNetworkConnection>(nullptr)),
+                              connections_out.end());
+        connections_in.erase(std::remove_if(connections_in.begin(), connections_in.end(),
+                                            WeakPtrExpiredOrEquals<EnetNetworkConnection>(nullptr)),
+                             connections_in.end());
+
+        // Return result
         return did_something;
     }
 

@@ -85,9 +85,9 @@ namespace Coercri {
         int server_port;
         bool server_enabled;
         int max_incoming;
-        typedef std::vector<boost::shared_ptr<EnetNetworkConnection> > EnetConnections;
-        EnetConnections connections_out;
-        EnetConnections connections_in;
+        typedef std::vector<boost::weak_ptr<EnetNetworkConnection> > WeakConnections;
+        WeakConnections connections_out;
+        WeakConnections connections_in;
         Connections new_connections_in;
         bool use_compression;
     };
