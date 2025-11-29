@@ -36,7 +36,6 @@ namespace Coercri {
 
 boost::shared_ptr<Coercri::Font> LoadFont(boost::shared_ptr<Coercri::GfxDriver> driver,
                                           Coercri::TTFLoader &loader,
-                                          const std::vector<std::string> &ttf_font_names,
-                                          const std::vector<std::string> &bmp_font_names, int size);
+                                          const std::vector<std::string> &ttf_font_names, int size);
 
 #endif

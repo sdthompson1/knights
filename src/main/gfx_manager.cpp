@@ -35,14 +35,12 @@
 GfxManager::GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                        boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
                        const std::vector<std::string> &ttf_font_names_,
-                       const std::vector<std::string> &bmp_font_names_,
                        unsigned char invis_alpha_,
                        FileCache &fc)
     : gfx_driver(gfx_driver_),
       ttf_loader(ttf_loader_),
       file_cache(fc),
       ttf_font_names(ttf_font_names_),
-      bmp_font_names(bmp_font_names_),
       font_size(0),
       npix(0),
       invis_alpha(invis_alpha_)
@@ -62,7 +60,7 @@ boost::shared_ptr<Coercri::Font> GfxManager::getFont()
 void GfxManager::setFontSize(int new_size)
 {
     if (font_size == new_size) return;
-    font = LoadFont(gfx_driver, *ttf_loader, ttf_font_names, bmp_font_names, new_size);
+    font = LoadFont(gfx_driver, *ttf_loader, ttf_font_names, new_size);
     font_size = new_size;
 }  
 

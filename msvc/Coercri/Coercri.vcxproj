@@ -88,7 +88,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\coercri\core\utf8string.cpp" />
-    <ClCompile Include="..\..\src\coercri\gfx\bitmap_font.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\freetype_ttf_loader.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\lazy_bitmap_font.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\load_system_ttf.cpp" />
@@ -120,7 +119,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\coercri\core\utf8string.hpp" />
-    <ClInclude Include="..\..\src\coercri\gfx\bitmap_font.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\freetype_ttf_loader.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\glyph_creator.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\lazy_bitmap_font.hpp" />

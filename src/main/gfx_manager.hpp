@@ -62,7 +62,6 @@ public:
     GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
                const std::vector<std::string> &ttf_font_names_,
-               const std::vector<std::string> &bmp_font_names_,
                unsigned char invis_alpha_,
                FileCache &fc);
     ~GfxManager();
@@ -146,7 +145,7 @@ private:
     
     // Font data
     boost::shared_ptr<Coercri::TTFLoader> ttf_loader;
-    std::vector<std::string> ttf_font_names, bmp_font_names;
+    std::vector<std::string> ttf_font_names;
     int font_size;
     boost::shared_ptr<Coercri::Font> font;
 

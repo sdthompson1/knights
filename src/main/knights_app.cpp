@@ -422,8 +422,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     }
 
     // Get the font names.
-    // NOTE: we always try to load TTF before bitmap fonts, irrespective of the order they are in the file.
-    std::vector<std::string> ttf_font_names, bitmap_font_names;
+    std::vector<std::string> ttf_font_names;
     {
         RStream str("client/fonts.txt");
 
@@ -436,24 +435,21 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
             // Right trim
             x.erase(find_if(x.rbegin(), x.rend(), [](char c) { return !IsSpace(c); }).base(), x.end());
             
-            if (x.empty()) continue;
-        
-            if (x[0] == '+') bitmap_font_names.push_back(x.substr(1));
-            else if (x[0] != '#') ttf_font_names.push_back(x);
+            if (x.empty() || x[0] == '#') continue;
+            ttf_font_names.push_back(x);
         }
     }
 
     // Font for the gui
     pimpl->font = LoadFont(pimpl->gfx_driver,
                            *pimpl->ttf_loader,
-                           ttf_font_names, 
-                           bitmap_font_names,
+                           ttf_font_names,
                            pimpl->config_map.getInt("font_size"));
 
     // Setup gfx & sound managers
     pimpl->gfx_manager.reset(
         new GfxManager(pimpl->gfx_driver, pimpl->ttf_loader,
-                       ttf_font_names, bitmap_font_names,
+                       ttf_font_names,
                        static_cast<unsigned char>(pimpl->config_map.getInt("invisalpha")),
                        pimpl->file_cache));
     setupGfxResizer();

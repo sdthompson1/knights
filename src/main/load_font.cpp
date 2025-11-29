@@ -27,29 +27,17 @@
 #include "my_exceptions.hpp"  // misc
 #include "rstream.hpp"        // rstream
 
-#include "gfx/bitmap_font.hpp"      // coercri
 #include "gfx/load_bmp.hpp"         // coercri
 #include "gfx/load_system_ttf.hpp"  // coercri
 
 boost::shared_ptr<Coercri::Font> LoadFont(boost::shared_ptr<Coercri::GfxDriver> driver,
                                           Coercri::TTFLoader &ttf_loader,
                                           const std::vector<std::string> &ttf_font_names,
-                                          const std::vector<std::string> &bitmap_font_names, int size)
+                                          int size)
 {
     try {
-        if (!ttf_font_names.empty()) {
-            return Coercri::LoadSystemTTF(ttf_loader, ttf_font_names, size);
-        }
-    } catch (...) { }
-    
-    for (std::vector<std::string>::const_iterator it = bitmap_font_names.begin(); it != bitmap_font_names.end(); ++it) {
-        try {
-            RStream str(*it);
-            Coercri::PixelArray pix = Coercri::LoadBMP(str);
-            boost::shared_ptr<Coercri::Font> result(new Coercri::BitmapFont(driver, pix));
-            return result;
-        } catch (...) { }
+        return Coercri::LoadSystemTTF(ttf_loader, ttf_font_names, size);
+    } catch (...) {
+        throw GraphicLoadFailed("Could not load font! Check fonts.txt");
     }
-
-    throw GraphicLoadFailed("Could not load font! Check fonts.txt");
 }
