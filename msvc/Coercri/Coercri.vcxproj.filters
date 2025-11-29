@@ -18,6 +18,9 @@
     <ClCompile Include="..\..\src\coercri\gfx\bitmap_font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\coercri\gfx\lazy_bitmap_font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\coercri\network\byte_buf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -96,9 +99,6 @@
     <ClCompile Include="..\..\src\coercri\sdl\sound\sdl_sound_driver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\coercri\shared\win32_set_icon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\coercri\core\utf8string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -108,6 +108,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\coercri\gfx\bitmap_font.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\coercri\gfx\glyph_creator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\coercri\gfx\lazy_bitmap_font.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\network\byte_buf.hpp">
@@ -240,9 +246,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\sdl\sound\sdl_sound_driver.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\coercri\shared\win32_set_icon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\core\utf8string.hpp">

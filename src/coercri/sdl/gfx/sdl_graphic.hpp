@@ -9,7 +9,7 @@
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -62,6 +62,8 @@ namespace Coercri {
 
         void blit(SDLWindow *window, SDL_Renderer *renderer, int x, int y) const;
         void blitModulated(SDLWindow *window, SDL_Renderer *renderer, int x, int y, Color col) const;
+        void blitRegionModulated(SDLWindow *window, SDL_Renderer *renderer, int x, int y,
+                                 int src_x, int src_y, int src_w, int src_h, Color col) const;
 
         // overridden from Graphic:
         int getWidth() const override;

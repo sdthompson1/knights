@@ -6,7 +6,7 @@
  *   Stephen Thompson <stephen@solarflare.org.uk>
  *
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2008 - 2024.
+ *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
@@ -61,91 +61,123 @@ namespace Coercri {
 
     void SDLGraphic::createTexture(SDLWindow *window, SDL_Renderer *renderer) const
     {
-        // Note: Currently we can only associate a SDLGraphic with a single SDL_Renderer
-        // at a time. This is probably very inefficient for multi-window applications
-        // (we would have to keep destroying and recreating the texture as the Graphic
-        // is rendered to different windows), but it works fine for Knights.
-        if (used_renderer != renderer) {
-            if (used_window) {
-                used_window->rmGraphicUsingThisWindow(this);
+        // Currently, we can only associate a SDLGraphic with a single
+        // SDL_Renderer at a time. This is probably very inefficient
+        // for multi-window applications (we would have to keep
+        // destroying and recreating the texture as the Graphic is
+        // rendered to different windows), but it works fine for
+        // Knights.
+
+        // If we are already ready for rendering on the given
+        // window/renderer then nothing needs to be done
+        if (used_renderer == renderer) {
+            return;
+        }
+
+        // Delete any existing texture
+        if (used_window) {
+            used_window->rmGraphicUsingThisWindow(this);
+        }
+        texture.reset();
+        used_renderer = nullptr;
+        used_window = nullptr;
+
+        // If we are being asked to delete the texture then we can
+        // stop here
+        if (renderer == nullptr) {
+            return;
+        }
+
+        // Otherwise, create the texture
+        SDL_TextureAccess access = hasFlag(flags, GraphicFlags::Dynamic)
+            ? SDL_TEXTUREACCESS_STREAMING
+            : SDL_TEXTUREACCESS_STATIC;
+
+        texture.reset(
+            SDL_CreateTexture(renderer,
+                              SDL_PIXELFORMAT_RGBA8888,
+                              access,
+                              pixels.getWidth(),
+                              pixels.getHeight()),
+            DeleteSDLTexture());
+
+        if (!texture) {
+            // If creation fails, throw an exception
+            throw CoercriError("Failed to create texture");
+        }
+
+        // Enable blending for the new texture
+        SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND);
+
+        // Convert pixel data to Uint32 array and upload to texture
+        const int w = pixels.getWidth();
+        const int h = pixels.getHeight();
+        std::vector<Uint32> tempPixels(w * h);
+        for (int y = 0; y < h; ++y) {
+            for (int x = 0; x < w; ++x) {
+                const Color &c = pixels(x, y);
+                tempPixels[y * w + x] = (Uint32(c.r) << 24) | (Uint32(c.g) << 16) | (Uint32(c.b) << 8) | Uint32(c.a);
             }
+        }
+        if (SDL_UpdateTexture(texture.get(), nullptr, tempPixels.data(), w * sizeof(Uint32)) != 0) {
+            // Upload failed - delete the texture (to maintain consistent
+            // state) and throw exception
+            texture.reset();
+            throw CoercriError("Failed to update texture");
+        }
 
-            if (renderer == nullptr) {
-                texture.reset();
-            } else {
-                // Create texture (streaming for Dynamic, static otherwise)
-                SDL_TextureAccess access = hasFlag(flags, GraphicFlags::Dynamic)
-                    ? SDL_TEXTUREACCESS_STREAMING
-                    : SDL_TEXTUREACCESS_STATIC;
+        // Success - update used_window and used_renderer pointers for
+        // this new target window
+        used_window = window;
+        used_renderer = renderer;
 
-                texture.reset(
-                    SDL_CreateTexture(renderer,
-                                      SDL_PIXELFORMAT_RGBA8888,
-                                      access,
-                                      pixels.getWidth(),
-                                      pixels.getHeight()),
-                    DeleteSDLTexture());
-                SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND);
-
-                // Convert pixel data to Uint32 array and upload to texture
-                const int w = pixels.getWidth();
-                const int h = pixels.getHeight();
-                std::vector<Uint32> tempPixels(w * h);
-                for (int y = 0; y < h; ++y) {
-                    for (int x = 0; x < w; ++x) {
-                        const Color &c = pixels(x, y);
-                        tempPixels[y * w + x] = (Uint32(c.r) << 24) | (Uint32(c.g) << 16) | (Uint32(c.b) << 8) | Uint32(c.a);
-                    }
-                }
-                SDL_UpdateTexture(texture.get(), nullptr, tempPixels.data(), w * sizeof(Uint32));
-            }
-
-            used_window = window;
-            used_renderer = renderer;
-
-            if (used_window) {
-                used_window->addGraphicUsingThisWindow(this);
-            }
+        if (used_window) {
+            used_window->addGraphicUsingThisWindow(this);
         }
     }
 
     void SDLGraphic::notifyWindowDestroyed(SDLWindow *window) const
     {
-        // this window is being destroyed, so our cached texture is no longer valid.
-        // delete it.
+        // This window is being destroyed, so our cached texture is no
+        // longer valid. Delete it.
         createTexture(nullptr, nullptr);
     }
 
     void SDLGraphic::blit(SDLWindow *window, SDL_Renderer *renderer, int x, int y) const
     {
-        createTexture(window, renderer);
-
-        SDL_SetTextureColorMod(texture.get(), 255, 255, 255);
-        SDL_SetTextureAlphaMod(texture.get(), 255);
-
-        SDL_Rect dest_rect;
-        dest_rect.x = x - hx;
-        dest_rect.y = y - hy;
-        dest_rect.w = pixels.getWidth();
-        dest_rect.h = pixels.getHeight();
-
-        SDL_RenderCopy(renderer, texture.get(), NULL, &dest_rect);
+        blitRegionModulated(window, renderer, x - hx, y - hy,
+                            0, 0, pixels.getWidth(), pixels.getHeight(),
+                            Color(255, 255, 255, 255));
     }
 
     void SDLGraphic::blitModulated(SDLWindow *window, SDL_Renderer *renderer, int x, int y, Color col) const
+    {
+        blitRegionModulated(window, renderer, x - hx, y - hy,
+                            0, 0, pixels.getWidth(), pixels.getHeight(),
+                            col);
+    }
+
+    void SDLGraphic::blitRegionModulated(SDLWindow *window, SDL_Renderer *renderer, int x, int y,
+                                         int src_x, int src_y, int src_w, int src_h, Color col) const
     {
         createTexture(window, renderer);
 
         SDL_SetTextureColorMod(texture.get(), col.r, col.g, col.b);
         SDL_SetTextureAlphaMod(texture.get(), col.a);
 
-        SDL_Rect dest_rect;
-        dest_rect.x = x - hx;
-        dest_rect.y = y - hy;
-        dest_rect.w = pixels.getWidth();
-        dest_rect.h = pixels.getHeight();
+        SDL_Rect src_rect;
+        src_rect.x = src_x;
+        src_rect.y = src_y;
+        src_rect.w = src_w;
+        src_rect.h = src_h;
 
-        SDL_RenderCopy(renderer, texture.get(), NULL, &dest_rect);
+        SDL_Rect dest_rect;
+        dest_rect.x = x;
+        dest_rect.y = y;
+        dest_rect.w = src_w;
+        dest_rect.h = src_h;
+
+        SDL_RenderCopy(renderer, texture.get(), &src_rect, &dest_rect);
     }
 
     int SDLGraphic::getWidth() const
@@ -208,6 +240,8 @@ namespace Coercri {
                     }
                 }
                 SDL_UnlockTexture(texture.get());
+            } else {
+                throw CoercriError("Failed to lock texture");
             }
         }
     }

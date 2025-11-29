@@ -45,6 +45,7 @@
 #define COERCRI_GFX_CONTEXT_HPP
 
 #include "color.hpp"
+#include "rectangle.hpp"
 
 #include "boost/shared_ptr.hpp"
 
@@ -55,7 +56,6 @@ namespace Coercri {
     class Font;
     class Graphic;
     class PixelArray;
-    class Rectangle;
     class UTF8String;
 
     // This struct is used in plotPixelBatch.
@@ -89,6 +89,7 @@ namespace Coercri {
         virtual void plotPixel(int x, int y, Color col) = 0;
         virtual void drawGraphic(int x, int y, const Graphic &graphic) = 0;
         virtual void drawGraphicModulated(int x, int y, const Graphic &graphic, Color col) = 0;
+        virtual void drawGraphicRegionModulated(int x, int y, const Graphic &graphic, const Rectangle &src_rect, Color col) = 0;
 
         // this just calls through to font.drawText.
         void drawText(int x, int y, const Font &font, const UTF8String &text, Color col);

@@ -71,6 +71,7 @@ namespace Coercri {
         virtual void plotPixel(int x, int y, Color col);
         virtual void drawGraphic(int x, int y, const Graphic &graphic);
         virtual void drawGraphicModulated(int x, int y, const Graphic &graphic, Color col);
+        virtual void drawGraphicRegionModulated(int x, int y, const Graphic &graphic, const Rectangle &src_rect, Color col);
 
         virtual void drawLine(int x1, int y1, int x2, int y2, Color col);
         virtual void drawRectangle(const Rectangle &rect, Color col);

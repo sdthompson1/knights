@@ -130,6 +130,17 @@ namespace Coercri {
         }
     }
 
+    void SDLGfxContext::drawGraphicRegionModulated(int x, int y, const Graphic &graphic, const Rectangle &src_rect, Color col)
+    {
+        const SDLGraphic *sdl_graphic = dynamic_cast<const SDLGraphic*>(&graphic);
+        if (sdl_graphic) {
+            sdl_graphic->blitRegionModulated(window, renderer, x, y,
+                                             src_rect.getLeft(), src_rect.getTop(),
+                                             src_rect.getWidth(), src_rect.getHeight(),
+                                             col);
+        }
+    }
+
     void SDLGfxContext::drawLine(int x1, int y1, int x2, int y2, Color col)
     {
         SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);

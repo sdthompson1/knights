@@ -4,9 +4,8 @@
  *
  * PURPOSE:
  *   This implementation of TTFLoader uses Freetype to render a TTF
- *   font file into a bitmap, then returns a corresponding BitmapFont
- *   object. Kerning and anti-aliasing are supported via the new
- *   BitmapFont interface.
+ *   font file, returning a LazyBitmapFont that creates glyphs on
+ *   demand. Kerning and anti-aliasing are supported.
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
@@ -15,7 +14,7 @@
  *   21-May-2012
  *   
  * COPYRIGHT:
- *   Copyright (C) Stephen Thompson, 2012 - 2024.
+ *   Copyright (C) Stephen Thompson, 2012 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
  *   is permitted under the terms of the Boost Software License, Version 1.0, 
