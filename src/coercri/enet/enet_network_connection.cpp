@@ -89,10 +89,16 @@ namespace Coercri {
             queued_packets.pop();
         }
         if (peer) {
-            // Use enet_peer_disconnect_now rather than enet_peer_reset
-            // (the only real difference is that disconnect_now will take
-            // one last shot at sending a DISCONNECT message before
-            // resetting).
+            // If close() was called previously, then the "disconnect"
+            // packet might not have been sent yet - doing a "flush"
+            // will fix that.
+            enet_host_flush(peer->host);
+
+            // We now tell enet to disconnect. Using
+            // enet_peer_disconnect_now (as opposed to
+            // enet_peer_reset) will allow ENet to send a final
+            // "disconnect" packet if not already done (this applies
+            // in the case where close() was NOT called previously).
             enet_peer_disconnect_now(peer, 0);
             peer->data = nullptr;
         }
