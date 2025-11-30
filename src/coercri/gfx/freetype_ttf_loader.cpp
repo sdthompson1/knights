@@ -55,12 +55,8 @@
 #include <sstream>
 
 namespace {
-    // Globals
-    bool g_initialized = false;
-    FT_Library g_library;
-
     // Error checking
-    void ThrowFTError(FT_Error err)
+    void FT_CHK_ERR(FT_Error err)
     {
         if (err) {
             std::ostringstream str;
@@ -68,8 +64,29 @@ namespace {
             throw Coercri::CoercriError(str.str());
         }
     }
+}
 
-#define FT_CHK_ERR(code) { FT_Error err = code; if (err) ThrowFTError(err); }
+namespace Coercri {
+    class FTLibraryWrapper {
+    public:
+        FTLibraryWrapper()
+        {
+            FT_CHK_ERR(FT_Init_FreeType(&library));
+        }
+
+        ~FTLibraryWrapper()
+        {
+            FT_Done_FreeType(library);
+        }
+
+        FT_Library get() const { return library; }
+
+    private:
+        FT_Library library;
+    };
+}
+
+namespace {
 
     // Conversion from Freetype 26.6 format
     inline int MyCeil(int x)
@@ -103,7 +120,7 @@ namespace {
     // GlyphCreator implementation using FreeType
     class FreetypeGlyphCreator : public Coercri::GlyphCreator {
     public:
-        FreetypeGlyphCreator(boost::shared_ptr<std::istream> str, int size);
+        FreetypeGlyphCreator(boost::shared_ptr<Coercri::FTLibraryWrapper> library, boost::shared_ptr<std::istream> str, int size);
         ~FreetypeGlyphCreator();
 
         Coercri::GlyphData createGlyph(char32_t codepoint) override;
@@ -111,22 +128,19 @@ namespace {
         int getLineHeight() const override { return line_height; }
 
     private:
-        boost::shared_ptr<std::istream> stream;  // Keep stream alive
+        boost::shared_ptr<Coercri::FTLibraryWrapper> ft_library;  // Keep library alive
+        boost::shared_ptr<std::istream> stream;    // Keep stream alive
         FT_StreamRec stream_rec;
         FT_Face face;
         int ascent;
         int line_height;
     };
 
-    FreetypeGlyphCreator::FreetypeGlyphCreator(boost::shared_ptr<std::istream> str, int size)
-        : stream(std::move(str)), face(nullptr)
+    FreetypeGlyphCreator::FreetypeGlyphCreator(boost::shared_ptr<Coercri::FTLibraryWrapper> library,
+                                               boost::shared_ptr<std::istream> str,
+                                               int size)
+        : ft_library(std::move(library)), stream(std::move(str)), face(nullptr)
     {
-        // Initialize Freetype library if required
-        if (!g_initialized) {
-            FT_CHK_ERR(FT_Init_FreeType(&g_library));
-            g_initialized = true;
-        }
-
         // Calculate the file size, this is needed by Freetype
         stream->seekg(0, std::ios::end);
         size_t file_size = stream->tellg();
@@ -147,7 +161,7 @@ namespace {
         args.stream = &stream_rec;
 
         // Open the font
-        FT_CHK_ERR(FT_Open_Face(g_library, &args, 0, &face));
+        FT_CHK_ERR(FT_Open_Face(ft_library->get(), &args, 0, &face));
 
         try {
             // Set the size
@@ -228,12 +242,14 @@ namespace {
 
 
 Coercri::FreetypeTTFLoader::FreetypeTTFLoader(boost::shared_ptr<Coercri::GfxDriver> driver)
-    : gfx_driver(driver)
-{}
+    : gfx_driver(driver),
+      ft_library(boost::make_shared<FTLibraryWrapper>())
+{
+}
 
 boost::shared_ptr<Coercri::Font> Coercri::FreetypeTTFLoader::loadFont(boost::shared_ptr<std::istream> str,
                                                                       int size)
 {
-    auto glyph_creator = std::make_unique<FreetypeGlyphCreator>(std::move(str), size);
+    auto glyph_creator = std::make_unique<FreetypeGlyphCreator>(ft_library, std::move(str), size);
     return boost::make_shared<LazyBitmapFont>(gfx_driver, std::move(glyph_creator));
 }

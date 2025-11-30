@@ -53,6 +53,7 @@
 
 namespace Coercri {
 
+    class FTLibraryWrapper;
     class GfxDriver;
 
     class FreetypeTTFLoader : public TTFLoader {
@@ -62,6 +63,7 @@ namespace Coercri {
 
     private:
         boost::shared_ptr<Coercri::GfxDriver> gfx_driver;
+        boost::shared_ptr<FTLibraryWrapper> ft_library;
     };
 
 }
