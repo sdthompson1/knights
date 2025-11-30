@@ -43,6 +43,8 @@
 
 #include "generic_timer.hpp"
 
+#include <mutex>
+
 #ifdef WIN32
 #include <windows.h>
 #ifdef min
@@ -65,27 +67,30 @@ namespace Coercri {
         int g_timer_use_count = 0;
         bool g_use_perf_counter;
         LARGE_INTEGER g_perf_freq;
+        std::mutex g_init_mutex;
     }
 #endif
     
     GenericTimer::GenericTimer()
     {
 #ifdef WIN32
+        std::unique_lock lock(g_init_mutex);
         if (g_timer_use_count == 0) {
-            // use QueryPerformanceCounter if available, timeGetTime
+            // Use QueryPerformanceCounter if available, timeGetTime
             // otherwise.
             g_use_perf_counter = (QueryPerformanceFrequency(&g_perf_freq) != 0);
             if (!g_use_perf_counter) {
                 timeBeginPeriod(1);
             }
-            ++g_timer_use_count;
         }
+        ++g_timer_use_count;
 #endif
     }
 
     GenericTimer::~GenericTimer()
     {
 #ifdef WIN32
+        std::unique_lock lock(g_init_mutex);
         --g_timer_use_count;
         if (g_timer_use_count == 0 && !g_use_perf_counter) {
             timeEndPeriod(1);
@@ -159,6 +164,6 @@ namespace Coercri {
 
     void GenericTimer::sleepMsec(int msec)
     {
-        sleepUsec(msec * 1000);
+        sleepUsec(int64_t(msec) * 1000);
     }
 }
