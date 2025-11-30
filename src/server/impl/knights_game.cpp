@@ -126,6 +126,8 @@ public:
 
 typedef std::vector<boost::shared_ptr<GameConnection> > game_conn_vector;
 
+const int HOUSE_COLOUR_CIRCULAR_BUFFER_SIZE = 30;
+
 class KnightsGameImpl {
 public:
     boost::shared_ptr<KnightsConfig> knights_config;
@@ -174,9 +176,25 @@ public:
     boost::condition_variable wake_up_cond_var;
 #endif
     bool wake_up_flag;
+
+    // Track previous house colours for reconnecting players (circular buffer)
+    std::vector<std::pair<PlayerID, int>> previous_house_colours{HOUSE_COLOUR_CIRCULAR_BUFFER_SIZE};
+    int previous_house_colours_next = 0;  // Next index to write to
 };
 
 namespace {
+
+    // Search for a PlayerID in the previous_house_colours circular buffer.
+    // Returns index if found, -1 otherwise.
+    int FindPreviousHouseColour(const KnightsGameImpl &impl, const PlayerID &id)
+    {
+        for (int i = 0; i < HOUSE_COLOUR_CIRCULAR_BUFFER_SIZE; ++i) {
+            if (impl.previous_house_colours[i].first == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     void CheckTeamChat(const Coercri::UTF8String &msg_orig_utf8,
                        Coercri::UTF8String &msg,
@@ -1637,22 +1655,30 @@ GameConnection & KnightsGame::newClientConnection(const PlayerID &client_id, con
     // Game not in progress.
 
     // Assign the player a unique house colour if possible.
-    bool col_ok = false;
-    const int n_hse_cols = GetNumAvailHouseCols(*pimpl);
-    while (!col_ok) {
-        col_ok = true;
-        for (game_conn_vector::const_iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-            if (*it != conn && (*it)->house_colour == conn->house_colour && !(*it)->obs_flag) {
-                col_ok = false;
-                // try the next colour
-                conn->house_colour ++;
-                std::vector<Coercri::Color> hse_cols;
-                pimpl->knights_config->getHouseColours(hse_cols);  // a bit wasteful as we only want the size. never mind.
-                if (conn->house_colour == n_hse_cols - 1) {
-                    // run out of colours so will just have to accept the last one
-                    col_ok = true;
+    // First check if this player previously had a house colour.
+    int prev_idx = FindPreviousHouseColour(*pimpl, client_id);
+    if (prev_idx >= 0) {
+        // Restore previous colour
+        conn->house_colour = pimpl->previous_house_colours[prev_idx].second;
+    } else {
+        // New player: find first available colour
+        bool col_ok = false;
+        const int n_hse_cols = GetNumAvailHouseCols(*pimpl);
+        while (!col_ok) {
+            col_ok = true;
+            for (game_conn_vector::const_iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
+                if (*it != conn && (*it)->house_colour == conn->house_colour && !(*it)->obs_flag) {
+                    col_ok = false;
+                    // try the next colour
+                    conn->house_colour ++;
+                    std::vector<Coercri::Color> hse_cols;
+                    pimpl->knights_config->getHouseColours(hse_cols);  // a bit wasteful as we only want the size. never mind.
+                    if (conn->house_colour == n_hse_cols - 1) {
+                        // run out of colours so will just have to accept the last one
+                        col_ok = true;
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
@@ -1691,6 +1717,19 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
         id2 = (*where)->id2;
         if ((*where)->observer_num > 0) {
             pimpl->delete_observer_nums.push_back( (*where)->observer_num );
+        }
+
+        // Save house colour for potential reconnection (only for players, not observers)
+        if (is_player) {
+            int idx = FindPreviousHouseColour(*pimpl, id1);
+            if (idx >= 0) {
+                // Update existing entry
+                pimpl->previous_house_colours[idx].second = (*where)->house_colour;
+            } else {
+                // Add new entry at next position (circular)
+                pimpl->previous_house_colours[pimpl->previous_house_colours_next] = std::make_pair(id1, (*where)->house_colour);
+                pimpl->previous_house_colours_next = (pimpl->previous_house_colours_next + 1) % HOUSE_COLOUR_CIRCULAR_BUFFER_SIZE;
+            }
         }
 
         // Erase the connection from our list. Note 'conn' is invalid from now on
