@@ -78,6 +78,7 @@ namespace Coercri {
         // Cached glyph information (stored in the atlas).
         struct CachedGlyph {
             Rectangle atlas_rect;  // Position and size within the atlas texture
+            int atlas_index = 0;   // Which atlas this glyph is stored in
             int xofs = 0;          // Offset from pen position to top-left of glyph
             int yofs = 0;
             int xadvance = 0;      // How far to advance pen after drawing

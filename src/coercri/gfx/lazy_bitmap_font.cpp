@@ -86,7 +86,7 @@ namespace Coercri {
                 dest.drawGraphicRegionModulated(
                     x + glyph.xofs,
                     y + glyph.yofs,
-                    *atlases.back(),
+                    *atlases[glyph.atlas_index],
                     glyph.atlas_rect,
                     col);
             }
@@ -189,6 +189,7 @@ namespace Coercri {
 
         // Place the glyph
         glyph.atlas_rect = Rectangle(current_x, current_shelf_y, data.width, data.height);
+        glyph.atlas_index = static_cast<int>(atlases.size()) - 1;
 
         // Convert alpha data to RGBA PixelArray and upload to atlas
         PixelArray pixels(data.width, data.height);
