@@ -56,7 +56,11 @@ namespace Coercri {
         virtual ~Timer() { }
 
         // Get current "clock time" in milliseconds or microseconds.
-        // Note the clock does not necessarily start from zero.
+        // Note the clock does not necessarily start from zero. However,
+        // in the case of getUsec, it is guaranteed to start from a value
+        // that is a long way below UINT64_MAX (i.e., the microsecond
+        // clock should never "wrap around" during runtime; the same is
+        // not true of getMsec which can wrap at any time!).
         virtual unsigned int getMsec() = 0;
         virtual uint64_t getUsec() = 0;
 

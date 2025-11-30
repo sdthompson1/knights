@@ -112,7 +112,7 @@ namespace Coercri {
             
         } else {
             // timeGetTime returns milliseconds, multiply by 1000 to convert to microseconds
-            return timeGetTime() * 1000;
+            return uint64_t(timeGetTime()) * 1000;
         }
 
 #elif defined(__linux__)
