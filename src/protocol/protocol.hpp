@@ -100,7 +100,7 @@ enum ServerMessageCode {
     SERVER_SET_QUEST_DESCRIPTION = 10,  // followed by string (localkey)
     SERVER_START_GAME = 11,          // followed by ubyte (num_displays), ubyte (deathmatch flag), ubyte (already_started_flag). implicitly clears all ready-flags.
     SERVER_GOTO_MENU = 12,           // no extra data.
-    SERVER_START_GAME_OBS = 13,      // followed by ubyte (num_displays), ubyte (deathmatch flag), NDisp strings (player names, for obs-mode)
+    SERVER_START_GAME_OBS = 13,      // followed by ubyte (num_displays), ubyte (deathmatch flag), NDisp strings (player ids, for obs-mode)
                                      //   + ubyte (0 = at start of game, 1 = halfway through.)
     SERVER_GO_INTO_OBS_MODE = 14,    // followed by ubyte (num displays) + NDisp strings (player ids, for obs-mode)
 
@@ -152,7 +152,7 @@ enum ServerMessageCode {
     SERVER_PLACE_ICON = 111,         // followed by room-coord, varint (gfx-id), ushort (duration)
     SERVER_FLASH_MESSAGE = 112,      // followed by string, ubyte (ntimes)
     SERVER_CANCEL_CONTINUOUS_MESSAGES = 113,  // no data
-    SERVER_ADD_CONTINUOUS_MESSAGE = 114,  // followed by string (localkey)
+    SERVER_ADD_CONTINUOUS_MESSAGE = 114,  // followed by string
     SERVER_SET_SPEECH_BUBBLE = 115,  // followed by varint (id), ubyte (show flag)
 
     // minimap
