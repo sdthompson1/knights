@@ -356,13 +356,8 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
             uint32_t size = getA2();
 
             if (fd == 1 || fd == 2) {
-                // Allow writes to stdout or stderr
-                std::ostream &str = (fd == 1) ? std::cout : std::cerr;
-                for (uint32_t i = 0; i < size; ++i) {
-                    str << char(readByteU(addr + i));
-                }
-
-                // Return number of bytes written
+                // Writes to stdout or stderr are silently ignored.
+                // Just return number of bytes written (as if the call had succeeded).
                 setA0(size);
 
             } else if (fd == TICK_DEVICE_FD) {
