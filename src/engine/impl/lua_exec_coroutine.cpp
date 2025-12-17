@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "knights_callbacks.hpp"
+#include "localization.hpp"
 #include "lua_exec_coroutine.hpp"
 #include "lua_ref.hpp"
 #include "lua_traceback.hpp"
@@ -180,7 +181,11 @@ bool CoroutineTask::doExec(TaskManager &tm)
             std::string err(p ? p : "<No err msg>");
             err += LuaTraceback(thread);
             lua_settop(thread, 0);  // clear its stack
-            mediator.getCallbacks().gameMsgRaw(-1, UTF8String::fromUTF8Safe(err), true);  // display the error message
+
+            LocalKey key("lua_error_is");
+            std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(err)));
+
+            mediator.getCallbacks().gameMsgLoc(-1, key, params, true); // display the error message
             return false;
         }
     }

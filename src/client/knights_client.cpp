@@ -407,14 +407,6 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
-        case SERVER_ANNOUNCEMENT_RAW:
-            {
-                auto msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
-                if (client_cb) client_cb->announcementRaw(msg, pimpl->next_announcement_is_error);
-                pimpl->next_announcement_is_error = false;
-            }
-            break;
-
         case SERVER_ANNOUNCEMENT_LOC:
             {
                 LocalKey key;

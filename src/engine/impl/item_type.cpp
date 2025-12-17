@@ -87,7 +87,7 @@ ItemType::ItemType(lua_State *lua, int idx)
     lua_getfield(lua, idx, "critical");  // [crit]
     if (lua_toboolean(lua, -1) != 0) {
         const char *p = lua_tostring(lua, -1);
-        if (p) critical_msg = p;
+        if (p) critical_msg = LocalKey(p);
         is_critical = true;
     } else {
         is_critical = false;
@@ -274,7 +274,7 @@ void ItemType::newIndex(lua_State *lua)
     } else if (k == "critical") {
         if (lua_toboolean(lua, 3) != 0) {
             const char *p = lua_tostring(lua, 3);
-            if (p) critical_msg = p;
+            if (p) critical_msg = LocalKey(p);
             is_critical = true;
         } else {
             is_critical = false;

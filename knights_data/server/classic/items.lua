@@ -220,7 +220,7 @@ basic_wand = {
     melee_tile_damage = 0,
     melee_action = wandzap,
 
-    critical = "A wand"
+    critical = "a_wand"
 }
 
 i_wand_of_destruction = kts.ItemType(
@@ -285,7 +285,7 @@ basic_book = {
     graphic = g_book,
     overlay = kts.Overlay { g_book_north, g_book_east, g_book_south, g_book_west },
     on_hit = check_destroy_quest,
-    critical = "The book"
+    critical = "the_book"
 }
 
 i_basic_book = kts.ItemType(basic_book)
@@ -468,7 +468,7 @@ i_gem = kts.ItemType {
     graphic = g_gem,
     backpack_graphic = g_menu_drop_gem,
     backpack_slot = 30,
-    critical = "A gem"
+    critical = "a_gem"
 }
 
 --

@@ -85,7 +85,7 @@ public:
 
     // setup variables (set by Lua functions during game startup)
     bool initial_update_needed;
-    std::vector<UTF8String> *initial_msgs;
+    std::vector<std::pair<LocalKey, std::vector<LocalParam>>> *initial_msgs;
     std::vector<std::pair<ItemType *, std::vector<int> > > starting_gears;
     bool premapped;
     std::vector<ItemType*> respawn_items;
@@ -117,7 +117,7 @@ KnightsEngine::KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                              const std::vector<int> &hse_cols,
                              const std::vector<PlayerID> &player_ids,
                              bool &deathmatch_mode,
-                             std::vector<UTF8String> &messages)
+                             std::vector<std::pair<LocalKey, std::vector<LocalParam>>> &messages)
 {
     try {
 
@@ -459,10 +459,10 @@ void KnightsEngine::setPremapped(bool pm)
     pimpl->premapped = pm;
 }
 
-void KnightsEngine::gameStartupMsg(const UTF8String &msg)
+void KnightsEngine::gameStartupMsg(const LocalKey &key, const std::vector<LocalParam> &params)
 {
     if (pimpl->initial_msgs) {
-        pimpl->initial_msgs->push_back(msg);
+        pimpl->initial_msgs->push_back(std::make_pair(key, params));
     } else {
         throw UnexpectedError("KnightsEngine::gameStartupMsg called at unexpected time");
     }

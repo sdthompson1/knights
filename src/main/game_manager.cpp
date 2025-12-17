@@ -1545,11 +1545,7 @@ void GameManager::announcementLoc(const LocalKey &key, const std::vector<LocalPa
 {
     const Localization &loc = pimpl->knights_app.getLocalization();
     Coercri::UTF8String msg = loc.get(key, params);
-    announcementRaw(msg, err);
-}
 
-void GameManager::announcementRaw(const UTF8String &msg, bool err)
-{
     std::string msg_latin1 = msg.asLatin1();
 
     pimpl->chat_list.add(msg_latin1);

@@ -50,6 +50,11 @@ void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
             buf.writeUbyte(2);
             buf.writeVarInt(param.getInteger());
             break;
+        case LocalParam::Type::STRING:
+            // note: client will only accept this in "safe" modes i.e. not VM mode
+            buf.writeUbyte(3);
+            buf.writeString(param.getString().asUTF8());
+            break;
         default:
             throw std::logic_error("Incorrect LocalParam type");
         }
@@ -73,6 +78,10 @@ void ReadAnnouncementLoc(Coercri::InputByteBuf &buf,
             break;
         case 2:
             params.push_back(LocalParam(buf.readVarInt()));
+            break;
+        case 3:
+            // TODO: in VM mode, string params should be replaced with "#####"
+            params.push_back(LocalParam(Coercri::UTF8String::fromUTF8Safe(buf.readString())));
             break;
         default:
             throw ProtocolError(LocalKey("bad_server_message"));

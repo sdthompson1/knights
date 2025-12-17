@@ -237,15 +237,12 @@ namespace {
         }
     }
 
-    void SendMessages(game_conn_vector &conns, const std::vector<UTF8String> &messages)
+    void SendMessages(game_conn_vector &conns, const std::vector<std::pair<LocalKey, std::vector<LocalParam>>> &messages)
     {
-        // TODO: need better handling of the startup msgs. For now they are sent
-        // as unlocalized strings.
         for (game_conn_vector::const_iterator it = conns.begin(); it != conns.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
-            for (const UTF8String &msg : messages) {
-                buf.writeUbyte(SERVER_ANNOUNCEMENT_RAW);
-                buf.writeString(msg.asUTF8());
+            for (const auto &msg : messages) {
+                WriteAnnouncementLoc(buf, msg.first, msg.second);
             }
         }
     }
@@ -598,7 +595,7 @@ namespace {
                 nplayers = player_ids.size();
 
                 // Create the KnightsEngine. Pass any messages back to the players
-                std::vector<UTF8String> messages;
+                std::vector<std::pair<LocalKey, std::vector<LocalParam>>> messages;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, hse_cols, player_ids,
                                                    kg.deathmatch_mode,  // output from KnightsEngine

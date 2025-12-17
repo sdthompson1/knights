@@ -455,14 +455,15 @@ const Control * Tile::getControl(const MapCoord &pos) const
             try {
                 LuaExec(lua, 1, 1);  // resets stack to [] on exception
             } catch (const LuaError &e) {
-                Mediator::instance().getCallbacks().gameMsgRaw(-1, UTF8String::fromUTF8Safe(e.what()), true);
+                std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(e.what())));
+                Mediator::instance().getCallbacks().gameMsgLoc(-1, LocalKey("lua_error_is"), params, true);
                 return 0;
             }
 
             // on successful execution stack is [return_val]
             if (!IsLuaPtr<Control>(lua, -1)) {
-                Mediator::instance().getCallbacks().gameMsgRaw(-1,
-                    UTF8String::fromUTF8("Tile 'control' function did not return a control!"), true);
+                Mediator::instance().getCallbacks().gameMsgLoc(-1,
+                    LocalKey("bad_tile_control"), std::vector<LocalParam>(), true);
                 return 0;
             }
 

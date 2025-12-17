@@ -1915,12 +1915,6 @@ void LocalDisplay::flashScreen(int plyr, int delay_ms)
     }
 }
 
-void LocalDisplay::gameMsgRaw(int plyr, const Coercri::UTF8String &msg, bool is_err)
-{
-    // TODO: Review usage of raw messages
-    chat_list.add(msg.asLatin1());  // chat_list only supports latin1 encoding for now
-}
-
 void LocalDisplay::gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
 {
     const Coercri::UTF8String msg = localization.get(key, params);

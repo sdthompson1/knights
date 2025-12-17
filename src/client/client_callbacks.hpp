@@ -150,7 +150,6 @@ public:
     // chat, and "announcements".
     virtual void chat(const PlayerID &whofrom, bool observer, bool team, const UTF8String &msg) = 0;
     virtual void announcementLoc(const LocalKey &msg, const std::vector<LocalParam> &params, bool is_err) = 0;
-    virtual void announcementRaw(const Coercri::UTF8String &msg, bool is_err) = 0;
 };
 
 #endif

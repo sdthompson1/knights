@@ -113,7 +113,7 @@ enum ServerMessageCode {
     SERVER_DEACTIVATE_READY_FLAGS = 26,         // no additional data
 
     SERVER_CHAT = 30,                // followed by string (player-id), ubyte (0=lobby 1=player 2=observer 3=team), string (utf-8 chat msg)
-    SERVER_ANNOUNCEMENT_RAW = 31,    // followed by string (raw utf-8 message). Be careful - the string can't necessarily be trusted.
+    // SERVER_ANNOUNCEMENT_RAW = 31,    // no longer used
     SERVER_ANNOUNCEMENT_LOC = 32,    // followed by string (localkey) + ubyte (num params) + params; see announcement_loc.cpp for the param format
 
     SERVER_POP_UP_WINDOW = 33,       // complex. only used in 1-player games.

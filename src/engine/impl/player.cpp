@@ -471,10 +471,10 @@ bool Player::respawn()
 
             // lua stack = [errmsg]
 
-            Mediator::instance().gameMsgRaw(
-                -1,
-                UTF8String::fromUTF8Safe(std::string("(Error in respawn function) ") + lua_tostring(lua, -1)),
-                true);
+            UTF8String lua_msg = UTF8String::fromUTF8Safe(lua_tostring(lua, -1));
+            LocalKey key("error_in_respawn_func");
+            std::vector<LocalParam> params(1, LocalParam(lua_msg));
+            Mediator::instance().gameMsgLoc(-1, key, params, true);
             lua_pop(lua, 1); // []
 
         } else {

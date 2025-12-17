@@ -187,10 +187,6 @@ public:
     {
         Log("Announcement (Loc): %s", msg.getKey().c_str());
     }
-    void announcementRaw(const Coercri::UTF8String& msg, bool is_err) override
-    {
-        Log("Announcement (Raw): %s", msg.asUTF8().c_str());
-    }
 
 public:
     bool join_game_accepted;
@@ -287,7 +283,6 @@ public:
         Log("Set menu highlight, player = %d", player_num);
     }
     void flashScreen(int player_num, int delay) override { Log("Flash screen"); }
-    void gameMsgRaw(int player_num, const Coercri::UTF8String &msg, bool is_err) override { Log("Game msg. Player = %d, msg = %s", player_num, msg.asUTF8().c_str()); }
     void gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) override { Log("Game msg. Player = %d, msg key = %s", player_num, key.getKey().c_str()); }
     void popUpWindow(const std::vector<TutorialWindow> &windows) override { Log("Pop up window"); }
     void onElimination(int player_num) override { Log("On elimination, player = %d", player_num); }

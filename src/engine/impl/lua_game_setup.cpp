@@ -719,13 +719,8 @@ LuaStartupSentinel::~LuaStartupSentinel()
 }
 
 
-void GameStartupMsg(lua_State *lua, const UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params)
+void GameStartupMsg(lua_State *lua, const LocalKey &key, const std::vector<LocalParam> &params)
 {
     KnightsEngine &ke = GetKnightsEngine(lua);
-    if (!msg.empty()) {
-        ke.gameStartupMsg(msg);
-    } else {
-        // TODO: proper localization of startup msgs. For now just send the key.
-        ke.gameStartupMsg(UTF8String::fromUTF8Safe(key.getKey()));
-    }
+    ke.gameStartupMsg(key, params);
 }

@@ -37,6 +37,7 @@
 #ifndef ITEM_TYPE_HPP
 #define ITEM_TYPE_HPP
 
+#include "localization.hpp"
 #include "lua_func.hpp"
 #include "lua_ref.hpp"
 #include "random_int.hpp"
@@ -150,7 +151,7 @@ public:
     // Critical items
     // (A critical item will automatically be respawned if it is destroyed for any reason. See ItemCheckTask.)
     bool isCritical() const { return is_critical; }
-    const std::string & getCriticalMsg() const { return critical_msg; }
+    const LocalKey & getCriticalMsg() const { return critical_msg; }
 
     
     // Actions
@@ -216,7 +217,7 @@ private:
     bool open_traps;
 
     bool is_critical;
-    std::string critical_msg;
+    LocalKey critical_msg;
 
     const Control * control; 
     

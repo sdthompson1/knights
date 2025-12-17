@@ -80,7 +80,6 @@ public:
     virtual void setAvailableControls(int, const std::vector<std::pair<const UserControl*,bool> >&) override { }
     virtual void setMenuHighlight(int, const UserControl*) override { }
     virtual void flashScreen(int,int) override { }
-    virtual void gameMsgRaw(int, const UTF8String&, bool) override { }
     virtual void gameMsgLoc(int, const LocalKey&, const std::vector<LocalParam>&, bool) override { }
     virtual void popUpWindow(const std::vector<TutorialWindow> &) override { }
     virtual void onElimination(int) override { }

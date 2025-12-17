@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "announcement_loc.hpp"
 #include "knights_game.hpp"
 #include "knights_log.hpp"
 #include "knights_server.hpp"
@@ -305,7 +306,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                     throw ProtocolError(LocalKey("old_server"));
                 }
 
-                // Send him the MOTD [Disabled if VIRTUAL_SERVER]
+                // Send them the MOTD
                 // Note: old_motd_file is deprecated. It will not get used, thanks to the above version check.
                 const std::string & motd_file = (ver < KNIGHTS_VERSION_NUM) ? pimpl->old_motd_file : pimpl->motd_file;
                 if (!motd_file.empty()) {
@@ -319,8 +320,10 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         motd += '\n';
                     }
                     Coercri::OutputByteBuf buf(conn.output_data);
-                    buf.writeUbyte(SERVER_ANNOUNCEMENT_RAW);
-                    buf.writeString(motd);
+
+                    LocalKey key("raw_msg");
+                    std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(motd)));
+                    WriteAnnouncementLoc(buf, key, params);
                 }
                 
                 conn.client_version = ver;

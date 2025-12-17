@@ -34,8 +34,6 @@ class LocalParam;
 
 #include <vector>
 
-// Note: This does *not* allow raw string params (LocalParam::Type::STRING)
-// as these are not safe for the client to consume without additional filtering.
 void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
                           const LocalKey &key,
                           const std::vector<LocalParam> &params);

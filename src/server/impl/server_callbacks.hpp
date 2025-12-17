@@ -80,7 +80,6 @@ public:
 
     virtual void flashScreen(int plyr, int delay) override;
 
-    virtual void gameMsgRaw(int plyr_num, const Coercri::UTF8String &msg, bool is_err) override;
     virtual void gameMsgLoc(int plyr_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) override;
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows) override;
 
@@ -92,7 +91,6 @@ public:
 
 private:
     void doAppendPlayerCmds(int plyr, std::vector<ubyte> &out, int observer_num, bool include_private) const;
-    void gameMsgImpl(int plyr, const Coercri::UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err);
 
 private:
     std::vector<boost::shared_ptr<ServerDungeonView> > dungeon_view;

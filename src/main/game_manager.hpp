@@ -241,7 +241,6 @@ public:
     
     virtual void chat(const PlayerID &id, bool observer, bool team, const Coercri::UTF8String &msg) override;
     virtual void announcementLoc(const LocalKey &key, const std::vector<LocalParam> &params, bool err) override;
-    virtual void announcementRaw(const UTF8String &msg, bool err) override;
 
 
 private:

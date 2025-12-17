@@ -33,6 +33,7 @@
 #ifndef KNIGHTS_ENGINE_HPP
 #define KNIGHTS_ENGINE_HPP
 
+#include "localization.hpp"
 #include "player_id.hpp"
 #include "player_state.hpp"
 #include "utf8string.hpp"
@@ -67,12 +68,11 @@ class KnightsEngine {
 public:
     // Start up a new KnightsEngine. Requires KnightsConfig and menu settings.
     // Note that each KnightsGame should have a unique KnightsConfig.
-    // TODO: "msgs" output should be localized probably?
     KnightsEngine(boost::shared_ptr<KnightsConfig> config,
                   const std::vector<int> &hse_cols,
                   const std::vector<PlayerID> &player_ids,
                   bool &deathmatch_mode,   // output.
-                  std::vector<UTF8String> &msgs);  // output.
+                  std::vector<std::pair<LocalKey, std::vector<LocalParam>>> &msgs);  // output.
     ~KnightsEngine();
 
     // Run one update step (for a given time).
@@ -114,7 +114,7 @@ public:
 
     void resetMap();
     void setPremapped(bool);
-    void gameStartupMsg(const UTF8String &msg);
+    void gameStartupMsg(const LocalKey &key, const std::vector<LocalParam> &params);
     void addStartingGear(ItemType *, const std::vector<int> &);
     void setItemRespawn(const std::vector<ItemType*> &items_to_respawn, int respawn_delay);
     void setLockpickSpawn(ItemType *lockpicks, int init_time, int interval);

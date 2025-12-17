@@ -22,9 +22,12 @@ invalid_id_server               Invalid ID in server message
 invalid_id_client               Invalid ID in client message
 dpy_num_out_of_range            Display number out of range
 n_players_incorrect             Number of players incorrect
+bad_tile_control                Tile 'control' function did not return a control!
 couldnt_start_game              Couldn't start game! {0}
 couldnt_join_game               Could not join game! {0}
 error_is                        Error: {0}
+lua_error_is                    Lua Error: {0}
+error_in_respawn_func           Error in respawn function: {0}
 
 
 # Game statuses (for multiplayer game list screen)
@@ -45,6 +48,13 @@ is_winner               {0} is the winner!
 are_winners             {0...} are the winners!
 game_completed          Game completed in {0}m {1}s.
 x_disconnected          {0} (Disconnected)
+
+
+# Critical item respawning
+has_been_respawned    {0} has been respawned at a random location.
+a_gem                 A gem
+a_wand                A wand
+the_book              The book
 
 
 # Quest selection menu
@@ -146,6 +156,7 @@ player_set_random     {0} selected a Random Quest.
 
 
 # Other UI strings
+raw_msg                         {0}
 connecting_to_game              Connecting to game...
 host_migration_in_progress      Host migration in progress...
 connection_lost_reconnecting    Connection lost. Attempting to reconnect...

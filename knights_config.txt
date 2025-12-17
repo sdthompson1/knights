@@ -3,7 +3,7 @@
 
 
 # Which UDP port to run the server on. Default 16399
-Port = 1234
+Port = 16399
 
 
 # Short description of server. This will appear on the Find Server screen.
@@ -21,8 +21,9 @@ MaxGames = 40
 
 
 # Whether to "advertise" this server on the LAN and/or the Internet.
-#  - To run an Internet server, set UseMetaserver = yes and UseBroadcast = no.
-#  - To run a LAN server, set UseMetaserver = no and UseBroadcast = yes.
+# Note: As of 2025, the metaserver feature has been disabled and will
+# no longer work. UseBroadcast should still work, and is useful for
+# LAN servers.
 UseMetaserver = no
 UseBroadcast = no
 

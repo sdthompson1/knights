@@ -134,21 +134,12 @@ const std::string &Mediator::cfgString(const std::string &key) const
 // printing msgs
 //
 
-void Mediator::gameMsgRaw(int player_num, const Coercri::UTF8String &msg, bool is_err)
-{
-    if (callbacks) {
-        callbacks->gameMsgRaw(player_num, msg, is_err);
-    } else {
-        GameStartupMsg(lua_state.get(), msg, LocalKey(), std::vector<LocalParam>());
-    }
-}
-
 void Mediator::gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
 {
     if (callbacks) {
         callbacks->gameMsgLoc(player_num, key, params, is_err);
     } else {
-        GameStartupMsg(lua_state.get(), UTF8String(), key, params);
+        GameStartupMsg(lua_state.get(), key, params);
     }
 }
 

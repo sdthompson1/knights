@@ -54,7 +54,6 @@ private:
 
 
 // This is a workaround to allow msgs to be printed during game startup.
-// Either msg, or key and params, should be passed, but not both.
-void GameStartupMsg(lua_State *lua, const UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params);
+void GameStartupMsg(lua_State *lua, const LocalKey &key, const std::vector<LocalParam> &params);
 
 #endif

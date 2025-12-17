@@ -536,11 +536,10 @@ public:
 private:
     static void printRespawnMessage(const DungeonMap::DisplacedItem &di)
     {
-        const std::string &name = di.item->getType().getCriticalMsg();
-        if (!name.empty()) {
-            // TODO: this should be localized at some point.
-            std::string msg = name + " has been respawned at a random location.";
-            Mediator::instance().getCallbacks().gameMsgRaw(-1, UTF8String::fromUTF8Safe(msg));
+        const LocalKey &name = di.item->getType().getCriticalMsg();
+        if (name != LocalKey()) {
+            std::vector<LocalParam> params(1, LocalParam(name));
+            Mediator::instance().getCallbacks().gameMsgLoc(-1, LocalKey("has_been_respawned"), params, false);
         }
     }
 

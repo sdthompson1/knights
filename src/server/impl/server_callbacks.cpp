@@ -200,17 +200,7 @@ void ServerCallbacks::flashScreen(int plyr, int delay)
     buf.writeVarInt(delay);
 }
 
-void ServerCallbacks::gameMsgRaw(int plyr, const Coercri::UTF8String &msg, bool is_err)
-{
-    gameMsgImpl(plyr, msg, LocalKey(), std::vector<LocalParam>(), is_err);
-}
-
 void ServerCallbacks::gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
-{
-    gameMsgImpl(plyr, UTF8String(), key, params, is_err);
-}
-
-void ServerCallbacks::gameMsgImpl(int plyr, const Coercri::UTF8String &msg, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
 {
     const int MAX_ERRORS = 50;
 
@@ -237,12 +227,7 @@ void ServerCallbacks::gameMsgImpl(int plyr, const Coercri::UTF8String &msg, cons
                 buf.writeUshort(0);
             }
 
-            if (key == LocalKey()) {
-                buf.writeUbyte(SERVER_ANNOUNCEMENT_RAW);
-                buf.writeString(msg.asUTF8());
-            } else {
-                WriteAnnouncementLoc(buf, key, params);
-            }
+            WriteAnnouncementLoc(buf, key, params);
         }
     }
 
