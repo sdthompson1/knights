@@ -37,6 +37,23 @@ LocalParam::LocalParam(const Coercri::UTF8String &str) : type(Type::STRING), str
 
 LocalParam::LocalParam(int value) : type(Type::INTEGER), int_value(value) {}
 
+bool LocalParam::operator==(const LocalParam &other) const
+{
+    if (type != other.type) return false;
+    switch (type) {
+        case Type::LOCAL_KEY: return local_key == other.local_key;
+        case Type::PLAYER_ID: return player_id == other.player_id;
+        case Type::STRING: return string_value == other.string_value;
+        case Type::INTEGER: return int_value == other.int_value;
+    }
+    return false;
+}
+
+bool LocalParam::operator!=(const LocalParam &other) const
+{
+    return !(*this == other);
+}
+
 void Localization::readStrings(std::istream &file)
 {
     std::string line;
@@ -199,4 +216,16 @@ Coercri::UTF8String Localization::get(const LocalKey &key, const std::vector<Loc
     }
     
     return substituteParameters(template_str, converted_params);
+}
+
+LocalKey Localization::pluralize(const LocalKey &key, int count) const
+{
+    // This logic works for English - for other languages, different logic may be needed
+    if (count < 0) {
+        return key;
+    } else if (count == 1) {
+        return LocalKey(key.getKey() + "[one]");
+    } else {
+        return LocalKey(key.getKey() + "[other]");
+    }
 }

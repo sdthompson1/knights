@@ -244,25 +244,100 @@ namespace {
         lua_pop(lua, 2);   // []
     }
 
-    std::string GetQuestDescription(lua_State *lua, const MenuWrapperImpl &impl)
+    std::vector<Paragraph> GetQuestDescription(lua_State *lua, const MenuWrapperImpl &impl)
     {
+        std::vector<Paragraph> result;
+
         impl.s_table.push(lua);    // [S]
-        if (impl.describe_quest_func.hasValue()) {
-
-            impl.describe_quest_func.run(lua, 1, 1);  // [result]
-
-            const char *p = lua_tostring(lua, -1);
-            std::string result;
-            if (p) {
-                result = p;
-            }
-            lua_pop(lua, 1);   // []
-
-            return result;
-        } else {
+        if (!impl.describe_quest_func.hasValue()) {
             lua_pop(lua, 1);  // []
-            return std::string();
+            return result;
         }
+
+        impl.describe_quest_func.run(lua, 1, 1);  // [result]
+
+        // Result should be a table of paragraphs
+        if (!lua_istable(lua, -1)) {
+            lua_pop(lua, 1);  // []
+            return result;
+        }
+
+        // Iterate through paragraphs at [1], [2], [3], etc.
+        int para_idx = 1;
+        while (para_idx < 20) {  // Max 20 paragraphs just in case lua goes haywire
+            lua_pushinteger(lua, para_idx);  // [result idx]
+            lua_gettable(lua, -2);  // [result para]
+            if (lua_isnil(lua, -1)) {
+                lua_pop(lua, 1);  // [result]
+                break;
+            }
+
+            Paragraph para;
+
+            // Result is either a table, or a plain string
+            if (lua_isstring(lua, -1)) {
+                para.key = LocalKey(lua_tostring(lua, -1));
+                para.plural = -1;
+                para.params.clear();
+                result.push_back(para);
+                lua_pop(lua, 1);  // [result]
+                ++para_idx;
+                continue;
+            }
+
+            if (!lua_istable(lua, -1)) {
+                // Invalid paragraph format, skip
+                lua_pop(lua, 1);  // [result]
+                ++para_idx;
+                continue;
+            }
+
+            // Get the LocalKey from position [1]
+            lua_pushinteger(lua, 1);  // [result para idx]
+            lua_gettable(lua, -2);  // [result para key]
+            const char *key_str = lua_tostring(lua, -1);
+            if (key_str) {
+                para.key = LocalKey(key_str);
+            }
+            lua_pop(lua, 1);  // [result para]
+
+            // Get the "plural" field (defaults to -1 if not present)
+            lua_getfield(lua, -1, "plural");  // [result para plural]
+            if (lua_isinteger(lua, -1)) {
+                para.plural = lua_tointeger(lua, -1);
+            } else {
+                para.plural = -1;
+            }
+            lua_pop(lua, 1);  // [result para]
+
+            // Get parameters from positions [2], [3], etc.
+            int param_idx = 2;
+            while (param_idx < 20) {  // Max number of parameters we will read
+                lua_pushinteger(lua, param_idx);  // [result para idx]
+                lua_gettable(lua, -2);  // [result para param]
+                if (lua_isnil(lua, -1)) {
+                    lua_pop(lua, 1);  // [result para]
+                    break;
+                }
+
+                if (lua_isinteger(lua, -1)) {
+                    para.params.push_back(LocalParam(static_cast<int>(lua_tointeger(lua, -1))));
+                } else if (lua_isstring(lua, -1)) {
+                    para.params.push_back(LocalParam(LocalKey(lua_tostring(lua, -1))));
+                }
+                // Other types are ignored
+
+                lua_pop(lua, 1);  // [result para]
+                ++param_idx;
+            }
+
+            result.push_back(para);
+            lua_pop(lua, 1);  // [result]
+            ++para_idx;
+        }
+
+        lua_pop(lua, 1);  // []
+        return result;
     }
 
     // ---------------------------------------------------------------------------
@@ -535,7 +610,7 @@ namespace {
     struct OldSettings {
         std::vector<int> choices;
         std::vector<std::vector<int> > constraints;
-        std::string quest_description;
+        std::vector<Paragraph> quest_description;
     };
 
     void SaveOldSettings(lua_State *lua, const MenuWrapperImpl &impl, OldSettings &out)
@@ -561,7 +636,7 @@ namespace {
         }
 
         // describe the new quest, as well
-        std::string new_quest = GetQuestDescription(lua, impl);
+        std::vector<Paragraph> new_quest = GetQuestDescription(lua, impl);
         if (new_quest != old.quest_description) {
             listener.questDescriptionChanged(new_quest);
         }

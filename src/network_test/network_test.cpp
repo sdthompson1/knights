@@ -137,9 +137,9 @@ public:
     {
         Log("Set menu selection. Item = %d, Choice = %d", item, choice);
     }
-    void setQuestDescription(const UTF8String &quest_descr) override
+    void setQuestDescription(const std::vector<Paragraph> &quest_descr) override
     {
-        Log("Set quest description. Descr = %s", quest_descr.asUTF8().c_str());
+        Log("Set quest description");
     }
 
     void startGame(int ndisplays, bool deathmatch_mode, const std::vector<PlayerID> &player_ids, bool already_started) override

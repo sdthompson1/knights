@@ -25,6 +25,7 @@
 
 #include "my_menu_listeners.hpp"
 #include "protocol.hpp"
+#include "read_write_loc.hpp"
 
 #include <ostream>
 
@@ -48,12 +49,18 @@ void MyMenuListener::settingChanged(int item_num, const char *,
     }
 }
 
-void MyMenuListener::questDescriptionChanged(const std::string &s)
+void MyMenuListener::questDescriptionChanged(const std::vector<Paragraph> &paragraphs)
 {
     for (std::vector<Coercri::OutputByteBuf>::iterator bit = bufs.begin(); bit != bufs.end(); ++bit) {
         Coercri::OutputByteBuf &buf = *bit;
         buf.writeUbyte(SERVER_SET_QUEST_DESCRIPTION);
-        buf.writeString(s);
+        if (paragraphs.size() > 255) {
+            throw ProtocolError(LocalKey("message_too_long"));
+        }
+        buf.writeUbyte(paragraphs.size());
+        for (const Paragraph &p : paragraphs) {
+            WriteLocalKeyAndParams(buf, p.key, p.plural, p.params);
+        }
     }
 }
 

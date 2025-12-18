@@ -1,5 +1,5 @@
 /*
- * menu_listener.hpp
+ * paragraph.hpp
  *
  * This file is part of Knights.
  *
@@ -21,28 +21,23 @@
  *
  */
 
-/*
- * This class interfaces to the Lua menu system.
- *
- */
+#ifndef PARAGRAPH_HPP
+#define PARAGRAPH_HPP
 
-#ifndef MENU_LISTENER_HPP
-#define MENU_LISTENER_HPP
+#include "localization.hpp"
 
-#include "paragraph.hpp"
+// This struct is used for quest descriptions
+struct Paragraph {
+    LocalKey key;
+    int plural;  // negative if doesn't need to be pluralized
+    std::vector<LocalParam> params;
 
-#include <string>
-#include <vector>
-
-class MenuListener {
-public:
-    virtual void settingChanged(int item_num,
-                                const char *item_key,
-                                int choice_num,
-                                const char *choice_string,
-                                const std::vector<int> &allowed_choices) = 0;
-
-    virtual void questDescriptionChanged(const std::vector<Paragraph> &new_description) { }
+    bool operator==(const Paragraph &other) const {
+        return key == other.key && plural == other.plural && params == other.params;
+    }
+    bool operator!=(const Paragraph &other) const {
+        return !(*this == other);
+    }
 };
 
 #endif

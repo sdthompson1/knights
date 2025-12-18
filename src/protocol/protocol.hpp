@@ -97,7 +97,7 @@ enum ServerMessageCode {
     
     SERVER_LEAVE_GAME = 8,           // no extra data
     SERVER_SET_MENU_SELECTION = 9,   // complex
-    SERVER_SET_QUEST_DESCRIPTION = 10,  // followed by string (localkey)
+    SERVER_SET_QUEST_DESCRIPTION = 10,  // complex (contains "paragraphs" of localkeys and params)
     SERVER_START_GAME = 11,          // followed by ubyte (num_displays), ubyte (deathmatch flag), ubyte (already_started_flag). implicitly clears all ready-flags.
     SERVER_GOTO_MENU = 12,           // no extra data.
     SERVER_START_GAME_OBS = 13,      // followed by ubyte (num_displays), ubyte (deathmatch flag), NDisp strings (player ids, for obs-mode)

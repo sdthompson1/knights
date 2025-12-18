@@ -22,9 +22,7 @@ quest_table = {
    gems = {
       name_key = "quest_for_gems",
       description = function(S)
-         return "Quest for Gems\n\n"
-            .. "Deep within the dungeon are hidden four gems.\n\n"
-            .. "You must recover at least three of them and then return to your entry point."
+          return {"quest_for_gems", "desc_quest_for_gems_1", "desc_quest_for_gems_2"}
       end,
       settings = {
          mission = "escape",
@@ -49,9 +47,7 @@ quest_table = {
    big_gems = {
       name_key = "big_quest_for_gems",
       description = function(S)
-         return "The Big Quest for Gems\n\n"
-            .. "Deep within the vast dungeon are hidden six gems.\n\n"
-            .. "You must recover at least four of them before returning to your entry point."
+          return {"big_quest_for_gems", "desc_big_quest_for_gems_1", "desc_big_quest_for_gems_2"}
       end,
       settings = {
          mission = "escape",
@@ -76,10 +72,7 @@ quest_table = {
    shock = {
       name_key = "shock_assault",
       description = function(S)
-         return "Shock Assault\n\n"
-            .. "You must make a shock assault on the entry point of the other knight. "
-            .. "If you succeed before your enemy you are the winner.\n\n"
-            .. "This quest is for 2 players only."
+          return {"shock_assault", "desc_shock_assault_1", "desc_shock_assault_2"}
       end,
       min_players = 2,
       max_players = 2,
@@ -108,9 +101,7 @@ quest_table = {
    survival = {
       name_key = "war_of_survival",
       description = function(S)
-         return "War of Survival\n\n"
-            .. "You must secure all entry points with the wand so that your opponents cannot use them, "
-            .. "and then kill all enemy knights."
+          return {"war_of_survival", "desc_war_of_survival"}
       end,
       min_teams = 2,   -- Duel to death doesn't really make sense with only one team.
       settings = {
@@ -136,9 +127,7 @@ quest_table = {
    dungeon_death = {
       name_key = "dungeon_of_death",
       description = function(S)
-         return "The Dungeon of Death\n\n"
-            .. "Out of the vampire bat infested dungeon you must find an exit which "
-            .. "is behind locked doors and a swarm of bats."
+          return {"dungeon_of_death", "desc_dungeon_of_death"}
       end,
       settings = {
          mission = "escape",
@@ -163,9 +152,7 @@ quest_table = {
    gnomes = {
       name_key = "lost_book_of_gnome",
       description = function(S)
-         return "The Lost Book of the Gnome King\n\n"
-            .. "The ancient Gnome King left his book of wisdom within this dungeon.\n\n"
-            .. "You must find it and carry it back to your entry point."
+          return {"lost_book_of_gnome", "desc_lost_book_of_gnome_1", "desc_lost_book_of_gnome_2"}
       end,
       settings = {      
          mission = "retrieve_book",
@@ -190,9 +177,7 @@ quest_table = {
    liche = {
       name_key = "tomb_of_liche",
       description = function(S)
-         return "The Tomb of the Liche Lord\n\n"
-            .. "The Liche Lord is gone but his spell book is still in our universe. "
-            .. "You must recover it from the Liche Lord's study."
+          return {"tomb_of_liche", "desc_tomb_of_liche"}
       end,
       settings = {
          mission = "retrieve_book",
@@ -217,11 +202,10 @@ quest_table = {
    wand_death = {
       name_key = "ancient_wand_of_death",
       description = function(S)
-         return "The Ancient Wand of Death\n\n"
-            .. "The Wand of Destruction is hidden in this dungeon.\n\n"
-            .. "You must recover it and escape via "
-            .. describe_exit_point(S)   -- it might not be Other's Entry (there may be >2 players)
-            .. "."
+          return {"ancient_wand_of_death",
+                  "desc_ancient_wand_of_death_1",
+                  {"desc_ancient_wand_of_death_2", describe_exit_point(S)}}
+          -- note: exit point might not be Other's Entry (there may be >2 players)
       end,
       settings = {
          mission = "retrieve_wand",
@@ -246,10 +230,7 @@ quest_table = {
    paradise = {
       name_key = "way_to_paradise",
       description = function(S)
-         return "The Way to the Paradise\n\n"
-            .. "Legend has it that any hero who strikes the Book of Knowledge with "
-            .. "the Wand of Open Ways in the Special Pentagram will be granted immortality.\n\n"
-            .. "Your objective is to attain that status."
+          return {"way_to_paradise", "desc_way_to_paradise_1", "desc_way_to_paradise_2"}
       end,
       settings = {
          mission = "destroy_book",
@@ -274,11 +255,9 @@ quest_table = {
    giants = {
       name_key = "quest_of_giants",
       description = function(S)
-         return "The Quest of Giants\n\n"
-            .. "You are put on the huge quest.\n\n"
-            .. "You must retrieve the book and four out of six gems and escape via "
-            .. describe_exit_point(S)
-            .. "."
+          return {"quest_of_giants",
+                  "desc_quest_of_giants_1",
+                  {"desc_quest_of_giants_2", describe_exit_point(S)}}
       end,
       settings = { 
          mission = "retrieve_book",
@@ -303,9 +282,7 @@ quest_table = {
    freedom = {
       name_key = "run_for_freedom",
       description = function(S)
-         return "Run for the Freedom\n\n"
-            .. "You are trapped in the dungeon of vampire bats.\n\n"
-            .. "You must run to the exit point and get out before your opponents."
+          return {"run_for_freedom", "desc_run_for_freedom_1", "desc_run_for_freedom_2"}
       end,
       settings = {
          mission = "escape",

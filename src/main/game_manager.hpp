@@ -167,7 +167,7 @@ public:
     void getMenuStrings(std::vector<std::pair<std::string, std::string> > &menu_strings) const;
     bool getMenuWidgetInfo(gcn::Widget *source, int &item_num, int &choice_num) const;
     LocalKey getQuestMessageCode() const;  // return a localization key for name of current quest
-    const UTF8String &getQuestDescription() const;
+    UTF8String getQuestDescription() const;
     
     // player lists etc.
     NameList & getLobbyPlayersList() const;   // names of players in lobby
@@ -225,7 +225,7 @@ public:
     
     virtual void leaveGame();     // goes to lobby
     virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals) override;
-    virtual void setQuestDescription(const UTF8String &quest_descr) override;
+    virtual void setQuestDescription(const std::vector<Paragraph> &quest_descr) override;
     virtual void startGame(int ndisplays, bool deathmatch_mode,
                            const std::vector<PlayerID> &player_ids, bool already_started) override;  // goes to InGameScreen
     virtual void gotoMenu() override;     // goes to MenuScreen

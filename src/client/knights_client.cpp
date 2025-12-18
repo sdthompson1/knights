@@ -261,8 +261,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_QUEST_DESCRIPTION:
             {
-                auto quest_descr = Coercri::UTF8String::fromUTF8Safe(buf.readString());
-                if (client_cb) client_cb->setQuestDescription(quest_descr);
+                std::vector<Paragraph> paragraphs;
+                int num_para = buf.readUbyte();
+                for (int i = 0; i < num_para; ++i) {
+                    Paragraph p;
+                    ReadLocalKeyAndParams(buf, p.key, p.plural, p.params, pimpl->allow_untrusted_strings);
+                    paragraphs.push_back(p);
+                }
+                if (client_cb) client_cb->setQuestDescription(paragraphs);
             }
             break;
             

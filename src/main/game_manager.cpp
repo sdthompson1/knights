@@ -439,7 +439,7 @@ public:
     const Menu *menu;
     std::vector<MenuWidgets> menu_widgets_map;  // item_num -> MenuWidgets
     std::vector<MenuChoices> menu_choices;      // item_num -> MenuChoices
-    UTF8String quest_description;
+    std::vector<Paragraph> quest_description;
     bool gui_invalid;
     bool are_menu_widgets_enabled;
 
@@ -1323,15 +1323,24 @@ LocalKey GameManager::getQuestMessageCode() const
     return LocalKey("none");
 }
 
-void GameManager::setQuestDescription(const UTF8String &quest_descr)
+void GameManager::setQuestDescription(const std::vector<Paragraph> &paragraphs)
 {
-    pimpl->quest_description = quest_descr;
+    pimpl->quest_description = paragraphs;
     pimpl->gui_invalid = true;
 }
 
-const UTF8String & GameManager::getQuestDescription() const
+UTF8String GameManager::getQuestDescription() const
 {
-    return pimpl->quest_description;
+    const Localization &loc = pimpl->knights_app.getLocalization();
+
+    UTF8String result;
+    for (const Paragraph &p : pimpl->quest_description) {
+        if (!result.empty()) result += UTF8String::fromUTF8("\n\n");
+        LocalKey key = loc.pluralize(p.key, p.plural);
+        result += loc.get(key, p.params);
+    }
+
+    return result;
 }
 
 void GameManager::startGame(int ndisplays, bool deathmatch_mode,

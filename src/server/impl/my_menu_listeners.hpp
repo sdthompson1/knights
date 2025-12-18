@@ -25,6 +25,7 @@
 #define MY_MENU_LISTENERS_HPP
 
 #include "menu_listener.hpp"
+#include "paragraph.hpp"
 
 #include "network/byte_buf.hpp"  // coercri
 
@@ -41,8 +42,8 @@ public:
     
     virtual void settingChanged(int item_num, const char *item_key,
                                 int choice_num, const char *choice_string,
-                                const std::vector<int> &allowed_choices);
-    virtual void questDescriptionChanged(const std::string &desc);
+                                const std::vector<int> &allowed_choices) override;
+    virtual void questDescriptionChanged(const std::vector<Paragraph> &paragraphs) override;
     
 private:
     std::vector<Coercri::OutputByteBuf> bufs;

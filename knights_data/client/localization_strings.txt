@@ -28,6 +28,7 @@ couldnt_join_game               Could not join game! {0}
 error_is                        Error: {0}
 lua_error_is                    Lua Error: {0}
 error_in_respawn_func           Error in respawn function: {0}
+message_too_long                Message too long
 
 
 # Game statuses (for multiplayer game list screen)
@@ -172,6 +173,62 @@ teams                    teams
 player_set_menu       {0} set "{1}" to "{2}".
 player_set_random     {0} selected a Random Quest.
 
+
+# Quest descriptions
+desc_exit_same                  your entry point
+desc_exit_other                 your opponent's entry point
+desc_exit_random                an unknown exit point
+desc_exit_guarded               the guarded exit
+
+desc_ashur                      The Lost Book of Ashur is somewhere in the dungeon.
+desc_gnomes                     The Tome of Gnomes is hidden behind unknown traps and riddles.
+desc_knowledge                  The Book of Knowledge reveals knowledge of the dungeon, but also gives away your position to your opponents.
+desc_necronomicon               The Necronomicon is sealed behind locked doors. It has powers to raise the undead.
+
+desc_destruction                The Wand of Destruction terminates targets.
+desc_open_ways                  The Wand of Open Ways may be used to open any item.
+desc_securing                   The Wand of Securing is used to secure entry points. Securing an entry point prevents your opponents respawning there.
+desc_undeath                    The Wand of Undeath controls and slays the undead.
+
+desc_duel_to_death              You must secure all entry points to prevent your opponents entering the dungeon, and then destroy all enemy knights.
+desc_destroy_book               You must strike the book with the wand in the special pentagram.
+desc_destroy_book_gems          You must strike the book with the wand in the special pentagram with {0} out of {1} gems.
+desc_escape                     Your mission is to escape via {0}.
+desc_escape_gems                Your mission is to escape via {0} with {1} out of {2} gems.
+desc_retrieve                   You must retrieve the {0} and escape via {1}.
+desc_retrieve_gems              You must retrieve the {0} and escape via {1} with {2} out of {3} gems.
+
+desc_book                       book
+desc_wand                       wand
+
+desc_game_last_for[one]         The game will last for {0} minute.
+desc_game_last_for[other]       The game will last for {0} minutes.
+desc_complete_within[one]       You must complete this quest within {0} minute.
+desc_complete_within[other]     You must complete this quest within {0} minutes.
+
+desc_custom_quest               Custom Quest
+
+desc_quest_for_gems_1           Deep within the dungeon are hidden four gems.
+desc_quest_for_gems_2           You must recover at least three of them and then return to your entry point.
+desc_big_quest_for_gems_1       Deep within the vast dungeon are hidden six gems.
+desc_big_quest_for_gems_2       You must recover at least four of them before returning to your entry point.
+desc_shock_assault_1            You must make a shock assault on the entry point of the other knight. If you succeed before your enemy you are the winner.
+desc_shock_assault_2            This quest is for 2 players only.
+desc_war_of_survival            You must secure all entry points with the wand so that your opponents cannot use them, and then kill all enemy knights.
+desc_dungeon_of_death           Out of the vampire bat infested dungeon you must find an exit which is behind locked doors and a swarm of bats.
+desc_lost_book_of_gnome_1       The ancient Gnome King left his book of wisdom within this dungeon.
+desc_lost_book_of_gnome_2       You must find it and carry it back to your entry point.
+desc_tomb_of_liche              The Liche Lord is gone but his spell book is still in our universe. You must recover it from the Liche Lord's study.
+desc_ancient_wand_of_death_1    The Wand of Destruction is hidden in this dungeon.
+desc_ancient_wand_of_death_2    You must recover it and escape via {0}.
+desc_way_to_paradise_1          Legend has it that any hero who strikes the Book of Knowledge with the Wand of Open Ways in the Special Pentagram will be granted immortality.
+desc_way_to_paradise_2          Your objective is to attain that status.
+desc_quest_of_giants_1          You are put on the huge quest.
+desc_quest_of_giants_2          You must retrieve the book and four out of six gems and escape via {0}.
+desc_run_for_freedom_1          You are trapped in the dungeon of vampire bats.
+desc_run_for_freedom_2          You must run to the exit point and get out before your opponents.
+desc_deathmatch_1               Deathmatch
+desc_deathmatch_2               Players get 1 point for killing an enemy knight, and -1 for a suicide. (Being killed by a monster doesn't affect your score.) The player with the highest score when time runs out is the winner.
 
 # Other UI strings
 raw_msg                         {0}

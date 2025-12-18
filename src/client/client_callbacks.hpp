@@ -32,6 +32,8 @@
 #define CLIENT_CALLBACKS_HPP
 
 #include "game_info.hpp"
+#include "localization.hpp"
+#include "paragraph.hpp"
 #include "player_id.hpp"
 #include "utf8string.hpp"
 
@@ -129,7 +131,7 @@ public:
 
     // menu
     virtual void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values) = 0;
-    virtual void setQuestDescription(const UTF8String &quest_descr) = 0;
+    virtual void setQuestDescription(const std::vector<Paragraph> &quest_descr) = 0;
 
     // switching between menu and in-game states
     virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<PlayerID> &player_ids, bool already_started) = 0;

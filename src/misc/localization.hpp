@@ -85,6 +85,9 @@ public:
     const Coercri::UTF8String& getString() const { return string_value; }
     int getInteger() const { return int_value; }
 
+    bool operator==(const LocalParam &other) const;
+    bool operator!=(const LocalParam &other) const;
+
 private:
     Type type;
     LocalKey local_key;
@@ -121,6 +124,10 @@ public:
 
     // Get a string with a list of arbitrary parameters
     Coercri::UTF8String get(const LocalKey &key, const std::vector<LocalParam> &params) const;
+
+    // Pluralize key by appending [one], [other] or a similar string
+    // (If count < 0, this returns the key unchanged)
+    LocalKey pluralize(const LocalKey &key, int count) const;
 
 private:
     static Coercri::UTF8String substituteParameters(const Coercri::UTF8String& template_str, const std::vector<Coercri::UTF8String>& params);
