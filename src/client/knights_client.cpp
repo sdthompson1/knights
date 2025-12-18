@@ -67,9 +67,11 @@ namespace {
 class KnightsClientImpl {
 public:
     // ctor
-    KnightsClientImpl() : ndisplays(0), player(0), 
-                          knights_callbacks(0), client_callbacks(0),
-                          next_announcement_is_error(false)
+    explicit KnightsClientImpl(bool allow_untrusted_strings)
+        : ndisplays(0), player(0),
+          knights_callbacks(0), client_callbacks(0),
+          next_announcement_is_error(false),
+          allow_untrusted_strings(allow_untrusted_strings)
     { 
         for (int i = 0; i < 2; ++i) last_cts_ctrl[i] = 0;
     }
@@ -83,6 +85,7 @@ public:
     ClientCallbacks *client_callbacks;
     const UserControl *last_cts_ctrl[2];
     bool next_announcement_is_error;
+    bool allow_untrusted_strings;
     
     // helper functions
     void receiveConfiguration(Coercri::InputByteBuf &buf);
@@ -94,8 +97,8 @@ public:
     void requestImpl(ClientMessageCode msg, const std::vector<int> &ids);
 };
 
-KnightsClient::KnightsClient()
-    : pimpl(new KnightsClientImpl)
+KnightsClient::KnightsClient(bool allow_untrusted_strings)
+    : pimpl(new KnightsClientImpl(allow_untrusted_strings))
 {
     // Write the initial version string.
     Coercri::OutputByteBuf buf(pimpl->out);
@@ -411,7 +414,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             {
                 LocalKey key;
                 std::vector<LocalParam> params;
-                ReadAnnouncementLoc(buf, key, params);
+                ReadAnnouncementLoc(buf, key, params, pimpl->allow_untrusted_strings);
                 if (client_cb) client_cb->announcementLoc(key, params, pimpl->next_announcement_is_error);
                 pimpl->next_announcement_is_error = false;
             }

@@ -62,7 +62,7 @@ boost::shared_ptr<KnightsClient>
                                     const std::string &game_name)
 {
     knights_lobby.reset(new SimpleKnightsLobby(timer, config, game_name));
-    knights_client.reset(new KnightsClient);
+    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings for local game
     return knights_client;
 }
 
@@ -74,7 +74,7 @@ boost::shared_ptr<KnightsClient>
                                  const std::string &game_name)
 {
     knights_lobby.reset(new SimpleKnightsLobby(net_driver, timer, port, config, game_name));
-    knights_client.reset(new KnightsClient);
+    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings for LAN game
     return knights_client;
 }
 
@@ -85,7 +85,7 @@ boost::shared_ptr<KnightsClient>
                                       int port)
 {
     knights_lobby.reset(new SimpleKnightsLobby(net_driver, timer, address, port));
-    knights_client.reset(new KnightsClient);
+    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings (we assume that players trust any server that they choose to connect to)
     return knights_client;
 }
 
@@ -127,7 +127,7 @@ boost::shared_ptr<KnightsClient>
     vm_lobby_leader_id = PlayerID();
 
     // Create the client
-    knights_client.reset(new KnightsClient);
+    knights_client.reset(new KnightsClient(false)); // Don't trust arbitrary strings coming from VM
     return knights_client;
 }
 #endif

@@ -40,6 +40,7 @@ void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
 
 void ReadAnnouncementLoc(Coercri::InputByteBuf &buf,
                          LocalKey &key,
-                         std::vector<LocalParam> &params);
+                         std::vector<LocalParam> &params,
+                         bool allow_untrusted_strings);
 
 #endif

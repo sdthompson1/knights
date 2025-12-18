@@ -55,7 +55,7 @@ class KnightsClient : boost::noncopyable {
 public:
     typedef unsigned char ubyte;
 
-    KnightsClient();
+    explicit KnightsClient(bool allow_untrusted_strings);
     ~KnightsClient();
 
     //

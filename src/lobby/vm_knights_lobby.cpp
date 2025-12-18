@@ -212,7 +212,7 @@ void VMKnightsLobby::becomeFollower(const std::string &address, int port)
 // Mutex should be locked when this is called
 void VMKnightsLobby::rejoinGame()
 {
-    KnightsClient client;
+    KnightsClient client(false); // don't allow untrusted strings
     client.setPlayerIdAndControls(pimpl->local_user_id, pimpl->new_control_system);
     client.joinGame("#VMGame");
     std::vector<unsigned char> data;

@@ -63,7 +63,8 @@ void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
 
 void ReadAnnouncementLoc(Coercri::InputByteBuf &buf,
                          LocalKey &key,
-                         std::vector<LocalParam> &params)
+                         std::vector<LocalParam> &params,
+                         bool allow_untrusted_strings)
 {
     key = LocalKey(buf.readString());
     int num_params = buf.readUbyte();
@@ -80,8 +81,14 @@ void ReadAnnouncementLoc(Coercri::InputByteBuf &buf,
             params.push_back(LocalParam(buf.readVarInt()));
             break;
         case 3:
-            // TODO: in VM mode, string params should be replaced with "#####"
-            params.push_back(LocalParam(Coercri::UTF8String::fromUTF8Safe(buf.readString())));
+            {
+                std::string str = buf.readString();
+                if (!allow_untrusted_strings) {
+                    // Untrusted strings are NOT allowed => replace it with "#####"
+                    str = "#####";
+                }
+                params.push_back(LocalParam(Coercri::UTF8String::fromUTF8Safe(str)));
+            }
             break;
         default:
             throw ProtocolError(LocalKey("bad_server_message"));
