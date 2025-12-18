@@ -406,7 +406,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const bool is_observer = (chat_code == 2);
                 const bool is_team = (chat_code == 3);
                 const Coercri::UTF8String msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
-                if (client_cb) client_cb->chat(whofrom, is_observer, is_team, msg);
+
+                // Chat is just an arbitrary string and hence untrusted.
+                // Therefore, we can only forward this to the game if
+                // allow_untrusted_strings is true.
+                if (client_cb && pimpl->allow_untrusted_strings) {
+                    client_cb->chat(whofrom, is_observer, is_team, msg);
+                }
             }
             break;
 
@@ -422,6 +428,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_POP_UP_WINDOW:
             {
+                if (!pimpl->allow_untrusted_strings) {
+                    // Untrusted strings NOT allowed => SERVER_POP_UP_WINDOW is blocked
+                    // (This is a tutorial-specific message anyway so it shouldn't be needed
+                    // in online scenarios)
+                    throw ProtocolError(LocalKey("bad_server_message"));
+                }
+
                 const int n = buf.readVarInt();
                 std::vector<TutorialWindow> windows;
                 windows.reserve(n);
