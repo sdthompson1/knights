@@ -113,7 +113,7 @@ i_axe = kts.ItemType {
        menu_icon = g_menu_axe,
        continuous = true,
        action_bar_slot = 4,
-       name = "Throw Axe",
+       name_key = "throw_axe",
        menu_special = 4, -- Does not appear on Action Menu
 
        can_do_while_moving = true
@@ -157,7 +157,7 @@ i_dagger = kts.ItemType {
         menu_special = 1,
         continuous = true,
         action_bar_slot = 5,
-        name = "Throw Daggers",
+        name_key = "throw_daggers",
 
         can_do_while_moving = true
     }
@@ -196,7 +196,7 @@ i_crossbow = kts.ItemType {
        menu_icon = g_menu_crossbow,
        continuous = true,
        action_bar_slot = 4,
-       name = "Fire Crossbow",
+       name_key = "shoot_crossbow",
        menu_special = 4,   -- Does not appear on Action Menu
        can_do_while_moving = true
     }
@@ -343,7 +343,7 @@ i_bear_trap = kts.ItemType {
         menu_icon = g_menu_beartrap,
         menu_direction = "left",
         action_bar_slot = 8,
-        name = "Set Bear Trap"
+        name_key = "set_bear_trap"
     }
 }
 
@@ -377,7 +377,7 @@ i_poison_trap = kts.ItemType {
        menu_icon = g_menu_poison_trap,
        menu_direction = "left",
        action_bar_slot = 8,
-       name = "Set Poison Needle Trap",
+       name_key = "set_poison_trap",
     }
 }
 
@@ -398,7 +398,7 @@ i_blade_trap = kts.ItemType {
        menu_icon = g_menu_blade_trap,
        menu_direction = "right",
        action_bar_slot = 9,
-       name = "Set Spring Blade Trap"
+       name_key = "set_blade_trap"
     }
 }
 
@@ -453,7 +453,7 @@ i_lockpicks = kts.ItemType(
        menu_icon = g_menu_lockpicks,
        menu_direction = "up",
        action_bar_slot = 8,
-       name = "Use Lock Picks"
+       name_key = "use_lock_picks"
     }
   }
 ))

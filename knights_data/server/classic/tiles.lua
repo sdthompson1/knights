@@ -161,9 +161,9 @@ door_control_tbl = {
     tap_priority = 4,
     action_bar_slot = 2,
     menu_special = 1,
-    name = "Open/Close Door"
+    name_key = "open_close_door"
 }
-chest_control_tbl = table_merge(door_control_tbl, { name = "Open/Close Chest" })
+chest_control_tbl = table_merge(door_control_tbl, { name_key = "open_close_chest" })
 
 door_control = kts.Control (door_control_tbl)
 chest_control = kts.Control (chest_control_tbl)
@@ -352,7 +352,7 @@ set_open_closed(t_crystal_ball, t_wall_pillar)
 switch = {
     access = switch_acc,
     on_hit = function() kts.Activate(); snd_tile_bash() end,
-    control = kts.Control (table_merge( door_control_tbl, { name = "Pull Lever" })),
+    control = kts.Control (table_merge( door_control_tbl, { name_key = "pull_lever" })),
     items = 0
 }
 t_switch_up   = kts.Tile( table_merge( switch, {     -- 18

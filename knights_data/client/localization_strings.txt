@@ -50,6 +50,24 @@ game_completed          Game completed in {0}m {1}s.
 x_disconnected          {0} (Disconnected)
 
 
+# Controls
+attack            Attack
+drop              Drop
+drop_gem          Drop Gem
+open_close_chest  Open/Close Chest
+open_close_door   Open/Close Door
+pick_up           Pick Up
+pull_lever        Pull Lever
+set_bear_trap     Set Bear Trap
+set_blade_trap    Set Spring Blade Trap
+set_poison_trap   Set Poison Needle Trap
+shoot_crossbow    Shoot Crossbow
+suicide_mouse     Suicide (press both mouse buttons)
+throw_axe         Throw Axe
+throw_daggers     Throw Daggers
+use_lock_picks    Use Lock Picks
+
+
 # Critical item respawning
 has_been_respawned    {0} has been respawned at a random location.
 a_gem                 A gem

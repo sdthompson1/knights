@@ -40,7 +40,7 @@ UserControl::UserControl(lua_State *lua, int idx)
     menu_direction = LuaGetMapDirection(lua, 1, "menu_direction", D_NORTH);
     menu_graphic = LuaGetPtr<Graphic>(lua, 1, "menu_icon");
     menu_special = static_cast<unsigned int>(LuaGetInt(lua, 1, "menu_special", 0));
-    name = LuaGetString(lua, 1, "name");
+    name = LocalKey(LuaGetString(lua, 1, "name_key"));
     suicide_key = LuaGetBool(lua, 1, "suicide_key", false);
 }
 
@@ -64,8 +64,9 @@ void UserControl::newIndex(lua_State *lua)
         menu_graphic = ReadLuaPtr<Graphic>(lua, 3);
     } else if (k == "menu_special") {
         menu_special = lua_tointeger(lua, 3);
-    } else if (k == "name") {
-        name = lua_tostring(lua, 3);
+    } else if (k == "name_key") {
+        const char *str = lua_tostring(lua, 3);
+        name = LocalKey(str ? str : "");
     } else if (k == "suicide_key") {
         suicide_key = lua_toboolean(lua, 3) != 0;
     }

@@ -25,7 +25,7 @@ kts.CONTROLS = {
        menu_icon      = g_menu_drop_gem,
        menu_direction = "down",
        action_bar_slot = 7,
-       name           = "Drop Gem"
+       name_key       = "drop_gem"
     },
     kts.Control {
        action         = function() kts.PickUp(); snd_click() end,
@@ -34,7 +34,7 @@ kts.CONTROLS = {
        menu_direction = "down",
        tap_priority   = 3,
        action_bar_slot = 3,
-       name           = "Pick Up"
+       name_key       = "pick_up"
     },
     kts.Control {
        action         = function() kts.DropHeld(); snd_click() end,
@@ -43,7 +43,7 @@ kts.CONTROLS = {
        menu_direction = "right",
        tap_priority   = 2,
        action_bar_slot = 6,
-       name           = "Drop"
+       name_key       = "drop"
     },
     kts.Control {
         action         = kts.SwingOrDrop,
@@ -52,14 +52,14 @@ kts.CONTROLS = {
         action_bar_slot = 1,
         menu_icon = g_menu_fist,
         menu_direction = "left",
-        name           = "Attack",
+        name_key       = "attack",
         can_do_while_moving = true
     },
     kts.Control {
         action         = kts.Suicide,
         action_bar_slot = 0,
         menu_icon      = g_menu_suicide,
-        name           = "Suicide (press both mouse buttons)",
+        name_key       = "suicide_mouse",
         menu_special = 4,   -- Does not appear on Action Menu
         can_do_while_moving = true,
         can_do_while_stunned = true

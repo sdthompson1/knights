@@ -42,7 +42,7 @@ UserControl::UserControl(int id_, Coercri::InputByteBuf &buf, const std::vector<
     suicide_key = buf.readUbyte() != 0;
     menu_special = buf.readUbyte();
     continuous = buf.readUbyte() != 0;
-    name = buf.readString();
+    name = LocalKey(buf.readString());
 }
 
 void UserControl::serialize(Coercri::OutputByteBuf &buf) const
@@ -55,5 +55,5 @@ void UserControl::serialize(Coercri::OutputByteBuf &buf) const
     buf.writeUbyte(suicide_key);
     buf.writeUbyte(menu_special);
     buf.writeUbyte(continuous);
-    buf.writeString(name);
+    buf.writeString(name.getKey());
 }

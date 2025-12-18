@@ -1186,7 +1186,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                 const int mos = mouse_over_slot[player_num];
                 if (mos >= 0 && mos < NUM_ACTION_BAR_SLOTS) {
                     const UserControl *ctrl = slot_controls[player_num][mos];
-                    const UTF8String name = UTF8String::fromLatin1(ctrl ? ctrl->getName() : "");
+                    const UTF8String name = ctrl ? localization.get(ctrl->getNameKey()) : UTF8String();
                     gc.drawText(action_bar_x, action_bar_y + pixels_per_square + 2, *txt_font, name, Coercri::Color(255,255,255));
                 }
             }

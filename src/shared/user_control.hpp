@@ -24,6 +24,7 @@
 #ifndef USER_CONTROL_HPP
 #define USER_CONTROL_HPP
 
+#include "localization.hpp"
 #include "map_support.hpp"
 
 #include "network/byte_buf.hpp"  // coercri
@@ -78,7 +79,7 @@ public:
     unsigned int getMenuSpecial() const { return menu_special; }
 
     // Name. Displayed below the Action Bar.
-    const std::string & getName() const { return name; }
+    const LocalKey & getNameKey() const { return name; }
 
     // serialization
     explicit UserControl(int id_, Coercri::InputByteBuf &buf, const std::vector<const Graphic *> &graphics);
@@ -94,7 +95,7 @@ private:
     bool continuous;
     bool suicide_key;
     unsigned int menu_special;
-    std::string name;
+    LocalKey name;
 };
 
 //
