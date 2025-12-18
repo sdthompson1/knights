@@ -444,7 +444,7 @@ bool Player::respawn()
                 Pcall *p = static_cast<Pcall*>(lua_touserdata(lua, 1));
                 NewLuaPtr<Player>(lua, p->plyr);  // [plyr]
                 p->plyr->respawn_func.run(lua, 1, 3);   // [x y dir] or [nil nil nil] or ["retry" nil nil]
-                if (lua_tostring(lua, -3) == "retry") {
+                if (lua_isstring(lua, -3) && strcmp(lua_tostring(lua, -3), "retry") == 0) {
                     p->want_retry = true;
                 } else if (!lua_isnil(lua, -3)) {
                     p->dmap = Mediator::instance().getMap().get();
@@ -471,7 +471,9 @@ bool Player::respawn()
 
             // lua stack = [errmsg]
 
-            UTF8String lua_msg = UTF8String::fromUTF8Safe(lua_tostring(lua, -1));
+            const char *lua_str_ptr = lua_tostring(lua, -1);
+            if (!lua_str_ptr) lua_str_ptr = "";
+            UTF8String lua_msg = UTF8String::fromUTF8Safe(lua_str_ptr);
             LocalKey key("error_in_respawn_func");
             std::vector<LocalParam> params(1, LocalParam(lua_msg));
             Mediator::instance().gameMsgLoc(-1, key, params, true);

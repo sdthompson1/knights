@@ -61,7 +61,7 @@ namespace {
             else {
                 luaL_error(lua,
                            "'%s' is not a valid access type; must be 'approach', 'partial', 'blocked' or 'clear'",
-                           p);
+                           p ? p : "");
             }
         }
 
