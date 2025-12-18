@@ -24,7 +24,6 @@
 #include "misc.hpp"
 
 #include "anim.hpp"
-#include "announcement_loc.hpp"
 #include "graphic.hpp"
 #include "knights_config.hpp"
 #include "knights_engine.hpp"
@@ -35,6 +34,7 @@
 #include "my_menu_listeners.hpp"
 #include "overlay.hpp"
 #include "protocol.hpp"
+#include "read_write_loc.hpp"
 #include "rng.hpp"
 #include "rstream.hpp"
 #include "server_callbacks.hpp"
@@ -233,7 +233,8 @@ namespace {
                 buf.writeUshort(0);
             }
 
-            WriteAnnouncementLoc(buf, key, params);
+            buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
+            WriteLocalKeyAndParams(buf, key, -1, params);
         }
     }
 
@@ -242,7 +243,8 @@ namespace {
         for (game_conn_vector::const_iterator it = conns.begin(); it != conns.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
             for (const auto &msg : messages) {
-                WriteAnnouncementLoc(buf, msg.first, msg.second);
+                buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
+                WriteLocalKeyAndParams(buf, msg.first, -1, msg.second);
             }
         }
     }
@@ -681,7 +683,8 @@ namespace {
                         Coercri::OutputByteBuf buf((*it)->output_data);
                         
                         if (!(*it)->obs_flag && team_counts[(*it)->house_colour] > 1) {
-                            WriteAnnouncementLoc(buf, LocalKey("team_chat_avail"), std::vector<LocalParam>());
+                            buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
+                            WriteLocalKeyAndParams(buf, LocalKey("team_chat_avail"), -1, std::vector<LocalParam>());
                         }
                     }
                 }
@@ -2140,7 +2143,8 @@ void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
     if (pimpl->update_thread.joinable()) {
 #endif
         Coercri::OutputByteBuf buf(conn.output_data);
-        WriteAnnouncementLoc(buf, LocalKey("cant_change_obs"), std::vector<LocalParam>());
+        buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
+        WriteLocalKeyAndParams(buf, LocalKey("cant_change_obs"), -1, std::vector<LocalParam>());
         return;
     }
 

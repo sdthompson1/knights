@@ -24,7 +24,6 @@
 #include "misc.hpp"
 
 #include "anim.hpp"
-#include "announcement_loc.hpp"
 #include "client_callbacks.hpp"
 #include "client_config.hpp"
 #include "colour_change.hpp"
@@ -32,6 +31,7 @@
 #include "graphic.hpp"
 #include "mini_map.hpp"
 #include "overlay.hpp"
+#include "read_write_loc.hpp"
 #include "sound.hpp"
 #include "status_display.hpp"
 #include "knights_callbacks.hpp"
@@ -419,8 +419,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_ANNOUNCEMENT_LOC:
             {
                 LocalKey key;
+                int plural;   // ignored for this message
                 std::vector<LocalParam> params;
-                ReadAnnouncementLoc(buf, key, params, pimpl->allow_untrusted_strings);
+                ReadLocalKeyAndParams(buf, key, plural, params, pimpl->allow_untrusted_strings);
                 if (client_cb) client_cb->announcementLoc(key, params, pimpl->next_announcement_is_error);
                 pimpl->next_announcement_is_error = false;
             }

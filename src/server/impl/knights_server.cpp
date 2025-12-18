@@ -23,13 +23,13 @@
 
 #include "misc.hpp"
 
-#include "announcement_loc.hpp"
 #include "knights_game.hpp"
 #include "knights_log.hpp"
 #include "knights_server.hpp"
 #include "localization.hpp"
 #include "player_id.hpp"
 #include "protocol.hpp"
+#include "read_write_loc.hpp"
 #include "sh_ptr_eq.hpp"
 #include "version.hpp"
 
@@ -323,7 +323,8 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
                     LocalKey key("raw_msg");
                     std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(motd)));
-                    WriteAnnouncementLoc(buf, key, params);
+                    buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
+                    WriteLocalKeyAndParams(buf, key, -1, params);
                 }
                 
                 conn.client_version = ver;

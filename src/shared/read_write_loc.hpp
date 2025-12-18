@@ -1,5 +1,5 @@
 /*
- * announcement_loc.hpp
+ * read_write_loc.hpp
  *
  * This file is part of Knights.
  *
@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef ANNOUNCEMENT_LOC_HPP
-#define ANNOUNCEMENT_LOC_HPP
+#ifndef READ_WRITE_LOC_HPP
+#define READ_WRITE_LOC_HPP
 
 namespace Coercri {
     class InputByteBuf;
@@ -34,13 +34,15 @@ class LocalParam;
 
 #include <vector>
 
-void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
-                          const LocalKey &key,
-                          const std::vector<LocalParam> &params);
+void WriteLocalKeyAndParams(Coercri::OutputByteBuf &buf,
+                            const LocalKey &key,
+                            int plural,
+                            const std::vector<LocalParam> &params);
 
-void ReadAnnouncementLoc(Coercri::InputByteBuf &buf,
-                         LocalKey &key,
-                         std::vector<LocalParam> &params,
-                         bool allow_untrusted_strings);
+void ReadLocalKeyAndParams(Coercri::InputByteBuf &buf,
+                           LocalKey &key,
+                           int &plural,
+                           std::vector<LocalParam> &params,
+                           bool allow_untrusted_strings);
 
 #endif

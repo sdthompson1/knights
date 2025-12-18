@@ -23,9 +23,9 @@
 
 #include "misc.hpp"
 
-#include "announcement_loc.hpp"
 #include "graphic.hpp"
 #include "protocol.hpp"
+#include "read_write_loc.hpp"
 #include "server_callbacks.hpp"
 #include "server_dungeon_view.hpp"
 #include "server_mini_map.hpp"
@@ -227,7 +227,8 @@ void ServerCallbacks::gameMsgLoc(int plyr, const LocalKey &key, const std::vecto
                 buf.writeUshort(0);
             }
 
-            WriteAnnouncementLoc(buf, key, params);
+            buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
+            WriteLocalKeyAndParams(buf, key, -1, params);
         }
     }
 

@@ -88,7 +88,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\shared\impl\anim.cpp" />
-    <ClCompile Include="..\..\src\shared\impl\announcement_loc.cpp" />
     <ClCompile Include="..\..\src\shared\impl\colour_change.cpp" />
     <ClCompile Include="..\..\src\shared\impl\file_info.cpp" />
     <ClCompile Include="..\..\src\shared\impl\graphic.cpp" />
@@ -103,13 +102,13 @@
     <ClCompile Include="..\..\src\shared\impl\menu.cpp" />
     <ClCompile Include="..\..\src\shared\impl\menu_item.cpp" />
     <ClCompile Include="..\..\src\shared\impl\overlay.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\read_write_loc.cpp" />
     <ClCompile Include="..\..\src\shared\impl\sound.cpp" />
     <ClCompile Include="..\..\src\shared\impl\trim.cpp" />
     <ClCompile Include="..\..\src\shared\impl\user_control.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\shared\anim.hpp" />
-    <ClInclude Include="..\..\src\shared\announcement_loc.hpp" />
     <ClInclude Include="..\..\src\shared\colour_change.hpp" />
     <ClInclude Include="..\..\src\shared\dungeon_view.hpp" />
     <ClInclude Include="..\..\src\shared\file_info.hpp" />
@@ -131,6 +130,7 @@
     <ClInclude Include="..\..\src\shared\overlay.hpp" />
     <ClInclude Include="..\..\src\shared\potion_magic.hpp" />
     <ClInclude Include="..\..\src\protocol\protocol.hpp" />
+    <ClInclude Include="..\..\src\shared\read_write_loc.hpp" />
     <ClInclude Include="..\..\src\shared\sound.hpp" />
     <ClInclude Include="..\..\src\shared\status_display.hpp" />
     <ClInclude Include="..\..\src\shared\trim.hpp" />

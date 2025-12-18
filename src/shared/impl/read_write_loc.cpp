@@ -1,5 +1,5 @@
 /*
- * announcement_loc.cpp
+ * read_write_loc.cpp
  *
  * This file is part of Knights.
  *
@@ -23,18 +23,19 @@
 
 #include "misc.hpp"
 
-#include "announcement_loc.hpp"
 #include "localization.hpp"
 #include "protocol.hpp"
+#include "read_write_loc.hpp"
 
 #include "network/byte_buf.hpp"
 
-void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
-                          const LocalKey &key,
-                          const std::vector<LocalParam> &params)
+void WriteLocalKeyAndParams(Coercri::OutputByteBuf &buf,
+                            const LocalKey &key,
+                            int plural,
+                            const std::vector<LocalParam> &params)
 {
-    buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
     buf.writeString(key.getKey());
+    buf.writeVarInt(plural);
     buf.writeUbyte(params.size());
     for (const auto & param : params) {
         switch (param.getType()) {
@@ -61,12 +62,14 @@ void WriteAnnouncementLoc(Coercri::OutputByteBuf &buf,
     }
 }
 
-void ReadAnnouncementLoc(Coercri::InputByteBuf &buf,
-                         LocalKey &key,
-                         std::vector<LocalParam> &params,
-                         bool allow_untrusted_strings)
+void ReadLocalKeyAndParams(Coercri::InputByteBuf &buf,
+                           LocalKey &key,
+                           int &plural,
+                           std::vector<LocalParam> &params,
+                           bool allow_untrusted_strings)
 {
     key = LocalKey(buf.readString());
+    plural = buf.readVarInt();
     int num_params = buf.readUbyte();
     params.reserve(num_params);
     for (int i = 0; i < num_params; ++i) {
