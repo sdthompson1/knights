@@ -149,9 +149,36 @@ void KnightsConfigLoader::operator ()()
 
             boost::this_thread::sleep(boost::posix_time::milliseconds(100));
         }
+    } catch (ExceptionBase &e) {
+        boost::lock_guard<boost::mutex> lock(mutex);
+
+        // This is the command line server program which doesn't have
+        // localization available, so just concatenate all the strings
+        // as best we can!
+
+        err_msg = e.getKey().getKey();
+        for (const LocalParam &param : e.getParams()) {
+            err_msg += " : ";
+            switch (param.getType()) {
+            case LocalParam::Type::LOCAL_KEY:
+                err_msg += param.getLocalKey().getKey();
+                break;
+            case LocalParam::Type::PLAYER_ID:
+                err_msg += param.getPlayerID().asString();
+                break;
+            case LocalParam::Type::STRING:
+                err_msg += param.getString().asUTF8();
+                break;
+            case LocalParam::Type::INTEGER:
+                err_msg += std::to_string(param.getInteger());
+                break;
+            }
+        }
+
     } catch (std::exception &e) {
         boost::lock_guard<boost::mutex> lock(mutex);
         err_msg = e.what();
+
     } catch (...) {
         boost::lock_guard<boost::mutex> lock(mutex);
         err_msg = "<Unknown exception>";
@@ -593,9 +620,9 @@ void CheckGames(KnightsConfigLoader &knights_config_loader)
         {
             boost::lock_guard<boost::mutex> lock(knights_config_loader.mutex);
 
-            // check for errors; re-throw them as InitError in the main thread.
+            // check for errors; re-throw them in the main thread.
             if (!knights_config_loader.err_msg.empty()) {
-                throw InitError(knights_config_loader.err_msg);
+                throw std::runtime_error(knights_config_loader.err_msg);
             }
 
             config = knights_config_loader.knights_config;

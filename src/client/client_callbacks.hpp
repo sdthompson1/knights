@@ -79,8 +79,7 @@ public:
     virtual void connectionFailed() = 0;
 
     // special
-    virtual void serverError(const LocalKey &error) = 0;
-    virtual void luaError(const std::string &error) = 0;
+    virtual void serverError(const LocalKey &error, const std::vector<LocalParam> &params) = 0;
     virtual void connectionAccepted(int server_version) = 0;
     
     

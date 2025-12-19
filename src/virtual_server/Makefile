@@ -154,7 +154,6 @@ CXXFILES = \
 	server/impl/server_mini_map.cpp \
 	server/impl/server_status_display.cpp \
 	shared/impl/anim.cpp \
-	shared/impl/announcement_loc.cpp \
 	shared/impl/colour_change.cpp \
 	shared/impl/file_info.cpp \
 	shared/impl/graphic.cpp \
@@ -169,6 +168,7 @@ CXXFILES = \
 	shared/impl/menu.cpp \
 	shared/impl/menu_item.cpp \
 	shared/impl/overlay.cpp \
+	shared/impl/read_write_loc.cpp \
 	shared/impl/sound.cpp \
 	shared/impl/trim.cpp \
 	shared/impl/user_control.cpp \

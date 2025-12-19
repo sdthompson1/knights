@@ -22,24 +22,30 @@
  */
 
 /*
- * ExceptionBase: subclass of std::exception that defines what() for
- * you.
+ * ExceptionBase: subclass of std::exception that contains a LocalKey
+ * and params for the error message.
  *
  */
 
 #ifndef MISC_ERROR_HPP
 #define MISC_ERROR_HPP
 
+#include "localization.hpp"
+
 #include <exception>
 #include <string>
 
 class ExceptionBase : public std::exception {
 public:
-    explicit ExceptionBase(const std::string &s_) : s(s_) { }
+    explicit ExceptionBase(LocalKey key) : key(key) { }
+    ExceptionBase(LocalKey key, std::vector<LocalParam> params) : key(key), params(params) { }
     virtual ~ExceptionBase() throw() { }
-    virtual const char *what() const throw() { return s.c_str(); }
+    virtual const char *what() const throw() { return key.getKey().c_str(); }
+    const LocalKey &getKey() const { return key; }
+    const std::vector<LocalParam> &getParams() const { return params; }
 private:
-    std::string s;
+    LocalKey key;
+    std::vector<LocalParam> params;
 };
 
 #endif

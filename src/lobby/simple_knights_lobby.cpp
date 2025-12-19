@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "exception_base.hpp"
 #include "knights_client.hpp"
 #include "knights_server.hpp"
 #include "player_id.hpp"
@@ -113,15 +114,22 @@ void SimpleLobbyThread::operator()()
             lobby.timer->sleepMsec(3);
         }
 
+    } catch (ExceptionBase &e) {
+        // Signal error to main thread
+        boost::unique_lock lock(lobby.mutex);
+        lobby.error_key = e.getKey();
+        lobby.error_params = e.getParams();
+
     } catch (const std::exception &e) {
         // Signal error to main thread
         boost::unique_lock lock(lobby.mutex);
-        lobby.error_msg = e.what()[0] == 0 ? "std::exception" : e.what();
+        lobby.error_key = LocalKey("cxx_error_is");
+        lobby.error_params = std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what())));
 
     } catch (...) {
         // Signal error to main thread
         boost::unique_lock lock(lobby.mutex);
-        lobby.error_msg = "Unknown error";
+        lobby.error_key = LocalKey("unknown_error");
     }
 }
 
@@ -239,8 +247,8 @@ void SimpleKnightsLobby::readIncomingMessages(KnightsClient &client)
     }
 
     // Check if background thread has exited
-    if (!error_msg.empty()) {
-        throw std::runtime_error(error_msg);
+    if (error_key != LocalKey()) {
+        throw ExceptionBase(error_key, error_params);
     }
 }
 

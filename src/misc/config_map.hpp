@@ -33,7 +33,9 @@ struct lua_State;
 
 class BadConfig : public ExceptionBase {
 public:
-    explicit BadConfig(const std::string &key) : ExceptionBase("Config key " + key + " not found") { }
+    explicit BadConfig(const std::string &key)
+        : ExceptionBase(LocalKey("config_key_not_found"),
+                        std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(key)))) {}
 };
     
 class ConfigMap {

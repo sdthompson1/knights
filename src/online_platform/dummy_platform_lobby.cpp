@@ -103,47 +103,54 @@ void DummyPlatformLobby::updateCachedInfo()
             if (platform->sendMessage(DummyOnlinePlatform::MSG_GET_LOBBY_INFO, lobby_id)) {
                 std::string response_data;
                 if (platform->receiveResponse(response_data)) {
-                    // Parse response: leader_id (null-terminated) + num_players (4 bytes) + 
-                    //                status_key (null-terminated) + has_param (1 byte) + 
+                    // Parse response: leader_id (null-terminated) + num_players (4 bytes) +
+                    //                checksum (null-terminated) +
+                    //                status_key (null-terminated) + has_param (1 byte) +
                     //                [optional param_key (null-terminated)] + lobby_state (null-terminated)
                     size_t pos = 0;
-                    
+
                     // Parse leader_id
                     size_t null_pos = response_data.find('\0', pos);
                     if (null_pos != std::string::npos) {
                         leader_id = PlayerID(response_data.substr(pos, null_pos - pos));
                         pos = null_pos + 1;
-                        
+
                         // Skip num_players (4 bytes)
                         pos += 4;
-                        
-                        // Skip status_key (null-terminated)
+
+                        // Skip checksum (null-terminated)
                         null_pos = response_data.find('\0', pos);
                         if (null_pos != std::string::npos) {
                             pos = null_pos + 1;
-                            
-                            // Skip has_param (1 byte) and optional param_key
-                            if (pos < response_data.length()) {
-                                bool has_param = response_data[pos] != 0;
-                                pos += 1;
-                                
-                                if (has_param) {
-                                    // Skip param_key (null-terminated)
-                                    null_pos = response_data.find('\0', pos);
-                                    if (null_pos != std::string::npos) {
-                                        pos = null_pos + 1;
-                                    }
-                                }
-                                
-                                // Parse lobby_state
+
+                            // Skip status_key (null-terminated)
+                            null_pos = response_data.find('\0', pos);
+                            if (null_pos != std::string::npos) {
+                                pos = null_pos + 1;
+
+                                // Skip has_param (1 byte) and optional param_key
                                 if (pos < response_data.length()) {
-                                    null_pos = response_data.find('\0', pos);
-                                    if (null_pos != std::string::npos) {
-                                        std::string state_str = response_data.substr(pos, null_pos - pos);
-                                        if (state_str == "JOINED") {
-                                            current_state = State::JOINED;
-                                        } else if (state_str == "FAILED") {
-                                            current_state = State::FAILED;
+                                    bool has_param = response_data[pos] != 0;
+                                    pos += 1;
+
+                                    if (has_param) {
+                                        // Skip param_key (null-terminated)
+                                        null_pos = response_data.find('\0', pos);
+                                        if (null_pos != std::string::npos) {
+                                            pos = null_pos + 1;
+                                        }
+                                    }
+
+                                    // Parse lobby_state
+                                    if (pos < response_data.length()) {
+                                        null_pos = response_data.find('\0', pos);
+                                        if (null_pos != std::string::npos) {
+                                            std::string state_str = response_data.substr(pos, null_pos - pos);
+                                            if (state_str == "JOINED") {
+                                                current_state = State::JOINED;
+                                            } else if (state_str == "FAILED") {
+                                                current_state = State::FAILED;
+                                            }
                                         }
                                     }
                                 }

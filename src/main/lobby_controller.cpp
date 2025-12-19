@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "exception_base.hpp"
 #include "knights_client.hpp"
 #include "lobby_controller.hpp"
 #include "simple_knights_lobby.hpp"
@@ -109,7 +110,7 @@ boost::shared_ptr<KnightsClient>
             std::vector<LocalParam> no_params;
             platform_lobby->setGameStatus(LocalKey("selecting_quest"), no_params);
         } else {
-            throw std::runtime_error("Failed to create lobby");
+            throw ExceptionBase(LocalKey("failed_create_lobby"));
         }
 
     } else {
@@ -117,7 +118,7 @@ boost::shared_ptr<KnightsClient>
         created_by_me = false;
 
         if (!platform_lobby) {
-            throw std::runtime_error("Failed to join lobby");
+            throw ExceptionBase(LocalKey("failed_join_lobby"));
         }
     }
 
@@ -161,7 +162,7 @@ void LobbyController::inviteFriendToLobby()
 
 void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
                                          bool new_control_system,
-                                         UTF8String &err_msg,
+                                         LocalKey &error_key,
                                          LocalKey &host_migration_key,
                                          bool &del_gfx_sounds)
 {
@@ -169,12 +170,12 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
         // We were kicked out of the lobby for some reason. Go to ErrorScreen.
         if (host_migration_state == HostMigrationState::NOT_IN_GAME) {
             if (created_by_me) {
-                err_msg = UTF8String::fromUTF8("Failed to create lobby");
+                error_key = LocalKey("failed_create_lobby");
             } else {
-                err_msg = UTF8String::fromUTF8("Failed to join lobby");
+                error_key = LocalKey("failed_join_lobby");
             }
         } else {
-            err_msg = UTF8String::fromUTF8("Lobby connection lost");
+            error_key = LocalKey("lobby_connection_lost");
         }
 
     } else if (platform_lobby

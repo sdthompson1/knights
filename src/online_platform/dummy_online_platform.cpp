@@ -195,7 +195,7 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
 {
     LobbyInfo info;
     info.num_players = 0;
-    info.game_status_key = LocalKey("waiting");
+    info.game_status_key = LocalKey("unknown");
 
     if (!connected) return info;
 
@@ -204,8 +204,9 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
         if (receiveResponse(response_data)) {
             // Parse response: leader_id (null-terminated) + num_players (4 bytes) +
             //                 checksum (null-terminated) +
-            //                 status_key (null-terminated) + has_param (1 byte) + 
-            //                 [optional param_key (null-terminated)]
+            //                 status_key (null-terminated) + has_param (1 byte) +
+            //                 [optional param_key (null-terminated)] +
+            //                 lobby_state (null-terminated)
             size_t pos = 0;
             size_t null_pos = response_data.find('\0', pos);
             if (null_pos != std::string::npos) {
@@ -246,6 +247,17 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
                         pos = null_pos + 1;
                         info.game_status_params.push_back(LocalParam(param_key));
                     }
+                }
+            }
+
+            // Skip lobby_state (null-terminated)
+            // Note: This field is not currently used by this function but is part of the protocol
+            if (pos < response_data.size()) {
+                null_pos = response_data.find('\0', pos);
+                if (null_pos != std::string::npos) {
+                    // std::string lobby_state = response_data.substr(pos, null_pos - pos);
+                    // Could be "JOINED" or "FAILED" but we don't use it here
+                    pos = null_pos + 1;
                 }
             }
         }

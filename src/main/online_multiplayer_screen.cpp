@@ -230,7 +230,7 @@ namespace
             if (gi) {
                 bool is_incompatible = (gi->checksum != screen_impl.myChecksum());
                 if (is_incompatible) {
-                    throw std::runtime_error("This game is running a different version of Knights or using modified game data");
+                    throw ExceptionBase(LocalKey("incompatible_game"));
                 } else {
                     screen_impl.joinGame(gi->lobby_id);
                 }

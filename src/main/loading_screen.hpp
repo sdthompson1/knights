@@ -24,6 +24,8 @@
 #ifndef LOADING_SCREEN_HPP
 #define LOADING_SCREEN_HPP
 
+#include "localization.hpp"
+#include "my_exceptions.hpp"
 #include "player_id.hpp"
 #include "screen.hpp"
 
@@ -32,7 +34,6 @@
 
 class KnightsConfig;
 class KnightsServer;
-class LuaError;
 
 class LoadingScreen : public Screen {
 public:
@@ -51,7 +52,8 @@ private:
         explicit Loader(const std::string & config_filename, bool menu_strict_);
         void operator()();
         
-        std::string error_msg;
+        LocalKey error_key;
+        std::vector<LocalParam> error_params;
         std::unique_ptr<LuaError> lua_error;
 
         std::string knights_config_filename;

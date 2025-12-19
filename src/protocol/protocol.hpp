@@ -42,14 +42,7 @@
 
 class ProtocolError : public ExceptionBase {
 public:
-    // TODO: The LocalKey should probably be moved up into ExceptionBase
-    explicit ProtocolError(const LocalKey &key)
-        : ExceptionBase(key.getKey()), local_key(key) { }
-
-    const LocalKey & getLocalKey() const { return local_key; }
-
-private:
-    LocalKey local_key;
+    explicit ProtocolError(LocalKey key) : ExceptionBase(key) { }
 };
 
 
@@ -85,7 +78,7 @@ enum ClientMessageCode {
 // Messages sent by the server
 enum ServerMessageCode {
 
-    SERVER_ERROR = 1,                // followed by string (localkey)
+    SERVER_ERROR = 1,                // followed by key and params (see read_write_loc.hpp)
 
     SERVER_CONNECTION_ACCEPTED = 2,  // followed by varint (server version number)
     
@@ -114,7 +107,7 @@ enum ServerMessageCode {
 
     SERVER_CHAT = 30,                // followed by string (player-id), ubyte (0=lobby 1=player 2=observer 3=team), string (utf-8 chat msg)
     // SERVER_ANNOUNCEMENT_RAW = 31,    // no longer used
-    SERVER_ANNOUNCEMENT_LOC = 32,    // followed by string (localkey) + ubyte (num params) + params; see announcement_loc.cpp for the param format
+    SERVER_ANNOUNCEMENT_LOC = 32,    // followed by string (localkey) + ubyte (num params) + params; see read_write_loc.cpp for the format
 
     SERVER_POP_UP_WINDOW = 33,       // complex. only used in 1-player games.
     
@@ -175,7 +168,6 @@ enum ServerMessageCode {
     
     // misc
     SERVER_SWITCH_PLAYER = 250,      // followed by ubyte (player number)
-    SERVER_LUA_ERROR = 251,          // followed by string (error dump)
 
     // extended messages
     // (will be ignored if the client doesn't know the message.)

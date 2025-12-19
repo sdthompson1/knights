@@ -282,18 +282,22 @@ class LobbyServer:
             #         checksum (null-terminated) +
             #         status_key (null-terminated) +
             #         has_param (1 byte) +
-            #         [optional param_key (null-terminated)]
+            #         [optional param_key (null-terminated)] +
+            #         lobby_state (null-terminated)
             response_data = lobby.get_leader_id().encode() + b'\0'
             response_data += struct.pack('<I', len(lobby.members))
             response_data += lobby.checksum + b'\0'
             response_data += lobby.status_key.encode() + b'\0'
-            
+
             # Add has_param flag and optional param_key
             if lobby.param_key is not None:
                 response_data += struct.pack('<B', 1)  # has_param = true
                 response_data += lobby.param_key.encode() + b'\0'
             else:
                 response_data += struct.pack('<B', 0)  # has_param = false
+
+            # Add lobby_state
+            response_data += lobby.lobby_state.encode() + b'\0'
 
         return self.create_success_response(response_data)
     

@@ -35,7 +35,7 @@ RoomMap::RoomMap()
 
 void RoomMap::addRoom(const MapCoord &top_left, int w, int h)
 {
-    if (ready) throw InitError("RoomMap: addRoom after doneAddingRooms");
+    if (ready) throw UnexpectedError("RoomMap: addRoom after doneAddingRooms");
     RoomInfo ri;
     ri.pos = top_left;
     ri.w = w;

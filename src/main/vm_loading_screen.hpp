@@ -63,7 +63,8 @@ private:
         bool new_control_system;
 
         // Outputs
-        std::string error_msg;
+        LocalKey error_key;
+        std::vector<LocalParam> error_params;
         std::unique_ptr<VMKnightsLobby> vm_knights_lobby;
     };
 

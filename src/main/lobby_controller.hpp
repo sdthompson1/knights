@@ -107,14 +107,14 @@ public:
     void inviteFriendToLobby();
 
     // This is called periodically (by KnightsApp::updateOnlinePlatform)
-    // On output, if err_msg non-empty, should go to ErrorScreen
+    // On output, if error_key non-empty, should go to ErrorScreen
     // On output, if host_migration_key non-empty, should go to HostMigrationScreen
     // On output, if del_gfx_sounds is true, should clear gfx_manager and sound_manager
     // [If these parameters seem a little weird, it is because this class was refactored out
     // from some other code, and not everything has been fully disentangled at this time!]
     void checkHostMigration(OnlinePlatform &online_platform,
                             bool new_control_system,
-                            UTF8String &err_msg,
+                            LocalKey &error_key,
                             LocalKey &host_migration_key,
                             bool &del_gfx_sounds);
 #endif

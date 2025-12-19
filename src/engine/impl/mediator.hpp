@@ -50,8 +50,8 @@
 #ifndef MEDIATOR_HPP
 #define MEDIATOR_HPP
 
-#include "exception_base.hpp"
 #include "map_support.hpp"
+#include "my_exceptions.hpp"
 #include "player_state.hpp"
 #include "secure_result.hpp"
 #include "utf8string.hpp"
@@ -94,21 +94,25 @@ struct lua_State;
 
 // Exception classes:-
 
-class MediatorCreatedTwice : public ExceptionBase {
+class MediatorCreatedTwice : public UnexpectedError {
 public:
-    MediatorCreatedTwice() : ExceptionBase("Mediator created twice!") { }
+    MediatorCreatedTwice() : UnexpectedError("Mediator created twice!") { }
 };
 
 class MediatorUnavailable : public ExceptionBase {
 public:
     // NB if this is thrown it probably indicates that either (a) the mediator was accessed
     // before the game started, or (b) the mediator was accessed from outside of a game thread.
-    MediatorUnavailable() : ExceptionBase("No Mediator instance available!") { }
+    // Scenario (a) can easily happen from Lua, e.g. one way is to call kts.LimitTotalMonsters(100)
+    // directly from main.lua (i.e. before any game has started).
+    // Scenario (b) indicates a C++ programming error and is unlikely to happen in practice.
+    MediatorUnavailable()
+        : ExceptionBase(LocalKey("game_hasnt_started")) { }
 };
 
-class CallbacksUnavailable : public ExceptionBase {
+class CallbacksUnavailable : public UnexpectedError {
 public:
-    CallbacksUnavailable() : ExceptionBase("KnightsCallbacks not found") { }
+    CallbacksUnavailable() : UnexpectedError("KnightsCallbacks not found") { }
 };
 
 

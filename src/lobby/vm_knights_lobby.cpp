@@ -25,10 +25,12 @@
 
 #ifdef USE_VM_LOBBY
 
+#include "exception_base.hpp"
 #include "follower_state.hpp"
 #include "knights_client.hpp"
 #include "knights_vm.hpp"
 #include "leader_state.hpp"
+#include "localization.hpp"
 #include "rng.hpp"
 #include "vm_knights_lobby.hpp"
 
@@ -64,7 +66,6 @@ struct VMKnightsLobbyImpl {
                        const PlayerID &local_user_id,
                        bool new_control_system)
         : exit_flag(false),
-          error_msg(""),
           net_driver(net_driver),
           timer(timer),
           local_user_id(local_user_id),
@@ -95,7 +96,8 @@ struct VMKnightsLobbyImpl {
     boost::mutex mutex;
     boost::thread background_thread;
     bool exit_flag;
-    std::string error_msg;
+    LocalKey error_key;
+    std::vector<LocalParam> error_params;
 
     // refs
     Coercri::NetworkDriver &net_driver;
@@ -246,8 +248,8 @@ void VMKnightsLobby::readIncomingMessages(KnightsClient &client)
         }
 
         // Check if thread has closed
-        if (!pimpl->error_msg.empty()) {
-            throw std::runtime_error(pimpl->error_msg);
+        if (pimpl->error_key != LocalKey()) {
+            throw ExceptionBase(pimpl->error_key, pimpl->error_params);
         }
     }
 
@@ -392,13 +394,19 @@ void VMKnightsLobbyThread::operator()()
             impl.timer.sleepMsec(3);
         }
 
+    } catch (ExceptionBase &e) {
+        boost::unique_lock<boost::mutex> lock(impl.mutex);
+        impl.error_key = e.getKey();
+        impl.error_params = e.getParams();
+
     } catch (const std::exception &e) {
         boost::unique_lock<boost::mutex> lock(impl.mutex);
-        impl.error_msg = e.what()[0] == 0 ? "std::exception" : e.what();
+        impl.error_key = LocalKey("cxx_error_is");
+        impl.error_params = std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what())));
 
     } catch (...) {
         boost::unique_lock<boost::mutex> lock(impl.mutex);
-        impl.error_msg = "Unknown error";
+        impl.error_key = LocalKey("unknown_error");
     }
 }
 

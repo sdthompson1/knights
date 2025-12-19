@@ -23,15 +23,27 @@ invalid_id_client               Invalid ID in client message
 dpy_num_out_of_range            Display number out of range
 n_players_incorrect             Number of players incorrect
 bad_tile_control                Tile 'control' function did not return a control!
-couldnt_start_game              Couldn't start game! {0}
+couldnt_start_game              Couldn't start game:
 couldnt_join_game               Could not join game! {0}
 error_is                        Error: {0}
 lua_error_is                    Lua Error: {0}
 error_in_respawn_func           Error in respawn function: {0}
 message_too_long                Message too long
+game_hasnt_started              Game hasn't started or could not be found
+config_key_not_found            Config key '{0}' not found
+could_not_load_font             Could not load font! Check fonts.txt
+cxx_error_is                    C++ error: {0}
+incompatible_game               This game is running a different version of Knights or using modified game data
+connection_lost                 The network connection has been lost
+connection_failed               Connection failed
+bad_port_number                 Bad port number
+failed_create_lobby             Failed to create lobby
+failed_join_lobby               Failed to join lobby
+lobby_connection_lost           Lobby connection lost
 
 
 # Game statuses (for multiplayer game list screen)
+unknown           Unknown
 selecting_quest   Selecting Quest
 playing_x         Playing ({0})
 

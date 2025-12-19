@@ -26,6 +26,7 @@
 #if defined(USE_VM_LOBBY) && defined(ONLINE_PLATFORM)
 
 #include "error_screen.hpp"
+#include "exception_base.hpp"
 #include "game_manager.hpp"
 #include "knights_app.hpp"
 #include "knights_client.hpp"
@@ -48,12 +49,14 @@ void VMLoadingScreen::Loader::operator()()
     try {
         vm_knights_lobby = std::make_unique<VMKnightsLobby>(net_driver, timer, local_user_id, new_control_system);
 
+    } catch (ExceptionBase &e) {
+        error_key = e.getKey();
+        error_params = e.getParams();
     } catch (std::exception &e) {
-        error_msg = e.what();
-        if (error_msg.empty()) error_msg = " ";
-
+        error_key = LocalKey("cxx_error_is");
+        error_params = std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what())));
     } catch (...) {
-        error_msg = "Unknown Error";
+        error_key = LocalKey("unknown_error");
     }
 }
 
@@ -100,8 +103,8 @@ void VMLoadingScreen::update()
         return;
     }
 
-    if (!loader->error_msg.empty()) {
-        UTF8String msg = UTF8String::fromUTF8Safe("Loading failed: " + loader->error_msg);
+    if (loader->error_key != LocalKey()) {
+        UTF8String msg = knights_app->getLocalization().get(loader->error_key, loader->error_params);
         std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
         knights_app->requestScreenChange(std::move(error_screen));
         return;

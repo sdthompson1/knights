@@ -114,7 +114,7 @@ public:
     }
 
     // Get a plain string
-    const Coercri::UTF8String & get(const LocalKey &key) const;
+    Coercri::UTF8String get(const LocalKey &key) const;
 
     // Get a string with another LocalKey as parameter
     Coercri::UTF8String get(const LocalKey &key, const LocalKey &param) const;

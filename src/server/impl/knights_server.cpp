@@ -127,11 +127,14 @@ namespace {
         buf.writeString(reason.getKey());
     }
 
-    void SendError(ServerConnection &conn, const LocalKey &error, KnightsServerImpl &impl)
+    void SendError(ServerConnection &conn,
+                   const LocalKey &error,
+                   const std::vector<LocalParam> &error_params,
+                   KnightsServerImpl &impl)
     {
         Coercri::OutputByteBuf buf(conn.output_data);
         buf.writeUbyte(SERVER_ERROR);
-        buf.writeString(error.getKey());
+        WriteLocalKeyAndParams(buf, error, -1, error_params);
 
         if (impl.knights_log) {
             impl.knights_log->logMessage(conn.game_name + "\terror\tplayer=" + conn.player_id.asString() + ", error=" + error.getKey());
@@ -275,6 +278,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
     // This is where we decode incoming messages from the client
 
     LocalKey error_key;
+    std::vector<LocalParam> error_params;
     
     try {
     
@@ -356,19 +360,19 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
                     if (!conn.player_id.empty()) {
                         // They have already sent their ID
-                        SendError(conn, LocalKey("player_id_already_set"), *pimpl);
+                        SendError(conn, LocalKey("player_id_already_set"), std::vector<LocalParam>(), *pimpl);
 
                     } else if (!conn.platform_user_id.empty() && new_id != conn.platform_user_id) {
                         // The ID they are setting doesn't match the ID provided by the platform
-                        SendError(conn, LocalKey("player_id_mismatch"), *pimpl);
+                        SendError(conn, LocalKey("player_id_mismatch"), std::vector<LocalParam>(), *pimpl);
 
                     } else if (new_id.empty()) {
                         // Claiming you have an empty ID is not allowed
-                        SendError(conn, LocalKey("player_id_is_empty"), *pimpl);
+                        SendError(conn, LocalKey("player_id_is_empty"), std::vector<LocalParam>(), *pimpl);
 
                     } else if (!IsIDAvailable(pimpl->connections, new_id)) {
                         // This player is already connected
-                        SendError(conn, LocalKey("already_connected"), *pimpl);
+                        SendError(conn, LocalKey("already_connected"), std::vector<LocalParam>(), *pimpl);
 
                     } else {
                         // set the player id
@@ -675,23 +679,27 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
         return;  // everything below here is error handling code.
 
-    } catch (ProtocolError &e) {
-        error_key = e.getLocalKey();
+    } catch (ExceptionBase &e) {
+        error_key = e.getKey();
+        error_params = e.getParams();
+
+    } catch (std::exception &e) {
+        error_key = LocalKey("cxx_error_is");
+        error_params = std::vector<LocalParam>(1, LocalParam(UTF8String::fromUTF8Safe(e.what())));
 
     } catch (...) {
-        // We can't send the what() message directly as a LocalKey,
-        // so "unknown_error" is the best we can do
         error_key = LocalKey("unknown_error");
+        error_params.clear();
     }
 
     // Exception thrown. This is (probably) because the client sent us
-    // some bad data. Send him an error message (the client will
+    // some bad data. Send them an error message (the client will
     // usually then respond by closing the connection). Note that we
     // clear out any existing data already in his buffer, this
     // prevents any half-written messages from being sent out.
 
     conn.output_data.clear();
-    SendError(conn, error_key, *pimpl);
+    SendError(conn, error_key, error_params, *pimpl);
 }
 
 void KnightsServer::getOutputData(ServerConnection &conn,

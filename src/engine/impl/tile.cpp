@@ -454,9 +454,8 @@ const Control * Tile::getControl(const MapCoord &pos) const
 
             try {
                 LuaExec(lua, 1, 1);  // resets stack to [] on exception
-            } catch (const LuaError &e) {
-                std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(e.what())));
-                Mediator::instance().getCallbacks().gameMsgLoc(-1, LocalKey("lua_error_is"), params, true);
+            } catch (const ExceptionBase &e) {
+                Mediator::instance().getCallbacks().gameMsgLoc(-1, e.getKey(), e.getParams(), true);
                 return 0;
             }
 

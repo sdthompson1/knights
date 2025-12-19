@@ -196,8 +196,7 @@ public:
     
     virtual void connectionLost() override;     // goes to ErrorScreen
     virtual void connectionFailed() override;   // goes to ErrorScreen
-    virtual void serverError(const LocalKey &error) override;       // goes to ErrorScreen
-    virtual void luaError(const std::string &error) override;       // goes to ErrorScreen
+    virtual void serverError(const LocalKey &error, const std::vector<LocalParam> &params) override;  // goes to ErrorScreen
     virtual void connectionAccepted(int server_version) override;   // goes to LobbyScreen
     
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,

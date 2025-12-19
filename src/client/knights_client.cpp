@@ -151,15 +151,11 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
            
         case SERVER_ERROR:
             {
-                const std::string err = buf.readString();
-                if (client_cb) client_cb->serverError(LocalKey(err));
-            }
-            break;
-
-        case SERVER_LUA_ERROR:
-            {
-                const std::string msg = buf.readString();
-                if (client_cb) client_cb->luaError(msg);
+                LocalKey key;
+                int plural;  // not used for error messages
+                std::vector<LocalParam> params;
+                ReadLocalKeyAndParams(buf, key, plural, params, pimpl->allow_untrusted_strings);
+                if (client_cb) client_cb->serverError(key, params);
             }
             break;
 

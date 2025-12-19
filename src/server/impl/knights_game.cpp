@@ -168,6 +168,7 @@ public:
     // used during game startup
     volatile bool startup_signal;
     LocalKey startup_err_key;
+    std::vector<LocalParam> startup_err_params;
 
     // Condition variable used to wake up the update thread when a control comes in
     // (instead of polling, like it used to do).
@@ -608,11 +609,12 @@ namespace {
                     // the game close itself down.
                     throw;
 
-                } catch (const ProtocolError &e) {
+                } catch (const ExceptionBase &e) {
 
                     SendMessages(kg.connections, messages);
 
-                    kg.startup_err_key = e.getLocalKey();
+                    kg.startup_err_key = e.getKey();
+                    kg.startup_err_params = e.getParams();
 
                     kg.update_thread_wants_to_exit = true;
 #ifdef VIRTUAL_SERVER
@@ -624,8 +626,8 @@ namespace {
 
                     SendMessages(kg.connections, messages);
 
-                    kg.startup_err_key = LocalKey("unknown_error");
-                    // TODO: Print e.what() somewhere?
+                    kg.startup_err_key = LocalKey("cxx_error_is");
+                    kg.startup_err_params = std::vector<LocalParam>(1, LocalParam(UTF8String::fromUTF8Safe(e.what())));
 
                     kg.update_thread_wants_to_exit = true;
 #ifdef VIRTUAL_SERVER
@@ -701,10 +703,11 @@ namespace {
                 kg.emergency_exit = true;
                 kg.emergency_err_msg = e.what();
                 std::string msg = e.what();
-                sendLuaError(msg.c_str());
+                sendError(LocalKey("lua_error_is"),
+                          std::vector<LocalParam>(1, LocalParam(UTF8String::fromUTF8Safe(msg))));
                 
             } catch (...) {
-                sendServerError(LocalKey("unknown_error"));
+                sendError(LocalKey("unknown_error"), std::vector<LocalParam>());
             }
 
             // Before we go, delete the KnightsEngine. This will make sure that the Mediator
@@ -721,17 +724,7 @@ namespace {
 #endif
         }
 
-        void sendServerError(const LocalKey &key)
-        {
-            sendErrorImpl(key, nullptr);
-        }
-
-        void sendLuaError(const char *lua_msg)
-        {
-            sendErrorImpl(LocalKey(), lua_msg);
-        }
-
-        void sendErrorImpl(const LocalKey &key, const char *lua_msg)
+        void sendError(LocalKey key, std::vector<LocalParam> params)
         {
             try {
                 // send error to all players connected to this game.
@@ -740,17 +733,12 @@ namespace {
 #endif
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     Coercri::OutputByteBuf buf((*it)->output_data);
-                    if (lua_msg) {
-                        buf.writeUbyte(SERVER_LUA_ERROR);
-                        buf.writeString(lua_msg);
-                    } else {
-                        buf.writeUbyte(SERVER_ERROR);
-                        buf.writeString(key.getKey());
-                    }
+                    buf.writeUbyte(SERVER_ERROR);
+                    WriteLocalKeyAndParams(buf, key, -1, params);
                 }
                 // log the error as well.
                 if (kg.knights_log) {
-                    kg.knights_log->logMessage(kg.game_name + "\tError in update thread\t" + key.getKey() + (lua_msg ? lua_msg : ""));
+                    kg.knights_log->logMessage(kg.game_name + "\tError in update thread\t" + key.getKey());
                 }
             } catch (...) {
                 // Disregard any exceptions here, as we don't want them to propagate up into the
@@ -1340,6 +1328,7 @@ namespace {
             kg.emergency_err_msg.clear();
             kg.startup_signal = false;
             kg.startup_err_key = LocalKey();
+            kg.startup_err_params.clear();
 
 #ifdef VIRTUAL_SERVER
             kg.update_thread.reset(new UpdateThread(kg, kg.timer));
@@ -1408,10 +1397,8 @@ namespace {
             const LocalKey err_key = kg.startup_err_key;
             if (err_key != LocalKey()) {
 
-                std::vector<LocalParam> params;
-                params.push_back(LocalParam(err_key));
-
-                Announcement(kg, LocalKey("couldnt_start_game"), params, true);
+                Announcement(kg, LocalKey("couldnt_start_game"), std::vector<LocalParam>(), false);
+                Announcement(kg, err_key, kg.startup_err_params, true);
 
                 // log the error as well
                 if (kg.knights_log) {

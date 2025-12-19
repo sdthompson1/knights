@@ -868,34 +868,24 @@ bool GameManager::setSavedChat(const UTF8String &s)
 void GameManager::connectionLost()
 {
     // Go to ErrorScreen
-    std::unique_ptr<Screen> error_screen(new ErrorScreen(UTF8String::fromUTF8("The network connection has been lost")));
+    UTF8String msg = pimpl->knights_app.getLocalization().get(LocalKey("connection_lost"));
+    std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
 void GameManager::connectionFailed()
 {
     // Go to ErrorScreen
-    std::unique_ptr<Screen> error_screen(new ErrorScreen(UTF8String::fromUTF8("Connection failed")));
-    pimpl->knights_app.requestScreenChange(std::move(error_screen));
-}
-
-void GameManager::serverError(const LocalKey &error)
-{
-    // Go to ErrorScreen
-    const Localization &loc = pimpl->knights_app.getLocalization();
-    std::vector<LocalParam> params;
-    params.push_back(LocalParam(error));
-    UTF8String msg = loc.get(LocalKey("error_is"), params);
+    UTF8String msg = pimpl->knights_app.getLocalization().get(LocalKey("connection_failed"));
     std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
-void GameManager::luaError(const std::string &error)
+void GameManager::serverError(const LocalKey &error, const std::vector<LocalParam> &params)
 {
     // Go to ErrorScreen
-    // TODO: We probably shouldn't display the error directly unless some kind of
-    // debug mode is set
-    auto msg = UTF8String::fromUTF8Safe("Lua Error: " + error);
+    const Localization &loc = pimpl->knights_app.getLocalization();
+    UTF8String msg = loc.get(error, params);
     std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
@@ -1563,7 +1553,7 @@ void GameManager::announcementLoc(const LocalKey &key, const std::vector<LocalPa
     if (err && pimpl->single_player && !pimpl->game_in_progress) {
         // This is needed because there is no way to display error messages on the
         // quest selection screen in single player mode
-        throw std::runtime_error(msg_latin1);
+        throw ExceptionBase(key, params);
     }
 }
 

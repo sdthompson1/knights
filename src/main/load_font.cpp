@@ -38,6 +38,6 @@ boost::shared_ptr<Coercri::Font> LoadFont(boost::shared_ptr<Coercri::GfxDriver> 
     try {
         return Coercri::LoadSystemTTF(ttf_loader, ttf_font_names, size);
     } catch (...) {
-        throw GraphicLoadFailed("Could not load font! Check fonts.txt");
+        throw GraphicLoadFailed(LocalKey("could_not_load_font"));
     }
 }

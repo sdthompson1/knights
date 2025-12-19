@@ -40,34 +40,63 @@
 // error during game initialization (eg: sdl font could not be loaded)
 class InitError : public ExceptionBase {
 public:
-    InitError(const std::string &s) : ExceptionBase(s) { }
+    explicit InitError(LocalKey k) : ExceptionBase(k) { }
+    InitError(LocalKey k, std::vector<LocalParam> params) : ExceptionBase(k, params) { }
 };
 
 // failed to load graphic (or other resource!)
 class GraphicLoadFailed : public ExceptionBase {
 public:
-    GraphicLoadFailed(const std::string &s) : ExceptionBase(s) { }
+    explicit GraphicLoadFailed(LocalKey k) : ExceptionBase(k) { }
 };
 
 // error when loading or running a Lua script file
 class LuaError : public ExceptionBase {
 public:
-    LuaError(const std::string &s) : ExceptionBase(s) { }
+    explicit LuaError(const std::string &s)
+        : ExceptionBase(LocalKey("lua_error_is"),
+                        std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(s)))),
+          orig_error_string(s)
+    { }
+
+    virtual const char* what() const throw() override {
+        return orig_error_string.c_str();
+    }
+
+private:
+    std::string orig_error_string;
 };
 
 // lua panic (lua error in unprotected context).
 // (this should be treated as a fatal error and lua_State should be closed as soon as possible)
 class LuaPanic : public ExceptionBase {
 public:
-    LuaPanic(const std::string &s) : ExceptionBase(s) { }
+    explicit LuaPanic(const std::string &s)
+        : ExceptionBase(LocalKey("lua_error_is"),
+                        std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(s))))
+    { }
+
+    virtual const char* what() const throw() override { return "Lua panic!"; }
 };
 
-// something unexpected happened (throwing this indicates a bug or not-yet-implemented
-// feature)
-
+// Something unexpected happened (throwing this indicates a bug or not-yet-implemented
+// feature).
+// This doesn't use a LocalKey because we don't expect the messages to be shown in
+// normal operation, so localizing them has little value.
 class UnexpectedError : public ExceptionBase {
 public:
-    UnexpectedError(const std::string &s) : ExceptionBase(s) { }
+    explicit UnexpectedError(const std::string &s)
+        : ExceptionBase(LocalKey("error_is"),
+                        std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(s)))),
+          orig_error_string(s)
+    { }
+
+    virtual const char* what() const throw() override {
+        return orig_error_string.c_str();
+    }
+
+private:
+    std::string orig_error_string;
 };
 
 

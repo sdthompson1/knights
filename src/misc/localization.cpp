@@ -163,15 +163,14 @@ Coercri::UTF8String Localization::buildList(const std::vector<Coercri::UTF8Strin
     }
 }
 
-const Coercri::UTF8String& Localization::get(const LocalKey &key) const
+Coercri::UTF8String Localization::get(const LocalKey &key) const
 {
     auto it = strings.find(key);
     if (it != strings.end()) {
         return it->second;
     }
 
-    static const auto missing_string = Coercri::UTF8String::fromUTF8("Missing string");
-    return missing_string;
+    return Coercri::UTF8String::fromUTF8Safe("Missing string [" + key.getKey() + "]");
 }
 
 Coercri::UTF8String Localization::get(const LocalKey &key, const LocalKey &param) const

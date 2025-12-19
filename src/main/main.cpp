@@ -107,6 +107,8 @@ extern "C" {  // needed for SDL I think (?)
 
 int main(int argc, char * argv[])
 {
+    Localization localization;
+
 #ifdef WIN32
     // This is needed for audio to work in SDL2 on Windows apparently
     putenv("SDL_AUDIODRIVER=directsound");
@@ -145,7 +147,7 @@ int main(int argc, char * argv[])
         ParseCmdLineArgs(argc, argv, display_type, data_dir, config_filename, autostart);
         
         // Run the game itself:
-        KnightsApp app(display_type, data_dir, config_filename, autostart);
+        KnightsApp app(display_type, data_dir, config_filename, autostart, localization);
         app.runKnights();
 
 #ifdef ONLINE_PLATFORM
@@ -170,24 +172,27 @@ int main(int argc, char * argv[])
         std::cout << "\n";
         std::cout << "Miscellaneous options:\n";
         std::cout << "  -v, --version:  Print Knights version and exit.\n";
-        
+
     } catch (PrintVersionAndExit &) {
         std::cout << "Knights version " << KNIGHTS_VERSION << std::endl;
         std::cout << "Please see in-game credits for further information." << std::endl;
 
 #ifdef CATCH_EXCEPTIONS
-    } catch (LuaError &e) {
-        err_msg = "ERROR: Lua error:\n";
-        err_msg += e.what();
+    } catch (ExceptionBase &e) {
+        err_msg = "ERROR:\n";
+        err_msg += localization.get(e.getKey(), e.getParams()).asUTF8();
+
     } catch (std::exception &e) {
         err_msg = "ERROR: Caught exception:\n";
         err_msg += e.what();
+
     } catch (gcn::Exception &e) {
         std::ostringstream str;
         str << "ERROR: Caught guichan exception:\n";
         str << e.getMessage() + "\n";
         str << "In " << e.getFunction() << " at " << e.getFilename() << ":" << e.getLine() << "\n";
         err_msg = str.str();
+
     } catch (...) {
         err_msg = "ERROR: Unknown exception caught\n";
 #endif
@@ -201,7 +206,7 @@ int main(int argc, char * argv[])
 #endif
     }
 
-    return 0;
+    return (!err_msg.empty() ? 1 : 0);
 }
     
 } // extern "C"

@@ -46,11 +46,14 @@ void LoadingScreen::Loader::operator()()
 
     } catch (LuaError &err) {
         lua_error.reset(new LuaError(err));
+    } catch (ExceptionBase &err) {
+        error_key = err.getKey();
+        error_params = err.getParams();
     } catch (std::exception &e) {
-        error_msg = e.what();
-        if (error_msg.empty()) error_msg = " ";
+        error_key = LocalKey("cxx_error_is");
+        error_params = std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what())));
     } catch (...) {
-        error_msg = "Unknown Error";
+        error_key = LocalKey("unknown_error");
     }
 }
 
@@ -104,8 +107,8 @@ void LoadingScreen::update()
     if (loader->lua_error.get()) {
         throw *loader->lua_error;
     }
-    if (!loader->error_msg.empty()) {
-        UTF8String msg = UTF8String::fromUTF8Safe("Loading Failed: " + loader->error_msg);
+    if (loader->error_key != LocalKey()) {
+        Coercri::UTF8String msg = knights_app->getLocalization().get(loader->error_key, loader->error_params);
         std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
         knights_app->requestScreenChange(std::move(error_screen));
         return;

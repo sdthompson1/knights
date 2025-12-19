@@ -254,10 +254,11 @@ public:
     bool autostart;
 
     // localization strings
-    Localization localization;
+    Localization &localization;
 
     // functions
-    KnightsAppImpl() : running(true), player_name_changed(false) { }
+    explicit KnightsAppImpl(Localization &loc)
+        : running(true), player_name_changed(false), localization(loc) { }
 
     void initOptions();
     void saveOptions();
@@ -275,9 +276,19 @@ public:
 /////////////////////////////////////////////////////
 
 KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &resource_dir, const std::string &config_filename,
-                       bool autostart)
-    : pimpl(new KnightsAppImpl)
+                       bool autostart, Localization &localization)
+    : pimpl(new KnightsAppImpl(localization))
 {
+    // Initialize resource lib
+    std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";
+    RStream::Initialize(resource_dir);
+
+    // Read knights_data/client/localization_strings.txt
+    {
+        RStream file("client/localization_strings.txt");
+        pimpl->localization.readStrings(file);
+    }
+
     const char * game_name = "Knights";
 
     pimpl->server_config_filename = config_filename;
@@ -285,10 +296,6 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     
     // initialize RNG
     g_rng.initialize();
-
-    // initialize resource lib
-    std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";
-    RStream::Initialize(resource_dir);
 
     // read the client config
     {
@@ -323,12 +330,6 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         pimpl->popSkullSetup(lua);
         lua_getglobal(lua, "SPEECH_BUBBLE");
         pimpl->speech_bubble = PopGraphic(lua, &pimpl->config_gfx);
-    }
-    
-    // Read knights_data/client/localization_strings.txt
-    {
-        RStream file("client/localization_strings.txt");
-        pimpl->localization.readStrings(file);
     }
 
     // initialize game options
@@ -1004,12 +1005,16 @@ void KnightsApp::runKnights()
         } catch (LuaError&) {
             // These are big and better displayed on stdout than in a guichan dialog box:
             throw;
+        } catch (ExceptionBase &e) {
+            error = getLocalization().get(e.getKey(), e.getParams());
         } catch (std::exception &e) {
-            error = UTF8String::fromUTF8Safe(std::string("ERROR: ") + e.what());
+            std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(e.what())));
+            error = getLocalization().get(LocalKey("cxx_error_is"), params);
         } catch (gcn::Exception &e) {
-            error = UTF8String::fromUTF8Safe(std::string("Guichan Error: ") + e.getMessage());
+            std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(e.getMessage())));
+            error = getLocalization().get(LocalKey("cxx_error_is"), params);
         } catch (...) {
-            error = UTF8String::fromUTF8("Unknown Error");
+            error = getLocalization().get(LocalKey("unknown_error"));
         }
     }
 
@@ -1164,11 +1169,11 @@ void KnightsAppImpl::updateOnlinePlatform()
 
 #ifdef USE_VM_LOBBY
     // Check host migration
-    UTF8String err_msg;
+    LocalKey error_key;
     LocalKey host_migration_key;
     bool del_gfx_sounds = false;
     lobby_controller.checkHostMigration(*online_platform, options->new_control_system,
-                                        err_msg, host_migration_key, del_gfx_sounds);
+                                        error_key, host_migration_key, del_gfx_sounds);
 
     // Host migration: Delete gfx and sounds if requested
     if (del_gfx_sounds) {
@@ -1177,8 +1182,9 @@ void KnightsAppImpl::updateOnlinePlatform()
     }
 
     // Host migration: Change the screen if requested
-    if (!err_msg.empty()) {
-        requested_screen = std::make_unique<ErrorScreen>(err_msg);
+    if (error_key != LocalKey()) {
+        UTF8String msg = localization.get(error_key);
+        requested_screen = std::make_unique<ErrorScreen>(msg);
     } else if (host_migration_key != LocalKey()) {
         requested_screen = std::make_unique<HostMigrationScreen>(host_migration_key);
     }

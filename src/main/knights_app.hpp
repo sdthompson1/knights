@@ -75,8 +75,8 @@ enum DisplayType {
 
 class KnightsApp {
 public:
-    explicit KnightsApp(DisplayType dt, const std::filesystem::path &resource_dir, const std::string &config_filename,
-                        bool autostart);
+    KnightsApp(DisplayType dt, const std::filesystem::path &resource_dir, const std::string &config_filename,
+               bool autostart, Localization &localization);
 
     // Start the main loop
     void runKnights();

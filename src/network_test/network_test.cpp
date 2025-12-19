@@ -83,8 +83,7 @@ public:
     void connectionLost() override { Log("Connection lost"); }
     void connectionFailed() override { Log("Connection failed"); }
 
-    void serverError(const LocalKey &error) override { Log("Server error: %s", error.getKey().c_str()); }
-    void luaError(const std::string &error) override { Log("Server error: %s", error.c_str()); }
+    void serverError(const LocalKey &error, const std::vector<LocalParam> &) override { Log("Server error: %s", error.getKey().c_str()); }
     void connectionAccepted(int server_version) override { Log("Connection accepted. Server version = %d", server_version); }
 
     void joinGameAccepted(boost::shared_ptr<const ClientConfig> config,

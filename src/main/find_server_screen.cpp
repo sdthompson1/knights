@@ -852,7 +852,8 @@ void FindServerScreenImpl::action(const gcn::ActionEvent &event)
             std::istringstream str(port_field->getText());
             str >> port;
             if (!str) {
-                std::unique_ptr<Screen> error_screen(new ErrorScreen(UTF8String::fromUTF8("Bad port number")));
+                UTF8String msg = knights_app.getLocalization().get(LocalKey("bad_port_number"));
+                std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
                 knights_app.requestScreenChange(std::move(error_screen));
                 return;
             }
