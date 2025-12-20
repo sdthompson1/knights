@@ -474,9 +474,7 @@ bool Player::respawn()
             const char *lua_str_ptr = lua_tostring(lua, -1);
             if (!lua_str_ptr) lua_str_ptr = "";
             UTF8String lua_msg = UTF8String::fromUTF8Safe(lua_str_ptr);
-            LocalKey key("error_in_respawn_func");
-            std::vector<LocalParam> params(1, LocalParam(lua_msg));
-            Mediator::instance().gameMsgLoc(-1, key, params, true);
+            Mediator::instance().gameMsgLoc(-1, LocalMsg{LocalKey("error_in_respawn_func"), {LocalParam(lua_msg)}}, true);
             lua_pop(lua, 1); // []
 
         } else {
@@ -519,17 +517,16 @@ bool Player::respawn()
                 if (!already_eliminated) {
 
                     // Send "PlayerName has been eliminated" to all players.
-                    std::vector<LocalParam> params;
-                    params.push_back(LocalParam(getPlayerID()));
+                    LocalMsg msg;
+                    msg.params.push_back(LocalParam(getPlayerID()));
                     const int nleft = mediator.getNumPlayersRemaining() - 1;
-                    LocalKey key;
                     if (nleft > 1) {
-                        params.push_back(LocalParam(nleft));
-                        key = LocalKey("player_eliminated_num");
+                        msg.params.push_back(LocalParam(nleft));
+                        msg.key = LocalKey("player_eliminated_num");
                     } else {
-                        key = LocalKey("player_eliminated");
+                        msg.key = LocalKey("player_eliminated");
                     }
-                    mediator.getCallbacks().gameMsgLoc(-1, key, params);
+                    mediator.getCallbacks().gameMsgLoc(-1, msg);
 
                     // Now eliminate the player.
                     mediator.changePlayerState(*this, PlayerState::ELIMINATED);

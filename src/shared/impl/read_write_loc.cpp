@@ -29,15 +29,12 @@
 
 #include "network/byte_buf.hpp"
 
-void WriteLocalKeyAndParams(Coercri::OutputByteBuf &buf,
-                            const LocalKey &key,
-                            int plural,
-                            const std::vector<LocalParam> &params)
+void WriteLocalMsg(Coercri::OutputByteBuf &buf, const LocalMsg &msg)
 {
-    buf.writeString(key.getKey());
-    buf.writeVarInt(plural);
-    buf.writeUbyte(params.size());
-    for (const auto & param : params) {
+    buf.writeString(msg.key.getKey());
+    buf.writeVarInt(msg.count);
+    buf.writeUbyte(msg.params.size());
+    for (const auto & param : msg.params) {
         switch (param.getType()) {
         case LocalParam::Type::LOCAL_KEY:
             buf.writeUbyte(0);
@@ -62,26 +59,23 @@ void WriteLocalKeyAndParams(Coercri::OutputByteBuf &buf,
     }
 }
 
-void ReadLocalKeyAndParams(Coercri::InputByteBuf &buf,
-                           LocalKey &key,
-                           int &plural,
-                           std::vector<LocalParam> &params,
-                           bool allow_untrusted_strings)
+void ReadLocalMsg(Coercri::InputByteBuf &buf, LocalMsg &msg, bool allow_untrusted_strings)
 {
-    key = LocalKey(buf.readString());
-    plural = buf.readVarInt();
+    msg.key = LocalKey(buf.readString());
+    msg.count = buf.readVarInt();
     int num_params = buf.readUbyte();
-    params.reserve(num_params);
+    msg.params.clear();
+    msg.params.reserve(num_params);
     for (int i = 0; i < num_params; ++i) {
         switch (buf.readUbyte()) {
         case 0:
-            params.push_back(LocalParam(LocalKey(buf.readString())));
+            msg.params.push_back(LocalParam(LocalKey(buf.readString())));
             break;
         case 1:
-            params.push_back(LocalParam(PlayerID(buf.readString())));
+            msg.params.push_back(LocalParam(PlayerID(buf.readString())));
             break;
         case 2:
-            params.push_back(LocalParam(buf.readVarInt()));
+            msg.params.push_back(LocalParam(buf.readVarInt()));
             break;
         case 3:
             {
@@ -90,7 +84,7 @@ void ReadLocalKeyAndParams(Coercri::InputByteBuf &buf,
                     // Untrusted strings are NOT allowed => replace it with "#####"
                     str = "#####";
                 }
-                params.push_back(LocalParam(Coercri::UTF8String::fromUTF8Safe(str)));
+                msg.params.push_back(LocalParam(Coercri::UTF8String::fromUTF8Safe(str)));
             }
             break;
         default:

@@ -61,8 +61,8 @@ public:
     void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
 
     // Determine whether the quest is playable with strict constraints on no of players.
-    // If not, return a suitable error message (as LocalKey and LocalParams).
-    bool checkNumPlayersStrict(LocalKey &err_key, std::vector<LocalParam> &err_params) const;
+    // If not, return a suitable error message (as LocalMsg).
+    bool checkNumPlayersStrict(LocalMsg &err_msg) const;
     
     
     // request a random quest. Changed menu items will be reported.

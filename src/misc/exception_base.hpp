@@ -37,15 +37,13 @@
 
 class ExceptionBase : public std::exception {
 public:
-    explicit ExceptionBase(LocalKey key) : key(key) { }
-    ExceptionBase(LocalKey key, std::vector<LocalParam> params) : key(key), params(params) { }
+    explicit ExceptionBase(LocalKey key) : msg{key} { }
+    explicit ExceptionBase(const LocalMsg &m) : msg(m) { }
     virtual ~ExceptionBase() throw() { }
-    virtual const char *what() const throw() { return key.getKey().c_str(); }
-    const LocalKey &getKey() const { return key; }
-    const std::vector<LocalParam> &getParams() const { return params; }
+    virtual const char *what() const throw() { return msg.key.getKey().c_str(); }
+    const LocalMsg &getMsg() const { return msg; }
 private:
-    LocalKey key;
-    std::vector<LocalParam> params;
+    LocalMsg msg;
 };
 
 #endif

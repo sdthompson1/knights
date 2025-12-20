@@ -200,7 +200,7 @@ void ServerCallbacks::flashScreen(int plyr, int delay)
     buf.writeVarInt(delay);
 }
 
-void ServerCallbacks::gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
+void ServerCallbacks::gameMsgLoc(int plyr, const LocalMsg &msg, bool is_err)
 {
     const int MAX_ERRORS = 50;
 
@@ -208,14 +208,14 @@ void ServerCallbacks::gameMsgLoc(int plyr, const LocalKey &key, const std::vecto
         ++no_err_msgs;
         if (no_err_msgs > MAX_ERRORS) return;
     }
-    
+
     // convert to an ANNOUNCEMENT
     for (int p = 0; p < int(pub.size()); ++p) {
         if (p == plyr || plyr < 0) {   // plyr < 0 means "send to all players"
 
             // First msg goes to 'pub', rest go to 'prv', this prevents duplicate messages
             // for observers (Trac #36).
-            // NOTE: This can screw up the order of messages, because private messages always come 
+            // NOTE: This can screw up the order of messages, because private messages always come
             // after public. No good solution for that at the moment.
             Coercri::OutputByteBuf buf(
                 (plyr < 0 && p > 0) ? prv[p] : pub[p]
@@ -228,12 +228,12 @@ void ServerCallbacks::gameMsgLoc(int plyr, const LocalKey &key, const std::vecto
             }
 
             buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
-            WriteLocalKeyAndParams(buf, key, -1, params);
+            WriteLocalMsg(buf, msg);
         }
     }
 
     if (is_err && no_err_msgs == MAX_ERRORS) {
-        gameMsgLoc(-1, LocalKey("too_many_errors"), std::vector<LocalParam>(), false);
+        gameMsgLoc(-1, LocalMsg{LocalKey("too_many_errors")}, false);
     }
 }
 

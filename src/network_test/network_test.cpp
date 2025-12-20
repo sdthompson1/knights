@@ -83,7 +83,7 @@ public:
     void connectionLost() override { Log("Connection lost"); }
     void connectionFailed() override { Log("Connection failed"); }
 
-    void serverError(const LocalKey &error, const std::vector<LocalParam> &) override { Log("Server error: %s", error.getKey().c_str()); }
+    void serverError(const LocalMsg &error) override { Log("Server error: %s", error.key.getKey().c_str()); }
     void connectionAccepted(int server_version) override { Log("Connection accepted. Server version = %d", server_version); }
 
     void joinGameAccepted(boost::shared_ptr<const ClientConfig> config,
@@ -136,7 +136,7 @@ public:
     {
         Log("Set menu selection. Item = %d, Choice = %d", item, choice);
     }
-    void setQuestDescription(const std::vector<Paragraph> &quest_descr) override
+    void setQuestDescription(const std::vector<LocalMsg> &quest_descr) override
     {
         Log("Set quest description");
     }
@@ -182,9 +182,9 @@ public:
     {
         Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.asString().c_str(), observer ? 1 : 0, team ? 1 : 0, msg.asUTF8().c_str());
     }
-    void announcementLoc(const LocalKey& msg, const std::vector<LocalParam>& params, bool is_err) override
+    void announcementLoc(const LocalMsg& msg, bool is_err) override
     {
-        Log("Announcement (Loc): %s", msg.getKey().c_str());
+        Log("Announcement (Loc): %s", msg.key.getKey().c_str());
     }
 
 public:

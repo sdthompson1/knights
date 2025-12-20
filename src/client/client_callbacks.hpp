@@ -33,7 +33,6 @@
 
 #include "game_info.hpp"
 #include "localization.hpp"
-#include "paragraph.hpp"
 #include "player_id.hpp"
 #include "utf8string.hpp"
 
@@ -79,7 +78,7 @@ public:
     virtual void connectionFailed() = 0;
 
     // special
-    virtual void serverError(const LocalKey &error, const std::vector<LocalParam> &params) = 0;
+    virtual void serverError(const LocalMsg &error) = 0;
     virtual void connectionAccepted(int server_version) = 0;
     
     
@@ -130,7 +129,7 @@ public:
 
     // menu
     virtual void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values) = 0;
-    virtual void setQuestDescription(const std::vector<Paragraph> &quest_descr) = 0;
+    virtual void setQuestDescription(const std::vector<LocalMsg> &quest_descr) = 0;
 
     // switching between menu and in-game states
     virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<PlayerID> &player_ids, bool already_started) = 0;
@@ -150,7 +149,7 @@ public:
     
     // chat, and "announcements".
     virtual void chat(const PlayerID &whofrom, bool observer, bool team, const UTF8String &msg) = 0;
-    virtual void announcementLoc(const LocalKey &msg, const std::vector<LocalParam> &params, bool is_err) = 0;
+    virtual void announcementLoc(const LocalMsg &msg, bool is_err) = 0;
 };
 
 #endif

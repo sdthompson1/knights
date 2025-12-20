@@ -117,19 +117,17 @@ void SimpleLobbyThread::operator()()
     } catch (ExceptionBase &e) {
         // Signal error to main thread
         boost::unique_lock lock(lobby.mutex);
-        lobby.error_key = e.getKey();
-        lobby.error_params = e.getParams();
+        lobby.error_msg = e.getMsg();
 
     } catch (const std::exception &e) {
         // Signal error to main thread
         boost::unique_lock lock(lobby.mutex);
-        lobby.error_key = LocalKey("cxx_error_is");
-        lobby.error_params = std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what())));
+        lobby.error_msg = {LocalKey("cxx_error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what()))}};
 
     } catch (...) {
         // Signal error to main thread
         boost::unique_lock lock(lobby.mutex);
-        lobby.error_key = LocalKey("unknown_error");
+        lobby.error_msg = {LocalKey("unknown_error")};
     }
 }
 
@@ -247,8 +245,8 @@ void SimpleKnightsLobby::readIncomingMessages(KnightsClient &client)
     }
 
     // Check if background thread has exited
-    if (error_key != LocalKey()) {
-        throw ExceptionBase(error_key, error_params);
+    if (error_msg.key != LocalKey()) {
+        throw ExceptionBase(error_msg);
     }
 }
 

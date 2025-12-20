@@ -161,7 +161,7 @@ public:
     // is_err should be true if this is a Lua error message.
     //
 
-    void gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err = false);
+    void gameMsgLoc(int player_num, const LocalMsg &msg, bool is_err = false);
 
 
     //

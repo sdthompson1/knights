@@ -538,8 +538,7 @@ private:
     {
         const LocalKey &name = di.item->getType().getCriticalMsg();
         if (name != LocalKey()) {
-            std::vector<LocalParam> params(1, LocalParam(name));
-            Mediator::instance().getCallbacks().gameMsgLoc(-1, LocalKey("has_been_respawned"), params, false);
+            Mediator::instance().getCallbacks().gameMsgLoc(-1, LocalMsg{LocalKey("has_been_respawned"), {LocalParam(name)}});
         }
     }
 

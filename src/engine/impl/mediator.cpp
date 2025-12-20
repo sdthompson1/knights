@@ -134,12 +134,12 @@ const std::string &Mediator::cfgString(const std::string &key) const
 // printing msgs
 //
 
-void Mediator::gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
+void Mediator::gameMsgLoc(int player_num, const LocalMsg &msg, bool is_err)
 {
     if (callbacks) {
-        callbacks->gameMsgLoc(player_num, key, params, is_err);
+        callbacks->gameMsgLoc(player_num, msg, is_err);
     } else {
-        GameStartupMsg(lua_state.get(), key, params);
+        GameStartupMsg(lua_state.get(), msg);
     }
 }
 
@@ -416,40 +416,30 @@ void Mediator::endGame(const std::vector<const Player *> &winners, bool time_lim
 
     // Send the message saying who has won.
 
-    LocalKey key;
-    std::vector<LocalParam> params;
+    LocalMsg msg;
 
     if (winners.empty()) {
         if (time_limit_expired) {
-            key = LocalKey("time_expired");  // Time limit expired! All players lose!
+            msg.key = LocalKey("time_expired");  // Time limit expired! All players lose!
         } else {
-            key = LocalKey("all_lose");      // All players lose!
+            msg.key = LocalKey("all_lose");      // All players lose!
         }
-        
-    } else if (winners.size() == 1) {
-        // <N> is the winner!
-        key = LocalKey("is_winner");
-        params.push_back(LocalParam(winners.front()->getPlayerID()));
-
     } else {
-        // <N>, <N> and <N> are the winners!
-        key = LocalKey("are_winners");
+        msg.key = LocalKey("is_winner");
         for (const Player * winner : winners) {
-            params.push_back(LocalParam(winner->getPlayerID()));
+            msg.params.push_back(LocalParam(winner->getPlayerID()));
         }
+        msg.count = winners.size();
     }
 
-    Mediator::getCallbacks().gameMsgLoc(-1, key, params);
+    Mediator::getCallbacks().gameMsgLoc(-1, msg);
 
     // print length of game, in mins and seconds
     const int time = getGVT()/1000;
     const int mins = time / 60;
     const int secs = time % 60;
     // Game completed in {0}m {1}s.
-    params.clear();
-    params.push_back(LocalParam(mins));
-    params.push_back(LocalParam(secs));
-    Mediator::getCallbacks().gameMsgLoc(-1, LocalKey("game_completed"), params);
+    Mediator::getCallbacks().gameMsgLoc(-1, LocalMsg{LocalKey("game_completed"), {LocalParam(mins), LocalParam(secs)}});
 
     // kill all tasks, this prevents anything further from happening in-game.
     task_manager.rmAllTasks();

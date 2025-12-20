@@ -21,15 +21,6 @@
  *
  */
 
-/*
- * An attempt to standardize some of the exceptions used in the game.
- *
- * Note: These should probably be phased out in favour of the exceptions
- * in <stdexcept> (except maybe the Lua ones which are useful to be able
- * to catch separately).
- *
- */
-
 #ifndef MY_EXCEPTIONS_HPP
 #define MY_EXCEPTIONS_HPP
 
@@ -41,7 +32,7 @@
 class InitError : public ExceptionBase {
 public:
     explicit InitError(LocalKey k) : ExceptionBase(k) { }
-    InitError(LocalKey k, std::vector<LocalParam> params) : ExceptionBase(k, params) { }
+    explicit InitError(const LocalMsg &m) : ExceptionBase(m) { }
 };
 
 // failed to load graphic (or other resource!)
@@ -54,8 +45,7 @@ public:
 class LuaError : public ExceptionBase {
 public:
     explicit LuaError(const std::string &s)
-        : ExceptionBase(LocalKey("lua_error_is"),
-                        std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(s)))),
+        : ExceptionBase(LocalMsg{LocalKey("lua_error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(s))}}),
           orig_error_string(s)
     { }
 
@@ -72,8 +62,7 @@ private:
 class LuaPanic : public ExceptionBase {
 public:
     explicit LuaPanic(const std::string &s)
-        : ExceptionBase(LocalKey("lua_error_is"),
-                        std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(s))))
+        : ExceptionBase(LocalMsg{LocalKey("lua_error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(s))}})
     { }
 
     virtual const char* what() const throw() override { return "Lua panic!"; }
@@ -86,8 +75,7 @@ public:
 class UnexpectedError : public ExceptionBase {
 public:
     explicit UnexpectedError(const std::string &s)
-        : ExceptionBase(LocalKey("error_is"),
-                        std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(s)))),
+        : ExceptionBase(LocalMsg{LocalKey("error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(s))}}),
           orig_error_string(s)
     { }
 

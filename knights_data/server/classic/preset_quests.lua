@@ -204,7 +204,7 @@ quest_table = {
       description = function(S)
           return {"ancient_wand_of_death",
                   "desc_ancient_wand_of_death_1",
-                  {"desc_ancient_wand_of_death_2", describe_exit_point(S)}}
+                  {key="desc_ancient_wand_of_death_2", params={describe_exit_point(S)}}}
           -- note: exit point might not be Other's Entry (there may be >2 players)
       end,
       settings = {
@@ -257,7 +257,7 @@ quest_table = {
       description = function(S)
           return {"quest_of_giants",
                   "desc_quest_of_giants_1",
-                  {"desc_quest_of_giants_2", describe_exit_point(S)}}
+                  {key="desc_quest_of_giants_2", params={describe_exit_point(S)}}}
       end,
       settings = { 
          mission = "retrieve_book",

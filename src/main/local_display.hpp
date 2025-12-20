@@ -203,7 +203,7 @@ public:
     
     void flashScreen(int plyr, int delay_ms) override;  // Note milliseconds not microseconds
 
-    void gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) override;
+    void gameMsgLoc(int plyr, const LocalMsg &msg, bool is_err) override;
 
     void popUpWindow(const std::vector<TutorialWindow> &windows) override;
     void onElimination(int) override { }

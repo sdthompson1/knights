@@ -38,6 +38,9 @@ namespace Coercri {
     class UTF8String;
 }
 
+struct lua_State;
+
+
 // A localization string key
 class LocalKey {
 public:
@@ -63,6 +66,7 @@ namespace std {
         }
     };
 }
+
 
 // Flexible parameter: can be a LocalKey, a PlayerID, or an arbitrary string
 class LocalParam {
@@ -97,6 +101,29 @@ private:
 };
 
 
+// A LocalMsg is a combination of LocalKey, LocalParams and optional count (for plurals)
+struct LocalMsg {
+    LocalKey key;
+    std::vector<LocalParam> params;
+    int count = -1;  // see Localization::pluralize
+
+    bool operator==(const LocalMsg &other) const {
+        return key == other.key && count == other.count && params == other.params;
+    }
+    bool operator!=(const LocalMsg &other) const {
+        return !(*this == other);
+    }
+};
+
+// Pop a LocalMsg from the top of the Lua stack.
+// If top of stack is a string, it represents a plain LocalKey.
+// If it is a table, it has fields "key", "params" and "plural".
+//  - Params are either strings (which represent LocalKeys) or integers.
+//  - Plural is optional - if nil it defaults to -1.
+// Any error with the format throws a lua error.
+LocalMsg PopLocalMsgFromLua(lua_State *state);
+
+
 // Localization string lookup class
 class Localization {
 public:
@@ -128,6 +155,11 @@ public:
     // Pluralize key by appending [one], [other] or a similar string
     // (If count < 0, this returns the key unchanged)
     LocalKey pluralize(const LocalKey &key, int count) const;
+
+    // Convenience function: Get a message using a LocalMsg struct
+    Coercri::UTF8String get(const LocalMsg &msg) const {
+        return get(pluralize(msg.key, msg.count), msg.params);
+    }
 
 private:
     static Coercri::UTF8String substituteParameters(const Coercri::UTF8String& template_str, const std::vector<Coercri::UTF8String>& params);

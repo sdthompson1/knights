@@ -50,13 +50,11 @@ void VMLoadingScreen::Loader::operator()()
         vm_knights_lobby = std::make_unique<VMKnightsLobby>(net_driver, timer, local_user_id, new_control_system);
 
     } catch (ExceptionBase &e) {
-        error_key = e.getKey();
-        error_params = e.getParams();
+        error_msg = e.getMsg();
     } catch (std::exception &e) {
-        error_key = LocalKey("cxx_error_is");
-        error_params = std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what())));
+        error_msg = {LocalKey("cxx_error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what()))}};
     } catch (...) {
-        error_key = LocalKey("unknown_error");
+        error_msg = {LocalKey("unknown_error")};
     }
 }
 
@@ -103,8 +101,8 @@ void VMLoadingScreen::update()
         return;
     }
 
-    if (loader->error_key != LocalKey()) {
-        UTF8String msg = knights_app->getLocalization().get(loader->error_key, loader->error_params);
+    if (loader->error_msg.key != LocalKey()) {
+        UTF8String msg = knights_app->getLocalization().get(loader->error_msg);
         std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
         knights_app->requestScreenChange(std::move(error_screen));
         return;

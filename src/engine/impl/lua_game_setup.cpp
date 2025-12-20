@@ -719,8 +719,8 @@ LuaStartupSentinel::~LuaStartupSentinel()
 }
 
 
-void GameStartupMsg(lua_State *lua, const LocalKey &key, const std::vector<LocalParam> &params)
+void GameStartupMsg(lua_State *lua, const LocalMsg &msg)
 {
     KnightsEngine &ke = GetKnightsEngine(lua);
-    ke.gameStartupMsg(key, params);
+    ke.gameStartupMsg(msg);
 }

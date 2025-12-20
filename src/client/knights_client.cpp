@@ -151,11 +151,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
            
         case SERVER_ERROR:
             {
-                LocalKey key;
-                int plural;  // not used for error messages
-                std::vector<LocalParam> params;
-                ReadLocalKeyAndParams(buf, key, plural, params, pimpl->allow_untrusted_strings);
-                if (client_cb) client_cb->serverError(key, params);
+                LocalMsg msg;
+                ReadLocalMsg(buf, msg, pimpl->allow_untrusted_strings);
+                if (client_cb) client_cb->serverError(msg);
             }
             break;
 
@@ -257,12 +255,12 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_QUEST_DESCRIPTION:
             {
-                std::vector<Paragraph> paragraphs;
+                std::vector<LocalMsg> paragraphs;
                 int num_para = buf.readUbyte();
                 for (int i = 0; i < num_para; ++i) {
-                    Paragraph p;
-                    ReadLocalKeyAndParams(buf, p.key, p.plural, p.params, pimpl->allow_untrusted_strings);
-                    paragraphs.push_back(p);
+                    LocalMsg paragraph;
+                    ReadLocalMsg(buf, paragraph, pimpl->allow_untrusted_strings);
+                    paragraphs.push_back(paragraph);
                 }
                 if (client_cb) client_cb->setQuestDescription(paragraphs);
             }
@@ -324,7 +322,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 #endif
 
                 if (knights_cb) knights_cb->goIntoObserverMode(pimpl->ndisplays, player_ids);
-                if (client_cb) client_cb->announcementLoc(LocalKey("you_are_eliminated"), std::vector<LocalParam>(), false);
+                if (client_cb) client_cb->announcementLoc(LocalMsg{LocalKey("you_are_eliminated")}, false);
             }
             break;
 
@@ -420,11 +418,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_ANNOUNCEMENT_LOC:
             {
-                LocalKey key;
-                int plural;   // ignored for this message
-                std::vector<LocalParam> params;
-                ReadLocalKeyAndParams(buf, key, plural, params, pimpl->allow_untrusted_strings);
-                if (client_cb) client_cb->announcementLoc(key, params, pimpl->next_announcement_is_error);
+                LocalMsg msg;
+                ReadLocalMsg(buf, msg, pimpl->allow_untrusted_strings);
+                if (client_cb) client_cb->announcementLoc(msg, pimpl->next_announcement_is_error);
                 pimpl->next_announcement_is_error = false;
             }
             break;

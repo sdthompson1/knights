@@ -182,10 +182,8 @@ bool CoroutineTask::doExec(TaskManager &tm)
             err += LuaTraceback(thread);
             lua_settop(thread, 0);  // clear its stack
 
-            LocalKey key("lua_error_is");
-            std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(err)));
-
-            mediator.getCallbacks().gameMsgLoc(-1, key, params, true); // display the error message
+            LocalMsg msg{LocalKey("lua_error_is"), {LocalParam(UTF8String::fromUTF8Safe(err))}};
+            mediator.getCallbacks().gameMsgLoc(-1, msg, true); // display the error message
             return false;
         }
     }

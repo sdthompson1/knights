@@ -167,8 +167,7 @@ public:
 
     // used during game startup
     volatile bool startup_signal;
-    LocalKey startup_err_key;
-    std::vector<LocalParam> startup_err_params;
+    LocalMsg startup_err;
 
     // Condition variable used to wake up the update thread when a control comes in
     // (instead of polling, like it used to do).
@@ -223,7 +222,7 @@ namespace {
         msg = Coercri::UTF8String::fromUTF8(msg_orig.substr(idx));
     }
 
-    void Announcement(KnightsGameImpl &kg, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err = false)
+    void Announcement(KnightsGameImpl &kg, const LocalMsg &msg, bool is_err = false)
     {
         for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
@@ -235,17 +234,17 @@ namespace {
             }
 
             buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
-            WriteLocalKeyAndParams(buf, key, -1, params);
+            WriteLocalMsg(buf, msg);
         }
     }
 
-    void SendMessages(game_conn_vector &conns, const std::vector<std::pair<LocalKey, std::vector<LocalParam>>> &messages)
+    void SendMessages(game_conn_vector &conns, const std::vector<LocalMsg> &messages)
     {
         for (game_conn_vector::const_iterator it = conns.begin(); it != conns.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
             for (const auto &msg : messages) {
                 buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
-                WriteLocalKeyAndParams(buf, msg.first, -1, msg.second);
+                WriteLocalMsg(buf, msg);
             }
         }
     }
@@ -598,7 +597,7 @@ namespace {
                 nplayers = player_ids.size();
 
                 // Create the KnightsEngine. Pass any messages back to the players
-                std::vector<std::pair<LocalKey, std::vector<LocalParam>>> messages;
+                std::vector<LocalMsg> messages;
                 try {
                     engine.reset(new KnightsEngine(kg.knights_config, hse_cols, player_ids,
                                                    kg.deathmatch_mode,  // output from KnightsEngine
@@ -613,8 +612,7 @@ namespace {
 
                     SendMessages(kg.connections, messages);
 
-                    kg.startup_err_key = e.getKey();
-                    kg.startup_err_params = e.getParams();
+                    kg.startup_err = e.getMsg();
 
                     kg.update_thread_wants_to_exit = true;
 #ifdef VIRTUAL_SERVER
@@ -626,8 +624,7 @@ namespace {
 
                     SendMessages(kg.connections, messages);
 
-                    kg.startup_err_key = LocalKey("cxx_error_is");
-                    kg.startup_err_params = std::vector<LocalParam>(1, LocalParam(UTF8String::fromUTF8Safe(e.what())));
+                    kg.startup_err = {LocalKey("cxx_error_is"), {LocalParam(UTF8String::fromUTF8Safe(e.what()))}};
 
                     kg.update_thread_wants_to_exit = true;
 #ifdef VIRTUAL_SERVER
@@ -683,10 +680,10 @@ namespace {
                     // Send the team chat notification (but only if more than 1 player on the team; #151)
                     for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                         Coercri::OutputByteBuf buf((*it)->output_data);
-                        
+
                         if (!(*it)->obs_flag && team_counts[(*it)->house_colour] > 1) {
                             buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
-                            WriteLocalKeyAndParams(buf, LocalKey("team_chat_avail"), -1, std::vector<LocalParam>());
+                            WriteLocalMsg(buf, LocalMsg{LocalKey("team_chat_avail")});
                         }
                     }
                 }
@@ -703,11 +700,10 @@ namespace {
                 kg.emergency_exit = true;
                 kg.emergency_err_msg = e.what();
                 std::string msg = e.what();
-                sendError(LocalKey("lua_error_is"),
-                          std::vector<LocalParam>(1, LocalParam(UTF8String::fromUTF8Safe(msg))));
-                
+                sendError(LocalMsg{LocalKey("lua_error_is"), {LocalParam(UTF8String::fromUTF8Safe(msg))}});
+
             } catch (...) {
-                sendError(LocalKey("unknown_error"), std::vector<LocalParam>());
+                sendError(LocalMsg{LocalKey("unknown_error")});
             }
 
             // Before we go, delete the KnightsEngine. This will make sure that the Mediator
@@ -724,7 +720,7 @@ namespace {
 #endif
         }
 
-        void sendError(LocalKey key, std::vector<LocalParam> params)
+        void sendError(const LocalMsg &msg)
         {
             try {
                 // send error to all players connected to this game.
@@ -734,11 +730,11 @@ namespace {
                 for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                     Coercri::OutputByteBuf buf((*it)->output_data);
                     buf.writeUbyte(SERVER_ERROR);
-                    WriteLocalKeyAndParams(buf, key, -1, params);
+                    WriteLocalMsg(buf, msg);
                 }
                 // log the error as well.
                 if (kg.knights_log) {
-                    kg.knights_log->logMessage(kg.game_name + "\tError in update thread\t" + key.getKey());
+                    kg.knights_log->logMessage(kg.game_name + "\tError in update thread\t" + msg.key.getKey());
                 }
             } catch (...) {
                 // Disregard any exceptions here, as we don't want them to propagate up into the
@@ -1294,10 +1290,9 @@ namespace {
         bool ready_to_start = (nready == nplayers && nplayers >= 1);
 
         // Don't start if there are insufficient players for the current quest
-        LocalKey nplyrs_err_key;
-        std::vector<LocalParam> nplyrs_err_params;
-        if (ready_to_start && !kg.knights_config->checkNumPlayersStrict(nplyrs_err_key, nplyrs_err_params)) {
-            Announcement(kg, nplyrs_err_key, nplyrs_err_params, true);
+        LocalMsg nplyrs_err_msg;
+        if (ready_to_start && !kg.knights_config->checkNumPlayersStrict(nplyrs_err_msg)) {
+            Announcement(kg, nplyrs_err_msg, true);
             ready_to_start = false;
         }
 
@@ -1327,8 +1322,7 @@ namespace {
             kg.emergency_exit = false;
             kg.emergency_err_msg.clear();
             kg.startup_signal = false;
-            kg.startup_err_key = LocalKey();
-            kg.startup_err_params.clear();
+            kg.startup_err = {};
 
 #ifdef VIRTUAL_SERVER
             kg.update_thread.reset(new UpdateThread(kg, kg.timer));
@@ -1364,8 +1358,8 @@ namespace {
                         throw LuaError("Fatal Lua error during startup: " + kg.emergency_err_msg);
                     }
 
-                    if (kg.startup_err_key == LocalKey()) {
-                        kg.startup_err_key = LocalKey("update_thread_failed");
+                    if (kg.startup_err.key == LocalKey()) {
+                        kg.startup_err = {LocalKey("update_thread_failed")};
                     }
 
                     break;
@@ -1394,15 +1388,15 @@ namespace {
             
             // If the game failed to initialize then print a message and refuse to start the game.
             // Otherwise, send startup message to all players.
-            const LocalKey err_key = kg.startup_err_key;
-            if (err_key != LocalKey()) {
+            const LocalMsg err_msg = kg.startup_err;
+            if (err_msg.key != LocalKey()) {
 
-                Announcement(kg, LocalKey("couldnt_start_game"), std::vector<LocalParam>(), false);
-                Announcement(kg, err_key, kg.startup_err_params, true);
+                Announcement(kg, LocalMsg{LocalKey("couldnt_start_game")}, false);
+                Announcement(kg, err_msg, true);
 
                 // log the error as well
                 if (kg.knights_log) {
-                    kg.knights_log->logMessage(kg.game_name + "\tError starting game\t" + err_key.getKey());
+                    kg.knights_log->logMessage(kg.game_name + "\tError starting game\t" + err_msg.key.getKey());
                 }
 
 #ifdef VIRTUAL_SERVER
@@ -1963,22 +1957,22 @@ void KnightsGame::setMenuSelection(GameConnection &conn, int item_num, int choic
         // send announcement to all players
         const MenuItem & item = pimpl->knights_config->getMenu().getItem(item_num);
 
-        std::vector<LocalParam> params;
-        params.push_back(LocalParam(conn.id1));
-        params.push_back(LocalParam(item.getTitleKey()));
+        LocalMsg msg{LocalKey("player_set_menu")};
+        msg.params.push_back(LocalParam(conn.id1));
+        msg.params.push_back(LocalParam(item.getTitleKey()));
 
         if (item.isNumeric()) {
-            params.push_back(LocalParam(choice_num));
+            msg.params.push_back(LocalParam(choice_num));
         } else {
             const LocalKeyOrInteger &lki = item.getChoice(choice_num);
             if (lki.is_integer) {
-                params.push_back(LocalParam(lki.integer));
+                msg.params.push_back(LocalParam(lki.integer));
             } else {
-                params.push_back(LocalParam(lki.local_key));
+                msg.params.push_back(LocalParam(lki.local_key));
             }
         }
 
-        Announcement(*pimpl, LocalKey("player_set_menu"), params);
+        Announcement(*pimpl, msg);
 
         // deactivate all ready flags
         DeactivateReadyFlags(*pimpl);
@@ -2005,9 +1999,8 @@ void KnightsGame::randomQuest(GameConnection &conn)
     pimpl->knights_config->randomQuest(listener);
 
     // send announcement to all players
-    std::vector<LocalParam> params;
-    params.push_back(LocalParam(conn.id1));
-    Announcement(*pimpl, LocalKey("player_set_random"), params);
+    LocalMsg msg{LocalKey("player_set_random"), {LocalParam(conn.id1)}};
+    Announcement(*pimpl, msg);
 
     // deactivate all ready flags
     DeactivateReadyFlags(*pimpl);
@@ -2131,7 +2124,7 @@ void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
 #endif
         Coercri::OutputByteBuf buf(conn.output_data);
         buf.writeUbyte(SERVER_ANNOUNCEMENT_LOC);
-        WriteLocalKeyAndParams(buf, LocalKey("cant_change_obs"), -1, std::vector<LocalParam>());
+        WriteLocalMsg(buf, LocalMsg{LocalKey("cant_change_obs")});
         return;
     }
 

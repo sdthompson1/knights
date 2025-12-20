@@ -29,7 +29,7 @@
 #ifndef MENU_LISTENER_HPP
 #define MENU_LISTENER_HPP
 
-#include "paragraph.hpp"
+#include "localization.hpp"
 
 #include <string>
 #include <vector>
@@ -42,7 +42,7 @@ public:
                                 const char *choice_string,
                                 const std::vector<int> &allowed_choices) = 0;
 
-    virtual void questDescriptionChanged(const std::vector<Paragraph> &new_description) { }
+    virtual void questDescriptionChanged(const std::vector<LocalMsg> &new_description) { }
 };
 
 #endif

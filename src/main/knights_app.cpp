@@ -1006,7 +1006,7 @@ void KnightsApp::runKnights()
             // These are big and better displayed on stdout than in a guichan dialog box:
             throw;
         } catch (ExceptionBase &e) {
-            error = getLocalization().get(e.getKey(), e.getParams());
+            error = getLocalization().get(e.getMsg());
         } catch (std::exception &e) {
             std::vector<LocalParam> params(1, LocalParam(UTF8String::fromUTF8Safe(e.what())));
             error = getLocalization().get(LocalKey("cxx_error_is"), params);

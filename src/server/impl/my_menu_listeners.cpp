@@ -49,7 +49,7 @@ void MyMenuListener::settingChanged(int item_num, const char *,
     }
 }
 
-void MyMenuListener::questDescriptionChanged(const std::vector<Paragraph> &paragraphs)
+void MyMenuListener::questDescriptionChanged(const std::vector<LocalMsg> &paragraphs)
 {
     for (std::vector<Coercri::OutputByteBuf>::iterator bit = bufs.begin(); bit != bufs.end(); ++bit) {
         Coercri::OutputByteBuf &buf = *bit;
@@ -58,8 +58,8 @@ void MyMenuListener::questDescriptionChanged(const std::vector<Paragraph> &parag
             throw ProtocolError(LocalKey("message_too_long"));
         }
         buf.writeUbyte(paragraphs.size());
-        for (const Paragraph &p : paragraphs) {
-            WriteLocalKeyAndParams(buf, p.key, p.plural, p.params);
+        for (const LocalMsg &p : paragraphs) {
+            WriteLocalMsg(buf, p);
         }
     }
 }

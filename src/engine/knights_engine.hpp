@@ -72,7 +72,7 @@ public:
                   const std::vector<int> &hse_cols,
                   const std::vector<PlayerID> &player_ids,
                   bool &deathmatch_mode,   // output.
-                  std::vector<std::pair<LocalKey, std::vector<LocalParam>>> &msgs);  // output.
+                  std::vector<LocalMsg> &msgs);  // output.
     ~KnightsEngine();
 
     // Run one update step (for a given time).
@@ -114,7 +114,7 @@ public:
 
     void resetMap();
     void setPremapped(bool);
-    void gameStartupMsg(const LocalKey &key, const std::vector<LocalParam> &params);
+    void gameStartupMsg(const LocalMsg &msg);
     void addStartingGear(ItemType *, const std::vector<int> &);
     void setItemRespawn(const std::vector<ItemType*> &items_to_respawn, int respawn_delay);
     void setLockpickSpawn(ItemType *lockpicks, int init_time, int interval);

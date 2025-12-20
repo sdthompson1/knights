@@ -439,7 +439,7 @@ public:
     const Menu *menu;
     std::vector<MenuWidgets> menu_widgets_map;  // item_num -> MenuWidgets
     std::vector<MenuChoices> menu_choices;      // item_num -> MenuChoices
-    std::vector<Paragraph> quest_description;
+    std::vector<LocalMsg> quest_description;
     bool gui_invalid;
     bool are_menu_widgets_enabled;
 
@@ -881,11 +881,11 @@ void GameManager::connectionFailed()
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
 
-void GameManager::serverError(const LocalKey &error, const std::vector<LocalParam> &params)
+void GameManager::serverError(const LocalMsg &error)
 {
     // Go to ErrorScreen
     const Localization &loc = pimpl->knights_app.getLocalization();
-    UTF8String msg = loc.get(error, params);
+    UTF8String msg = loc.get(error);
     std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
     pimpl->knights_app.requestScreenChange(std::move(error_screen));
 }
@@ -1313,7 +1313,7 @@ LocalKey GameManager::getQuestMessageCode() const
     return LocalKey("none");
 }
 
-void GameManager::setQuestDescription(const std::vector<Paragraph> &paragraphs)
+void GameManager::setQuestDescription(const std::vector<LocalMsg> &paragraphs)
 {
     pimpl->quest_description = paragraphs;
     pimpl->gui_invalid = true;
@@ -1324,10 +1324,9 @@ UTF8String GameManager::getQuestDescription() const
     const Localization &loc = pimpl->knights_app.getLocalization();
 
     UTF8String result;
-    for (const Paragraph &p : pimpl->quest_description) {
+    for (const LocalMsg &paragraph : pimpl->quest_description) {
         if (!result.empty()) result += UTF8String::fromUTF8("\n\n");
-        LocalKey key = loc.pluralize(p.key, p.plural);
-        result += loc.get(key, p.params);
+        result += loc.get(paragraph);
     }
 
     return result;
@@ -1540,12 +1539,12 @@ void GameManager::chat(const PlayerID &whofrom, bool observer, bool team, const 
     pimpl->gui_invalid = true;
 }
 
-void GameManager::announcementLoc(const LocalKey &key, const std::vector<LocalParam> &params, bool err)
+void GameManager::announcementLoc(const LocalMsg &msg, bool err)
 {
     const Localization &loc = pimpl->knights_app.getLocalization();
-    Coercri::UTF8String msg = loc.get(key, params);
+    Coercri::UTF8String msg_str = loc.get(msg);
 
-    std::string msg_latin1 = msg.asLatin1();
+    std::string msg_latin1 = msg_str.asLatin1();
 
     pimpl->chat_list.add(msg_latin1);
     pimpl->gui_invalid = true;
@@ -1553,7 +1552,7 @@ void GameManager::announcementLoc(const LocalKey &key, const std::vector<LocalPa
     if (err && pimpl->single_player && !pimpl->game_in_progress) {
         // This is needed because there is no way to display error messages on the
         // quest selection screen in single player mode
-        throw ExceptionBase(key, params);
+        throw ExceptionBase(msg);
     }
 }
 

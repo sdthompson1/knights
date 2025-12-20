@@ -40,16 +40,16 @@ function describe_mission(S)
 
     elseif S.mission == "destroy_book" then
         if S.gems_needed > 0 then
-            return {"desc_destroy_book_gems", S.gems_needed, S.num_gems}
+            return {key="desc_destroy_book_gems", params={S.gems_needed, S.num_gems}}
         else
             return "desc_destroy_book"
         end
 
     elseif S.mission == "escape" then
         if S.gems_needed > 0 then
-            return {"desc_escape_gems", describe_exit_point(S), S.gems_needed, S.num_gems}
+            return {key="desc_escape_gems", params={describe_exit_point(S), S.gems_needed, S.num_gems}}
         else
-            return {"desc_escape", describe_exit_point(S)}
+            return {key="desc_escape", params={describe_exit_point(S)}}
         end
 
     else
@@ -60,9 +60,11 @@ function describe_mission(S)
             what = "desc_wand"
         end
         if S.gems_needed > 0 then
-            return {"desc_retrieve_gems", what, describe_exit_point(S), S.gems_needed, S.num_gems}
+            return {key="desc_retrieve_gems",
+                    params={what, describe_exit_point(S), S.gems_needed, S.num_gems}}
         else
-            return {"desc_retrieve", what, describe_exit_point(S)}
+            return {key="desc_retrieve",
+                    params={what, describe_exit_point(S)}}
         end
     end
 end
@@ -70,15 +72,17 @@ end
 function describe_time(S)
     if S.time > 0 then
         if S.mission == "deathmatch" then
-            return {"desc_game_last_for", S.time, plural=S.time}
+            return {key="desc_game_last_for", params={S.time}, plural=S.time}
         else
-            return {"desc_complete_within", S.time, plural=S.time}
+            return {key="desc_complete_within", params={S.time}, plural=S.time}
         end
     end
 end
 
 function describe_quest(S)
 
+    -- Result is a list of messages, where each message is either a simple string
+    -- (localization key), or a table with "key", "params" and optionally "plural".
     local result = {}
 
     if S.quest ~= "custom" and quest_table[S.quest].description ~= nil then

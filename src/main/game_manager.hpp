@@ -196,7 +196,7 @@ public:
     
     virtual void connectionLost() override;     // goes to ErrorScreen
     virtual void connectionFailed() override;   // goes to ErrorScreen
-    virtual void serverError(const LocalKey &error, const std::vector<LocalParam> &params) override;  // goes to ErrorScreen
+    virtual void serverError(const LocalMsg &error) override;  // goes to ErrorScreen
     virtual void connectionAccepted(int server_version) override;   // goes to LobbyScreen
     
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
@@ -224,7 +224,7 @@ public:
     
     virtual void leaveGame();     // goes to lobby
     virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals) override;
-    virtual void setQuestDescription(const std::vector<Paragraph> &quest_descr) override;
+    virtual void setQuestDescription(const std::vector<LocalMsg> &quest_descr) override;
     virtual void startGame(int ndisplays, bool deathmatch_mode,
                            const std::vector<PlayerID> &player_ids, bool already_started) override;  // goes to InGameScreen
     virtual void gotoMenu() override;     // goes to MenuScreen
@@ -239,7 +239,7 @@ public:
     virtual void setObsFlag(const PlayerID &id, bool new_obs_flag) override;
     
     virtual void chat(const PlayerID &id, bool observer, bool team, const Coercri::UTF8String &msg) override;
-    virtual void announcementLoc(const LocalKey &key, const std::vector<LocalParam> &params, bool err) override;
+    virtual void announcementLoc(const LocalMsg &msg, bool err) override;
 
 
 private:

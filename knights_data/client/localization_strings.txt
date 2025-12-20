@@ -57,8 +57,8 @@ player_eliminated_num   Player {0} has been eliminated. {1} players are left.
 you_are_eliminated      ** You have been eliminated from this game. You are now in observer mode. Use arrow keys (left/right and up/down) to switch between players.
 time_expired            Time limit expired! All players lose!
 all_lose                All players lose!
-is_winner               {0} is the winner!
-are_winners             {0...} are the winners!
+is_winner[one]          {0} is the winner!
+is_winner[other]        {0...} are the winners!
 game_completed          Game completed in {0}m {1}s.
 x_disconnected          {0} (Disconnected)
 

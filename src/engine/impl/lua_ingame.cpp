@@ -634,8 +634,7 @@ namespace {
             }
             
             // print the message
-            std::vector<LocalParam> params(1, LocalParam(BuildMsg(lua, start)));
-            med.gameMsgLoc(player_num, LocalKey("raw_msg"), params);
+            med.gameMsgLoc(player_num, LocalMsg{LocalKey("raw_msg"), {LocalParam(BuildMsg(lua, start))}});
 
         } catch (MediatorUnavailable&) {
             // print it to stdout instead

@@ -80,7 +80,7 @@ public:
 
     virtual void flashScreen(int plyr, int delay) override;
 
-    virtual void gameMsgLoc(int plyr_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err) override;
+    virtual void gameMsgLoc(int plyr_num, const LocalMsg &msg, bool is_err) override;
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows) override;
 
     virtual void onElimination(int player_num) override;

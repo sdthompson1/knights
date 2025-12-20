@@ -51,9 +51,8 @@ private:
     struct Loader {
         explicit Loader(const std::string & config_filename, bool menu_strict_);
         void operator()();
-        
-        LocalKey error_key;
-        std::vector<LocalParam> error_params;
+
+        LocalMsg error_msg;
         std::unique_ptr<LuaError> lua_error;
 
         std::string knights_config_filename;

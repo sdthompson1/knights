@@ -39,8 +39,7 @@
 #include <vector>
 
 class DungeonView;
-class LocalKey;
-class LocalParam;
+struct LocalMsg;
 class MiniMap;
 class Sound;
 class StatusDisplay;
@@ -86,9 +85,9 @@ public:
 
     // GameMsg -- a message to be sent to a particular player.
     // NOTE: If player_num < 0 then the message will be broadcast to all players.
-    // (If is_err is set, the total no of msgs will be limited to 100 per game. Used 
+    // (If is_err is set, the total no of msgs will be limited to 100 per game. Used
     // for Lua errors.)
-    virtual void gameMsgLoc(int player_num, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err = false) = 0;
+    virtual void gameMsgLoc(int player_num, const LocalMsg &msg, bool is_err = false) = 0;
 
     // Tutorial pop-up windows
     virtual void popUpWindow(const std::vector<TutorialWindow> &windows) = 0;

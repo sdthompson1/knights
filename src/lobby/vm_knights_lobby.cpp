@@ -96,8 +96,7 @@ struct VMKnightsLobbyImpl {
     boost::mutex mutex;
     boost::thread background_thread;
     bool exit_flag;
-    LocalKey error_key;
-    std::vector<LocalParam> error_params;
+    LocalMsg error_msg;
 
     // refs
     Coercri::NetworkDriver &net_driver;
@@ -248,8 +247,8 @@ void VMKnightsLobby::readIncomingMessages(KnightsClient &client)
         }
 
         // Check if thread has closed
-        if (pimpl->error_key != LocalKey()) {
-            throw ExceptionBase(pimpl->error_key, pimpl->error_params);
+        if (pimpl->error_msg.key != LocalKey()) {
+            throw ExceptionBase(pimpl->error_msg);
         }
     }
 
@@ -396,17 +395,15 @@ void VMKnightsLobbyThread::operator()()
 
     } catch (ExceptionBase &e) {
         boost::unique_lock<boost::mutex> lock(impl.mutex);
-        impl.error_key = e.getKey();
-        impl.error_params = e.getParams();
+        impl.error_msg = e.getMsg();
 
     } catch (const std::exception &e) {
         boost::unique_lock<boost::mutex> lock(impl.mutex);
-        impl.error_key = LocalKey("cxx_error_is");
-        impl.error_params = std::vector<LocalParam>(1, LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what())));
+        impl.error_msg = {LocalKey("cxx_error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what()))}};
 
     } catch (...) {
         boost::unique_lock<boost::mutex> lock(impl.mutex);
-        impl.error_key = LocalKey("unknown_error");
+        impl.error_msg = {LocalKey("unknown_error")};
     }
 }
 

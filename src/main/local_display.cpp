@@ -1915,10 +1915,10 @@ void LocalDisplay::flashScreen(int plyr, int delay_ms)
     }
 }
 
-void LocalDisplay::gameMsgLoc(int plyr, const LocalKey &key, const std::vector<LocalParam> &params, bool is_err)
+void LocalDisplay::gameMsgLoc(int plyr, const LocalMsg &msg, bool is_err)
 {
-    const Coercri::UTF8String msg = localization.get(key, params);
-    chat_list.add(msg.asLatin1());  // chat_list only supports latin1 encoding for now
+    const Coercri::UTF8String msg_str = localization.get(msg);
+    chat_list.add(msg_str.asLatin1());  // chat_list only supports latin1 encoding for now
 }
 
 void LocalDisplay::popUpWindow(const std::vector<TutorialWindow> &windows)

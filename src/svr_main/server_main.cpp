@@ -156,8 +156,8 @@ void KnightsConfigLoader::operator ()()
         // localization available, so just concatenate all the strings
         // as best we can!
 
-        err_msg = e.getKey().getKey();
-        for (const LocalParam &param : e.getParams()) {
+        err_msg = e.getMsg().key.getKey();
+        for (const LocalParam &param : e.getMsg().params) {
             err_msg += " : ";
             switch (param.getType()) {
             case LocalParam::Type::LOCAL_KEY:

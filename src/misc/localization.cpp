@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "include_lua.hpp"
 #include "localization.hpp"
 #include "player_id.hpp"
 
@@ -52,6 +53,78 @@ bool LocalParam::operator==(const LocalParam &other) const
 bool LocalParam::operator!=(const LocalParam &other) const
 {
     return !(*this == other);
+}
+
+LocalMsg PopLocalMsgFromLua(lua_State *lua)
+{
+    LocalMsg msg;
+
+    if (lua_isstring(lua, -1)) {
+        // Found a plain string key
+        msg.key = LocalKey(lua_tostring(lua, -1));
+        lua_pop(lua, 1);
+        return msg;
+    }
+
+    if (!lua_istable(lua, -1)) {
+        lua_pushstring(lua, "incorrect message format: should be string or table");
+        lua_error(lua);
+    }
+
+    // Read the key
+    lua_getfield(lua, -1, "key");
+    if (!lua_isstring(lua, -1)) {
+        lua_pushstring(lua, "message table must have a string 'key' field");
+        lua_error(lua);
+    }
+    msg.key = LocalKey(lua_tostring(lua, -1));
+    lua_pop(lua, 1);
+
+    // Read the params
+    lua_getfield(lua, -1, "params");
+    if (!lua_isnil(lua, -1)) {
+        if (!lua_istable(lua, -1)) {
+            lua_pushstring(lua, "message 'params' field must be a table");
+            lua_error(lua);
+        }
+
+        lua_len(lua, -1);
+        size_t len = lua_tointeger(lua, -1);
+        lua_pop(lua, 1);
+
+        for (size_t i = 1; i <= len; ++i) {
+            lua_pushinteger(lua, i);
+            lua_gettable(lua, -2);
+
+            if (lua_isnumber(lua, -1)) {
+                msg.params.push_back(LocalParam(static_cast<int>(lua_tointeger(lua, -1))));
+            } else if (lua_isstring(lua, -1)) {
+                msg.params.push_back(LocalParam(LocalKey(lua_tostring(lua, -1))));
+            } else {
+                lua_pushstring(lua, "message params must be strings or integers");
+                lua_error(lua);
+            }
+
+            lua_pop(lua, 1);
+        }
+    }
+    lua_pop(lua, 1);
+
+    // Read the plural value, if present
+    lua_getfield(lua, -1, "plural");
+    if (!lua_isnil(lua, -1)) {
+        if (!lua_isnumber(lua, -1)) {
+            lua_pushstring(lua, "message 'plural' field must be a number");
+            lua_error(lua);
+        }
+        msg.count = static_cast<int>(lua_tointeger(lua, -1));
+    }
+    lua_pop(lua, 1);
+
+    // Pop the table itself
+    lua_pop(lua, 1);
+
+    return msg;
 }
 
 void Localization::readStrings(std::istream &file)

@@ -29,20 +29,10 @@ namespace Coercri {
     class OutputByteBuf;
 }
 
-class LocalKey;
-class LocalParam;
+struct LocalMsg;
 
-#include <vector>
+void WriteLocalMsg(Coercri::OutputByteBuf &buf, const LocalMsg &msg);
 
-void WriteLocalKeyAndParams(Coercri::OutputByteBuf &buf,
-                            const LocalKey &key,
-                            int plural,
-                            const std::vector<LocalParam> &params);
-
-void ReadLocalKeyAndParams(Coercri::InputByteBuf &buf,
-                           LocalKey &key,
-                           int &plural,
-                           std::vector<LocalParam> &params,
-                           bool allow_untrusted_strings);
+void ReadLocalMsg(Coercri::InputByteBuf &buf, LocalMsg &msg, bool allow_untrusted_strings);
 
 #endif

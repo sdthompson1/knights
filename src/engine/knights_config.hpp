@@ -60,8 +60,7 @@ class HomeManager;
 class ItemType;
 class KnightsConfigImpl;
 class KnightsEngine;
-class LocalKey;
-class LocalParam;
+struct LocalMsg;
 class Menu;
 class MenuListener;
 class MonsterManager;
@@ -115,7 +114,7 @@ public:
     void changeNumberOfPlayers(int nplayers, int nteams, MenuListener &listener);
 
     // check whether the game can be started under strict interpretation of no. of players constraints
-    bool checkNumPlayersStrict(LocalKey &err_key, std::vector<LocalParam> &err_params) const;
+    bool checkNumPlayersStrict(LocalMsg &err_msg) const;
 
     // call when all players have left game. resets settings to defaults.
     void resetMenu();

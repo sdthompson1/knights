@@ -180,7 +180,7 @@ int main(int argc, char * argv[])
 #ifdef CATCH_EXCEPTIONS
     } catch (ExceptionBase &e) {
         err_msg = "ERROR:\n";
-        err_msg += localization.get(e.getKey(), e.getParams()).asUTF8();
+        err_msg += localization.get(e.getMsg()).asUTF8();
 
     } catch (std::exception &e) {
         err_msg = "ERROR: Caught exception:\n";
