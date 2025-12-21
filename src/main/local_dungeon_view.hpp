@@ -95,7 +95,7 @@ public:
 
     void flashMessage(const LocalMsg &msg, int ntimes) override;
     void cancelContinuousMessages() override;
-    void addContinuousMessage(const std::string &msg) override;
+    void addContinuousMessage(const LocalMsg &msg) override;
 
 private:
     // config map
@@ -161,7 +161,7 @@ private:
         int stop_time_ms;
     };
     std::deque<Message> messages;  // sorted by start_time
-    std::vector<UTF8String> cts_messages;
+    std::vector<LocalMsg> cts_messages;
     int last_mtime_ms;
 
     // gfx buffer

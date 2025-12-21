@@ -768,7 +768,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_ADD_CONTINUOUS_MESSAGE:
             {
-                const std::string msg = buf.readString();
+                LocalMsg msg;
+                ReadLocalMsg(buf, msg, pimpl->allow_untrusted_strings);
                 if (dungeon_view) dungeon_view->addContinuousMessage(msg);
             }
             break;

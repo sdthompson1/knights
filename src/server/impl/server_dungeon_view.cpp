@@ -320,9 +320,9 @@ void ServerDungeonView::cancelContinuousMessages()
     buf.writeUbyte(SERVER_CANCEL_CONTINUOUS_MESSAGES);
 }
 
-void ServerDungeonView::addContinuousMessage(const std::string &msg)
+void ServerDungeonView::addContinuousMessage(const LocalMsg &msg)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_ADD_CONTINUOUS_MESSAGE);
-    buf.writeString(msg);
+    WriteLocalMsg(buf, msg);
 }

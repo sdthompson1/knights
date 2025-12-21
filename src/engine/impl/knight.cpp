@@ -29,6 +29,7 @@
 #include "healing_task.hpp"
 #include "item.hpp"
 #include "knight.hpp"
+#include "localization.hpp"
 #include "mediator.hpp"
 #include "player.hpp"
 #include "status_display.hpp"
@@ -180,7 +181,7 @@ void Knight::resetMagic()
     // Set the cts message, if paralyzed.
     getPlayer()->getDungeonView().cancelContinuousMessages();
     if (current_potion == PARALYZATION) {
-        getPlayer()->getDungeonView().addContinuousMessage("Paralyzation"); // TODO: Use LocalKey("paralyzation")
+        getPlayer()->getDungeonView().addContinuousMessage(LocalMsg{LocalKey("paralyzation")});
     }
 }
 

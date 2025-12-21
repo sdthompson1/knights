@@ -239,7 +239,7 @@ public:
 
     void flashMessage(const LocalMsg &msg, int ntimes) override { Log("dview: flash msg: %s", msg.key.getKey().c_str()); }
     void cancelContinuousMessages() override { Log("dview: cancel continuous messages"); }
-    void addContinuousMessage(const std::string &msg) override { Log("dview: add cts msg: %s", msg.c_str()); }
+    void addContinuousMessage(const LocalMsg &msg) override { Log("dview: add cts msg: %s", msg.key.getKey().c_str()); }
 };
 
 class TestMiniMap : public MiniMap {

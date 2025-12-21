@@ -207,7 +207,7 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
             if (mphase < messages.size()) {
                 the_msg = localization.get(messages[mphase].message);
             } else {
-                the_msg = cts_messages[mphase - messages.size()];
+                the_msg = localization.get(cts_messages[mphase - messages.size()]);
             }
 
             if (mtime_ms % (msg_on_time_ms + msg_off_time_ms) <= msg_on_time_ms) {
@@ -411,7 +411,7 @@ void LocalDungeonView::cancelContinuousMessages()
     cts_messages.clear();
 }
 
-void LocalDungeonView::addContinuousMessage(const std::string &s_latin1)
+void LocalDungeonView::addContinuousMessage(const LocalMsg &msg)
 {
-    cts_messages.push_back(UTF8String::fromLatin1(s_latin1));
+    cts_messages.push_back(msg);
 }

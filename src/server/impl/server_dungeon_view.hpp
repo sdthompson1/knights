@@ -68,7 +68,7 @@ public:
 
     virtual void flashMessage(const LocalMsg &msg, int ntimes) override;
     virtual void cancelContinuousMessages() override;
-    virtual void addContinuousMessage(const std::string &msg) override;
+    virtual void addContinuousMessage(const LocalMsg &msg) override;
 
 private:
     std::vector<ubyte> &out;

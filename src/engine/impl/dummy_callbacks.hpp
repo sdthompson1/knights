@@ -48,7 +48,7 @@ public:
     virtual void placeIcon(int, int, const Graphic *, int) override { }
     virtual void flashMessage(const LocalMsg&, int) override { }
     virtual void cancelContinuousMessages() override { }
-    virtual void addContinuousMessage(const std::string&) override { }
+    virtual void addContinuousMessage(const LocalMsg&) override { }
 };
 
 class DummyMiniMap : public MiniMap {

@@ -124,7 +124,7 @@ public:
 
     virtual void flashMessage(const LocalMsg &msg, int ntimes) = 0;
     virtual void cancelContinuousMessages() = 0;
-    virtual void addContinuousMessage(const std::string &msg) = 0;
+    virtual void addContinuousMessage(const LocalMsg &msg) = 0;
 };
 
 #endif
