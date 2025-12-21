@@ -30,6 +30,7 @@
 #include "item.hpp"
 #include "knight.hpp"
 #include "knights_callbacks.hpp"
+#include "map_support.hpp"
 #include "mediator.hpp"
 #include "missile.hpp"
 #include "monster.hpp"
@@ -42,366 +43,334 @@
 #include "teleport.hpp"
 #include "tile.hpp"
 
-#ifdef _MSC_VER
-    // fix "bug" with MSVC static libraries and global constructors
-    extern "C" void InitScriptActions()
+#include "include_lua.hpp"
+#include "lua_func_wrapper.hpp"
+#include "lua_userdata.hpp"
+
+namespace {
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int CrystalStart(lua_State *lua)
     {
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        boost::shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        boost::shared_ptr<Knight> kt = boost::dynamic_pointer_cast<Knight>(actor);
+        if (kt) kt->setCrystalBall(true);
+        lua_pop(lua, 2);  // pop cxt and actor
+        return 0;
     }
-#endif
 
-
-//
-// A_ChangeItem
-//
-
-void A_ChangeItem::execute(const ActionData &ad) const
-{
-    DungeonMap *dmap;
-    MapCoord mc;
-    ItemType *old_item;
-    ad.getItem(dmap, mc, old_item);
-    if (!dmap || mc.isNull() || !old_item || !item_type) return;
-    dmap->rmItem(mc);
-    shared_ptr<Item> new_item(new Item(*item_type));
-    dmap->addItem(mc, new_item);
-}
-
-A_ChangeItem::Maker A_ChangeItem::Maker::register_me;
-
-LegacyAction * A_ChangeItem::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_ChangeItem(pars.getItemType(0));
-}
-
-
-
-//
-// A_ChangeTile
-//
-
-void A_ChangeTile::execute(const ActionData &ad) const
-{
-    DungeonMap *dmap;
-    MapCoord mc;
-    shared_ptr<Tile> old_tile;
-    ad.getTile(dmap, mc, old_tile);
-    if (!dmap || !old_tile || !tile) return;
-    dmap->rmTile(mc, old_tile, ad.getOriginator());
-    dmap->addTile(mc, tile->clone(false), ad.getOriginator());
-}
-
-A_ChangeTile::Maker A_ChangeTile::Maker::register_me;
-
-LegacyAction * A_ChangeTile::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_ChangeTile(pars.getTile(0));
-}
-
-
-//
-// A_CrystalStart
-//
-
-void A_CrystalStart::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) kt->setCrystalBall(true);
-}
-
-A_CrystalStart::Maker A_CrystalStart::Maker::register_me;
-
-LegacyAction * A_CrystalStart::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_CrystalStart;
-}
-
-//
-// A_CrystalStop
-//
-
-void A_CrystalStop::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) kt->setCrystalBall(false);
-}
-
-A_CrystalStop::Maker A_CrystalStop::Maker::register_me;
-
-LegacyAction * A_CrystalStop::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_CrystalStop;
-}
-
-//
-// A_Damage
-//
-
-void A_Damage::execute(const ActionData &ad) const
-{
-    // This damages the *actor* (used eg for bear traps)
-    shared_ptr<Creature> cr = ad.getActor();
-    if (cr) {
-        const int stun = stun_time > 0 ? stun_time : 0;
-        cr->damage(amount, ad.getOriginator(), Mediator::instance().getGVT() + stun, inhibit_squelch);
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int CrystalStop(lua_State *lua)
+    {
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        boost::shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        boost::shared_ptr<Knight> kt = boost::dynamic_pointer_cast<Knight>(actor);
+        if (kt) kt->setCrystalBall(false);
+        lua_pop(lua, 2);  // pop cxt and actor
+        return 0;
     }
-}
 
-A_Damage::Maker A_Damage::Maker::register_me;
-
-LegacyAction * A_Damage::Maker::make(ActionPars &pars) const
-{
-    pars.require(2, 3);
-    bool inhibit_squelch = (pars.getSize() == 3 && pars.getInt(2));
-    return new A_Damage(pars.getInt(0), pars.getInt(1), inhibit_squelch);
-}
-
-
-//
-// A_FlashMessage
-//
-
-void A_FlashMessage::execute(const ActionData &ad) const
-{
-    shared_ptr<Creature> actor = ad.getActor();
-    if (actor->getPlayer()) {
-        actor->getPlayer()->getDungeonView().flashMessage(msg, num_times);
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int RevealStart(lua_State *lua)
+    {
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        boost::shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        boost::shared_ptr<Knight> kt = boost::dynamic_pointer_cast<Knight>(actor);
+        if (kt) kt->setReveal2(true);
+        lua_pop(lua, 2);  // pop cxt and actor
+        return 0;
     }
-}
 
-A_FlashMessage::Maker A_FlashMessage::Maker::register_me;
-
-LegacyAction * A_FlashMessage::Maker::make(ActionPars &pars) const
-{
-    pars.require(1,2);
-    return new A_FlashMessage(pars.getString(0), pars.getSize()==1 ? 4 : pars.getInt(1));
-}
-
-//
-// A_FlashScreen
-//
-
-void A_FlashScreen::execute(const ActionData &ad) const
-{
-    shared_ptr<Creature> actor = ad.getActor();
-
-    // Currently, the rule is that the screen can only be flashed
-    // by a Knight. Otherwise, zombies walking over pentagrams will
-    // set off screen flashes, which is distracting.
-    if (dynamic_cast<Knight*>(actor.get())) {
-        Mediator::instance().flashScreen(actor, delay);
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int RevealStop(lua_State *lua)
+    {
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        boost::shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        boost::shared_ptr<Knight> kt = boost::dynamic_pointer_cast<Knight>(actor);
+        if (kt) kt->setReveal2(false);
+        lua_pop(lua, 2);  // pop cxt and actor
+        return 0;
     }
-}
 
-A_FlashScreen::Maker A_FlashScreen::Maker::register_me;
-
-LegacyAction * A_FlashScreen::Maker::make(ActionPars &pars) const
-{
-    pars.require(0,1);
-    int delay = 0;
-    if (pars.getSize() == 1) {
-        delay = pars.getInt(0);
+    // Input: none
+    // Cxt: none
+    // Output: none
+    int FullZombieActivity(lua_State *lua)
+    {
+        Mediator::instance().getMonsterManager().fullZombieActivity();
+        return 0;
     }
-    return new A_FlashScreen(delay);
-}
 
+    // Input: none
+    // Cxt: none
+    // Output: none
+    int NormalZombieActivity(lua_State *lua)
+    {
+        Mediator::instance().getMonsterManager().normalZombieActivity();
+        return 0;
+    }
 
-//
-// A_FullZombieActivity
-//
+    // This directly kills the actor, without blood/gore effects, but only if the
+    // actor is at height H_WALKING. Used for pits.
+    // Input: none
+    // Cxt: actor, originator
+    // Output: none
+    int PitKill(lua_State *lua)
+    {
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pop(lua, 2);  // pop cxt and actor
 
-void A_FullZombieActivity::execute(const ActionData &ad) const
-{
-    Mediator::instance().getMonsterManager().fullZombieActivity();
-}
+        if (!cr || !cr->getMap()) return 0;
+        if (cr->getHeight() != H_WALKING) return 0;
 
-A_FullZombieActivity::Maker A_FullZombieActivity::Maker::register_me;
+        cr->onDeath(Creature::PIT_MODE, GetOriginatorFromCxt(lua));
+        cr->rmFromMap();
+        return 0;
+    }
 
-LegacyAction * A_FullZombieActivity::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_FullZombieActivity;
-}
+    // Input: optional int delay (arg 1, default 0)
+    // Cxt: actor
+    // Output: none
+    int FlashScreen(lua_State *lua)
+    {
+        int delay = 0;
+        if (lua_gettop(lua) >= 1) {
+            delay = luaL_checkinteger(lua, 1);
+        }
 
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pop(lua, 2);  // pop cxt and actor
 
+        // Only flash for Knights (not zombies - otherwise the screen would
+        // flash every time a zombie walked over a pentagram, which would
+        // be distracting)
+        if (dynamic_cast<Knight*>(actor.get())) {
+            Mediator::instance().flashScreen(actor, delay);
+        }
+        return 0;
+    }
 
-//
-// A_Necromancy
-//
+    // Input: string msg (arg 1), optional int num_times (arg 2, default 4)
+    // Cxt: actor
+    // Output: none
+    int FlashMessage(lua_State *lua)
+    {
+        const std::string msg = luaL_checkstring(lua, 1);
+        int num_times = 4;
+        if (lua_gettop(lua) >= 2) {
+            num_times = luaL_checkinteger(lua, 2);
+        }
 
-bool A_Necromancy::possible(const ActionData &) const
-{
-    return !Mediator::instance().getMonsterManager().hasNecromancyBeenDone();
-}
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pop(lua, 2);  // pop cxt and actor
 
-bool A_Necromancy::executeWithResult(const ActionData &ad) const
-{
-    if (possible(ad)) {
+        if (actor && actor->getPlayer()) {
+            actor->getPlayer()->getDungeonView().flashMessage(msg, num_times);
+        }
+        return 0;
+    }
 
-        DungeonMap *dmap;
-        MapCoord pos;
-        ad.getGenericPos(dmap, pos);
+    // This damages the *actor* (e.g. used for bear traps)
+    // Input: int amount (arg 1), int stun_time (arg 2), optional bool inhibit_squelch (arg 3)
+    // Cxt: actor, originator
+    // Output: none
+    int Damage(lua_State *lua)
+    {
+        int amount = luaL_checkinteger(lua, 1);
+        int stun_time = luaL_checkinteger(lua, 2);
+        bool inhibit_squelch = false;
+        if (lua_gettop(lua) >= 3) {
+            inhibit_squelch = lua_toboolean(lua, 3) != 0;
+        }
 
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "actor");   // [cxt cr]
+        shared_ptr<Creature> cr = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pop(lua, 2);  // pop cxt and actor
+
+        if (cr) {
+            const int stun = stun_time > 0 ? stun_time : 0;
+            cr->damage(amount, GetOriginatorFromCxt(lua),
+                      Mediator::instance().getGVT() + stun, inhibit_squelch);
+        }
+        return 0;
+    }
+
+    // Input: ItemType* item_type (arg 1)
+    // Cxt: pos (generic position)
+    // Output: none
+    int ChangeItem(lua_State *lua)
+    {
+        ItemType *item_type = ReadLuaPtr<ItemType>(lua, 1);
+        if (!item_type) return 0;
+
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "pos");     // [cxt pos]
+        MapCoord mc = GetMapCoord(lua, -1);
+        lua_pop(lua, 2);  // pop cxt and pos
+
+        DungeonMap *dmap = Mediator::instance().getMap().get();
+        if (!dmap || mc.isNull()) return 0;
+
+        dmap->rmItem(mc);
+        shared_ptr<Item> new_item(new Item(*item_type));
+        dmap->addItem(mc, new_item);
+        return 0;
+    }
+
+    // Input: shared_ptr<Tile> new_tile (arg 1)
+    // Cxt: tile (old tile), pos, originator
+    // Output: none
+    int ChangeTile(lua_State *lua)
+    {
+        shared_ptr<Tile> new_tile = ReadLuaSharedPtr<Tile>(lua, 1);
+        if (!new_tile) return 0;
+
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "tile");    // [cxt tile]
+        shared_ptr<Tile> old_tile = ReadLuaSharedPtr<Tile>(lua, -1);
+        lua_getfield(lua, -2, "pos");     // [cxt tile pos]
+        MapCoord mc = GetMapCoord(lua, -1);
+        lua_pop(lua, 3);  // pop cxt, tile, and pos
+
+        DungeonMap *dmap = Mediator::instance().getMap().get();
+        if (!dmap || !old_tile) return 0;
+
+        Originator orig = GetOriginatorFromCxt(lua);
+        dmap->rmTile(mc, old_tile, orig);
+        dmap->addTile(mc, new_tile->clone(false), orig);
+        return 0;
+    }
+
+    // Input: int nzoms (arg 1), int range (arg 2)
+    // Cxt: pos (generic position)
+    // Output: boolean (true if successful, false if already done or no map)
+    int Necromancy(lua_State *lua)
+    {
+        int nzoms = luaL_checkinteger(lua, 1);
+        int range = luaL_checkinteger(lua, 2);
+
+        // Check if possible (necromancy not already done)
+        if (Mediator::instance().getMonsterManager().hasNecromancyBeenDone()) {
+            lua_pushboolean(lua, false);
+            return 1;
+        }
+
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "pos");     // [cxt pos]
+        MapCoord pos = GetMapCoord(lua, -1);
+        lua_pop(lua, 2);  // pop cxt and pos
+
+        DungeonMap *dmap = Mediator::instance().getMap().get();
         if (dmap) {
             Mediator::instance().getMonsterManager().doNecromancy(nzoms, *dmap,
                     pos.getX() - range,     pos.getY() - range,
                     pos.getX() + range + 1, pos.getY() + range + 1);
-            return true;
+            lua_pushboolean(lua, true);
+            return 1;
         }
+
+        lua_pushboolean(lua, false);
+        return 1;
     }
 
-    return false;
-}
-
-A_Necromancy::Maker A_Necromancy::Maker::register_me;
-
-LegacyAction * A_Necromancy::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_Necromancy(pars.getInt(0), pars.getInt(1));
-}
-
-
-//
-// A_Nop
-//
-
-void A_Nop::execute(const ActionData &) const
-{
-}
-
-A_Nop::Maker A_Nop::Maker::register_me;
-
-LegacyAction * A_Nop::Maker::make(ActionPars &) const
-{
-    return new A_Nop;
-}
-
-
-//
-// A_NormalZombieActivity
-//
-
-void A_NormalZombieActivity::execute(const ActionData &ad) const
-{
-    Mediator::instance().getMonsterManager().normalZombieActivity();
-}
-
-A_NormalZombieActivity::Maker A_NormalZombieActivity::Maker::register_me;
-
-LegacyAction * A_NormalZombieActivity::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_NormalZombieActivity;
-}
-
-
-//
-// A_PitKill
-// Kill the given creature (w/o blood/gore effects -- just directly remove them from the map).
-// Only creatures at height H_WALKING are affected!
-//
-
-void A_PitKill::execute(const ActionData &ad) const
-{
-    shared_ptr<Creature> cr = ad.getActor();
-    if (!cr || !cr->getMap()) return;
-    if (cr->getHeight() != H_WALKING) return;
-    cr->onDeath(Creature::PIT_MODE, ad.getOriginator());
-    cr->rmFromMap();
-}
-
-A_PitKill::Maker A_PitKill::Maker::register_me;
-
-LegacyAction * A_PitKill::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_PitKill;
-}
-
-
-//
-// A_RevealStart
-//
-
-void A_RevealStart::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) kt->setReveal2(true);
-}
-
-A_RevealStart::Maker A_RevealStart::Maker::register_me;
-
-LegacyAction * A_RevealStart::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_RevealStart;
-}
-
-//
-// A_RevealStop
-//
-
-void A_RevealStop::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) kt->setReveal2(false);
-}
-
-A_RevealStop::Maker A_RevealStop::Maker::register_me;
-
-LegacyAction * A_RevealStop::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_RevealStop;
-}
-
-
-//
-// A_ZombieKill
-//
-
-bool A_ZombieKill::possible(const ActionData &ad) const
-{
-    // See if the victim is a monster
-    shared_ptr<Monster> mon = dynamic_pointer_cast<Monster>(ad.getVictim());
-    if (mon) {
-        // See if it has the correct type
-        if (&mon->getMonsterType() == &zom_type) {
-            return true;
+    // Kills the *victim* if it has a given monster type. Used as melee_action
+    // for the wand of undeath.
+    // Input: MonsterType* zom_type (arg 1)
+    // Cxt: victim, originator
+    // Output: boolean (true if killed, false otherwise)
+    int ZombieKill(lua_State *lua)
+    {
+        const MonsterType *zom_type = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!zom_type) {
+            lua_pushboolean(lua, false);
+            return 1;
         }
-    }
 
-    // otherwise the ZombieKill won't work
-    return false;
+        lua_getglobal(lua, "cxt");        // [cxt]
+        lua_getfield(lua, -1, "victim");  // [cxt victim]
+        shared_ptr<Creature> victim = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pop(lua, 2);  // pop cxt and victim
+
+        shared_ptr<Monster> cr = dynamic_pointer_cast<Monster>(victim);
+        if (cr && cr->getMap() && &cr->getMonsterType() == zom_type) {
+            cr->onDeath(Creature::NORMAL_MODE, GetOriginatorFromCxt(lua));
+            cr->rmFromMap();
+            lua_pushboolean(lua, true);
+            return 1;
+        }
+
+        lua_pushboolean(lua, false);
+        return 1;
+    }
 }
 
-bool A_ZombieKill::executeWithResult(const ActionData &ad) const
+void AddLuaScriptFunctions(lua_State *lua)
 {
-    // Kills the *victim* if it is a zombie (Used as a melee_action)
-    shared_ptr<Monster> cr = dynamic_pointer_cast<Monster>(ad.getVictim());
-    if (cr && cr->getMap() && &cr->getMonsterType() == &zom_type) {
-        cr->onDeath(Creature::NORMAL_MODE, ad.getOriginator());
-        cr->rmFromMap();
-        return true;
-    } else {
-        return false;
-    }
-}
+    // all functions go in "kts" table.
+    lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);   // [env]
+    luaL_getsubtable(lua, -1, "kts");                         // [env kts]
 
-A_ZombieKill::Maker A_ZombieKill::Maker::register_me;
+    PushCFunction(lua, &ChangeItem);
+    lua_setfield(lua, -2, "ChangeItem");
 
-LegacyAction * A_ZombieKill::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    const MonsterType * mtype = pars.getMonsterType(0);
-    if (!mtype) {
-        pars.error();
-        return 0;
-    } else {
-        return new A_ZombieKill(*mtype);
-    }
+    PushCFunction(lua, &ChangeTile);
+    lua_setfield(lua, -2, "ChangeTile");
+
+    PushCFunction(lua, &CrystalStart);
+    lua_setfield(lua, -2, "CrystalStart");
+
+    PushCFunction(lua, &CrystalStop);
+    lua_setfield(lua, -2, "CrystalStop");
+
+    PushCFunction(lua, &Damage);
+    lua_setfield(lua, -2, "Damage");
+
+    PushCFunction(lua, &FlashMessage);
+    lua_setfield(lua, -2, "FlashMessage");
+
+    PushCFunction(lua, &FlashScreen);
+    lua_setfield(lua, -2, "FlashScreen");
+
+    PushCFunction(lua, &FullZombieActivity);
+    lua_setfield(lua, -2, "FullZombieActivity");
+
+    PushCFunction(lua, &Necromancy);
+    lua_setfield(lua, -2, "Necromancy");
+
+    PushCFunction(lua, &NormalZombieActivity);
+    lua_setfield(lua, -2, "NormalZombieActivity");
+
+    PushCFunction(lua, &PitKill);
+    lua_setfield(lua, -2, "PitKill");
+
+    PushCFunction(lua, &RevealStart);
+    lua_setfield(lua, -2, "RevealStart");
+
+    PushCFunction(lua, &RevealStop);
+    lua_setfield(lua, -2, "RevealStop");
+
+    PushCFunction(lua, &ZombieKill);
+    lua_setfield(lua, -2, "ZombieKill");
+
+    // pop the "kts" and environment tables.
+    lua_pop(lua, 2);
 }

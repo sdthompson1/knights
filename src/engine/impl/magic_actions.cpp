@@ -30,6 +30,7 @@
 #include "lockable.hpp"
 #include "magic_actions.hpp"
 #include "magic_map.hpp"
+#include "map_support.hpp"
 #include "mediator.hpp"
 #include "monster_manager.hpp"
 #include "my_exceptions.hpp"
@@ -37,21 +38,13 @@
 #include "potion_magic.hpp"
 #include "task_manager.hpp"
 #include "teleport.hpp"
+#include "tile.hpp"
 
-using std::string;
+#include "include_lua.hpp"
+#include "lua_func_wrapper.hpp"
+#include "lua_userdata.hpp"
 
-#ifdef _MSC_VER
-    // fix "bug" with MSVC static libraries and global constructors
-    extern "C" void InitMagicActions()
-    {
-    }
-#endif
-
-
-//
-// SetPotion, FlashMessage
-//
-
+// Helper functions
 namespace {
     void SetPotion(int gvt, shared_ptr<Knight> kt, PotionMagic pm, int dur)
     {
@@ -61,460 +54,31 @@ namespace {
         kt->setPotionMagic(pm, stop_time);
     }
 
-    void FlashMessage(shared_ptr<Knight> kt, const string &msg)
+    shared_ptr<Creature> GetActorAsCreature(lua_State *lua)
+    {
+        lua_getglobal(lua, "cxt");
+        lua_getfield(lua, -1, "actor");
+        shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pop(lua, 2);
+        return actor;
+    }
+
+    shared_ptr<Knight> GetActorAsKnight(lua_State *lua)
+    {
+        return dynamic_pointer_cast<Knight>(GetActorAsCreature(lua));
+    }
+
+    void FlashMessage(shared_ptr<Knight> kt, const std::string &msg)
     {
         if (!kt) return;
         kt->getPlayer()->getDungeonView().flashMessage(msg, 4);
     }
 
-    void FlashMessage(const ActionData &ad, const string &msg)
+    void FlashMessage(lua_State *lua, const std::string &msg)
     {
-        FlashMessage(dynamic_pointer_cast<Knight>(ad.getActor()), msg);
-    }
-}
-
-
-//
-// A_Attractor
-//
-
-void A_Attractor::execute(const ActionData &ad) const
-{
-    shared_ptr<Creature> cr(ad.getActor());
-    if (cr && cr->getMap()) {
-        shared_ptr<Knight> who_to_teleport = FindRandomOtherKnight(boost::dynamic_pointer_cast<Knight>(cr));
-        if (who_to_teleport) {
-            TeleportToRoom(who_to_teleport, cr);
-        } else {
-            // If no other knights exist then teleport myself randomly instead.
-            TeleportToRandomSquare(cr);
-        }
-    }
-}
-
-A_Attractor::Maker A_Attractor::Maker::register_me;
-
-LegacyAction * A_Attractor::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_Attractor;
-}
-
-
-//
-// A_DispelMagic
-//
-
-void A_DispelMagic::execute(const ActionData &ad) const
-{
-    FlashMessage(ad, msg);
-    DispelMagic(Mediator::instance().getPlayers());
-}
-
-A_DispelMagic::Maker A_DispelMagic::Maker::register_me;
-
-LegacyAction * A_DispelMagic::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_DispelMagic(pars.getString(0));
-}
-
-
-//
-// A_Healing
-//
-
-void A_Healing::execute(const ActionData &ad) const
-{
-    if (ad.getActor() && ad.getActor()->getHealth() < ad.getActor()->getMaxHealth()) {
-        // reset his health to maximum
-        FlashMessage(ad, msg);
-        ad.getActor()->addToHealth( ad.getActor()->getMaxHealth() - ad.getActor()->getHealth() );
-    }
-}
-
-A_Healing::Maker A_Healing::Maker::register_me;
-
-LegacyAction * A_Healing::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_Healing(pars.getString(0));
-}
-
-
-//
-// A_Invisibility
-//
-
-void A_Invisibility::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    FlashMessage(kt, msg);
-    SetPotion(Mediator::instance().getGVT(), kt, INVISIBILITY, dur);
-}
-
-A_Invisibility::Maker A_Invisibility::Maker::register_me;
-
-LegacyAction * A_Invisibility::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_Invisibility(pars.getInt(0), pars.getString(1));
-}
-
-//
-// A_Invulnerability
-//
-
-void A_Invulnerability::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) {
-        FlashMessage(kt, msg);
-        int stop_time = Mediator::instance().getGVT();
-        if (dur > 0) stop_time += dur;
-        kt->setInvulnerability(true, stop_time);
-    }
-}
-
-A_Invulnerability::Maker A_Invulnerability::Maker::register_me;
-
-LegacyAction * A_Invulnerability::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_Invulnerability(pars.getInt(0), pars.getString(1));
-}
-
-
-//
-// A_MagicMapping
-//
-
-void A_MagicMapping::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) MagicMapping(kt);
-}
-
-A_MagicMapping::Maker A_MagicMapping::Maker::register_me;
-
-LegacyAction * A_MagicMapping::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_MagicMapping;
-}
-
-
-//
-// A_OpenWays
-//
-
-void A_OpenWays::execute(const ActionData &ad) const
-{
-    DungeonMap *dm;
-    MapCoord mc;
-    shared_ptr<Tile> t;
-    ad.getTile(dm, mc, t);
-    if (!dm || !t) return;
-    shared_ptr<Creature> actor = ad.getActor();
-    
-    // If the tile is a "lockable" (i.e. a door or chest) then open it.
-    shared_ptr<Lockable> lock = dynamic_pointer_cast<Lockable>(t);
-    if (lock) {
-        lock->open(*dm, mc, ad.getOriginator());
-    } else if (actor->hasStrength()) {
-        // We turn off allow_strength for wand of open ways, so the normal melee code
-        // will not attempt to damage the tile if the knight has strength. This is to
-        // prevent the melee code from destroying the tile before the above code has a
-        // chance to open it.
-        // However for other types of tile we DO want the normal smashing to take
-        // place. So we do it here:
-        t->damage(*dm, mc, 9999, actor);
-    }
-}
-
-A_OpenWays::Maker A_OpenWays::Maker::register_me;
-
-LegacyAction * A_OpenWays::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_OpenWays;
-}
-
-
-//
-// A_Paralyzation
-//
-
-void A_Paralyzation::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    SetPotion(Mediator::instance().getGVT(), kt, PARALYZATION, dur);
-}
-
-A_Paralyzation::Maker A_Paralyzation::Maker::register_me;
-
-LegacyAction * A_Paralyzation::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_Paralyzation(pars.getInt(0));
-}
-
-
-//
-// A_Poison
-//
-
-void A_Poison::execute(const ActionData &ad) const
-{
-    if (ad.getActor()) {
-        FlashMessage(ad, msg);
-        ad.getActor()->poison(ad.getOriginator());
-    }
-}
-
-A_Poison::Maker A_Poison::Maker::register_me;
-
-LegacyAction * A_Poison::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_Poison(pars.getString(0));
-}
-
-
-//
-// A_PoisonImmunity
-//
-
-void A_PoisonImmunity::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) {
-        FlashMessage(kt, msg);
-        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
-        kt->setPoisonImmunity(true, stop_time);
-    }
-}
-
-A_PoisonImmunity::Maker A_PoisonImmunity::Maker::register_me;
-
-LegacyAction * A_PoisonImmunity::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_PoisonImmunity(pars.getInt(0), pars.getString(1));
-}
-
-
-//
-// A_Quickness
-//
-
-void A_Quickness::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    FlashMessage(kt, msg);
-    SetPotion(Mediator::instance().getGVT(), kt, QUICKNESS, dur);
-}
-
-A_Quickness::Maker A_Quickness::Maker::register_me;
-
-LegacyAction * A_Quickness::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_Quickness(pars.getInt(0), pars.getString(1));
-}
-
-
-//
-// A_Regeneration
-//
-
-void A_Regeneration::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    FlashMessage(kt, msg);
-    SetPotion(Mediator::instance().getGVT(), kt, potion_magic, dur);
-}
-
-A_Regeneration::Maker A_Regeneration::Maker::register_me;
-
-LegacyAction * A_Regeneration::Maker::make(ActionPars &pars) const
-{
-    pars.require(3);
-    std::string regen_type = pars.getString(2);
-
-    PotionMagic pm = NO_POTION;
-
-    if (regen_type == "fast") {
-        pm = FAST_REGENERATION;
-    } else if (regen_type == "slow") {
-        pm = SLOW_REGENERATION;
-    } else {
-        throw LuaError("invalid regeneration type, must be \"fast\" or \"slow\"");
+        FlashMessage(GetActorAsKnight(lua), msg);
     }
 
-    return new A_Regeneration(pars.getInt(0), pars.getString(1), pm);
-}
-
-
-//
-// A_RevealLocation
-//
-
-void A_RevealLocation::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) {
-        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
-        kt->setRevealLocation(true, stop_time);
-    }
-}
-
-A_RevealLocation::Maker A_RevealLocation::Maker::register_me;
-
-LegacyAction * A_RevealLocation::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_RevealLocation(pars.getInt(0));
-}
-
-
-//
-// A_SenseItems
-//
-
-void A_SenseItems::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) {
-        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
-        SenseItems(kt, stop_time);
-    }
-}
-
-A_SenseItems::Maker A_SenseItems::Maker::register_me;
-
-LegacyAction * A_SenseItems::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_SenseItems(pars.getInt(0));
-}
-
-
-//
-// A_SenseKnight
-//
-
-void A_SenseKnight::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) {
-        const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
-        kt->setSenseKnight(true, stop_time);
-    }
-}
-
-A_SenseKnight::Maker A_SenseKnight::Maker::register_me;
-
-LegacyAction * A_SenseKnight::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    return new A_SenseKnight(pars.getInt(0));
-}
-
-
-//
-// A_Strength
-//
-
-void A_Strength::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    FlashMessage(kt, msg);
-    SetPotion(Mediator::instance().getGVT(), kt, STRENGTH, dur);
-}
-
-A_Strength::Maker A_Strength::Maker::register_me;
-
-LegacyAction * A_Strength::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_Strength(pars.getInt(0), pars.getString(1));
-}
-
-
-//
-// A_Super
-//
-
-void A_Super::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    FlashMessage(kt, msg);
-    SetPotion(Mediator::instance().getGVT(), kt, SUPER, dur);
-}
-
-A_Super::Maker A_Super::Maker::register_me;
-
-LegacyAction * A_Super::Maker::make(ActionPars &pars) const
-{
-    pars.require(2);
-    return new A_Super(pars.getInt(0), pars.getString(1));
-}
-
-//
-// A_TeleportRandom
-//
-
-void A_TeleportRandom::execute(const ActionData &ad) const
-{
-    // Only Knights can teleport, because we don't want zombies to be teleported about
-    // by pentagrams....
-    shared_ptr<Creature> cr(ad.getActor());
-    shared_ptr<Knight> kt = boost::dynamic_pointer_cast<Knight>(cr);
-    if (kt && kt->getMap()) {
-        shared_ptr<Knight> where_to_teleport_to = FindRandomOtherKnight(kt);
-        if (where_to_teleport_to) {
-            TeleportToRoom(kt, where_to_teleport_to);
-        } else {
-            // If no other knights exist then just teleport myself randomly
-            TeleportToRandomSquare(kt);
-        }
-    }
-}
-
-A_TeleportRandom::Maker A_TeleportRandom::Maker::register_me;
-
-LegacyAction * A_TeleportRandom::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_TeleportRandom;
-}
-
-
-//
-// A_WipeMap
-//
-
-void A_WipeMap::execute(const ActionData &ad) const
-{
-    shared_ptr<Knight> kt = dynamic_pointer_cast<Knight>(ad.getActor());
-    if (kt) WipeMap(kt);
-}
-
-A_WipeMap::Maker A_WipeMap::Maker::register_me;
-
-LegacyAction * A_WipeMap::Maker::make(ActionPars &pars) const
-{
-    pars.require(0);
-    return new A_WipeMap;
-}
-
-
-//
-// A_ZombifyActor, A_ZombifyTarget
-//
-
-namespace {
     bool ZombifyCreature(shared_ptr<Creature> cr, const MonsterType &zom_type, const Originator &originator)
     {
         // Only Knights can be zombified. This prevents zombification
@@ -539,46 +103,407 @@ namespace {
     }
 }
 
-void A_ZombifyActor::execute(const ActionData &ad) const
-{
-    ZombifyCreature(ad.getActor(), zom_type, ad.getOriginator());
-}
-
-A_ZombifyActor::Maker A_ZombifyActor::Maker::register_me;
-
-LegacyAction * A_ZombifyActor::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    const MonsterType * mtype = pars.getMonsterType(0);
-    if (!mtype) {
-        pars.error();
+// Lua function implementations
+namespace {
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int MagicMapping(lua_State *lua)
+    {
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt) ::MagicMapping(kt);
         return 0;
-    } else {
-        return new A_ZombifyActor(*mtype);
+    }
+
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int WipeMap(lua_State *lua)
+    {
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt) ::WipeMap(kt);
+        return 0;
+    }
+
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int Attractor(lua_State *lua)
+    {
+        shared_ptr<Creature> cr = GetActorAsCreature(lua);
+        if (cr && cr->getMap()) {
+            shared_ptr<Knight> who_to_teleport = FindRandomOtherKnight(boost::dynamic_pointer_cast<Knight>(cr));
+            if (who_to_teleport) {
+                TeleportToRoom(who_to_teleport, cr);
+            } else {
+                // If no other knights exist then teleport myself randomly instead.
+                TeleportToRandomSquare(cr);
+            }
+        }
+        return 0;
+    }
+
+    // Input: none
+    // Cxt: actor
+    // Output: none
+    int TeleportRandom(lua_State *lua)
+    {
+        // Only Knights can teleport, because we don't want zombies to be teleported about
+        // by pentagrams....
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt && kt->getMap()) {
+            shared_ptr<Knight> where_to_teleport_to = FindRandomOtherKnight(kt);
+            if (where_to_teleport_to) {
+                TeleportToRoom(kt, where_to_teleport_to);
+            } else {
+                // If no other knights exist then just teleport myself randomly
+                TeleportToRandomSquare(kt);
+            }
+        }
+        return 0;
+    }
+
+    // Input: none
+    // Cxt: actor, tile, tile_pos
+    // Output: none
+    int OpenWays(lua_State *lua)
+    {
+        lua_getglobal(lua, "cxt");
+        lua_getfield(lua, -1, "actor");
+        shared_ptr<Creature> actor = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_getfield(lua, -2, "tile");
+        shared_ptr<Tile> t = ReadLuaSharedPtr<Tile>(lua, -1);
+        lua_getfield(lua, -3, "tile_pos");
+        MapCoord mc = GetMapCoord(lua, -1);
+        lua_pop(lua, 4);
+
+        DungeonMap *dm = Mediator::instance().getMap().get();
+        if (!dm || !t) return 0;
+
+        // If the tile is a "lockable" (i.e. a door or chest) then open it.
+        shared_ptr<Lockable> lock = dynamic_pointer_cast<Lockable>(t);
+        if (lock) {
+            Originator orig = GetOriginatorFromCxt(lua);
+            lock->open(*dm, mc, orig);
+        } else if (actor && actor->hasStrength()) {
+            // We turn off allow_strength for wand of open ways, so the normal melee code
+            // will not attempt to damage the tile if the knight has strength. This is to
+            // prevent the melee code from destroying the tile before the above code has a
+            // chance to open it.
+            // However for other types of tile we DO want the normal smashing to take
+            // place. So we do it here:
+            t->damage(*dm, mc, 9999, actor);
+        }
+        return 0;
+    }
+
+    // Input: int dur (arg 1)
+    // Cxt: actor
+    // Output: none
+    int Paralyzation(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        SetPotion(Mediator::instance().getGVT(), kt, PARALYZATION, dur);
+        return 0;
+    }
+
+    // Input: int dur (arg 1)
+    // Cxt: actor
+    // Output: none
+    int RevealLocation(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt) {
+            const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
+            kt->setRevealLocation(true, stop_time);
+        }
+        return 0;
+    }
+
+    // Input: int dur (arg 1)
+    // Cxt: actor
+    // Output: none
+    int SenseItems(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt) {
+            const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
+            ::SenseItems(kt, stop_time);
+        }
+        return 0;
+    }
+
+    // Input: int dur (arg 1)
+    // Cxt: actor
+    // Output: none
+    int SenseKnight(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt) {
+            const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
+            kt->setSenseKnight(true, stop_time);
+        }
+        return 0;
+    }
+
+    // Input: string msg (arg 1)
+    // Cxt: actor
+    // Output: none
+    int DispelMagic(lua_State *lua)
+    {
+        const std::string msg = luaL_checkstring(lua, 1);
+
+        FlashMessage(lua, msg);
+        ::DispelMagic(Mediator::instance().getPlayers());
+        return 0;
+    }
+
+    // Input: string msg (arg 1)
+    // Cxt: actor
+    // Output: none
+    int Healing(lua_State *lua)
+    {
+        const std::string msg = luaL_checkstring(lua, 1);
+        shared_ptr<Creature> actor = GetActorAsCreature(lua);
+        if (actor && actor->getHealth() < actor->getMaxHealth()) {
+            // reset his health to maximum
+            FlashMessage(lua, msg);
+            actor->addToHealth(actor->getMaxHealth() - actor->getHealth());
+        }
+        return 0;
+    }
+
+    // Input: string msg (arg 1)
+    // Cxt: actor, originator
+    // Output: none
+    int Poison(lua_State *lua)
+    {
+        const std::string msg = luaL_checkstring(lua, 1);
+        shared_ptr<Creature> actor = GetActorAsCreature(lua);
+        if (actor) {
+            FlashMessage(lua, msg);
+            actor->poison(GetOriginatorFromCxt(lua));
+        }
+        return 0;
+    }
+
+    // Input: int dur (arg 1), string msg (arg 2)
+    // Cxt: actor
+    // Output: none
+    int Invisibility(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        const std::string msg = luaL_checkstring(lua, 2);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        FlashMessage(kt, msg);
+        SetPotion(Mediator::instance().getGVT(), kt, INVISIBILITY, dur);
+        return 0;
+    }
+
+    // Input: int dur (arg 1), string msg (arg 2)
+    // Cxt: actor
+    // Output: none
+    int Invulnerability(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        const std::string msg = luaL_checkstring(lua, 2);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt) {
+            FlashMessage(kt, msg);
+            int stop_time = Mediator::instance().getGVT();
+            if (dur > 0) stop_time += dur;
+            kt->setInvulnerability(true, stop_time);
+        }
+        return 0;
+    }
+
+    // Input: int dur (arg 1), string msg (arg 2)
+    // Cxt: actor
+    // Output: none
+    int PoisonImmunity(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        const std::string msg = luaL_checkstring(lua, 2);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        if (kt) {
+            FlashMessage(kt, msg);
+            const int stop_time = Mediator::instance().getGVT() + (dur > 0 ? dur : 0);
+            kt->setPoisonImmunity(true, stop_time);
+        }
+        return 0;
+    }
+
+    // Input: int dur (arg 1), string msg (arg 2)
+    // Cxt: actor
+    // Output: none
+    int Quickness(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        const std::string msg = luaL_checkstring(lua, 2);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        FlashMessage(kt, msg);
+        SetPotion(Mediator::instance().getGVT(), kt, QUICKNESS, dur);
+        return 0;
+    }
+
+    // Input: int dur (arg 1), string msg (arg 2)
+    // Cxt: actor
+    // Output: none
+    int Strength(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        const std::string msg = luaL_checkstring(lua, 2);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        FlashMessage(kt, msg);
+        SetPotion(Mediator::instance().getGVT(), kt, STRENGTH, dur);
+        return 0;
+    }
+
+    // Input: int dur (arg 1), string msg (arg 2)
+    // Cxt: actor
+    // Output: none
+    int Super(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        const std::string msg = luaL_checkstring(lua, 2);
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        FlashMessage(kt, msg);
+        SetPotion(Mediator::instance().getGVT(), kt, SUPER, dur);
+        return 0;
+    }
+
+    // Input: int dur (arg 1), string msg (arg 2), string regen_type (arg 3)
+    // Cxt: actor
+    // Output: none
+    int Regeneration(lua_State *lua)
+    {
+        int dur = luaL_checkinteger(lua, 1);
+        const std::string msg = luaL_checkstring(lua, 2);
+        const std::string regen_type = luaL_checkstring(lua, 3);
+
+        PotionMagic pm = NO_POTION;
+        if (regen_type == "fast") {
+            pm = FAST_REGENERATION;
+        } else if (regen_type == "slow") {
+            pm = SLOW_REGENERATION;
+        } else {
+            throw LuaError("invalid regeneration type, must be \"fast\" or \"slow\"");
+        }
+
+        shared_ptr<Knight> kt = GetActorAsKnight(lua);
+        FlashMessage(kt, msg);
+        SetPotion(Mediator::instance().getGVT(), kt, pm, dur);
+        return 0;
+    }
+
+    // Input: MonsterType* zom_type (arg 1)
+    // Cxt: actor, originator
+    // Output: none
+    int ZombifyActor(lua_State *lua)
+    {
+        const MonsterType *zom_type = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!zom_type) return 0;
+
+        shared_ptr<Creature> actor = GetActorAsCreature(lua);
+        ZombifyCreature(actor, *zom_type, GetOriginatorFromCxt(lua));
+        return 0;
+    }
+
+    // Input: MonsterType* zom_type (arg 1)
+    // Cxt: victim, originator
+    // Output: boolean (true if zombified, false otherwise)
+    int ZombifyTarget(lua_State *lua)
+    {
+        const MonsterType *zom_type = ReadLuaPtr<MonsterType>(lua, 1);
+        if (!zom_type) {
+            lua_pushboolean(lua, false);
+            return 1;
+        }
+
+        lua_getglobal(lua, "cxt");
+        lua_getfield(lua, -1, "victim");
+        shared_ptr<Creature> victim = ReadLuaSharedPtr<Creature>(lua, -1);
+        lua_pop(lua, 2);
+
+        bool result = ZombifyCreature(victim, *zom_type, GetOriginatorFromCxt(lua));
+        lua_pushboolean(lua, result);
+        return 1;
     }
 }
 
-bool A_ZombifyTarget::possible(const ActionData &ad) const
+void AddLuaMagicFunctions(lua_State *lua)
 {
-    // Only knights can be zombified
-    return bool(dynamic_pointer_cast<Knight>(ad.getVictim()));
-}
+    // all functions go in "kts" table (same as script actions)
+    lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
+    luaL_getsubtable(lua, -1, "kts");
 
-bool A_ZombifyTarget::executeWithResult(const ActionData &ad) const
-{
-    return ZombifyCreature(ad.getVictim(), zom_type, ad.getOriginator());
-}
+    PushCFunction(lua, &Attractor);
+    lua_setfield(lua, -2, "Attractor");
 
-A_ZombifyTarget::Maker A_ZombifyTarget::Maker::register_me;
+    PushCFunction(lua, &DispelMagic);
+    lua_setfield(lua, -2, "DispelMagic");
 
-LegacyAction * A_ZombifyTarget::Maker::make(ActionPars &pars) const
-{
-    pars.require(1);
-    const MonsterType * mtype = pars.getMonsterType(0);
-    if (!mtype) {
-        pars.error();
-        return 0;
-    } else {
-        return new A_ZombifyTarget(*mtype);
-    }
+    PushCFunction(lua, &Healing);
+    lua_setfield(lua, -2, "Healing");
+
+    PushCFunction(lua, &Invisibility);
+    lua_setfield(lua, -2, "Invisibility");
+
+    PushCFunction(lua, &Invulnerability);
+    lua_setfield(lua, -2, "Invulnerability");
+
+    PushCFunction(lua, &MagicMapping);
+    lua_setfield(lua, -2, "MagicMapping");
+
+    PushCFunction(lua, &OpenWays);
+    lua_setfield(lua, -2, "OpenWays");
+
+    PushCFunction(lua, &Paralyzation);
+    lua_setfield(lua, -2, "Paralyzation");
+
+    PushCFunction(lua, &Poison);
+    lua_setfield(lua, -2, "Poison");
+
+    PushCFunction(lua, &PoisonImmunity);
+    lua_setfield(lua, -2, "PoisonImmunity");
+
+    PushCFunction(lua, &Quickness);
+    lua_setfield(lua, -2, "Quickness");
+
+    PushCFunction(lua, &Regeneration);
+    lua_setfield(lua, -2, "Regeneration");
+
+    PushCFunction(lua, &RevealLocation);
+    lua_setfield(lua, -2, "RevealLocation");
+
+    PushCFunction(lua, &SenseItems);
+    lua_setfield(lua, -2, "SenseItems");
+
+    PushCFunction(lua, &SenseKnight);
+    lua_setfield(lua, -2, "SenseKnight");
+
+    PushCFunction(lua, &Strength);
+    lua_setfield(lua, -2, "Strength");
+
+    PushCFunction(lua, &Super);
+    lua_setfield(lua, -2, "Super");
+
+    PushCFunction(lua, &TeleportRandom);
+    lua_setfield(lua, -2, "TeleportRandom");
+
+    PushCFunction(lua, &WipeMap);
+    lua_setfield(lua, -2, "WipeMap");
+
+    PushCFunction(lua, &ZombifyActor);
+    lua_setfield(lua, -2, "ZombifyActor");
+
+    PushCFunction(lua, &ZombifyTarget);
+    lua_setfield(lua, -2, "ZombifyTarget");
+
+    // pop the "kts" and environment tables
+    lua_pop(lua, 2);
 }

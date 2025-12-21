@@ -35,6 +35,8 @@
 #include "lua_ingame.hpp"
 #include "lua_exec.hpp"
 #include "lua_game_setup.hpp"
+#include "magic_actions.hpp"
+#include "script_actions.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_sandbox.hpp"
 #include "lua_setup.hpp"
@@ -117,6 +119,8 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
         AddLuaConfigFunctions(lua, this);
         AddLuaGameSetupFunctions(lua);
         AddLuaIngameFunctions(lua);
+        AddLuaScriptFunctions(lua);
+        AddLuaMagicFunctions(lua);
 
         // Add the standard controls
         AddStandardControls(lua, this);
