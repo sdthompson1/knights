@@ -26,6 +26,7 @@
 #include "concrete_traps.hpp"
 #include "creature.hpp"
 #include "dungeon_view.hpp"
+#include "localization.hpp"
 #include "missile.hpp"
 #include "player.hpp"
 
@@ -39,7 +40,7 @@ void PoisonTrap::spring(DungeonMap &, const MapCoord &, shared_ptr<Creature> cr,
     if (cr) {
         Player * pl = cr->getPlayer();
         if (pl) {
-            pl->getDungeonView().flashMessage("Poison", 4);
+            pl->getDungeonView().flashMessage({LocalKey("poison")}, 4);
         }
         
         cr->poison(originator);

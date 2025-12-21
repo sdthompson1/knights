@@ -166,12 +166,14 @@ namespace {
         return 0;
     }
 
-    // Input: string msg (arg 1), optional int num_times (arg 2, default 4)
+    // Input: localization msg (arg 1), optional int num_times (arg 2, default 4)
     // Cxt: actor
     // Output: none
     int FlashMessage(lua_State *lua)
     {
-        const std::string msg = luaL_checkstring(lua, 1);
+        lua_pushvalue(lua, 1);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         int num_times = 4;
         if (lua_gettop(lua) >= 2) {
             num_times = luaL_checkinteger(lua, 2);

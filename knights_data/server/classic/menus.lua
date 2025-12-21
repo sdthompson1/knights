@@ -85,7 +85,7 @@ kts.MENU = {
                         S.IsNot("book", "none")   -- must have book
                     end,
                     features = function(S)
-                        quest_retrieve(all_books, 1, "Book Required")
+                        quest_retrieve(all_books, 1, "book_required")
                         hint("Retrieve the book", 2, 1)
                     end
                 },
@@ -98,7 +98,7 @@ kts.MENU = {
                         S.IsAtLeast("num_wands", 1)
                     end,
                     features = function(S)
-                        quest_retrieve(all_wands, 1, "Wand Required")
+                        quest_retrieve(all_wands, 1, "wand_required")
                         hint("Retrieve the wand", 2, 1)
                     end
                 },
@@ -114,7 +114,7 @@ kts.MENU = {
                         quest_destroy(all_books,
                                       all_wands,
                                       all_special_pentagrams,
-                                      "Not in Special Pentagram")
+                                      "not_in_special_pentagram")
                         hint("Place the book in the special pentagram", 3, 1)
                         hint("Strike the book with the wand", 4, 1)
                         add_segment(special_pentagrams)
@@ -266,7 +266,7 @@ kts.MENU = {
             choice_max = 6,
             show = show_zero_as_none,
             features = function(S)
-                quest_retrieve(i_gem, S.gems_needed, "Gem Required", "%d Gems Required")
+                quest_retrieve(i_gem, S.gems_needed, "gem_required")
                 if S.gems_needed == 1 then
                     hint("Retrieve 1 gem", 1, 1)
                 elseif S.gems_needed > 1 then

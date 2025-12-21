@@ -143,7 +143,7 @@ enum ServerMessageCode {
     SERVER_SET_TILE = 109,           // complex
     SERVER_SET_ITEM = 110,           // followed by room-coord, varint (gfx-id)
     SERVER_PLACE_ICON = 111,         // followed by room-coord, varint (gfx-id), ushort (duration)
-    SERVER_FLASH_MESSAGE = 112,      // followed by string, ubyte (ntimes)
+    SERVER_FLASH_MESSAGE = 112,      // followed by LocalMsg, ubyte (ntimes)
     SERVER_CANCEL_CONTINUOUS_MESSAGES = 113,  // no data
     SERVER_ADD_CONTINUOUS_MESSAGE = 114,  // followed by string
     SERVER_SET_SPEECH_BUBBLE = 115,  // followed by varint (id), ubyte (show flag)

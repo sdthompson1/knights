@@ -144,6 +144,13 @@ void Localization::readStrings(std::istream &file)
             // Rest of line is the message
             std::string message;
             if (std::getline(iss, message)) {
+                // Trim trailing whitespace
+                size_t end = message.find_last_not_of(" \t\r\n");
+                if (end != std::string::npos) {
+                    message = message.substr(0, end + 1);
+                } else {
+                    message.clear();
+                }
 
                 LocalKey local_key(key);
 

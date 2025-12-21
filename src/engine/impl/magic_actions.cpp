@@ -68,13 +68,13 @@ namespace {
         return dynamic_pointer_cast<Knight>(GetActorAsCreature(lua));
     }
 
-    void FlashMessage(shared_ptr<Knight> kt, const std::string &msg)
+    void FlashMessage(shared_ptr<Knight> kt, const LocalMsg &msg)
     {
         if (!kt) return;
         kt->getPlayer()->getDungeonView().flashMessage(msg, 4);
     }
 
-    void FlashMessage(lua_State *lua, const std::string &msg)
+    void FlashMessage(lua_State *lua, const LocalMsg &msg)
     {
         FlashMessage(GetActorAsKnight(lua), msg);
     }
@@ -250,39 +250,44 @@ namespace {
         return 0;
     }
 
-    // Input: string msg (arg 1)
+    // Input: localization msg (arg 1)
     // Cxt: actor
     // Output: none
     int DispelMagic(lua_State *lua)
     {
-        const std::string msg = luaL_checkstring(lua, 1);
+        lua_pushvalue(lua, 1);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
 
         FlashMessage(lua, msg);
         ::DispelMagic(Mediator::instance().getPlayers());
         return 0;
     }
 
-    // Input: string msg (arg 1)
+    // Input: localization msg (arg 1)
     // Cxt: actor
     // Output: none
     int Healing(lua_State *lua)
     {
-        const std::string msg = luaL_checkstring(lua, 1);
+        lua_pushvalue(lua, 1);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Creature> actor = GetActorAsCreature(lua);
         if (actor && actor->getHealth() < actor->getMaxHealth()) {
-            // reset his health to maximum
+            // reset their health to maximum
             FlashMessage(lua, msg);
             actor->addToHealth(actor->getMaxHealth() - actor->getHealth());
         }
         return 0;
     }
 
-    // Input: string msg (arg 1)
+    // Input: localization msg (arg 1)
     // Cxt: actor, originator
     // Output: none
     int Poison(lua_State *lua)
     {
-        const std::string msg = luaL_checkstring(lua, 1);
+        lua_pushvalue(lua, 1);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Creature> actor = GetActorAsCreature(lua);
         if (actor) {
             FlashMessage(lua, msg);
@@ -291,26 +296,32 @@ namespace {
         return 0;
     }
 
-    // Input: int dur (arg 1), string msg (arg 2)
+    // Input: int dur (arg 1), localization msg (arg 2)
     // Cxt: actor
     // Output: none
     int Invisibility(lua_State *lua)
     {
         int dur = luaL_checkinteger(lua, 1);
-        const std::string msg = luaL_checkstring(lua, 2);
+
+        lua_pushvalue(lua, 2);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Knight> kt = GetActorAsKnight(lua);
         FlashMessage(kt, msg);
         SetPotion(Mediator::instance().getGVT(), kt, INVISIBILITY, dur);
         return 0;
     }
 
-    // Input: int dur (arg 1), string msg (arg 2)
+    // Input: int dur (arg 1), localization msg (arg 2)
     // Cxt: actor
     // Output: none
     int Invulnerability(lua_State *lua)
     {
         int dur = luaL_checkinteger(lua, 1);
-        const std::string msg = luaL_checkstring(lua, 2);
+
+        lua_pushvalue(lua, 2);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Knight> kt = GetActorAsKnight(lua);
         if (kt) {
             FlashMessage(kt, msg);
@@ -321,13 +332,16 @@ namespace {
         return 0;
     }
 
-    // Input: int dur (arg 1), string msg (arg 2)
+    // Input: int dur (arg 1), localization msg (arg 2)
     // Cxt: actor
     // Output: none
     int PoisonImmunity(lua_State *lua)
     {
         int dur = luaL_checkinteger(lua, 1);
-        const std::string msg = luaL_checkstring(lua, 2);
+
+        lua_pushvalue(lua, 2);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Knight> kt = GetActorAsKnight(lua);
         if (kt) {
             FlashMessage(kt, msg);
@@ -337,52 +351,64 @@ namespace {
         return 0;
     }
 
-    // Input: int dur (arg 1), string msg (arg 2)
+    // Input: int dur (arg 1), localization msg (arg 2)
     // Cxt: actor
     // Output: none
     int Quickness(lua_State *lua)
     {
         int dur = luaL_checkinteger(lua, 1);
-        const std::string msg = luaL_checkstring(lua, 2);
+
+        lua_pushvalue(lua, 2);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Knight> kt = GetActorAsKnight(lua);
         FlashMessage(kt, msg);
         SetPotion(Mediator::instance().getGVT(), kt, QUICKNESS, dur);
         return 0;
     }
 
-    // Input: int dur (arg 1), string msg (arg 2)
+    // Input: int dur (arg 1), localization msg (arg 2)
     // Cxt: actor
     // Output: none
     int Strength(lua_State *lua)
     {
         int dur = luaL_checkinteger(lua, 1);
-        const std::string msg = luaL_checkstring(lua, 2);
+
+        lua_pushvalue(lua, 2);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Knight> kt = GetActorAsKnight(lua);
         FlashMessage(kt, msg);
         SetPotion(Mediator::instance().getGVT(), kt, STRENGTH, dur);
         return 0;
     }
 
-    // Input: int dur (arg 1), string msg (arg 2)
+    // Input: int dur (arg 1), localization msg (arg 2)
     // Cxt: actor
     // Output: none
     int Super(lua_State *lua)
     {
         int dur = luaL_checkinteger(lua, 1);
-        const std::string msg = luaL_checkstring(lua, 2);
+
+        lua_pushvalue(lua, 2);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         shared_ptr<Knight> kt = GetActorAsKnight(lua);
         FlashMessage(kt, msg);
         SetPotion(Mediator::instance().getGVT(), kt, SUPER, dur);
         return 0;
     }
 
-    // Input: int dur (arg 1), string msg (arg 2), string regen_type (arg 3)
+    // Input: int dur (arg 1), localization msg (arg 2), string regen_type (arg 3)
     // Cxt: actor
     // Output: none
     int Regeneration(lua_State *lua)
     {
         int dur = luaL_checkinteger(lua, 1);
-        const std::string msg = luaL_checkstring(lua, 2);
+
+        lua_pushvalue(lua, 2);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
         const std::string regen_type = luaL_checkstring(lua, 3);
 
         PotionMagic pm = NO_POTION;
@@ -437,7 +463,7 @@ namespace {
 
 void AddLuaMagicFunctions(lua_State *lua)
 {
-    // all functions go in "kts" table (same as script actions)
+    // all functions go in "kts" table
     lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
     luaL_getsubtable(lua, -1, "kts");
 

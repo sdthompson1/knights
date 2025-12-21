@@ -660,12 +660,12 @@ end
 ----------------------------------------------------------------------
 
 function check_gems()
-   if kts.GetNumHeld(cxt.actor, C.i_gem) >= 5 then
-      kts.WinGame(cxt.actor)
-   else
-      kts.FlashMessage("5 Gems Required")
-      tutorial_msg(11)
-   end
+    if kts.GetNumHeld(cxt.actor, C.i_gem) >= 5 then
+        kts.WinGame(cxt.actor)
+    else
+        kts.FlashMessage({key="gem_required", params={5}, plural=5})
+        tutorial_msg(11)
+    end
 end
 
 -- Modify the home on_approach actions, because we don't use the

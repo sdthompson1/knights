@@ -755,7 +755,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_FLASH_MESSAGE:
             {
-                const std::string msg = buf.readString();
+                LocalMsg msg;
+                ReadLocalMsg(buf, msg, pimpl->allow_untrusted_strings);
                 const int ntimes = buf.readUbyte();
                 if (dungeon_view) dungeon_view->flashMessage(msg, ntimes);
             }

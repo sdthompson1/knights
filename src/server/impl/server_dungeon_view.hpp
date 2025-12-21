@@ -41,34 +41,34 @@ public:
     void clearDungeonViewCmds();
     void rmObserverNum(int observer_num);  // clear caches
 
-    virtual void setCurrentRoom(int r, int width, int height);
+    virtual void setCurrentRoom(int r, int width, int height) override;
 
     virtual void addEntity(unsigned short int id, int x, int y, MapHeight ht, MapDirection facing,
                            const Anim * anim, const Overlay *ovr, int af, int atz_diff,
                            bool ainvis, bool ainvuln, // (anim data)
                            bool approached,
                            int cur_ofs, MotionType motion_type, int motion_time_remaining,
-                           const PlayerID &player_id);
-    virtual void rmEntity(unsigned short int id);
-    virtual void repositionEntity(unsigned short int id, int new_x, int new_y);
+                           const PlayerID &player_id) override;
+    virtual void rmEntity(unsigned short int id) override;
+    virtual void repositionEntity(unsigned short int id, int new_x, int new_y) override;
     virtual void moveEntity(unsigned short int id, MotionType motion_type,
-                            int motion_duration, bool missile_mode);
-    virtual void flipEntityMotion(unsigned short int id, int initial_delay, int motion_duration);
+                            int motion_duration, bool missile_mode) override;
+    virtual void flipEntityMotion(unsigned short int id, int initial_delay, int motion_duration) override;
     virtual void setAnimData(unsigned short int id, const Anim *, const Overlay *, int af,
-                             int atz_diff, bool ainvis, bool ainvuln, bool currently_moving);
-    virtual void setFacing(unsigned short int id, MapDirection new_facing);
-    virtual void setSpeechBubble(unsigned short int id, bool show);
+                             int atz_diff, bool ainvis, bool ainvuln, bool currently_moving) override;
+    virtual void setFacing(unsigned short int id, MapDirection new_facing) override;
+    virtual void setSpeechBubble(unsigned short int id, bool show) override;
 
-    virtual void clearTiles(int x, int y, bool force);
-    virtual void setTile(int x, int y, int depth, const Graphic *gfx, boost::shared_ptr<const ColourChange> cc, bool force);
+    virtual void clearTiles(int x, int y, bool force) override;
+    virtual void setTile(int x, int y, int depth, const Graphic *gfx, boost::shared_ptr<const ColourChange> cc, bool force) override;
 
-    virtual void setItem(int x, int y, const Graphic *gfx, bool force);
+    virtual void setItem(int x, int y, const Graphic *gfx, bool force) override;
 
-    virtual void placeIcon(int x, int y, const Graphic *gfx, int dur);
+    virtual void placeIcon(int x, int y, const Graphic *gfx, int dur) override;
 
-    virtual void flashMessage(const std::string &msg, int ntimes);
-    virtual void cancelContinuousMessages();
-    virtual void addContinuousMessage(const std::string &msg);
+    virtual void flashMessage(const LocalMsg &msg, int ntimes) override;
+    virtual void cancelContinuousMessages() override;
+    virtual void addContinuousMessage(const std::string &msg) override;
 
 private:
     std::vector<ubyte> &out;

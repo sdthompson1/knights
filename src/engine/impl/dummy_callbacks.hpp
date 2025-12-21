@@ -46,7 +46,7 @@ public:
     virtual void setTile(int,int,int,const Graphic *, boost::shared_ptr<const ColourChange>,bool) override { }
     virtual void setItem(int, int, const Graphic *,bool) override { }
     virtual void placeIcon(int, int, const Graphic *, int) override { }
-    virtual void flashMessage(const std::string&, int) override { }
+    virtual void flashMessage(const LocalMsg&, int) override { }
     virtual void cancelContinuousMessages() override { }
     virtual void addContinuousMessage(const std::string&) override { }
 };

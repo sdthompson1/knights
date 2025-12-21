@@ -30,5 +30,3 @@ struct lua_State;
 void AddLuaScriptFunctions(lua_State *lua);
 
 #endif
-
-    

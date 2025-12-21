@@ -237,7 +237,7 @@ public:
     void setItem(int x, int y, const Graphic *gfx, bool force) override { Log("dview: set item"); }
     void placeIcon(int x, int y, const Graphic *gfx, int dur) override { Log("dview: place icon"); }
 
-    void flashMessage(const std::string &msg, int ntimes) override { Log("dview: flash msg: %s", msg.c_str()); }
+    void flashMessage(const LocalMsg &msg, int ntimes) override { Log("dview: flash msg: %s", msg.key.getKey().c_str()); }
     void cancelContinuousMessages() override { Log("dview: cancel continuous messages"); }
     void addContinuousMessage(const std::string &msg) override { Log("dview: add cts msg: %s", msg.c_str()); }
 };

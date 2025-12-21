@@ -45,21 +45,17 @@ function how_many_more_needed(itemtypes, num_needed)
    return num_needed - num_held
 end
 
--- Check the knight is holding the required item.
---   If he is:  returns true
---   Otherwise: calls FlashMessage w/ a suitable message, then returns false
-function check_item(itemtypes, num_needed, sing, plural)
-   local shortfall = how_many_more_needed(itemtypes, num_needed)
-   if shortfall > 0 then
-      if num_needed > 1 and plural ~= nil then
-         kts.FlashMessage(string.format(plural, num_needed))
-      else
-         kts.FlashMessage(sing)
-      end
-      return false
-   else
-      return true
-   end
+-- Check the knight is holding the required item, in the required quantity.
+--   If so:     returns true
+--   Otherwise: calls FlashMessage with a suitable message, then returns false
+function check_item(itemtypes, num_needed, msg_key)
+    local shortfall = how_many_more_needed(itemtypes, num_needed)
+    if shortfall > 0 then
+        kts.FlashMessage({key=msg_key, params={num_needed}, plural=num_needed})
+        return false
+    else
+        return true
+    end
 end
 
 -- Check a required tile exists at a given square
@@ -84,11 +80,10 @@ end
 -- itemtypes = list of acceptable itemtypes
 --    e.g. { i_gem } or { i_some_wand, i_some_other_wand } etc.
 -- qty = number required
--- sing_msg = singular message e.g. "Gem Required"
--- pl_msg   = plural message   e.g. "%d Gems Required"  (can be nil)
-function make_retrieve_handler(itemtypes, qty, sing_msg, pl_msg)
+-- msg_key = Localization key for message; {0} and "plural" are both set to the number required
+function make_retrieve_handler(itemtypes, qty, msg_key)
    return function()
-      return check_item(itemtypes, qty, sing_msg, pl_msg)
+      return check_item(itemtypes, qty, msg_key)
    end
 end
 

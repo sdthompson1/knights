@@ -38,6 +38,7 @@
 class Anim;
 class ColourChange;
 class Graphic;
+class LocalMsg;
 class Overlay;
 class PlayerID;
 
@@ -121,7 +122,7 @@ public:
     // Messages
     //
 
-    virtual void flashMessage(const std::string &msg_latin1, int ntimes) = 0;
+    virtual void flashMessage(const LocalMsg &msg, int ntimes) = 0;
     virtual void cancelContinuousMessages() = 0;
     virtual void addContinuousMessage(const std::string &msg) = 0;
 };

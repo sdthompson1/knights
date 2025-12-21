@@ -28,6 +28,7 @@
 #include "overlay.hpp"
 #include "player_id.hpp"
 #include "protocol.hpp"
+#include "read_write_loc.hpp"
 #include "server_dungeon_view.hpp"
 
 #include <limits>
@@ -305,11 +306,11 @@ void ServerDungeonView::placeIcon(int x, int y, const Graphic *gfx, int dur)
     buf.writeUshort(ClampToUshort(dur));
 }
 
-void ServerDungeonView::flashMessage(const std::string &msg, int ntimes)
+void ServerDungeonView::flashMessage(const LocalMsg &msg, int ntimes)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_FLASH_MESSAGE);
-    buf.writeString(msg);
+    WriteLocalMsg(buf, msg);
     buf.writeUbyte(ntimes);
 }
 

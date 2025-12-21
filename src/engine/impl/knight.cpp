@@ -180,7 +180,7 @@ void Knight::resetMagic()
     // Set the cts message, if paralyzed.
     getPlayer()->getDungeonView().cancelContinuousMessages();
     if (current_potion == PARALYZATION) {
-        getPlayer()->getDungeonView().addContinuousMessage(Mediator::instance().cfgString("paralyzation_msg"));
+        getPlayer()->getDungeonView().addContinuousMessage("Paralyzation"); // TODO: Use LocalKey("paralyzation")
     }
 }
 

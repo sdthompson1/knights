@@ -1168,6 +1168,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                                        dungeon_height, pixels_per_square, dungeon_scale_factor, *txt_font,
                                        observer_mode,  // Show my knight name in obs mode. In normal mode, show only names of opponents, not myself.
                                        player_name_lookup,
+                                       localization,
                                        room_tl_x, room_tl_y);
 
         // Work out highlighting for action bar

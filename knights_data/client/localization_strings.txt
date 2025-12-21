@@ -81,6 +81,30 @@ throw_daggers     Throw Daggers
 use_lock_picks    Use Lock Picks
 
 
+# Various items and effects
+dispel_magic          Dispel Magic
+healing               Healing
+invisibility          Invisibility
+invulnerability       Invulnerability
+locked                Locked
+paralyzation          Paralyzation
+poison                Poison
+poison_immunity       Poison Immunity
+quickness             Quickness
+regeneration          Regeneration
+strength              Strength
+super                 Super
+
+
+# Quest Requirements
+book_required[one]        Book Required
+wand_required[one]        Wand Required
+gem_required[one]         Gem Required
+gem_required[other]       {0} Gems Required
+cannot_secure             This exit cannot be secured.
+not_in_special_pentagram  Not in Special Pentagram
+
+
 # Critical item respawning
 has_been_respawned    {0} has been respawned at a random location.
 a_gem                 A gem

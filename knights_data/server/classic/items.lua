@@ -266,7 +266,7 @@ i_wand_of_securing = kts.ItemType(
        if success then
          wandzap()
        elseif reason == "special_exit" then
-         kts.FlashMessage("This exit cannot be secured.")
+         kts.FlashMessage("cannot_secure")
        end
     end
   }

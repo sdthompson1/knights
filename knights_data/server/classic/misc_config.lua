@@ -81,10 +81,6 @@ invuln_r = 170;             -- the colour of an invulnerable knight
 invuln_g = 170;             --   (each component must be in range 0..255)
 invuln_b = 170;
 
--- Miscellaneous game messages
-paralyzation_msg = "Paralyzation";
-required_msg = "Required";
-
 -- Time penalty for using daggers in the new control system.
 -- This is meant to offset the advantage of the new controls when throwing
 -- daggers (because you don't have to wait half a second while opening the menu).

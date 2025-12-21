@@ -65,6 +65,7 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
                             const Coercri::Font &txt_font,
                             bool show_own_name,
                             std::function<UTF8String(const PlayerID&)> player_name_lookup,
+                            const Localization &localization,
                             int &room_tl_x, int &room_tl_y)
 {
     using std::list;
@@ -201,8 +202,14 @@ void LocalDungeonView::draw(Coercri::GfxContext &gc, GfxManager &gm, bool screen
             const int msg_off_time_ms = config_map.getInt("message_off_time");
             const int nmsgs = messages.size() + cts_messages.size();
             int mphase = (mtime_ms / (msg_on_time_ms + msg_off_time_ms)) % nmsgs;
-            const UTF8String &the_msg(mphase < messages.size() ? messages[mphase].message
-                                       : cts_messages[mphase - messages.size()]);
+
+            UTF8String the_msg;
+            if (mphase < messages.size()) {
+                the_msg = localization.get(messages[mphase].message);
+            } else {
+                the_msg = cts_messages[mphase - messages.size()];
+            }
+
             if (mtime_ms % (msg_on_time_ms + msg_off_time_ms) <= msg_on_time_ms) {
                 std::map<int,RoomData>::iterator ri = rooms.find(current_room);
                 if (ri != rooms.end()) {
@@ -388,12 +395,12 @@ void LocalDungeonView::placeIcon(int x, int y, const Graphic *g, int dur_ms)
     icons.push(ic);
 }
 
-void LocalDungeonView::flashMessage(const std::string &s_latin1, int ntimes)
+void LocalDungeonView::flashMessage(const LocalMsg &msg, int ntimes)
 {
     int time_ms = time_us / 1000;
 
     Message m;
-    m.message = UTF8String::fromLatin1(s_latin1);
+    m.message = msg;
     m.start_time_ms = time_ms;
     m.stop_time_ms = time_ms + (config_map.getInt("message_on_time") + config_map.getInt("message_off_time"))*ntimes;
     messages.push_back(m);

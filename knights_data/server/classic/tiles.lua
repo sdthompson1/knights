@@ -45,7 +45,7 @@ end
 
 
 function locked_msg()
-   kts.FlashMessage("Locked", 2)
+   kts.FlashMessage("locked", 2)
 end
 
 -- Define some access types

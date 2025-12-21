@@ -60,6 +60,7 @@ public:
               int phy_pixels_per_square, float dungeon_scale_factor,
               const Coercri::Font & txt_font, bool show_own_name,
               std::function<UTF8String(const PlayerID&)> player_name_lookup,
+              const Localization &localization,
               int &room_tl_x, int &room_tl_y);
     boost::shared_ptr<ColourChange> getMyColourChange() const { return my_colour_change; }
     bool isApproached() const { return my_approached; }
@@ -92,7 +93,7 @@ public:
 
     void placeIcon(int x, int y, const Graphic *gfx, int dur_ms) override;
 
-    void flashMessage(const std::string &msg_latin1, int ntimes) override;
+    void flashMessage(const LocalMsg &msg, int ntimes) override;
     void cancelContinuousMessages() override;
     void addContinuousMessage(const std::string &msg) override;
 
@@ -155,7 +156,7 @@ private:
 
     // messages
     struct Message {
-        UTF8String message;
+        LocalMsg message;
         int start_time_ms;
         int stop_time_ms;
     };

@@ -134,19 +134,19 @@ function my_zombify()
 end
 
 function dispel_magic()
-   kts.DispelMagic("Dispel Magic")
+   kts.DispelMagic("dispel_magic")
 end
 
 function healing()
-   kts.Healing("Healing")
+   kts.Healing("healing")
 end
 
 function invisibility()
-   kts.Invisibility(pot_dur(), "Invisibility")
+   kts.Invisibility(pot_dur(), "invisibility")
 end
 
 function invulnerability()
-   kts.Invulnerability(invuln_dur(), "Invulnerability")
+   kts.Invulnerability(invuln_dur(), "invulnerability")
 end
 
 function paralyzation()
@@ -154,31 +154,31 @@ function paralyzation()
 end
 
 function poison()
-   kts.Poison("Poison")
+   kts.Poison("poison")
 end
 
 function poison_immunity()
-   kts.PoisonImmunity(pi_dur(), "Poison Immunity")
+   kts.PoisonImmunity(pi_dur(), "poison_immunity")
 end
 
 function quickness()
-   kts.Quickness(pot_dur(), "Quickness")
+   kts.Quickness(pot_dur(), "quickness")
 end
 
 function regeneration()
     if kts.RandomChance(0.5) then
-        kts.Regeneration(pot_dur(), "Regeneration", "slow")
+        kts.Regeneration(pot_dur(), "regeneration", "slow")
     else
-        kts.Regeneration(pot_dur(), "Regeneration", "fast")
+        kts.Regeneration(pot_dur(), "regeneration", "fast")
     end
 end
 
 function strength()
-   kts.Strength(pot_dur(), "Strength")
+   kts.Strength(pot_dur(), "strength")
 end
 
 function super()
-   kts.Super(pot_dur(), "Super")
+   kts.Super(pot_dur(), "super")
 end
 
 function sense_items()
@@ -193,7 +193,7 @@ function potion_effect()
       poison()
       return    -- Poison overrides all other effects.
    end
-   
+
    if effect == 2 then regeneration() end
    if effect == 3 then quickness() end
    if effect == 4 then strength() end

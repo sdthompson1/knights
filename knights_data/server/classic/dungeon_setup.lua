@@ -39,11 +39,11 @@ Dsetup = nil
 
 -- Quest Setup Functions called by menus.lua
 
-function quest_retrieve(itemtypes, qty, msg_singular, msg_plural)
+function quest_retrieve(itemtypes, qty, msg_key)
    local i = itemtypes
    if type(i) == "userdata" then i = {i} end  -- Wrap single item in a table.
    table.insert(Dsetup.retrieve_handlers,
-                make_retrieve_handler( i, qty, msg_singular, msg_plural ))
+                make_retrieve_handler( i, qty, msg_key ))
 end
 
 function quest_destroy(booklist, 
