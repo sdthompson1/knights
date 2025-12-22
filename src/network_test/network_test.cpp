@@ -98,8 +98,6 @@ public:
         join_game_accepted = true;
     }
     void joinGameDenied(const LocalKey &reason) override { Log("Join game denied. Reason = %s", reason.getKey().c_str()); }
-    void loadGraphic(const Graphic &g, const std::string &) override { Log("Loading graphic"); }
-    void loadSound(const Sound &s, const std::string &) override { Log("Loading sound"); }
 
     void passwordRequested(bool first_attempt) override { Log("Please enter password"); }
 

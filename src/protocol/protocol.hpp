@@ -71,8 +71,7 @@ enum ClientMessageCode {
     CLIENT_SET_APPROACH_BASED_CONTROLS = 19,     // followed by ubyte (1=true 0=false)
     CLIENT_SET_ACTION_BAR_CONTROLS = 20,         // followed by ubyte (1=true 0=false)
     CLIENT_RANDOM_QUEST = 21,        // no extra data
-    CLIENT_REQUEST_GRAPHICS = 22,    // followed by number of ids, then ids (all varints)
-    CLIENT_REQUEST_SOUNDS = 23       // ditto
+    // NOTE: 22,23 no longer used (CLIENT_REQUEST_GRAPHICS or SOUNDS)
 };
 
 // Messages sent by the server
@@ -162,10 +161,8 @@ enum ServerMessageCode {
     SERVER_SET_POTION_MAGIC = 203,   // followed by ubyte (bit7 = poison immun, bits0-6 = potion_magic)
     // NOTE: 204, 205 no longer used (were set quest message / set quest icons)
 
-    // sending gfx, sounds etc
-    SERVER_SEND_GRAPHICS = 210,       // followed by number of gfx, (id (varint) + size (varint) + data) for each.
-    SERVER_SEND_SOUNDS = 211,         // ditto for sounds.
-    
+    // NOTE: 210, 211 no longer used (were send graphics/sounds)
+
     // misc
     SERVER_SWITCH_PLAYER = 250,      // followed by ubyte (player number)
 

@@ -69,7 +69,7 @@ public:
 
     void setColourChange(ColourChange cc) { colour_change.reset(new ColourChange(cc)); }
     const ColourChange * getColourChange() const { return colour_change.get(); }
-    
+
     int getID() const { return id; }    
     void setID(int i) { id = i; }
 

@@ -27,7 +27,6 @@
 #include "my_exceptions.hpp"  // misc
 #include "rstream.hpp"        // rstream
 
-#include "gfx/load_bmp.hpp"         // coercri
 #include "gfx/load_system_ttf.hpp"  // coercri
 
 boost::shared_ptr<Coercri::Font> LoadFont(boost::shared_ptr<Coercri::GfxDriver> driver,

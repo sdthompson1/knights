@@ -1474,35 +1474,6 @@ namespace {
 
         ReturnToMenu(kg);
     }
-
-    void SendFile(Coercri::OutputByteBuf &buf, const FileInfo &fi)
-    {
-        // note: this will throw if file not found
-        RStream str(fi.getPath());
-
-        // get size
-        str.seekg(0, ios_base::end);
-        size_t filesize = str.tellg();
-        str.seekg(0, ios_base::beg);
-
-        // write size
-        buf.writeVarInt(filesize);
-        
-        // write file contents
-        size_t ct = 0;
-        while (str) {
-            char c;
-            str.get(c);
-            if (str) {
-                buf.writeUbyte(static_cast<unsigned char>(c));
-                ++ct;
-            }
-        }
-
-        if (ct != filesize) {
-            throw std::runtime_error("Could not read file (on server): " + fi.getPath());
-        }
-    }
 }
 
 KnightsGame::KnightsGame(boost::shared_ptr<KnightsConfig> config,
@@ -2000,48 +1971,6 @@ void KnightsGame::randomQuest(GameConnection &conn)
 
     // deactivate all ready flags
     DeactivateReadyFlags(*pimpl);
-}
-
-void KnightsGame::requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids)
-{
-#ifndef VIRTUAL_SERVER
-    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
-    std::vector<const Graphic *> graphics;
-    pimpl->knights_config->getGraphics(graphics);
-    
-    buf.writeUbyte(SERVER_SEND_GRAPHICS);
-    buf.writeVarInt(ids.size());
-    
-    for (std::vector<int>::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-        if (*it <= 0 || static_cast<size_t>(*it) > graphics.size()) {
-            throw ProtocolError(LocalKey("invalid_id_server"));
-        }
-        buf.writeVarInt(*it);
-        ASSERT(graphics[*it - 1]->getID() == *it);
-        SendFile(buf, graphics[*it - 1]->getFileInfo());
-    }
-}
-
-void KnightsGame::requestSounds(Coercri::OutputByteBuf &buf, const std::vector<int> &ids)
-{
-#ifndef VIRTUAL_SERVER
-    boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
-    std::vector<const Sound *> sounds;
-    pimpl->knights_config->getSounds(sounds);
-    
-    buf.writeUbyte(SERVER_SEND_SOUNDS);
-    buf.writeVarInt(ids.size());
-    
-    for (std::vector<int>::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-        if (*it <= 0 || static_cast<size_t>(*it) > sounds.size()) {
-            throw ProtocolError(LocalKey("invalid_id_server"));
-        }
-        buf.writeVarInt(*it);
-        ASSERT(sounds[*it - 1]->getID() == *it);
-        SendFile(buf, sounds[*it - 1]->getFileInfo());
-    }
 }
 
 void KnightsGame::sendControl(GameConnection &conn, int p, unsigned char control_num)

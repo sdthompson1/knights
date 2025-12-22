@@ -66,7 +66,7 @@ void GfxManager::setFontSize(int new_size)
 
 
 
-bool GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
+void GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
 {
     // Note: We don't (yet) bother to optimize the case where the same filename,
     // but a different hx/hy/r/g/b is being loaded. The BMP file is loaded twice in that case.
@@ -74,7 +74,6 @@ bool GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
     if (it == gfx_map.end()) {
         // Open the file. Only BMP format supported for now.
         boost::shared_ptr<std::istream> str = file_cache.openFile(gfx.getFileInfo());
-        if (!str) return false; // Not in cache!
 
         Coercri::PixelArray pixels = Coercri::LoadBMP(*str);
 
@@ -96,8 +95,6 @@ bool GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
         g.permanent = permanent;
         gfx_map.insert(GfxMap::value_type(&gfx, g));
     }
-
-    return true;
 }
 
 void GfxManager::deleteAllGraphics()

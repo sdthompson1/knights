@@ -31,28 +31,16 @@
 FileInfo::FileInfo(const char *f, const char *cwd)
 {
     if (!f) throw std::invalid_argument("Incorrect argument to FileInfo ctor");
-
-    if (f[0] == '+') {
-        standard_file = true;
-        pathname = (f+1);
-    } else {
-        standard_file = false;
-        if (cwd) {
-            pathname = RStreamFind(f, cwd);
-        } else {
-            pathname = f;
-        }
-    }
+    pathname = f;
+    // note: cwd ignored currently
 }       
 
 FileInfo::FileInfo(Coercri::InputByteBuf &buf)
 {
-    standard_file = buf.readUbyte() != 0;
     pathname = buf.readString();
 }
 
 void FileInfo::serialize(Coercri::OutputByteBuf &buf) const
 {
-    buf.writeUbyte(standard_file ? 1 : 0);
     buf.writeString(pathname);
 }

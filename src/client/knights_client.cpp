@@ -94,7 +94,6 @@ public:
     const Overlay * readOverlay(Coercri::InputByteBuf &buf) const;
     const Sound * readSound(Coercri::InputByteBuf &buf) const;
     const UserControl * getControl(int id) const;
-    void requestImpl(ClientMessageCode msg, const std::vector<int> &ids);
 };
 
 KnightsClient::KnightsClient(bool allow_untrusted_strings)
@@ -107,6 +106,11 @@ KnightsClient::KnightsClient(bool allow_untrusted_strings)
 
 KnightsClient::~KnightsClient()
 {
+}
+
+bool KnightsClient::allowUntrustedStrings() const
+{
+    return pimpl->allow_untrusted_strings;
 }
 
 void KnightsClient::setClientCallbacks(ClientCallbacks *c)
@@ -852,45 +856,6 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
-        case SERVER_SEND_GRAPHICS:
-            {
-                const int num_gfx = buf.readVarInt();
-
-#ifdef LOG_MSGS
-                std::cout << "SERVER_SEND_GRAPHICS " << num_gfx << std::endl;
-#endif
-
-                for (int i = 0; i < num_gfx; ++i) {
-                    const Graphic *g = pimpl->readGraphic(buf);
-                    if (!g) throw ProtocolError(LocalKey("invalid_id_server"));
-                    
-                    // read the buffer into a string.
-                    // (Might be better to create a custom istream object that can read from
-                    // 'buf', but that is too much work)
-                    std::string contents = buf.readString();
-                    
-                    if (client_cb) client_cb->loadGraphic(*g, contents);
-                }
-            }
-            break;
-
-        case SERVER_SEND_SOUNDS:
-            {
-                const int num_sounds = buf.readVarInt();
-
-#ifdef LOG_MSGS
-                std::cout << "SERVER_SEND_SOUNDS " << num_sounds << std::endl;
-#endif
-
-                for (int i = 0; i < num_sounds; ++i) {
-                    const Sound *s = pimpl->readSound(buf);
-                    if (!s) throw ProtocolError(LocalKey("invalid_id_server"));
-                    std::string contents = buf.readString();
-                    if (client_cb) client_cb->loadSound(*s, contents);
-                }
-            }
-            break;
-
         case SERVER_SWITCH_PLAYER:
             {
                 const int new_player = buf.readUbyte();
@@ -1208,27 +1173,3 @@ const UserControl * KnightsClientImpl::getControl(int id) const
         throw ProtocolError(LocalKey("invalid_id_server"));
     }
 }
-
-
-void KnightsClient::requestGraphics(const std::vector<int> &ids)
-{
-    pimpl->requestImpl(CLIENT_REQUEST_GRAPHICS, ids);
-}
-
-void KnightsClient::requestSounds(const std::vector<int> &ids)
-{
-    pimpl->requestImpl(CLIENT_REQUEST_SOUNDS, ids);
-}
-
-void KnightsClientImpl::requestImpl(ClientMessageCode msg, const std::vector<int> &ids)
-{
-    if (!ids.empty()) {
-        Coercri::OutputByteBuf buf(out);
-        buf.writeUbyte(msg);
-        buf.writeVarInt(ids.size());
-        for (std::vector<int>::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-            buf.writeVarInt(*it);
-        }
-    }
-}
-

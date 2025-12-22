@@ -89,8 +89,6 @@ public:
     void setPauseMode(bool p);
     void setMenuSelection(GameConnection &, int item_num, int new_choice_num);
     void randomQuest(GameConnection &);
-    void requestGraphics(Coercri::OutputByteBuf &buf, const std::vector<int> &ids);
-    void requestSounds(Coercri::OutputByteBuf &, const std::vector<int> &ids);
     void sendControl(GameConnection &, int plyr, unsigned char control_num);  // plyr is usually 0; can be 1 in split screen mode
     void requestSpeechBubble(GameConnection &, bool show);
     void setObsFlag(GameConnection &, bool flag);

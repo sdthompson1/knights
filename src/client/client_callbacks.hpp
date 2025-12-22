@@ -97,10 +97,6 @@ public:
                                   bool already_started) = 0;
     virtual void joinGameDenied(const LocalKey &reason) = 0;
 
-    // loading of gfx/sounds from the server.
-    virtual void loadGraphic(const Graphic &g, const std::string &contents) = 0;
-    virtual void loadSound(const Sound &s, const std::string &contents) = 0;
-    
     // called if the server wants us to enter a password before proceeding.
     virtual void passwordRequested(bool first_attempt) = 0;
     

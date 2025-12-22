@@ -146,25 +146,25 @@ quest_rqmts_extra_lines = 3;
 }
 
 -- Menus
-MENU_CENTRE    = Graphic("+menu_centre.bmp")
-MENU_EMPTY     = Graphic("+menu_empty.bmp")
-MENU_HIGHLIGHT = Graphic("+menu_highlight.bmp",0,0,0)
+MENU_CENTRE    = Graphic("menu_centre.bmp")
+MENU_EMPTY     = Graphic("menu_empty.bmp")
+MENU_HIGHLIGHT = Graphic("menu_highlight.bmp",0,0,0)
 
 
 -- Winner/Loser images
-WINNER_IMAGE = Graphic("+winner.bmp", 0,0,0, 0,0)
-LOSER_IMAGE  = Graphic("+loser.bmp",  0,0,0, 0,0)
+WINNER_IMAGE = Graphic("winner.bmp", 0,0,0, 0,0)
+LOSER_IMAGE  = Graphic("loser.bmp",  0,0,0, 0,0)
 
 -- Skulls and Potion Bottle
-g_skull1        = Graphic("+skull1.bmp",0,0,0,-1,-9)
-g_skull2        = Graphic("+skull2.bmp",0,0,0, 0,-7)
-g_skull3        = Graphic("+skull3.bmp",0,0,0, 0,-3)
-g_skull4        = Graphic("+skull4.bmp",0,0,0, 0, 0)
-g_health0       = Graphic("+health0.bmp",0,0,0)
-g_health1       = Graphic("+health1.bmp",0,0,0)
-g_health2       = Graphic("+health2.bmp",0,0,0)
-g_health3       = Graphic("+health3.bmp",0,0,0)
-g_health4       = Graphic("+health4.bmp",0,0,0)
+g_skull1        = Graphic("skull1.bmp",0,0,0,-1,-9)
+g_skull2        = Graphic("skull2.bmp",0,0,0, 0,-7)
+g_skull3        = Graphic("skull3.bmp",0,0,0, 0,-3)
+g_skull4        = Graphic("skull4.bmp",0,0,0, 0, 0)
+g_health0       = Graphic("health0.bmp",0,0,0)
+g_health1       = Graphic("health1.bmp",0,0,0)
+g_health2       = Graphic("health2.bmp",0,0,0)
+g_health3       = Graphic("health3.bmp",0,0,0)
+g_health4       = Graphic("health4.bmp",0,0,0)
 
 POTION_SETUP = {
     graphics = {g_health0, g_health1, g_health2, g_health3, g_health4};
@@ -187,4 +187,4 @@ SKULL_SETUP = {
 }
 
 -- Speech bubble image
-SPEECH_BUBBLE = Graphic("+speech_bubble.bmp", 0,255,0, -7,5)
+SPEECH_BUBBLE = Graphic("speech_bubble.bmp", 0,255,0, -7,5)

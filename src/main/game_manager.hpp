@@ -208,9 +208,6 @@ public:
                                   bool already_started) override;
     virtual void joinGameDenied(const LocalKey &reason) override;     // goes to ErrorScreen
 
-    virtual void loadGraphic(const Graphic &g, const std::string &contents) override;
-    virtual void loadSound(const Sound &s, const std::string &contents) override;
-
     virtual void passwordRequested(bool first_attempt) override;
     virtual void playerConnected(const PlayerID &id) override;
     virtual void playerDisconnected(const PlayerID &id) override;
@@ -245,7 +242,6 @@ public:
 private:
     void updateMenuWidget(int item_num);
     void updateAllMenuWidgets();
-    void gotoMenuIfAllDownloaded();
     
 private:
     boost::shared_ptr<GameManagerImpl> pimpl;

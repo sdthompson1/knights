@@ -216,7 +216,7 @@ void RStream::HashDirectory(const std::string &resource_path, XXHash &hasher)
         // Hash file contents
         std::ifstream file(filepath, std::ios::binary);
         if (!file) {
-            throw RStreamError(resource_path, "failed to read file: " + rel_path_str);
+            throw RStreamError(resource_path, "failed to read file");
         }
 
         // Read in 32-byte chunks (use fast path for aligned data)
@@ -227,7 +227,7 @@ void RStream::HashDirectory(const std::string &resource_path, XXHash &hasher)
 
         // Check for read errors (not just EOF)
         if (file.bad()) {
-            throw RStreamError(resource_path, "I/O error reading file: " + rel_path_str);
+            throw RStreamError(resource_path, "I/O error reading file");
         }
 
         // Handle remaining bytes (0-31) with padding

@@ -24,32 +24,18 @@
 #ifndef FILE_CACHE_HPP
 #define FILE_CACHE_HPP
 
-#include "file_info.hpp"
-
 #include "boost/shared_ptr.hpp"
-
 #include <iosfwd>
-#include <memory>
+#include <string>
+
+class FileInfo;
 
 class FileCache {
 public:
-    // The following returns NULL if the file is not in cache, and
-    // needs to be downloaded from server.
-    boost::shared_ptr<std::istream> openFile(const FileInfo &file) const;
-
-    // "Install" a server file into the cache
-
-    // It's guaranteed that calling installFile() then calling
-    // openFile() on the same FileInfo will succeed and return a
-    // stream. (But if any other file is installed in the interim, the
-    // first file might have been evicted.)
-    void installFile(const FileInfo &file, const std::string &contents);
-
-private:
-    // At the moment the cache stores only one file at a time, and
-    // stores it in RAM only.
-    std::unique_ptr<FileInfo> stored_fi;
-    std::string stored_contents;
+    // Open a file from client/std_files/, or throw an RStreamError on
+    // failure.
+    // If this returns, the pointer is always non-null.
+    boost::shared_ptr<std::istream> openFile(const FileInfo &fi) const;
 };
 
 #endif

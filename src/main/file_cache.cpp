@@ -24,10 +24,13 @@
 #include "misc.hpp"
 
 #include "file_cache.hpp"
+#include "file_info.hpp"
 #include "rstream.hpp"
+#include "rstream_error.hpp"
+
+#include "boost/make_shared.hpp"
 
 #include <cctype>
-#include <sstream>
 
 namespace {
     void ValidateStdFileName(const std::string &name)
@@ -37,29 +40,14 @@ namespace {
         // directory to be loaded!
         for (const char c : name) {
             if (!isalnum(c) && c != '_' && c != '.') {
-                throw std::runtime_error("Invalid standard file name '" + name + "' (only alphanumeric, underscore, dot allowed)");
+                throw RStreamError(name, "Invalid file name (only alphanumeric, underscore, dot allowed)");
             }
         }
     }
 }
 
-boost::shared_ptr<std::istream> FileCache::openFile(const FileInfo &file) const
+boost::shared_ptr<std::istream> FileCache::openFile(const FileInfo &fi) const
 {
-    boost::shared_ptr<std::istream> result;
-    
-    if (file.isStandardFile()) {
-        ValidateStdFileName(file.getPath());
-        result.reset(new RStream(std::string("client/std_files/") + file.getPath()));
-    } else if (stored_fi.get() && *stored_fi == file) {
-        result.reset(new std::istringstream(stored_contents));
-    }
-    // otherwise: cache miss (return 0).
-
-    return result;
-}
-
-void FileCache::installFile(const FileInfo &file, const std::string &contents)
-{
-    stored_fi.reset(new FileInfo(file));
-    stored_contents = contents;
+    ValidateStdFileName(fi.getPath());
+    return boost::make_shared<RStream>(std::string("client/std_files/") + fi.getPath());
 }

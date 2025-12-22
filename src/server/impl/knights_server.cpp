@@ -634,32 +634,6 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 }
                 break;
 
-            case CLIENT_REQUEST_GRAPHICS:
-                {
-                    const int num_ids = buf.readVarInt();
-                    std::vector<int> ids;
-                    ids.reserve(num_ids);
-                    for (int i = 0; i < num_ids; ++i) {
-                        ids.push_back(buf.readVarInt());
-                    }
-                    Coercri::OutputByteBuf buf(conn.output_data);
-                    if (conn.game) conn.game->requestGraphics(buf, ids);
-                }
-                break;
-
-            case CLIENT_REQUEST_SOUNDS:
-                {
-                    const int num_ids = buf.readVarInt();
-                    std::vector<int> ids;
-                    ids.reserve(num_ids);
-                    for (int i = 0; i < num_ids; ++i) {
-                        ids.push_back(buf.readVarInt());
-                    }
-                    Coercri::OutputByteBuf buf(conn.output_data);
-                    if (conn.game) conn.game->requestSounds(buf, ids);
-                }                
-                break;
-                
             default:
                 throw ProtocolError(LocalKey("unknown_client_message"));
             }

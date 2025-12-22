@@ -44,24 +44,18 @@ public:
     void serialize(Coercri::OutputByteBuf &buf) const;
 
     // interface used by FileCache
-    bool isStandardFile() const { return standard_file; }
     const std::string &getPath() const { return pathname; }
 
     // comparison operator(s)
     bool operator==(const FileInfo &rhs) const 
     {
-        return pathname == rhs.pathname
-            && standard_file == rhs.standard_file;
+        return pathname == rhs.pathname;
     }
     
 private:
-    // This is a resource pathname i.e. it will be passed to RStream constructor eventually.
-    // Therefore, it is a std::string rather than a std::filesystem::path.
+    // Filename, currently interpreted relative to client/std_files/
+    // and may only contain alphanumerics, dots and underscores.
     std::string pathname;
-
-    // false: file is on server, must be downloaded by client (or read from cache, if client does caching).
-    // true: file is one of the "standard files" included with Knights; client doesn't need to download.
-    bool standard_file;
 };
 
 #endif

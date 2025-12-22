@@ -1121,7 +1121,6 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
 
         if (image) {
             int width, height;
-            gm.loadGraphic(*image);
             gm.getGraphicSize(*image, width, height);
             const int new_width = int(scale*width);
             const int new_height = int(scale*height);

@@ -27,7 +27,6 @@
 #include "config_map.hpp"
 #include "copy_if.hpp"
 #include "error_screen.hpp"
-#include "file_cache.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
 #include "graphic.hpp"
@@ -43,6 +42,7 @@
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "password_screen.hpp"
+#include "rstream_error.hpp"
 #include "sound.hpp"
 #include "sound_manager.hpp"
 #include "text_formatter.hpp"
@@ -414,8 +414,7 @@ public:
           allow_lobby_screen(allow_lobby),
           can_invite(can_invite),
           my_player_id(my_player_id), doing_menu_widget_update(false), deathmatch_mode(false),
-          game_in_progress(false),
-          download_count(0)
+          game_in_progress(false)
     { }
 
     UTF8String usernameLookup(const PlayerID &id) const {
@@ -485,9 +484,6 @@ public:
     bool deathmatch_mode;
 
     bool game_in_progress;
-
-    // Number of graphics/sounds that we are waiting for the server to send.
-    int download_count;
 };
 
 void GameManagerImpl::showNewLeader()
@@ -936,32 +932,24 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     // Resize the MenuChoices to the proper size
     pimpl->menu_choices.resize(pimpl->menu->getNumItems());
 
-    // Load the graphics and sounds
-    std::vector<int> gfx_ids;
-    for (std::vector<const Graphic *>::const_iterator it = conf->graphics.begin(); it != conf->graphics.end(); ++it) {
-        if (!pimpl->knights_app.getGfxManager().loadGraphic(**it)) {
-            if ((*it)->getFileInfo().isStandardFile()) {
-                // Standard files cannot be requested - the client is expected to have them locally
-                throw std::runtime_error("Error loading file: " + (*it)->getFileInfo().getPath());
-            }
-            gfx_ids.push_back((*it)->getID());
+    // Pre-load all the graphics and sounds, so that they don't have to be
+    // loaded during gameplay, and also so that any errors can be detected
+    // at this point
+    try {
+        for (std::vector<const Graphic *>::const_iterator it = conf->graphics.begin(); it != conf->graphics.end(); ++it) {
+            pimpl->knights_app.getGfxManager().loadGraphic(**it);
+        }
+        for (std::vector<const Sound *>::const_iterator it = conf->sounds.begin(); it != conf->sounds.end(); ++it) {
+            pimpl->knights_app.getSoundManager().loadSound(**it);
+        }
+    } catch (RStreamError &err) {
+        if (pimpl->knights_client->allowUntrustedStrings()) {
+            throw;
+        } else {
+            // hide the filename, just in case the host put something nasty there
+            throw RStreamError("#####", err.getErrorMsg());
         }
     }
-    std::vector<int> sound_ids;
-    for (std::vector<const Sound *>::const_iterator it = conf->sounds.begin(); it != conf->sounds.end(); ++it) {
-        if (!pimpl->knights_app.getSoundManager().loadSound(**it)) {
-            if ((*it)->getFileInfo().isStandardFile()) {
-                // Standard files cannot be requested - the client is expected to have them locally
-                throw std::runtime_error("Error loading file: " + (*it)->getFileInfo().getPath());
-            }
-            sound_ids.push_back((*it)->getID());
-        }
-    }
-
-    // Request download of gfx/sound files if required.
-    pimpl->knights_client->requestGraphics(gfx_ids);
-    pimpl->knights_client->requestSounds(sound_ids);
-    pimpl->download_count = gfx_ids.size() + sound_ids.size();
 
     // Clear messages, and add new "Joined game" messages for lan games
     bool should_clear = true;
@@ -983,22 +971,8 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
 #endif
     }
 
-    // Go to MenuScreen, if counts are zero.
-    gotoMenuIfAllDownloaded();
-
-#ifdef ONLINE_PLATFORM
-    if (!already_started) {
-        // If not already started, set host migration state to IN_GAME here; otherwise,
-        // set it in the startGame call.
-        pimpl->knights_app.setHostMigrationStateInGame();
-    }
-#endif
-}
-
-void GameManager::gotoMenuIfAllDownloaded()
-{
-    if (pimpl->download_count == 0    // wait until all files are downloaded
-    && !pimpl->tutorial_mode          // tutorial should never go into menu screen
+    // Go to MenuScreen, if applicable
+    if (!pimpl->tutorial_mode         // tutorial should never go into menu screen
     && !pimpl->game_in_progress) {    // don't go to menu screen if observation of a game is in progress (#214), or if we just host-migrated into an in-progress game
         std::unique_ptr<Screen> menu_screen(new MenuScreen(
             pimpl->knights_client,
@@ -1007,6 +981,14 @@ void GameManager::gotoMenuIfAllDownloaded()
             pimpl->saved_chat));
         pimpl->knights_app.requestScreenChange(std::move(menu_screen));
     }
+
+#ifdef ONLINE_PLATFORM
+    if (!already_started) {
+        // If not already started, set host migration state to IN_GAME here; otherwise,
+        // set it in the startGame call.
+        pimpl->knights_app.setHostMigrationStateInGame();
+    }
+#endif
 }
 
 void GameManager::joinGameDenied(const LocalKey &reason)
@@ -1018,24 +1000,6 @@ void GameManager::joinGameDenied(const LocalKey &reason)
     pimpl->chat_list.add(msg.asLatin1());
     pimpl->current_game_name.clear();
     pimpl->gui_invalid = true;
-}
-
-void GameManager::loadGraphic(const Graphic &g, const std::string &contents)
-{
-    pimpl->knights_app.getFileCache().installFile(g.getFileInfo(), contents);
-    const bool success = pimpl->knights_app.getGfxManager().loadGraphic(g);
-    ASSERT(success);
-    --(pimpl->download_count);
-    gotoMenuIfAllDownloaded();
-}
-
-void GameManager::loadSound(const Sound &s, const std::string &contents)
-{
-    pimpl->knights_app.getFileCache().installFile(s.getFileInfo(), contents);
-    const bool success = pimpl->knights_app.getSoundManager().loadSound(s);
-    ASSERT(success);
-    --(pimpl->download_count);
-    gotoMenuIfAllDownloaded();
 }
 
 namespace {

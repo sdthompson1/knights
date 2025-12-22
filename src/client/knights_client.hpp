@@ -58,6 +58,9 @@ public:
     explicit KnightsClient(bool allow_untrusted_strings);
     ~KnightsClient();
 
+    bool allowUntrustedStrings() const;
+
+
     //
     // Methods to handle incoming/outgoing data
     //
@@ -124,10 +127,6 @@ public:
 
     void setPauseMode(bool);  // only works for split screen games currently.
 
-    // downloading of gfx/sound files
-    void requestGraphics(const std::vector<int> &ids);
-    void requestSounds(const std::vector<int> &ids);
-    
 private:
     std::unique_ptr<KnightsClientImpl> pimpl;
 };
