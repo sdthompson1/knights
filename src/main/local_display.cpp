@@ -1403,9 +1403,10 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
         quest_rqmts_list.clear();
         int prev_group = -999;
 
-        const std::vector<std::string> & hints = status_display[0]->getQuestHints();
-        for (std::vector<std::string>::const_iterator it = hints.begin(); it != hints.end(); ++it) {
-            quest_rqmts_list.add(*it);
+        const std::vector<LocalMsg> & hints = status_display[0]->getQuestHints();
+        for (const LocalMsg &hint : hints) {
+            // UI only supports latin-1 for now
+            quest_rqmts_list.add(localization.get(hint).asLatin1());
         }
 
         if (quest_rqmts_list.getNumberOfElements() != old_size) force_setup_gui = true;

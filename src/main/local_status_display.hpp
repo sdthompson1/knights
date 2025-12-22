@@ -65,7 +65,7 @@ public:
     void clearMenuHighlight() { menu_highlight = false; }
 
     // get quest info
-    const std::vector<std::string> & getQuestHints() const { return quest_hints; }
+    const std::vector<LocalMsg> & getQuestHints() const { return quest_hints; }
     bool needQuestHintUpdate() { const bool result = need_gui_update; need_gui_update = false; return result; }
     
     //
@@ -77,7 +77,7 @@ public:
     void addSkull();
     void setHealth(int h);
     void setPotionMagic(PotionMagic pm, bool poison_immunity);
-    void setQuestHints(const std::vector<std::string> &);
+    void setQuestHints(const std::vector<LocalMsg> &);
     
 private:
     const ConfigMap &config_map;
@@ -117,7 +117,7 @@ private:
     MapDirection menu_highlight_dir;
 
     // quest requirements from server
-    std::vector<std::string> quest_hints;
+    std::vector<LocalMsg> quest_hints;
     bool need_gui_update;
 };
 

@@ -1019,7 +1019,8 @@ namespace {
 
     int AddHint(lua_State *lua)
     {
-        const std::string msg = luaL_checkstring(lua, 1);
+        lua_pushvalue(lua, 1);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
         const double order = luaL_checknumber(lua, 2);
         const double group = luaL_checknumber(lua, 3);
         Mediator::instance().addQuestHint(msg, order, group);

@@ -96,13 +96,29 @@ strength              Strength
 super                 Super
 
 
-# Quest Requirements
+# Quest Requirements (and related messages)
 book_required[one]        Book Required
 wand_required[one]        Wand Required
 gem_required[one]         Gem Required
 gem_required[other]       {0} Gems Required
 cannot_secure             This exit cannot be secured.
 not_in_special_pentagram  Not in Special Pentagram
+escape_via_entry          Escape via your entry point
+escape_via_opponent       Escape via your opponent's entry point
+escape_via_unknown        Escape via the unknown exit point
+escape_via_guarded        Escape via the guarded exit
+retrieve_book             Retrieve the book
+retrieve_wand             Retrieve the wand
+retrieve_gem[one]         Retrieve {0} gem
+retrieve_gem[other]       Retrieve {0} gems
+place_book                Place the book in the special pentagram
+strike_book               Strike the book with the wand
+deathmatch_objective      Score points by killing enemy knights
+secure_all_entry          Secure all entry points using the Wand of Securing
+destroy_all_knights       Destroy all enemy knights
+bat_objective[one]        Kill {0} bat
+bat_objective[other]      Kill {0} bats
+quest_req_separator       --- OR ---
 
 
 # Critical item respawning

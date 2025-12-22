@@ -523,7 +523,7 @@ void Mediator::changePlayerState(Player &pl, PlayerState new_state)
     }
 }
 
-void Mediator::addQuestHint(const std::string &msg, double order, double group)
+void Mediator::addQuestHint(const LocalMsg &msg, double order, double group)
 {
     quest_hint_manager.addHint(msg, order, group);
 }

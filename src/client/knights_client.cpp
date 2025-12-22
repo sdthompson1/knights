@@ -935,10 +935,12 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 case SERVER_EXT_SET_QUEST_HINTS:
                     {
                         int num_hints = buf.readUbyte();
-                        std::vector<std::string> hints;
+                        std::vector<LocalMsg> hints;
                         hints.reserve(num_hints);
                         for (int i = 0; i < num_hints; ++i) {
-                            hints.push_back(buf.readString());
+                            LocalMsg msg;
+                            ReadLocalMsg(buf, msg, pimpl->allow_untrusted_strings);
+                            hints.push_back(msg);
                         }
                         if (status_display) status_display->setQuestHints(hints);
                     }

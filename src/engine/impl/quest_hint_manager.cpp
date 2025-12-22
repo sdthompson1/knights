@@ -34,10 +34,10 @@ bool QuestHintManager::QuestHint::operator<(const QuestHintManager::QuestHint &r
         : group > rhs.group ? false
         : order < rhs.order ? true
         : order > rhs.order ? false
-        : msg < rhs.msg;
+        : msg.key < rhs.msg.key;
 }
 
-void QuestHintManager::addHint(const std::string &msg, double order, double group)
+void QuestHintManager::addHint(const LocalMsg &msg, double order, double group)
 {
     QuestHint i;
     i.msg = msg;
@@ -56,13 +56,13 @@ void QuestHintManager::sendHints(StatusDisplay &status_display)
     // Sort QuestHints into order
     std::sort(quest_hints.begin(), quest_hints.end());
 
-    // Work out the "Quest Requirements" strings
-    std::vector<std::string> quest_rqmts;
+    // Work out the "Quest Requirements" messages
+    std::vector<LocalMsg> quest_rqmts;
     for (std::vector<QuestHint>::const_iterator it = quest_hints.begin(); it != quest_hints.end(); ++it) {
         if (it != quest_hints.begin() && it->group != (it-1)->group) {
-            quest_rqmts.push_back("");
-            quest_rqmts.push_back("--- OR ---");
-            quest_rqmts.push_back("");
+            quest_rqmts.push_back(LocalMsg(LocalKey()));
+            quest_rqmts.push_back(LocalMsg(LocalKey("quest_req_separator")));
+            quest_rqmts.push_back(LocalMsg(LocalKey()));
         }
         quest_rqmts.push_back(it->msg);
     }

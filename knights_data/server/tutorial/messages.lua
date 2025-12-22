@@ -692,8 +692,3 @@ bat_failed_text = "Pull the lever again if you want to have another go."
 
 bat_success_title = "MISSION COMPLETE"
 bat_success_text = "Mission successful. Well done."
-
-bat_objective_sing = "Kill 1 bat"
-bat_objective_pl   = "Kill %d bats"
-normal_objective_1 = "Retrieve 5 gems"
-normal_objective_2 = "Escape via your entry point"

@@ -233,7 +233,7 @@ public:
         { return remaining_players.size(); }
 
     // Quest hint manager
-    void addQuestHint(const std::string &msg, double order, double group);
+    void addQuestHint(const LocalMsg &msg, double order, double group);
     void clearQuestHints();
     void sendQuestHints();
 

@@ -24,20 +24,22 @@
 #ifndef QUEST_HINT_MANAGER_HPP
 #define QUEST_HINT_MANAGER_HPP
 
-class StatusDisplay;
+#include "localization.hpp"
 
 #include <string>
 #include <vector>
 
+class StatusDisplay;
+
 class QuestHintManager {
 public:
-    void addHint(const std::string &msg, double order, double group);
+    void addHint(const LocalMsg &msg, double order, double group);
     void clearHints();
     void sendHints(StatusDisplay &sd);
 
 private:
     struct QuestHint {
-        std::string msg;
+        LocalMsg msg;
         double order;
         double group;
         

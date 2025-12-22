@@ -25,6 +25,7 @@
 
 #include "graphic.hpp"
 #include "protocol.hpp"
+#include "read_write_loc.hpp"
 #include "server_status_display.hpp"
 
 void ServerStatusDisplay::setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max)
@@ -58,7 +59,7 @@ void ServerStatusDisplay::setPotionMagic(PotionMagic pm, bool poison_immunity)
     buf.writeUbyte((poison_immunity?128:0) + int(pm));
 }
 
-void ServerStatusDisplay::setQuestHints(const std::vector<std::string> &hints)
+void ServerStatusDisplay::setQuestHints(const std::vector<LocalMsg> &hints)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_EXTENDED_MESSAGE);
@@ -69,7 +70,7 @@ void ServerStatusDisplay::setQuestHints(const std::vector<std::string> &hints)
     
     buf.writeUbyte(hints.size());
     for (int i = 0; i < int(hints.size()); ++i) {
-        buf.writeString(hints[i]);
+        WriteLocalMsg(buf, hints[i]);
     }
 
     buf.backpatchPayloadSize(scratch);

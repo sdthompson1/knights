@@ -86,7 +86,7 @@ kts.MENU = {
                     end,
                     features = function(S)
                         quest_retrieve(all_books, 1, "book_required")
-                        hint("Retrieve the book", 2, 1)
+                        hint("retrieve_book", 2, 1)
                     end
                 },
                 {
@@ -99,7 +99,7 @@ kts.MENU = {
                     end,
                     features = function(S)
                         quest_retrieve(all_wands, 1, "wand_required")
-                        hint("Retrieve the wand", 2, 1)
+                        hint("retrieve_wand", 2, 1)
                     end
                 },
                 {
@@ -115,8 +115,8 @@ kts.MENU = {
                                       all_wands,
                                       all_special_pentagrams,
                                       "not_in_special_pentagram")
-                        hint("Place the book in the special pentagram", 3, 1)
-                        hint("Strike the book with the wand", 4, 1)
+                        hint("place_book", 3, 1)
+                        hint("strike_book", 4, 1)
                         add_segment(special_pentagrams)
                     end
                 },
@@ -143,7 +143,7 @@ kts.MENU = {
                     end,
                     features = function(S)
                         quest_deathmatch()
-                        hint("Score points by killing enemy knights", 1, 1)
+                        hint("deathmatch_objective", 1, 1)
                     end
                 }
             }
@@ -214,8 +214,8 @@ kts.MENU = {
                     features = function(S)
                         add_item(i_wand_of_securing, S.num_wands, item_weights)
                         if S.num_players > 1 then
-                            hint("Secure all entry points using the Wand of Securing", 1, 2)
-                            hint("Destroy all enemy knights", 2, 2)
+                            hint("secure_all_entry", 1, 2)
+                            hint("destroy_all_knights", 2, 2)
                         end
                     end
                 },
@@ -267,10 +267,8 @@ kts.MENU = {
             show = show_zero_as_none,
             features = function(S)
                 quest_retrieve(i_gem, S.gems_needed, "gem_required")
-                if S.gems_needed == 1 then
-                    hint("Retrieve 1 gem", 1, 1)
-                elseif S.gems_needed > 1 then
-                    hint(string.format("Retrieve %d gems", S.gems_needed), 1, 1)
+                if S.gems_needed > 0 then
+                    hint({key="retrieve_gem", params={S.gems_needed}, plural=S.gems_needed}, 1, 1)
                 end
             end
         },
@@ -400,7 +398,7 @@ kts.MENU = {
                     text_key = "same_as_entry",
                     features = function(S)
                         set_exit("self")
-                        hint("Escape via your entry point", 5, 1)
+                        hint("escape_via_entry", 5, 1)
                     end
                 },
                 {
@@ -410,7 +408,7 @@ kts.MENU = {
                     max_players = 2,
                     features = function(S)
                         set_exit("other")
-                        hint("Escape via your opponent's entry point", 5, 1)
+                        hint("escape_via_opponent", 5, 1)
                     end
                 },
                 {
@@ -418,7 +416,7 @@ kts.MENU = {
                     text_key = "total_random",
                     features = function(S)
                         set_exit("random")
-                        hint("Escape via the unknown exit point", 5, 1)
+                        hint("escape_via_unknown", 5, 1)
                     end
                 },
                 {
@@ -427,7 +425,7 @@ kts.MENU = {
                     features = function(S)
                         add_segment(guarded_exits)
                         set_exit("special")
-                        hint("Escape via the guarded exit", 5, 1)
+                        hint("escape_via_guarded", 5, 1)
                     end
                 }
             }

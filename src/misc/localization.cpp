@@ -245,11 +245,18 @@ Coercri::UTF8String Localization::buildList(const std::vector<Coercri::UTF8Strin
 
 Coercri::UTF8String Localization::get(const LocalKey &key) const
 {
+    // Look for the key in the strings table
     auto it = strings.find(key);
     if (it != strings.end()) {
         return it->second;
     }
 
+    // Empty key is a special case - displays as an empty string
+    if (key == LocalKey()) {
+        return Coercri::UTF8String();
+    }
+
+    // Otherwise, it is a missing string
     return Coercri::UTF8String::fromUTF8Safe("Missing string [" + key.getKey() + "]");
 }
 
@@ -257,7 +264,7 @@ Coercri::UTF8String Localization::get(const LocalKey &key, const LocalKey &param
 {
     const Coercri::UTF8String& template_str = get(key);
     const Coercri::UTF8String& param_str = get(param);
-    
+
     std::vector<Coercri::UTF8String> params = { param_str };
     return substituteParameters(template_str, params);
 }
@@ -265,7 +272,7 @@ Coercri::UTF8String Localization::get(const LocalKey &key, const LocalKey &param
 Coercri::UTF8String Localization::get(const LocalKey &key, const Coercri::UTF8String &param) const
 {
     const Coercri::UTF8String& template_str = get(key);
-    
+
     std::vector<Coercri::UTF8String> params = { param };
     return substituteParameters(template_str, params);
 }

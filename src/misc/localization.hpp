@@ -44,7 +44,7 @@ struct lua_State;
 // A localization string key
 class LocalKey {
 public:
-    LocalKey() {}  // construct "null" key
+    LocalKey() {}  // construct "null" key (displays as empty string)
     explicit LocalKey(const char *k) : key(k) {}
     explicit LocalKey(const std::string &k) : key(k) {}
 

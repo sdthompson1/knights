@@ -30,6 +30,7 @@
 #ifndef STATUS_DISPLAY_HPP
 #define STATUS_DISPLAY_HPP
 
+#include "localization.hpp"
 #include "potion_magic.hpp"
 
 #include <string>
@@ -64,7 +65,7 @@ public:
     virtual void setHealth(int h) = 0;
     virtual void setPotionMagic(PotionMagic pm, bool poison_immunity) = 0;
     
-    virtual void setQuestHints(const std::vector<std::string> &quest_hints) = 0;
+    virtual void setQuestHints(const std::vector<LocalMsg> &quest_hints) = 0;
 };
 
 #endif

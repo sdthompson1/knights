@@ -216,7 +216,7 @@ void LocalStatusDisplay::setPotionMagic(PotionMagic pm, bool pi)
     poison_immun = pi;
 }
 
-void LocalStatusDisplay::setQuestHints(const std::vector<std::string> &rqmts)
+void LocalStatusDisplay::setQuestHints(const std::vector<LocalMsg> &rqmts)
 {
     quest_hints = rqmts;
     need_gui_update = true;

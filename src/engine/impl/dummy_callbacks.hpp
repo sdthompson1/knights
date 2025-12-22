@@ -66,7 +66,7 @@ public:
     virtual void addSkull() override { }
     virtual void setHealth(int) override { }
     virtual void setPotionMagic(PotionMagic, bool) override { }
-    virtual void setQuestHints(const std::vector<std::string> &) override { }
+    virtual void setQuestHints(const std::vector<LocalMsg> &) override { }
 };
 
 class DummyCallbacks : public KnightsCallbacks {

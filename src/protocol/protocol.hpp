@@ -175,7 +175,7 @@ enum ServerMessageCode {
 };
 
 enum ServerExtendedCode {
-    SERVER_EXT_SET_QUEST_HINTS = 1,   // TODO: These need to be localized
+    SERVER_EXT_SET_QUEST_HINTS = 1,   // num hints, hints as LocalMsgs
     SERVER_EXT_NEXT_ANNOUNCEMENT_IS_ERROR = 2,
     SERVER_EXT_DISABLE_VIEW = 3
 };

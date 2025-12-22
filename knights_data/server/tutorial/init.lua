@@ -445,20 +445,14 @@ function update_quest_rqmts()
 end
 
 function set_quest_rqmts()
-   kts.ClearHints()
-   if bats_remaining > 0 then
-      local msg
-      if bats_remaining == 1 then
-         msg = bat_objective_sing
-      else
-         msg = string.format(bat_objective_pl, bats_remaining)
-      end
-      kts.AddHint(msg, 1, 1)
-      kts.AddHint("", 2, 1)
-   else
-      kts.AddHint(normal_objective_1, 1, 1)
-      kts.AddHint(normal_objective_2, 2, 1)
-   end
+    kts.ClearHints()
+    if bats_remaining > 0 then
+        kts.AddHint({key="bat_objective", params={bats_remaining}, plural=bats_remaining}, 1, 1)
+        kts.AddHint("", 2, 1)
+    else
+        kts.AddHint({key="retrieve_gem", params={5}, plural=5}, 1, 1)
+        kts.AddHint("escape_via_entry", 2, 1)
+    end
 end
 
 function schedule_bat()
