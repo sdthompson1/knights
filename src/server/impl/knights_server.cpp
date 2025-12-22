@@ -73,9 +73,6 @@ public:
     std::string ip_addr;
     bool error_sent;
 
-    // this is used for logging/game recording.
-    int unique_id;
-
     // what type of controls they are using
     bool approach_based_controls;
     bool action_bar_controls;
@@ -99,8 +96,6 @@ public:
     std::string password;
 
     KnightsLog *knights_log;
-
-    int conn_counter;
 };
 
 namespace {
@@ -250,7 +245,6 @@ KnightsServer::KnightsServer(boost::shared_ptr<Coercri::Timer> timer,
     pimpl->old_motd_file = old_motd_file;
     pimpl->password = password;
     pimpl->knights_log = 0;
-    pimpl->conn_counter = 1;
 }
 
 KnightsServer::~KnightsServer()
@@ -260,7 +254,6 @@ KnightsServer::~KnightsServer()
 ServerConnection & KnightsServer::newClientConnection(const std::string &ip, const PlayerID &platform_user_id)
 {
     boost::shared_ptr<ServerConnection> new_conn(new ServerConnection(ip, platform_user_id));
-    new_conn->unique_id = pimpl->conn_counter++;
     pimpl->connections.push_back(new_conn);
 
     // log that we got a new connection (can't show player name yet).
@@ -720,7 +713,6 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
     const std::string ip = conn.ip_addr;
     const std::string game_name = conn.game_name;
     boost::shared_ptr<KnightsGame> game = conn.game;
-    const int unique_id = conn.unique_id;
     const bool accepted = conn.connection_accepted;
     
     // inform the KnightsGame (if we were connected to a game)
