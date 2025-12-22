@@ -901,7 +901,5 @@ int main(int argc, char **argv)
 
 // Fix "bug" with MSVC static libs + global object constructors.
 #ifdef _MSC_VER
-#pragma comment (linker, "/include:InitMagicActions")
-#pragma comment (linker, "/include:InitScriptActions")
 #pragma comment (linker, "/include:InitControls")
 #endif

@@ -235,7 +235,5 @@ void boost::assertion_failed(char const * expr, char const * function, char cons
 
 // Fix "bug" with MSVC static libs + global object constructors.
 #ifdef _MSC_VER
-#pragma comment (linker, "/include:InitMagicActions")
-#pragma comment (linker, "/include:InitScriptActions")
 #pragma comment (linker, "/include:InitControls")
 #endif
