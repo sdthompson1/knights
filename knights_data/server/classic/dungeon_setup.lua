@@ -324,9 +324,7 @@ function generate_dungeon()
    end
 
    if Dsetup.layout ~= orig_layout then
-      print("Could not generate a \"" .. orig_layout.name .. 
-            "\" dungeon for this quest. Using \"" .. Dsetup.layout.name ..
-            "\" instead.")
+      kts.PrintLoc({key="could_not_generate", params={orig_layout.name_key, Dsetup.layout.name_key}})
    end
 end
 

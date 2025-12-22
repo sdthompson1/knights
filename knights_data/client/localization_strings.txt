@@ -61,6 +61,7 @@ is_winner[one]          {0} is the winner!
 is_winner[other]        {0...} are the winners!
 game_completed          Game completed in {0}m {1}s.
 x_disconnected          {0} (Disconnected)
+could_not_generate      Could not generate a "{0}" dungeon for this quest. Using "{1}" instead.
 
 
 # Controls

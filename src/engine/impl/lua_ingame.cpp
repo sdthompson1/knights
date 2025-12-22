@@ -608,6 +608,25 @@ namespace {
         return UTF8String::fromUTF8Safe(msg);
     }
 
+    // Helper for Print and PrintLoc
+    bool ReadPrintPlayer(Mediator &med, lua_State *lua, int &player_num, int &start)
+    {
+        if (!lua_isnil(lua, 1) && IsLuaPtr<Player>(lua, 1)) {
+            const Player * player = ReadLuaPtr<Player>(lua, 1);
+            ++start;
+            if (player) {
+                for (int i = 0; i < med.getPlayers().size(); ++i) {
+                    if (med.getPlayers()[i] == player) {
+                        player_num = i;
+                        break;
+                    }
+                }
+                if (player_num < 0) return false;  // that player doesn't seem to exist (shouldn't happen)
+            }
+        }
+        return true;
+    }
+    
     // Input: (optional) player, followed by any number of args.
     // Cxt: none
     // Output: none
@@ -619,20 +638,8 @@ namespace {
             // find out if there is a 'player' argument, if so, convert it to a player number
             int player_num = -1;
             int start = 1;
-            if (!lua_isnil(lua, 1) && IsLuaPtr<Player>(lua, 1)) {
-                const Player * player = ReadLuaPtr<Player>(lua, 1);
-                ++start;
-                if (player) {
-                    for (int i = 0; i < med.getPlayers().size(); ++i) {
-                        if (med.getPlayers()[i] == player) {
-                            player_num = i;
-                            break;
-                        }
-                    }
-                    if (player_num < 0) return 0;  // that player doesn't seem to exist (shouldn't happen)
-                }
-            }
-            
+            if (!ReadPrintPlayer(med, lua, player_num, start)) return 0;
+
             // print the message
             med.gameMsgLoc(player_num, LocalMsg{LocalKey("raw_msg"), {LocalParam(BuildMsg(lua, start))}});
 
@@ -642,6 +649,24 @@ namespace {
             UTF8String msg = BuildMsg(lua, 1);
             std::cout << msg.asUTF8() << std::endl;
         }
+        return 0;
+    }
+
+    // Input: (optional) player, followed by a localized message (string or table)
+    // Cxt: none
+    // Output: none
+    // Only works in-game or on quest selection menu (assumes existence of Mediator)
+    int PrintLoc(lua_State *lua)
+    {
+        Mediator &med = Mediator::instance();
+        int player_num = -1;
+        int start = 1;
+        if (!ReadPrintPlayer(med, lua, player_num, start)) return 0;
+
+        lua_pushvalue(lua, start);
+        LocalMsg msg = PopLocalMsgFromLua(lua);
+
+        med.gameMsgLoc(player_num, msg);
         return 0;
     }
 
@@ -1260,6 +1285,9 @@ void AddLuaIngameFunctions(lua_State *lua)
     // "print" is set globally, NOT in kts table
     PushCFunction(lua, &Print);       // [env kts Print]
     lua_setfield(lua, -3, "print");   // [env kts]
+
+    PushCFunction(lua, &PrintLoc);
+    lua_setfield(lua, -2, "PrintLoc");
 
     PushCFunction(lua, &RotateAddPos);
     lua_setfield(lua, -2, "RotateAddPos");

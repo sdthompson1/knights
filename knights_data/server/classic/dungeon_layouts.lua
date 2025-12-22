@@ -20,7 +20,7 @@
 
 
 d_huge = {
-   name = "Huge",
+   name_key = "huge",
    func = function()
       local choice = kts.RandomRange(1,3)
       if choice == 1 then
@@ -57,7 +57,7 @@ d_huge = {
 }
 
 d_big = {
-   name = "Big",
+   name_key = "big",
    next = d_huge,
    func = function()
       if kts.RandomChance(0.75) then
@@ -85,7 +85,7 @@ d_big = {
 }
 
 d_basic = {
-   name = "Basic",
+   name_key = "basic",
    next = d_big,
    func = function()
       return {
@@ -100,7 +100,7 @@ d_basic = {
 }
 
 d_small = {
-   name = "Small",
+   name_key = "small",
    next = d_basic,
    func = function()
       return {
@@ -114,7 +114,7 @@ d_small = {
 }
 
 d_tiny = {
-   name = "Tiny",
+   name_key = "tiny",
    next = d_small,
    func = function()
       return {
@@ -128,7 +128,7 @@ d_tiny = {
 }
 
 d_long_snake = {
-   name = "Long Snake",
+   name_key = "long_snake",
    next = d_huge,
    func = function()
       local choice = kts.RandomRange(1,5)
@@ -182,7 +182,7 @@ d_long_snake = {
 }
 
 d_snake = {
-   name = "Snake",
+   name_key = "snake",
    next = d_long_snake,
    func = function()
       local choice = kts.RandomRange(1,10)
@@ -231,7 +231,7 @@ d_snake = {
 }
 
 d_ring = {
-   name = "Ring",
+   name_key = "ring",
    next = d_big,
    func = function()
       local choice = kts.RandomRange(1,6)
