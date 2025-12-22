@@ -155,7 +155,7 @@ namespace {
         const char *filename = luaL_checkstring(lua, 1);
 
         lua_getglobal(lua, "_CWD"); // [_CWD]
-        const char *cwd = lua_tostring(lua, -1);
+        const char *cwd = lua_tostring(lua, -1);  // Note: could be NULL; using GetCWD would probably be better
         Sound * sound = kc->addLuaSound(FileInfo(filename, cwd));
         lua_pop(lua, 1);  // []
 

@@ -100,7 +100,7 @@ std::unique_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
     }
 
     lua_getglobal(lua, "_CWD");  // [_CWD]
-    const char *cwd = lua_tostring(lua, -1);
+    const char *cwd = lua_tostring(lua, -1); // Note: could be NULL; using GetCWD would probably be better
     std::unique_ptr<Graphic> gfx(new Graphic(FileInfo(filename, cwd), x, y, r, g, b, size_hint_num, size_hint_denom));
     lua_pop(lua, 1);  // []
     
