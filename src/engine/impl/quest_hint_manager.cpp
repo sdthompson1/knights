@@ -60,9 +60,9 @@ void QuestHintManager::sendHints(StatusDisplay &status_display)
     std::vector<LocalMsg> quest_rqmts;
     for (std::vector<QuestHint>::const_iterator it = quest_hints.begin(); it != quest_hints.end(); ++it) {
         if (it != quest_hints.begin() && it->group != (it-1)->group) {
-            quest_rqmts.push_back(LocalMsg(LocalKey()));
-            quest_rqmts.push_back(LocalMsg(LocalKey("quest_req_separator")));
-            quest_rqmts.push_back(LocalMsg(LocalKey()));
+            quest_rqmts.push_back({LocalKey()});
+            quest_rqmts.push_back({LocalKey("quest_req_separator")});
+            quest_rqmts.push_back({LocalKey()});
         }
         quest_rqmts.push_back(it->msg);
     }
