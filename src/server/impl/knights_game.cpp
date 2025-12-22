@@ -876,6 +876,13 @@ namespace {
         // SERVER_GOTO_MENU (or whatever else it wants to do).
         bool update(int time_delta)
         {
+            // Note: mutex must be locked during the whole update cycle, because
+            // KnightsEngine is accessing things like the lua state, which the
+            // main thread is also accessing at the same time.
+#ifndef VIRTUAL_SERVER
+            boost::lock_guard<boost::mutex> lock(kg.my_mutex);
+#endif
+
             // Pre-update activities
             if (!preUpdate()) return true;
 
@@ -891,10 +898,6 @@ namespace {
         // Returns true if should continue to the main update, or false if game is paused.
         bool preUpdate()
         {
-#ifndef VIRTUAL_SERVER
-            boost::lock_guard<boost::mutex> lock(kg.my_mutex);
-#endif
-
             // Add any new players to the game.
             for (boost::shared_ptr<GameConnection> conn : kg.incoming_connections) {
                 AddNewPlayer(kg, conn, engine.get(), callbacks.get());
@@ -986,10 +989,6 @@ namespace {
         // Returns true if game is still running, or false if it has ended.
         bool postUpdate(int time_delta)
         {
-#ifndef VIRTUAL_SERVER
-            boost::lock_guard<boost::mutex> lock(kg.my_mutex);
-#endif
-
             // Read control inputs
             for (game_conn_vector::const_iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                 if (!(*it)->obs_flag) {
@@ -1111,9 +1110,6 @@ namespace {
             if (time_to_force_quit > 0) {
                 time_to_force_quit -= time_delta;
                 if (time_to_force_quit <= 0) {
-#ifndef VIRTUAL_SERVER
-                    boost::lock_guard<boost::mutex> lock(kg.my_mutex);
-#endif
                     ReturnToMenu(kg);
                     return false;  // force game loop to quit
                 }
