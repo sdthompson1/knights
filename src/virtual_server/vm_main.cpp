@@ -151,8 +151,7 @@ int main()
         KnightsServer server(timer,
                              false,    // don't allow split screen
                              "",       // no motd file
-                             "",       // no old_motd file
-                             "");      // no password
+                             "");      // no old_motd file
 
         // Create a single KnightsGame on the server.
         boost::shared_ptr<KnightsConfig> config(new KnightsConfig("main.lua", false));

@@ -63,7 +63,7 @@
 namespace {
 
     struct ServerInfo {
-        ServerInfo() : port(0), num_players(0), age(0), password_required(false) { }
+        ServerInfo() : port(0), num_players(0), age(0) { }
         
         std::string ip_address;
         std::string hostname;
@@ -71,8 +71,7 @@ namespace {
         int port;
         int num_players;
         int age;   // Number of milliseconds ago that we last had an update from this server, or -1 for metaserver entries.
-        bool password_required;
-        
+
         // used for sorting the displayed list.
         bool operator<(const ServerInfo &other) const {
             return hostname < other.hostname ? true 
@@ -116,9 +115,6 @@ namespace {
 
         str << "  -  " << si.num_players << " player";
         if (si.num_players != 1) str << "s";
-        if (si.password_required) {
-            str << "  -  password required";
-        }
         if (!si.description.empty()) {
             str << "  -  " << si.description;
         }
@@ -251,8 +247,6 @@ namespace {
                         si.num_players = std::atoi(val.c_str());
                     } else if (key == "description") {
                         si.description = val;
-                    } else if (key == "password_required") {
-                        si.password_required = std::atoi(val.c_str()) != 0;
                     }
                 }
             }

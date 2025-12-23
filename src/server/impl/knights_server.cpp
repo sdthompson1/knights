@@ -42,15 +42,14 @@
 class ServerConnection {
 public:
     explicit ServerConnection(const std::string &ip, const PlayerID &platform_user_id)
-        : wait_until(0), platform_user_id(platform_user_id), game_conn(nullptr), client_version(0),
+        : platform_user_id(platform_user_id), game_conn(nullptr), client_version(0),
           version_string_received(false), connection_accepted(false),
-          failed_password_attempts(0), ip_addr(ip), error_sent(false),
+          ip_addr(ip), error_sent(false),
           approach_based_controls(true), action_bar_controls(false)
     { }
     
     // output buffer
     std::vector<unsigned char> output_data;
-    unsigned int wait_until;   // don't send output before this time. used for password checking. 0 = disabled.
 
     // player id
     PlayerID player_id;
@@ -66,10 +65,9 @@ public:
     int client_version;
     bool version_string_received;
     
-    // have we accepted their player name (and password if applicable) yet?
+    // have we accepted their player name yet?
     bool connection_accepted;
 
-    int failed_password_attempts;
     std::string ip_addr;
     bool error_sent;
 
@@ -77,8 +75,6 @@ public:
     bool approach_based_controls;
     bool action_bar_controls;
 };
-
-const int MAX_PASSWORD_ATTEMPTS = 5;
 
 typedef std::vector<boost::shared_ptr<ServerConnection> > connection_vector;
 typedef std::map<std::string, boost::shared_ptr<KnightsGame> > game_map;
@@ -93,7 +89,6 @@ public:
 
     std::string motd_file;
     std::string old_motd_file;
-    std::string password;
 
     KnightsLog *knights_log;
 };
@@ -236,14 +231,13 @@ namespace {
 
 KnightsServer::KnightsServer(boost::shared_ptr<Coercri::Timer> timer,
                              bool allow_split_screen, const std::string &motd_file, 
-                             const std::string &old_motd_file, const std::string &password)
+                             const std::string &old_motd_file)
     : pimpl(new KnightsServerImpl)
 {
     pimpl->timer = timer;
     pimpl->allow_split_screen = allow_split_screen;
     pimpl->motd_file = motd_file;
     pimpl->old_motd_file = old_motd_file;
-    pimpl->password = password;
     pimpl->knights_log = 0;
 }
 
@@ -328,9 +322,9 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
             const ubyte msg = buf.readUbyte();
 
-            // If the player name and password have not yet been accepted then the client can only send us two
-            // messages: CLIENT_SET_PLAYER_ID and CLIENT_SEND_PASSWORD.
-            if (!conn.connection_accepted && msg != CLIENT_SET_PLAYER_ID && msg != CLIENT_SEND_PASSWORD) {
+            // If the player name have not yet been accepted then the client can only send us one
+            // message: CLIENT_SET_PLAYER_ID.
+            if (!conn.connection_accepted && msg != CLIENT_SET_PLAYER_ID) {
                 // note: if an error has already been sent then do not send another 'access denied' error.
                 // (have had problems with useful error messages being overwritten by not-very-useful
                 // 'access denied' messages...)
@@ -373,45 +367,11 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                             pimpl->knights_log->logMessage("\tplayer connected\taddr=" + conn.ip_addr + ", player=" + new_id.asString());
                         }
 
-                        // If the server has a password then request the password. Otherwise proceed as if the
-                        // password has just been accepted.
-                        if (!pimpl->password.empty()) {
-                            out.writeUbyte(SERVER_REQUEST_PASSWORD);
-                            out.writeUbyte(1);
-                        } else {
-                            SendStartupMessages(out, conn, pimpl->connections, pimpl->games);
-                        }
+                        SendStartupMessages(out, conn, pimpl->connections, pimpl->games);
                     }
                 }
                 break;
 
-            case CLIENT_SEND_PASSWORD:
-                {
-                    const std::string their_password = buf.readString();
-                    Coercri::OutputByteBuf out(conn.output_data);
-                    if (conn.player_id.empty()) {
-                        throw ProtocolError(LocalKey("must_set_id"));
-                    }
-                    if (conn.failed_password_attempts == MAX_PASSWORD_ATTEMPTS) {
-                        throw ProtocolError(LocalKey("password_incorrect"));
-                    } else if (their_password == pimpl->password) {
-                        Coercri::OutputByteBuf(conn.output_data);
-                        SendStartupMessages(out, conn, pimpl->connections, pimpl->games);
-                        if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tpassword accepted\tplayer=" + conn.player_id.asString());
-                        }
-                    } else {
-                        ++conn.failed_password_attempts;
-                        conn.wait_until = pimpl->timer->getMsec() + 2000;  // make them wait a couple of seconds between password attempts
-                        out.writeUbyte(SERVER_REQUEST_PASSWORD);
-                        out.writeUbyte(0);
-                        if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tpassword rejected\tplayer=" + conn.player_id.asString());
-                        }
-                    }
-                }
-                break;
-            
             case CLIENT_JOIN_GAME:
             case CLIENT_JOIN_GAME_SPLIT_SCREEN:
                 {
@@ -666,18 +626,10 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 void KnightsServer::getOutputData(ServerConnection &conn,
                                   std::vector<ubyte> &data)
 {
-    if (conn.wait_until != 0 && (int(pimpl->timer->getMsec() - conn.wait_until)) > 0) {
-        // don't release the output yet -- still waiting
-        data.clear();
-
-    } else {    
-        conn.wait_until = 0;
+    ReadDataFromKnightsGame(conn);
         
-        ReadDataFromKnightsGame(conn);
-        
-        data.swap(conn.output_data);
-        conn.output_data.clear();
-    }
+    data.swap(conn.output_data);
+    conn.output_data.clear();
 }
 
 void KnightsServer::connectionClosed(ServerConnection &conn)

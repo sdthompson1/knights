@@ -97,9 +97,6 @@ public:
                                   bool already_started) = 0;
     virtual void joinGameDenied(const LocalKey &reason) = 0;
 
-    // called if the server wants us to enter a password before proceeding.
-    virtual void passwordRequested(bool first_attempt) = 0;
-    
     // called when other players connect to or disconnect from the server.
     virtual void playerConnected(const PlayerID &id) = 0;
     virtual void playerDisconnected(const PlayerID &id) = 0;

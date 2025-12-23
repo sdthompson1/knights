@@ -111,10 +111,6 @@ public:
     
     void finishedLoading();  // tell server that we have finished loading and are ready to start game
 
-    // send password to server
-    // server will reply with initialPlayerList() if successful, or passwordRequested(false) if not.
-    void sendPassword(const std::string &password);
-    
     // Send a control to my knight
     // Note: continuous controls will act until cancelled (by sending a
     // `nullptr`), while discontinuous controls will act once only.

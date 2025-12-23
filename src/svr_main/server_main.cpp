@@ -412,8 +412,7 @@ struct MetaserverThread {
         str << "port=" << NonNegative(g_config->getPort());
         str << "&description=" << Escape(curl_stuff.curl, g_config->getDescription());
         str << "&num_players=" << NonNegative(num_players);
-        str << "&password_required=" << (g_config->getPassword().empty() ? "0" : "1");
-        
+
         prev_num_players = num_players;
 
         curl_easy_setopt(curl_stuff.curl, CURLOPT_COPYPOSTFIELDS, str.str().c_str());
@@ -777,8 +776,7 @@ int main(int argc, char **argv)
         // Create the KnightsServer.
         g_knights_server.reset(new KnightsServer(timer, 
                                                  false,  // don't allow split screen
-                                                 g_config->getMOTDFile(), g_config->getOldMOTDFile(),
-                                                 g_config->getPassword()));
+                                                 g_config->getMOTDFile(), g_config->getOldMOTDFile()));
         g_knights_server->setKnightsLog(&my_log);
         
         // Set up Coercri network driver, and start listening for incoming connections.

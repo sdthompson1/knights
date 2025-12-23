@@ -60,8 +60,6 @@ public:
     bool getUseMetaserver() const { return metaserver; }
     bool getReplyToBroadcast() const { return broadcast; }
 
-    const std::string & getPassword() const { return password; }  // empty if no password.
-
     const std::string & getKnightsDataDir() const { return knights_data_dir; }  // empty means use default (DATA_DIR or knights_data)
     const std::string & getLogFile() const { return log_file; }  // empty means print log to stdout.
 
@@ -71,7 +69,6 @@ private:
     int max_players;   // must be > 0.
     int max_games;     // must be >= 0. 0 means unlimited.
     bool metaserver, broadcast;
-    std::string password;
     std::string knights_data_dir;
     std::string log_file;
 };

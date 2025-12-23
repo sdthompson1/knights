@@ -159,7 +159,6 @@
     <ClCompile Include="..\..\src\main\online_multiplayer_screen.cpp" />
     <ClCompile Include="..\..\src\main\options.cpp" />
     <ClCompile Include="..\..\src\main\options_screen.cpp" />
-    <ClCompile Include="..\..\src\main\password_screen.cpp" />
     <ClCompile Include="..\..\src\main\potion_renderer.cpp" />
     <ClCompile Include="..\..\src\main\skull_renderer.cpp" />
     <ClCompile Include="..\..\src\main\sound_manager.cpp" />
@@ -217,7 +216,6 @@
     <ClInclude Include="..\..\src\main\online_multiplayer_screen.hpp" />
     <ClInclude Include="..\..\src\main\options.hpp" />
     <ClInclude Include="..\..\src\main\options_screen.hpp" />
-    <ClInclude Include="..\..\src\main\password_screen.hpp" />
     <ClInclude Include="..\..\src\main\potion_renderer.hpp" />
     <ClInclude Include="..\..\src\main\screen.hpp" />
     <ClInclude Include="..\..\src\main\skull_renderer.hpp" />

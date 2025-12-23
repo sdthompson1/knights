@@ -41,7 +41,6 @@
 #include "menu_screen.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
-#include "password_screen.hpp"
 #include "rstream_error.hpp"
 #include "sound.hpp"
 #include "sound_manager.hpp"
@@ -1009,13 +1008,6 @@ namespace {
             return x.second.empty();
         }
     };
-}
-
-void GameManager::passwordRequested(bool first_attempt)
-{
-    // Go to PasswordScreen
-    std::unique_ptr<Screen> password_screen(new PasswordScreen(pimpl->knights_client, first_attempt));
-    pimpl->knights_app.requestScreenChange(std::move(password_screen));
 }
 
 void GameManager::playerConnected(const PlayerID &id)

@@ -22,18 +22,16 @@ $ip_address = $db->escape_string($ip_address);
 $port = $db->escape_string($_POST['port']);
 $description = $db->escape_string($_POST['description']);
 $num_players = $db->escape_string($_POST['num_players']);
-$password_required = $db->escape_string($_POST['password_required']);
 
 // Insert the data
 // Hostname is set to same as ip_address at this point.
 
 $query = sprintf("INSERT INTO %s (ip_address, port, hostname, last_updated, num_players, "
-                 . " description, password_required) VALUES ('%s', '%s', '%s', now(), '%s', '%s', '%s')"
+                 . " description) VALUES ('%s', '%s', '%s', now(), '%s', '%s')"
                  . " ON DUPLICATE KEY UPDATE last_updated=VALUES(last_updated),"
                                          . " num_players=VALUES(num_players),"
                                          . " description=VALUES(description),"
-                                         . " password_required=VALUES(password_required)",
-                 DATABASE_TABLE, $ip_address, $port, $ip_address, $num_players, $description, $password_required);
+                 DATABASE_TABLE, $ip_address, $port, $ip_address, $num_players, $description);
 $db->query($query);
 
 

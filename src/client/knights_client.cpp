@@ -459,13 +459,6 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
-        case SERVER_REQUEST_PASSWORD:
-            {
-                const bool first_attempt = buf.readUbyte() != 0;
-                if (client_cb) client_cb->passwordRequested(first_attempt);
-            }
-            break;
-
         case SERVER_UPDATE_GAME:
             {
                 const std::string game_name = buf.readString();
@@ -1033,13 +1026,6 @@ void KnightsClient::randomQuest()
 void KnightsClient::finishedLoading()
 {
     pimpl->out.push_back(CLIENT_FINISHED_LOADING);
-}
-
-void KnightsClient::sendPassword(const std::string &password)
-{
-    Coercri::OutputByteBuf buf(pimpl->out);
-    buf.writeUbyte(CLIENT_SEND_PASSWORD);
-    buf.writeString(password);
 }
 
 void KnightsClient::sendControl(int plyr, const UserControl *ctrl)

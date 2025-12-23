@@ -138,8 +138,6 @@ Config::Config(std::istream &str)
             metaserver = StrToBool(line_counter, value);
         } else if (lkey == "usebroadcast") {
             broadcast = StrToBool(line_counter, value);
-        } else if (lkey == "password") {
-            password = value;
         } else if (lkey == "knightsdatadir") {
             knights_data_dir = value;
         } else if (lkey == "logfile") {

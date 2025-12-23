@@ -65,7 +65,7 @@ enum ClientMessageCode {
     CLIENT_READY_TO_END = 12,        // (I have clicked mouse on winner/loser screen and want to go to lobby) no extra data
     //CLIENT_QUIT = 13,                // (I have pressed escape and want to go to lobby) no extra data
     CLIENT_SET_PAUSE_MODE = 14,      // followed by ubyte (paused-flag). only works for split screen mode currently.
-    CLIENT_SEND_PASSWORD = 15,       // followed by string (the password).
+    // REMOVED: CLIENT_SEND_PASSWORD (15)
     CLIENT_SET_OBS_FLAG = 17,        // followed by ubyte (0=I want to be a player, 1=I want to be an observer)
     CLIENT_REQUEST_SPEECH_BUBBLE = 18,   // followed by ubyte (0=don't show, 1=show)
     CLIENT_SET_APPROACH_BASED_CONTROLS = 19,     // followed by ubyte (1=true 0=false)
@@ -109,8 +109,8 @@ enum ServerMessageCode {
     SERVER_ANNOUNCEMENT_LOC = 32,    // followed by string (localkey) + ubyte (num params) + params; see read_write_loc.cpp for the format
 
     SERVER_POP_UP_WINDOW = 33,       // complex. only used in 1-player games.
-    
-    SERVER_REQUEST_PASSWORD = 35,    // followed by ubyte (first_attempt)
+
+    // REMOVED: SERVER_REQUEST_PASSWORD (35)
 
     SERVER_UPDATE_GAME = 36,         // followed by string (game name), varint (num_players), varint (num_observers), ubyte (status code)
     SERVER_DROP_GAME = 37,           // followed by string (game name)

@@ -208,7 +208,6 @@ public:
                                   bool already_started) override;
     virtual void joinGameDenied(const LocalKey &reason) override;     // goes to ErrorScreen
 
-    virtual void passwordRequested(bool first_attempt) override;
     virtual void playerConnected(const PlayerID &id) override;
     virtual void playerDisconnected(const PlayerID &id) override;
 

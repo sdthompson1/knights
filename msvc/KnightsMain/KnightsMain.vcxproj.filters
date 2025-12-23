@@ -144,9 +144,6 @@
     <ClCompile Include="..\..\src\main\options_screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\main\password_screen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\main\potion_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -312,9 +309,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\main\options_screen.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\main\password_screen.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\main\potion_renderer.hpp">

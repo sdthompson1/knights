@@ -138,7 +138,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(boost::shared_ptr<Coercri::Timer> timer,
     : exit_flag(false),
       net_driver(nullptr),
       timer(timer),
-      server(new KnightsServer(timer, true, "", "", ""))  // allow split-screen
+      server(new KnightsServer(timer, true, "", ""))  // allow split-screen
 {
     server->startNewGame(config, game_name);
     local_server_conn = &server->newClientConnection("", PlayerID());
@@ -153,7 +153,7 @@ SimpleKnightsLobby::SimpleKnightsLobby(Coercri::NetworkDriver &net_driver,
     : exit_flag(false),
       net_driver(&net_driver),
       timer(timer),
-      server(new KnightsServer(timer, false, "", "", ""))  // don't allow split-screen
+      server(new KnightsServer(timer, false, "", ""))  // don't allow split-screen
 {
     server->startNewGame(config, game_name);
     local_server_conn = &server->newClientConnection("", PlayerID());

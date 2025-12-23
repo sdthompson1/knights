@@ -28,10 +28,6 @@ UseMetaserver = no
 UseBroadcast = no
 
 
-# Set this to password protect your server
-# Password = example
-
-
 # Log file to use. If unset, log messages will be printed to stdout.
 # LogFile = /path/to/log_file.txt
 

@@ -6,8 +6,6 @@ player_id_already_set           Player ID already set
 player_id_mismatch              Player ID mismatch
 player_id_empty                 Player ID is empty
 already_connected               A player with your name or ID is already connected
-must_set_id                     Must set player ID before sending password
-password_incorrect              Too many failed password attempts
 already_in_game                 You are already connected to a game
 game_not_found                  Game not found on server
 split_screen_not_allowed        Split screen game not allowed
