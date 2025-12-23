@@ -238,7 +238,7 @@ desc_necronomicon               The Necronomicon is sealed behind locked doors. 
 
 desc_destruction                The Wand of Destruction terminates targets.
 desc_open_ways                  The Wand of Open Ways may be used to open any item.
-desc_securing                   The Wand of Securing is used to secure entry points. Securing an entry point prevents your opponents respawning there.
+desc_securing                   The Wand of Securing is used to secure entry points, preventing your opponents from respawning there.
 desc_undeath                    The Wand of Undeath controls and slays the undead.
 
 desc_duel_to_death              You must secure all entry points to prevent your opponents entering the dungeon, and then destroy all enemy knights.
