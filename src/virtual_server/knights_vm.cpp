@@ -363,6 +363,14 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
             } else if (fd == TICK_DEVICE_FD) {
                 // Append data to vm_output_data if available (ignore otherwise)
                 if (vm_output_data) {
+
+                    // Check the VM is not sending us an excessive amount of data
+                    constexpr size_t MAX_SIZE = 1024 * 1024;  // 1 MB, should be more than enough
+                    if (vm_output_data->size() + size > MAX_SIZE) {
+                        throw std::runtime_error("Tick data max size exceeded");
+                    }
+
+                    // Copy the tick data to vm_output_data, one byte at a time
                     uint32_t count = size;
                     while (count > 0) {
                         vm_output_data->push_back(readByteU(addr++));
