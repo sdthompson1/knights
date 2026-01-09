@@ -25,7 +25,7 @@ MaxGames = 40
 # no longer work. UseBroadcast should still work, and is useful for
 # LAN servers.
 UseMetaserver = no
-UseBroadcast = no
+UseBroadcast = yes
 
 
 # Log file to use. If unset, log messages will be printed to stdout.
