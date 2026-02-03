@@ -47,6 +47,7 @@
 #include "text_formatter.hpp"
 #include "title_screen.hpp"
 #include "utf8string.hpp"
+#include "vote_flags.hpp"
 
 #include "guichan.hpp"
 
@@ -1254,9 +1255,28 @@ void GameManager::playerIsReadyToEnd(const PlayerID &player)
     playerList(pimpl->saved_client_player_info);
 }
 
-void GameManager::playerVotedToRestart(const PlayerID &player, bool vote, bool is_me, int num_more_needed)
+void GameManager::playerVotedToRestart(const PlayerID &player, uint8_t flags, int num_more_needed)
 {
+    const bool vote = (flags & VF_VOTE) != 0;
+    const bool is_me = (flags & VF_IS_ME) != 0;
+    const bool show_msg = (flags & VF_SHOW_MSG) != 0;
+    const bool restarting = (flags & VF_GAME_ENDING) != 0;
     pimpl->vote_status.setVote(player, vote, is_me, num_more_needed);
+
+    if (show_msg) {
+        const Localization &loc = pimpl->knights_app.getLocalization();
+        const char *key;
+        if (restarting) {
+            key = "game_restarted";
+        } else if (vote) {
+            key = "x_voted_to_restart";
+        } else {
+            key = "x_cancelled_vote";
+        }
+        UTF8String msg = loc.get(LocalKey(key), std::vector<LocalParam>(1, LocalParam(player)));
+        pimpl->chat_list.add(msg.asLatin1());
+    }
+
     pimpl->gui_invalid = true;
 }
 

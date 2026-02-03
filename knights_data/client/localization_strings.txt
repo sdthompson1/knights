@@ -290,6 +290,9 @@ x_is_now_leader                 Host migration complete. {0} is now hosting this
 you_are_now_leader              Host migration complete. You are now hosting this game.
 vote                            Vote
 cancel_vote                     Cancel Vote
+x_voted_to_restart              {0} voted to restart.
+x_cancelled_vote                {0} no longer wants to restart.
+game_restarted                  Game restarted.
 x_wants_to_restart              {0} wants to restart
 xy_want_to_restart              {0} and {1} want to restart
 xyz_want_to_restart[one]        {0}, {1} and {2} other want to restart

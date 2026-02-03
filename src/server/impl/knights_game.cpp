@@ -41,6 +41,7 @@
 #include "sh_ptr_eq.hpp"
 #include "sound.hpp"
 #include "user_control.hpp"
+#include "vote_flags.hpp"
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/weak_ptr.hpp"
@@ -1938,13 +1939,17 @@ void KnightsGame::voteToRestart(GameConnection &conn, bool vote)
                 should_restart = (num_more_votes_needed <= 0);
 
                 // Broadcast the vote to all players
-                uint8_t num_more_bits = uint8_t(num_more_votes_needed) << 2;
                 for (auto &other_conn : pimpl->connections) {
                     bool is_my_vote = (&conn == other_conn.get());
                     Coercri::OutputByteBuf out(other_conn->output_data);
                     out.writeUbyte(SERVER_VOTED_TO_RESTART);
                     out.writeString(conn.id1.asString());
-                    out.writeUbyte((vote ? 1 : 0) | (is_my_vote ? 2 : 0) | num_more_bits);
+                    uint8_t flags = (vote ? VF_VOTE : 0)
+                        | (is_my_vote ? VF_IS_ME : 0)
+                        | VF_SHOW_MSG
+                        | (should_restart ? VF_GAME_ENDING : 0);
+                    out.writeUbyte(flags);
+                    out.writeUbyte(std::max(0, num_more_votes_needed));
                 }
             }
         }

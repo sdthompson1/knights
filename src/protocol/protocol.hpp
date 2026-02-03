@@ -121,7 +121,7 @@ enum ServerMessageCode {
     SERVER_TIME_REMAINING = 40,      // followed by varint (time remaining in milliseconds)
 
     SERVER_READY_TO_END = 41,        // followed by string (id of the player who is ready to end)
-    SERVER_VOTED_TO_RESTART = 42,    // followed by string (id of the player voting), ubyte (bit0=vote, bit1=is_my_vote, bits2-7=num_more_votes_needed)
+    SERVER_VOTED_TO_RESTART = 42,    // followed by string (id of the player voting), ubyte (flags), ubyte (num_more_votes_needed)
 
     // knights callbacks
     SERVER_PLAY_SOUND = 50,          // followed by varint (soundnum) + varint (frequency)

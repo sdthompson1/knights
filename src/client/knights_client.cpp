@@ -884,11 +884,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_VOTED_TO_RESTART:
             {
                 const PlayerID player_id = PlayerID(buf.readString());
-                uint8_t data_byte = buf.readUbyte();
-                bool vote = (data_byte & 1) != 0;
-                bool is_me = (data_byte & 2) != 0;
-                int num_more_needed = (data_byte & 0xfc) >> 2;
-                if (client_cb) client_cb->playerVotedToRestart(player_id, vote, is_me, num_more_needed);
+                uint8_t flags = buf.readUbyte();
+                uint8_t num_more_needed = buf.readUbyte();
+                if (client_cb) client_cb->playerVotedToRestart(player_id, flags, num_more_needed);
             }
             break;
 

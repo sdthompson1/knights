@@ -126,7 +126,7 @@ public:
     {
         Log("Player is ready to end. Player id = %s", player.asString().c_str());
     }
-    void playerVotedToRestart(const PlayerID &player, bool vote, bool is_me, int num_more_needed) override
+    void playerVotedToRestart(const PlayerID &player, uint8_t flags, int num_more_needed) override
     {
         Log("Player voted to restart");
     }

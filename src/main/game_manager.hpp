@@ -244,7 +244,7 @@ public:
     virtual void playerList(const std::vector<ClientPlayerInfo> &player_list) override;
     virtual void setTimeRemaining(int milliseconds) override;
     virtual void playerIsReadyToEnd(const PlayerID &player) override;
-    virtual void playerVotedToRestart(const PlayerID &player, bool vote, bool is_me, int num_more_needed) override;
+    virtual void playerVotedToRestart(const PlayerID &player, uint8_t flags, int num_more_needed) override;
     
     virtual void leaveGame();     // goes to lobby
     virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals) override;

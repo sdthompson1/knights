@@ -112,7 +112,7 @@ public:
     virtual void playerList(const std::vector<ClientPlayerInfo> &player_list) = 0;
     virtual void setTimeRemaining(int milliseconds) = 0;
     virtual void playerIsReadyToEnd(const PlayerID &player) = 0;
-    virtual void playerVotedToRestart(const PlayerID &player, bool vote, bool is_me, int num_more_needed) = 0;
+    virtual void playerVotedToRestart(const PlayerID &player, uint8_t flags, int num_more_needed) = 0;
     
     //
     // "Post-join-game" callbacks
