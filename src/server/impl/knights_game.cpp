@@ -931,7 +931,8 @@ namespace {
 #endif
 
             // Pre-update activities
-            if (!preUpdate()) return true;
+            bool pre_update_result = false;
+            if (!preUpdate(pre_update_result)) return pre_update_result;
 
             // Update the dungeon
             engine->update(time_delta, *callbacks);
@@ -942,8 +943,11 @@ namespace {
 
         // Prepare for a dungeon update, e.g. put eliminated players into observer mode,
         // catch up new observers (or reconnecting players).
-        // Returns true if should continue to the main update, or false if game is paused.
-        bool preUpdate()
+        // Returns true if should continue to the main update.
+        // If returning false:
+        //  - set is_paused = true if game paused
+        //  - set is_paused = false if game should end.
+        bool preUpdate(bool &is_paused)
         {
             // Add any new players to the game.
             for (boost::shared_ptr<GameConnection> conn : kg.incoming_connections) {
@@ -968,7 +972,7 @@ namespace {
             for (std::vector<int>::const_iterator p = put_into_obs_mode.begin(); p != put_into_obs_mode.end(); ++p) {
                 for (game_conn_vector::iterator c = kg.connections.begin(); c != kg.connections.end(); ++c) {
                     if ((*c)->player_num == *p) {
-                        // Send him the 'go into obs mode' command
+                        // Send them the 'go into obs mode' command
                         Coercri::OutputByteBuf buf((*c)->output_data);
                         buf.writeUbyte(SERVER_GO_INTO_OBS_MODE);
                         buf.writeUbyte(kg.all_player_ids.size());
@@ -976,11 +980,36 @@ namespace {
                             buf.writeString(id.asString());
                         }
 
-                        // Set his obs_num to zero (which means "observer num not allocated yet")
-                        // and his obs_flag to true. (Leave player_num unchanged.)
+                        bool voting_active = IsVotingActive(kg.connections);
+
+                        // Set their obs_num to zero (which means "observer num not allocated yet")
+                        // and their obs_flag to true. (Leave player_num unchanged.)
                         (*c)->obs_flag = true;
+                        (*c)->voted_to_restart = false;
                         (*c)->observer_num = 0;
                         (*c)->cancel_obs_mode_after_game = true;
+
+                        // Send a voting update to all players, if necessary
+                        if (voting_active) {
+                            int num_votes_needed = GetNumMoreVotesNeeded(kg.connections);
+                            for (const auto &conn : kg.connections) {
+                                Coercri::OutputByteBuf buf(conn->output_data);
+                                buf.writeUbyte(SERVER_VOTED_TO_RESTART);
+                                buf.writeString((*c)->id1.asString());
+                                uint8_t flags = (conn.get() == c->get() ? VF_IS_ME : 0);
+                                if (num_votes_needed <= 0) flags |= VF_SHOW_MSG | VF_GAME_ENDING;
+                                buf.writeUbyte(flags);
+                                buf.writeUbyte(std::max(0, num_votes_needed));
+                            }
+                            if (num_votes_needed <= 0) {
+                                // This can happen if the number of votes needed for a majority
+                                // decreased by one (similar to a player disconnecting).
+                                // Stop the game!
+                                ReturnToMenu(kg);  // Tell all players to return to menu
+                                is_paused = false;  // Signals main loop to quit completely
+                                return false; // Do not proceed any further with this update
+                            }
+                        }
                     }
                 }
             }
@@ -988,7 +1017,8 @@ namespace {
             // Detect whether the game is paused
             // (Pausing is only allowed in split-screen mode)
             if (kg.pause_mode && kg.allow_split_screen) {
-                return false;  // Do not proceed any further
+                is_paused = true;  // Signals main loop to go round again
+                return false;  // Do not proceed any further with this update
             }
 
             // Check for players that need to catch up
