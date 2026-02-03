@@ -86,6 +86,7 @@ public:
     void setHouseColour(GameConnection &, int hse_col);
     void finishedLoading(GameConnection &);
     void readyToEnd(GameConnection &);
+    void voteToRestart(GameConnection &, bool vote);
     void setPauseMode(bool p);
     void setMenuSelection(GameConnection &, int item_num, int new_choice_num);
     void randomQuest(GameConnection &);

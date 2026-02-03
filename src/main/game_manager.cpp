@@ -396,6 +396,79 @@ namespace {
     }
 }
 
+//
+// VoteStatus implementation
+//
+
+void VoteStatus::setVote(const PlayerID &player, bool voted, bool is_me, int num_more)
+{
+    if (voted) {
+        // Add player to end of vector, if they are not already there
+        if (std::find(player_votes.begin(), player_votes.end(), player) == player_votes.end()) {
+            player_votes.push_back(player);
+        }
+    } else {
+        // Remove player from vector, if they are there
+        auto it = std::find(player_votes.begin(), player_votes.end(), player);
+        if (it != player_votes.end()) {
+            player_votes.erase(it);
+        }
+    }
+
+    num_more_needed = num_more;
+
+    if (is_me) {
+        i_voted = voted;
+    }
+
+    dirty = true;
+}
+
+void VoteStatus::clearVotes()
+{
+    player_votes.clear();
+    num_more_needed = 0;
+    i_voted = false;
+    dirty = true;
+}
+
+std::string VoteStatus::getStatusMessage(const Localization &loc) const
+{
+    if (player_votes.empty()) {
+        return "";
+    }
+
+    UTF8String msg1;
+    if (player_votes.size() == 1) {
+        msg1 = loc.get(LocalKey("x_wants_to_restart"),
+                       std::vector<LocalParam>(1, LocalParam(player_votes[0])));
+
+    } else if (player_votes.size() == 2) {
+        std::vector<LocalParam> params;
+        params.reserve(2);
+        params.emplace_back(player_votes[0]);
+        params.emplace_back(player_votes[1]);
+        msg1 = loc.get(LocalKey("xy_want_to_restart"), params);
+
+    } else {
+        std::vector<LocalParam> params;
+        int n = player_votes.size() - 2;
+        params.reserve(player_votes.size());
+        params.emplace_back(player_votes[0]);
+        params.emplace_back(player_votes[1]);
+        params.emplace_back(n);
+        msg1 = loc.get(loc.pluralize(LocalKey("xyz_want_to_restart"), n), params);
+    }
+
+    UTF8String msg2;
+    if (num_more_needed > 0) {
+        msg2 = loc.get(loc.pluralize(LocalKey("more_vote_required"), num_more_needed),
+                       std::vector<LocalParam>(1, LocalParam(num_more_needed)));
+    }
+
+    return (msg1 + UTF8String::fromUTF8(" ") + msg2).asLatin1();
+}
+
 class GameManagerImpl {
 public:
     GameManagerImpl(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer_,
@@ -469,6 +542,7 @@ public:
     ChatList quest_rqmts_list;
     std::vector<ClientPlayerInfo> saved_client_player_info;
     std::set<PlayerID> ready_to_end; // IDs of players who have clicked mouse at end of game.
+    VoteStatus vote_status;
 
     bool single_player;
     bool tutorial_mode;
@@ -848,6 +922,11 @@ ChatList & GameManager::getQuestRequirementsList() const
     return pimpl->quest_rqmts_list;
 }
 
+VoteStatus & GameManager::getVoteStatus() const
+{
+    return pimpl->vote_status;
+}
+
 bool GameManager::setSavedChat(const UTF8String &s)
 {
     const bool result = (pimpl->saved_chat != s);
@@ -1175,6 +1254,12 @@ void GameManager::playerIsReadyToEnd(const PlayerID &player)
     playerList(pimpl->saved_client_player_info);
 }
 
+void GameManager::playerVotedToRestart(const PlayerID &player, bool vote, bool is_me, int num_more_needed)
+{
+    pimpl->vote_status.setVote(player, vote, is_me, num_more_needed);
+    pimpl->gui_invalid = true;
+}
+
 void GameManager::setObsFlag(const PlayerID &id, bool new_obs_flag)
 {
     // Update players list
@@ -1374,6 +1459,9 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
 
     // clear quest requirements
     pimpl->quest_rqmts_list.clear();
+
+    // clear vote status
+    pimpl->vote_status.clearVotes();
 
     pimpl->gui_invalid = true;
 

@@ -136,6 +136,7 @@ void InGameScreen::setupDisplay()
                                    knights_app.getGameManager().getChatList(),
                                    knights_app.getGameManager().getIngamePlayerList(),
                                    knights_app.getGameManager().getQuestRequirementsList(),
+                                   knights_app.getGameManager().getVoteStatus(),
                                    *knights_client,
                                    *container,
                                    Coercri::KeyCodeToKeyName(options.ctrls[2][0]), 
@@ -336,6 +337,7 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
     const bool escape_pressed = pressed && kc == Coercri::KC_ESCAPE;
     const bool space_pressed = pressed && kc == Coercri::KC_SPACE;
     const bool q_pressed = pressed && kc == Coercri::KC_Q;
+    const bool r_pressed = pressed && kc == Coercri::KC_R;
     const bool tab_pressed = pressed && kc == global_chat_key;
     const bool backtick_pressed = pressed && kc == team_chat_key;
 
@@ -385,6 +387,15 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
         // this should return to quest menu instead
         // (which will probably be implemented using a "vote to end game" mechanism)
 
+        pause_mode = false;
+        return;
+    }
+
+    // R in "pause mode" to vote to restart
+    if (r_pressed && pause_mode) {
+        VoteStatus &vote_status = knights_app.getGameManager().getVoteStatus();
+        const bool new_vote = !vote_status.haveIVoted();
+        knights_client->voteToRestart(new_vote);
         pause_mode = false;
         return;
     }

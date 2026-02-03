@@ -63,7 +63,7 @@ enum ClientMessageCode {
     CLIENT_FINISHED_LOADING = 10,    // (I have loaded and am ready to start playing) no extra data 
     CLIENT_SEND_CONTROL = 11,        // followed by ubyte (bits 0-6: control num; bit 7: display num)
     CLIENT_READY_TO_END = 12,        // (I have clicked mouse on winner/loser screen and want to go to lobby) no extra data
-    //CLIENT_QUIT = 13,                // (I have pressed escape and want to go to lobby) no extra data
+    // REMOVED: CLIENT_QUIT (13)
     CLIENT_SET_PAUSE_MODE = 14,      // followed by ubyte (paused-flag). only works for split screen mode currently.
     // REMOVED: CLIENT_SEND_PASSWORD (15)
     CLIENT_SET_OBS_FLAG = 17,        // followed by ubyte (0=I want to be a player, 1=I want to be an observer)
@@ -72,6 +72,7 @@ enum ClientMessageCode {
     CLIENT_SET_ACTION_BAR_CONTROLS = 20,         // followed by ubyte (1=true 0=false)
     CLIENT_RANDOM_QUEST = 21,        // no extra data
     // NOTE: 22,23 no longer used (CLIENT_REQUEST_GRAPHICS or SOUNDS)
+    CLIENT_VOTE_TO_RESTART = 24,     // followed by ubyte (1=vote yes, 0=cancel vote)
 };
 
 // Messages sent by the server
@@ -120,7 +121,8 @@ enum ServerMessageCode {
     SERVER_TIME_REMAINING = 40,      // followed by varint (time remaining in milliseconds)
 
     SERVER_READY_TO_END = 41,        // followed by string (id of the player who is ready to end)
-    
+    SERVER_VOTED_TO_RESTART = 42,    // followed by string (id of the player voting), ubyte (bit0=vote, bit1=is_my_vote, bits2-7=num_more_votes_needed)
+
     // knights callbacks
     SERVER_PLAY_SOUND = 50,          // followed by varint (soundnum) + varint (frequency)
     SERVER_WIN_GAME = 51,            // no extra data

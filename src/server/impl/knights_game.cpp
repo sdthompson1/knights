@@ -83,7 +83,7 @@ public:
     GameConnection(const PlayerID &id1, const PlayerID &id2, bool new_obs_flag, int ver,
                    bool approach_based_ctrls, bool action_bar_ctrls)
         : id1(id1), id2(id2),
-          is_ready(false), finished_loading(false), ready_to_end(false), 
+          is_ready(false), finished_loading(false), ready_to_end(false), voted_to_restart(false),
           obs_flag(new_obs_flag), cancel_obs_mode_after_game(false),
           requires_catchup(false),
           house_colour(0),
@@ -103,6 +103,7 @@ public:
     bool is_ready;    // true=ready to start game, false=want to stay in lobby
     bool finished_loading;   // true=ready to play, false=still loading
     bool ready_to_end;   // true=clicked mouse on winner/loser screen, false=still waiting.
+    bool voted_to_restart;   // true=voted to restart the current game, false=not voted (or cancelled vote)
     bool obs_flag;   // true=observer, false=player
     bool cancel_obs_mode_after_game;
     bool requires_catchup;
@@ -194,6 +195,28 @@ namespace {
             }
         }
         return -1;
+    }
+
+    // Check if there is a strict majority (>50%) of active players voting for restart.
+    // (Note: in split screen games this doesn't count the second player, hence, one vote
+    // is enough to end the game in that case.)
+    // Returns number of additional votes needed -- if <= 0, game should restart.
+    int GetNumMoreVotesNeeded(const game_conn_vector &connections)
+    {
+        int active_player_count = 0;
+        int votes_for_restart = 0;
+
+        for (const auto &conn: connections) {
+            if (!conn->obs_flag) {
+                ++active_player_count;
+                if (conn->voted_to_restart) {
+                    ++votes_for_restart;
+                }
+            }
+        }
+
+        // 50% (rounded down) plus one vote needed for majority
+        return (active_player_count / 2 + 1) - votes_for_restart;
     }
 
     void CheckTeamChat(const Coercri::UTF8String &msg_orig_utf8,
@@ -542,7 +565,7 @@ namespace {
             kg.knights_log->logMessage(kg.game_name + "\tgame ended");
         }
     }
-    
+
     class UpdateThread {
     public:
         UpdateThread(KnightsGameImpl &kg_, boost::shared_ptr<Coercri::Timer> timer_)
@@ -1299,7 +1322,8 @@ namespace {
             for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
                 (*it)->finished_loading = false;
                 (*it)->ready_to_end = false;
-                
+                (*it)->voted_to_restart = false;
+
                 // clear all ready flags when the game starts.
                 (*it)->is_ready = false;
 
@@ -1645,10 +1669,19 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
     bool is_player = false;
     
     PlayerID id1, id2;
-    int player_num = 0;
-    int num_player_connections = 0;
+    int player_num = -1;
+    bool should_stop_game = false;
+
+    // Is the game currently running?
+    bool is_running;
+#ifdef VIRTUAL_SERVER
+    is_running = vs_game_thread_running();
+#else
+    is_running = pimpl->update_thread.joinable();
+#endif
 
     {
+        // Lock mutex
 #ifndef VIRTUAL_SERVER
         boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
@@ -1658,7 +1691,7 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
                                                         pimpl->connections.end(), ShPtrEq<GameConnection>(&conn));
         ASSERT(where != pimpl->connections.end());
         
-        // Determine whether he is a player or observer. Also save his ID(s)
+        // Determine whether they are a player or observer. Also save their ID(s)
         is_player = !(*where)->obs_flag;
         player_num = (*where)->player_num;
         id1 = (*where)->id1;
@@ -1683,46 +1716,18 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
         // Erase the connection from our list. Note 'conn' is invalid from now on
         pimpl->connections.erase(where);
 
-        // find out how many player connections are remaining
-        for (game_conn_vector::const_iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-            if (!(*it)->obs_flag) {
-                ++num_player_connections;
-            }
+        // Find out whether there is now a majority for a restart
+        should_stop_game = (GetNumMoreVotesNeeded(pimpl->connections) <= 0);
+
+        // If a player (not observer) just disconnected and the game is running, then
+        // add them to pending_disconnections
+        if (is_player && is_running) {
+            pimpl->pending_disconnections.push_back(player_num);
         }
-    }
-
-    bool is_running;
-#ifdef VIRTUAL_SERVER
-    is_running = vs_game_thread_running();
-#else
-    is_running = pimpl->update_thread.joinable();
-#endif
-    if (is_player && is_running) {
-        // The leaving client is one of the players (as opposed to an observer).
-
-#ifndef VIRTUAL_SERVER
-        if (num_player_connections == 0) {
-            // This is a non-virtual server and the last player left the game.
-            // Go back to the quest selection menu.
-            StopGameAndReturnToMenu(*pimpl);
-        }
-#endif
-
-        // Mark this player disconnected and allow the game to continue.
-#ifndef VIRTUAL_SERVER
-        boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
-        pimpl->pending_disconnections.push_back(player_num);
-    }
-
-    {
-#ifndef VIRTUAL_SERVER
-        boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
-#endif
 
         // Send SERVER_PLAYER_LEFT_THIS_GAME message to all remaining players
-        for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-            Coercri::OutputByteBuf buf((*it)->output_data);
+        for (auto &other_conn : pimpl->connections) {
+            Coercri::OutputByteBuf buf(other_conn->output_data);
             buf.writeUbyte(SERVER_PLAYER_LEFT_THIS_GAME);
             buf.writeString(id1.asString());
             buf.writeUbyte(is_player ? 0 : 1);
@@ -1733,16 +1738,22 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
             }
         }
 
+        // If there are no connections at all left (and we are not in virtual server mode)
+        // then reset the menu selections.
         if (pimpl->connections.empty()) {
-            // If there are no connections left (and we are not in virtual server mode)
-            // then reset the menu selections.
 #ifndef VIRTUAL_SERVER
             pimpl->knights_config->resetMenu();
 #endif
-        } else if (is_player) {
+        } else if (is_player && !is_running) {
             // Number of players has changed, may need to update menu constraints.
             UpdateNumPlayersAndTeams(*pimpl);
         }
+    }
+
+    // If there were enough votes then return to menu now (mutex needs
+    // to be unlocked for this step)
+    if (should_stop_game) {
+        StopGameAndReturnToMenu(*pimpl);
     }
 
     // If all remaining players are ready, then the game should start (Trac #25)
@@ -1884,6 +1895,64 @@ void KnightsGame::readyToEnd(GameConnection &conn)
             out.writeUbyte(SERVER_READY_TO_END);
             out.writeString(conn.id1.asString());
         }
+    }
+}
+
+void KnightsGame::voteToRestart(GameConnection &conn, bool vote)
+{
+    // Only allow voting during active game (not when game_over)
+    bool is_running;
+#ifdef VIRTUAL_SERVER
+    is_running = vs_game_thread_running();
+#else
+    is_running = pimpl->update_thread.joinable();
+#endif
+    if (!is_running) return;
+
+    bool should_restart = false;
+
+    {
+#ifndef VIRTUAL_SERVER
+        boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
+#endif
+
+        // Check if there are any actual players (not just observers)
+        bool all_observers = (CountPlayers(*pimpl) == 0);
+
+        if (all_observers && conn.obs_flag && vote) {
+            // If all players are observers, then anyone can
+            // immediately end the game
+            should_restart = true;
+
+        } else if (!conn.obs_flag) {
+            // Otherwise, only players can vote
+
+            // Check if they are actually changing their vote
+            if (conn.voted_to_restart != vote) {
+
+                // Update their vote
+                conn.voted_to_restart = vote;
+
+                // Check if more than 50% voted yes (strict majority)
+                int num_more_votes_needed = GetNumMoreVotesNeeded(pimpl->connections);
+                should_restart = (num_more_votes_needed <= 0);
+
+                // Broadcast the vote to all players
+                uint8_t num_more_bits = uint8_t(num_more_votes_needed) << 2;
+                for (auto &other_conn : pimpl->connections) {
+                    bool is_my_vote = (&conn == other_conn.get());
+                    Coercri::OutputByteBuf out(other_conn->output_data);
+                    out.writeUbyte(SERVER_VOTED_TO_RESTART);
+                    out.writeString(conn.id1.asString());
+                    out.writeUbyte((vote ? 1 : 0) | (is_my_vote ? 2 : 0) | num_more_bits);
+                }
+            }
+        }
+    }
+
+    // If majority reached or observer-only special case, stop game
+    if (should_restart) {
+        StopGameAndReturnToMenu(*pimpl);
     }
 }
 

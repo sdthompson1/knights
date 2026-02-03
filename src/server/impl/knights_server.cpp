@@ -530,6 +530,21 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 }
                 break;
 
+            case CLIENT_VOTE_TO_RESTART:
+                {
+                    const bool vote = buf.readUbyte() != 0;
+                    if (conn.game) {
+                        const GameStatus old_status = conn.game->getStatus();
+                        conn.game->voteToRestart(*conn.game_conn, vote);
+                        const GameStatus new_status = conn.game->getStatus();
+                        if (new_status != old_status) {
+                            SendGameUpdate(pimpl->connections, conn.game_name, conn.game->getNumPlayers(),
+                                           conn.game->getNumObservers(), new_status);
+                        }
+                    }
+                }
+                break;
+
             case CLIENT_SET_PAUSE_MODE:
                 {
                     const bool p = buf.readUbyte() != 0;

@@ -126,6 +126,10 @@ public:
     {
         Log("Player is ready to end. Player id = %s", player.asString().c_str());
     }
+    void playerVotedToRestart(const PlayerID &player, bool vote, bool is_me, int num_more_needed) override
+    {
+        Log("Player voted to restart");
+    }
 
     void leaveGame() override { Log("Leave game"); }
     void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values) override

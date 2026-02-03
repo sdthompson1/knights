@@ -881,6 +881,17 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
+        case SERVER_VOTED_TO_RESTART:
+            {
+                const PlayerID player_id = PlayerID(buf.readString());
+                uint8_t data_byte = buf.readUbyte();
+                bool vote = (data_byte & 1) != 0;
+                bool is_me = (data_byte & 2) != 0;
+                int num_more_needed = (data_byte & 0xfc) >> 2;
+                if (client_cb) client_cb->playerVotedToRestart(player_id, vote, is_me, num_more_needed);
+            }
+            break;
+
         case SERVER_EXTENDED_MESSAGE:
             {
                 int ext_code = buf.readVarInt();
@@ -1063,6 +1074,12 @@ void KnightsClient::requestSpeechBubble(bool show)
 void KnightsClient::readyToEnd()
 {
     pimpl->out.push_back(CLIENT_READY_TO_END);
+}
+
+void KnightsClient::voteToRestart(bool vote)
+{
+    pimpl->out.push_back(CLIENT_VOTE_TO_RESTART);
+    pimpl->out.push_back(vote ? 1 : 0);
 }
 
 void KnightsClient::setPauseMode(bool p)

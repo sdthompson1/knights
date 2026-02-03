@@ -41,6 +41,7 @@
 #include "boost/shared_ptr.hpp"
 #include <deque>
 #include <functional>
+#include <set>
 #include <vector>
 
 class GameManagerImpl;
@@ -118,6 +119,31 @@ private:
 #endif
 };
 
+// Vote to restart status
+class VoteStatus {
+public:
+    VoteStatus() : num_more_needed(0), i_voted(false), dirty(true) {}
+
+    void setVote(const PlayerID &player, bool voted, bool is_me, int num_more_needed);
+    void clearVotes();
+    bool haveIVoted() const { return i_voted; }
+    std::string getStatusMessage(const Localization &loc) const;  // returns "" if no voting active
+
+    // "dirty" means UI needs to be updated
+    void setDirty() { dirty = true; }
+    bool isDirty() {
+        bool r = dirty;
+        dirty = false;
+        return r;
+    }
+
+private:
+    std::vector<PlayerID> player_votes;  // players who have voted
+    int num_more_needed;
+    bool i_voted;
+    bool dirty;
+};
+
 
 class GameManager : public ClientCallbacks {
 public:
@@ -175,6 +201,7 @@ public:
     ChatList & getChatList() const;
     ChatList & getIngamePlayerList() const;
     ChatList & getQuestRequirementsList() const;
+    VoteStatus & getVoteStatus() const;
     Coercri::Color getAvailHouseColour(int) const;  // translate house-colour-code into RGB colour.
     int getNumAvailHouseColours() const;
     std::function<UTF8String(const PlayerID&)> getPlayerNameLookup() const;
@@ -217,6 +244,7 @@ public:
     virtual void playerList(const std::vector<ClientPlayerInfo> &player_list) override;
     virtual void setTimeRemaining(int milliseconds) override;
     virtual void playerIsReadyToEnd(const PlayerID &player) override;
+    virtual void playerVotedToRestart(const PlayerID &player, bool vote, bool is_me, int num_more_needed) override;
     
     virtual void leaveGame();     // goes to lobby
     virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals) override;

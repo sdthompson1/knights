@@ -140,6 +140,52 @@ namespace {
         const gcn::Font &font;
         int x0, y0;
     };
+
+    void LayoutQuestRequirements(int font_height,
+                                 int num_quest_requirement_lines,
+                                 int available_height,
+                                 int &scroll_area_y,
+                                 int &scroll_area_height,
+                                 int &label_area_y,
+                                 int &label_offset,
+                                 bool &show_label,
+                                 int &ideal_height)
+    {
+        // Titleblock occupies font_height + 4 pixels, but add some additional padding below
+        scroll_area_y = font_height + 8;
+
+        // Scroll area needs font_height pixels per quest requirement line
+        scroll_area_height = num_quest_requirement_lines * font_height;
+        int scroll_area_bottom = scroll_area_y + scroll_area_height;
+
+        // Add some spacing below the scroll area
+        label_offset = 4;  // Distance between label_area_y and the top of the actual text label
+        label_area_y = scroll_area_bottom + font_height - label_offset;
+        int label_area_bottom = label_area_y + label_offset + font_height + label_offset;
+        show_label = true;
+
+        // Add some more spacing below the label area
+        ideal_height = label_area_bottom + font_height/2;
+
+        // If not enough height for ideal_height then reduce scroll_area_height accordingly
+        int shrink_by = ideal_height - available_height;
+        if (shrink_by > 0) {
+            if (shrink_by > scroll_area_height) {
+                // Can't shrink by more than what we have
+                shrink_by = scroll_area_height;
+            }
+
+            // Shrink scroll area by that amount
+            scroll_area_height -= shrink_by;
+            label_area_y -= shrink_by;
+            label_area_bottom -= shrink_by;
+
+            // If label bottom is now below the available height then don't show the label
+            if (label_area_bottom > available_height) {
+                show_label = false;
+            }
+        }
+    }
 }
 
 class TutorialWidget : public gcn::Widget { 
@@ -257,6 +303,7 @@ LocalDisplay::LocalDisplay(const Localization &localization,
                            ChatList &chat_list_,
                            ChatList &ingame_player_list_,
                            ChatList &quest_rqmts_list_,
+                           VoteStatus &vote_status_,
                            KnightsClient &knights_client_,
                            gcn::Container &container_,
                            const std::string &u_key, const std::string &d_key, const std::string &l_key,
@@ -308,6 +355,7 @@ LocalDisplay::LocalDisplay(const Localization &localization,
       chat_list(chat_list_),
       ingame_player_list(ingame_player_list_),
       quest_rqmts_list(quest_rqmts_list_),
+      vote_status(vote_status_),
       knights_client(knights_client_),
       container(container_),
       chat_updated(false),
@@ -754,6 +802,12 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
 
     if (quest_rqmts_height > 0) {
 
+        int scroll_area_y, scroll_area_height, label_area_y, label_offset, dummy;
+        bool show_label;
+        LayoutQuestRequirements(gui_font->getHeight(), quest_rqmts_list.getNumberOfElements(), quest_rqmts_height,
+                                scroll_area_y, scroll_area_height, label_area_y, label_offset,
+                                show_label, dummy);
+
         std::vector<std::string> titles(1, "Quest Requirements");
         if (quest_rqmts_minimized) titles.front().append(" (click to show)");
         std::vector<int> widths(1, quest_rqmts_width);
@@ -768,6 +822,8 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         if (quest_rqmts_minimized) {
             quest_listbox.reset();
             quest_scrollarea.reset();
+            vote_status_label.reset();
+            vote_button.reset();
         } else {
 
             quest_listbox.reset(new ListBoxNoMouse);
@@ -777,17 +833,48 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
             quest_listbox->setForegroundColor(gcn::Color(255,255,255));
             quest_listbox->setListModel(&quest_rqmts_list);
             quest_listbox->setWidth(quest_rqmts_width - DEFAULT_SCROLLBAR_WIDTH);
-            
+
             quest_scrollarea.reset(new gcn::ScrollArea);
             quest_scrollarea->setContent(quest_listbox.get());
-            quest_scrollarea->setSize(quest_rqmts_width, quest_rqmts_height - quest_titleblock->getHeight() - 2);
+            quest_scrollarea->setSize(quest_rqmts_width, scroll_area_height);
             quest_scrollarea->setScrollbarWidth(DEFAULT_SCROLLBAR_WIDTH);
             quest_scrollarea->setFrameSize(0);
             quest_scrollarea->setHorizontalScrollPolicy(gcn::ScrollArea::SHOW_NEVER);
             quest_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_AUTO);
             quest_scrollarea->setBaseColor(bg_col);
             quest_scrollarea->setBackgroundColor(gcn::Color(0,0,0));
-            container.add(quest_scrollarea.get(), quest_rqmts_x, quest_rqmts_y + quest_titleblock->getHeight() + 2);
+            container.add(quest_scrollarea.get(), quest_rqmts_x, quest_rqmts_y + scroll_area_y);
+
+            int label_top = quest_rqmts_y + label_area_y + label_offset;
+            if (show_label) {
+                vote_status_label.reset(new gcn::Label);
+                vote_status_label->setFont(gui_font.get());
+                container.add(vote_status_label.get(), quest_rqmts_x, label_top);
+
+                // Find longest message out of "Vote" or "Cancel Vote"
+                // (it is probably the latter, but with different languages, who knows!)
+                UTF8String msg1 = localization.get(LocalKey("vote"));
+                UTF8String msg2 = localization.get(LocalKey("cancel_vote"));
+                int width1 = gui_small_font->getWidth(msg1.asLatin1());
+                int width2 = gui_small_font->getWidth(msg2.asLatin1());
+                const UTF8String& longest_msg = width1 > width2 ? msg1 : msg2;
+
+                vote_button.reset(new gcn::Button(longest_msg.asLatin1()));
+                vote_button->addActionListener(this);
+                vote_button->setBaseColor(gcn::Color(0x66, 0x66, 0x44));
+                vote_button->setForegroundColor(gcn::Color(255, 255, 255));
+                vote_button->setFont(gui_small_font.get());
+                vote_button->adjustSize();
+                vote_button->setFocusable(false);
+                container.add(vote_button.get(),
+                              quest_rqmts_x + quest_rqmts_width - vote_button->getWidth() - 4,
+                              quest_rqmts_y + label_area_y);
+
+                vote_status.setDirty();
+            } else {
+                vote_status_label.reset();
+                vote_button.reset();
+            }
         }
     }
 }
@@ -816,11 +903,17 @@ void LocalDisplay::action(const gcn::ActionEvent &event)
     } else if (event.getSource() == clear_button.get()) {
         chat_field->setText("");
         if (!chat_field->isFocused()) deactivateChatField();
+
+    } else if (event.getSource() == vote_button.get()) {
+        const bool new_vote = !vote_status.haveIVoted();
+        knights_client.voteToRestart(new_vote);
+
     } else if (event.getSource() == tutorial_left.get()) {
         if (tutorial_selected_window > tutorial_windows.size()) tutorial_selected_window = tutorial_windows.size();
         --tutorial_selected_window;
         if (tutorial_selected_window < 0) tutorial_selected_window = 0;
         updateTutorialWidget();
+
     } else if (event.getSource() == tutorial_right.get()) {
         if (tutorial_selected_window < 0) tutorial_selected_window = -1;
         ++tutorial_selected_window;
@@ -1305,11 +1398,11 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     }
     
     // work out height
-    int pause_height = (9*th/2) + (menu_strings ? menu_strings->size() : 0)*th;
+    int pause_height = (11*th/2) + (menu_strings ? menu_strings->size() : 0)*th;
 
     // work out width
     int maxw1 = gm.getFont()->getTextWidth(UTF8String::fromUTF8("ESC:"));
-    int maxw2 = gm.getFont()->getTextWidth(UTF8String::fromUTF8("Return to game"));
+    int maxw2 = gm.getFont()->getTextWidth(UTF8String::fromUTF8("Vote to restart"));
     if (menu_strings) {
         for (int i = 0; i < menu_strings->size(); ++i) {
             const std::pair<std::string, std::string> & p = (*menu_strings)[i];
@@ -1352,6 +1445,8 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm, "ESC", "Return to game");
     y += th;
     DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm, "Q", "Quit");
+    y += th;
+    DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm, "R", "Vote to restart");
     y += th;
     y += th;
 
@@ -1472,14 +1567,13 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
             if (quest_rqmts_minimized) {
                 quest_rqmts_height = gui_font->getHeight() + 8;
             } else {
-                quest_rqmts_height = gui_font->getHeight() * (quest_rqmts_list.getNumberOfElements() + 
-                    config_map.getInt("quest_rqmts_extra_lines"));
-                // the +quest_rqmts_extra_lines just gives it a bit of extra black space underneath.
+                int a, b, c, d;
+                bool s;
+                LayoutQuestRequirements(gui_font->getHeight(), quest_rqmts_list.getNumberOfElements(), third_height, a, b, c, d, s, quest_rqmts_height);
             }
-            
-            if (quest_rqmts_height > third_height) quest_rqmts_height = third_height;
 
-            const int quest_rqmts_bottom = quest_rqmts_y + quest_rqmts_height + player_list_margin;
+            if (quest_rqmts_height > third_height) quest_rqmts_height = third_height;
+            const int quest_rqmts_bottom = quest_rqmts_y + quest_rqmts_height;
             
             // Work out where to draw the chat area (bottom)
             const int chat_area_margin = player_list_margin;
@@ -1496,6 +1590,27 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
     }
 
     if (!container.isVisible()) container.setVisible(true);
+
+    // Update vote status label, if needed
+    if (vote_status_label && vote_button && vote_status.isDirty()) {
+        std::string vote_msg = vote_status.getStatusMessage(localization);
+        if (vote_msg.empty()) {
+            vote_status_label->setCaption("Press ESC for more info & options");
+            vote_status_label->adjustSize();
+            vote_status_label->setForegroundColor(gcn::Color(170, 170, 170));
+            vote_button->setVisible(false);
+        } else {
+            vote_status_label->setCaption(vote_msg);
+            vote_status_label->adjustSize();
+            vote_status_label->setForegroundColor(gcn::Color(255, 0, 0));  // Red for active voting
+            if (vote_status.haveIVoted()) {
+                vote_button->setCaption(localization.get(LocalKey("cancel_vote")).asLatin1());
+            } else {
+                vote_button->setCaption(localization.get(LocalKey("vote")).asLatin1());
+            }
+            vote_button->setVisible(true);
+        }
+    }
 }
 
 void LocalDisplay::hideGui()
@@ -1707,10 +1822,10 @@ const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mle
         } else {
             if (ctrlr.fire) {
                 attack_mode[plyr] = true;
-                return standard_controls[SC_ATTACK + ctrlr.dir];
+                return standard_controls[int(SC_ATTACK) + int(ctrlr.dir)];
             } else {
                 my_facing[plyr] = ctrlr.dir;
-                return standard_controls[SC_MOVE + ctrlr.dir];
+                return standard_controls[int(SC_MOVE) + int(ctrlr.dir)];
             }
         }
     }

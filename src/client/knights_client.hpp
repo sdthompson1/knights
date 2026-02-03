@@ -120,6 +120,7 @@ public:
     void requestSpeechBubble(bool show);
     
     void readyToEnd();   // tell server that we are ready to exit winner/loser screen
+    void voteToRestart(bool vote);  // tell server that we want to restart (go back to quest menu)
 
     void setPauseMode(bool);  // only works for split screen games currently.
 

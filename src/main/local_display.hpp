@@ -91,6 +91,7 @@ public:
                  ChatList &chat_list_,
                  ChatList &ingame_player_list_,
                  ChatList &quest_rqmts_list_,
+                 VoteStatus &vote_status_,
                  KnightsClient &knights_client_,
                  gcn::Container &container_,
                  const std::string &up_key,
@@ -327,6 +328,7 @@ private:
     ChatList &chat_list;
     ChatList &ingame_player_list;
     ChatList &quest_rqmts_list;
+    VoteStatus &vote_status;
     KnightsClient &knights_client;
     gcn::Container &container;
     bool chat_updated;
@@ -351,6 +353,8 @@ private:
     boost::scoped_ptr<TitleBlock> quest_titleblock;
     boost::scoped_ptr<gcn::ListBox> quest_listbox;
     boost::scoped_ptr<gcn::ScrollArea> quest_scrollarea;
+    boost::scoped_ptr<gcn::Label> vote_status_label;
+    boost::scoped_ptr<gcn::Button> vote_button;
 
     boost::shared_ptr<Coercri::Font> my_font, txt_font;
 

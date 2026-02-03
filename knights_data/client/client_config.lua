@@ -140,9 +140,6 @@ invisalpha = 140;
 player_list_lines = 12;
 tutorial_lines = 20;
 
--- Number of extra blank lines in quest requirements window
-quest_rqmts_extra_lines = 3;
-
 }
 
 -- Menus
