@@ -206,6 +206,7 @@ public:
     int getNumAvailHouseColours() const;
     std::function<UTF8String(const PlayerID&)> getPlayerNameLookup() const;
     bool getMyObsFlag() const;
+    int getNumConnectedPlayers() const;
     bool getMyReadyFlag() const;
     int getMyHouseColour() const;
     int getTimeRemaining() const;  // in ms, or -1 if no time limit

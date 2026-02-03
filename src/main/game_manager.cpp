@@ -883,6 +883,17 @@ bool GameManager::getMyObsFlag() const
     return pimpl->my_obs_flag;
 }
 
+int GameManager::getNumConnectedPlayers() const
+{
+    int num = 0;
+    for (const auto &player : pimpl->saved_client_player_info) {
+        if (player.client_state == ClientState::NORMAL) {
+            ++num;
+        }
+    }
+    return num;
+}
+
 bool GameManager::getMyReadyFlag() const
 {
     return pimpl->my_ready_flag;

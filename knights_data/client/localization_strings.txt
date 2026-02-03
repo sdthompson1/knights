@@ -5,7 +5,7 @@ invalid_connection_string       Invalid connection string
 player_id_already_set           Player ID already set
 player_id_mismatch              Player ID mismatch
 player_id_empty                 Player ID is empty
-already_connected               A player with your name or ID is already connected
+already_connected               A player with your name/ID is already connected
 already_in_game                 You are already connected to a game
 game_not_found                  Game not found on server
 split_screen_not_allowed        Split screen game not allowed
@@ -280,6 +280,16 @@ desc_run_for_freedom_1          You are trapped in the dungeon of vampire bats.
 desc_run_for_freedom_2          You must run to the exit point and get out before your opponents.
 desc_deathmatch_1               Deathmatch
 desc_deathmatch_2               Players get 1 point for killing an enemy knight, and -1 for a suicide. (Being killed by a monster doesn't affect your score.) The player with the highest score when time runs out is the winner.
+
+# In-game "pause mode" (ESC menu)
+knights_caps                    KNIGHTS
+game_paused_caps                GAME PAUSED
+esc                             ESC
+return_to_game                  Return to game
+quit                            Quit
+quit_disconnect                 Quit (disconnect)
+restart                         Restart quest
+vote_to_restart                 Vote to restart quest
 
 # Other UI strings
 raw_msg                         {0}

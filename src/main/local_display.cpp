@@ -85,12 +85,9 @@ namespace {
 
     // draw "key" lines in the ESC menu.
     void DrawKeyLine(int xc, int y, const Coercri::Color &col1, const Coercri::Color &col2,
-                     Coercri::GfxContext &gc, GfxManager &gm, const char *msg1_utf8, const char *msg2_utf8)
+                     Coercri::GfxContext &gc, GfxManager &gm, const UTF8String &msg1, const UTF8String &msg2)
     {
         const UTF8String separator = UTF8String::fromUTF8(": ");
-        const UTF8String msg1 = UTF8String::fromUTF8(msg1_utf8);
-        const UTF8String msg2 = UTF8String::fromUTF8(msg2_utf8);
-
         const int w1 = gm.getFont()->getTextWidth(msg1 + separator);
         const int w = gm.getFont()->getTextWidth(msg1 + separator + msg2);
         gc.drawText(xc - w/2, y, *gm.getFont(), msg1 + separator, col1);
@@ -1376,7 +1373,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
 
 void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm, 
                                     int vp_x, int vp_y, int vp_width, int vp_height,
-                                    bool is_paused, bool blend)
+                                    bool is_paused, bool blend,
+                                    bool observer, int num_connected_players)
 {
     if (vp_width <= 0 || vp_height <= 0) return;
 
@@ -1396,13 +1394,42 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
         const float scale = std::min(x_scale, y_scale);
         gm.setFontSize(std::max(min_font_size, Round(ref_font_size * scale)));
     }
-    
+
+    // "R" key does not appear in single player modes (is_paused ==> single player)
+    const char *q_key = "quit";
+    const char *r_key = nullptr;
+    if (!is_paused) {
+        // In the multiplayer modes, show "Quit (disconnect)" instead of just "Quit"
+        q_key = "quit_disconnect";
+
+        // Determine what to show for "R" key (if anything)
+        if ((observer && num_connected_players == 0)
+        || (!observer && num_connected_players == 1)
+        || !blend) {  // !blend ==> split screen mode
+            // Pressing R will restart immediately
+            r_key = "restart";
+        } else if (!observer) {
+            // Pressing R only votes to restart
+            r_key = "vote_to_restart";
+        }
+        // Otherwise: I'm an observer and there are active players, so "R" key
+        // is not available
+    }
+    UTF8String return_msg = localization.get(LocalKey("return_to_game"));
+    UTF8String q_msg = localization.get(LocalKey(q_key));
+    UTF8String r_msg = r_key ? localization.get(LocalKey(r_key)) : UTF8String();
+
     // work out height
-    int pause_height = (11*th/2) + (menu_strings ? menu_strings->size() : 0)*th;
+    int num_lines = 4;
+    if (r_key) ++num_lines;
+    if (menu_strings) num_lines += menu_strings->size();
+    int pause_height = num_lines * th + th/2;
 
     // work out width
-    int maxw1 = gm.getFont()->getTextWidth(UTF8String::fromUTF8("ESC:"));
-    int maxw2 = gm.getFont()->getTextWidth(UTF8String::fromUTF8("Vote to restart"));
+    int maxw1 = gm.getFont()->getTextWidth(localization.get(LocalKey("esc")) + UTF8String::fromUTF8(":"));  // assumed wider than "Q:" and "R:"
+    int maxw2 = std::max(gm.getFont()->getTextWidth(return_msg),
+                         std::max(gm.getFont()->getTextWidth(q_msg),
+                                  gm.getFont()->getTextWidth(r_msg)));
     if (menu_strings) {
         for (int i = 0; i < menu_strings->size(); ++i) {
             const std::pair<std::string, std::string> & p = (*menu_strings)[i];
@@ -1435,19 +1462,27 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     }
 
     // draw "header" lines
-    const UTF8String pstr = UTF8String::fromUTF8(is_paused ? "GAME PAUSED" : "KNIGHTS");
+    const UTF8String pstr = localization.get(LocalKey(is_paused ? "game_paused_caps" : "knights_caps"));
     const int pwidth = gm.getFont()->getTextWidth(pstr);
     
     gc.drawText(vp_x + vp_width/2 - pwidth/2, y, *gm.getFont(), pstr, col1);
     y += th;
     y += th/2;
     
-    DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm, "ESC", "Return to game");
+    DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm,
+                localization.get(LocalKey("esc")),
+                return_msg);
     y += th;
-    DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm, "Q", "Quit");
+    DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm,
+                UTF8String::fromUTF8("Q"),
+                q_msg);
     y += th;
-    DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm, "R", "Vote to restart");
-    y += th;
+    if (r_key) {
+        DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm,
+                    UTF8String::fromUTF8("R"),
+                    r_msg);
+        y += th;
+    }
     y += th;
 
     if (menu_strings) {

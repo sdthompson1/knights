@@ -136,7 +136,8 @@ public:
     // blend => draw a blended black rectangle behind the pause display.
     void drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm, 
                           int vp_x, int vp_y, int vp_width, int vp_height,
-                          bool is_paused, bool blend);
+                          bool is_paused, bool blend,
+                          bool observer, int num_connected_players);
     
     // update the in-game gui to use the given viewport.
     // should be called when drawing each frame.

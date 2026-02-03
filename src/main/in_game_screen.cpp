@@ -204,6 +204,9 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
                              time_delta_us,
                              remaining_us);
 
+    bool obs = knights_app.getGameManager().getMyObsFlag();
+    int ncp = knights_app.getGameManager().getNumConnectedPlayers();
+
     if (nplayers >= 2) {
         if (player_ids.empty()) {
 
@@ -211,8 +214,8 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
             const int w = gc.getWidth();
             const int h = gc.getHeight();
             if (pause_mode) {
-                display->drawPauseDisplay(gc, gm, 0,   0, w/2, h, true, false);
-                display->drawPauseDisplay(gc, gm, w/2, 0, w/2, h, true, false);
+                display->drawPauseDisplay(gc, gm, 0,   0, w/2, h, true, false, obs, ncp);
+                display->drawPauseDisplay(gc, gm, w/2, 0, w/2, h, true, false, obs, ncp);
             } else {
                 display->drawSplitScreen(gc, gm, 0, 0, w, h);
             }
@@ -226,7 +229,7 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
             const int actual_height = display->drawObs(gc, gm, 0, 0, w, h1);
             display->updateGui(gm, 0, actual_height, gc.getWidth(), gc.getHeight() - actual_height, true);
             if (pause_mode) {
-                display->drawPauseDisplay(gc, gm, 0, 0, gc.getWidth(), gc.getHeight(), false, true);
+                display->drawPauseDisplay(gc, gm, 0, 0, gc.getWidth(), gc.getHeight(), false, true, obs, ncp);
             }
         }
     } else {
@@ -244,7 +247,7 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
 
         // Draw pause display. (Single player mode => paused, Network game => not paused.)
         if (pause_mode) {
-            display->drawPauseDisplay(gc, gm, 0, 0, gc.getWidth(), gc.getHeight(), single_player, true);
+            display->drawPauseDisplay(gc, gm, 0, 0, gc.getWidth(), gc.getHeight(), single_player, true, obs, ncp);
         }
     }
 }
@@ -382,11 +385,14 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
 
     // Q in "pause mode" to request quit
     if (q_pressed && pause_mode) {
-        knights_client->leaveGame();
-        // TODO - in single player / split screen games,
-        // this should return to quest menu instead
-        // (which will probably be implemented using a "vote to end game" mechanism)
-
+        bool split_screen = (nplayers >= 2 && player_ids.empty());
+        if (single_player || split_screen) {
+            // Return to quest menu (same as pressing "R" in this case)
+            knights_client->voteToRestart(true);
+        } else {
+            // Disconnect from a multiplayer game
+            knights_client->leaveGame();
+        }
         pause_mode = false;
         return;
     }
