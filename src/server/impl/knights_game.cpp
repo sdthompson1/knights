@@ -220,6 +220,16 @@ namespace {
         return (active_player_count / 2 + 1) - votes_for_restart;
     }
 
+    bool IsVotingActive(const game_conn_vector &connections)
+    {
+        for (const auto &conn : connections) {
+            if (!conn->obs_flag && conn->voted_to_restart) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void CheckTeamChat(const Coercri::UTF8String &msg_orig_utf8,
                        Coercri::UTF8String &msg,
                        bool &is_team)
@@ -491,18 +501,31 @@ namespace {
         // Add to connections list
         kg.connections.push_back(conn);
 
+        bool voting_active = IsVotingActive(kg.connections);
+        int num_votes_needed = GetNumMoreVotesNeeded(kg.connections);
+
         // Send the SERVER_JOIN_GAME_ACCEPTED message (includes initial configuration messages e.g. menu settings)
         Coercri::OutputByteBuf buf(conn->output_data);
         SendJoinGameAccepted(kg, buf, conn->house_colour, enter_game);
 
         // Send any necessary SERVER_PLAYER_JOINED_THIS_GAME messages (but not to the player who just joined).
+        // Also send a dummy SERVER_VOTED_TO_RESTART message (but only if voting active) - this will force client-side voting UI to update.
         for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
             if (*it != conn) {
                 Coercri::OutputByteBuf out((*it)->output_data);
+
+                if (voting_active) {
+                    out.writeUbyte(SERVER_VOTED_TO_RESTART);
+                    out.writeString(conn->id1.asString());
+                    out.writeUbyte(0); // flags
+                    out.writeUbyte(std::max(0, num_votes_needed));
+                }
+
                 out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
                 out.writeString(conn->id1.asString());
                 out.writeUbyte(observer);
                 out.writeUbyte(conn->house_colour);
+
                 if (!conn->id2.empty()) {
                     out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
                     out.writeString(conn->id2.asString());
@@ -997,6 +1020,20 @@ namespace {
                         // Catchup for reconnecting players (as opposed to observers)
                         engine->catchUp((*it)->player_num, *callbacks);
                         engine->changePlayerState((*it)->player_num, PlayerState::NORMAL);
+                    }
+
+                    // Send them the current voting status if applicable!
+                    if (IsVotingActive(kg.connections)) {
+                        int num_votes_needed = GetNumMoreVotesNeeded(kg.connections);
+                        Coercri::OutputByteBuf out(buf);
+                        for (const auto &voter : kg.connections) {
+                            if (!voter->obs_flag && voter->voted_to_restart) {
+                                out.writeUbyte(SERVER_VOTED_TO_RESTART);
+                                out.writeString(voter->id1.asString());
+                                out.writeUbyte(VF_VOTE);
+                                out.writeUbyte(std::max(0, num_votes_needed));
+                            }
+                        }
                     }
 
                     (*it)->requires_catchup = false;
@@ -1714,11 +1751,15 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
             }
         }
 
+        // Check if voting is currently active (i.e. at least one player has voted to restart)
+        bool voting_active = IsVotingActive(pimpl->connections);
+
         // Erase the connection from our list. Note 'conn' is invalid from now on
         pimpl->connections.erase(where);
 
         // Find out whether there is now a majority for a restart
-        should_stop_game = (GetNumMoreVotesNeeded(pimpl->connections) <= 0);
+        int num_votes_needed = GetNumMoreVotesNeeded(pimpl->connections);
+        should_stop_game = (num_votes_needed <= 0);
 
         // If a player (not observer) just disconnected and the game is running, then
         // add them to pending_disconnections
@@ -1726,9 +1767,23 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
             pimpl->pending_disconnections.push_back(player_num);
         }
 
-        // Send SERVER_PLAYER_LEFT_THIS_GAME message to all remaining players
+        // Send messages to all remaining players
         for (auto &other_conn : pimpl->connections) {
             Coercri::OutputByteBuf buf(other_conn->output_data);
+
+            // Tell them the updated num_votes_needed and that the leaving player
+            // cancelled their vote (if applicable). This is so that the client-side
+            // UI can be updated. Note this is only needed if at least one player
+            // had an active vote.
+            if (voting_active) {
+                buf.writeUbyte(SERVER_VOTED_TO_RESTART);
+                buf.writeString(id1.asString());
+                uint8_t flags = (should_stop_game ? VF_GAME_ENDING : 0);
+                buf.writeUbyte(flags);
+                buf.writeUbyte(std::max(0, num_votes_needed));
+            }
+
+            // Tell them that the player left
             buf.writeUbyte(SERVER_PLAYER_LEFT_THIS_GAME);
             buf.writeString(id1.asString());
             buf.writeUbyte(is_player ? 0 : 1);
