@@ -984,10 +984,13 @@ namespace {
 
                         // Set their obs_num to zero (which means "observer num not allocated yet")
                         // and their obs_flag to true. (Leave player_num unchanged.)
+                        // Also set requires_catchup so that their display can start up properly
+                        // in observer mode.
                         (*c)->obs_flag = true;
                         (*c)->voted_to_restart = false;
                         (*c)->observer_num = 0;
                         (*c)->cancel_obs_mode_after_game = true;
+                        (*c)->requires_catchup = true;
 
                         // Send a voting update to all players, if necessary
                         if (voting_active) {
