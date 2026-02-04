@@ -27,11 +27,20 @@
 #ifdef ONLINE_PLATFORM
 
 #include "player_id.hpp"
+#include "utf8string.hpp"
 
 #include <vector>
 
 class LocalKey;
 class LocalParam;
+
+struct ChatMessage {
+    PlayerID sender;
+    Coercri::UTF8String message;
+
+    ChatMessage(const PlayerID& sender_id, const Coercri::UTF8String& msg)
+        : sender(sender_id), message(msg) { }
+};
 
 // A PlatformLobby is a group of players who have gathered together to play a game.
 // Players can create their own lobbies, or join or search for other lobbies, using
@@ -61,6 +70,12 @@ public:
 
     // Open the platform UI for inviting friends to this lobby (if available).
     virtual void openInviteUI() { }
+
+    // Send a chat message to all players in the lobby
+    virtual void sendChatMessage(const Coercri::UTF8String &msg) = 0;
+
+    // Returns all chat messages since the last call (or since joining if first call)
+    virtual std::vector<ChatMessage> receiveChatMessages() = 0;
 };
 
 #endif

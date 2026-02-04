@@ -124,6 +124,13 @@ public:
 
     void setPauseMode(bool);  // only works for split screen games currently.
 
+
+    //
+    // Support for external chat routing (in cases where allow_untrusted_strings is false
+    // so we can't use the server to route chat)
+    //
+    std::vector<UTF8String> getPendingChatMessages();
+
 private:
     std::unique_ptr<KnightsClientImpl> pimpl;
 };

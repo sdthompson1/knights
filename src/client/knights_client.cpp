@@ -86,6 +86,7 @@ public:
     const UserControl *last_cts_ctrl[2];
     bool next_announcement_is_error;
     bool allow_untrusted_strings;
+    std::vector<UTF8String> pending_chat_messages;
     
     // helper functions
     void receiveConfiguration(Coercri::InputByteBuf &buf);
@@ -402,20 +403,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_CHAT:
             {
                 const PlayerID whofrom = PlayerID(buf.readString());
-
-                // Chat codes recognized here:
-                // 2 = (Observer)
-                // 3 = (Team)
-                const int chat_code = buf.readUbyte();
-                const bool is_observer = (chat_code == 2);
-                const bool is_team = (chat_code == 3);
                 const Coercri::UTF8String msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
 
                 // Chat is just an arbitrary string and hence untrusted.
                 // Therefore, we can only forward this to the game if
                 // allow_untrusted_strings is true.
                 if (client_cb && pimpl->allow_untrusted_strings) {
-                    client_cb->chat(whofrom, is_observer, is_team, msg);
+                    client_cb->chat(whofrom, msg);
                 }
             }
             break;
@@ -992,9 +986,17 @@ void KnightsClient::leaveGame()
 
 void KnightsClient::sendChatMessage(const Coercri::UTF8String &msg)
 {
-    Coercri::OutputByteBuf buf(pimpl->out);
-    buf.writeUbyte(CLIENT_CHAT);
-    buf.writeString(msg.asUTF8());
+    if (pimpl->allow_untrusted_strings) {
+        // If untrusted strings are allowed, then we can use the server as
+        // a chat relay
+        Coercri::OutputByteBuf buf(pimpl->out);
+        buf.writeUbyte(CLIENT_CHAT);
+        buf.writeString(msg.asUTF8());
+    } else {
+        // Otherwise, we just store the message and allow someone else to
+        // deliver it using the getPendingChatMessages() mechanism
+        pimpl->pending_chat_messages.push_back(msg);
+    }
 }
 
 void KnightsClient::setReady(bool ready)
@@ -1084,6 +1086,13 @@ void KnightsClient::setPauseMode(bool p)
 {
     pimpl->out.push_back(CLIENT_SET_PAUSE_MODE);
     pimpl->out.push_back(p ? 1 : 0);
+}
+
+std::vector<UTF8String> KnightsClient::getPendingChatMessages()
+{
+    std::vector<UTF8String> result;
+    result.swap(pimpl->pending_chat_messages);  // leaves pimpl->pending_chat_messages empty
+    return result;
 }
 
 void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)

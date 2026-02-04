@@ -142,7 +142,7 @@ public:
     virtual void setObsFlag(const PlayerID &id, bool new_obs_flag) = 0;
     
     // chat, and "announcements".
-    virtual void chat(const PlayerID &whofrom, bool observer, bool team, const UTF8String &msg) = 0;
+    virtual void chat(const PlayerID &whofrom, const UTF8String &msg) = 0;
     virtual void announcementLoc(const LocalMsg &msg, bool is_err) = 0;
 };
 

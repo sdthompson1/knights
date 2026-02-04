@@ -46,6 +46,12 @@ public:
     // Set game status for the lobby - only the leader can do this
     virtual void setGameStatus(const LocalKey &key, const std::vector<LocalParam> &params) override;
 
+    // Send a chat message to all players in the lobby
+    virtual void sendChatMessage(const Coercri::UTF8String &msg) override;
+
+    // Returns all chat messages since the last call (or since joining if first call)
+    virtual std::vector<ChatMessage> receiveChatMessages() override;
+
 private:
     DummyOnlinePlatform* platform;
     std::string lobby_id;

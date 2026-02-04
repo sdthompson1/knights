@@ -205,6 +205,18 @@ void NameList::alter(const PlayerID &x, const bool *observer, const bool *ready,
     }
 }
 
+bool NameList::query(const PlayerID &id, bool &observer, int &house_col)
+{
+    for (const Name &name : names) {
+        if (name.id == id) {
+            observer = name.observer;
+            house_col = name.house_col;
+            return true;
+        }
+    }
+    return false;
+}
+
 void NameList::sortNames()
 {
     struct CompareName {
@@ -1603,13 +1615,68 @@ void GameManager::deactivateReadyFlags()
     pimpl->gui_invalid = true;
 }
 
-void GameManager::chat(const PlayerID &whofrom, bool observer, bool team, const Coercri::UTF8String &msg)
+namespace {
+    bool CheckTeamChat(const Coercri::UTF8String &msg,
+                       bool team_chat_allowed,
+                       std::string &msg_stripped)
+    {
+        const std::string latin1 = msg.asLatin1();
+        bool is_team = false;
+
+        // strip away any leading spaces
+        int idx = 0;
+        while (idx < latin1.size() && latin1[idx] == ' ') ++idx;
+
+        if (team_chat_allowed
+        && idx + 1 < latin1.size()
+        && latin1[idx] == '/'
+        && latin1[idx + 1] == 't') {
+            // strip away "/t" and any further leading spaces
+            is_team = true;
+            idx += 2;
+            while (idx < latin1.size() && latin1[idx] == ' ') ++idx;
+        }
+
+        // return the stripped message and the is_team flag
+        msg_stripped = latin1.substr(idx);
+        return is_team;
+    }
+}
+
+void GameManager::chat(const PlayerID &whofrom, const Coercri::UTF8String &msg)
 {
+    // Convert player ID to name
     std::string out_latin1 = pimpl->usernameLatin1(whofrom);
-    if (observer) out_latin1 += " (Observer)";
-    if (team) out_latin1 += " (Team)";
+
+    // Get house colour and observer status of the sender
+    bool observer = false;
+    int house_col = -1;
+    pimpl->game_namelist.query(whofrom, observer, house_col);
+
+    // "/t" prefix is honoured if game in progress (i.e. not on quest selection menu)
+    // and the sender is not an observer
+    bool team_chat_allowed = !observer && pimpl->game_in_progress;
+
+    // Strip away leading spaces and "/t" prefix if applicable
+    std::string msg_stripped;
+    bool is_team = CheckTeamChat(msg, team_chat_allowed, msg_stripped);
+
+    // Add "(Team)" or "(Observer)" marker if needed
+    if (is_team) {
+        if (pimpl->my_house_colour != house_col || pimpl->my_obs_flag) {
+            // Drop this message as it is for a different team
+            return;
+        }
+        out_latin1 += " (Team)";
+    } else if (observer) {
+        out_latin1 += " (Observer)";
+    }
+
+    // Add colon and the stripped message itself
     out_latin1 += ": ";
-    out_latin1 += msg.asLatin1();
+    out_latin1 += msg_stripped;
+
+    // Add it to the chat list in the GUI
     pimpl->chat_list.add(out_latin1);
     pimpl->gui_invalid = true;
 }

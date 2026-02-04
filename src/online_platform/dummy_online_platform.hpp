@@ -77,6 +77,8 @@ public:
     static constexpr unsigned char MSG_LEAVE_LOBBY = 0x05;
     static constexpr unsigned char MSG_GET_LOBBY_INFO = 0x06;
     static constexpr unsigned char MSG_SET_LOBBY_INFO = 0x07;
+    static constexpr unsigned char MSG_SEND_CHAT = 0x08;
+    static constexpr unsigned char MSG_GET_CHAT = 0x09;
 
 private:
     PlayerID current_user_id;

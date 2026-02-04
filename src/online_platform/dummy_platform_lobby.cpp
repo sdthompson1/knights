@@ -27,7 +27,9 @@
 #include "dummy_platform_lobby.hpp"
 #include "dummy_online_platform.hpp"
 #include "localization.hpp"
+#include "utf8string.hpp"
 #include <chrono>
+#include <cstring>
 
 DummyPlatformLobby::DummyPlatformLobby(DummyOnlinePlatform* platform, const std::string& lobby_id)
     : platform(platform), lobby_id(lobby_id), current_state(State::JOINED)
@@ -163,6 +165,72 @@ void DummyPlatformLobby::updateCachedInfo()
         
         last_query_time = now;
     }
+}
+
+void DummyPlatformLobby::sendChatMessage(const Coercri::UTF8String &msg)
+{
+    if (platform) {
+        // Build payload: message string + null terminator
+        std::string payload = msg.asUTF8();
+        payload += '\0';
+
+        platform->sendMessage(DummyOnlinePlatform::MSG_SEND_CHAT, payload);
+        std::string response;
+        platform->receiveResponse(response);
+        // Fire-and-forget, no error handling needed
+    }
+}
+
+std::vector<ChatMessage> DummyPlatformLobby::receiveChatMessages()
+{
+    std::vector<ChatMessage> messages;
+
+    if (!platform) {
+        return messages;
+    }
+
+    if (platform->sendMessage(DummyOnlinePlatform::MSG_GET_CHAT, "")) {
+        std::string response_data;
+        if (platform->receiveResponse(response_data)) {
+            // Parse response: num_messages (4 bytes) + array of (sender_id + message, both null-terminated)
+            size_t pos = 0;
+
+            // Read num_messages
+            if (response_data.length() >= 4) {
+                uint32_t num_messages;
+                std::memcpy(&num_messages, response_data.data(), 4);
+                pos = 4;
+
+                // Parse each message
+                for (uint32_t i = 0; i < num_messages && pos < response_data.length(); ++i) {
+                    // Parse sender_id (null-terminated)
+                    size_t null_pos = response_data.find('\0', pos);
+                    if (null_pos == std::string::npos) {
+                        break;  // Malformed response
+                    }
+
+                    std::string sender_id_str = response_data.substr(pos, null_pos - pos);
+                    PlayerID sender_id(sender_id_str);
+                    pos = null_pos + 1;
+
+                    // Parse message_text (null-terminated)
+                    null_pos = response_data.find('\0', pos);
+                    if (null_pos == std::string::npos) {
+                        break;  // Malformed response
+                    }
+
+                    std::string message_text = response_data.substr(pos, null_pos - pos);
+                    Coercri::UTF8String message = Coercri::UTF8String::fromUTF8Safe(message_text);
+                    pos = null_pos + 1;
+
+                    // Create ChatMessage and add to vector
+                    messages.emplace_back(sender_id, message);
+                }
+            }
+        }
+    }
+
+    return messages;
 }
 
 #endif

@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "client_callbacks.hpp"
 #include "exception_base.hpp"
 #include "knights_client.hpp"
 #include "lobby_controller.hpp"
@@ -251,6 +252,21 @@ void LobbyController::readIncomingMessages()
     if (knights_lobby) {
         knights_lobby->readIncomingMessages(*knights_client);
     }
+
+#ifdef ONLINE_PLATFORM
+    // Read chat from platform lobby, if applicable
+    if (platform_lobby) {
+        std::vector<ChatMessage> msgs = platform_lobby->receiveChatMessages();
+        if (knights_client) {
+            ClientCallbacks *cb = knights_client->getClientCallbacks();
+            if (cb) {
+                for (const auto &msg : msgs) {
+                    cb->chat(msg.sender, msg.message);
+                }
+            }
+        }
+    }
+#endif
 }
 
 void LobbyController::sendOutgoingMessages()
@@ -258,6 +274,18 @@ void LobbyController::sendOutgoingMessages()
     if (knights_lobby) {
         knights_lobby->sendOutgoingMessages(*knights_client);
     }
+
+#ifdef ONLINE_PLATFORM
+    // Write chat to platform lobby, if applicable
+    if (knights_client) {
+        std::vector<UTF8String> msgs = knights_client->getPendingChatMessages();
+        if (platform_lobby) {
+            for (const auto &msg : msgs) {
+                platform_lobby->sendChatMessage(msg);
+            }
+        }
+    }
+#endif
 }
 
 int LobbyController::getNumberOfPlayers() const

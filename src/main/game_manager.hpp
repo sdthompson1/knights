@@ -94,6 +94,7 @@ public:
     NameList(const std::vector<Coercri::Color> &hc, KnightsApp &app);
     void add(const PlayerID &id, bool observer, bool ready, int house_col);
     void alter(const PlayerID &id, const bool *observer, const bool *ready, const int *house_col);  // ptr = null means don't change.
+    bool query(const PlayerID &id, bool &observer, int &house_col); // returns true if found
     void clearReady();
     void clear();
     void remove(const PlayerID &id);
@@ -263,7 +264,7 @@ public:
 
     virtual void setObsFlag(const PlayerID &id, bool new_obs_flag) override;
     
-    virtual void chat(const PlayerID &id, bool observer, bool team, const Coercri::UTF8String &msg) override;
+    virtual void chat(const PlayerID &id, const Coercri::UTF8String &msg) override;
     virtual void announcementLoc(const LocalMsg &msg, bool err) override;
 
 

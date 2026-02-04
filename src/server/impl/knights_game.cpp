@@ -230,30 +230,18 @@ namespace {
         return false;
     }
 
-    void CheckTeamChat(const Coercri::UTF8String &msg_orig_utf8,
-                       Coercri::UTF8String &msg,
-                       bool &is_team)
+    bool CheckTeamChat(const Coercri::UTF8String &msg)
     {
-        std::string msg_orig = msg_orig_utf8.asUTF8();
-
-        is_team = false;
+        const std::string & msg_orig = msg.asUTF8();
 
         // Left trim
         size_t idx = 0;
         while (idx < msg_orig.size() && msg_orig[idx] == ' ') ++idx;
 
         // Check for "/t"
-        if (idx < msg_orig.size() && msg_orig[idx] == '/'
-            && idx+1 < msg_orig.size() && msg_orig[idx+1] == 't') {
-                idx += 2;
-                is_team = true;
-        }
-
-        // Left trim again
-        while (idx < msg_orig.size() && msg_orig[idx] == ' ') ++idx;
-
-        // Copy rest of the message into msg
-        msg = Coercri::UTF8String::fromUTF8(msg_orig.substr(idx));
+        return (idx+1 < msg_orig.size()
+                && msg_orig[idx] == '/'
+                && msg_orig[idx+1] == 't');
     }
 
     void Announcement(KnightsGameImpl &kg, const LocalMsg &msg, bool is_err = false)
@@ -1850,7 +1838,7 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
 }
 
 
-void KnightsGame::sendChatMessage(GameConnection &conn, const Coercri::UTF8String &msg_orig)
+void KnightsGame::sendChatMessage(GameConnection &conn, const Coercri::UTF8String &msg)
 {
     bool is_running;
 #ifdef VIRTUAL_SERVER
@@ -1861,15 +1849,13 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const Coercri::UTF8Strin
 
     // Determine whether this is a Team chat message
     bool is_team;
-    UTF8String msg;
     if (!is_running || conn.obs_flag) {
         // Team chat not available (either because we are on the quest selection menu, 
         // or because sender is an observer).
         is_team = false;
-        msg = msg_orig;
     } else {
-        // Check whether they typed /t, and strip it out (and set is_team flag) if it's there
-        CheckTeamChat(msg_orig, msg, is_team);
+        // Check whether they typed /t
+        is_team = CheckTeamChat(msg);
     }
 
     // Forward the message to everybody (including the originator)
@@ -1878,7 +1864,6 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const Coercri::UTF8Strin
     boost::lock_guard<boost::mutex> lock(pimpl->my_mutex);
 #endif
     for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
-
         if (is_team) {
             // Skip over players of different team, or observers
             if ((*it)->obs_flag || (*it)->house_colour != conn.house_colour) continue;
@@ -1887,14 +1872,6 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const Coercri::UTF8Strin
         Coercri::OutputByteBuf buf((*it)->output_data);
         buf.writeUbyte(SERVER_CHAT);
         buf.writeString(conn.id1.asString());
-
-        if (is_team) {
-            buf.writeUbyte(3);  // Team Message
-        } else if (conn.obs_flag) {
-            buf.writeUbyte(2);  // Message from an observer
-        } else {
-            buf.writeUbyte(1);  // Normal Message
-        }
         buf.writeString(msg.asUTF8());
     }
 }

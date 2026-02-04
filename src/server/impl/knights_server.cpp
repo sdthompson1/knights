@@ -448,7 +448,6 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                                 Coercri::OutputByteBuf out_other((*it)->output_data);
                                 out_other.writeUbyte(SERVER_CHAT);
                                 out_other.writeString(conn.player_id.asString());
-                                out_other.writeUbyte(0);
                                 out_other.writeString(msg.asUTF8());
                             }
                         }

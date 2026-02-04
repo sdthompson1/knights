@@ -105,7 +105,7 @@ enum ServerMessageCode {
     SERVER_SET_OBS_FLAG = 25,        // followed by string (player-id), ubyte (1=obs 0=player).
     SERVER_DEACTIVATE_READY_FLAGS = 26,         // no additional data
 
-    SERVER_CHAT = 30,                // followed by string (player-id), ubyte (0=lobby 1=player 2=observer 3=team), string (utf-8 chat msg)
+    SERVER_CHAT = 30,                // followed by string (player-id), string (utf-8 chat msg)
     // SERVER_ANNOUNCEMENT_RAW = 31,    // no longer used
     SERVER_ANNOUNCEMENT_LOC = 32,    // followed by string (localkey) + ubyte (num params) + params; see read_write_loc.cpp for the format
 

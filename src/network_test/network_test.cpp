@@ -178,9 +178,9 @@ public:
         Log("Set obs flag. ID = %s, val = %d", id.asString().c_str(), new_obs_flag ? 1 : 0);
     }
     
-    void chat(const PlayerID &whofrom, bool observer, bool team, const Coercri::UTF8String &msg) override
+    void chat(const PlayerID &whofrom, const Coercri::UTF8String &msg) override
     {
-        Log("Chat. whofrom = %s, obs = %d, team = %d, msg = %s", whofrom.asString().c_str(), observer ? 1 : 0, team ? 1 : 0, msg.asUTF8().c_str());
+        Log("Chat. whofrom = %s, msg = %s", whofrom.asString().c_str(), msg.asUTF8().c_str());
     }
     void announcementLoc(const LocalMsg& msg, bool is_err) override
     {

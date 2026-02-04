@@ -11,9 +11,9 @@ Note that this is *not* normally compiled into the Knights client -- it is
 used only in special debugging builds (when ONLINE_PLATFORM_DUMMY is defined).
 
 Binary Protocol:
-- Message Type (1 byte): 
+- Message Type (1 byte):
   0x01=LOGIN, 0x02=CREATE_LOBBY, 0x03=GET_LOBBY_LIST, 0x04=JOIN_LOBBY, 0x05=LEAVE_LOBBY,
-  0x06=GET_LOBBY_INFO, 0x07=SET_LOBBY_INFO
+  0x06=GET_LOBBY_INFO, 0x07=SET_LOBBY_INFO, 0x08=SEND_CHAT, 0x09=GET_CHAT
 - Message Length (4 bytes, little-endian): Length of data payload
 - Data payload (variable length)
 
@@ -40,6 +40,8 @@ MSG_JOIN_LOBBY = 0x04
 MSG_LEAVE_LOBBY = 0x05
 MSG_GET_LOBBY_INFO = 0x06
 MSG_SET_LOBBY_INFO = 0x07
+MSG_SEND_CHAT = 0x08
+MSG_GET_CHAT = 0x09
 
 STATUS_SUCCESS = 0x00
 STATUS_ERROR = 0x01
@@ -54,10 +56,14 @@ class Lobby:
         self.status_key = ""  # LocalKey string
         self.param_key = None  # Optional parameter LocalKey string
         self.lobby_state = "JOINED"  # Lobby state: "JOINED" or "FAILED"
+        self.chat_messages: List[Dict[str, str]] = []  # [{'sender': user_id, 'message': text}, ...]
+        self.user_last_read_index: Dict[str, int] = {}  # user_id -> index of last message read
     
     def add_member(self, user_id: str) -> bool:
         if user_id not in self.members:
             self.members.add(user_id)
+            # New members start from current message count (no history)
+            self.user_last_read_index[user_id] = len(self.chat_messages)
             return True
         return False
     
@@ -91,6 +97,17 @@ class Lobby:
             self.lobby_state = new_state
             return True
         return False
+
+    def add_chat_message(self, sender_user_id: str, message: str):
+        """Add a chat message to the lobby"""
+        self.chat_messages.append({'sender': sender_user_id, 'message': message})
+
+    def get_new_messages(self, user_id: str) -> List[Dict[str, str]]:
+        """Get messages user hasn't seen yet and update their index"""
+        last_index = self.user_last_read_index.get(user_id, 0)
+        new_messages = self.chat_messages[last_index:]
+        self.user_last_read_index[user_id] = len(self.chat_messages)
+        return new_messages
 
 class LobbyServer:
     def __init__(self, port: int = 12345):
@@ -175,6 +192,10 @@ class LobbyServer:
                 return self.handle_get_lobby_info(client_socket, payload)
             elif msg_type == MSG_SET_LOBBY_INFO:
                 return self.handle_set_lobby_info(client_socket, payload)
+            elif msg_type == MSG_SEND_CHAT:
+                return self.handle_send_chat(client_socket, payload)
+            elif msg_type == MSG_GET_CHAT:
+                return self.handle_get_chat(client_socket, payload)
             else:
                 return self.create_error_response(b"Unknown message type")
         except Exception as e:
@@ -359,7 +380,62 @@ class LobbyServer:
         
         print(f"User {user_id} updated lobby {lobby_id} info: status_key='{status_key}', param_key='{param_key}'")
         return self.create_success_response(b"OK")
-    
+
+    def handle_send_chat(self, client_socket: socket.socket, payload: bytes) -> bytes:
+        if client_socket not in self.clients:
+            return self.create_error_response(b"Not logged in")
+
+        user_id = self.clients[client_socket]
+
+        with self.lock:
+            if user_id not in self.user_lobbies:
+                return self.create_error_response(b"Not in any lobby")
+
+            lobby_id = self.user_lobbies[user_id]
+            lobby = self.lobbies[lobby_id]
+
+            # Parse payload: message_text (null-terminated)
+            try:
+                null_pos = payload.find(b'\0')
+                if null_pos == -1:
+                    return self.create_error_response(b"Invalid payload format")
+
+                message_text = payload[:null_pos].decode('utf-8')
+
+                # Add chat message
+                lobby.add_chat_message(user_id, message_text)
+
+            except UnicodeDecodeError:
+                return self.create_error_response(b"Invalid UTF-8 encoding")
+
+        print(f"User {user_id} sent chat message in lobby {lobby_id}: '{message_text}'")
+        return self.create_success_response(b"OK")
+
+    def handle_get_chat(self, client_socket: socket.socket, payload: bytes) -> bytes:
+        if client_socket not in self.clients:
+            return self.create_error_response(b"Not logged in")
+
+        user_id = self.clients[client_socket]
+
+        with self.lock:
+            if user_id not in self.user_lobbies:
+                return self.create_error_response(b"Not in any lobby")
+
+            lobby_id = self.user_lobbies[user_id]
+            lobby = self.lobbies[lobby_id]
+
+            # Get new messages for this user
+            new_messages = lobby.get_new_messages(user_id)
+
+            # Build response: num_messages (4 bytes, little-endian) +
+            #                 for each message: sender_id + '\0' + message + '\0'
+            response_data = struct.pack('<I', len(new_messages))
+            for msg in new_messages:
+                response_data += msg['sender'].encode('utf-8') + b'\0'
+                response_data += msg['message'].encode('utf-8') + b'\0'
+
+        return self.create_success_response(response_data)
+
     def cleanup_client(self, client_socket: socket.socket):
         if client_socket in self.clients:
             user_id = self.clients[client_socket]
