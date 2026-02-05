@@ -1616,29 +1616,31 @@ void GameManager::deactivateReadyFlags()
 }
 
 namespace {
+    // Check if a message is team chat (if allowed). If so, remove the "/t" prefix.
+    // Also removes leading spaces.
     bool CheckTeamChat(const Coercri::UTF8String &msg,
                        bool team_chat_allowed,
-                       std::string &msg_stripped)
+                       Coercri::UTF8String &msg_stripped)
     {
-        const std::string latin1 = msg.asLatin1();
+        const std::string& utf8 = msg.asUTF8();
         bool is_team = false;
 
         // strip away any leading spaces
         int idx = 0;
-        while (idx < latin1.size() && latin1[idx] == ' ') ++idx;
+        while (idx < utf8.size() && utf8[idx] == ' ') ++idx;
 
         if (team_chat_allowed
-        && idx + 1 < latin1.size()
-        && latin1[idx] == '/'
-        && latin1[idx + 1] == 't') {
+        && idx + 1 < utf8.size()
+        && utf8[idx] == '/'
+        && utf8[idx + 1] == 't') {
             // strip away "/t" and any further leading spaces
             is_team = true;
             idx += 2;
-            while (idx < latin1.size() && latin1[idx] == ' ') ++idx;
+            while (idx < utf8.size() && utf8[idx] == ' ') ++idx;
         }
 
         // return the stripped message and the is_team flag
-        msg_stripped = latin1.substr(idx);
+        msg_stripped = UTF8String::fromUTF8(utf8.substr(idx));
         return is_team;
     }
 }
@@ -1658,8 +1660,18 @@ void GameManager::chat(const PlayerID &whofrom, const Coercri::UTF8String &msg)
     bool team_chat_allowed = !observer && pimpl->game_in_progress;
 
     // Strip away leading spaces and "/t" prefix if applicable
-    std::string msg_stripped;
+    Coercri::UTF8String msg_stripped;
     bool is_team = CheckTeamChat(msg, team_chat_allowed, msg_stripped);
+
+    // Filter the message text if required
+#ifdef ONLINE_PLATFORM
+    msg_stripped = pimpl->knights_app.getOnlinePlatform().filterChatMessage(whofrom, msg_stripped);
+#endif
+
+    // If the message was blocked (or was empty to begin with), we drop it.
+    if (msg_stripped.empty()) {
+        return;
+    }
 
     // Add "(Team)" or "(Observer)" marker if needed
     if (is_team) {
@@ -1674,7 +1686,7 @@ void GameManager::chat(const PlayerID &whofrom, const Coercri::UTF8String &msg)
 
     // Add colon and the stripped message itself
     out_latin1 += ": ";
-    out_latin1 += msg_stripped;
+    out_latin1 += msg_stripped.asLatin1();
 
     // Add it to the chat list in the GUI
     pimpl->chat_list.add(out_latin1);

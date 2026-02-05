@@ -69,6 +69,10 @@ public:
     // P2P connections (faked using normal Coercri NetworkConnections)
     virtual Coercri::NetworkDriver & getNetworkDriver() override;
 
+    // Text/Chat filtering - no-ops on this platform
+    virtual Coercri::UTF8String filterGameContent(const Coercri::UTF8String &str) override { return str; }
+    virtual Coercri::UTF8String filterChatMessage(const PlayerID &sender, const Coercri::UTF8String &str) override { return str; }
+
     // Public methods for DummyPlatformLobby to use
     bool sendMessage(unsigned char msg_type, const std::string& payload);
     bool receiveResponse(std::string& response_data);

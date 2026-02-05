@@ -127,7 +127,8 @@ LocalMsg PopLocalMsgFromLua(lua_State *lua)
     return msg;
 }
 
-void Localization::readStrings(std::istream &file)
+void Localization::readStrings(std::istream &file,
+                               std::function<Coercri::UTF8String (const Coercri::UTF8String &)> filter_func)
 {
     std::string line;
     while (std::getline(file, line)) {
@@ -158,7 +159,7 @@ void Localization::readStrings(std::istream &file)
                     throw std::runtime_error("Duplicate localization key: " + key);
                 }
 
-                strings[local_key] = Coercri::UTF8String::fromUTF8(message);
+                strings[local_key] = filter_func(Coercri::UTF8String::fromUTF8(message));
             }
         }
     }

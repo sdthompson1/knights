@@ -133,7 +133,9 @@ public:
     }
 
     // Read strings from a file
-    void readStrings(std::istream &file);
+    // Strings are passed through the given function for filtering
+    void readStrings(std::istream &file,
+                     std::function<Coercri::UTF8String (const Coercri::UTF8String &)> filter_func);
 
     // Set a player name lookup function
     void setPlayerNameLookup(std::function<Coercri::UTF8String(const PlayerID &)> func) {

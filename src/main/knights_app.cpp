@@ -273,6 +273,16 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
                        bool autostart, Localization &localization)
     : pimpl(new KnightsAppImpl(localization))
 {
+    // Init online platform (if applicable) - do this first so that we
+    // can apply any required text filtering to the localization strings
+#ifdef ONLINE_PLATFORM
+#ifdef ONLINE_PLATFORM_DUMMY
+    pimpl->online_platform.reset(new DummyOnlinePlatform);
+#else
+#error "Online platform not defined"
+#endif
+#endif
+
     // Initialize resource lib
     std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";
     RStream::Initialize(resource_dir);
@@ -280,7 +290,14 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     // Read knights_data/client/localization_strings.txt
     {
         RStream file("client/localization_strings.txt");
-        pimpl->localization.readStrings(file);
+        pimpl->localization.readStrings(file,
+                                        [this](const UTF8String &str) {
+#ifdef ONLINE_PLATFORM
+                                            return pimpl->online_platform->filterGameContent(str);
+#else
+                                            return str;
+#endif
+                                        });
     }
 
     const char * game_name = "Knights";
@@ -346,21 +363,13 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     pimpl->ttf_loader.reset(new Coercri::FreetypeTTFLoader(pimpl->gfx_driver));
 
 #ifdef ONLINE_PLATFORM
-    // initialize online platform
-#ifdef ONLINE_PLATFORM_DUMMY
-    pimpl->online_platform.reset(new DummyOnlinePlatform);
-#else
-#error "Online platform not defined"
-#endif
-
     // use online platform for username lookup
     pimpl->localization.setPlayerNameLookup([this](const PlayerID &id) {
         return pimpl->online_platform->lookupUserName(id);
     });
-
 #else
-    // online platform not available
-    // use the enet network driver
+    // Online platform not available
+    // Use the ENet network driver
     pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
     pimpl->net_driver->enableServer(false);  // start off disabled.
 #endif

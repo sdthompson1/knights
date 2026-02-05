@@ -149,6 +149,16 @@ public:
     // Get a build ID string for the current build, from the online platform.
     // If this is not available, an empty string will be returned.
     virtual std::string getBuildId() { return ""; }
+
+
+    // Filtering and Blocking:
+
+    // Filter a game content string. Returns filtered version.
+    virtual Coercri::UTF8String filterGameContent(const Coercri::UTF8String &str) = 0;
+
+    // Filter a chat message from a given user. If the user is blocked this will return
+    // an empty string; otherwise it returns a filtered version of the msg.
+    virtual Coercri::UTF8String filterChatMessage(const PlayerID &sender, const Coercri::UTF8String &msg) = 0;
 };
 
 #endif  // ONLINE_PLATFORM
