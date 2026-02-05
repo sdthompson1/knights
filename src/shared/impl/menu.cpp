@@ -28,7 +28,7 @@
 Menu::Menu(Coercri::InputByteBuf &buf)
 {
     title = LocalKey(buf.readString());
-    const int n_items = buf.readVarInt();
+    const int n_items = buf.readVarIntThrow(0, 10000);
     items.reserve(n_items);
     for (int i = 0; i < n_items; ++i) {
         items.push_back(MenuItem(buf));

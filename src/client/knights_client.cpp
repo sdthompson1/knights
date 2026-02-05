@@ -177,8 +177,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 pimpl->receiveConfiguration(buf);
                 const int my_house_colour = buf.readUbyte();
 
-                const int n_plyrs = buf.readVarInt();
-                if (n_plyrs < 0) throw ProtocolError(LocalKey("n_players_incorrect"));
+                const int n_plyrs = buf.readVarIntThrow(0, 1000);
                 std::vector<PlayerID> players;
                 std::vector<bool> ready_flags;
                 std::vector<int> hse_cols;
@@ -188,9 +187,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     hse_cols.push_back(buf.readUbyte());
                 }
 
-                const int n_obs = buf.readVarInt();
+                const int n_obs = buf.readVarIntThrow(0, 1000);
                 std::vector<PlayerID> observers;
-                if (n_obs < 0) throw ProtocolError(LocalKey("n_players_incorrect"));
                 observers.reserve(n_obs);
                 for (int i = 0; i < n_obs; ++i) {
                     observers.push_back(PlayerID(buf.readString()));
@@ -217,10 +215,6 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
-        case SERVER_NOTUSED:
-            throw ProtocolError(LocalKey("old_server"));
-            break;
-
         case SERVER_PLAYER_CONNECTED:
             {
                 const PlayerID id = PlayerID(buf.readString());
@@ -244,7 +238,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const int item_num = buf.readVarInt();
                 const int choice_num = buf.readVarInt();
                 std::vector<int> allowed_vals;
-                const int num_allowed_vals = buf.readVarInt();
+                const int num_allowed_vals = buf.readVarIntThrow(0, 10000);
                 allowed_vals.resize(num_allowed_vals);
                 for (int i = 0; i < num_allowed_vals; ++i) {
                     allowed_vals[i] = buf.readVarInt();
@@ -432,7 +426,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     throw ProtocolError(LocalKey("bad_server_message"));
                 }
 
-                const int n = buf.readVarInt();
+                const int n = buf.readVarIntThrow(0, 10000);
                 std::vector<TutorialWindow> windows;
                 windows.reserve(n);
                 for (int i = 0; i < n; ++i) {
@@ -440,7 +434,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     win.title_latin1 = buf.readString();
                     win.msg_latin1 = buf.readString();
                     win.popup = buf.readVarInt() != 0;
-                    const int ngfx = buf.readVarInt();
+                    const int ngfx = buf.readVarIntThrow(0, 10000);
                     win.gfx.reserve(ngfx);
                     win.cc.reserve(ngfx);
                     for (int i = 0; i < ngfx; ++i) {
@@ -456,8 +450,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_UPDATE_GAME:
             {
                 const std::string game_name = buf.readString();
-                const int num_players = buf.readVarInt();
-                const int num_observers = buf.readVarInt();
+                const int num_players = buf.readVarIntThrow(0, 1000);
+                const int num_observers = buf.readVarIntThrow(0, 1000);
                 const GameStatus status_code = GameStatus(buf.readUbyte());
                 if (client_cb) client_cb->updateGame(game_name, num_players, num_observers, status_code);
             }
@@ -481,7 +475,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_PLAYER_LIST:
             {
-                const int nplayers = buf.readVarInt();
+                const int nplayers = buf.readVarIntThrow(0, 1000);
                 std::vector<ClientPlayerInfo> player_list;
                 player_list.reserve(nplayers);
                 for (int i = 0; i < nplayers; ++i) {
@@ -524,7 +518,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_PLAY_SOUND:
             {
                 const Sound *sound = pimpl->readSound(buf);
-                const int freq = buf.readVarInt();
+                const int freq = buf.readVarIntClamp(1, 1000000);
                 if (knights_cb && sound) knights_cb->playSound(pimpl->player, *sound, freq);
             }
             break;
@@ -561,7 +555,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_FLASH_SCREEN:
             {
-                const int delay = buf.readVarInt();
+                const int delay = buf.readVarIntClamp(0, 10000);
                 if (knights_cb) knights_cb->flashScreen(pimpl->player, delay);
             }
             break;
@@ -775,7 +769,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_COLOUR:
             {
-                const int nruns = buf.readVarInt();
+                const int nruns = buf.readVarIntThrow(0, 1000000);
                 for (int i = 0; i < nruns; ++i) {
                     const int start_x = buf.readUbyte();
                     const int y = buf.readUbyte();
@@ -1041,6 +1035,8 @@ void KnightsClient::finishedLoading()
 
 void KnightsClient::sendControl(int plyr, const UserControl *ctrl)
 {
+    if (plyr != 0 && plyr != 1) return;  // Protect against potential buffer overrun below
+
     int id = 0;
     if (ctrl) {
         id = ctrl->getID();
@@ -1049,7 +1045,7 @@ void KnightsClient::sendControl(int plyr, const UserControl *ctrl)
     if (plyr < 0 || plyr > 1) throw ProtocolError(LocalKey("invalid_id_client"));
 
     // optimization: do not send "repeats" of continuous controls.
-    if (ctrl == 0 || ctrl->isContinuous()) {
+    if (ctrl == nullptr || ctrl->isContinuous()) {
         if (ctrl == pimpl->last_cts_ctrl[plyr]) return;
         pimpl->last_cts_ctrl[plyr] = ctrl;
     } else {
@@ -1099,37 +1095,39 @@ void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 {
     client_config.reset(new ClientConfig);  // wipe out the old client config if there is one.
 
-    const int n_graphics = buf.readVarInt();
+    constexpr int MAX_COUNT = 100000;
+
+    const int n_graphics = buf.readVarIntThrow(0, MAX_COUNT);
     client_config->graphics.reserve(n_graphics);
     for (int i = 0; i < n_graphics; ++i) {
         client_config->graphics.push_back(new Graphic(i+1, buf));
     }
 
-    const int n_anims = buf.readVarInt();
+    const int n_anims = buf.readVarIntThrow(0, MAX_COUNT);
     client_config->anims.reserve(n_anims);
     for (int i = 0; i < n_anims; ++i) {
         client_config->anims.push_back(new Anim(i+1, buf, client_config->graphics));
     }
 
-    const int n_overlays = buf.readVarInt();
+    const int n_overlays = buf.readVarIntThrow(0, MAX_COUNT);
     client_config->overlays.reserve(n_overlays);
     for (int i = 0; i < n_overlays; ++i) {
         client_config->overlays.push_back(new Overlay(i+1, buf, client_config->graphics));
     }
 
-    const int n_sounds = buf.readVarInt();
+    const int n_sounds = buf.readVarIntThrow(0, MAX_COUNT);
     client_config->sounds.reserve(n_sounds);
     for (int i = 0; i < n_sounds; ++i) {
         client_config->sounds.push_back(new Sound(i+1, buf));
     }
 
-    const int n_standard_controls = buf.readVarInt();
+    const int n_standard_controls = buf.readVarIntThrow(0, MAX_COUNT);
     client_config->standard_controls.reserve(n_standard_controls);
     for (int i = 0; i < n_standard_controls; ++i) {
         client_config->standard_controls.push_back(new UserControl(i+1, buf, client_config->graphics));
     }
 
-    const int n_other_controls = buf.readVarInt();
+    const int n_other_controls = buf.readVarIntThrow(0, MAX_COUNT);
     client_config->other_controls.reserve(n_other_controls);
     for (int i = 0; i < n_other_controls; ++i) {
         client_config->other_controls.push_back(new UserControl(i+1+n_standard_controls, buf, client_config->graphics));
@@ -1137,7 +1135,7 @@ void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 
     client_config->menu.reset(new Menu(buf));
 
-    client_config->approach_offset = buf.readVarInt();
+    client_config->approach_offset = buf.readVarIntClamp(-2000, 2000);
 }
 
 const Graphic * KnightsClientImpl::readGraphic(Coercri::InputByteBuf &buf) const

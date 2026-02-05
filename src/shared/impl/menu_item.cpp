@@ -31,10 +31,10 @@ MenuItem::MenuItem(Coercri::InputByteBuf &buf)
     numeric = buf.readUbyte() != 0;
 
     if (numeric) {
-        num_digits = buf.readVarInt();
+        num_digits = buf.readVarIntClamp(0, 50);
         suffix = LocalKey(buf.readString());
     } else {
-        const int nsettings = buf.readVarInt();
+        const int nsettings = buf.readVarIntThrow(0, 1000);
         dropdown_entries.reserve(nsettings);
 
         for (int i = 0; i < nsettings; ++i) {

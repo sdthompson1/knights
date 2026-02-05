@@ -124,6 +124,21 @@ namespace Coercri {
         }
     }
 
+    int InputByteBuf::readVarIntClamp(int min, int max)
+    {
+        int v = readVarInt();
+        if (v < min) return min;
+        else if (v > max) return max;
+        else return v;
+    }
+
+    int InputByteBuf::readVarIntThrow(int min, int max)
+    {
+        int v = readVarInt();
+        if (v < min || v > max) throw CoercriError("readVarIntThrow: out of range");
+        return v;
+    }
+
     void InputByteBuf::readNibbles(int &x, int &y)
     {
         int ub = readUbyte();

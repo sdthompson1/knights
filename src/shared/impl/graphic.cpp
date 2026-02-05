@@ -41,13 +41,13 @@ Graphic::Graphic(const Graphic &rhs)
 Graphic::Graphic(int id_, Coercri::InputByteBuf &buf)
     : file(buf)
 {
-    hx = buf.readVarInt();
-    hy = buf.readVarInt();
-    r = buf.readVarInt();
-    g = buf.readVarInt();
-    b = buf.readVarInt();
-    size_hint_num = buf.readVarInt();
-    size_hint_denom = buf.readVarInt();
+    hx = buf.readVarIntClamp(-1000, 1000);
+    hy = buf.readVarIntClamp(-1000, 1000);
+    r = buf.readVarIntClamp(-1, 255);
+    g = buf.readVarIntClamp(-1, 255);
+    b = buf.readVarIntClamp(-1, 255);
+    size_hint_num = buf.readVarIntClamp(0, 1000000);
+    size_hint_denom = buf.readVarIntClamp(1, 1000000);
     id = id_;
 
     bool use_cc = buf.readUbyte() != 0;

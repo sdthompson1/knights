@@ -33,7 +33,7 @@
 
 void Overlay::getGraphic(MapDirection facing, int frame, const Graphic *&gfx, int &ofsx, int &ofsy) const
 {
-    gfx = 0;
+    gfx = nullptr;
     ofsx = ofsy = 0;
     if (frame != AF_THROW_DOWN) {  // overlays aren't drawn for this frame
         MapDirection d = D_NORTH;
@@ -66,8 +66,8 @@ Overlay::Overlay(int id_, Coercri::InputByteBuf &buf, const std::vector<const Gr
     }
 
     for (int i = 0; i < N_OVERLAY_FRAME*4; ++i) {
-        offset_data[i].ofsx = buf.readVarInt();
-        offset_data[i].ofsy = buf.readVarInt();
+        offset_data[i].ofsx = buf.readVarIntClamp(-2000, 2000);
+        offset_data[i].ofsy = buf.readVarIntClamp(-2000, 2000);
         int d = buf.readUbyte();
         if (d > 3) throw std::runtime_error("error reading Overlay");
         offset_data[i].dir = MapDirection(d);

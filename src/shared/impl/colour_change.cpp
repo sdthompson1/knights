@@ -79,7 +79,7 @@ void Colour::serialize(Coercri::OutputByteBuf &buf) const
 
 ColourChange::ColourChange(Coercri::InputByteBuf &buf)
 {
-    const int num = buf.readVarInt();
+    const int num = buf.readVarIntThrow(0, 1000);
     mappings.reserve(num);
     for (int i = 0; i < num; ++i) {
         Colour c1(buf);

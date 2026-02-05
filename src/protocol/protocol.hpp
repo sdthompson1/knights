@@ -84,7 +84,7 @@ enum ServerMessageCode {
     
     SERVER_JOIN_GAME_ACCEPTED = 3,   // complex
     SERVER_JOIN_GAME_DENIED = 4,     // followed by string (reason, as localkey)
-    SERVER_NOTUSED = 5,              // was SERVER_INITIAL_PLAYER_LIST in version 011 and below
+           // 5 = not used (was SERVER_INITIAL_PLAYER_LIST in version 011 and below)
     SERVER_PLAYER_CONNECTED = 6,     // followed by string (player id)
     SERVER_PLAYER_DISCONNECTED = 7,  // followed by string (player id)
     

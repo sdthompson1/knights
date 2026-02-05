@@ -75,6 +75,8 @@ namespace Coercri {
         int readShort();
         unsigned int readUlong();
         int readVarInt();  // variable length int (1,2,3 or 4 bytes)
+        int readVarIntClamp(int min, int max);  // Clamp to min/max range (inclusive)
+        int readVarIntThrow(int min, int max);  // Throw if out of range (inclusive)
         void readNibbles(int &x, int &y);   // two numbers in range [0,15], encoded in one byte
         std::string readString();  // encoded as length (as VarInt) + data.
 
