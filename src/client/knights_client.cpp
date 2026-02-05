@@ -72,7 +72,7 @@ public:
           knights_callbacks(0), client_callbacks(0),
           next_announcement_is_error(false),
           allow_untrusted_strings(allow_untrusted_strings)
-    { 
+    {
         for (int i = 0; i < 2; ++i) last_cts_ctrl[i] = 0;
     }
 
@@ -87,7 +87,7 @@ public:
     bool next_announcement_is_error;
     bool allow_untrusted_strings;
     std::vector<UTF8String> pending_chat_messages;
-    
+
     // helper functions
     void receiveConfiguration(Coercri::InputByteBuf &buf);
     const Graphic * readGraphic(Coercri::InputByteBuf &buf) const;
@@ -153,7 +153,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         const unsigned char msg_code = buf.readUbyte();
         switch (msg_code) {
-           
+
         case SERVER_ERROR:
             {
                 LocalMsg msg;
@@ -171,7 +171,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 if (client_cb) client_cb->connectionAccepted(server_version);
             }
             break;
-            
+
         case SERVER_JOIN_GAME_ACCEPTED:
             {
                 pimpl->receiveConfiguration(buf);
@@ -187,7 +187,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     ready_flags.push_back(buf.readUbyte() != 0);
                     hse_cols.push_back(buf.readUbyte());
                 }
-                
+
                 const int n_obs = buf.readVarInt();
                 std::vector<PlayerID> observers;
                 if (n_obs < 0) throw ProtocolError(LocalKey("n_players_incorrect"));
@@ -220,7 +220,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_NOTUSED:
             throw ProtocolError(LocalKey("old_server"));
             break;
-            
+
         case SERVER_PLAYER_CONNECTED:
             {
                 const PlayerID id = PlayerID(buf.readString());
@@ -238,7 +238,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_LEAVE_GAME:
             if (client_cb) client_cb->leaveGame();
             break;
-            
+
         case SERVER_SET_MENU_SELECTION:
             {
                 const int item_num = buf.readVarInt();
@@ -270,7 +270,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 if (client_cb) client_cb->setQuestDescription(paragraphs);
             }
             break;
-            
+
         case SERVER_START_GAME:
             {
                 pimpl->ndisplays = buf.readUbyte();
@@ -494,7 +494,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     inf.deaths = buf.readVarInt();
                     inf.frags = buf.readVarInt();
                     inf.ping = buf.readVarInt();
-                    
+
                     // Read status byte: 0=NORMAL, 1=ELIMINATED, 2=DISCONNECTED, 3=OBSERVER
                     const unsigned char status_byte = buf.readUbyte();
                     switch (status_byte) {
@@ -514,7 +514,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                         inf.client_state = ClientState::NORMAL;  // Default to NORMAL for unknown values
                         break;
                     }
-                    
+
                     player_list.push_back(inf);
                 }
                 if (client_cb) client_cb->playerList(player_list);
@@ -593,9 +593,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const bool approached = ((z & 4) != 0);
                 const bool ainvis = ((z & 2) != 0);
                 const bool ainvuln = ((z & 1) != 0);
-				
+
                 MotionType motion_type = MotionType(buf.readUbyte());
-				
+
                 const int atz_diff = af == 0 ? 0 : buf.readShort();
                 const int cur_ofs = buf.readUshort();
                 const int motion_time_remaining = motion_type == MT_NOT_MOVING ? 0 : buf.readUshort();
@@ -919,8 +919,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 // check that we read the entire payload
                 size_t pos_now = buf.getPos();
                 size_t should_be = pos_before_payload + size_t(payload_length);
-                
-                // If we did not read all of the payload, then skip over the unread payload 
+
+                // If we did not read all of the payload, then skip over the unread payload
                 // bytes. (This is for forwards compatibility.)
                 while (pos_now < should_be) {
                     buf.readUbyte();
@@ -933,7 +933,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 }
             }
             break;
-            
+
         default:
             throw ProtocolError(LocalKey("unknown_server_message"));
         }
@@ -1056,7 +1056,7 @@ void KnightsClient::sendControl(int plyr, const UserControl *ctrl)
         // this is a "discrete" control so make sure we re-send the next continuous control after it...
         pimpl->last_cts_ctrl[plyr] = 0;
     }
-    
+
     Coercri::OutputByteBuf buf(pimpl->out);
     buf.writeUbyte(CLIENT_SEND_CONTROL);
 
@@ -1098,7 +1098,7 @@ std::vector<UTF8String> KnightsClient::getPendingChatMessages()
 void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 {
     client_config.reset(new ClientConfig);  // wipe out the old client config if there is one.
-    
+
     const int n_graphics = buf.readVarInt();
     client_config->graphics.reserve(n_graphics);
     for (int i = 0; i < n_graphics; ++i) {
@@ -1128,7 +1128,7 @@ void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
     for (int i = 0; i < n_standard_controls; ++i) {
         client_config->standard_controls.push_back(new UserControl(i+1, buf, client_config->graphics));
     }
-    
+
     const int n_other_controls = buf.readVarInt();
     client_config->other_controls.reserve(n_other_controls);
     for (int i = 0; i < n_other_controls; ++i) {
@@ -1178,7 +1178,7 @@ const UserControl * KnightsClientImpl::getControl(int id) const
     if (id <= int(client_config->standard_controls.size())) {
         return client_config->standard_controls.at(id-1);
     } else if (id <= int(client_config->standard_controls.size() + client_config->other_controls.size())) {
-        return client_config->other_controls.at(id - 1 - client_config->standard_controls.size()); 
+        return client_config->other_controls.at(id - 1 - client_config->standard_controls.size());
     } else {
         throw ProtocolError(LocalKey("invalid_id_server"));
     }
