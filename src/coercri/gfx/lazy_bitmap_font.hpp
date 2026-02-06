@@ -73,6 +73,7 @@ namespace Coercri {
         void drawText(GfxContext &dest, int x, int y, const UTF8String &text, Color col) const override;
         int getTextHeight() const override;
         void getTextSize(const UTF8String &text, int &w, int &h) const override;
+        size_t getStringIndexAt(const UTF8String &text, int x) const override;
 
     private:
         // Cached glyph information (stored in the atlas).

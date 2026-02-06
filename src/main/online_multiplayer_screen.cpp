@@ -108,14 +108,14 @@ namespace {
     {
         if (i >= 0 && i < int(games.size())) {
             const GameInfo &game = games[i];
-            std::string result = game.leader_name.asLatin1();
+            std::string result = game.leader_name.asUTF8();
             result += "\t";
             result += std::to_string(game.num_players);
             result += "\t";
 
             const Localization &loc = knights_app.getLocalization();
             Coercri::UTF8String status_msg = loc.get(game.game_status_key, game.game_status_params);
-            result += status_msg.asLatin1();
+            result += status_msg.asUTF8();
 
             return result;
         }

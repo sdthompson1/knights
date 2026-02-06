@@ -431,8 +431,8 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 windows.reserve(n);
                 for (int i = 0; i < n; ++i) {
                     TutorialWindow win;
-                    win.title_latin1 = buf.readString();
-                    win.msg_latin1 = buf.readString();
+                    win.title = Coercri::UTF8String::fromUTF8Safe(buf.readString());
+                    win.msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
                     win.popup = buf.readVarInt() != 0;
                     const int ngfx = buf.readVarIntThrow(0, 10000);
                     win.gfx.reserve(ngfx);

@@ -32,6 +32,7 @@
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
+#include "utf8_text_field.hpp"
 
 #include "gcn/cg_font.hpp" // coercri
 
@@ -49,7 +50,7 @@ private:
     boost::scoped_ptr<gcn::Container> container;
     boost::scoped_ptr<gcn::Label> name_label;
     boost::scoped_ptr<gcn::Label> label1;    
-    boost::scoped_ptr<gcn::TextField> name_field;
+    boost::scoped_ptr<UTF8TextField> name_field;
     boost::scoped_ptr<gcn::Button> ok_button;
     boost::scoped_ptr<gcn::Button> cancel_button;
 };
@@ -67,10 +68,10 @@ HostLanScreenImpl::HostLanScreenImpl(KnightsApp &ka, gcn::Gui &gui)
     label1->setForegroundColor(gcn::Color(0,0,128));
 
     name_label.reset(new gcn::Label("Player Name: "));
-    name_field.reset(new gcn::TextField);
+    name_field.reset(new UTF8TextField);
     name_field->adjustSize();
     name_field->setWidth(250);
-    name_field->setText(knights_app.getPlayerName().asLatin1());
+    name_field->setText(knights_app.getPlayerName().asUTF8());
     name_field->addActionListener(this);
     
     const int total_width = 2*pad + name_label->getWidth() + name_field->getWidth();
@@ -107,11 +108,9 @@ void HostLanScreenImpl::action(const gcn::ActionEvent &event)
         knights_app.requestScreenChange(std::move(start_screen));
         
     } else if (event.getSource() == name_field.get() || event.getSource() == ok_button.get()) {
-        std::string name_latin1 = "Player 1";
-        UTF8String name_utf8 = UTF8String::fromLatin1(name_latin1);
+        UTF8String name_utf8 = UTF8String::fromUTF8("Player 1");
         if (!name_field->getText().empty()) {
-            name_latin1 = name_field->getText();
-            name_utf8 = UTF8String::fromLatin1(name_latin1);
+            name_utf8 = UTF8String::fromUTF8Safe(name_field->getText());
             knights_app.setPlayerName(name_utf8);  // make sure the name gets saved when we exit
         }
 

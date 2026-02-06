@@ -93,9 +93,9 @@ void InGameScreen::setupDisplay()
     using std::vector;
 
     // Set up menu strings.
-    boost::shared_ptr<vector<pair<string, string> > > menu_strings(new vector<pair<string, string> >);
+    boost::shared_ptr<vector<pair<UTF8String, UTF8String> > > menu_strings(new vector<pair<UTF8String, UTF8String>>);
     knights_app.getGameManager().getMenuStrings(*menu_strings);
-    
+
     // Create displays / callbacks.
     const Controller * left_controller = 0;
     const Controller * right_controller = 0;

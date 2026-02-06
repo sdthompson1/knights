@@ -35,6 +35,7 @@
 #include "knights_callbacks.hpp"
 #include "map_support.hpp"
 #include "tutorial_window.hpp"
+#include "utf8_text_field.hpp"
 
 // coercri stuff
 #include "gcn/cg_font.hpp"
@@ -81,7 +82,7 @@ public:
                  const Graphic *menu_gfx_highlight,
                  const PotionRenderer *potion_renderer,
                  const SkullRenderer *skull_renderer,
-                 boost::shared_ptr<std::vector<std::pair<std::string,std::string> > > menu_strings_,
+                 boost::shared_ptr<std::vector<std::pair<UTF8String, UTF8String> > > menu_strings_,
                  const std::vector<const UserControl*> &standard_controls_,
                  const Controller *ctrlr1,
                  const Controller *ctrlr2,
@@ -295,7 +296,7 @@ private:
 
     // other display stuff.
     std::vector<int> flash_screen_start_us;
-    boost::shared_ptr<std::vector<std::pair<std::string,std::string> > > menu_strings;
+    boost::shared_ptr<std::vector<std::pair<UTF8String, UTF8String> > > menu_strings;
     const Graphic *winner_image;
     const Graphic *loser_image;
 
@@ -338,7 +339,7 @@ private:
     boost::scoped_ptr<gcn::ListBox> chat_listbox;
     boost::scoped_ptr<gcn::ScrollArea> chat_scrollarea;
     boost::scoped_ptr<TitleBlock> chat_titleblock;
-    boost::scoped_ptr<gcn::TextField> chat_field;
+    boost::scoped_ptr<UTF8TextField> chat_field;
     boost::scoped_ptr<gcn::Button> send_button, clear_button;
     boost::scoped_ptr<TitleBlock> plyr_list_titleblock;
     boost::scoped_ptr<TabFont> tab_font;
@@ -359,7 +360,7 @@ private:
 
     boost::shared_ptr<Coercri::Font> my_font, txt_font;
 
-    std::string time_limit_string;
+    UTF8String time_limit_string;
     
     // player ids. used in "observer" mode.
     std::vector<PlayerID> ids;

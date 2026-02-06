@@ -53,7 +53,7 @@ class OnlinePlatform;
 // internal structs, used in ChatList
 struct FormattedLine {
     bool firstline;
-    std::string text_latin1;
+    Coercri::UTF8String text;
 };
 class FontWrapper;
 
@@ -62,26 +62,32 @@ public:
     explicit ChatList(int mm, bool do_fmt, bool do_tstmp)
         : max_msgs(mm), font(0), width(999999), is_updated(false), do_format(do_fmt), do_timestamps(do_tstmp) { }
     
-    void add(const std::string &msg_latin1);
+    void add(const Coercri::UTF8String &msg);
     void setGuiParams(const gcn::Font *new_font, int new_width);
     void clear();
 
     // from gcn::ListModel
     virtual int getNumberOfElements() override { return formatted_lines.size(); }
-    virtual std::string getElementAt(int i) override { if (i>=0 && i<formatted_lines.size()) return formatted_lines[i].text_latin1; else return ""; }
+    virtual std::string getElementAt(int i) override {
+        if (i>=0 && i<formatted_lines.size()) {
+            return formatted_lines[i].text.asUTF8();
+        } else {
+            return std::string();
+        }
+    }
 
     bool isUpdated();  // clears is_updated flag afterwards. used for auto-scrolling to bottom.
     
 private:
     void doSetWidth(int);
-    void addFormattedLine(const std::string &msg_latin1);
+    void addFormattedLine(const Coercri::UTF8String &msg);
     void rmFormattedLine();
     
 private:
     int max_msgs;
     const gcn::Font *font;
     int width;
-    std::deque<std::string> lines;    // latin1 encoding
+    std::deque<UTF8String> lines;
     std::deque<FormattedLine> formatted_lines;
     bool is_updated;
     bool do_format;
@@ -101,7 +107,7 @@ public:
 
     // overridden from gcn::ListModel
     virtual int getNumberOfElements() override;
-    virtual std::string getElementAt(int i) override;   // latin1 encoding (with special sequences for "house colour blocks")
+    virtual std::string getElementAt(int i) override;   // utf-8 encoding (with special sequences for "house colour blocks")
 
 private:
     void sortNames();
@@ -128,7 +134,7 @@ public:
     void setVote(const PlayerID &player, bool voted, bool is_me, int num_more_needed);
     void clearVotes();
     bool haveIVoted() const { return i_voted; }
-    std::string getStatusMessage(const Localization &loc) const;  // returns "" if no voting active
+    Coercri::UTF8String getStatusMessage(const Localization &loc) const;  // returns "" if no voting active
 
     // "dirty" means UI needs to be updated
     void setDirty() { dirty = true; }
@@ -191,7 +197,7 @@ public:
                            int &y_after_menu);
     void destroyMenuWidgets();
     void setMenuWidgetsEnabled(bool enabled);
-    void getMenuStrings(std::vector<std::pair<std::string, std::string> > &menu_strings) const;
+    void getMenuStrings(std::vector<std::pair<UTF8String, UTF8String> > &menu_strings) const;
     bool getMenuWidgetInfo(gcn::Widget *source, int &item_num, int &choice_num) const;
     LocalKey getQuestMessageCode() const;  // return a localization key for name of current quest
     UTF8String getQuestDescription() const;

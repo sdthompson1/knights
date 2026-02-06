@@ -44,9 +44,11 @@
 #include "../gfx/font.hpp"
 #include "../gfx/gfx_context.hpp"
 
+#include <limits>
+
 namespace Coercri {
 
-    void CGFont::drawString(gcn::Graphics *graphics, const std::string &text_latin1, int x, int y)
+    void CGFont::drawString(gcn::Graphics *graphics, const std::string &text_utf8, int x, int y)
     {
         CGGraphics * cg_gfx = dynamic_cast<CGGraphics*>(graphics);
         if (!cg_gfx) {
@@ -66,7 +68,7 @@ namespace Coercri {
         gfx_context->drawText(clip_area.xOffset + x,
                               clip_area.yOffset + y,
                               *font,
-                              UTF8String::fromLatin1(text_latin1),
+                              UTF8String::fromUTF8Safe(text_utf8),
                               coercri_col);
     }
 
@@ -75,8 +77,18 @@ namespace Coercri {
         return font->getTextHeight();
     }
 
-    int CGFont::getWidth(const std::string &text_latin1) const
+    int CGFont::getWidth(const std::string &text_utf8) const
     {
-        return font->getTextWidth(UTF8String::fromLatin1(text_latin1));
+        return font->getTextWidth(UTF8String::fromUTF8Safe(text_utf8));
+    }
+
+    int CGFont::getStringIndexAt(const std::string &text_utf8, int x) const
+    {
+        size_t idx = font->getStringIndexAt(UTF8String::fromUTF8Safe(text_utf8), x);
+        if (idx > std::numeric_limits<int>::max()) {
+            return 0;
+        } else {
+            return idx;
+        }
     }
 }

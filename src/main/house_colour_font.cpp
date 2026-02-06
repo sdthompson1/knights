@@ -26,29 +26,50 @@
 #include "house_colour_font.hpp"
 #include "round.hpp"
 
-std::string ColToText(const Coercri::Color &c)
+namespace {
+    void AppendRGBComponent(std::string &s, unsigned char val)
+    {
+        s += (val >> 4) + 1;
+        s += (val & 0x0f) + 1;
+    }
+
+    // This requires that pos and pos+1 are both valid
+    unsigned char DecodeRGBComponent(const std::string &str, std::string::size_type pos)
+    {
+        unsigned char c1 = str[pos];
+        unsigned char c2 = str[pos+1];
+        return ((c1 - 1) << 4) | (c2 - 1);
+    }
+
+    // This requires that pos through pos+5 are all valid
+    gcn::Color DecodeRGB(const std::string &str, std::string::size_type pos)
+    {
+        return gcn::Color(DecodeRGBComponent(str, pos),
+                          DecodeRGBComponent(str, pos + 2),
+                          DecodeRGBComponent(str, pos + 4));
+    }
+}
+
+UTF8String ColToText(const Coercri::Color &c)
 {
     std::string x;
     x += '\001';  // special code meaning "house colour follows"
-    x += (unsigned char)(c.r);
-    x += (unsigned char)(c.g);
-    x += (unsigned char)(c.b);
-    return x;
-}
-
-gcn::Color TextToCol(const std::string &x)
-{
-    return gcn::Color((unsigned char)x[0], (unsigned char)x[1], (unsigned char)x[2]);
+    AppendRGBComponent(x, c.r);
+    AppendRGBComponent(x, c.g);
+    AppendRGBComponent(x, c.b);
+    // Since AppendRGBComponent only uses code points 1 through 17, this will
+    // be valid UTF-8
+    return UTF8String::fromUTF8(x);
 }
 
 int HouseColourFont::getWidth(const std::string &x) const
 {
     // We assume that a house colour square will always be at the beginning or end
-    if (x.length() >= 4) {
-        if (x[x.length()-4] == 1) {
-            return base_font.getWidth(x.substr(0, x.length()-4)) + house_col_width;
+    if (x.length() >= 7) {
+        if (x[x.length()-7] == 1) {
+            return base_font.getWidth(x.substr(0, x.length()-7)) + house_col_width;
         } else if (x[0] == 1) {
-            return base_font.getWidth(x.substr(4)) + house_col_width;
+            return base_font.getWidth(x.substr(7)) + house_col_width;
         }
     }
 
@@ -58,21 +79,21 @@ int HouseColourFont::getWidth(const std::string &x) const
 void HouseColourFont::drawString(gcn::Graphics *graphics, const std::string &text, int x, int y)
 {
     if (!graphics) return;
-    
+
     std::string to_print;
     gcn::Color col;
     bool use_col = false;
     bool col_begin = false;
-    
-    if (text.length() >= 4) {
-        if (text[text.length()-4] == 1) {
-            to_print = text.substr(0, text.length()-4);
-            col = TextToCol(text.substr(text.length()-3, 3));
+
+    if (text.length() >= 7) {
+        if (text[text.length()-7] == 1) {
+            to_print = text.substr(0, text.length() - 7);
+            col = DecodeRGB(text, text.length() - 6);
             use_col = true;
             col_begin = false;
         } else if (text[0] == 1) {
-            to_print = text.substr(4);
-            col = TextToCol(text.substr(1, 3));
+            to_print = text.substr(7);
+            col = DecodeRGB(text, 1);
             use_col = true;
             col_begin = true;
         }
@@ -97,7 +118,7 @@ void HouseColourFont::drawBox(gcn::Graphics *graphics, int x, int y, const gcn::
     const int excess_height = base_font.getHeight() - house_col_height;
     const int offset = excess_height > 0 ? Round(excess_height*0.55f) : 0;
     y += offset;
-        
+
     const int w = house_col_width, h = house_col_height;
     gcn::Color old_col = graphics->getColor();
     graphics->setColor(gcn::Color(0,0,0));

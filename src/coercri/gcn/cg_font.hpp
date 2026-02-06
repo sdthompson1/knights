@@ -59,11 +59,11 @@ namespace Coercri {
             : font(f) { }
 
         // overridden from gcn::Font
-        // NOTE: Guichan uses Latin-1 encoding, so all string
-        // arguments are interpreted as Latin-1 here.
-        virtual void drawString(gcn::Graphics *graphics, const std::string &text_latin1, int x, int y);
-        virtual int getHeight() const;
-        virtual int getWidth(const std::string &text_latin1) const;
+        // We assume all Guichan strings are encoded as UTF-8
+        virtual void drawString(gcn::Graphics *graphics, const std::string &text_utf8, int x, int y) override;
+        virtual int getHeight() const override;
+        virtual int getWidth(const std::string &text_utf8) const override;
+        virtual int getStringIndexAt(const std::string &text_utf8, int x) const override;
 
     private:
         boost::shared_ptr<Coercri::Font> font;

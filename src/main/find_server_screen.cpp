@@ -39,6 +39,7 @@
 #include "player_id.hpp"
 #include "start_game_screen.hpp"
 #include "utf8string.hpp"
+#include "utf8_text_field.hpp"
 
 // coercri
 #include "core/coercri_error.hpp"
@@ -666,12 +667,12 @@ private:
     boost::scoped_ptr<GuiPanel> panel;
     boost::scoped_ptr<gcn::Container> container;
     boost::scoped_ptr<gcn::Label> name_label;
-    boost::scoped_ptr<gcn::TextField> name_field;
+    boost::scoped_ptr<UTF8TextField> name_field;
     boost::scoped_ptr<gcn::Label> label1;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
     boost::scoped_ptr<gcn::ListBox> listbox;
     boost::scoped_ptr<gcn::Label> address_label, port_label;
-    boost::scoped_ptr<gcn::TextField> address_field, port_field;
+    boost::scoped_ptr<UTF8TextField> address_field, port_field;
     boost::scoped_ptr<gcn::Button> connect_button;
     boost::scoped_ptr<gcn::Button> cancel_button;
 
@@ -743,10 +744,10 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     y += title_label->getHeight() + 2*pad;
 
     name_label.reset(new gcn::Label("Player Name: "));
-    name_field.reset(new gcn::TextField);
+    name_field.reset(new UTF8TextField);
     name_field->adjustSize();
     name_field->setWidth(width - name_label->getWidth());
-    name_field->setText(knights_app.getPlayerName().asLatin1());
+    name_field->setText(knights_app.getPlayerName().asUTF8());
     container->add(name_label.get(), pad, y + 1);
     container->add(name_field.get(), pad + name_label->getWidth(), y);
     y += name_field->getHeight() + pad*3/2;
@@ -767,12 +768,12 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     const int port_field_width = port_label->getFont()->getWidth("123456789");
     const int address_field_width = width - port_field_width - address_label->getWidth() - port_label->getWidth();
     
-    address_field.reset(new gcn::TextField);
+    address_field.reset(new UTF8TextField);
     address_field->adjustSize();
     address_field->setWidth(address_field_width);
     address_field->setText(previous_address[internet?1:0]);
 
-    port_field.reset(new gcn::TextField);
+    port_field.reset(new UTF8TextField);
     port_field->adjustSize();
     port_field->setWidth(port_field_width);
     std::ostringstream oss;
@@ -894,11 +895,10 @@ void FindServerScreenImpl::initiateConnection(const std::string &address, int po
 {
     if (!allow_conn) return;
 
-    std::string name_latin1 = name_field ? name_field->getText() : "";
-    UTF8String name_utf8 = UTF8String::fromLatin1(name_latin1);
+    UTF8String name_utf8 = UTF8String::fromUTF8Safe(name_field ? name_field->getText() : "");
     PlayerID player_id = PlayerID(name_utf8.asUTF8());
 
-    if (name_latin1.empty()) {
+    if (name_utf8.empty()) {
         gotoErrorDialog("You must enter a player name");
     } else if (address.empty()) {
         gotoErrorDialog("You must enter an address to connect to");

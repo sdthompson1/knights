@@ -31,9 +31,9 @@
 
 #include "gfx/color.hpp"
 #include "guichan.hpp"
+#include "utf8string.hpp"
 
-std::string ColToText(const Coercri::Color &c);
-gcn::Color TextToCol(const std::string &x);
+UTF8String ColToText(const Coercri::Color &c);
 
 class HouseColourFont : public gcn::Font {
 public:

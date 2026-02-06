@@ -65,38 +65,11 @@ namespace Coercri {
         utf8::replace_invalid(input.begin(), input.end(), std::back_inserter(result.repr));
         return result;
     }
-    
-    UTF8String UTF8String::fromLatin1(const std::string &input)
-    {
-        UTF8String result;
-
-        for (std::string::const_iterator it = input.begin(); it != input.end(); ++it) {
-            unsigned int cp = static_cast<unsigned char>(*it);
-            utf8::append(cp, std::back_inserter(result.repr));
-        }
-
-        return result;
-    }
 
     UTF8String UTF8String::fromCodePoint(int cp)
     {
         UTF8String result;
         utf8::append(cp, std::back_inserter(result.repr));
-        return result;
-    }
-
-    std::string UTF8String::asLatin1() const
-    {
-        std::string result;
-        std::string::const_iterator it = repr.begin();
-        while (it != repr.end()) {
-            unsigned int cp = utf8::next(it, repr.end());
-            if (cp < 256) {
-                result += (unsigned char)(cp);
-            } else {
-                result += '?';
-            }
-        }
         return result;
     }
 

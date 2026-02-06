@@ -30,12 +30,14 @@
 #ifndef TEXT_FORMATTER_HPP
 #define TEXT_FORMATTER_HPP
 
+#include "utf8string.hpp"
+
 #include <string>
 
 struct Printer {
-    virtual int getTextWidth(const std::string &text_latin1) = 0;
+    virtual int getTextWidth(const Coercri::UTF8String &text) = 0;
     virtual int getTextHeight() = 0;
-    virtual void printLine(const std::string &text_latin1, int y, bool do_centre) = 0;
+    virtual void printLine(const Coercri::UTF8String &text, int y, bool do_centre) = 0;
 };
 
 class TextFormatter {
@@ -44,7 +46,7 @@ public:
 
     // print a string, breaking into separate lines if necessary
     // returns the total height printed.
-    int printString(const std::string &msg_latin1);
+    int printString(const Coercri::UTF8String &msg);
 
 private:
     Printer &printer;

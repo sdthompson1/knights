@@ -1,18 +1,15 @@
 /*
  * FILE:
- *   font.hpp
+ *   text_input_receiver.hpp
  *
- * PURPOSE:
- *   Font interface
- *   
  * AUTHOR:
- *   Stephen Thompson <stephen@solarflare.org.uk>
+ *   Stephen Thompson
  *
  * COPYRIGHT:
  *   Copyright (C) Stephen Thompson, 2008 - 2025.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
- *   is permitted under the terms of the Boost Software License, Version 1.0, 
+ *   is permitted under the terms of the Boost Software License, Version 1.0,
  *   the text of which is displayed below.
  *
  *   Boost Software License - Version 1.0 - August 17th, 2003
@@ -41,40 +38,27 @@
  *
  */
 
-#ifndef COERCRI_FONT_HPP
-#define COERCRI_FONT_HPP
-
-#include "color.hpp"
-
-#include <string>
+#ifndef COERCRI_TEXT_INPUT_RECEIVER_HPP
+#define COERCRI_TEXT_INPUT_RECEIVER_HPP
 
 namespace Coercri {
 
-    class GfxContext;
     class UTF8String;
-    
-    class Font {
+
+    //
+    // Interface for widgets that can receive UTF-8 text input.
+    //
+    // Widgets that support proper UTF-8 text input should inherit from this
+    // interface and implement receiveTextInput(). This allows CGListener to
+    // bypass the key event system (which only supports single-byte characters)
+    // and directly insert UTF-8 text into the widget.
+    //
+    class TextInputReceiver {
     public:
-        virtual ~Font() { }
+        virtual ~TextInputReceiver() = default;
 
-        // Virtual functions
-        virtual void drawText(GfxContext &dest, int x, int y, const UTF8String &text, Color col) const = 0;
-        virtual int getTextHeight() const = 0;  // suggested spacing between text lines
-        virtual void getTextSize(const UTF8String &text, int &w, int &h) const = 0;
-
-        // Get string index at a particular x position; useful when clicking on a piece
-        // of text and you want to know the character index.
-        // The returned number should be a byte offset within the UTF-8 representation;
-        // it should be on a valid code point boundary.
-        virtual size_t getStringIndexAt(const UTF8String &text, int x) const = 0;
-
-        // Convenience function, if only width is required
-        int getTextWidth(const UTF8String &text) const {
-            int w,h;
-            getTextSize(text,w,h);
-            return w;
-        }
-
+        // Receive and insert UTF-8 text at the current input position
+        virtual void receiveTextInput(const UTF8String &text) = 0;
     };
 
 }

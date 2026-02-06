@@ -41,6 +41,7 @@
 #include "cg_graphics.hpp"
 #include "cg_input.hpp"
 #include "cg_listener.hpp"
+#include "text_input_receiver.hpp"
 #include "../core/utf8string.hpp"
 #include "../gfx/window.hpp"
 #include "../timer/timer.hpp"
@@ -200,13 +201,21 @@ namespace Coercri {
 
     void CGListener::onTextInput(const UTF8String &txt_in)
     {
-        // realistically, guichan only works with Latin-1 chars at the moment.
-        const std::string & txt = txt_in.asLatin1();
-        
-        for (std::string::const_iterator it = txt.begin(); it != txt.end(); ++it) {
-            SendKeyToGuichan(pimpl->input,
-                                gcn::Key(static_cast<unsigned char>(*it)),
-                                KeyModifier(0));
+        if (!pimpl->gui_enabled) return;
+
+        // Get the currently focused widget
+        gcn::Widget *focused = pimpl->gui->getTop()->_getFocusHandler()->getFocused();
+
+        if (focused) {
+            // Try to cast to TextInputReceiver
+            TextInputReceiver *receiver = dynamic_cast<TextInputReceiver*>(focused);
+
+            if (receiver) {
+                // Direct text insertion for widgets that support UTF-8
+                receiver->receiveTextInput(txt_in);
+                pimpl->window->invalidateAll();
+            }
+            // else: widget doesn't support UTF-8 text input, drop the input
         }
     }
     

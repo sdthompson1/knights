@@ -61,12 +61,14 @@ namespace {
     struct ChatPrinter : Printer {
         ChatPrinter(std::deque<FormattedLine> &o, const gcn::Font *f) : output(o), font(f), printed(false) { }
 
-        virtual int getTextWidth(const std::string &text_latin1) { return font ? font->getWidth(text_latin1) : 0; }
+        virtual int getTextWidth(const UTF8String &text) {
+            return font ? font->getWidth(text.asUTF8()) : 0;
+        }
         virtual int getTextHeight() { return 1; }  // we want to count lines not pixels.
-        virtual void printLine(const std::string &text_latin1, int, bool) {
+        virtual void printLine(const UTF8String &text, int, bool) {
             FormattedLine f;
             f.firstline = !printed;
-            f.text_latin1 = text_latin1;
+            f.text = text;
             output.push_back(f);
             printed = true;
         }
@@ -93,30 +95,30 @@ namespace {
         void mouseWheelMovedUp(gcn::MouseEvent &) { }
     };
 
-    std::string AddTimestamp(const std::string &msg_latin1)
+    UTF8String AddTimestamp(const UTF8String &msg)
     {
         std::time_t time_since_epoch = std::time(0);
         std::tm * timeptr = std::localtime(&time_since_epoch);
         char buf[256];
         const int nchars = std::strftime(buf, sizeof(buf), "[%H:%M] ", timeptr);
-        if (nchars > 0) return buf + msg_latin1;
-        else return msg_latin1;
+        if (nchars > 0) return UTF8String::fromUTF8Safe(buf) + msg;
+        else return msg;
     }
 }
 
-void ChatList::add(const std::string &msg_latin1_in)
+void ChatList::add(const UTF8String &msg_in)
 {
     bool msg_empty = true;
-    for (std::string::const_iterator it = msg_latin1_in.begin(); it != msg_latin1_in.end(); ++it) {
-        if (!IsSpace(*it)) {
+    for (std::string::const_iterator it = msg_in.asUTF8().begin(); it != msg_in.asUTF8().end(); ++it) {
+        if (!IsAsciiSpace(*it)) {
             msg_empty = false;
             break;
         }
     }
 
-    const std::string msg_latin1 = (do_timestamps && !msg_empty) ? AddTimestamp(msg_latin1_in) : msg_latin1_in;
-    lines.push_back(msg_latin1);
-    addFormattedLine(msg_latin1);
+    const UTF8String msg_out = (do_timestamps && !msg_empty) ? AddTimestamp(msg_in) : msg_in;
+    lines.push_back(msg_out);
+    addFormattedLine(msg_out);
     if (lines.size() > max_msgs) {
         lines.pop_front();
         rmFormattedLine();
@@ -133,7 +135,7 @@ void ChatList::doSetWidth(int new_width)
 {
     width = new_width;
     formatted_lines.clear();
-    for (std::deque<std::string>::const_iterator it = lines.begin(); it != lines.end(); ++it) {
+    for (std::deque<UTF8String>::const_iterator it = lines.begin(); it != lines.end(); ++it) {
         addFormattedLine(*it);
     }
 }
@@ -144,16 +146,16 @@ void ChatList::clear()
     formatted_lines.clear();
 }
 
-void ChatList::addFormattedLine(const std::string &msg_latin1)
+void ChatList::addFormattedLine(const UTF8String &msg)
 {
     if (do_format) {
         ChatPrinter p(formatted_lines, font);
         TextFormatter formatter(p, width, false);
-        formatter.printString(msg_latin1);
+        formatter.printString(msg);
     } else {
         FormattedLine f;
         f.firstline = true;
-        f.text_latin1 = msg_latin1;
+        f.text = msg;
         formatted_lines.push_back(f);
     }
     is_updated = true;
@@ -289,28 +291,25 @@ int NameList::getNumberOfElements()
 std::string NameList::getElementAt(int i)
 {
     if (i < 0 || i >= names.size()) return "";
-    std::string result = nameLookup(names[i].id).asLatin1();
+    std::string result = nameLookup(names[i].id).asUTF8();
     if (names[i].observer) {
         result += " (Observer)";
     } else {
         if (names[i].ready) result += " (Ready)";
         if (names[i].house_col >= 0 && names[i].house_col < house_cols.size()) {
-            result += "  \001";
-            const Coercri::Color & col = house_cols[names[i].house_col];
-            result += (unsigned char)(col.r);
-            result += (unsigned char)(col.g);
-            result += (unsigned char)(col.b);
+            result += "  ";
+            result += ColToText(house_cols[names[i].house_col]).asUTF8();
         }
     }
     return result;
 }
 
-Coercri::UTF8String NameList::nameLookup(const PlayerID &id) const
+UTF8String NameList::nameLookup(const PlayerID &id) const
 {
 #ifdef ONLINE_PLATFORM
     return online_platform.lookupUserName(id);
 #else
-    return Coercri::UTF8String::fromUTF8Safe(id.asString());
+    return UTF8String::fromUTF8Safe(id.asString());
 #endif
 }
 
@@ -319,8 +318,14 @@ namespace {
     class MenuListModel : public gcn::ListModel {
     public:
         virtual int getNumberOfElements() { return elts.size(); }
-        virtual std::string getElementAt(int i) { if (i >= 0 && i < elts.size()) return elts[i]; else return ""; }
-        std::vector<std::string> elts;   // latin1 encoding
+        virtual std::string getElementAt(int i) {
+            if (i >= 0 && i < elts.size()) {
+                return elts[i].asUTF8();
+            } else {
+                return std::string();
+            }
+        }
+        std::vector<UTF8String> elts;
         std::vector<int> vals;
     };
 
@@ -330,8 +335,8 @@ namespace {
             : menu_item(&mi)
         {
             const LocalKey &title_key = menu_item->getTitleKey();
-            std::string title_latin1 = loc.get(title_key).asLatin1();
-            label.reset(new gcn::Label(title_latin1));
+            std::string title_utf8 = loc.get(title_key).asUTF8();
+            label.reset(new gcn::Label(title_utf8));
             label->adjustSize();
             if (menu_item->isNumeric()) {
                 // time entry (no of minutes) -- used for time limit
@@ -339,8 +344,8 @@ namespace {
                 textfield->adjustSize();
                 textfield->setWidth(textfield->getFont()->getWidth("9") *
                                     (menu_item->getNumDigits() + 1));
-                std::string loc_latin1 = loc.get(menu_item->getSuffix()).asLatin1();
-                label2.reset(new gcn::Label(loc_latin1));
+                std::string loc_utf8 = loc.get(menu_item->getSuffix()).asUTF8();
+                label2.reset(new gcn::Label(loc_utf8));
                 textfield->addActionListener(listener);
             } else {
                 list_model.reset(new MenuListModel);
@@ -372,12 +377,12 @@ namespace {
         std::vector<int> allowed_choices;  // for dropdowns
     };
 
-    std::string LocalKeyOrIntegerToLatin1(const Localization &loc, const LocalKeyOrInteger &lki)
+    UTF8String LocalKeyOrIntegerToUTF8String(const Localization &loc, const LocalKeyOrInteger &lki)
     {
         if (lki.is_integer) {
-            return std::to_string(lki.integer);
+            return UTF8String::fromUTF8Safe(std::to_string(lki.integer));
         } else {
-            return loc.get(lki.local_key).asLatin1();
+            return loc.get(lki.local_key);
         }
     }
 
@@ -389,8 +394,8 @@ namespace {
             int widest_text = 0;
             for (int i = 0; i < item.getNumChoices(); ++i) {
                 const LocalKeyOrInteger & lki = item.getChoice(i);
-                std::string text_latin1 = LocalKeyOrIntegerToLatin1(loc, lki);
-                const int text_width = font.getWidth(text_latin1);
+                UTF8String text_utf8 = LocalKeyOrIntegerToUTF8String(loc, lki);
+                const int text_width = font.getWidth(text_utf8.asUTF8());
                 if (text_width > widest_text) widest_text = text_width;
             }
             return widest_text + 8 + font.getHeight();  // getHeight is to allow for the 'drop down button' which is approximately square.
@@ -445,10 +450,10 @@ void VoteStatus::clearVotes()
     dirty = true;
 }
 
-std::string VoteStatus::getStatusMessage(const Localization &loc) const
+UTF8String VoteStatus::getStatusMessage(const Localization &loc) const
 {
     if (player_votes.empty()) {
-        return "";
+        return UTF8String();
     }
 
     UTF8String msg1;
@@ -479,7 +484,7 @@ std::string VoteStatus::getStatusMessage(const Localization &loc) const
                        std::vector<LocalParam>(1, LocalParam(num_more_needed)));
     }
 
-    return (msg1 + UTF8String::fromUTF8(" ") + msg2).asLatin1();
+    return msg1 + UTF8String::fromUTF8(" ") + msg2;
 }
 
 class GameManagerImpl {
@@ -508,10 +513,6 @@ public:
 #else
         return UTF8String::fromUTF8Safe(id.asString());
 #endif
-    }
-
-    std::string usernameLatin1(const PlayerID &id) const {
-        return usernameLookup(id).asLatin1();
     }
 
     void showNewLeader();
@@ -577,14 +578,14 @@ void GameManagerImpl::showNewLeader()
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     // Add message showing the new leader after host migration
     PlayerID leader_id = knights_app.getCurrentLeader();
-    Coercri::UTF8String msg;
+    UTF8String msg;
     if (leader_id == knights_app.getOnlinePlatform().getCurrentUserId()) {
         msg = knights_app.getLocalization().get(LocalKey("you_are_now_leader"));
     } else {
         std::vector<LocalParam> params(1, LocalParam(leader_id));
         msg = knights_app.getLocalization().get(LocalKey("x_is_now_leader"), params);
     }
-    chat_list.add(msg.asLatin1());
+    chat_list.add(msg);
 #endif
 }
 
@@ -715,7 +716,7 @@ void GameManager::setMenuWidgetsEnabled(bool enabled)
     updateAllMenuWidgets();
 }
 
-void GameManager::getMenuStrings(std::vector<std::pair<std::string, std::string> > &menu_strings) const
+void GameManager::getMenuStrings(std::vector<std::pair<UTF8String, UTF8String> > &menu_strings) const
 {
     const Menu * menu = pimpl->menu;
     if (!menu) throw UnexpectedError("cannot get menu strings");
@@ -723,21 +724,21 @@ void GameManager::getMenuStrings(std::vector<std::pair<std::string, std::string>
     const Localization & loc = pimpl->knights_app.getLocalization();
 
     for (int i = 0; i < menu->getNumItems(); ++i) {
-        std::pair<std::string, std::string> p;
+        std::pair<UTF8String, UTF8String> p;
         const MenuItem &item = menu->getItem(i);
-        p.first = loc.get(item.getTitleKey()).asLatin1();
+        p.first = loc.get(item.getTitleKey());
         if (item.isNumeric()) {
             std::ostringstream str;
             str << pimpl->menu_choices[i].choice;
-            p.second = str.str();
+            p.second = UTF8String::fromUTF8Safe(str.str());
         } else {
             const LocalKeyOrInteger &lki = item.getChoice(pimpl->menu_choices[i].choice);
-            p.second = LocalKeyOrIntegerToLatin1(loc, lki);
+            p.second = LocalKeyOrIntegerToUTF8String(loc, lki);
         }
 
         menu_strings.push_back(p);
         if (item.getSpaceAfter()) {
-            menu_strings.push_back(std::make_pair(std::string(), std::string()));
+            menu_strings.push_back(std::make_pair(UTF8String(), UTF8String()));
         }
     }
 }
@@ -819,7 +820,7 @@ void GameManager::updateMenuWidget(int item_num)
 
         for (std::vector<int>::const_iterator it = mc.allowed_choices.begin(); it != mc.allowed_choices.end(); ++it) {
             const LocalKeyOrInteger &lki = mw.menu_item->getChoice(*it);
-            mw.list_model->elts.push_back(LocalKeyOrIntegerToLatin1(loc, lki));
+            mw.list_model->elts.push_back(LocalKeyOrIntegerToUTF8String(loc, lki));
             mw.list_model->vals.push_back(*it);
         }
 
@@ -1063,7 +1064,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
         pimpl->chat_list.clear();
     }
     if (pimpl->is_lan_game && player_ids.size() == 1) {
-        pimpl->chat_list.add("LAN game created.");
+        pimpl->chat_list.add(UTF8String::fromUTF8("LAN game created."));
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     } else if (pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING
                && !already_started) {
@@ -1099,7 +1100,7 @@ void GameManager::joinGameDenied(const LocalKey &reason)
     std::vector<LocalParam> params;
     params.push_back(LocalParam(reason));
     UTF8String msg = loc.get(LocalKey("couldnt_join_game"), params);
-    pimpl->chat_list.add(msg.asLatin1());
+    pimpl->chat_list.add(msg);
     pimpl->current_game_name.clear();
     pimpl->gui_invalid = true;
 }
@@ -1120,8 +1121,8 @@ void GameManager::playerConnected(const PlayerID &id)
     // only show connection/disconnection messages if in main lobby.
     if (pimpl->allow_lobby_screen && pimpl->current_game_name.empty()) {
         // Print msg
-        std::string name = pimpl->usernameLatin1(id);
-        pimpl->chat_list.add(name + " has connected.");
+        UTF8String name = pimpl->usernameLookup(id);
+        pimpl->chat_list.add(name + UTF8String::fromUTF8(" has connected."));
 
         // Pop window to front
         pimpl->knights_app.popWindowToFront();
@@ -1135,8 +1136,8 @@ void GameManager::playerDisconnected(const PlayerID &id)
     pimpl->lobby_namelist.remove(id);
 
     if (pimpl->allow_lobby_screen && pimpl->current_game_name.empty()) {
-        std::string name = pimpl->usernameLatin1(id);
-        pimpl->chat_list.add(name + " has disconnected.");
+        UTF8String name = pimpl->usernameLookup(id);
+        pimpl->chat_list.add(name + UTF8String::fromUTF8(" has disconnected."));
     }
 
     pimpl->gui_invalid = true;
@@ -1234,32 +1235,33 @@ void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list_or
     // Now transfer the sorted list to the UI (ingame_player_list).
     pimpl->ingame_player_list.clear();
     for (std::vector<ClientPlayerInfo>::const_iterator it = player_list.begin(); it != player_list.end(); ++it) {
-        std::ostringstream str_latin1;
-        std::string name = pimpl->usernameLatin1(it->id);
-        str_latin1 << ColToText(it->house_colour) << " " << name;
+        UTF8String str = ColToText(it->house_colour);
+        str += UTF8String::fromUTF8(" ");
+        str += pimpl->usernameLookup(it->id);
 
         if (pimpl->ready_to_end.find(it->id) != pimpl->ready_to_end.end()) {
-            str_latin1 << " (Ready)"; // indicate players who have clicked.
+            str += UTF8String::fromUTF8(" (Ready)"); // indicate players who have clicked.
         } else if (it->client_state == ClientState::DISCONNECTED) {
-            str_latin1 << " (Disconnected)";
+            str += UTF8String::fromUTF8(" (Disconnected)");
         } else if (it->client_state == ClientState::ELIMINATED) {
-            str_latin1 << " (Eliminated)";
+            str += UTF8String::fromUTF8(" (Eliminated)");
         } else if (it->client_state == ClientState::OBSERVER) {
-            str_latin1 << " (Observer)";
+            str += UTF8String::fromUTF8(" (Observer)");
         }
 
-        str_latin1 << "\t";
+        str += UTF8String::fromUTF8("\t");
         if (pimpl->deathmatch_mode) {
-            if (it->frags >= -999) str_latin1 << it->frags;
+            if (it->frags >= -999) str += UTF8String::fromUTF8Safe(std::to_string(it->frags));
         } else {
-            if (it->kills >= 0) str_latin1 << it->kills;
-            str_latin1 << "\t";
-            if (it->deaths >= 0) str_latin1 << it->deaths;
+            if (it->kills >= 0) str += UTF8String::fromUTF8Safe(std::to_string(it->kills));
+            str += UTF8String::fromUTF8("\t");
+            if (it->deaths >= 0) str += UTF8String::fromUTF8Safe(std::to_string(it->deaths));
         }
         if (it->client_state != ClientState::DISCONNECTED) {
-            str_latin1 << "\t" << it->ping;
+            str += UTF8String::fromUTF8("\t");
+            str += UTF8String::fromUTF8Safe(std::to_string(it->ping));
         }
-        pimpl->ingame_player_list.add(str_latin1.str());
+        pimpl->ingame_player_list.add(str);
     }
 
     // Also save the sorted list (in case we need it later) and set the gui_invalid flag.
@@ -1297,7 +1299,7 @@ void GameManager::playerVotedToRestart(const PlayerID &player, uint8_t flags, in
             key = "x_cancelled_vote";
         }
         UTF8String msg = loc.get(LocalKey(key), std::vector<LocalParam>(1, LocalParam(player)));
-        pimpl->chat_list.add(msg.asLatin1());
+        pimpl->chat_list.add(msg);
     }
 
     pimpl->gui_invalid = true;
@@ -1312,16 +1314,16 @@ void GameManager::setObsFlag(const PlayerID &id, bool new_obs_flag)
     if (id == pimpl->my_player_id) {
         pimpl->my_obs_flag = new_obs_flag;
         if (new_obs_flag) {
-            pimpl->chat_list.add("You are now observing this game.");
+            pimpl->chat_list.add(UTF8String::fromUTF8("You are now observing this game."));
         } else {
-            pimpl->chat_list.add("You have joined the game.");
+            pimpl->chat_list.add(UTF8String::fromUTF8("You have joined the game."));
         }
     } else {
-        std::string name = pimpl->usernameLatin1(id);
+        UTF8String name = pimpl->usernameLookup(id);
         if (new_obs_flag) {
-            pimpl->chat_list.add(name + " is now observing this game.");
+            pimpl->chat_list.add(name + UTF8String::fromUTF8(" is now observing this game."));
         } else {
-            pimpl->chat_list.add(name + " has joined the game.");
+            pimpl->chat_list.add(name + UTF8String::fromUTF8(" has joined the game."));
         }
     }
 
@@ -1454,8 +1456,8 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     if (pimpl->single_player) {
         pimpl->chat_list.clear();
     } else if (!already_started) {
-        pimpl->chat_list.add("\n");
-        pimpl->chat_list.add("\n");
+        pimpl->chat_list.add(UTF8String::fromUTF8("\n"));
+        pimpl->chat_list.add(UTF8String::fromUTF8("\n"));
     }
 
     bool host_migration_occurred = false;
@@ -1474,21 +1476,21 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     } else if (i_am_observer) {
         // Observer, either starting new game or rejoining existing one
         if (already_started) {
-            pimpl->chat_list.add("You are now observing this game.");
+            pimpl->chat_list.add(UTF8String::fromUTF8("You are now observing this game."));
         } else {
-            pimpl->chat_list.add("Game started. You are observing this game.");
+            pimpl->chat_list.add(UTF8String::fromUTF8("Game started. You are observing this game."));
         }
         if (player_ids.size() > 2) {
-            pimpl->chat_list.add("Use arrow keys (left/right and up/down) to switch between players.");
+            pimpl->chat_list.add(UTF8String::fromUTF8("Use arrow keys (left/right and up/down) to switch between players."));
         }
 
     } else if (already_started) {
         // Player, rejoining an existing game
-        pimpl->chat_list.add("You have reconnected to this game.");
+        pimpl->chat_list.add(UTF8String::fromUTF8("You have reconnected to this game."));
 
     } else {
         // Player, starting a new game
-        pimpl->chat_list.add("Game started.");
+        pimpl->chat_list.add(UTF8String::fromUTF8("Game started."));
     }
 
     // clear ready flags
@@ -1538,8 +1540,8 @@ void GameManager::gotoMenu()
         pimpl->knights_app.requestScreenChange(std::move(menu_screen));
 
         // add separator lines to chat list.
-        pimpl->chat_list.add("\n");
-        pimpl->chat_list.add("\n");
+        pimpl->chat_list.add(UTF8String::fromUTF8("\n"));
+        pimpl->chat_list.add(UTF8String::fromUTF8("\n"));
 
         pimpl->gui_invalid = true;
 
@@ -1552,18 +1554,18 @@ void GameManager::gotoMenu()
 
 void GameManager::playerJoinedThisGame(const PlayerID &id, bool obs_flag, int house_col)
 {
-    std::string name = pimpl->usernameLatin1(id);
+    UTF8String name = pimpl->usernameLookup(id);
     if (!obs_flag) {
         if (pimpl->game_in_progress) {
             // The only way to join a game while it is in progress is via reconnect - there
             // is no way for "new" players to enter a game in progress (currently)
-            pimpl->chat_list.add(name + " has reconnected.");
+            pimpl->chat_list.add(name + UTF8String::fromUTF8(" has reconnected."));
         } else {
-            pimpl->chat_list.add(name + " has joined the game.");
+            pimpl->chat_list.add(name + UTF8String::fromUTF8(" has joined the game."));
         }
         pimpl->game_namelist.add(id, false, false, house_col);
     } else {
-        pimpl->chat_list.add(name + " is now observing this game.");
+        pimpl->chat_list.add(name + UTF8String::fromUTF8(" is now observing this game."));
         pimpl->game_namelist.add(id, true, false, house_col);
     }
     pimpl->gui_invalid = true;
@@ -1584,24 +1586,24 @@ void GameManager::setAvailableHouseColours(const std::vector<Coercri::Color> &co
 
 void GameManager::playerLeftThisGame(const PlayerID &id, bool obs_flag)
 {
-    std::string msg_latin1 = pimpl->usernameLatin1(id);
+    UTF8String msg = pimpl->usernameLookup(id);
     if (obs_flag) {
-        msg_latin1 += " is no longer observing this game.";
+        msg += UTF8String::fromUTF8(" is no longer observing this game.");
     } else {
-        msg_latin1 += " has left the game.";
+        msg += UTF8String::fromUTF8(" has left the game.");
     }
-    pimpl->chat_list.add(msg_latin1);
+    pimpl->chat_list.add(msg);
     pimpl->game_namelist.remove(id);
     pimpl->gui_invalid = true;
 }
 
 void GameManager::setReady(const PlayerID &id, bool ready)
 {
-    std::string name = pimpl->usernameLatin1(id);
+    UTF8String name = pimpl->usernameLookup(id);
     if (ready) {
-        pimpl->chat_list.add(name + " is ready to start.");
+        pimpl->chat_list.add(name + UTF8String::fromUTF8(" is ready to start."));
     } else {
-        pimpl->chat_list.add(name + " is no longer ready to start.");
+        pimpl->chat_list.add(name + UTF8String::fromUTF8(" is no longer ready to start."));
     }
     pimpl->game_namelist.alter(id, 0, &ready, 0);
     if (id == pimpl->my_player_id) pimpl->my_ready_flag = ready;
@@ -1618,9 +1620,9 @@ void GameManager::deactivateReadyFlags()
 namespace {
     // Check if a message is team chat (if allowed). If so, remove the "/t" prefix.
     // Also removes leading spaces.
-    bool CheckTeamChat(const Coercri::UTF8String &msg,
+    bool CheckTeamChat(const UTF8String &msg,
                        bool team_chat_allowed,
-                       Coercri::UTF8String &msg_stripped)
+                       UTF8String &msg_stripped)
     {
         const std::string& utf8 = msg.asUTF8();
         bool is_team = false;
@@ -1645,10 +1647,10 @@ namespace {
     }
 }
 
-void GameManager::chat(const PlayerID &whofrom, const Coercri::UTF8String &msg)
+void GameManager::chat(const PlayerID &whofrom, const UTF8String &msg)
 {
     // Convert player ID to name
-    std::string out_latin1 = pimpl->usernameLatin1(whofrom);
+    UTF8String out = pimpl->usernameLookup(whofrom);
 
     // Get house colour and observer status of the sender
     bool observer = false;
@@ -1660,7 +1662,7 @@ void GameManager::chat(const PlayerID &whofrom, const Coercri::UTF8String &msg)
     bool team_chat_allowed = !observer && pimpl->game_in_progress;
 
     // Strip away leading spaces and "/t" prefix if applicable
-    Coercri::UTF8String msg_stripped;
+    UTF8String msg_stripped;
     bool is_team = CheckTeamChat(msg, team_chat_allowed, msg_stripped);
 
     // Filter the message text if required
@@ -1679,28 +1681,23 @@ void GameManager::chat(const PlayerID &whofrom, const Coercri::UTF8String &msg)
             // Drop this message as it is for a different team
             return;
         }
-        out_latin1 += " (Team)";
+        out += UTF8String::fromUTF8(" (Team)");
     } else if (observer) {
-        out_latin1 += " (Observer)";
+        out += UTF8String::fromUTF8(" (Observer)");
     }
 
     // Add colon and the stripped message itself
-    out_latin1 += ": ";
-    out_latin1 += msg_stripped.asLatin1();
+    out += UTF8String::fromUTF8(": ");
+    out += msg_stripped;
 
     // Add it to the chat list in the GUI
-    pimpl->chat_list.add(out_latin1);
+    pimpl->chat_list.add(out);
     pimpl->gui_invalid = true;
 }
 
 void GameManager::announcementLoc(const LocalMsg &msg, bool err)
 {
-    const Localization &loc = pimpl->knights_app.getLocalization();
-    Coercri::UTF8String msg_str = loc.get(msg);
-
-    std::string msg_latin1 = msg_str.asLatin1();
-
-    pimpl->chat_list.add(msg_latin1);
+    pimpl->chat_list.add(pimpl->knights_app.getLocalization().get(msg));
     pimpl->gui_invalid = true;
 
     if (err && pimpl->single_player && !pimpl->game_in_progress) {

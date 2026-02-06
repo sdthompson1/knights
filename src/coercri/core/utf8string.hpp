@@ -60,9 +60,6 @@ namespace Coercri {
         // construct from a possibly-invalid UTF-8 string
         //  (inserts replacement characters if input is invalid)
         static UTF8String fromUTF8Safe(const std::string &input);
-        
-        // construct from a Latin-1 string
-        static UTF8String fromLatin1(const std::string &input);
 
         // construct from a single integer code-point
         //  (throws exception if the code-point is not valid)
@@ -75,10 +72,6 @@ namespace Coercri {
         // convert a Coercri::UTF8String to a std::string in UTF-8 format
         const std::string & asUTF8() const { return repr; }
 
-        // convert a Coercri::UTF8String to a std::string in Latin-1 format
-        //  - un-representable characters are replaced with '?'
-        std::string asLatin1() const;
-        
 
         
         // GENERAL FUNCTIONS AND OPERATORS

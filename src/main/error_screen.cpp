@@ -48,7 +48,7 @@ public:
         const int hpad = 6, vpad = 6;
         
         // create label
-        label.reset(new gcn::Label(msg.asLatin1()));
+        label.reset(new gcn::Label(msg.asUTF8()));
         container->add(label.get(), hpad, y);
         y += label->getHeight() + vpad;
         

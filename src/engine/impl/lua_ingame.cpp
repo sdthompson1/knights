@@ -1152,15 +1152,14 @@ namespace {
     int PopUpWindow(lua_State *lua)
     {
         // Read out the table
-        // Note: we interpret the lua-strings as Latin1 for now.
         TutorialWindow win;
         
         lua_getfield(lua, 1, "title");  // [title]
-        if (lua_isstring(lua, -1)) win.title_latin1 = lua_tostring(lua, -1);
+        if (lua_isstring(lua, -1)) win.title = UTF8String::fromUTF8Safe(lua_tostring(lua, -1));
         lua_pop(lua, 1);  // []
 
         lua_getfield(lua, 1, "body");  // [body]
-        if (lua_isstring(lua, -1)) win.msg_latin1 = lua_tostring(lua, -1);
+        if (lua_isstring(lua, -1)) win.msg = UTF8String::fromUTF8Safe(lua_tostring(lua, -1));
         lua_pop(lua, 1); // []
 
         lua_getfield(lua, 1, "popup");  // [popup]

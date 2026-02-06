@@ -85,7 +85,7 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                               int x, int y,
                               bool show_potion_bottle,
                               LocalMiniMap &mini_map,
-                              const std::string &time_limit_string_latin1)
+                              const UTF8String &time_limit_string)
 {
     // Work out where to draw the inventory
     const int inv_slot_width = int(ref_inventory_width / num_inventory_slots * scale);
@@ -149,7 +149,7 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
 
     // Draw Potion Bottle
     if (potion_renderer && show_potion_bottle) {
-        const bool show_time = !time_limit_string_latin1.empty();
+        const bool show_time = !time_limit_string.empty();
         const int ref_top = show_time ? ref_potion_top_with_time : ref_potion_top;
         const int phy_potion_left = Round(float(ref_potion_left) * scale) + x;
         const int phy_potion_top = Round(float(ref_top) * scale) + y;
@@ -157,9 +157,9 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                               phy_potion_left, phy_potion_top, scale);
         if (show_time) {
             const int phy_x = Round(float(ref_time_x) * scale) + x 
-                    - gm.getFont()->getTextWidth(UTF8String::fromLatin1(time_limit_string_latin1))/2;
+                    - gm.getFont()->getTextWidth(time_limit_string)/2;
             const int phy_y = Round(float(ref_time_y) * scale) + y;
-            gc.drawText(phy_x, phy_y, *gm.getFont(), UTF8String::fromLatin1(time_limit_string_latin1),
+            gc.drawText(phy_x, phy_y, *gm.getFont(), time_limit_string,
                     Coercri::Color(255,255,255));
         }
     }

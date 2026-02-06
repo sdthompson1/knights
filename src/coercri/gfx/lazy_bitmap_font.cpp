@@ -128,6 +128,38 @@ namespace Coercri {
         h = glyph_creator->getLineHeight();
     }
 
+    size_t LazyBitmapFont::getStringIndexAt(const UTF8String &txt, int x) const
+    {
+        const std::string &text = txt.asUTF8();
+
+        utf8::iterator<std::string::const_iterator>
+            begin(text.begin(), text.begin(), text.end()),
+            end(text.end(), text.begin(), text.end()),
+            it;
+
+        int w = 0;
+        char32_t previous = 0;
+
+        for (it = begin; it != end; ++it) {
+
+            if (w > x) {
+                return it.base() - text.begin();
+            }
+
+            char32_t codepoint = *it;
+
+            if (previous) {
+                w += getKern(previous, codepoint);
+            }
+
+            const CachedGlyph &glyph = ensureGlyph(codepoint);
+            w += glyph.xadvance;
+            previous = codepoint;
+        }
+
+        return text.length();
+    }
+
     const LazyBitmapFont::CachedGlyph& LazyBitmapFont::ensureGlyph(char32_t codepoint) const
     {
         auto it = glyph_cache.find(codepoint);

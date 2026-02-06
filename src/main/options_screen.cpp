@@ -147,7 +147,7 @@ private:
 
     bool previous_fullscreen;
 
-    std::string bad_key_msg;
+    UTF8String bad_key_msg;
 };
 
 OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
@@ -496,7 +496,7 @@ void OptionsScreenImpl::transferToGui()
 void OptionsScreenImpl::setupChangeControls(int i)
 {
     change_active = true;
-    bad_key_msg = "";
+    bad_key_msg = UTF8String();
     change_player = i;
     change_key = 0;
     transferToGui();
@@ -509,7 +509,7 @@ void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, C
         if (kc == Coercri::KC_ESCAPE) {
             // cancel!
             change_active = false;
-            bad_key_msg = "";
+            bad_key_msg = UTF8String();
 
         } else {
             bool allowed = true;
@@ -531,7 +531,7 @@ void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, C
             }
 
             if (!allowed) {
-                bad_key_msg = "Key already in use. Please choose another key.";
+                bad_key_msg = UTF8String::fromUTF8("Key already in use. Please choose another key.");
             }
 
             if (allowed) {
@@ -559,7 +559,7 @@ void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, C
                     }
                 }
 
-                bad_key_msg = "";
+                bad_key_msg = UTF8String();
             }
         }
 

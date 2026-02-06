@@ -40,6 +40,7 @@
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 #include "title_block.hpp"
+#include "utf8_text_field.hpp"
 
 #include "gcn/cg_font.hpp" // coercri
 
@@ -132,7 +133,7 @@ public:
     boost::scoped_ptr<gcn::ListBox> games_listbox, players_listbox, chat_listbox;
     boost::scoped_ptr<TitleBlock> games_titleblock;
     std::unique_ptr<gcn::ScrollArea> games_scrollarea, players_scrollarea, chat_scrollarea;
-    boost::scoped_ptr<gcn::TextField> chat_field;
+    boost::scoped_ptr<UTF8TextField> chat_field;
 
     boost::scoped_ptr<GuiCentre> join_centre;
     boost::scoped_ptr<GuiPanel> join_panel;
@@ -279,7 +280,7 @@ void LobbyScreenImpl::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window> w
     container->add(chat_label.get(), pad, y);
     y += chat_label->getHeight() + pad;
 
-    chat_field.reset(new gcn::TextField);
+    chat_field.reset(new UTF8TextField);
     chat_field->adjustSize();
     chat_field->setWidth(width);
     chat_field->addActionListener(this);
@@ -332,7 +333,7 @@ void LobbyScreenImpl::action(const gcn::ActionEvent &event)
         std::unique_ptr<Screen> title_screen(new TitleScreen);
         knights_app->requestScreenChange(std::move(title_screen));
     } else if (event.getSource() == chat_field.get()) {
-        client->sendChatMessage(Coercri::UTF8String::fromLatin1(chat_field->getText()));
+        client->sendChatMessage(Coercri::UTF8String::fromUTF8Safe(chat_field->getText()));
         chat_field->setText("");
         gui->logic();
         window->invalidateAll();

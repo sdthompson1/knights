@@ -47,4 +47,7 @@ inline bool IsSpace(char c) { return std::isspace(static_cast<unsigned char>(c))
 inline char ToLower(char c) { return std::tolower(static_cast<unsigned char>(c)); }
 inline char ToUpper(char c) { return std::toupper(static_cast<unsigned char>(c)); }
 
+// This explicitly looks for ASCII space characters regardless of current locale:
+inline bool IsAsciiSpace(unsigned int c) { return (c >= 9 && c <= 13) || c == 32; }
+
 #endif

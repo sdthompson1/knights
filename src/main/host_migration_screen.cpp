@@ -60,8 +60,7 @@ void HostMigrationScreenImpl::createGui(KnightsApp &ka, gcn::Gui &gui)
     const int pad = 10, small_pad = 5;
     int y = small_pad;
 
-    std::string msg_latin1 = ka.getLocalization().get(msg).asLatin1();
-    label1.reset(new gcn::Label(msg_latin1));
+    label1.reset(new gcn::Label(ka.getLocalization().get(msg).asUTF8()));
 
     const int total_width = 2*pad + label1->getWidth();
 

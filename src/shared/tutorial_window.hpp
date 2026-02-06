@@ -26,6 +26,8 @@
 
 #include "colour_change.hpp"
 
+#include "utf8string.hpp"
+
 #include <string>
 #include <vector>
 
@@ -35,7 +37,7 @@ struct TutorialWindow {
     TutorialWindow() : popup(false) { }
 
     // window title
-    std::string title_latin1;
+    Coercri::UTF8String title;
 
     // Graphics to be displayed alongside title
     std::vector<const Graphic *> gfx;
@@ -46,7 +48,7 @@ struct TutorialWindow {
     // %L, %R, %U, %D, %A, %S indicate knight control keys (left/right/up/down/action/suicide).
     // Also %M represents the string "WASD keys", "ARROW KEYS", or a longhand description of the 
     //   current movement keys, as appropriate.
-    std::string msg_latin1;
+    Coercri::UTF8String msg;
 
     // Whether this should be a popup window or not
     bool popup;

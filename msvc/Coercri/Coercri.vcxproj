@@ -130,6 +130,7 @@
     <ClInclude Include="..\..\src\coercri\gcn\cg_image.hpp" />
     <ClInclude Include="..\..\src\coercri\gcn\cg_input.hpp" />
     <ClInclude Include="..\..\src\coercri\gcn\cg_listener.hpp" />
+    <ClInclude Include="..\..\src\coercri\gcn\text_input_receiver.hpp" />
     <ClInclude Include="..\..\src\coercri\core\coercri_error.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\color.hpp" />
     <ClInclude Include="..\..\src\coercri\enet\enet_network_connection.hpp" />

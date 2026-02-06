@@ -26,12 +26,14 @@
 
 #include "guichan.hpp"
 
+#include "utf8string.hpp"
+
 class GuiTextWrap : public gcn::Widget, public gcn::MouseListener {
 public:
     GuiTextWrap();
     
-    void setText(const std::string &t) { text = t; }
-    const std::string & getText() const { return text; }
+    void setText(const UTF8String &t) { text = t; }
+    const UTF8String & getText() const { return text; }
 
     void adjustHeight();
     
@@ -46,12 +48,12 @@ public:
     // whether to interpret %c or %l "rich text" sequences
     void setRich(bool r) { rich = r; }
     bool isRich() const { return rich; }
-    
+
     virtual void draw(gcn::Graphics *graphics);
     virtual void mouseReleased(gcn::MouseEvent &mouseEvent);
 
 private:
-    std::string text;
+    UTF8String text;
     bool opaque;
     bool centred;
     bool rich;

@@ -128,6 +128,9 @@
     <ClInclude Include="..\..\src\coercri\gcn\cg_listener.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\coercri\gcn\text_input_receiver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\coercri\core\coercri_error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

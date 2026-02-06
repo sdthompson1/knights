@@ -36,6 +36,7 @@
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 #include "gui_text_wrap.hpp"
+#include "utf8_text_field.hpp"
 
 #include "house_colour_font.hpp"
 
@@ -48,7 +49,7 @@ namespace {
         explicit HouseColourListModel(const GameManager &gm) : game_manager(gm) { }
         std::string getElementAt(int i) {
             if (i < 0 || i >= game_manager.getNumAvailHouseColours()) return "";
-            else return ColToText(game_manager.getAvailHouseColour(i));
+            else return ColToText(game_manager.getAvailHouseColour(i)).asUTF8();
         }
         int getNumberOfElements() { return game_manager.getNumAvailHouseColours(); }
     private:
@@ -98,7 +99,7 @@ public:
     boost::scoped_ptr<gcn::ListBox> chat_listbox;
     std::unique_ptr<gcn::ScrollArea> chat_scrollarea;
     boost::scoped_ptr<gcn::Label> chat_field_title;
-    boost::scoped_ptr<gcn::TextField> chat_field;
+    boost::scoped_ptr<UTF8TextField> chat_field;
 
     boost::scoped_ptr<HouseColourFont> house_colour_font;
     
@@ -126,8 +127,8 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
     const int gutter = 15;
     
     // Create title (don't add it yet)
-    std::string menu_title_latin1 = app.getLocalization().get(app.getGameManager().getMenuTitle()).asLatin1();
-    title.reset(new gcn::Label(menu_title_latin1));
+    Coercri::UTF8String menu_title = app.getLocalization().get(app.getGameManager().getMenuTitle());
+    title.reset(new gcn::Label(menu_title.asUTF8()));
 
     // Add menu widgets
     const int menu_y = vpad_pretitle + title->getHeight() + vpad_posttitle;
@@ -199,12 +200,12 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         // Add chat field (at bottom)
         int ybelow = y_after_menu;
 
-        chat_field.reset(new gcn::TextField);
+        chat_field.reset(new UTF8TextField);
         chat_field->adjustSize();
         chat_field->setWidth(width_rhs);
         chat_field->addActionListener(this);
         container->add(chat_field.get(), rhs_x, ybelow - chat_field->getHeight());
-        if (!saved_chat.empty()) chat_field->setText(saved_chat.asLatin1());
+        if (!saved_chat.empty()) chat_field->setText(saved_chat.asUTF8());
         ybelow -= chat_field->getHeight();
 
         chat_field_title.reset(new gcn::Label("Type here to chat"));
@@ -286,7 +287,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
 
     if (chat_field && !saved_chat.empty()) {
         chat_field->requestFocus();
-        chat_field->setCaretPosition(saved_chat.asLatin1().length());
+        chat_field->setCaretPosition(saved_chat.asUTF8().length());
     }
 }
 
@@ -320,7 +321,7 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
     }
 
     if (event.getSource() == chat_field.get() && !chat_field->getText().empty()) {
-        knights_client->sendChatMessage(Coercri::UTF8String::fromLatin1(chat_field->getText()));
+        knights_client->sendChatMessage(Coercri::UTF8String::fromUTF8Safe(chat_field->getText()));
         chat_field->setText("");
         gui.logic();
         window->invalidateAll();
@@ -389,7 +390,7 @@ void MenuScreenImpl::updateGui()
         }
     }
 
-    quest_description_box->setText(game_manager.getQuestDescription().asLatin1());
+    quest_description_box->setText(game_manager.getQuestDescription());
     quest_description_box->adjustHeight();
 
     if (players_listbox) AdjustListBoxSize(*players_listbox, *players_scrollarea);
@@ -445,6 +446,6 @@ void MenuScreen::update()
     // Save our chat field contents into GameManager (so that it can be preserved across
     // host migrations if applicable)
     if (extended && !pimpl->knights_app.screenChangePending()) {
-        pimpl->knights_app.getGameManager().setSavedChat(Coercri::UTF8String::fromLatin1(pimpl->chat_field->getText()));
+        pimpl->knights_app.getGameManager().setSavedChat(Coercri::UTF8String::fromUTF8Safe(pimpl->chat_field->getText()));
     }
 }

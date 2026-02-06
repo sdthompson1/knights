@@ -65,7 +65,7 @@ CreditsScreenImpl::CreditsScreenImpl(KnightsApp &app, gcn::Gui &gui, const std::
     text_wrap.reset(new GuiTextWrap);
     text_wrap->setForegroundColor(gcn::Color(255,255,255));
     text_wrap->setRich(true);
-    text_wrap->setText(credits);
+    text_wrap->setText(UTF8String::fromUTF8Safe(credits));
 
     // Use an intermediate container between the TextWrap and the ScrollArea.
     // This allows us to make the TextWrap smaller than the whole screen while keeping
