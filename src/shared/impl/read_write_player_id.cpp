@@ -48,6 +48,14 @@ PlayerID ReadPlayerID(Coercri::InputByteBuf &buf, bool allow_untrusted_strings)
     if (!allow_untrusted_strings) {
         // Untrusted strings NOT allowed - so we cannot read the username
         // (an untrusted host might try to spoof usernames or insert offensive words etc.)
+
+        // Note: if this turns a non-empty PlayerID into an empty PlayerID, then that
+        // should be considered an error.
+
+        if (platform.empty() && !user_name_raw.empty()) {
+            throw std::runtime_error("invalid player id");
+        }
+
         user_name_raw.clear();
     }
 
