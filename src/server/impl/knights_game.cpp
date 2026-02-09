@@ -35,6 +35,7 @@
 #include "overlay.hpp"
 #include "protocol.hpp"
 #include "read_write_loc.hpp"
+#include "read_write_player_id.hpp"
 #include "rng.hpp"
 #include "rstream.hpp"
 #include "server_callbacks.hpp"
@@ -381,11 +382,11 @@ namespace {
 
         for (game_conn_vector::const_iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
             if (!(*it)->obs_flag) {
-                buf.writeString((*it)->id1.asString());
+                WritePlayerID(buf, (*it)->id1);
                 buf.writeUbyte((*it)->is_ready ? 1 : 0);
                 buf.writeUbyte((*it)->house_colour);
                 if (!(*it)->id2.empty()) {
-                    buf.writeString((*it)->id2.asString());
+                    WritePlayerID(buf, (*it)->id2);
                     buf.writeUbyte((*it)->is_ready ? 1 : 0);
                     buf.writeUbyte((*it)->house_colour + 1);
                 }
@@ -398,7 +399,7 @@ namespace {
         for (game_conn_vector::const_iterator it = impl.connections.begin(); it != impl.connections.end(); ++it) {
             if ((*it)->obs_flag) {
                 ASSERT((*it)->id2.empty());
-                buf.writeString((*it)->id1.asString());
+                WritePlayerID(buf, (*it)->id1);
             }
         }
 
@@ -504,19 +505,19 @@ namespace {
 
                 if (voting_active) {
                     out.writeUbyte(SERVER_VOTED_TO_RESTART);
-                    out.writeString(conn->id1.asString());
+                    WritePlayerID(out, conn->id1);
                     out.writeUbyte(0); // flags
                     out.writeUbyte(std::max(0, num_votes_needed));
                 }
 
                 out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
-                out.writeString(conn->id1.asString());
+                WritePlayerID(out, conn->id1);
                 out.writeUbyte(observer);
                 out.writeUbyte(conn->house_colour);
 
                 if (!conn->id2.empty()) {
                     out.writeUbyte(SERVER_PLAYER_JOINED_THIS_GAME);
-                    out.writeString(conn->id2.asString());
+                    WritePlayerID(out, conn->id2);
                     out.writeUbyte(observer);
                     out.writeUbyte(conn->house_colour);
                 }
@@ -530,7 +531,7 @@ namespace {
             buf.writeUbyte(kg.deathmatch_mode);
             if (observer) {
                 for (std::vector<PlayerID>::const_iterator it = kg.all_player_ids.begin(); it != kg.all_player_ids.end(); ++it) {
-                    buf.writeString(it->asString());
+                    WritePlayerID(buf, *it);
                 }
             }
             buf.writeUbyte(1);  // already_started flag (true)
@@ -965,7 +966,7 @@ namespace {
                         buf.writeUbyte(SERVER_GO_INTO_OBS_MODE);
                         buf.writeUbyte(kg.all_player_ids.size());
                         for (auto const & id : kg.all_player_ids) {
-                            buf.writeString(id.asString());
+                            WritePlayerID(buf, id);
                         }
 
                         bool voting_active = IsVotingActive(kg.connections);
@@ -986,7 +987,7 @@ namespace {
                             for (const auto &conn : kg.connections) {
                                 Coercri::OutputByteBuf buf(conn->output_data);
                                 buf.writeUbyte(SERVER_VOTED_TO_RESTART);
-                                buf.writeString((*c)->id1.asString());
+                                WritePlayerID(buf, (*c)->id1);
                                 uint8_t flags = (conn.get() == c->get() ? VF_IS_ME : 0);
                                 if (num_votes_needed <= 0) flags |= VF_SHOW_MSG | VF_GAME_ENDING;
                                 buf.writeUbyte(flags);
@@ -1050,7 +1051,7 @@ namespace {
                         for (const auto &voter : kg.connections) {
                             if (!voter->obs_flag && voter->voted_to_restart) {
                                 out.writeUbyte(SERVER_VOTED_TO_RESTART);
-                                out.writeString(voter->id1.asString());
+                                WritePlayerID(out, voter->id1);
                                 out.writeUbyte(VF_VOTE);
                                 out.writeUbyte(std::max(0, num_votes_needed));
                             }
@@ -1179,9 +1180,9 @@ namespace {
                     msg = kg.game_name + "\tgame won\t";
                     // the first name printed is the winner, then we list the losers (of which there will be
                     // only one at the moment).
-                    msg += "winner=" + winner_id.asString();
+                    msg += "winner=" + winner_id.getDebugString();
                     for (auto const& loser_id : loser_ids) {
-                        msg += std::string(", loser=") + loser_id.asString();
+                        msg += std::string(", loser=") + loser_id.getDebugString();
                     }
                     kg.knights_log->logMessage(msg);
                 }
@@ -1268,7 +1269,7 @@ namespace {
                 buf.writeUbyte(SERVER_PLAYER_LIST);
                 buf.writeVarInt(player_list.size());
                 for (size_t idx = 0; idx < player_list.size(); ++idx) {
-                    buf.writeString(player_list[idx].id.asString());
+                    WritePlayerID(buf, player_list[idx].id);
                     buf.writeUbyte(player_list[idx].house_colour.r);
                     buf.writeUbyte(player_list[idx].house_colour.g);
                     buf.writeUbyte(player_list[idx].house_colour.b);
@@ -1324,11 +1325,11 @@ namespace {
         for (game_conn_vector::iterator it = kg.connections.begin(); it != kg.connections.end(); ++it) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_SET_READY);
-            out.writeString(conn.id1.asString());
+            WritePlayerID(out, conn.id1);
             out.writeUbyte(ready ? 1 : 0);
             if (!conn.id2.empty()) {
                 out.writeUbyte(SERVER_SET_READY);
-                out.writeString(conn.id2.asString());
+                WritePlayerID(out, conn.id2);
                 out.writeUbyte(ready ? 1 : 0);
             }
         }
@@ -1513,7 +1514,7 @@ namespace {
                         buf.writeUbyte(num_displays);
                         buf.writeUbyte(kg.deathmatch_mode);
                         for (int i = 0; i < num_displays; ++i) {
-                            buf.writeString(ids[i].asString());
+                            WritePlayerID(buf, ids[i]);
                         }
                         buf.writeUbyte(0);  // already_started flag (false)
                     }
@@ -1525,7 +1526,7 @@ namespace {
                     str << kg.game_name << "\tgame started\t";
                     for (auto it = ids.begin(); it != ids.end(); ++it) {
                         if (it != ids.begin()) str << ", ";
-                        str << it->asString();
+                        str << it->getDebugString();
                     }
 
                     LogMenuListener listener(str);
@@ -1798,7 +1799,7 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
             // had an active vote.
             if (voting_active) {
                 buf.writeUbyte(SERVER_VOTED_TO_RESTART);
-                buf.writeString(id1.asString());
+                WritePlayerID(buf, id1);
                 uint8_t flags = (should_stop_game ? VF_GAME_ENDING : 0);
                 buf.writeUbyte(flags);
                 buf.writeUbyte(std::max(0, num_votes_needed));
@@ -1806,11 +1807,11 @@ void KnightsGame::clientLeftGame(GameConnection &conn)
 
             // Tell them that the player left
             buf.writeUbyte(SERVER_PLAYER_LEFT_THIS_GAME);
-            buf.writeString(id1.asString());
+            WritePlayerID(buf, id1);
             buf.writeUbyte(is_player ? 0 : 1);
             if (!id2.empty()) {
                 buf.writeUbyte(SERVER_PLAYER_LEFT_THIS_GAME);
-                buf.writeString(id2.asString());
+                WritePlayerID(buf, id2);
                 buf.writeUbyte(is_player ? 0 : 1);
             }
         }
@@ -1871,7 +1872,7 @@ void KnightsGame::sendChatMessage(GameConnection &conn, const Coercri::UTF8Strin
 
         Coercri::OutputByteBuf buf((*it)->output_data);
         buf.writeUbyte(SERVER_CHAT);
-        buf.writeString(conn.id1.asString());
+        WritePlayerID(buf, conn.id1);
         buf.writeString(msg.asUTF8());
     }
 }
@@ -1915,7 +1916,7 @@ void KnightsGame::setHouseColour(GameConnection &conn, int hse_col)
             out.writeUbyte(SERVER_SET_HOUSE_COLOUR);
             // note we don't support house colours in split screen mode at the moment. we assume it's the first player
             // on the connection who is having the house colours set.
-            out.writeString(conn.id1.asString());
+            WritePlayerID(out, conn.id1);
             out.writeUbyte(hse_col);
         }
 
@@ -1959,7 +1960,7 @@ void KnightsGame::readyToEnd(GameConnection &conn)
         for (game_conn_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_READY_TO_END);
-            out.writeString(conn.id1.asString());
+            WritePlayerID(out, conn.id1);
         }
     }
 }
@@ -2008,7 +2009,7 @@ void KnightsGame::voteToRestart(GameConnection &conn, bool vote)
                     bool is_my_vote = (&conn == other_conn.get());
                     Coercri::OutputByteBuf out(other_conn->output_data);
                     out.writeUbyte(SERVER_VOTED_TO_RESTART);
-                    out.writeString(conn.id1.asString());
+                    WritePlayerID(out, conn.id1);
                     uint8_t flags = (vote ? VF_VOTE : 0)
                         | (is_my_vote ? VF_IS_ME : 0)
                         | VF_SHOW_MSG
@@ -2226,12 +2227,12 @@ void KnightsGame::setObsFlag(GameConnection &conn, bool new_obs_flag)
         Coercri::OutputByteBuf buf((*it)->output_data);
 
         buf.writeUbyte(SERVER_SET_OBS_FLAG);
-        buf.writeString(my_id.asString());
+        WritePlayerID(buf, my_id);
         buf.writeUbyte(new_obs_flag ? 1 : 0);
         
         if (!new_obs_flag) {
             buf.writeUbyte(SERVER_SET_HOUSE_COLOUR);
-            buf.writeString(my_id.asString());
+            WritePlayerID(buf, my_id);
             buf.writeUbyte(new_col);
         }
     }

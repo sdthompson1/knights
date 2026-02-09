@@ -169,6 +169,7 @@ CXXFILES = \
 	shared/impl/menu_item.cpp \
 	shared/impl/overlay.cpp \
 	shared/impl/read_write_loc.cpp \
+	shared/impl/read_write_player_id.cpp \
 	shared/impl/sound.cpp \
 	shared/impl/trim.cpp \
 	shared/impl/user_control.cpp \

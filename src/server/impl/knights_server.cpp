@@ -30,6 +30,7 @@
 #include "player_id.hpp"
 #include "protocol.hpp"
 #include "read_write_loc.hpp"
+#include "read_write_player_id.hpp"
 #include "sh_ptr_eq.hpp"
 #include "version.hpp"
 
@@ -126,7 +127,7 @@ namespace {
         WriteLocalMsg(buf, error);
 
         if (impl.knights_log) {
-            impl.knights_log->logMessage(conn.game_name + "\terror\tplayer=" + conn.player_id.asString() + ", error=" + error.key.getKey());
+            impl.knights_log->logMessage(conn.game_name + "\terror\tplayer=" + conn.player_id.getDebugString() + ", error=" + error.key.getKey());
         }
 
         conn.error_sent = true;
@@ -146,7 +147,7 @@ namespace {
         for (connection_vector::iterator it = connections.begin(); it != connections.end(); ++it) {
             if ((*it)->connection_accepted || it->get() == &conn) {
                 out.writeUbyte(SERVER_UPDATE_PLAYER);
-                out.writeString((*it)->player_id.asString());
+                WritePlayerID(out, (*it)->player_id);
                 out.writeString((*it)->game_name);
                 bool is_obs = false;
                 if ((*it)->game) {
@@ -174,7 +175,7 @@ namespace {
             if (it->get() != &conn) {
                 Coercri::OutputByteBuf out_other((*it)->output_data);
                 out_other.writeUbyte(SERVER_PLAYER_CONNECTED);
-                out_other.writeString(conn.player_id.asString());
+                WritePlayerID(out_other, conn.player_id);
             }
         }
 
@@ -216,7 +217,7 @@ namespace {
         for (connection_vector::iterator it = connections.begin(); it != connections.end(); ++it) {
             Coercri::OutputByteBuf out((*it)->output_data);
             out.writeUbyte(SERVER_UPDATE_PLAYER);
-            out.writeString(conn.player_id.asString());
+            WritePlayerID(out, conn.player_id);
             out.writeString("");  // no game
             out.writeUbyte(0);
         }
@@ -339,7 +340,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
             case CLIENT_SET_PLAYER_ID:
                 {
-                    const PlayerID new_id = PlayerID(buf.readString());
+                    const PlayerID new_id = ReadPlayerID(buf, true);
                     Coercri::OutputByteBuf out(conn.output_data);
 
                     if (!conn.player_id.empty()) {
@@ -364,7 +365,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
                         // write a log message
                         if (pimpl->knights_log) {
-                            pimpl->knights_log->logMessage("\tplayer connected\taddr=" + conn.ip_addr + ", player=" + new_id.asString());
+                            pimpl->knights_log->logMessage("\tplayer connected\taddr=" + conn.ip_addr + ", player=" + new_id.getDebugString());
                         }
 
                         SendStartupMessages(out, conn, pimpl->connections, pimpl->games);
@@ -393,8 +394,8 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                     
                         if (split_screen) {
                             // dummy player names for the split screen mode
-                            client_id_1 = PlayerID("Player 1");
-                            client_id_2 = PlayerID("Player 2");
+                            client_id_1 = PlayerID(UTF8String::fromUTF8("Player 1"));
+                            client_id_2 = PlayerID(UTF8String::fromUTF8("Player 2"));
                         } else {
                             // id 1 comes from the connection object. id 2 is unset.
                             client_id_1 = conn.player_id;
@@ -414,7 +415,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                         for (connection_vector::iterator it2 = pimpl->connections.begin(); it2 != pimpl->connections.end(); ++it2) {
                             Coercri::OutputByteBuf out((*it2)->output_data);
                             out.writeUbyte(SERVER_UPDATE_PLAYER);
-                            out.writeString(client_id_1.asString());
+                            WritePlayerID(out, client_id_1);
                             out.writeString(game_name);
                             out.writeUbyte(conn.game->getObsFlag(*conn.game_conn));
                             // NOTE: don't bother with supporting the split screen mode here, so no msg for client_id_2.
@@ -447,7 +448,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                             if (!(*it)->game) {
                                 Coercri::OutputByteBuf out_other((*it)->output_data);
                                 out_other.writeUbyte(SERVER_CHAT);
-                                out_other.writeString(conn.player_id.asString());
+                                WritePlayerID(out_other, conn.player_id);
                                 out_other.writeString(msg.asUTF8());
                             }
                         }
@@ -456,7 +457,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                     // log it
                     if (pimpl->knights_log) {
                         std::string log_msg = conn.game_name + "\tchat\t";
-                        log_msg += conn.player_id.asString() + ": " + msg.asUTF8();
+                        log_msg += conn.player_id.getDebugString() + ": " + msg.asUTF8();
                         pimpl->knights_log->logMessage(log_msg);
                     }
                 }
@@ -566,7 +567,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                                 for (connection_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
                                     Coercri::OutputByteBuf out(conn.output_data);
                                     out.writeUbyte(SERVER_UPDATE_PLAYER);
-                                    out.writeString(conn.player_id.asString());
+                                    WritePlayerID(out, conn.player_id);
                                     out.writeString(conn.game_name);
                                     out.writeUbyte(new_flag ? 1 : 0);
                                 }
@@ -676,7 +677,7 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
         for (connection_vector::iterator it = pimpl->connections.begin(); it != pimpl->connections.end(); ++it) {
             Coercri::OutputByteBuf buf((*it)->output_data);
             buf.writeUbyte(SERVER_PLAYER_DISCONNECTED);
-            buf.writeString(id.asString());
+            WritePlayerID(buf, id);
         }
         if (game) {
             SendGameUpdate(pimpl->connections, game_name, game->getNumPlayers(), game->getNumObservers(), game->getStatus());
@@ -685,7 +686,7 @@ void KnightsServer::connectionClosed(ServerConnection &conn)
 
     // log a message
     if (pimpl->knights_log) {
-        pimpl->knights_log->logMessage(game_name + "\tplayer disconnected\taddr=" + ip + ", player=" + id.asString());
+        pimpl->knights_log->logMessage(game_name + "\tplayer disconnected\taddr=" + ip + ", player=" + id.getDebugString());
     }
 }
 

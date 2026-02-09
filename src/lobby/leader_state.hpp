@@ -121,6 +121,9 @@ private:
 
     // Ping Times
     unsigned int last_ping_update_ms;
+
+    // Cached platform name
+    std::string platform_name;
 };
 
 #endif  // USE_VM_LOBBY

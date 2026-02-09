@@ -26,6 +26,7 @@
 #include "localization.hpp"
 #include "protocol.hpp"
 #include "read_write_loc.hpp"
+#include "read_write_player_id.hpp"
 
 #include "network/byte_buf.hpp"
 
@@ -42,7 +43,7 @@ void WriteLocalMsg(Coercri::OutputByteBuf &buf, const LocalMsg &msg)
             break;
         case LocalParam::Type::PLAYER_ID:
             buf.writeUbyte(1);
-            buf.writeString(param.getPlayerID().asString());
+            WritePlayerID(buf, param.getPlayerID());
             break;
         case LocalParam::Type::INTEGER:
             buf.writeUbyte(2);
@@ -72,7 +73,10 @@ void ReadLocalMsg(Coercri::InputByteBuf &buf, LocalMsg &msg, bool allow_untruste
             msg.params.push_back(LocalParam(LocalKey(buf.readString())));
             break;
         case 1:
-            msg.params.push_back(LocalParam(PlayerID(buf.readString())));
+            {
+                PlayerID id = ReadPlayerID(buf, allow_untrusted_strings);
+                msg.params.push_back(LocalParam(id));
+            }
             break;
         case 2:
             msg.params.push_back(LocalParam(buf.readVarInt()));

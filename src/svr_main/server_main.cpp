@@ -164,7 +164,7 @@ void KnightsConfigLoader::operator ()()
                 err_msg += param.getLocalKey().getKey();
                 break;
             case LocalParam::Type::PLAYER_ID:
-                err_msg += param.getPlayerID().asString();
+                err_msg += param.getPlayerID().getDebugString();
                 break;
             case LocalParam::Type::STRING:
                 err_msg += param.getString().asUTF8();

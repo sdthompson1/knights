@@ -128,8 +128,8 @@ LocalMsg PopLocalMsgFromLua(lua_State *state);
 class Localization {
 public:
     Localization() {
-        // Default name lookup just returns the player id unmodified
-        name_lookup = [](const PlayerID &id) { return Coercri::UTF8String::fromUTF8Safe(id.asString()); };
+        // Default name lookup just returns the user name from the PlayerID class
+        name_lookup = [](const PlayerID &id) { return id.getUserName(); };
     }
 
     // Read strings from a file

@@ -29,6 +29,7 @@
 #include "player_id.hpp"
 #include "protocol.hpp"
 #include "read_write_loc.hpp"
+#include "read_write_player_id.hpp"
 #include "server_dungeon_view.hpp"
 
 #include <limits>
@@ -198,7 +199,7 @@ void ServerDungeonView::addEntity(unsigned short int id, int x, int y, MapHeight
     if (af != 0) buf.writeShort(ClampToShort(atz_diff));
     buf.writeUshort(ClampToUshort(cur_ofs));
     if (motion_type != MT_NOT_MOVING) buf.writeUshort(ClampToUshort(motion_time_remaining));
-    buf.writeString(player_id.asString());
+    WritePlayerID(buf, player_id);
 }
 
 void ServerDungeonView::rmEntity(unsigned short int id)

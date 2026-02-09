@@ -28,12 +28,10 @@
 
 #include "network/byte_buf.hpp"
 
-#include <iostream>
-
 // Debugging options
 //#define LOG_ECALLS
 //#define LOG_BRK_CALLS
-#define LOG_UNKNOWN_CALLS
+//#define LOG_UNKNOWN_CALLS
 //#define LOG_TICKS
 
 #if defined(LOG_ECALLS) || defined(LOG_BRK_CALLS) || defined(LOG_UNKNOWN_CALLS)

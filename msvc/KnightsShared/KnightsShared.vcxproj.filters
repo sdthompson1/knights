@@ -63,6 +63,9 @@
     <ClCompile Include="..\..\src\shared\impl\read_write_loc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\shared\impl\read_write_player_id.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\shared\impl\sound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -141,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\shared\read_write_loc.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shared\read_write_player_id.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\shared\sound.hpp">

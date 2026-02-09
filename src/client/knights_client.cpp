@@ -32,6 +32,7 @@
 #include "mini_map.hpp"
 #include "overlay.hpp"
 #include "read_write_loc.hpp"
+#include "read_write_player_id.hpp"
 #include "sound.hpp"
 #include "status_display.hpp"
 #include "knights_callbacks.hpp"
@@ -95,6 +96,10 @@ public:
     const Overlay * readOverlay(Coercri::InputByteBuf &buf) const;
     const Sound * readSound(Coercri::InputByteBuf &buf) const;
     const UserControl * getControl(int id) const;
+
+    PlayerID readPlayerID(Coercri::InputByteBuf &buf) const {
+        return ReadPlayerID(buf, allow_untrusted_strings);
+    }
 };
 
 KnightsClient::KnightsClient(bool allow_untrusted_strings)
@@ -182,7 +187,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 std::vector<bool> ready_flags;
                 std::vector<int> hse_cols;
                 for (int i = 0; i < n_plyrs; ++i) {
-                    players.push_back(PlayerID(buf.readString()));
+                    players.push_back(pimpl->readPlayerID(buf));
                     ready_flags.push_back(buf.readUbyte() != 0);
                     hse_cols.push_back(buf.readUbyte());
                 }
@@ -191,7 +196,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 std::vector<PlayerID> observers;
                 observers.reserve(n_obs);
                 for (int i = 0; i < n_obs; ++i) {
-                    observers.push_back(PlayerID(buf.readString()));
+                    observers.push_back(pimpl->readPlayerID(buf));
                 }
 
                 bool already_started = (buf.readUbyte() != 0);
@@ -217,14 +222,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_PLAYER_CONNECTED:
             {
-                const PlayerID id = PlayerID(buf.readString());
+                const PlayerID id = pimpl->readPlayerID(buf);
                 if (client_cb) client_cb->playerConnected(id);
             }
             break;
 
         case SERVER_PLAYER_DISCONNECTED:
             {
-                const PlayerID id = PlayerID(buf.readString());
+                const PlayerID id = pimpl->readPlayerID(buf);
                 if (client_cb) client_cb->playerDisconnected(id);
             }
             break;
@@ -291,7 +296,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 std::vector<PlayerID> player_ids;
                 player_ids.reserve(pimpl->ndisplays);
                 for (int i = 0; i < pimpl->ndisplays; ++i) {
-                    player_ids.push_back(PlayerID(buf.readString()));
+                    player_ids.push_back(pimpl->readPlayerID(buf));
                 }
                 const bool already_started = buf.readUbyte() != 0;
 
@@ -313,7 +318,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 std::vector<PlayerID> player_ids;
                 player_ids.reserve(pimpl->ndisplays);
                 for (int i = 0; i < pimpl->ndisplays; ++i) {
-                    player_ids.push_back(PlayerID(buf.readString()));
+                    player_ids.push_back(pimpl->readPlayerID(buf));
                 }
 
 #ifdef LOG_MSGS
@@ -331,7 +336,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_PLAYER_JOINED_THIS_GAME:
             {
-                const PlayerID id = PlayerID(buf.readString());
+                const PlayerID id = pimpl->readPlayerID(buf);
                 const bool obs_flag = buf.readUbyte() != 0;
                 const int house_col = buf.readUbyte();
                 if (client_cb) client_cb->playerJoinedThisGame(id, obs_flag, house_col);
@@ -340,7 +345,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_PLAYER_LEFT_THIS_GAME:
             {
-                const PlayerID id = PlayerID(buf.readString());
+                const PlayerID id = pimpl->readPlayerID(buf);
                 const bool obs_flag = buf.readUbyte() != 0;
                 if (client_cb) client_cb->playerLeftThisGame(id, obs_flag);
             }
@@ -348,7 +353,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_READY:
             {
-                const PlayerID id = PlayerID(buf.readString());
+                const PlayerID id = pimpl->readPlayerID(buf);
                 const int ready = buf.readUbyte();
                 if (client_cb) client_cb->setReady(id, ready != 0);
             }
@@ -356,7 +361,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_HOUSE_COLOUR:
             {
-                const PlayerID id = PlayerID(buf.readString());
+                const PlayerID id = pimpl->readPlayerID(buf);
                 const int x = buf.readUbyte();
                 if (client_cb) client_cb->setPlayerHouseColour(id, x);
             }
@@ -379,7 +384,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_SET_OBS_FLAG:
             {
-                const PlayerID player = PlayerID(buf.readString());
+                const PlayerID player = pimpl->readPlayerID(buf);
                 const bool new_obs_flag = (buf.readUbyte() != 0);
 
 #ifdef LOG_MSGS
@@ -396,7 +401,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_CHAT:
             {
-                const PlayerID whofrom = PlayerID(buf.readString());
+                const PlayerID whofrom = pimpl->readPlayerID(buf);
                 const Coercri::UTF8String msg = Coercri::UTF8String::fromUTF8Safe(buf.readString());
 
                 // Chat is just an arbitrary string and hence untrusted.
@@ -466,7 +471,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_UPDATE_PLAYER:
             {
-                const PlayerID player_id = PlayerID(buf.readString());
+                const PlayerID player_id = pimpl->readPlayerID(buf);
                 const std::string game_name = buf.readString();
                 const bool obs_flag = buf.readUbyte() != 0;
                 if (client_cb) client_cb->updatePlayer(player_id, game_name, obs_flag);
@@ -480,7 +485,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 player_list.reserve(nplayers);
                 for (int i = 0; i < nplayers; ++i) {
                     ClientPlayerInfo inf;
-                    inf.id = PlayerID(buf.readString());
+                    inf.id = pimpl->readPlayerID(buf);
                     inf.house_colour.r = buf.readUbyte();
                     inf.house_colour.g = buf.readUbyte();
                     inf.house_colour.b = buf.readUbyte();
@@ -593,7 +598,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const int atz_diff = af == 0 ? 0 : buf.readShort();
                 const int cur_ofs = buf.readUshort();
                 const int motion_time_remaining = motion_type == MT_NOT_MOVING ? 0 : buf.readUshort();
-                const PlayerID player_id = PlayerID(buf.readString());
+                const PlayerID player_id = pimpl->readPlayerID(buf);
                 if (dungeon_view) dungeon_view->addEntity(id, x, y, MapHeight(ht), MapDirection(facing),
                                                           anim, overlay, af, atz_diff, ainvis, ainvuln,
                                                           approached,
@@ -864,14 +869,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
         case SERVER_READY_TO_END:
             {
-                const PlayerID player = PlayerID(buf.readString());
+                const PlayerID player = pimpl->readPlayerID(buf);
                 if (client_cb) client_cb->playerIsReadyToEnd(player);
             }
             break;
 
         case SERVER_VOTED_TO_RESTART:
             {
-                const PlayerID player_id = PlayerID(buf.readString());
+                const PlayerID player_id = pimpl->readPlayerID(buf);
                 uint8_t flags = buf.readUbyte();
                 uint8_t num_more_needed = buf.readUbyte();
                 if (client_cb) client_cb->playerVotedToRestart(player_id, flags, num_more_needed);
@@ -952,9 +957,12 @@ void KnightsClient::connectionFailed()
 
 void KnightsClient::setPlayerIdAndControls(const PlayerID &id, bool action_bar_ctrls)
 {
+#ifdef LOG_MSGS
+    std::cout << "Sending CLIENT_SET_PLAYER_ID: " << id.getDebugString() << std::endl;
+#endif
     Coercri::OutputByteBuf buf(pimpl->out);
     buf.writeUbyte(CLIENT_SET_PLAYER_ID);
-    buf.writeString(id.asString());
+    WritePlayerID(buf, id, pimpl->allow_untrusted_strings);
     buf.writeUbyte(CLIENT_SET_ACTION_BAR_CONTROLS);
     buf.writeUbyte(action_bar_ctrls ? 1 : 0);
 }

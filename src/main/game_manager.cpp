@@ -309,7 +309,7 @@ UTF8String NameList::nameLookup(const PlayerID &id) const
 #ifdef ONLINE_PLATFORM
     return online_platform.lookupUserName(id);
 #else
-    return UTF8String::fromUTF8Safe(id.asString());
+    return id.getUserName();
 #endif
 }
 
@@ -511,7 +511,7 @@ public:
 #ifdef ONLINE_PLATFORM
         return knights_app.getOnlinePlatform().lookupUserName(id);
 #else
-        return UTF8String::fromUTF8Safe(id.asString());
+        return id.getUserName();
 #endif
     }
 
@@ -868,14 +868,12 @@ int GameManager::getNumAvailHouseColours() const
 
 std::function<UTF8String(const PlayerID&)> GameManager::getPlayerNameLookup() const
 {
-#ifdef ONLINE_PLATFORM
     return [this](const PlayerID& id) -> UTF8String {
+        // Look up name from ID
+        UTF8String name = pimpl->usernameLookup(id);
 
-        OnlinePlatform &online_platform = pimpl->knights_app.getOnlinePlatform();
+        // Append "(Disconnected)" if applicable
         const Localization &localization = pimpl->knights_app.getLocalization();
-
-        UTF8String name = online_platform.lookupUserName(id);
-
         for (const auto& player : pimpl->saved_client_player_info) {
             if (player.id == id && player.client_state == ClientState::DISCONNECTED) {
                 return localization.get(LocalKey("x_disconnected"), name);
@@ -884,11 +882,6 @@ std::function<UTF8String(const PlayerID&)> GameManager::getPlayerNameLookup() co
 
         return name;
     };
-#else
-    return [](const PlayerID &id) -> UTF8String {
-        return UTF8String::fromUTF8Safe(id.asString());
-    };
-#endif
 }
 
 bool GameManager::getMyObsFlag() const

@@ -106,6 +106,9 @@ void LeaderState::initialize(const PlayerID &local_user_id, int sleep_time_ms)
     // Add dummy entries to follower vectors
     followers.push_back(boost::shared_ptr<Coercri::NetworkConnection>());
     follower_sync.push_back(std::unique_ptr<SyncHost>());
+
+    // Cache platform name
+    platform_name = local_user_id.getPlatform();
 }
 
 LeaderState::~LeaderState()
@@ -164,9 +167,15 @@ void LeaderState::update(Coercri::NetworkDriver &net_driver,
                 conn->send(client_num_byte);
 
                 // Open a new connection to the VM
-                // Note: getAddress, by convention, returns the platform user ID
-                // for platform P2P connections
-                tick_writer->writeNewConnection(client_num, PlayerID(conn->getAddress()));
+                // Note: We assume all players connecting to a VM game are part of the
+                // same online platform (and that there *is* an online platform); hence,
+                // we can use the cached "platform_name". Also, by convention, the
+                // VM network connections use the platform_user_id as the "address". The
+                // user name can be left blank in this context.
+                tick_writer->writeNewConnection(client_num,
+                                                PlayerID(platform_name,
+                                                         conn->getAddress(),
+                                                         Coercri::UTF8String()));
 
                 // Add the new follower
                 if (client_num >= followers.size()) {
@@ -393,7 +402,9 @@ bool LeaderState::processVmOutputData(const std::vector<unsigned char> &vm_outpu
     }
 
     LeaderTickCallbacks callbacks(0, local_player_packets);
-    ReadTickData(vm_output_data.data(), vm_output_data.data() + vm_output_data.size(), callbacks);
+    ReadTickData(vm_output_data.data(),
+                 vm_output_data.data() + vm_output_data.size(),
+                 callbacks);
     return callbacks.dataWasSent();
 }
 

@@ -55,6 +55,8 @@ constexpr uint8_t STATUS_ERROR = 0x01;
 
 constexpr uint16_t LOBBY_SERVER_PORT = 12345;
 
+#define PLATFORM_NAME "dummy"
+
 DummyOnlinePlatform::DummyOnlinePlatform() : socket_fd(-1), connected(false)
 {
     // Generate a random user ID (random integer as string)
@@ -64,14 +66,14 @@ DummyOnlinePlatform::DummyOnlinePlatform() : socket_fd(-1), connected(false)
     
     std::ostringstream oss;
     oss << dis(gen);
-    current_user_id = PlayerID(oss.str());
+    current_user_id = PlayerID(PLATFORM_NAME, oss.str(), UTF8String::fromUTF8("@" + oss.str()));
 
     // Create dummy network driver
     create_network_driver(current_user_id);
 
     // Connect to server and login
     if (connect_to_server()) {
-        sendMessage(MSG_LOGIN, current_user_id.asString());
+        sendMessage(MSG_LOGIN, current_user_id.getPlatformUserId());
         std::string response;
         receiveResponse(response);
     }
@@ -84,7 +86,14 @@ PlayerID DummyOnlinePlatform::getCurrentUserId()
 
 Coercri::UTF8String DummyOnlinePlatform::lookupUserName(const PlayerID& platform_user_id)
 {
-    return Coercri::UTF8String::fromUTF8("@" + platform_user_id.asString());
+    if (platform_user_id.getPlatform() == PLATFORM_NAME) {
+        // In a real implementation this would call the platform API to look up the user name.
+        // Here, simulate it by adding an "@".
+        return Coercri::UTF8String::fromUTF8("@" + platform_user_id.getPlatformUserId());
+    } else {
+        // If platform lookup is not available, fall back on platform_user_id.getUserName()
+        return platform_user_id.getUserName();
+    }
 }
 
 std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis, uint64_t checksum)
@@ -210,7 +219,9 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
             size_t pos = 0;
             size_t null_pos = response_data.find('\0', pos);
             if (null_pos != std::string::npos) {
-                info.leader_id = PlayerID(response_data.substr(pos, null_pos - pos));
+                info.leader_id = PlayerID(PLATFORM_NAME,
+                                          response_data.substr(pos, null_pos - pos),
+                                          UTF8String());
                 pos = null_pos + 1;
             }
 
@@ -352,7 +363,11 @@ public:
         : underlying(underlying),
           user_id(user_id),
           received_data(received_data)
-    {}
+    {
+        if (user_id.getPlatform() != PLATFORM_NAME) {
+            throw std::runtime_error("DummyNetworkConnectionWrapper: wrong platform name");
+        }
+    }
 
     virtual State getState() const { return underlying->getState(); }
     virtual void close() { underlying->close(); }
@@ -365,7 +380,7 @@ public:
         }
     }
     virtual void send(const std::vector<unsigned char> &data) { underlying->send(data); }
-    virtual std::string getAddress() { return user_id.asString(); }
+    virtual std::string getAddress() { return user_id.getPlatformUserId(); }
     virtual int getPingTime() { return underlying->getPingTime(); }
 
 private:
@@ -380,6 +395,10 @@ public:
         : EnetNetworkDriver(20, 1, true),
           my_user_id(my_user_id)
     {
+        if (my_user_id.getPlatform() != PLATFORM_NAME) {
+            throw std::runtime_error("DummyNetworkDriver: wrong platform name");
+        }
+
         // Serve on the port corresponding to our user id
         Coercri::EnetNetworkDriver::setServerPort(userIdToPortNum(my_user_id));
     }
@@ -387,14 +406,14 @@ public:
     boost::shared_ptr<Coercri::NetworkConnection> openConnection(const std::string &addr, int port) override
     {
         // Connect to localhost
-        PlayerID user_id(addr);  // Interpret address as platform user id
+        PlayerID user_id(PLATFORM_NAME, addr, UTF8String());  // Interpret address as platform user id
         auto conn = Coercri::EnetNetworkDriver::openConnection("localhost", userIdToPortNum(user_id));
 
         // A real online platform would authenticate users, but here we
         // fake that by sending our user_id as the first message
         std::vector<unsigned char> msg;
         Coercri::OutputByteBuf buf(msg);
-        buf.writeString(my_user_id.asString());
+        buf.writeString(my_user_id.getPlatformUserId());
         conn->send(msg);
 
         std::vector<unsigned char> empty;
@@ -414,7 +433,7 @@ public:
 
             // Read out the transmitted user id
             Coercri::InputByteBuf buf(msg);
-            PlayerID id = PlayerID(buf.readString());
+            PlayerID id = PlayerID(PLATFORM_NAME, buf.readString(), UTF8String());
 
             // Remove the consumed bytes from the msg
             msg.erase(msg.begin(), msg.begin() + buf.getPos());
@@ -437,7 +456,7 @@ public:
 private:
     static int userIdToPortNum(const PlayerID &id) {
         // Use port numbers 10000 - 12000
-        int p = std::stoi(id.asString());
+        int p = std::stoi(id.getPlatformUserId());
         return 10000 + (p % 2000);
     }
 

@@ -31,6 +31,8 @@
 #include <chrono>
 #include <cstring>
 
+#define PLATFORM_NAME "dummy"
+
 DummyPlatformLobby::DummyPlatformLobby(DummyOnlinePlatform* platform, const std::string& lobby_id)
     : platform(platform), lobby_id(lobby_id), current_state(State::JOINED)
 {
@@ -114,7 +116,9 @@ void DummyPlatformLobby::updateCachedInfo()
                     // Parse leader_id
                     size_t null_pos = response_data.find('\0', pos);
                     if (null_pos != std::string::npos) {
-                        leader_id = PlayerID(response_data.substr(pos, null_pos - pos));
+                        leader_id = PlayerID(PLATFORM_NAME,
+                                             response_data.substr(pos, null_pos - pos),
+                                             UTF8String());
                         pos = null_pos + 1;
 
                         // Skip num_players (4 bytes)
@@ -210,7 +214,7 @@ std::vector<ChatMessage> DummyPlatformLobby::receiveChatMessages()
                     }
 
                     std::string sender_id_str = response_data.substr(pos, null_pos - pos);
-                    PlayerID sender_id(sender_id_str);
+                    PlayerID sender_id(PLATFORM_NAME, sender_id_str, UTF8String());
                     pos = null_pos + 1;
 
                     // Parse message_text (null-terminated)

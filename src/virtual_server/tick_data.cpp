@@ -96,18 +96,6 @@ namespace {
         if (y & 0x80) vec.push_back(z);
     }
 
-    std::string ReadString(const unsigned char *&first,
-                           const unsigned char *last,
-                           int payload_length)
-    {
-        std::string s;
-        s.resize(payload_length);
-        for (std::string::iterator it = s.begin(); it != s.end(); ++it) {
-            *it = static_cast<char>(ReadUbyte(first, last));
-        }
-        return s;
-    }
-
     std::vector<unsigned char> ReadVector(const unsigned char *&first,
                                           const unsigned char *last,
                                           int payload_length)
@@ -167,11 +155,24 @@ const unsigned char * ReadTickData(const unsigned char *ptr,
         switch (message_type) {
         case TM_NEW_CONNECTION:
             {
-                std::string s = ReadString(ptr, end, payload_length);
+                std::string platform;
+                std::string platform_user_id;
+                int num_read = 0;
+                while (true) {
+                    if (num_read >= payload_length) throw std::runtime_error("Tick data format error");
+                    unsigned char c = ReadUbyte(ptr, end);
+                    ++num_read;
+                    if (c == 0) break;
+                    platform += c;
+                }
+                if (platform.empty()) throw std::runtime_error("Tick data format error");
+                for (int i = 0; i < payload_length - num_read; ++i) {
+                    platform_user_id += ReadUbyte(ptr, end);
+                }
 #ifdef LOG_TICK_DATA
-                std::cout << "Read TM_NEW_CONNECTION " << int(client_num) << " " << s << std::endl;
+                std::cout << "Read TM_NEW_CONNECTION " << int(client_num) << " " << platform << ":" << platform_user_id << std::endl;
 #endif
-                callbacks.onNewConnection(client_num, PlayerID(s));
+                callbacks.onNewConnection(client_num, PlayerID(platform, platform_user_id, Coercri::UTF8String()));
             }
             break;
 
@@ -311,9 +312,14 @@ void TickWriter::writeNewConnection(uint8_t client_num, const PlayerID &platform
     std::cout << "Write TM_NEW_CONNECTION " << int(client_num) << std::endl;
 #endif
 
-    const std::string &user_id = platform_user_id.asString();
+    const std::string &platform = platform_user_id.getPlatform();
+    const std::string &user_id = platform_user_id.getPlatformUserId();
 
-    beginNewMessage(TM_NEW_CONNECTION, user_id.size(), client_num);
+    beginNewMessage(TM_NEW_CONNECTION, platform.size() + 1 + user_id.size(), client_num);
+    for (char c : platform) {
+        tick_data.push_back(c);
+    }
+    tick_data.push_back(0);
     for (char c : user_id) {
         tick_data.push_back(c);
     }

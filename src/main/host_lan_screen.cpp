@@ -108,15 +108,16 @@ void HostLanScreenImpl::action(const gcn::ActionEvent &event)
         knights_app.requestScreenChange(std::move(start_screen));
         
     } else if (event.getSource() == name_field.get() || event.getSource() == ok_button.get()) {
-        UTF8String name_utf8 = UTF8String::fromUTF8("Player 1");
+        UTF8String name = UTF8String::fromUTF8("Player 1");
         if (!name_field->getText().empty()) {
-            name_utf8 = UTF8String::fromUTF8Safe(name_field->getText());
-            knights_app.setPlayerName(name_utf8);  // make sure the name gets saved when we exit
+            name = UTF8String::fromUTF8Safe(name_field->getText());
+            knights_app.setPlayerName(name);  // make sure the name gets saved when we exit
         }
 
         // Go to LoadingScreen in LAN mode
         const int server_port = knights_app.getConfigMap().getInt("port_number");
-        std::unique_ptr<Screen> loading_screen(new LoadingScreen(server_port, PlayerID(name_utf8.asUTF8()), false, false, false, false));
+        const PlayerID player_id(name);
+        std::unique_ptr<Screen> loading_screen(new LoadingScreen(server_port, player_id, false, false, false, false));
         knights_app.requestScreenChange(std::move(loading_screen));
     }
 }

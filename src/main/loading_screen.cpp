@@ -123,10 +123,10 @@ void LoadingScreen::update()
         PlayerID dummy_player_id;
         bool action_bar_controls;
         if (single_player_mode || tutorial_mode) {
-            dummy_player_id = PlayerID("Player 1");
+            dummy_player_id = PlayerID(UTF8String::fromUTF8("Player 1"));
             action_bar_controls = knights_app->getOptions().new_control_system || tutorial_mode;
         } else {
-            dummy_player_id = PlayerID("#SplitScreenPlayer");
+            dummy_player_id = PlayerID(UTF8String::fromUTF8("#SplitScreenPlayer"));
             action_bar_controls = false;
         }
 

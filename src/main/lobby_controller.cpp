@@ -199,7 +199,13 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
         if (vm_lobby_leader_id == online_platform.getCurrentUserId()) {
             vm_knights_lobby->becomeLeader(0);  // Dummy port number
         } else {
-            vm_knights_lobby->becomeFollower(vm_lobby_leader_id.asString(), 0);  // Use leader's PlayerID as the address
+            // Note: we currently assume all players in the VM game are part of the
+            // same online platform, and that we are using a NetworkDriver provided
+            // by that platform. The convention (for now) is that we use the
+            // platform_user_id of the player we wish to connect to as the address.
+            // Here, we want to connect to the current lobby leader, so we use
+            // vm_lobby_leader_id.getPlatformUserId().
+            vm_knights_lobby->becomeFollower(vm_lobby_leader_id.getPlatformUserId(), 0);
         }
 
         // Unload graphics and sounds, as they will be reloaded when we rejoin the

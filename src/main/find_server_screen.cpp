@@ -895,18 +895,18 @@ void FindServerScreenImpl::initiateConnection(const std::string &address, int po
 {
     if (!allow_conn) return;
 
-    UTF8String name_utf8 = UTF8String::fromUTF8Safe(name_field ? name_field->getText() : "");
-    PlayerID player_id = PlayerID(name_utf8.asUTF8());
+    UTF8String name = UTF8String::fromUTF8Safe(name_field ? name_field->getText() : "");
 
-    if (name_utf8.empty()) {
+    if (name.empty()) {
         gotoErrorDialog("You must enter a player name");
     } else if (address.empty()) {
         gotoErrorDialog("You must enter an address to connect to");
     } else {
-        knights_app.setPlayerName(name_utf8); // make sure the new name gets saved when we exit
+        knights_app.setPlayerName(name); // make sure the new name gets saved when we exit
         previous_address[internet?1:0] = address;
         previous_port[internet?1:0] = port;
 
+        PlayerID player_id(name);
         std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, player_id));
         knights_app.requestScreenChange(std::move(connecting_screen));
     }
