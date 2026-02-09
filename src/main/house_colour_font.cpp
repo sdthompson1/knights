@@ -29,8 +29,10 @@
 namespace {
     void AppendRGBComponent(std::string &s, unsigned char val)
     {
-        s += (val >> 4) + 1;
-        s += (val & 0x0f) + 1;
+        // Encode the RGB components as six ascii characters from
+        // the set "0123456789:;<=>?"
+        s += (val >> 4) + 48;
+        s += (val & 0x0f) + 48;
     }
 
     // This requires that pos and pos+1 are both valid
@@ -38,7 +40,7 @@ namespace {
     {
         unsigned char c1 = str[pos];
         unsigned char c2 = str[pos+1];
-        return ((c1 - 1) << 4) | (c2 - 1);
+        return ((c1 - 48) << 4) | (c2 - 48);
     }
 
     // This requires that pos through pos+5 are all valid
@@ -57,7 +59,7 @@ UTF8String ColToText(const Coercri::Color &c)
     AppendRGBComponent(x, c.r);
     AppendRGBComponent(x, c.g);
     AppendRGBComponent(x, c.b);
-    // Since AppendRGBComponent only uses code points 1 through 17, this will
+    // Since AppendRGBComponent only uses ASCII code points, this will
     // be valid UTF-8
     return UTF8String::fromUTF8(x);
 }
