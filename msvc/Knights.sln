@@ -23,12 +23,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KnightsClient", "KnightsCli
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KnightsServer", "KnightsServer\KnightsServer.vcxproj", "{B4BD454E-B242-456C-93A8-0160B6604614}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KnightsSvrMain", "KnightsSvrMain\KnightsSvrMain.vcxproj", "{AAD7A2D3-F662-4369-8912-0D2DBD06206F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{97A898FE-D684-42B1-9F9B-B8706436F78C} = {97A898FE-D684-42B1-9F9B-B8706436F78C}
-		{BC217BEA-9135-4266-B150-75F0450B2366} = {BC217BEA-9135-4266-B150-75F0450B2366}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetworkTest", "NetworkTest\NetworkTest.vcxproj", "{39F03EC5-5C29-4033-AEB6-156808E0D72F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KnightsLobby", "KnightsLobby\KnightsLobby.vcxproj", "{61A51FA4-8549-417B-B4EF-ACA1DC9B0616}"
