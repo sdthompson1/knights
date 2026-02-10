@@ -165,7 +165,7 @@ void LoadingScreen::update()
         client->setClientCallbacks(&knights_app->getGameManager());
 
         // Start responding to broadcasts
-        knights_app->startBroadcastReplies(server_port);
+        knights_app->startBroadcastReplies(player_id.getUserName());
 
         // Set our player ID.
         client->setPlayerIdAndControls(player_id, knights_app->getOptions().new_control_system);

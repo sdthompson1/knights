@@ -33,11 +33,14 @@
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 #include "knights_app.hpp"
+#include "localization.hpp"
 #include "make_scroll_area.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
 #include "player_id.hpp"
 #include "start_game_screen.hpp"
+#include "tab_font.hpp"
+#include "title_block.hpp"
 #include "utf8string.hpp"
 #include "utf8_text_field.hpp"
 
@@ -51,8 +54,8 @@
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread.hpp"
 #include <cstring>
+#include <numeric>
 #include <set>
-#include <sstream>
 
 #ifdef min
 #undef min
@@ -64,20 +67,18 @@
 namespace {
 
     struct ServerInfo {
-        ServerInfo() : port(0), num_players(0), age(0) { }
-        
+        ServerInfo() : num_players(0), age(0) { }
+
         std::string ip_address;
         std::string hostname;
-        std::string description;
-        int port;
+        Coercri::UTF8String host_username;  // Host player's display name
+        LocalKey quest_key;                 // Current quest key (empty = selecting quest)
         int num_players;
         int age;   // Number of milliseconds ago that we last had an update from this server
 
         // used for sorting the displayed list.
         bool operator<(const ServerInfo &other) const {
-            return hostname < other.hostname ? true 
-                : hostname > other.hostname ? false
-                : port < other.port;
+            return hostname < other.hostname;
         }
     };
 
@@ -104,23 +105,32 @@ namespace {
         }
     };
     
-    std::string ServerInfoToString(const ServerInfo &si)
+    std::string ServerInfoToString(const ServerInfo &si, const Localization &loc)
     {
-        std::ostringstream str;
+        std::string result;
 
-        if (si.hostname.find(':') != std::string::npos) {
-            str << "[" << si.hostname << "]:";
+        // Host column
+        result += si.host_username.asUTF8();
+        result += '\t';
+
+        // Address column
+        result += si.hostname;
+        result += '\t';
+
+        // Players column
+        result += std::to_string(si.num_players);
+        result += '\t';
+
+        // Status column
+        if (si.quest_key == LocalKey()) {
+            result += loc.get(LocalKey("selecting_quest")).asUTF8();
         } else {
-            str << si.hostname << ":" << si.port;
+            std::vector<LocalParam> params;
+            params.push_back(LocalParam(si.quest_key));
+            result += loc.get(LocalKey("playing_x"), params).asUTF8();
         }
 
-        str << "  -  " << si.num_players << " player";
-        if (si.num_players != 1) str << "s";
-        if (!si.description.empty()) {
-            str << "  -  " << si.description;
-        }
-
-        return str.str();
+        return result;
     }
 
     // used to look up host names for LAN games.
@@ -173,9 +183,10 @@ namespace {
     
     class ServerList : public gcn::ListModel, boost::noncopyable {
     public:
-        ServerList(Coercri::NetworkDriver& net_drv,
-                   boost::shared_ptr<Coercri::UDPSocket> sock, 
-                   Coercri::Timer &tmr, 
+        ServerList(KnightsApp &app,
+                   Coercri::NetworkDriver& net_drv,
+                   boost::shared_ptr<Coercri::UDPSocket> sock,
+                   Coercri::Timer &tmr,
                    const std::string &err_msg);
         virtual int getNumberOfElements();
         virtual std::string getElementAt(int i);
@@ -184,6 +195,7 @@ namespace {
         void forceBroadcast();
 
     private:
+        KnightsApp &knights_app;
         boost::shared_ptr<boost::mutex> mutex;   // protects server_infos and hostname_lookup_complete.
         boost::shared_ptr<std::vector<ServerInfo> > server_infos;
         std::vector<ClientInfo> client_infos;
@@ -197,11 +209,13 @@ namespace {
         std::string err_msg;
     };
 
-    ServerList::ServerList(Coercri::NetworkDriver& net_drv,
+    ServerList::ServerList(KnightsApp &app,
+                           Coercri::NetworkDriver& net_drv,
                            boost::shared_ptr<Coercri::UDPSocket> sock,
-                           Coercri::Timer &tmr, 
+                           Coercri::Timer &tmr,
                            const std::string &emsg)
-        : mutex(new boost::mutex),
+        : knights_app(app),
+          mutex(new boost::mutex),
           server_infos(new std::vector<ServerInfo>),
           hostname_lookup_complete(new bool(false)),
           network_driver(net_drv),
@@ -229,7 +243,7 @@ namespace {
     {
         if (socket) {
             const ServerInfo *si = getServerAt(i);
-            if (si) return ServerInfoToString(*si);
+            if (si) return ServerInfoToString(*si, knights_app.getLocalization());
             else return std::string();
         } else {
             if (i==0) {
@@ -306,42 +320,62 @@ namespace {
             while (socket->receive(address, port, msg)) {
 
                 if (msg.substr(0, broadcast_pong_length) == BROADCAST_PONG_HDR
-                && msg.length() >= broadcast_pong_length + 5) {
+                && msg.length() >= broadcast_pong_length + 3) {
                     // response from a server
-                    const unsigned char high_byte = msg[broadcast_pong_length];
-                    const unsigned char low_byte = msg[broadcast_pong_length+1];
-                    const char type = msg[broadcast_pong_length+2];
-                    const int port = int(high_byte)*256 + int(low_byte);
-                    const unsigned char nply_high = msg[broadcast_pong_length+3];
-                    const unsigned char nply_low = msg[broadcast_pong_length+4];
+                    const char type = msg[broadcast_pong_length];
+                    const unsigned char nply_high = msg[broadcast_pong_length+1];
+                    const unsigned char nply_low = msg[broadcast_pong_length+2];
                     const int nply = int(nply_high)*256 + int(nply_low);
 
                     // as we now only support LAN games, type must be 'L'
                     if (type == 'L') {
 
+                        // Parse host_username and quest_key from the extended fields (if present).
+                        // These are null-terminated strings appended after the 3 fixed data bytes.
+                        Coercri::UTF8String host_username;
+                        LocalKey quest_key;
+                        const size_t extra_start = broadcast_pong_length + 3;
+                        if (msg.length() > extra_start) {
+                            const size_t nul1 = msg.find('\0', extra_start);
+                            if (nul1 != std::string::npos) {
+                                host_username = Coercri::UTF8String::fromUTF8Safe(msg.substr(extra_start, nul1 - extra_start));
+                                const size_t nul2 = msg.find('\0', nul1 + 1);
+                                if (nul2 != std::string::npos) {
+                                    std::string qk = msg.substr(nul1 + 1, nul2 - nul1 - 1);
+                                    if (!qk.empty()) {
+                                        quest_key = LocalKey(qk);
+                                    }
+                                }
+                            }
+                        }
+
                         // See if we know about this server already. If so, update it, and set its age to zero.
                         bool found = false;
                         for (std::vector<ServerInfo>::iterator it = server_infos->begin(); it != server_infos->end(); ++it) {
-                            if (it->ip_address == address && it->port == port) {
+                            if (it->ip_address == address) {
                                 it->age = 0;
-                                if (nply != it->num_players) {
+                                if (nply != it->num_players
+                                    || it->host_username != host_username
+                                    || it->quest_key != quest_key) {
                                     it->num_players = nply;
+                                    it->host_username = host_username;
+                                    it->quest_key = quest_key;
                                     changed = true;
                                 }
                                 found = true;
                                 break;
                             }
                         }
-                        
+
                         // If not found then add it.
                         if (!found) {
                             ServerInfo si;
                             si.ip_address = address;
                             si.hostname = address;
-                            si.port = port;
+                            si.host_username = host_username;
+                            si.quest_key = quest_key;
                             si.num_players = nply;
                             si.age = 0;
-                            si.description = type == 'I' ? msg.substr(broadcast_pong_length + 5) : std::string();
                             server_infos->push_back(si);
                             changed = true;
 
@@ -449,6 +483,9 @@ private:
     boost::scoped_ptr<UTF8TextField> name_field;
 #endif
     boost::scoped_ptr<gcn::Label> label1;
+    boost::scoped_ptr<TitleBlock> games_titleblock;
+    boost::shared_ptr<gcn::Font> cg_font;
+    std::unique_ptr<gcn::Font> tab_font;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
     boost::scoped_ptr<gcn::ListBox> listbox;
     boost::scoped_ptr<gcn::Label> address_label;
@@ -502,17 +539,27 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     } catch (Coercri::CoercriError& e) {
         err_msg = e.what();
     }
-    server_list.reset(new ServerList(knights_app.getLanNetworkDriver(), sock, knights_app.getTimer(),
-                                     err_msg));
+    server_list.reset(new ServerList(knights_app, knights_app.getLanNetworkDriver(), sock,
+                                     knights_app.getTimer(), err_msg));
+
+    // Set up TabFont for formatting columns: Host | Address | Players | Status
+    std::vector<int> widths;
+    widths.push_back(200);  // Host username column
+    widths.push_back(250);  // Address column
+    widths.push_back(80);   // Player count column
+    widths.push_back(270);  // Status column
+
+    cg_font.reset(new Coercri::CGFont(knights_app.getFont()));
+    tab_font.reset(new TabFont(cg_font, widths));
 
     container.reset(new gcn::Container);
     container->setOpaque(false);
 
     const int pad = 10;
     int y = 5;
+    const int width = std::accumulate(widths.begin(), widths.end(), 0);
 
     label1.reset(new gcn::Label("Available LAN Games (double-click to connect):"));
-    const int width = 900;
 
     title_label.reset(new gcn::Label("LAN Games"));
     title_label->setForegroundColor(gcn::Color(0,0,128));
@@ -533,11 +580,22 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     container->add(label1.get(), pad, y);
     y += label1->getHeight() + pad;
 
+    std::vector<std::string> titles;
+    titles.push_back("Host");
+    titles.push_back("Address");
+    titles.push_back("Players");
+    titles.push_back("Status");
+    games_titleblock.reset(new TitleBlock(titles, widths));
+    games_titleblock->setBaseColor(gcn::Color(200, 200, 200));
+    container->add(games_titleblock.get(), pad, y);
+    y += games_titleblock->getHeight();
+
     listbox.reset(new MyListBox(knights_app, *server_list, *this));
     listbox->setListModel(server_list.get());
+    listbox->setFont(tab_font.get());
     listbox->setWidth(width);
     listbox->addSelectionListener(this);
-    scroll_area = MakeScrollArea(*listbox, width, 350);
+    scroll_area = MakeScrollArea(*listbox, width, 350 - games_titleblock->getHeight());
     container->add(scroll_area.get(), pad, y);
     y += scroll_area->getHeight() + pad*3/2;
     

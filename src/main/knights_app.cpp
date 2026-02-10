@@ -238,7 +238,8 @@ public:
     // broadcast socket
     boost::shared_ptr<Coercri::UDPSocket> broadcast_socket;
     unsigned int broadcast_last_time;
-    int server_port;
+    Coercri::UTF8String broadcast_host_username;  // Host player's display name
+    LocalKey broadcast_quest_key;                 // Current quest key (empty = selecting quest)
 
     // game manager
     std::unique_ptr<GameManager> game_manager;
@@ -579,8 +580,9 @@ void KnightsApp::resetAll()
     // Stop responding to broadcasts
     pimpl->broadcast_socket.reset();
     pimpl->broadcast_last_time = 0;
-    pimpl->server_port = 0;
-}    
+    pimpl->broadcast_host_username = UTF8String();
+    pimpl->broadcast_quest_key = LocalKey();
+}
 
 void KnightsApp::unloadGraphicsAndSounds()
 {
@@ -1223,12 +1225,13 @@ void KnightsAppImpl::updateOnlinePlatform()
 // Broadcast Replies
 //////////////////////////////////////////////
 
-void KnightsApp::startBroadcastReplies(int server_port)
+void KnightsApp::startBroadcastReplies(const UTF8String &host_username)
 {
     // Listen for client requests on the BROADCAST_PORT.
     pimpl->broadcast_socket = getLanNetworkDriver().createUDPSocket(BROADCAST_PORT, true);
     pimpl->broadcast_last_time = 0;
-    pimpl->server_port = server_port;
+    pimpl->broadcast_host_username = host_username;
+    pimpl->broadcast_quest_key = LocalKey();  // empty = "Selecting Quest"
 }
 
 void KnightsAppImpl::processBroadcastMsgs()
@@ -1249,12 +1252,14 @@ void KnightsAppImpl::processBroadcastMsgs()
         if (msg == BROADCAST_PING_MSG) {
             // Construct the reply string
             std::string reply = BROADCAST_PONG_HDR;
-            reply += static_cast<unsigned char>(server_port >> 8);
-            reply += static_cast<unsigned char>(server_port & 0xff);
             reply += 'L';
             reply += static_cast<unsigned char>(num_players >> 8);
             reply += static_cast<unsigned char>(num_players & 0xff);
-            
+            reply += broadcast_host_username.asUTF8();
+            reply += '\0';
+            reply += broadcast_quest_key.getKey();
+            reply += '\0';
+
             // Send the reply back to the address/port where the broadcast came from.
             broadcast_socket->send(address, port, reply);
         }
@@ -1306,6 +1311,11 @@ void KnightsApp::setQuestMessageCode(const LocalKey & quest_key)
 #ifdef ONLINE_PLATFORM
     pimpl->lobby_controller.setQuestMessageCode(getOnlinePlatform(), quest_key);
 #endif
+
+    // Store quest key for LAN broadcast (used by processBroadcastMsgs)
+    if (pimpl->broadcast_socket) {
+        pimpl->broadcast_quest_key = quest_key;
+    }
 }
 
 const Localization & KnightsApp::getLocalization() const

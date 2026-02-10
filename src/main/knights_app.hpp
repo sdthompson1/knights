@@ -209,7 +209,7 @@ public:
     // LAN broadcast replies. (Reset when we return to title screen.)
     // NOTE: the port number for this is fixed currently, see net_msgs.hpp.
     //
-    void startBroadcastReplies(int server_port);
+    void startBroadcastReplies(const UTF8String &host_username);
 
 
     //

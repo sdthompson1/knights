@@ -20,11 +20,7 @@ MaxPlayers = 100
 MaxGames = 40
 
 
-# Whether to "advertise" this server on the LAN and/or the Internet.
-# Note: As of 2025, the metaserver feature has been disabled and will
-# no longer work. UseBroadcast should still work, and is useful for
-# LAN servers.
-UseMetaserver = no
+# Whether to "advertise" this server on the LAN using broadcast packets
 UseBroadcast = yes
 
 
