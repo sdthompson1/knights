@@ -16,14 +16,6 @@ PROJECTS_MAIN = ['Coercri', 'guichan', 'KnightsClient', 'KnightsEngine',
                  'KnightsLobby',
                  'KnightsMain', 'KnightsServer', 'KnightsShared', 
                  'Misc', 'RStream']
-PROJECTS_SERVER = ['KnightsEngine', 'KnightsServer', 'KnightsShared',
-                   'KnightsSvrMain', 'Misc', 'RStream']
-EXTRA_OBJS_SERVER = ['src/coercri/network/byte_buf.o', 
-                     'src/coercri/enet/enet_network_driver.o',
-                     'src/coercri/enet/enet_network_connection.o',
-                     'src/coercri/enet/enet_udp_socket.o',
-                     'src/coercri/timer/generic_timer.o',
-                     'src/coercri/core/utf8string.o']
 
 
 # add project path to a path and normalize
@@ -107,7 +99,7 @@ else:
     online_platform_comment = "# Support for online platforms (like Steam) is disabled in this version\n# of Knights, hence ONLINE_PLATFORM_FLAGS is empty."
 
 # Calculate PROJECTS_ALL
-PROJECTS_ALL = list(set(PROJECTS_MAIN + PROJECTS_SERVER))
+PROJECTS_ALL = list(set(PROJECTS_MAIN))
 
 # Start printing the Makefile.
 print (f"""# Makefile for Knights
@@ -118,7 +110,7 @@ print (f"""# Makefile for Knights
 #
 # First, make sure you have all needed dependencies installed (see
 # distribution specific notes below). Then you can just type "make"
-# to build the knights and knights_server executables.
+# to build the knights executable.
 #
 #
 # DISTRIBUTION SPECIFIC NOTES:
@@ -219,7 +211,6 @@ DATA_DIR = $(PREFIX)/share/knights
 BOOST_SUFFIX = 
 
 KNIGHTS_BINARY_NAME = knights
-SERVER_BINARY_NAME = knights_server
 
 CC = gcc
 CXX = g++
@@ -247,28 +238,19 @@ INSTALL = install
 
 # Get all source files / include dirs
 srcs_with_inc_dirs_main = get_srcs_with_inc_dirs(PROJECTS_MAIN)
-srcs_with_inc_dirs_server = get_srcs_with_inc_dirs(PROJECTS_SERVER)
 srcs_with_inc_dirs_all = get_srcs_with_inc_dirs(PROJECTS_ALL)
 
-# Print the lists of object files for main program & server program.
+# Print the lists of object files for main program.
 print ("OFILES_MAIN =", end=" ")
 for (sfile, incdirs) in srcs_with_inc_dirs_main:
     print (get_obj_file(sfile), end=" ")
 print()
 print()
 
-print ("OFILES_SERVER =", end=" ")
-for (sfile, incdirs) in srcs_with_inc_dirs_server:
-    print (get_obj_file(sfile), end=" ")
-for sfile in EXTRA_OBJS_SERVER:
-    print (sfile, end=" ")
-print()
-print()
-
 # Print "build" target
 print ("""
 
-build: $(KNIGHTS_BINARY_NAME) $(SERVER_BINARY_NAME)
+build: $(KNIGHTS_BINARY_NAME)
 
 """)
 
@@ -294,22 +276,15 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     print ("\t      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \\")
     print ("\t  rm -f $*.d")
 
-pkg_link_flags_server = "$(LUA_LIBS) `pkg-config libenet --libs`"
 zlib_flag = ""
 if args.online_platform:
     zlib_flag = "`pkg-config zlib --libs` "
-pkg_link_flags_knights = "`pkg-config sdl2 --libs` `pkg-config freetype2 --libs` " + zlib_flag + pkg_link_flags_server
+pkg_link_flags_knights = "`pkg-config sdl2 --libs` `pkg-config freetype2 --libs` " + zlib_flag + "$(LUA_LIBS) `pkg-config libenet --libs`"
 
 # Print target for Knights binary
 print ("""
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
 \t$(CXX) $(LDFLAGS) -o $@ $^ """ + pkg_link_flags_knights + """ -lfontconfig -lX11 $(BOOST_LIBS)
-""")
-
-# Print target for Server binary
-print ("""
-$(SERVER_BINARY_NAME): $(OFILES_SERVER)
-\t$(CXX) $(LDFLAGS) -o $@ $^ """ + pkg_link_flags_server + """ $(BOOST_LIBS)
 """)
 
 
@@ -320,16 +295,12 @@ clean:
 \trm -f $(OFILES_MAIN)
 \trm -f $(OFILES_MAIN:.o=.d)
 \trm -f $(OFILES_MAIN:.o=.P)
-\trm -f $(OFILES_SERVER)
-\trm -f $(OFILES_SERVER:.o=.d)
-\trm -f $(OFILES_SERVER:.o=.P)
 \trm -f $(KNIGHTS_BINARY_NAME)
-\trm -f $(SERVER_BINARY_NAME)
 """)
 
 # Print the 'install' target.
 print ("""
-install: install_knights install_server install_docs
+install: install_knights install_docs
 
 install_knights: $(KNIGHTS_BINARY_NAME)
 \t$(INSTALL) -m 755 -d $(BIN_DIR)
@@ -340,12 +311,6 @@ for root, dirs, files in os.walk('knights_data'):
     for f in files:
         f2 = os.path.join(root, f)
         print ("\t$(INSTALL) -m 644 -D " + f2 + " $(DATA_DIR)" + f2[12:])
-
-print ("""
-install_server: $(SERVER_BINARY_NAME)
-\t$(INSTALL) -m 755 -d $(BIN_DIR)
-\t$(INSTALL) -m 755 $(SERVER_BINARY_NAME) $(BIN_DIR)
-\t$(INSTALL) -m 755 -d $(DATA_DIR)""")
 
 for root, dirs, files in os.walk('knights_data/server'):
     for f in files:
@@ -383,8 +348,7 @@ print()
 # Print the 'uninstall' target
 print ("""
 uninstall:
-\trm -f $(BIN_DIR)/$(KNIGHTS_BINARY_NAME)
-\trm -f $(BIN_DIR)/$(SERVER_BINARY_NAME)""")
+\trm -f $(BIN_DIR)/$(KNIGHTS_BINARY_NAME)""")
 
 for root, dirs, files in os.walk('knights_data'):
     for f in files:
@@ -403,4 +367,4 @@ for root, dirs, files in os.walk('docs'):
             print ("\trm -f $(DOC_DIR)/" + os.path.basename(f))
 
 print()
-print ("-include $(OFILES_MAIN:.o=.P) $(OFILES_SERVER:.o=.P)")
+print ("-include $(OFILES_MAIN:.o=.P)")
