@@ -442,7 +442,7 @@ bool Creature::canThrow(bool strict) const
 
     // Check if the square ahead allows missiles
     // Note: If non-strict then we check tiles only - not actual entities.
-    const MapHeight height = MapHeight(H_MISSILES + facing);
+    const MapHeight height = MapHeight(int(H_MISSILES) + int(facing));
     MapAccess access;
     if (strict) {
         access = getMap()->getAccess(pos, height);

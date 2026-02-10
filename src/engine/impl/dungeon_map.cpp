@@ -308,10 +308,13 @@ bool DungeonMap::canPlaceMissile(const MapCoord &mc, MapDirection dir) const
     // checked in the normal way.
     vector<shared_ptr<Entity> > ents;
     getEntities(mc, ents);
+
+    MapHeight h = MapHeight(int(H_MISSILES) + int(dir));
+
     for (vector<shared_ptr<Entity> >::iterator it = ents.begin(); it != ents.end(); ++it) {
-        if ((*it)->getHeight() == H_MISSILES + dir) return false;
+        if ((*it)->getHeight() == h) return false;
     }
-    return (getAccess(DisplaceCoord(mc, dir), MapHeight(H_MISSILES + dir)) > A_BLOCKED);
+    return (getAccess(DisplaceCoord(mc, dir), h) > A_BLOCKED);
 }
 
 
