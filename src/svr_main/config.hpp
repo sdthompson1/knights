@@ -57,7 +57,6 @@ public:
     int getMaxPlayers() const { return max_players; }
     int getMaxGames() const { return max_games; }
     
-    bool getUseMetaserver() const { return metaserver; }
     bool getReplyToBroadcast() const { return broadcast; }
 
     const std::string & getKnightsDataDir() const { return knights_data_dir; }  // empty means use default (DATA_DIR or knights_data)
@@ -68,7 +67,7 @@ private:
     std::string description, motd_file, old_motd_file;
     int max_players;   // must be > 0.
     int max_games;     // must be >= 0. 0 means unlimited.
-    bool metaserver, broadcast;
+    bool broadcast;
     std::string knights_data_dir;
     std::string log_file;
 };

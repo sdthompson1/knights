@@ -29,11 +29,11 @@
 #include "error_screen.hpp"
 #include "find_server_screen.hpp"
 #include "gui_button.hpp"
+#include "loading_screen.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 #include "knights_app.hpp"
 #include "make_scroll_area.hpp"
-#include "metaserver_urls.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
 #include "player_id.hpp"
@@ -71,7 +71,7 @@ namespace {
         std::string description;
         int port;
         int num_players;
-        int age;   // Number of milliseconds ago that we last had an update from this server, or -1 for metaserver entries.
+        int age;   // Number of milliseconds ago that we last had an update from this server
 
         // used for sorting the displayed list.
         bool operator<(const ServerInfo &other) const {
@@ -104,7 +104,7 @@ namespace {
         }
     };
     
-    std::string ServerInfoToString(const ServerInfo &si, bool internet)
+    std::string ServerInfoToString(const ServerInfo &si)
     {
         std::ostringstream str;
 
@@ -122,169 +122,6 @@ namespace {
 
         return str.str();
     }
-
-
-    class MetaserverThread : boost::noncopyable {
-    public:
-        MetaserverThread();
-        ~MetaserverThread();
-
-        void operator()();
-        std::vector<ServerInfo> getServerInfos();
-        bool needUpdate();
-
-    private:
-        void doUpdate();
-        void parseServerList(const std::string &result);
-        
-    private:
-        boost::mutex mutex;   // protects server_infos, need_update
-        std::vector<ServerInfo> server_infos;
-        bool need_update;
-        int fail_count;
-        
-        CURL *curl;
-    };
-
-    size_t WriteCallback(void *ptr, size_t size, size_t nmemb, void *data)
-    {
-        size_t total_size = size * nmemb;
-        std::string *result = static_cast<std::string*>(data);
-        char* char_ptr = static_cast<char*>(ptr);
-        result->append(char_ptr, total_size);
-        return total_size;
-    }
-
-    size_t ReadCallback(void *ptr, size_t size, size_t nmemb, void *data)
-    {
-        return 0;
-    }
-
-    MetaserverThread::MetaserverThread()
-        : need_update(true), fail_count(0)
-    {
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, ReadCallback);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT,
-                         "Knights/" KNIGHTS_VERSION " (" KNIGHTS_PLATFORM "; " KNIGHTS_WEBSITE ")");
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-        curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 30);
-    }
-
-    MetaserverThread::~MetaserverThread()
-    {
-        curl_easy_cleanup(curl);
-    }
-
-    void MetaserverThread::doUpdate()
-    {
-        std::string result;
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-
-        curl_easy_setopt(curl, CURLOPT_URL, g_metaserver_query_url);
-        const bool success =
-            curl_easy_perform(curl) == 0;
-
-        bool do_update;
-        if (success) {
-            do_update = true;
-            fail_count = 0;
-        } else {
-            // don't clear the list just because one update fails.
-            // wait for 3 failures in a row before doing that.
-            ++fail_count;
-            if (fail_count >= 3) {
-                do_update = true;
-                fail_count = 3;
-            } else {
-                do_update = false;
-            }
-        }
-
-        if (do_update) {
-            boost::lock_guard<boost::mutex> lock(mutex);
-            need_update = true;
-            server_infos.clear();
-            if (success) {
-                parseServerList(result);
-            }
-        }
-    }
-
-    void MetaserverThread::parseServerList(const std::string &result)
-    {
-        // we assume the mutex is locked at this point
-
-        std::istringstream str(result);
-
-        ServerInfo si;
-        bool first_time = true;
-        
-        while (str) {
-            std::string line;
-            std::getline(str, line);
-
-            if (str.eof() || line == "[SERVER]") {
-                if (!first_time) {
-                    si.age = -1;
-                    server_infos.push_back(si);
-                    si = ServerInfo();
-                }
-                first_time = false;
-            } else {
-                // find '='
-                const std::string::size_type pos = line.find('=');
-                if (pos != std::string::npos) {
-                    std::string key = line.substr(0, pos);
-                    std::string val = line.substr(pos+1, std::string::npos);
-                    if (key == "ip_address") {
-                        si.ip_address = val;
-                    } else if (key == "hostname") {
-                        si.hostname = val;
-                    } else if (key == "port") {
-                        si.port = std::atoi(val.c_str());
-                    } else if (key == "num_players") {
-                        si.num_players = std::atoi(val.c_str());
-                    } else if (key == "description") {
-                        si.description = val;
-                    }
-                }
-            }
-        }
-    }
-    
-    void MetaserverThread::operator()()
-    {
-        try {
-            while (1) {
-                doUpdate();
-                // update every 10 seconds.
-                boost::this_thread::sleep(boost::posix_time::seconds(10));
-            }
-        } catch (...) {
-            // Don't allow exceptions to escape the thread.
-        }
-    }
-
-    std::vector<ServerInfo> MetaserverThread::getServerInfos()
-    {
-        std::vector<ServerInfo> result;
-        {
-            boost::lock_guard<boost::mutex> lock(mutex);
-            result = server_infos;
-        }
-        return result;
-    }
-
-    bool MetaserverThread::needUpdate()
-    {
-        boost::lock_guard<boost::mutex> lock(mutex);
-        const bool result = need_update;
-        need_update = false;
-        return result;
-    }
-
 
     // used to look up host names for LAN games.
     class HostnameThread {
@@ -339,13 +176,12 @@ namespace {
         ServerList(Coercri::NetworkDriver& net_drv,
                    boost::shared_ptr<Coercri::UDPSocket> sock, 
                    Coercri::Timer &tmr, 
-                   bool inet,
                    const std::string &err_msg);
-        ~ServerList();
         virtual int getNumberOfElements();
         virtual std::string getElementAt(int i);
         const ServerInfo * getServerAt(int i) const;
         bool refresh();
+        void forceBroadcast();
 
     private:
         boost::shared_ptr<boost::mutex> mutex;   // protects server_infos and hostname_lookup_complete.
@@ -358,17 +194,12 @@ namespace {
         unsigned int last_time;
         unsigned int last_broadcast_time;
         bool first_broadcast_sent;
-        bool internet;
         std::string err_msg;
-
-        boost::scoped_ptr<MetaserverThread> metaserver_thread_obj;
-        boost::thread metaserver_thread;
     };
 
     ServerList::ServerList(Coercri::NetworkDriver& net_drv,
                            boost::shared_ptr<Coercri::UDPSocket> sock,
                            Coercri::Timer &tmr, 
-                           bool inet,
                            const std::string &emsg)
         : mutex(new boost::mutex),
           server_infos(new std::vector<ServerInfo>),
@@ -379,30 +210,15 @@ namespace {
           last_time(0),
           last_broadcast_time(0),
           first_broadcast_sent(false),
-          internet(inet),
           err_msg(emsg)
     {
-        if (internet) {
-            // start the metaserver thread.
-            metaserver_thread_obj.reset(new MetaserverThread);
-            metaserver_thread = boost::thread(boost::ref(*metaserver_thread_obj));
-        }
-    }
-
-    ServerList::~ServerList()
-    {
-        // Stop the metaserver thread if necessary.
-        if (internet) {
-            metaserver_thread.interrupt();
-            metaserver_thread.join();
-        }
     }
 
     int ServerList::getNumberOfElements()
     {
         boost::lock_guard<boost::mutex> lock(*mutex);
         
-        if (socket || internet) {
+        if (socket) {
             return int(server_infos->size());
         } else {
             return 3;
@@ -411,9 +227,9 @@ namespace {
 
     std::string ServerList::getElementAt(int i)
     {
-        if (socket || internet) {
+        if (socket) {
             const ServerInfo *si = getServerAt(i);
-            if (si) return ServerInfoToString(*si, internet);
+            if (si) return ServerInfoToString(*si);
             else return std::string();
         } else {
             if (i==0) {
@@ -421,7 +237,7 @@ namespace {
             } else if (i==1) {
                 return err_msg;
             } else {
-                return "Please enter address and port manually below.";
+                return "Please enter address manually below.";
             }
         }
     }
@@ -500,8 +316,8 @@ namespace {
                     const unsigned char nply_low = msg[broadcast_pong_length+4];
                     const int nply = int(nply_high)*256 + int(nply_low);
 
-                    // only display games of the right type (internet or lan).
-                    if ((type == 'I' && internet) || (type == 'L' && !internet)) {
+                    // as we now only support LAN games, type must be 'L'
+                    if (type == 'L') {
 
                         // See if we know about this server already. If so, update it, and set its age to zero.
                         bool found = false;
@@ -564,49 +380,6 @@ namespace {
                                client_infos.end());
         }
 
-        // Check the metaserver thread if necessary.
-        if (metaserver_thread_obj) {
-            const bool need_update = metaserver_thread_obj->needUpdate();
-            if (need_update) {
-                std::vector<ServerInfo> new_server_infos = metaserver_thread_obj->getServerInfos();
-
-                // Try to find the hostnames for these new servers.
-                std::set<std::string> ip_addresses;
-                for (std::vector<ServerInfo>::iterator it = new_server_infos.begin(); it != new_server_infos.end(); ++it) {
-                    if (it->hostname == it->ip_address) {
-                        // The metaserver didn't provide the hostname.
-                        // First find out whether this server is in the server_infos list already (if so,
-                        // it means we tried to look up the hostname on a previous run through this loop,
-                        // and should not do so again this time).
-                        bool found = false;
-                        for (std::vector<ServerInfo>::const_iterator it2 = server_infos->begin(); it2 != server_infos->end(); ++it2) {
-                            if (it->ip_address == it2->ip_address) {
-                                it->hostname = it2->hostname;
-                                found = true;
-                                break;
-                            }
-                        }
-                        
-                        // Check whether this is a duplicate server. (No need to look up the same ip address more than once.)
-                        if (ip_addresses.find(it->ip_address) != ip_addresses.end()) found = true;
-                        else ip_addresses.insert(it->ip_address);
-
-                        if (!found) {
-                            // Ok, we do not know the hostname for this ip address.
-                            // Start a lookup.
-                            boost::thread thr(HostnameThread(network_driver, mutex, server_infos, hostname_lookup_complete, it->ip_address));
-                        }
-                    }
-                }
-
-                // Delete all metaserver entries from server_infos, and then re-insert the entries from new_server_infos.
-                server_infos->erase(std::remove_if(server_infos->begin(), server_infos->end(), AgeIsMinusOne()),
-                                    server_infos->end());
-                std::copy(new_server_infos.begin(), new_server_infos.end(), std::back_inserter(*server_infos));
-                changed = true;
-            }
-        }
-
         if (*hostname_lookup_complete) {
             // the hostname lookup thread has changed something.
             *hostname_lookup_complete = false;
@@ -621,11 +394,16 @@ namespace {
         return changed;
     }
 
-    
+    void ServerList::forceBroadcast()
+    {
+        first_broadcast_sent = false;
+    }
+
+
     //
     // MyListBox
     // Reimplements ListBox::mouseClicked to listen for double clicks
-    // and goes to MenuScreen or LobbyScreen if one is received.
+    // and goes to ConnectingScreen if one is received.
     //
 
     class MyListBox : public gcn::ListBox {
@@ -643,22 +421,22 @@ namespace {
 
 class FindServerScreenImpl : public gcn::ActionListener, public gcn::SelectionListener {
 public:
-    FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g, const std::string &title, bool inet);
+    FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g);
     void action(const gcn::ActionEvent &event);
     void valueChanged(const gcn::SelectionEvent &event);
     void doUpdate();
 
-    void initiateConnection(const std::string &address, int port);
+    void initiateConnection(const std::string &address);
+    void createGame();
 
 private:
     void gotoErrorDialog(const std::string &msg);
+    PlayerID getPlayerID();
     
 private:
     KnightsApp &knights_app;
     boost::shared_ptr<Coercri::Window> window;
     gcn::Gui &gui;
-    bool internet;
-    bool allow_conn;
 
     boost::scoped_ptr<ServerList> server_list;
 
@@ -666,14 +444,18 @@ private:
     boost::scoped_ptr<GuiCentre> centre;
     boost::scoped_ptr<GuiPanel> panel;
     boost::scoped_ptr<gcn::Container> container;
+#ifndef ONLINE_PLATFORM
     boost::scoped_ptr<gcn::Label> name_label;
     boost::scoped_ptr<UTF8TextField> name_field;
+#endif
     boost::scoped_ptr<gcn::Label> label1;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
     boost::scoped_ptr<gcn::ListBox> listbox;
-    boost::scoped_ptr<gcn::Label> address_label, port_label;
-    boost::scoped_ptr<UTF8TextField> address_field, port_field;
+    boost::scoped_ptr<gcn::Label> address_label;
+    boost::scoped_ptr<UTF8TextField> address_field;
     boost::scoped_ptr<gcn::Button> connect_button;
+    boost::scoped_ptr<gcn::Button> create_game_button;
+    boost::scoped_ptr<gcn::Button> refresh_list_button;
     boost::scoped_ptr<gcn::Button> cancel_button;
 
     boost::scoped_ptr<GuiCentre> err_centre;
@@ -682,12 +464,10 @@ private:
     boost::scoped_ptr<gcn::Label> err_label;
     boost::scoped_ptr<gcn::Button> err_button;
 
-    static std::string previous_address[2];  // 0=lan, 1=internet
-    static int previous_port[2];  // 0=lan, 1=internet
+    static std::string previous_address;
 };
 
-std::string FindServerScreenImpl::previous_address[2];
-int FindServerScreenImpl::previous_port[2] = {-1, -1};
+std::string FindServerScreenImpl::previous_address;
 
 namespace
 {
@@ -701,14 +481,14 @@ namespace
             const ServerInfo *si = server_list.getServerAt(getSelected());
             if (si) {
                 // Initiate connection
-                find_srvr_impl.initiateConnection(si->hostname, si->port);
+                find_srvr_impl.initiateConnection(si->hostname);
             }
         }
     }
 }
 
-FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g, const std::string &title, bool inet)
-    : knights_app(ka), window(win), gui(g), internet(inet), allow_conn(true)
+FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
+    : knights_app(ka), window(win), gui(g)
 {
     // Catch errors from creating the socket, which might fail if (for example) we start two copies of Knights
     // on the local machine (which can be useful for testing purposes).
@@ -718,12 +498,12 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
         // Create a UDP socket
         // Set port to -1 because we only want to listen to replies to our own outgoing msgs,
         // we do NOT want to listen for "unsolicited" incoming msgs.
-        sock = knights_app.getNetworkDriver().createUDPSocket(-1, true);
+        sock = knights_app.getLanNetworkDriver().createUDPSocket(-1, true);
     } catch (Coercri::CoercriError& e) {
         err_msg = e.what();
     }
-    server_list.reset(new ServerList(knights_app.getNetworkDriver(), sock, knights_app.getTimer(), 
-                                     internet, err_msg));
+    server_list.reset(new ServerList(knights_app.getLanNetworkDriver(), sock, knights_app.getTimer(),
+                                     err_msg));
 
     container.reset(new gcn::Container);
     container->setOpaque(false);
@@ -731,27 +511,25 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     const int pad = 10;
     int y = 5;
 
-    if (internet) {
-        label1.reset(new gcn::Label("Available Servers (double-click to connect):"));
-    } else {
-        label1.reset(new gcn::Label("Available LAN Games (double-click to connect):"));
-    }
+    label1.reset(new gcn::Label("Available LAN Games (double-click to connect):"));
     const int width = 900;
 
-    title_label.reset(new gcn::Label(title));
+    title_label.reset(new gcn::Label("LAN Games"));
     title_label->setForegroundColor(gcn::Color(0,0,128));
     container->add(title_label.get(), pad + width/2 - title_label->getWidth()/2, y);
     y += title_label->getHeight() + 2*pad;
 
+#ifndef ONLINE_PLATFORM
     name_label.reset(new gcn::Label("Player Name: "));
     name_field.reset(new UTF8TextField);
     name_field->adjustSize();
     name_field->setWidth(width - name_label->getWidth());
     name_field->setText(knights_app.getPlayerName().asUTF8());
-    container->add(name_label.get(), pad, y + 1);
+    container->add(name_label.get(), pad, y + 2);
     container->add(name_field.get(), pad + name_label->getWidth(), y);
     y += name_field->getHeight() + pad*3/2;
-    
+#endif
+
     container->add(label1.get(), pad, y);
     y += label1->getHeight() + pad;
 
@@ -763,35 +541,31 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     container->add(scroll_area.get(), pad, y);
     y += scroll_area->getHeight() + pad*3/2;
     
+    connect_button.reset(new GuiButton("Connect"));
+    connect_button->addActionListener(this);
+
     address_label.reset(new gcn::Label("Address: "));
-    port_label.reset(new gcn::Label(" Port: "));
-    const int port_field_width = port_label->getFont()->getWidth("123456789");
-    const int address_field_width = width - port_field_width - address_label->getWidth() - port_label->getWidth();
-    
+    const int address_field_width = width - address_label->getWidth() - connect_button->getWidth() - pad;
+
     address_field.reset(new UTF8TextField);
     address_field->adjustSize();
     address_field->setWidth(address_field_width);
-    address_field->setText(previous_address[internet?1:0]);
+    address_field->setText(previous_address);
+    address_field->addActionListener(this);
 
-    port_field.reset(new UTF8TextField);
-    port_field->adjustSize();
-    port_field->setWidth(port_field_width);
-    std::ostringstream oss;
-    const int pport = previous_port[internet?1:0];
-    if (pport >= 0) oss << previous_port[internet?1:0];
-    port_field->setText(oss.str());
+    container->add(address_label.get(), pad, y + 5);
+    container->add(address_field.get(), pad + address_label->getWidth(), y + 3);
+    container->add(connect_button.get(), pad + address_label->getWidth() + address_field_width + pad, y);
+    y += connect_button->getHeight() + 15;
 
-    container->add(address_label.get(), pad, y + 1);
-    container->add(address_field.get(), pad + address_label->getWidth(), y);
-    container->add(port_label.get(), pad + address_label->getWidth() + address_field_width, y + 1);
-    container->add(port_field.get(), pad + address_label->getWidth() + address_field_width + port_label->getWidth(), y);
-    y += address_field->getHeight() + pad;
-
+    create_game_button.reset(new GuiButton("Create Game"));
+    create_game_button->addActionListener(this);
+    refresh_list_button.reset(new GuiButton("Refresh List"));
+    refresh_list_button->addActionListener(this);
     cancel_button.reset(new GuiButton("Cancel"));
     cancel_button->addActionListener(this);
-    connect_button.reset(new GuiButton("Connect"));
-    connect_button->addActionListener(this);
-    container->add(connect_button.get(), pad, y);
+    container->add(create_game_button.get(), pad, y);
+    container->add(refresh_list_button.get(), 25 + create_game_button->getWidth() + pad, y);
     container->add(cancel_button.get(), pad + width - cancel_button->getWidth(), y);
 
     container->setSize(2*pad + width, y + cancel_button->getHeight() + pad);
@@ -801,9 +575,11 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
     gui.setTop(centre.get());
 
     // make sure the first text field is focused initially
-    if (name_field) {
-        name_field->requestFocus();
-    }
+#ifdef ONLINE_PLATFORM
+    address_field->requestFocus();
+#else
+    name_field->requestFocus();
+#endif
 }
 
 void FindServerScreenImpl::gotoErrorDialog(const std::string &msg)
@@ -830,6 +606,22 @@ void FindServerScreenImpl::gotoErrorDialog(const std::string &msg)
     window->invalidateAll();
 }
 
+PlayerID FindServerScreenImpl::getPlayerID()
+{
+#ifdef ONLINE_PLATFORM
+    return knights_app.getOnlinePlatform().getCurrentUserId();
+#else
+    if (name_field->getText().empty()) {
+        gotoErrorDialog("You must enter a player name");
+        return PlayerID();
+    } else {
+        UTF8String name = UTF8String::fromUTF8Safe(name_field->getText());
+        knights_app.setPlayerName(name);
+        return PlayerID(name);
+    }
+#endif
+}
+
 void FindServerScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == cancel_button.get()) {
@@ -837,23 +629,18 @@ void FindServerScreenImpl::action(const gcn::ActionEvent &event)
         std::unique_ptr<Screen> start_screen(new StartGameScreen);
         knights_app.requestScreenChange(std::move(start_screen));
 
-    } else if (event.getSource() == connect_button.get()) {
+    } else if (event.getSource() == connect_button.get() || event.getSource() == address_field.get()) {
         // Initiate connection
         const std::string &address = address_field->getText();
-        int port = -1;
-        if (port_field->getText().empty()) {
-            port = knights_app.getConfigMap().getInt("port_number");  // default
-        } else {
-            std::istringstream str(port_field->getText());
-            str >> port;
-            if (!str) {
-                UTF8String msg = knights_app.getLocalization().get(LocalKey("bad_port_number"));
-                std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
-                knights_app.requestScreenChange(std::move(error_screen));
-                return;
-            }
-        }
-        initiateConnection(address, port);
+        initiateConnection(address);
+
+    } else if (event.getSource() == create_game_button.get()) {
+        // Host a new LAN game
+        createGame();
+
+    } else if (event.getSource() == refresh_list_button.get()) {
+        // Force an immediate broadcast ping
+        server_list->forceBroadcast();
 
     } else if (event.getSource() == err_button.get()) {
         int w,h;
@@ -870,13 +657,7 @@ void FindServerScreenImpl::valueChanged(const gcn::SelectionEvent &event)
     const ServerInfo *si = server_list->getServerAt(listbox->getSelected());
     if (si) {
         address_field->setText(si->hostname);
-        std::ostringstream str;
-        str << si->port;
-        port_field->setText(str.str());
-
         address_field->logic();
-        port_field->logic();
-
         window->invalidateAll();
     }
 }
@@ -891,36 +672,36 @@ void FindServerScreenImpl::doUpdate()
     }
 }
 
-void FindServerScreenImpl::initiateConnection(const std::string &address, int port)
+void FindServerScreenImpl::createGame()
 {
-    if (!allow_conn) return;
+    PlayerID player_id = getPlayerID();
+    if (player_id.empty()) return;
+    const int server_port = knights_app.getConfigMap().getInt("port_number");
+    std::unique_ptr<Screen> loading_screen(new LoadingScreen(server_port, player_id, false, false, false, false));
+    knights_app.requestScreenChange(std::move(loading_screen));
+}
 
-    UTF8String name = UTF8String::fromUTF8Safe(name_field ? name_field->getText() : "");
-
-    if (name.empty()) {
-        gotoErrorDialog("You must enter a player name");
-    } else if (address.empty()) {
+void FindServerScreenImpl::initiateConnection(const std::string &address)
+{
+    if (address.empty()) {
         gotoErrorDialog("You must enter an address to connect to");
-    } else {
-        knights_app.setPlayerName(name); // make sure the new name gets saved when we exit
-        previous_address[internet?1:0] = address;
-        previous_port[internet?1:0] = port;
-
-        PlayerID player_id(name);
-        std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, !internet, player_id));
-        knights_app.requestScreenChange(std::move(connecting_screen));
+        return;
     }
+
+    PlayerID player_id = getPlayerID();
+    if (player_id.empty()) return;
+
+    previous_address = address;
+
+    const int port = knights_app.getConfigMap().getInt("port_number");
+    std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, player_id));
+    knights_app.requestScreenChange(std::move(connecting_screen));
 }
 
-
-FindServerScreen::FindServerScreen(const std::string &t, bool inet)
-    : title(t), internet(inet)
-{
-}
 
 bool FindServerScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)
 {
-    pimpl.reset(new FindServerScreenImpl(ka, win, gui, title, internet));
+    pimpl.reset(new FindServerScreenImpl(ka, win, gui));
     return true;
 }
 

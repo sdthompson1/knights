@@ -77,7 +77,7 @@ namespace Coercri {
         void destroyIncomingHost();
         
     private:
-        static bool is_enet_initialized;   // Don't allow more than one enet instance at the same time.
+        static int enet_init_count;
 
     private:
         boost::mutex mutex;

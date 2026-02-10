@@ -85,7 +85,6 @@
     <ClCompile Include="..\..\src\misc\config_map.cpp" />
     <ClCompile Include="..\..\src\misc\find_knights_data_dir.cpp" />
     <ClCompile Include="..\..\src\misc\localization.cpp" />
-    <ClCompile Include="..\..\src\misc\metaserver_urls.cpp" />
     <ClCompile Include="..\..\src\misc\rng.cpp" />
     <ClCompile Include="..\..\src\misc\round.cpp" />
     <ClCompile Include="..\..\src\misc\xxhash.cpp" />
@@ -96,7 +95,6 @@
     <ClInclude Include="..\..\src\misc\exception_base.hpp" />
     <ClInclude Include="..\..\src\misc\find_knights_data_dir.hpp" />
     <ClInclude Include="..\..\src\misc\localization.hpp" />
-    <ClInclude Include="..\..\src\misc\metaserver_urls.hpp" />
     <ClInclude Include="..\..\src\misc\misc.hpp" />
     <ClInclude Include="..\..\src\misc\my_ctype.hpp" />
     <ClInclude Include="..\..\src\misc\my_exceptions.hpp" />

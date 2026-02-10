@@ -32,13 +32,12 @@
 class ConnectingScreenImpl;
 class PlayerID;
 
+// This screen is used for connecting to LAN games
+
 class ConnectingScreen : public Screen {
 public:
-    // Note: for online platform games, address should be the lobby_id, and
-    // port should be zero.
     ConnectingScreen(const std::string &address,
                      int port,
-                     bool join_lan_game,
                      const PlayerID &player_id);
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();

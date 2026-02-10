@@ -65,21 +65,18 @@ namespace Coercri {
         };
     }
 
-    bool EnetNetworkDriver::is_enet_initialized = false;
+    int EnetNetworkDriver::enet_init_count = 0;
 
     EnetNetworkDriver::EnetNetworkDriver(int max_inc, int max_outgoing, bool compress)
         : incoming_host(0), outgoing_host(0), server_port(0), server_enabled(false), max_incoming(max_inc),
           use_compression(compress)
     {
-        if (is_enet_initialized) {
-            throw CoercriError("enet initialized twice");
+        if (enet_init_count == 0) {
+            if (enet_initialize() != 0) {
+                throw CoercriError("enet initialization failed");
+            }
         }
-
-        if (enet_initialize() != 0) {
-            throw CoercriError("enet initialization failed");
-        }
-        
-        is_enet_initialized = true;
+        ++enet_init_count;
 
         // create the outgoing_host. (incoming_host only created as needed.)
         outgoing_host = enet_host_create(0, max_outgoing, 0, 0, 0);
@@ -113,8 +110,10 @@ namespace Coercri {
         // Close down ENet
         if (outgoing_host) enet_host_destroy(outgoing_host);
         if (incoming_host) enet_host_destroy(incoming_host);
-        enet_deinitialize();
-        is_enet_initialized = false;
+        --enet_init_count;
+        if (enet_init_count == 0) {
+            enet_deinitialize();
+        }
     }
 
     boost::shared_ptr<NetworkConnection> EnetNetworkDriver::openConnection(const std::string &hostname, int port_number)

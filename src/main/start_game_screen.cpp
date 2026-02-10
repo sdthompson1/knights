@@ -24,7 +24,6 @@
 #include "misc.hpp"
 
 #include "find_server_screen.hpp"
-#include "host_lan_screen.hpp"
 #include "knights_app.hpp"
 #include "loading_screen.hpp"
 #include "online_multiplayer_screen.hpp"
@@ -54,11 +53,8 @@ private:
     scoped_ptr<gcn::Label> title;
 #ifdef ONLINE_PLATFORM
     scoped_ptr<gcn::Button> online_multiplayer;
-#else
-    scoped_ptr<gcn::Button> join_internet_game;
-    scoped_ptr<gcn::Button> host_lan_game;
-    scoped_ptr<gcn::Button> join_lan_game;
 #endif
+    scoped_ptr<gcn::Button> lan_games;
     scoped_ptr<gcn::Button> split_screen_mode;
     scoped_ptr<gcn::Button> single_player_mode;
     scoped_ptr<gcn::Button> exit;
@@ -82,26 +78,13 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
     online_multiplayer->addActionListener(this);
     container->add(online_multiplayer.get(), x, y);
     y += yinc;
-
-#else
-    join_internet_game.reset(new GuiButton("Connect to Server"));
-    join_internet_game->setSize(w,h);
-    join_internet_game->addActionListener(this);
-    container->add(join_internet_game.get(), x, y);
-    y += yinc;
-
-    host_lan_game.reset(new GuiButton("Host LAN Game"));
-    host_lan_game->setSize(w,h);
-    host_lan_game->addActionListener(this);
-    container->add(host_lan_game.get(), x, y);
-    y += yinc;
-    
-    join_lan_game.reset(new GuiButton("Join LAN Game"));
-    join_lan_game->setSize(w,h);
-    join_lan_game->addActionListener(this);
-    container->add(join_lan_game.get(), x, y);
-    y += yinc;
 #endif
+
+    lan_games.reset(new GuiButton("LAN Games"));
+    lan_games->setSize(w,h);
+    lan_games->addActionListener(this);
+    container->add(lan_games.get(), x, y);
+    y += yinc;
 
     split_screen_mode.reset(new GuiButton("Split Screen Mode"));
     split_screen_mode->setSize(w,h);
@@ -152,20 +135,11 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
     } else if (event.getSource() == online_multiplayer.get()) {
         // Go to OnlineMultiplayerScreen
         new_screen.reset(new OnlineMultiplayerScreen);
-
-#else
-    } else if (event.getSource() == host_lan_game.get()) {
-        // Go to HostLanScreen
-        new_screen.reset(new HostLanScreen);
-
-    } else if (event.getSource() == join_lan_game.get()) {
-        // Go to FindServerScreen in LAN mode.
-        new_screen.reset(new FindServerScreen("Join LAN Game", false));
-
-    } else if (event.getSource() == join_internet_game.get()) {
-        // Go to FindServerScreen in Internet mode.
-        new_screen.reset(new FindServerScreen("Connect to Server", true));
 #endif
+
+    } else if (event.getSource() == lan_games.get()) {
+        // Go to FindServerScreen
+        new_screen.reset(new FindServerScreen);
 
     } else if (event.getSource() == single_player_mode.get()) {
         // Go to LoadingScreen in single player mode

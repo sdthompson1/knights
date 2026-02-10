@@ -132,7 +132,6 @@ void LoadingScreen::update()
 
         // set up the local client
         knights_app->createGameManager(client, single_player_mode, tutorial_mode, autostart_mode,
-                                       false,  // allow_lobby_screen
                                        false,  // can_invite
                                        dummy_player_id);
         client->setClientCallbacks(&knights_app->getGameManager());
@@ -161,7 +160,6 @@ void LoadingScreen::update()
                                        false,  // single_player
                                        false,  // tutorial
                                        false,  // autostart
-                                       false,  // allow_lobby_screen
                                        false,  // can_invite
                                        player_id);
         client->setClientCallbacks(&knights_app->getGameManager());

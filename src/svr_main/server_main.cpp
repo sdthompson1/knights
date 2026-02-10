@@ -33,7 +33,6 @@
 #include "knights_config.hpp"
 #include "knights_log.hpp"
 #include "knights_server.hpp"
-#include "metaserver_urls.hpp"
 #include "my_exceptions.hpp"
 #include "net_msgs.hpp"
 #include "player_id.hpp"
@@ -70,10 +69,6 @@
 #undef max
 #endif
 
-// This is used when contacting the Metaserver
-const char * user_agent_string = 
-    "Knights-Server/" KNIGHTS_VERSION " (" KNIGHTS_PLATFORM "; " KNIGHTS_WEBSITE ")";
-
 
 //
 // Global Variables.
@@ -84,10 +79,6 @@ boost::shared_ptr<Config> g_config;
 
 // The knights server. (Should only be accessed from main thread.)
 boost::shared_ptr<KnightsServer> g_knights_server;
-
-// The number of players connected to the knights server. Written by main thread, read by metaserver thread.
-int g_num_players;
-boost::mutex g_num_players_mutex;
 
 // The network driver.
 boost::shared_ptr<Coercri::NetworkDriver> net_driver;
@@ -349,182 +340,6 @@ bool ProcessIncomingNetMsgs()
     return did_something;
 }
 
-
-//
-// Report to Metaserver. (Done in a separate thread because it may block
-// for an extended period.)
-//
-
-size_t DummyReadFunc(void *ptr, size_t size, size_t nmemb, void *stream)
-{
-    return 0;
-}
-
-size_t DummyWriteFunc(void *ptr, size_t size, size_t nmemb, void *my_log)
-{
-    // If the server is sending back data then it is probably an error message.
-    // Print it on the log.
-    std::string msg(static_cast<char*>(ptr), size * nmemb);
-
-    static_cast<MyLog*>(my_log)->logMessage(msg);
-    
-    return size * nmemb;
-}
-
-struct CurlStuff {
-    CURL *curl;
-
-    CurlStuff()
-        : curl(0)
-    {
-    }
-
-    ~CurlStuff()
-    {
-        if (curl) curl_easy_cleanup(curl);
-    }
-};
-
-int NonNegative(int x)
-{
-    return x >= 0 ? x : 0;
-}
-
-std::string Escape(CURL *curl, const std::string &x)
-{
-    char * escaped = curl_easy_escape(curl, x.c_str(), x.length());
-    std::string result(escaped);
-    curl_free(escaped);
-    return result;
-}
-
-struct MetaserverThread {
-
-    explicit MetaserverThread(MyLog &l) : my_log(l), prev_num_players(0) { }
-    MyLog &my_log;
-    int prev_num_players;
-    char error_buffer[CURL_ERROR_SIZE];
-
-    bool ReportToMetaserver(CurlStuff &curl_stuff, int num_players)
-    {
-        std::ostringstream str;
-
-        str << "port=" << NonNegative(g_config->getPort());
-        str << "&description=" << Escape(curl_stuff.curl, g_config->getDescription());
-        str << "&num_players=" << NonNegative(num_players);
-
-        prev_num_players = num_players;
-
-        curl_easy_setopt(curl_stuff.curl, CURLOPT_COPYPOSTFIELDS, str.str().c_str());
-        curl_easy_setopt(curl_stuff.curl, CURLOPT_URL, g_metaserver_update_url);
-
-        my_log.logMessage(std::string("\tsending update to metaserver\t") + g_metaserver_update_url);
-
-        const bool success = 
-            curl_easy_perform(curl_stuff.curl) == 0;
-        if (success) {
-            my_log.logMessage("\tmetaserver update succeeded");
-        } else {
-            my_log.logMessage(std::string("\tmetaserver update failed\t") + error_buffer);
-        }
-
-        return success;
-    }
-
-    void RemoveFromMetaserver(CurlStuff &curl_stuff)
-    {
-        std::ostringstream str;
-        str << "port=" << NonNegative(g_config->getPort());
-
-        curl_easy_setopt(curl_stuff.curl, CURLOPT_COPYPOSTFIELDS, str.str().c_str());
-        curl_easy_setopt(curl_stuff.curl, CURLOPT_URL, g_metaserver_remove_url);
-
-        my_log.logMessage(std::string("\tremoving from metaserver\t") + g_metaserver_remove_url);
-        
-        const bool success =
-            curl_easy_perform(curl_stuff.curl) == 0;
-        if (success) {
-            my_log.logMessage("\tremove from metaserver succeeded");
-        } else {
-            my_log.logMessage(std::string("\tremove from metaserver failed\t") + error_buffer);            
-        }
-    }
-
-    void operator()()
-    {
-        try {
-
-            CurlStuff curl_stuff;
-            curl_stuff.curl = curl_easy_init();
-
-            if (!curl_stuff.curl) {
-                my_log.logMessage("\tcurl_easy_init failed. Disabling metaserver updates.");
-                return;
-            }
-
-            curl_easy_setopt(curl_stuff.curl, CURLOPT_READFUNCTION, &DummyReadFunc);
-            curl_easy_setopt(curl_stuff.curl, CURLOPT_WRITEFUNCTION, &DummyWriteFunc);
-            curl_easy_setopt(curl_stuff.curl, CURLOPT_WRITEDATA, &my_log);
-            curl_easy_setopt(curl_stuff.curl, CURLOPT_ERRORBUFFER, &error_buffer[0]);
-            curl_easy_setopt(curl_stuff.curl, CURLOPT_USERAGENT, user_agent_string);
-            curl_easy_setopt(curl_stuff.curl, CURLOPT_FOLLOWLOCATION, 1);
-            curl_easy_setopt(curl_stuff.curl, CURLOPT_MAXREDIRS, 30);
-
-            // Do initial report.
-            unsigned int last_update_time = timer->getMsec();
-            const bool success = ReportToMetaserver(curl_stuff, 0);
-            int num_failed_updates = success ? 0 : 1;
-
-            try {
-            
-                // Do further reports every 'long_interval' milliseconds, or whenever num_players changes.
-                // 'short_interval' is used when there has been an error.
-                const unsigned int long_interval = 10*60*1000;
-                const unsigned int short_interval = 60*1000;
-                
-                while (1) {
-                    const unsigned int time_now = timer->getMsec();
-                    const unsigned int elapsed = time_now - last_update_time;
-
-                    const bool use_short_interval = num_failed_updates > 0 && num_failed_updates <= 3;
-                    const unsigned int interval = use_short_interval ? short_interval * num_failed_updates : long_interval;
-                        
-                    int num_players;
-                    {
-                        boost::lock_guard<boost::mutex> lock(g_num_players_mutex);
-                        num_players = g_num_players;
-                    }
-                
-                    if (elapsed >= interval || num_players != prev_num_players) {
-                        const bool success = ReportToMetaserver(curl_stuff, num_players);
-                        if (success) num_failed_updates = 0;
-                        else ++num_failed_updates;
-                        last_update_time = timer->getMsec();
-                    }
-                    
-                    // Sleep for one second before making the next check.
-                    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-                }
-            } catch (boost::thread_interrupted&) {
-                // fall through
-            }
-
-            // Now remove ourselves from the metaserver before leaving the thread.
-            RemoveFromMetaserver(curl_stuff);
-
-        } catch (boost::thread_interrupted&) {
-            // this shouldn't happen.. but let it fall through.
-        } catch (std::exception &e) {
-            // this shouldn't happen
-            my_log.logMessage(std::string("\tERROR: stopping metaserver updates: ") + e.what());
-            return;
-        } catch (...) {
-            // this shouldn't happen
-            my_log.logMessage("\tERROR: stopping metaserver updates: unknown exception caught");
-            return;
-        }
-    }
-};
 
 void SetupBroadcastReplies(Coercri::NetworkDriver &net_driver)
 {
@@ -798,14 +613,6 @@ int main(int argc, char **argv)
         msg_str << "\tServer is now running on port " << g_config->getPort() << ".";
         my_log.logMessage(msg_str.str());
 
-        // Start Metaserver thread if required.
-        boost::thread metaserver_thread;
-        MetaserverThread metaserver_thread_obj(my_log);
-        if (g_config->getUseMetaserver()) {
-            boost::thread new_thread(boost::ref(metaserver_thread_obj));
-            metaserver_thread.swap(new_thread);
-        }
-
         unsigned int last_misc_update = timer->getMsec();
         
         // Main Loop.
@@ -834,15 +641,9 @@ int main(int argc, char **argv)
 
                 // Spawn new games / clean up old games if needed.
                 CheckGames(knights_config_loader);
-            
-                // Update the g_num_players variable
-                const int num_players = g_knights_server->getNumberOfPlayers();
-                {
-                    boost::lock_guard<boost::mutex> lock(g_num_players_mutex);
-                    g_num_players = num_players;
-                }
 
                 // if no players connected then increase sleep time.
+                const int num_players = g_knights_server->getNumberOfPlayers();
                 if (num_players == 0) sleep_time = 200;
             }
 
@@ -853,14 +654,6 @@ int main(int argc, char **argv)
         }
 
         my_log.logMessage("\tShutting down...");
-
-        // interrupt the metaserver thread (this will trigger it to
-        // send the remove command to the metaserver), and wait for it
-        // to finish.
-        if (g_config->getUseMetaserver()) {
-            metaserver_thread.interrupt();
-            metaserver_thread.join();
-        }
 
         // interrupt the logging thread.
         logging_thread.interrupt();

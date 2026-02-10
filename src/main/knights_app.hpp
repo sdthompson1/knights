@@ -118,7 +118,10 @@ public:
     const SkullRenderer * getSkullRenderer() const;
     const ConfigMap & getConfigMap() const;
     Coercri::Timer & getTimer() const;
-    Coercri::NetworkDriver & getNetworkDriver() const;
+    Coercri::NetworkDriver & getLanNetworkDriver() const;
+#ifdef ONLINE_PLATFORM
+    Coercri::NetworkDriver & getPlatformNetworkDriver() const;
+#endif
 
     // get the width/height to be used for windowed mode.
     void getWindowedModeSize(int &width, int &height);
@@ -145,7 +148,6 @@ public:
                            bool single_player,
                            bool tutorial_mode,
                            bool autostart_mode,
-                           bool allow_lobby,
                            bool can_invite,
                            const PlayerID &my_player_id);
     void destroyGameManager();

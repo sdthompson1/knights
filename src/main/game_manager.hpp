@@ -160,7 +160,6 @@ public:
                 bool single_player,
                 bool tutorial,
                 bool autostart,
-                bool allow_lobby_screen,
                 bool can_invite,
                 const PlayerID &my_player_id);
 
@@ -232,7 +231,7 @@ public:
     virtual void connectionLost() override;     // goes to ErrorScreen
     virtual void connectionFailed() override;   // goes to ErrorScreen
     virtual void serverError(const LocalMsg &error) override;  // goes to ErrorScreen
-    virtual void connectionAccepted(int server_version) override;   // goes to LobbyScreen
+    virtual void connectionAccepted(int server_version) override;
     
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
                                   int my_house_colour,

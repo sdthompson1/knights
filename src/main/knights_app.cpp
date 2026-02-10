@@ -228,9 +228,8 @@ public:
     // online platform stuff and net driver
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<OnlinePlatform> online_platform;
-#else
-    std::unique_ptr<Coercri::NetworkDriver> net_driver;
 #endif
+    std::unique_ptr<Coercri::NetworkDriver> lan_net_driver;
 
     LobbyController lobby_controller;
 
@@ -367,12 +366,11 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     pimpl->localization.setPlayerNameLookup([this](const PlayerID &id) {
         return pimpl->online_platform->lookupUserName(id);
     });
-#else
-    // Online platform not available
-    // Use the ENet network driver
-    pimpl->net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
-    pimpl->net_driver->enableServer(false);  // start off disabled.
 #endif
+
+    // Create ENet network driver (used for LAN games)
+    pimpl->lan_net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
+    pimpl->lan_net_driver->enableServer(false);  // start off disabled.
 
     // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
     curl_global_init(CURL_GLOBAL_NOTHING);
@@ -717,14 +715,17 @@ Coercri::Timer & KnightsApp::getTimer() const
     return *pimpl->timer;
 }
 
-Coercri::NetworkDriver & KnightsApp::getNetworkDriver() const
+Coercri::NetworkDriver & KnightsApp::getLanNetworkDriver() const
 {
-#ifdef ONLINE_PLATFORM
-    return pimpl->online_platform->getNetworkDriver();
-#else
-    return *pimpl->net_driver;
-#endif
+    return *pimpl->lan_net_driver;
 }
+
+#ifdef ONLINE_PLATFORM
+Coercri::NetworkDriver & KnightsApp::getPlatformNetworkDriver() const
+{
+    return pimpl->online_platform->getNetworkDriver();
+}
+#endif
 
 const Options & KnightsApp::getOptions() const
 {
@@ -935,7 +936,10 @@ void KnightsApp::runKnights()
 
             // Read input from the network (e.g. server telling us to move a knight on-screen)
             // (Do this first, so that the frame we are about to draw can include the latest updates)
-            while (getNetworkDriver().doEvents()) {}
+            while (getLanNetworkDriver().doEvents()) {}
+#ifdef ONLINE_PLATFORM
+            while (getPlatformNetworkDriver().doEvents()) {}
+#endif
             pimpl->lobby_controller.readIncomingMessages();
 
             // Read window system events (e.g. mouse/keyboard control inputs)
@@ -953,7 +957,10 @@ void KnightsApp::runKnights()
             // Screen::update might have sent outgoing network messages (e.g. in response
             // to the user clicking the mouse). Send these to the server now
             pimpl->lobby_controller.sendOutgoingMessages();
-            while (getNetworkDriver().doEvents()) {}
+            while (getLanNetworkDriver().doEvents()) {}
+#ifdef ONLINE_PLATFORM
+            while (getPlatformNetworkDriver().doEvents()) {}
+#endif
 
 
             // Work out if we need to draw.
@@ -1088,12 +1095,19 @@ void KnightsApp::runKnights()
     
     // Shut down curl.
     curl_global_cleanup();
-    
+
     // Wait up to ten seconds for network connections to be cleaned up.
     const int WAIT_SECONDS = 10;
     for (int i = 0; i < WAIT_SECONDS*10; ++i) {
-        if (!getNetworkDriver().outstandingConnections()) break;
-        while (getNetworkDriver().doEvents()) ;
+        bool outstanding = pimpl->lan_net_driver->outstandingConnections();
+#ifdef ONLINE_PLATFORM
+        outstanding = outstanding || getPlatformNetworkDriver().outstandingConnections();
+#endif
+        if (!outstanding) break;
+        while (pimpl->lan_net_driver->doEvents()) ;
+#ifdef ONLINE_PLATFORM
+        while (getPlatformNetworkDriver().doEvents()) ;
+#endif
         pimpl->timer->sleepMsec(100);
     }
 }
@@ -1118,13 +1132,13 @@ boost::shared_ptr<KnightsClient> KnightsApp::hostLanGame(int port,
                                                          boost::shared_ptr<KnightsConfig> config,
                                                          const std::string &game_name)
 {
-    return pimpl->lobby_controller.hostLanGame(getNetworkDriver(), pimpl->timer, port, config, game_name);
+    return pimpl->lobby_controller.hostLanGame(*pimpl->lan_net_driver, pimpl->timer, port, config, game_name);
 }
 
 boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string &address,
                                                               int port)
 {
-    return pimpl->lobby_controller.joinRemoteServer(getNetworkDriver(), pimpl->timer, address, port);
+    return pimpl->lobby_controller.joinRemoteServer(*pimpl->lan_net_driver, pimpl->timer, address, port);
 }
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
@@ -1212,7 +1226,7 @@ void KnightsAppImpl::updateOnlinePlatform()
 void KnightsApp::startBroadcastReplies(int server_port)
 {
     // Listen for client requests on the BROADCAST_PORT.
-    pimpl->broadcast_socket = getNetworkDriver().createUDPSocket(BROADCAST_PORT, true);
+    pimpl->broadcast_socket = getLanNetworkDriver().createUDPSocket(BROADCAST_PORT, true);
     pimpl->broadcast_last_time = 0;
     pimpl->server_port = server_port;
 }
@@ -1256,13 +1270,12 @@ void KnightsApp::createGameManager(boost::shared_ptr<KnightsClient> knights_clie
                                    bool single_player,
                                    bool tutorial_mode,
                                    bool autostart_mode,
-                                   bool allow_lobby,
                                    bool can_invite,
                                    const PlayerID &my_player_id)
 {
     if (pimpl->game_manager) throw UnexpectedError("GameManager created twice");
     pimpl->game_manager.reset(new GameManager(*this, knights_client, pimpl->timer, single_player, tutorial_mode,
-                                              autostart_mode, allow_lobby, can_invite, my_player_id));
+                                              autostart_mode, can_invite, my_player_id));
 }
 
 void KnightsApp::destroyGameManager()

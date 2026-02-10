@@ -90,7 +90,6 @@ Config::Config(std::istream &str)
     port = 16399;
     max_games = 9999999;    // effectively unlimited.
     max_players = 100;  // reasonable default. can't set this too high else enet_host_create will fail.
-    metaserver = true;
     broadcast = true;
 
     // Now load the config file.
@@ -134,8 +133,6 @@ Config::Config(std::istream &str)
         } else if (lkey == "maxgames") {
             max_games = StrToInt(line_counter, value);
             if (max_games < 1) throw ConfigError(line_counter, "MaxGames must be at least 1");
-        } else if (lkey == "usemetaserver") {
-            metaserver = StrToBool(line_counter, value);
         } else if (lkey == "usebroadcast") {
             broadcast = StrToBool(line_counter, value);
         } else if (lkey == "knightsdatadir") {

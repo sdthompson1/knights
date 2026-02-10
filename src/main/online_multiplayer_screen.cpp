@@ -208,7 +208,7 @@ private:
     boost::scoped_ptr<gcn::ListBox> listbox;
     boost::scoped_ptr<gcn::CheckBox> show_incompatible_checkbox;
     boost::scoped_ptr<gcn::Button> refresh_button;
-    boost::scoped_ptr<gcn::Button> back_button;
+    boost::scoped_ptr<gcn::Button> cancel_button;
     boost::scoped_ptr<gcn::Button> create_game_button;
     boost::shared_ptr<gcn::Font> cg_font;
     std::unique_ptr<gcn::Font> tab_font;
@@ -415,13 +415,13 @@ void OnlineMultiplayerScreenImpl::createFullGui()
     create_game_button->addActionListener(this);
     refresh_button.reset(new GuiButton("Refresh List"));
     refresh_button->addActionListener(this);
-    back_button.reset(new GuiButton("Back"));
-    back_button->addActionListener(this);
+    cancel_button.reset(new GuiButton("Cancel"));
+    cancel_button->addActionListener(this);
     container->add(create_game_button.get(), pad, y);
     container->add(refresh_button.get(), 25 + create_game_button->getWidth() + pad, y);
-    container->add(back_button.get(), pad + width - back_button->getWidth(), y);
+    container->add(cancel_button.get(), pad + width - cancel_button->getWidth(), y);
 
-    container->setSize(2*pad + width, y + back_button->getHeight() + pad);
+    container->setSize(2*pad + width, y + cancel_button->getHeight() + pad);
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
@@ -437,7 +437,7 @@ void OnlineMultiplayerScreenImpl::createFullGui()
 
 void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
 {
-    if (event.getSource() == back_button.get()) {
+    if (event.getSource() == cancel_button.get()) {
         // Return to Start Game screen
         std::unique_ptr<Screen> start_screen(new StartGameScreen);
         knights_app.requestScreenChange(std::move(start_screen));

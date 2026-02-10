@@ -46,7 +46,6 @@ class ConnectingScreenImpl : public gcn::ActionListener {
 public:
     ConnectingScreenImpl(const std::string &addr,
                          int port,
-                         bool join_lan,
                          const PlayerID &player_id);
     void setupGui(KnightsApp &ka, gcn::Gui &gui);
     void setupConnection();
@@ -55,7 +54,6 @@ public:
 private:
     std::string address;
     int port;
-    bool join_lan_game;
     PlayerID player_id;
     
     bool setup_done;
@@ -71,11 +69,9 @@ private:
 
 ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr,
                                            int port,
-                                           bool join_lan,
                                            const PlayerID &id)
     : address(addr),
       port(port),
-      join_lan_game(join_lan),
       player_id(id),
       setup_done(false),
       knights_app(nullptr)
@@ -117,7 +113,6 @@ void ConnectingScreenImpl::setupConnection()
                                    false,   // single_player
                                    false,   // tutorial
                                    false,   // autostart
-                                   !join_lan_game,   // allow_lobby_screen
                                    false,   // can_invite (Can't invite to an address/port for now)
                                    player_id);
     client->setClientCallbacks(&knights_app->getGameManager());
@@ -131,9 +126,7 @@ void ConnectingScreenImpl::setupConnection()
     }
     knights_app->getGameManager().setServerName(str.str());
 
-    if (join_lan_game) {
-        knights_app->getGameManager().tryJoinGame("#LanGame");
-    }
+    knights_app->getGameManager().tryJoinGame("#LanGame");
 }
 
 void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
@@ -145,8 +138,8 @@ void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
 
-ConnectingScreen::ConnectingScreen(const string &addr, int port, bool join_lan, const PlayerID &id)
-    : pimpl(new ConnectingScreenImpl(addr, port, join_lan, id))
+ConnectingScreen::ConnectingScreen(const string &addr, int port, const PlayerID &id)
+    : pimpl(new ConnectingScreenImpl(addr, port, id))
 {
 }
 

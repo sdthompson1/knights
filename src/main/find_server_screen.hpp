@@ -32,7 +32,6 @@ class FindServerScreenImpl;
 
 class FindServerScreen : public Screen {
 public:
-    FindServerScreen(const std::string &title, bool internet);
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
 

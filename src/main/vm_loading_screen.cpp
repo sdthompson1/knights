@@ -87,7 +87,7 @@ bool VMLoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, 
     knights_app = &ka;
     PlayerID local_user_id = ka.getOnlinePlatform().getCurrentUserId();
     bool new_control_system = ka.getOptions().new_control_system;
-    loader = std::make_unique<Loader>(ka.getNetworkDriver(), ka.getTimer(), local_user_id, new_control_system);
+    loader = std::make_unique<Loader>(ka.getPlatformNetworkDriver(), ka.getTimer(), local_user_id, new_control_system);
     loader_thread = boost::thread(boost::ref(*loader));
     return false;  // no gui required
 }
@@ -122,7 +122,6 @@ void VMLoadingScreen::update()
                                    false,  // single_player
                                    false,  // tutorial
                                    false,  // autostart
-                                   false,  // allow_lobby_screen
                                    true,   // can_invite (We assume VM games are using an online platform, and hence can invite)
                                    player_id);
     client->setClientCallbacks(&knights_app->getGameManager());

@@ -35,7 +35,6 @@
 #include "in_game_screen.hpp"
 #include "knights_app.hpp"
 #include "knights_client.hpp"
-#include "lobby_screen.hpp"
 #include "menu.hpp"
 #include "menu_item.hpp"
 #include "menu_screen.hpp"
@@ -490,7 +489,7 @@ UTF8String VoteStatus::getStatusMessage(const Localization &loc) const
 class GameManagerImpl {
 public:
     GameManagerImpl(KnightsApp &ka, boost::shared_ptr<KnightsClient> kc, boost::shared_ptr<Coercri::Timer> timer_,
-                    bool sgl_plyr, bool tut, bool autostart, bool allow_lobby, bool can_invite,
+                    bool sgl_plyr, bool tut, bool autostart, bool can_invite,
                     const PlayerID &my_player_id)
         : knights_app(ka), knights_client(kc), menu(0), gui_invalid(false), are_menu_widgets_enabled(true),
           timer(timer_), lobby_namelist(avail_house_colours, ka),
@@ -501,7 +500,6 @@ public:
           ingame_player_list(9999, false, false),  // unlimited number of lines; unformatted; no timestamps
           quest_rqmts_list(9999, false, false),    // ditto
           single_player(sgl_plyr), tutorial_mode(tut), autostart_mode(autostart),
-          allow_lobby_screen(allow_lobby),
           can_invite(can_invite),
           my_player_id(my_player_id), doing_menu_widget_update(false), deathmatch_mode(false),
           game_in_progress(false)
@@ -561,7 +559,6 @@ public:
     bool single_player;
     bool tutorial_mode;
     bool autostart_mode;
-    bool allow_lobby_screen;
     bool can_invite;
 
     PlayerID my_player_id;
@@ -984,14 +981,7 @@ void GameManager::serverError(const LocalMsg &error)
 
 void GameManager::connectionAccepted(int server_version)
 {
-    // Note: currently server version is ignored, although it might be used in future
-    // for backwards compatibility purposes.
-
-    if (pimpl->allow_lobby_screen) {
-        // Go to LobbyScreen
-        std::unique_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
-        pimpl->knights_app.requestScreenChange(std::move(lobby_screen));
-    }
+    // Do nothing - wait for joinGameAccepted
 }
 
 void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
@@ -1110,29 +1100,12 @@ namespace {
 void GameManager::playerConnected(const PlayerID &id)
 {
     pimpl->lobby_namelist.add(id, false, false, 0);
-
-    // only show connection/disconnection messages if in main lobby.
-    if (pimpl->allow_lobby_screen && pimpl->current_game_name.empty()) {
-        // Print msg
-        UTF8String name = pimpl->usernameLookup(id);
-        pimpl->chat_list.add(name + UTF8String::fromUTF8(" has connected."));
-
-        // Pop window to front
-        pimpl->knights_app.popWindowToFront();
-    }
-
     pimpl->gui_invalid = true;
 }
 
 void GameManager::playerDisconnected(const PlayerID &id)
 {
     pimpl->lobby_namelist.remove(id);
-
-    if (pimpl->allow_lobby_screen && pimpl->current_game_name.empty()) {
-        UTF8String name = pimpl->usernameLookup(id);
-        pimpl->chat_list.add(name + UTF8String::fromUTF8(" has disconnected."));
-    }
-
     pimpl->gui_invalid = true;
 }
 
@@ -1332,14 +1305,9 @@ void GameManager::leaveGame()
     pimpl->game_namelist.clear();
     pimpl->avail_house_colours.clear();
 
-    // go to lobby (for internet games) or title (for split screen, lan, and online platform games)
-    if (!pimpl->allow_lobby_screen) {
-        std::unique_ptr<Screen> title_screen(new TitleScreen);
-        pimpl->knights_app.requestScreenChange(std::move(title_screen));
-    } else {
-        std::unique_ptr<Screen> lobby_screen(new LobbyScreen(pimpl->knights_client, pimpl->server_name));
-        pimpl->knights_app.requestScreenChange(std::move(lobby_screen));
-    }
+    // go back to title screen
+    std::unique_ptr<Screen> title_screen(new TitleScreen);
+    pimpl->knights_app.requestScreenChange(std::move(title_screen));
 
     // unload gfx/sounds
     pimpl->knights_app.unloadGraphicsAndSounds();
@@ -1711,9 +1679,8 @@ GameManager::GameManager(KnightsApp &ka,
                          bool single_player,
                          bool tutorial_mode,
                          bool autostart,
-                         bool allow_lobby,
                          bool can_invite,
                          const PlayerID &my_player_id)
     : pimpl(new GameManagerImpl(ka, kc, timer, single_player, tutorial_mode, autostart,
-                                allow_lobby, can_invite, my_player_id))
+                                can_invite, my_player_id))
 { }
