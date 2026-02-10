@@ -23,7 +23,7 @@
 
 #include "misc.hpp"
 
-#include "find_server_screen.hpp"
+#include "lan_game_screen.hpp"
 #include "knights_app.hpp"
 #include "loading_screen.hpp"
 #include "online_multiplayer_screen.hpp"
@@ -138,8 +138,8 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 #endif
 
     } else if (event.getSource() == lan_games.get()) {
-        // Go to FindServerScreen
-        new_screen.reset(new FindServerScreen);
+        // Go to LanGameScreen
+        new_screen.reset(new LanGameScreen);
 
     } else if (event.getSource() == single_player_mode.get()) {
         // Go to LoadingScreen in single player mode

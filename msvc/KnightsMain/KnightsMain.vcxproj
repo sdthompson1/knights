@@ -124,7 +124,7 @@
     <ClCompile Include="..\..\src\main\entity_map.cpp" />
     <ClCompile Include="..\..\src\main\error_screen.cpp" />
     <ClCompile Include="..\..\src\main\file_cache.cpp" />
-    <ClCompile Include="..\..\src\main\find_server_screen.cpp" />
+    <ClCompile Include="..\..\src\main\lan_game_screen.cpp" />
     <ClCompile Include="..\..\src\main\frame_timer.cpp" />
     <ClCompile Include="..\..\src\main\game_manager.cpp" />
     <ClCompile Include="..\..\src\main\gfx_manager.cpp" />
@@ -179,7 +179,7 @@
     <ClInclude Include="..\..\src\main\entity_map.hpp" />
     <ClInclude Include="..\..\src\main\error_screen.hpp" />
     <ClInclude Include="..\..\src\main\file_cache.hpp" />
-    <ClInclude Include="..\..\src\main\find_server_screen.hpp" />
+    <ClInclude Include="..\..\src\main\lan_game_screen.hpp" />
     <ClInclude Include="..\..\src\main\frame_timer.hpp" />
     <ClInclude Include="..\..\src\main\game_manager.hpp" />
     <ClInclude Include="..\..\src\main\gfx_manager.hpp" />

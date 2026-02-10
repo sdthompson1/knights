@@ -1,5 +1,5 @@
 /*
- * find_server_screen.cpp
+ * lan_game_screen.cpp
  *
  * This file is part of Knights.
  *
@@ -27,7 +27,7 @@
 #include "config_map.hpp"
 #include "connecting_screen.hpp"
 #include "error_screen.hpp"
-#include "find_server_screen.hpp"
+#include "lan_game_screen.hpp"
 #include "gui_button.hpp"
 #include "loading_screen.hpp"
 #include "gui_centre.hpp"
@@ -441,20 +441,20 @@ namespace {
 
     class MyListBox : public gcn::ListBox {
     public:
-        MyListBox(KnightsApp &ka, const ServerList &sl, FindServerScreenImpl &fss)
+        MyListBox(KnightsApp &ka, const ServerList &sl, LanGameScreenImpl &fss)
             : knights_app(ka), server_list(sl), find_srvr_impl(fss) { }
         virtual void mouseClicked(gcn::MouseEvent &mouse_event);
     private:
         KnightsApp &knights_app;
         const ServerList &server_list;
-        FindServerScreenImpl &find_srvr_impl;
+        LanGameScreenImpl &find_srvr_impl;
     };
 }
 
 
-class FindServerScreenImpl : public gcn::ActionListener, public gcn::SelectionListener {
+class LanGameScreenImpl : public gcn::ActionListener, public gcn::SelectionListener {
 public:
-    FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g);
+    LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g);
     void action(const gcn::ActionEvent &event);
     void valueChanged(const gcn::SelectionEvent &event);
     void doUpdate();
@@ -503,7 +503,7 @@ private:
     static std::string previous_address;
 };
 
-std::string FindServerScreenImpl::previous_address;
+std::string LanGameScreenImpl::previous_address;
 
 namespace
 {
@@ -523,7 +523,7 @@ namespace
     }
 }
 
-FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
+LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
     : knights_app(ka), window(win), gui(g)
 {
     // Catch errors from creating the socket, which might fail if (for example) we start two copies of Knights
@@ -639,7 +639,7 @@ FindServerScreenImpl::FindServerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coe
 #endif
 }
 
-void FindServerScreenImpl::gotoErrorDialog(const std::string &msg)
+void LanGameScreenImpl::gotoErrorDialog(const std::string &msg)
 {
     err_container.reset(new gcn::Container);
     err_container->setOpaque(false);
@@ -663,7 +663,7 @@ void FindServerScreenImpl::gotoErrorDialog(const std::string &msg)
     window->invalidateAll();
 }
 
-PlayerID FindServerScreenImpl::getPlayerID()
+PlayerID LanGameScreenImpl::getPlayerID()
 {
 #ifdef ONLINE_PLATFORM
     return knights_app.getOnlinePlatform().getCurrentUserId();
@@ -679,7 +679,7 @@ PlayerID FindServerScreenImpl::getPlayerID()
 #endif
 }
 
-void FindServerScreenImpl::action(const gcn::ActionEvent &event)
+void LanGameScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == cancel_button.get()) {
         // Go back to start game screen
@@ -709,7 +709,7 @@ void FindServerScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
         
-void FindServerScreenImpl::valueChanged(const gcn::SelectionEvent &event)
+void LanGameScreenImpl::valueChanged(const gcn::SelectionEvent &event)
 {
     const ServerInfo *si = server_list->getServerAt(listbox->getSelected());
     if (si) {
@@ -719,7 +719,7 @@ void FindServerScreenImpl::valueChanged(const gcn::SelectionEvent &event)
     }
 }
 
-void FindServerScreenImpl::doUpdate()
+void LanGameScreenImpl::doUpdate()
 {
     const bool changed = server_list->refresh();
     if (changed) {
@@ -729,7 +729,7 @@ void FindServerScreenImpl::doUpdate()
     }
 }
 
-void FindServerScreenImpl::createGame()
+void LanGameScreenImpl::createGame()
 {
     PlayerID player_id = getPlayerID();
     if (player_id.empty()) return;
@@ -738,7 +738,7 @@ void FindServerScreenImpl::createGame()
     knights_app.requestScreenChange(std::move(loading_screen));
 }
 
-void FindServerScreenImpl::initiateConnection(const std::string &address)
+void LanGameScreenImpl::initiateConnection(const std::string &address)
 {
     if (address.empty()) {
         gotoErrorDialog("You must enter an address to connect to");
@@ -756,13 +756,13 @@ void FindServerScreenImpl::initiateConnection(const std::string &address)
 }
 
 
-bool FindServerScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)
+bool LanGameScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)
 {
-    pimpl.reset(new FindServerScreenImpl(ka, win, gui));
+    pimpl.reset(new LanGameScreenImpl(ka, win, gui));
     return true;
 }
 
-void FindServerScreen::update()
+void LanGameScreen::update()
 {
     if (pimpl) pimpl->doUpdate();
 }

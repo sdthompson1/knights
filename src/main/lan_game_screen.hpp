@@ -1,5 +1,5 @@
 /*
- * find_server_screen.hpp
+ * lan_game_screen.hpp
  *
  * This file is part of Knights.
  *
@@ -21,22 +21,22 @@
  *
  */
 
-#ifndef FIND_SERVER_SCREEN_HPP
-#define FIND_SERVER_SCREEN_HPP
+#ifndef LAN_GAME_SCREEN_HPP
+#define LAN_GAME_SCREEN_HPP
 
 #include "screen.hpp"
 
 #include <string>
 
-class FindServerScreenImpl;
+class LanGameScreenImpl;
 
-class FindServerScreen : public Screen {
+class LanGameScreen : public Screen {
 public:
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
 
 private:
-    boost::shared_ptr<FindServerScreenImpl> pimpl;
+    boost::shared_ptr<LanGameScreenImpl> pimpl;
     std::string title;
     bool internet;
 };
