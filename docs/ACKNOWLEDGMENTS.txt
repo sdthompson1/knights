@@ -80,14 +80,6 @@ licence.
 
 
 
-====== libcurl ======
-
-This program uses code from libcurl, an open source URL transfer
-library. See https://curl.se/. See third_party_licences/libcurl.txt
-for the licence.
-
-
-
 ====== zlib ======
 
 This program uses zlib, a compression library, available from

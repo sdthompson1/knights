@@ -1,7 +1,6 @@
 {
   "dependencies": [
     "boost",
-    "curl",
     "sdl2",
     "freetype",
     {"name": "lua", "features": ["cpp"]},

@@ -51,7 +51,6 @@ FreeType (www.freetype.org), by The FreeType Project.
 Guichan (github.com/darkbitsorg/guichan), by Olof Naessen and Per Larsson.
 Boost (www.boost.org).
 ENet (enet.bespin.org), by Lee Salzman.
-libcurl (curl.se), by Daniel Stenberg and others.
 Lua (www.lua.org), a scripting language.
 UTF8-CPP (github.com/nemtrif/utfcpp), by Nemanja Trifunovic.
 zlib (https://zlib.net/), a compression library by Jean-loup Gailly and Mark Adler.

@@ -128,7 +128,7 @@ print (f"""# Makefile for Knights
 #   The following command (as root) will install the required dependencies
 #   for building Knights:
 #     apt install libboost-dev libboost-thread-dev libsdl2-dev \\
-#       libcurl4-openssl-dev libfreetype6-dev libfontconfig-dev \\
+#       libfreetype6-dev libfontconfig-dev \\
 #       liblua5.4-dev libenet-dev pkg-config
 #   (Note: your distribution might have a newer Lua version available,
 #   in which case it should be fine to use that instead.)
@@ -137,7 +137,7 @@ print (f"""# Makefile for Knights
 # Arch Linux:
 #
 #   The following command should install the required dependencies:
-#     pacman -S base-devel boost boost-libs sdl2 curl freetype2 \\
+#     pacman -S base-devel boost boost-libs sdl2 freetype2 \\
 #       fontconfig lua enet
 #
 #   For Arch you need to edit LUA_CFLAGS and LUA_LIBS below.
@@ -148,7 +148,7 @@ print (f"""# Makefile for Knights
 # Other distributions:
 #
 #   Use whatever method is available on your distribution for installing
-#   the required libraries: boost, SDL2, curl, freetype, fontconfig,
+#   the required libraries: boost, SDL2, freetype, fontconfig,
 #   enet, and lua.
 #
 #   Note that Knights requires a C++ (not C) version of Lua.
@@ -276,7 +276,7 @@ build: $(KNIGHTS_BINARY_NAME) $(SERVER_BINARY_NAME)
 for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     incflags = make_include_flags(incdirs)
 
-    pkgflags = "`pkg-config libcurl --cflags` $(LUA_CFLAGS) `pkg-config libenet --cflags`"
+    pkgflags = "$(LUA_CFLAGS) `pkg-config libenet --cflags`"
     if srcfile.startswith("src/coercri/sdl/") or srcfile.startswith("src/main/") or srcfile.startswith("src/rstream/rstream_rwops"):
         pkgflags += " `pkg-config sdl2 --cflags`"
     if srcfile.startswith("src/coercri/gfx/"):
@@ -294,7 +294,7 @@ for (srcfile, incdirs) in srcs_with_inc_dirs_all:
     print ("\t      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \\")
     print ("\t  rm -f $*.d")
 
-pkg_link_flags_server = "`pkg-config libcurl --libs` $(LUA_LIBS) `pkg-config libenet --libs`"
+pkg_link_flags_server = "$(LUA_LIBS) `pkg-config libenet --libs`"
 zlib_flag = ""
 if args.online_platform:
     zlib_flag = "`pkg-config zlib --libs` "

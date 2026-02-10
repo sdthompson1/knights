@@ -46,8 +46,6 @@
 #include "network/udp_socket.hpp"
 #include "timer/generic_timer.hpp"
 
-#include <curl/curl.h>
-
 #include "boost/shared_ptr.hpp"
 #include "boost/thread.hpp"
 
@@ -452,23 +450,6 @@ void CheckGames(KnightsConfigLoader &knights_config_loader)
 
 
 //
-// RAII wrapper for curl
-//
-
-struct CurlWrapper {
-    CurlWrapper() {
-        // Initialize CURL
-        // Note: don't initialize win32 socket libraries because that should already have been done by ENet.
-        curl_global_init(CURL_GLOBAL_NOTHING);
-    }
-
-    ~CurlWrapper() {
-        curl_global_cleanup();
-    }
-};
-
-
-//
 // Parse cmd line arguments
 //
 
@@ -578,9 +559,6 @@ int main(int argc, char **argv)
                           + rdir.string() + std::string("\"."));
         RStream::Initialize(rdir);
 
-        // Initialize CURL
-        CurlWrapper curl_wrapper;
-    
         // Write initial log messages.
         my_log.logMessage(std::string("\tKnights Server version ") + KNIGHTS_VERSION + " starting...");
 

@@ -74,9 +74,6 @@
 #include "timer/generic_timer.hpp"
 
 
-// curl
-#include <curl/curl.h>
-
 // guichan
 #include "guichan.hpp"
 
@@ -372,9 +369,6 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     // Create ENet network driver (used for LAN games)
     pimpl->lan_net_driver.reset(new Coercri::EnetNetworkDriver(32, 1, true));
     pimpl->lan_net_driver->enableServer(false);  // start off disabled.
-
-    // initialize curl. tell it not to init winsock since EnetNetworkDriver will have done that already.
-    curl_global_init(CURL_GLOBAL_NOTHING);
 
     // Open the game window.
     Coercri::WindowParams params;
@@ -1095,9 +1089,6 @@ void KnightsApp::runKnights()
     // delete GfxManager, this has the last reference to the Coercri::GfxDriver.
     pimpl->gfx_manager.reset();
     
-    // Shut down curl.
-    curl_global_cleanup();
-
     // Wait up to ten seconds for network connections to be cleaned up.
     const int WAIT_SECONDS = 10;
     for (int i = 0; i < WAIT_SECONDS*10; ++i) {

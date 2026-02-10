@@ -49,8 +49,7 @@
 #include "gcn/cg_font.hpp"
 #include "network/udp_socket.hpp"
 
-// boost, curl, std
-#include <curl/curl.h>
+// boost, std
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread.hpp"
 #include <cstring>
