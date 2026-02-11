@@ -280,7 +280,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 if (client_version_string.substr(0, expected.length()) != expected) {
                     throw ProtocolError(LocalKey("invalid_connection_string"));
                 }
-                
+
                 // Parse the version number
                 std::istringstream str(client_version_string);
                 str.seekg(expected.length());
