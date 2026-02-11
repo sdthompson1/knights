@@ -38,6 +38,7 @@ class ConnectingScreen : public Screen {
 public:
     ConnectingScreen(const std::string &address,
                      int port,
+                     const std::string &address_display_name,   // e.g. hostname if address is IP addr
                      const PlayerID &player_id);
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();

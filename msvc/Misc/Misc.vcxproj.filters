@@ -59,9 +59,6 @@
     <ClInclude Include="..\..\src\misc\my_exceptions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\misc\net_msgs.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\misc\player_id.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

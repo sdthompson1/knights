@@ -40,7 +40,6 @@
 
 #include "enet_network_connection.hpp"
 #include "enet_network_driver.hpp"
-#include "enet_udp_socket.hpp"
 
 #include "../core/coercri_error.hpp"
 
@@ -146,6 +145,7 @@ namespace Coercri {
                 enet_host_compress_with_range_coder(incoming_host);
             }
             if (!incoming_host) {
+                server_enabled = false;
                 throw CoercriError("EnetNetworkDriver: enet_host_create failed");
             }
         }
@@ -304,23 +304,5 @@ namespace Coercri {
         boost::unique_lock lock(mutex);
 
         return !connections_in.empty() || !connections_out.empty() || !new_connections_in.empty();
-    }
-    
-    boost::shared_ptr<UDPSocket> EnetNetworkDriver::createUDPSocket(int port, bool reuseaddr)
-    {
-        // note: lock not needed as we are not accessing 'this' at all
-        return boost::shared_ptr<UDPSocket>(new EnetUDPSocket(port, reuseaddr));
-    }
-
-    std::string EnetNetworkDriver::resolveAddress(const std::string &ip_address)
-    {
-        // note: lock not needed as we are not accessing 'this' at all
-
-        ENetAddress address;
-        enet_address_set_host(&address, ip_address.c_str());
-
-        char name[256];
-        enet_address_get_host(&address, name, sizeof(name));
-        return name;
     }
 }

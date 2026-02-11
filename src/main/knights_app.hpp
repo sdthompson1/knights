@@ -206,10 +206,9 @@ public:
 
 
     //
-    // LAN broadcast replies. (Reset when we return to title screen.)
-    // NOTE: the port number for this is fixed currently, see net_msgs.hpp.
+    // mDNS advertiser for LAN game discovery. (Reset when we return to title screen.)
     //
-    void startBroadcastReplies(const UTF8String &host_username);
+    void startMdnsAdvertiser(const UTF8String &host_username, int game_port);
 
 
     //

@@ -46,6 +46,7 @@ class ConnectingScreenImpl : public gcn::ActionListener {
 public:
     ConnectingScreenImpl(const std::string &addr,
                          int port,
+                         const std::string &addr_display_name,
                          const PlayerID &player_id);
     void setupGui(KnightsApp &ka, gcn::Gui &gui);
     void setupConnection();
@@ -54,6 +55,7 @@ public:
 private:
     std::string address;
     int port;
+    std::string addr_display_name;
     PlayerID player_id;
     
     bool setup_done;
@@ -69,9 +71,11 @@ private:
 
 ConnectingScreenImpl::ConnectingScreenImpl(const std::string &addr,
                                            int port,
+                                           const std::string &addr_display_name,
                                            const PlayerID &id)
     : address(addr),
       port(port),
+      addr_display_name(addr_display_name),
       player_id(id),
       setup_done(false),
       knights_app(nullptr)
@@ -87,7 +91,14 @@ void ConnectingScreenImpl::setupGui(KnightsApp &ka, gcn::Gui &gui)
     const int pad = 10;
     int y = pad;
 
-    label.reset(new gcn::Label("Connecting to " + address + "..."));
+    std::string text = "Connecting to ";
+    if (addr_display_name.empty()) {
+        text += address;
+    } else {
+        text += addr_display_name + " (" + address + ")";
+    }
+    text += "...";
+    label.reset(new gcn::Label(text));
     container->add(label.get(), pad, y);
     y += label->getHeight() + pad;
     
@@ -138,8 +149,8 @@ void ConnectingScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
 
-ConnectingScreen::ConnectingScreen(const string &addr, int port, const PlayerID &id)
-    : pimpl(new ConnectingScreenImpl(addr, port, id))
+ConnectingScreen::ConnectingScreen(const string &addr, int port, const std::string &addr_display_name, const PlayerID &id)
+    : pimpl(new ConnectingScreenImpl(addr, port, addr_display_name, id))
 {
 }
 

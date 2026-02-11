@@ -47,7 +47,7 @@
 #include "localization.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
-#include "net_msgs.hpp"
+#include "mdns_discovery.hpp"
 #include "options.hpp"
 #include "potion_renderer.hpp"
 #include "rng.hpp"
@@ -67,7 +67,6 @@
 #include "gfx/load_bmp.hpp"
 #include "gfx/window_listener.hpp"
 #include "network/network_connection.hpp"
-#include "network/udp_socket.hpp"
 #include "sdl/core/sdl_pref_path.hpp"
 #include "sdl/gfx/sdl_gfx_driver.hpp"
 #include "sdl/sound/sdl_sound_driver.hpp"
@@ -232,11 +231,8 @@ public:
 
     std::string server_config_filename;
 
-    // broadcast socket
-    boost::shared_ptr<Coercri::UDPSocket> broadcast_socket;
-    unsigned int broadcast_last_time;
-    Coercri::UTF8String broadcast_host_username;  // Host player's display name
-    LocalKey broadcast_quest_key;                 // Current quest key (empty = selecting quest)
+    // mDNS advertiser for LAN game discovery
+    std::unique_ptr<MdnsAdvertiser> mdns_advertiser;
 
     // game manager
     std::unique_ptr<GameManager> game_manager;
@@ -257,7 +253,7 @@ public:
     void popPotionSetup(lua_State*);
     void popSkullSetup(lua_State*);
 
-    void processBroadcastMsgs();
+    void processMdnsMessages();
 
     void updateOnlinePlatform();
 };
@@ -571,11 +567,8 @@ void KnightsApp::resetAll()
     // Wipe out all loaded graphics / sounds.
     unloadGraphicsAndSounds();
 
-    // Stop responding to broadcasts
-    pimpl->broadcast_socket.reset();
-    pimpl->broadcast_last_time = 0;
-    pimpl->broadcast_host_username = UTF8String();
-    pimpl->broadcast_quest_key = LocalKey();
+    // Stop mDNS advertiser
+    pimpl->mdns_advertiser.reset();
 }
 
 void KnightsApp::unloadGraphicsAndSounds()
@@ -923,8 +916,8 @@ void KnightsApp::runKnights()
             // Handle screen changes if necessary
             executeScreenChange();
 
-            // Handle LAN broadcasts if necessary
-            pimpl->processBroadcastMsgs();
+            // Handle mDNS messages if necessary
+            pimpl->processMdnsMessages();
 
             // Update Online Platform
             pimpl->updateOnlinePlatform();
@@ -1213,48 +1206,21 @@ void KnightsAppImpl::updateOnlinePlatform()
 
 
 //////////////////////////////////////////////
-// Broadcast Replies
+// mDNS Advertiser
 //////////////////////////////////////////////
 
-void KnightsApp::startBroadcastReplies(const UTF8String &host_username)
+void KnightsApp::startMdnsAdvertiser(const UTF8String &host_username, int game_port)
 {
-    // Listen for client requests on the BROADCAST_PORT.
-    pimpl->broadcast_socket = getLanNetworkDriver().createUDPSocket(BROADCAST_PORT, true);
-    pimpl->broadcast_last_time = 0;
-    pimpl->broadcast_host_username = host_username;
-    pimpl->broadcast_quest_key = LocalKey();  // empty = "Selecting Quest"
+    pimpl->mdns_advertiser.reset();  // clear any previous instance first
+    pimpl->mdns_advertiser = std::make_unique<MdnsAdvertiser>(
+        host_username.asUTF8(), game_port);
 }
 
-void KnightsAppImpl::processBroadcastMsgs()
+void KnightsAppImpl::processMdnsMessages()
 {
-    if (!broadcast_socket) return;
-    
-    // don't run this more than once per second.
-    const unsigned int time_now = timer->getMsec();
-    if (time_now - broadcast_last_time < 1000) return;
-    broadcast_last_time = time_now;
-    
-    const int num_players = lobby_controller.getNumberOfPlayers();
-
-    // check for incoming messages, send replies if necessary.
-    std::string msg, address;
-    int port;
-    while (broadcast_socket->receive(address, port, msg)) {
-        if (msg == BROADCAST_PING_MSG) {
-            // Construct the reply string
-            std::string reply = BROADCAST_PONG_HDR;
-            reply += 'L';
-            reply += static_cast<unsigned char>(num_players >> 8);
-            reply += static_cast<unsigned char>(num_players & 0xff);
-            reply += broadcast_host_username.asUTF8();
-            reply += '\0';
-            reply += broadcast_quest_key.getKey();
-            reply += '\0';
-
-            // Send the reply back to the address/port where the broadcast came from.
-            broadcast_socket->send(address, port, reply);
-        }
-    }
+    if (!mdns_advertiser) return;
+    mdns_advertiser->setNumPlayers(lobby_controller.getNumberOfPlayers());
+    mdns_advertiser->poll();
 }
 
 
@@ -1303,9 +1269,9 @@ void KnightsApp::setQuestMessageCode(const LocalKey & quest_key)
     pimpl->lobby_controller.setQuestMessageCode(getOnlinePlatform(), quest_key);
 #endif
 
-    // Store quest key for LAN broadcast (used by processBroadcastMsgs)
-    if (pimpl->broadcast_socket) {
-        pimpl->broadcast_quest_key = quest_key;
+    // Update mDNS advertiser with current quest
+    if (pimpl->mdns_advertiser) {
+        pimpl->mdns_advertiser->setQuestKey(quest_key.getKey());
     }
 }
 

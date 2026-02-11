@@ -164,8 +164,8 @@ void LoadingScreen::update()
                                        player_id);
         client->setClientCallbacks(&knights_app->getGameManager());
 
-        // Start responding to broadcasts
-        knights_app->startBroadcastReplies(player_id.getUserName());
+        // Start mDNS advertiser for LAN game discovery
+        knights_app->startMdnsAdvertiser(player_id.getUserName(), server_port);
 
         // Set our player ID.
         client->setPlayerIdAndControls(player_id, knights_app->getOptions().new_control_system);

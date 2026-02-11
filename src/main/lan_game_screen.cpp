@@ -36,7 +36,7 @@
 #include "localization.hpp"
 #include "make_scroll_area.hpp"
 #include "my_exceptions.hpp"
-#include "net_msgs.hpp"
+#include "mdns_discovery.hpp"
 #include "player_id.hpp"
 #include "start_game_screen.hpp"
 #include "tab_font.hpp"
@@ -47,11 +47,9 @@
 // coercri
 #include "core/coercri_error.hpp"
 #include "gcn/cg_font.hpp"
-#include "network/udp_socket.hpp"
 
 // boost, std
 #include "boost/scoped_ptr.hpp"
-#include "boost/thread.hpp"
 #include <cstring>
 #include <numeric>
 #include <set>
@@ -66,44 +64,21 @@
 namespace {
 
     struct ServerInfo {
-        ServerInfo() : num_players(0), age(0) { }
+        ServerInfo() : num_players(0) { }
 
         std::string ip_address;
         std::string hostname;
         Coercri::UTF8String host_username;  // Host player's display name
         LocalKey quest_key;                 // Current quest key (empty = selecting quest)
         int num_players;
-        int age;   // Number of milliseconds ago that we last had an update from this server
 
         // used for sorting the displayed list.
         bool operator<(const ServerInfo &other) const {
-            return hostname < other.hostname;
+            return host_username < other.host_username
+                || (host_username == other.host_username && hostname < other.hostname);
         }
     };
 
-    struct ClientInfo {
-        ClientInfo() : age(0) { }
-        std::string ip_address;
-        int age;
-    };
-    
-    struct OlderThan {
-        explicit OlderThan(int a) : age(a) { }
-        bool operator()(const ServerInfo &si) const {
-            return si.age != -1 && si.age > age;
-        }
-        bool operator()(const ClientInfo &ci) const {
-            return ci.age > age;
-        }
-        int age;
-    };
-
-    struct AgeIsMinusOne {
-        bool operator()(const ServerInfo &si) const {
-            return si.age == -1;
-        }
-    };
-    
     std::string ServerInfoToString(const ServerInfo &si, const Localization &loc)
     {
         std::string result;
@@ -132,123 +107,48 @@ namespace {
         return result;
     }
 
-    // used to look up host names for LAN games.
-    class HostnameThread {
+    class ServerList : public gcn::ListModel {
     public:
-        HostnameThread(Coercri::NetworkDriver &drv,
-                       boost::shared_ptr<boost::mutex> mut,
-                       boost::shared_ptr<std::vector<ServerInfo> > si,
-                       boost::shared_ptr<bool> flag,
-                       const std::string &addr)
-            : net_driver(drv), mutex(mut), server_infos(si), hostname_lookup_complete(flag), ip_address(addr)
-        { }
-
-        void operator()() {
-            try {
-
-                std::string hostname;
-                {
-                    // Only one thread is allowed to call resolveAddress() at a time
-                    boost::lock_guard<boost::mutex> lock(net_driver_mutex);
-                    hostname = net_driver.resolveAddress(ip_address);
-                }
-
-                boost::unique_lock lock(*mutex);
-                for (std::vector<ServerInfo>::iterator it = server_infos->begin(); it != server_infos->end(); ++it) {
-                    if (it->ip_address == ip_address) {
-                        it->hostname = hostname;
-                    }
-                }
-
-            } catch (...) {
-                // Ignore any errors
-            }
-
-            boost::unique_lock lock(*mutex);
-            *hostname_lookup_complete = true;
-        }
-
-    private:
-        Coercri::NetworkDriver &net_driver;
-        boost::shared_ptr<boost::mutex> mutex;
-        boost::shared_ptr<std::vector<ServerInfo> > server_infos;
-        boost::shared_ptr<bool> hostname_lookup_complete;
-        std::string ip_address;
-
-        static boost::mutex net_driver_mutex; // Prevents multiple threads accessing the NetworkDriver at the same time
-    };
-
-    boost::mutex HostnameThread::net_driver_mutex;
-    
-    class ServerList : public gcn::ListModel, boost::noncopyable {
-    public:
-        ServerList(KnightsApp &app,
-                   Coercri::NetworkDriver& net_drv,
-                   boost::shared_ptr<Coercri::UDPSocket> sock,
-                   Coercri::Timer &tmr,
-                   const std::string &err_msg);
+        ServerList(KnightsApp &app, Coercri::Timer &tmr);
         virtual int getNumberOfElements();
         virtual std::string getElementAt(int i);
         const ServerInfo * getServerAt(int i) const;
-        bool refresh();
-        void forceBroadcast();
+        bool refresh(int &current_selection);
+        void forceRefresh();
+        bool hasError() const { return !(discoverer && discoverer->isValid()); }
 
     private:
         KnightsApp &knights_app;
-        boost::shared_ptr<boost::mutex> mutex;   // protects server_infos and hostname_lookup_complete.
-        boost::shared_ptr<std::vector<ServerInfo> > server_infos;
-        std::vector<ClientInfo> client_infos;
-        boost::shared_ptr<bool> hostname_lookup_complete;
-        Coercri::NetworkDriver& network_driver;
-        boost::shared_ptr<Coercri::UDPSocket> socket;
+        std::unique_ptr<MdnsDiscoverer> discoverer;
         Coercri::Timer &timer;
-        unsigned int last_time;
-        unsigned int last_broadcast_time;
-        bool first_broadcast_sent;
-        std::string err_msg;
+        std::vector<ServerInfo> server_infos;
     };
 
-    ServerList::ServerList(KnightsApp &app,
-                           Coercri::NetworkDriver& net_drv,
-                           boost::shared_ptr<Coercri::UDPSocket> sock,
-                           Coercri::Timer &tmr,
-                           const std::string &emsg)
+    ServerList::ServerList(KnightsApp &app, Coercri::Timer &tmr)
         : knights_app(app),
-          mutex(new boost::mutex),
-          server_infos(new std::vector<ServerInfo>),
-          hostname_lookup_complete(new bool(false)),
-          network_driver(net_drv),
-          socket(sock),
-          timer(tmr),
-          last_time(0),
-          last_broadcast_time(0),
-          first_broadcast_sent(false),
-          err_msg(emsg)
+          discoverer(new MdnsDiscoverer),
+          timer(tmr)
     {
     }
 
     int ServerList::getNumberOfElements()
     {
-        boost::lock_guard<boost::mutex> lock(*mutex);
-        
-        if (socket) {
-            return int(server_infos->size());
+        if (discoverer && discoverer->isValid()) {
+            return int(server_infos.size());
         } else {
-            return 3;
+            return 2;
         }
     }
 
     std::string ServerList::getElementAt(int i)
     {
-        if (socket) {
+        if (discoverer && discoverer->isValid()) {
             const ServerInfo *si = getServerAt(i);
             if (si) return ServerInfoToString(*si, knights_app.getLocalization());
             else return std::string();
         } else {
             if (i==0) {
                 return "Cannot autodetect LAN games";
-            } else if (i==1) {
-                return err_msg;
             } else {
                 return "Please enter address manually below.";
             }
@@ -257,179 +157,70 @@ namespace {
 
     const ServerInfo * ServerList::getServerAt(int i) const
     {
-        boost::lock_guard<boost::mutex> lock(*mutex);
-        
-        if (i < 0 || i >= int(server_infos->size())) return 0;
-        else return &((*server_infos)[i]);
+        if (i < 0 || i >= int(server_infos.size())) return 0;
+        else return &server_infos[i];
     }
 
-    bool ServerList::refresh()
+    bool ServerList::refresh(int &current_selection)
     {
-        boost::lock_guard<boost::mutex> lock(*mutex);
-        
-        bool changed = false;
-        
-        if (socket) {
-            
-            // we send out pings every 3*Nclients seconds.
-            // doing it this way ensures that the network doesn't get flooded with broadcasts if there are a lot of clients about.
-            const int nclients = std::max(1, int(client_infos.size()));
-            const int lan_broadcast_interval = 3000 * nclients;
+        if (!discoverer || !discoverer->isValid()) return false;
 
-            // after how long should we remove "dead" servers/clients from our lists?
-            // well, if there are Nclients clients broadcasting every lan_broadcast_interval,
-            // then we should expect each server to be broadcasting itself every lan_broadcast_interval/Nclients
-            // on average. We use a multiple of this as our timeout.
-            const int lan_broadcast_timeout = 3 * lan_broadcast_interval / nclients + 1000;
-
-            static const int broadcast_pong_length = std::strlen(BROADCAST_PONG_HDR);
-            
-            const unsigned int time_now = timer.getMsec();
-            const unsigned int interval_since_last_time = time_now - last_time;
-            const unsigned int interval_since_last_broadcast = time_now - last_broadcast_time;
-            last_time = time_now;
-
-            // Send a broadcast if it's time            
-            if (interval_since_last_broadcast > lan_broadcast_interval || !first_broadcast_sent) {
-
-                last_broadcast_time = time_now;
-                first_broadcast_sent = true;
-                
-                try {
-                    socket->broadcast(BROADCAST_PORT, BROADCAST_PING_MSG);
-                } catch (Coercri::CoercriError&) {
-                    // If a broadcast fails then ignore the error. We can try again next time.
-                }
-                
-            }
-
-            // Age all server/client entries by appropriate amount
-            for (std::vector<ServerInfo>::iterator it = server_infos->begin(); it != server_infos->end(); ++it) {
-                if (it->age != -1) {
-                    it->age += interval_since_last_time;
-                }
-            }
-            for (std::vector<ClientInfo>::iterator it = client_infos.begin(); it != client_infos.end(); ++it) {
-                it->age += interval_since_last_time;
-            }
-
-            // Listen for incoming responses
-            std::string msg, address;
-            int port;
-            while (socket->receive(address, port, msg)) {
-
-                if (msg.substr(0, broadcast_pong_length) == BROADCAST_PONG_HDR
-                && msg.length() >= broadcast_pong_length + 3) {
-                    // response from a server
-                    const char type = msg[broadcast_pong_length];
-                    const unsigned char nply_high = msg[broadcast_pong_length+1];
-                    const unsigned char nply_low = msg[broadcast_pong_length+2];
-                    const int nply = int(nply_high)*256 + int(nply_low);
-
-                    // as we now only support LAN games, type must be 'L'
-                    if (type == 'L') {
-
-                        // Parse host_username and quest_key from the extended fields (if present).
-                        // These are null-terminated strings appended after the 3 fixed data bytes.
-                        Coercri::UTF8String host_username;
-                        LocalKey quest_key;
-                        const size_t extra_start = broadcast_pong_length + 3;
-                        if (msg.length() > extra_start) {
-                            const size_t nul1 = msg.find('\0', extra_start);
-                            if (nul1 != std::string::npos) {
-                                host_username = Coercri::UTF8String::fromUTF8Safe(msg.substr(extra_start, nul1 - extra_start));
-                                const size_t nul2 = msg.find('\0', nul1 + 1);
-                                if (nul2 != std::string::npos) {
-                                    std::string qk = msg.substr(nul1 + 1, nul2 - nul1 - 1);
-                                    if (!qk.empty()) {
-                                        quest_key = LocalKey(qk);
-                                    }
-                                }
-                            }
-                        }
-
-                        // See if we know about this server already. If so, update it, and set its age to zero.
-                        bool found = false;
-                        for (std::vector<ServerInfo>::iterator it = server_infos->begin(); it != server_infos->end(); ++it) {
-                            if (it->ip_address == address) {
-                                it->age = 0;
-                                if (nply != it->num_players
-                                    || it->host_username != host_username
-                                    || it->quest_key != quest_key) {
-                                    it->num_players = nply;
-                                    it->host_username = host_username;
-                                    it->quest_key = quest_key;
-                                    changed = true;
-                                }
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        // If not found then add it.
-                        if (!found) {
-                            ServerInfo si;
-                            si.ip_address = address;
-                            si.hostname = address;
-                            si.host_username = host_username;
-                            si.quest_key = quest_key;
-                            si.num_players = nply;
-                            si.age = 0;
-                            server_infos->push_back(si);
-                            changed = true;
-
-                            // Start an update thread in the background to get the hostname.
-                            boost::thread thr(HostnameThread(network_driver, mutex, server_infos, hostname_lookup_complete, address));
-                        }
-                    }
-                } else if (msg == BROADCAST_PING_MSG) {
-                    // response from another client. need to maintain a list of other clients on the
-                    // network so that we can throttle broadcasts appropriately.
-                    bool found = false;
-                    for (std::vector<ClientInfo>::iterator it = client_infos.begin(); it != client_infos.end(); ++it) {
-                        if (it->ip_address == address) {
-                            it->age = 0;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        ClientInfo ci;
-                        ci.ip_address = address;
-                        ci.age = 0;
-                        client_infos.push_back(ci);
-                    }
-                }
-            }
-
-            // Drop any entries older than lan_broadcast_timeout.
-            OlderThan old(lan_broadcast_timeout);
-            if (std::find_if(server_infos->begin(), server_infos->end(), old) != server_infos->end()) {
-                server_infos->erase(std::remove_if(server_infos->begin(), server_infos->end(), old),
-                                    server_infos->end());
-                changed = true;
-            }
-            client_infos.erase(std::remove_if(client_infos.begin(), client_infos.end(), old),
-                               client_infos.end());
+        // Remember the currently selected IP address and hostname before refreshing
+        std::string current_ip_address;
+        UTF8String current_username;
+        if (current_selection >= 0 && current_selection < server_infos.size()) {
+            current_ip_address = server_infos[current_selection].ip_address;
+            current_username = server_infos[current_selection].host_username;
         }
 
-        if (*hostname_lookup_complete) {
-            // the hostname lookup thread has changed something.
-            *hostname_lookup_complete = false;
-            changed = true;
-        }
-        
+        // Poll the discoverer. This sends a query every 3 seconds and notifies us
+        // if any responses came in since the previous query
+        bool changed = discoverer->poll(timer.getMsec());
+
         if (changed) {
-            // sort by hostname.
-            std::stable_sort(server_infos->begin(), server_infos->end());
+            // Rebuild server_infos from discoverer's service list
+            server_infos.clear();
+            for (const auto &svc : discoverer->getServices()) {
+                ServerInfo si;
+                si.ip_address = svc.ip_address;
+                // Use IP address as hostname if the mDNS hostname is empty
+                if (svc.hostname.empty()) {
+                    si.hostname = svc.ip_address;
+                } else {
+                    si.hostname = svc.hostname;
+                    // Strip trailing ".local." for display
+                    const std::string suffix = ".local.";
+                    if (si.hostname.size() > suffix.size() &&
+                        si.hostname.compare(si.hostname.size() - suffix.size(), suffix.size(), suffix) == 0) {
+                        si.hostname = si.hostname.substr(0, si.hostname.size() - suffix.size());
+                    }
+                }
+                si.host_username = Coercri::UTF8String::fromUTF8Safe(svc.host_username);
+                if (!svc.quest_key.empty()) {
+                    si.quest_key = LocalKey(svc.quest_key);
+                }
+                si.num_players = svc.num_players;
+                server_infos.push_back(si);
+            }
+            std::stable_sort(server_infos.begin(), server_infos.end());
+
+            // Try to reselect the same item again
+            current_selection = -1;
+            for (int i = 0; i < server_infos.size(); ++i) {
+                if (server_infos[i].ip_address == current_ip_address
+                && server_infos[i].host_username == current_username) {
+                    current_selection = i;
+                    break;
+                }
+            }
         }
-        
+
         return changed;
     }
 
-    void ServerList::forceBroadcast()
+    void ServerList::forceRefresh()
     {
-        first_broadcast_sent = false;
+        if (discoverer) discoverer->forceQuery();
     }
 
 
@@ -452,14 +243,13 @@ namespace {
 }
 
 
-class LanGameScreenImpl : public gcn::ActionListener, public gcn::SelectionListener {
+class LanGameScreenImpl : public gcn::ActionListener {
 public:
     LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g);
     void action(const gcn::ActionEvent &event);
-    void valueChanged(const gcn::SelectionEvent &event);
     void doUpdate();
 
-    void initiateConnection(const std::string &address);
+    void initiateConnection(const std::string &address, const std::string &display_name);
     void createGame();
 
 private:
@@ -516,8 +306,9 @@ namespace
         if (mouse_event.getButton() == gcn::MouseEvent::LEFT && mouse_event.getClickCount() == 2) {
             const ServerInfo *si = server_list.getServerAt(getSelected());
             if (si) {
-                // Initiate connection
-                find_srvr_impl.initiateConnection(si->hostname);
+                // Initiate connection using IP address
+                find_srvr_impl.initiateConnection(si->ip_address.empty() ? si->hostname : si->ip_address,
+                                                  si->hostname);
             }
         }
     }
@@ -526,20 +317,7 @@ namespace
 LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
     : knights_app(ka), window(win), gui(g)
 {
-    // Catch errors from creating the socket, which might fail if (for example) we start two copies of Knights
-    // on the local machine (which can be useful for testing purposes).
-    std::string err_msg;
-    boost::shared_ptr<Coercri::UDPSocket> sock;
-    try {
-        // Create a UDP socket
-        // Set port to -1 because we only want to listen to replies to our own outgoing msgs,
-        // we do NOT want to listen for "unsolicited" incoming msgs.
-        sock = knights_app.getLanNetworkDriver().createUDPSocket(-1, true);
-    } catch (Coercri::CoercriError& e) {
-        err_msg = e.what();
-    }
-    server_list.reset(new ServerList(knights_app, knights_app.getLanNetworkDriver(), sock,
-                                     knights_app.getTimer(), err_msg));
+    server_list.reset(new ServerList(knights_app, knights_app.getTimer()));
 
     // Set up TabFont for formatting columns: Host | Address | Players | Status
     std::vector<int> widths;
@@ -591,9 +369,10 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
 
     listbox.reset(new MyListBox(knights_app, *server_list, *this));
     listbox->setListModel(server_list.get());
-    listbox->setFont(tab_font.get());
+    if (!server_list->hasError()) {
+        listbox->setFont(tab_font.get());
+    }
     listbox->setWidth(width);
-    listbox->addSelectionListener(this);
     scroll_area = MakeScrollArea(*listbox, width, 350 - games_titleblock->getHeight());
     container->add(scroll_area.get(), pad, y);
     y += scroll_area->getHeight() + pad*3/2;
@@ -631,10 +410,8 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     centre.reset(new GuiCentre(panel.get()));
     gui.setTop(centre.get());
 
-    // make sure the first text field is focused initially
-#ifdef ONLINE_PLATFORM
-    address_field->requestFocus();
-#else
+#ifndef ONLINE_PLATFORM
+    // Focus the player name field initially, as typing something here is mandatory
     name_field->requestFocus();
 #endif
 }
@@ -689,15 +466,16 @@ void LanGameScreenImpl::action(const gcn::ActionEvent &event)
     } else if (event.getSource() == connect_button.get() || event.getSource() == address_field.get()) {
         // Initiate connection
         const std::string &address = address_field->getText();
-        initiateConnection(address);
+        previous_address = address;
+        initiateConnection(address, "");  // Use entered address directly, without a separate "display name"
 
     } else if (event.getSource() == create_game_button.get()) {
         // Host a new LAN game
         createGame();
 
     } else if (event.getSource() == refresh_list_button.get()) {
-        // Force an immediate broadcast ping
-        server_list->forceBroadcast();
+        // Force an immediate mDNS query
+        server_list->forceRefresh();
 
     } else if (event.getSource() == err_button.get()) {
         int w,h;
@@ -708,21 +486,13 @@ void LanGameScreenImpl::action(const gcn::ActionEvent &event)
         window->invalidateAll();
     }
 }
-        
-void LanGameScreenImpl::valueChanged(const gcn::SelectionEvent &event)
-{
-    const ServerInfo *si = server_list->getServerAt(listbox->getSelected());
-    if (si) {
-        address_field->setText(si->hostname);
-        address_field->logic();
-        window->invalidateAll();
-    }
-}
 
 void LanGameScreenImpl::doUpdate()
 {
-    const bool changed = server_list->refresh();
+    int selection = listbox->getSelected();
+    const bool changed = server_list->refresh(selection);
     if (changed) {
+        listbox->setSelected(selection);
         AdjustListBoxSize(*listbox, *scroll_area);
         gui.logic();
         window->invalidateAll();
@@ -738,7 +508,7 @@ void LanGameScreenImpl::createGame()
     knights_app.requestScreenChange(std::move(loading_screen));
 }
 
-void LanGameScreenImpl::initiateConnection(const std::string &address)
+void LanGameScreenImpl::initiateConnection(const std::string &address, const std::string &display_name)
 {
     if (address.empty()) {
         gotoErrorDialog("You must enter an address to connect to");
@@ -748,10 +518,8 @@ void LanGameScreenImpl::initiateConnection(const std::string &address)
     PlayerID player_id = getPlayerID();
     if (player_id.empty()) return;
 
-    previous_address = address;
-
     const int port = knights_app.getConfigMap().getInt("port_number");
-    std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, player_id));
+    std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, display_name, player_id));
     knights_app.requestScreenChange(std::move(connecting_screen));
 }
 

@@ -67,10 +67,6 @@ namespace Coercri {
         virtual bool doEvents();
         virtual bool outstandingConnections();
         
-        virtual boost::shared_ptr<UDPSocket> createUDPSocket(int port, bool reuseaddr);
-
-        virtual std::string resolveAddress(const std::string &ip_address);        
-
     private:
         bool serviceHost(ENetHost *host);
         void createIncomingHostIfNeeded();

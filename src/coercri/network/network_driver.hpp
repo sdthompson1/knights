@@ -3,13 +3,9 @@
  *   network_driver.hpp
  *
  * PURPOSE:
- *   Networking interface.
- *
- *   Currently there are two basic interfaces provided -- a low level
- *   interface providing direct access to UDP sockets, and a
- *   higher level interface which provides TCP like connections
- *   optimized for games (currently this is built on top of ENet but
- *   other implementations are certainly possible).
+ *   Networking interface. Provides "NetworkConnection", a TCP-like connection,
+ *   but abstracting away the backend (which could be ENet, Steam P2P connections,
+ *   or anything else).
  *
  * AUTHOR:
  *   Stephen Thompson
@@ -62,7 +58,6 @@
 namespace Coercri {
 
     class NetworkConnection;
-    class UDPSocket;
 
 
     // Note: This class is now thread safe. Multiple threads can call
@@ -72,11 +67,6 @@ namespace Coercri {
     public:
         virtual ~NetworkDriver() { }
 
-        
-        //
-        // "High level" interface -- NetworkConnection class. 
-        //
-        
         // Opening outgoing connections:
         virtual boost::shared_ptr<NetworkConnection> openConnection(const std::string &host, int port) = 0;
 
@@ -107,36 +97,6 @@ namespace Coercri {
         // connections that have been put into CLOSED state but are
         // not fully cleaned up yet).
         virtual bool outstandingConnections() = 0;
-        
-
-        
-        //
-        // Lower level interface -- direct access to UDP sockets.
-        //
-        // Note these don't use doEvents, instead they let the OS
-        // handle the processing.
-        //
-        // port should be set to -1 to make an unbound socket or a
-        // valid UDP port number to make a bound socket. (See udp_socket.hpp
-        // for a discussion of bound vs unbound sockets.)
-        //
-        // reuseaddr controls whether we use the SO_REUSEADDR option 
-        // when creating the socket. This allows multiple processes to
-        // listen on the same port; broadcasts sent to the port will
-        // then be received by each of the processes (although this 
-        // doesn't apply to unicast messages apparently).
-        //
-
-        virtual boost::shared_ptr<UDPSocket> createUDPSocket(int port, bool reuseaddr) = 0;
-
-
-        //
-        // Utility functions
-        //
-
-        // Resolve an IP address to a hostname. (If not possible then
-        // just returns the IP address back again.) May block.
-        virtual std::string resolveAddress(const std::string &ip_address) = 0;
     };
 
 }

@@ -99,7 +99,6 @@
     <ClCompile Include="..\..\src\coercri\gcn\cg_listener.cpp" />
     <ClCompile Include="..\..\src\coercri\enet\enet_network_connection.cpp" />
     <ClCompile Include="..\..\src\coercri\enet\enet_network_driver.cpp" />
-    <ClCompile Include="..\..\src\coercri\enet\enet_udp_socket.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\istream_rwops.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_error.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_pref_path.cpp" />
@@ -135,7 +134,6 @@
     <ClInclude Include="..\..\src\coercri\gfx\color.hpp" />
     <ClInclude Include="..\..\src\coercri\enet\enet_network_connection.hpp" />
     <ClInclude Include="..\..\src\coercri\enet\enet_network_driver.hpp" />
-    <ClInclude Include="..\..\src\coercri\enet\enet_udp_socket.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\font.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\core\istream_rwops.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\core\sdl_error.hpp" />
@@ -163,7 +161,6 @@
     <ClInclude Include="..\..\src\coercri\sound\sound.hpp" />
     <ClInclude Include="..\..\src\coercri\sound\sound_driver.hpp" />
     <ClInclude Include="..\..\src\coercri\timer\timer.hpp" />
-    <ClInclude Include="..\..\src\coercri\network\udp_socket.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\window.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\window_listener.hpp" />
   </ItemGroup>
