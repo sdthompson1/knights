@@ -44,14 +44,24 @@
 
 #include <algorithm>
 #include <cstring>
+#include <random>
 
 namespace {
 
     const char SERVICE_TYPE[] = "_knights._udp.local.";
     const size_t BUFFER_SIZE = 2048;
-    const unsigned int QUERY_INTERVAL_MS = 3000;
+    const unsigned int QUERY_INTERVAL_MIN_MS = 3000;
+    const unsigned int QUERY_INTERVAL_MAX_MS = 5000;
     const unsigned int SERVICE_TIMEOUT_MS = 10000;
     const int NUM_ADDITIONAL_RECORDS = 5;  // 1 SRV + 4 TXT
+
+    unsigned int randomQueryInterval()
+    {
+        static std::mt19937 rng(std::random_device{}());
+        std::uniform_int_distribution<unsigned int> dist(QUERY_INTERVAL_MIN_MS,
+                                                         QUERY_INTERVAL_MAX_MS);
+        return dist(rng);
+    }
 
     std::string getLocalHostname()
     {
@@ -227,6 +237,7 @@ namespace {
         std::vector<MdnsDiscoverer::ServiceInfo> *services;
         unsigned int time_now_ms;
         bool changed;
+        bool query_seen;  // true if a matching QM query was overheard
 
         // Temp storage for parsing multi-record responses
         char namebuf[256];
@@ -279,11 +290,24 @@ namespace {
                            size_t name_offset, size_t name_length, size_t record_offset,
                            size_t record_length, void* user_data)
     {
-        (void)sock; (void)addrlen; (void)query_id; (void)rclass;
+        (void)sock; (void)addrlen; (void)query_id;
 
         DiscovererData *dd = static_cast<DiscovererData*>(user_data);
 
-        if (entry == MDNS_ENTRYTYPE_QUESTION) return 0;
+        if (entry == MDNS_ENTRYTYPE_QUESTION) {
+            // Duplicate Question Suppression (RFC 6762 Section 7.3):
+            // If we overhear a QM query matching ours, we can reset our timer.
+            if (rtype == MDNS_RECORDTYPE_PTR && !(rclass & MDNS_UNICAST_RESPONSE)) {
+                size_t off = name_offset;
+                mdns_string_t qname = mdns_string_extract(data, size, &off,
+                                                          dd->namebuf, sizeof(dd->namebuf));
+                std::string query_name = mdnsStringToStd(qname);
+                if (query_name == SERVICE_TYPE) {
+                    dd->query_seen = true;
+                }
+            }
+            return 0;
+        }
         if (ttl == 0 && rtype != MDNS_RECORDTYPE_PTR) return 0;
 
         // Extract the record name
@@ -572,6 +596,7 @@ void MdnsAdvertiser::handleQuery()
 MdnsDiscoverer::MdnsDiscoverer()
     : mdns_sock(-1),
       last_query_time(0),
+      query_interval(randomQueryInterval()),
       first_query_sent(false),
       buffer(BUFFER_SIZE, 0)
 {
@@ -610,30 +635,41 @@ bool MdnsDiscoverer::poll(unsigned int time_now_ms)
     bool changed = !first_query_sent;
 
     // Send query periodically on all interfaces
-    if (!first_query_sent || (time_now_ms - last_query_time) >= QUERY_INTERVAL_MS) {
+    if (!first_query_sent || (time_now_ms - last_query_time) >= query_interval) {
         sendOnAllInterfaces(mdns_sock, local_interfaces, [&]() {
             mdns_query_send(mdns_sock, MDNS_RECORDTYPE_PTR,
                             SERVICE_TYPE, sizeof(SERVICE_TYPE) - 1,
                             buffer.data(), buffer.size(), 0);
         });
         last_query_time = time_now_ms;
+        query_interval = randomQueryInterval();
         first_query_sent = true;
     }
 
-    // Receive and process responses
+    // Receive and process incoming packets (both queries and responses).
+    // Using mdns_socket_listen so we can see incoming questions for
+    // Duplicate Question Suppression (RFC 6762 Section 7.3).
     DiscovererData dd;
     dd.services = &services;
     dd.time_now_ms = time_now_ms;
     dd.changed = changed;
+    dd.query_seen = false;
     memset(dd.namebuf, 0, sizeof(dd.namebuf));
     memset(dd.strbuf, 0, sizeof(dd.strbuf));
 
     // Keep receiving until no more data
     size_t records;
     do {
-        records = mdns_query_recv(mdns_sock, buffer.data(), buffer.size(),
-                                  discovererCallback, &dd, 0);
+        records = mdns_socket_listen(mdns_sock, buffer.data(), buffer.size(),
+                                     discovererCallback, &dd);
     } while (records > 0);
+
+    // Duplicate Question Suppression: if we overheard a matching QM query,
+    // reset our timer with a new random interval
+    if (dd.query_seen) {
+        last_query_time = time_now_ms;
+        query_interval = randomQueryInterval();
+    }
 
     changed = dd.changed;
 

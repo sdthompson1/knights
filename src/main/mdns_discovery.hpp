@@ -100,6 +100,7 @@ public:
 private:
     int mdns_sock;
     unsigned int last_query_time;
+    unsigned int query_interval;
     bool first_query_sent;
     std::vector<ServiceInfo> services;
     std::vector<uint8_t> buffer;
