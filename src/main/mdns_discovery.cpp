@@ -29,11 +29,15 @@
 #ifdef _WIN32
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
+#include <iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
 #else
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <net/if.h>
 #endif
 
 #include "mdns.h"
@@ -61,6 +65,87 @@ namespace {
             return std::string(buf);
         }
         return "knights-host";
+    }
+
+    std::vector<struct in_addr> getLocalIPv4Addresses()
+    {
+        std::vector<struct in_addr> result;
+
+#ifdef _WIN32
+        ULONG bufSize = 15000;
+        std::vector<uint8_t> buf(bufSize);
+        PIP_ADAPTER_ADDRESSES addrs = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buf.data());
+        ULONG ret = GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST,
+                                         nullptr, addrs, &bufSize);
+        if (ret == ERROR_BUFFER_OVERFLOW) {
+            buf.resize(bufSize);
+            addrs = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buf.data());
+            ret = GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST,
+                                       nullptr, addrs, &bufSize);
+        }
+        if (ret == NO_ERROR) {
+            for (auto *a = addrs; a; a = a->Next) {
+                if (a->OperStatus != IfOperStatusUp) continue;
+                if (a->IfType == IF_TYPE_SOFTWARE_LOOPBACK) continue;
+                for (auto *ua = a->FirstUnicastAddress; ua; ua = ua->Next) {
+                    if (ua->Address.lpSockaddr->sa_family == AF_INET) {
+                        auto *sa = reinterpret_cast<struct sockaddr_in*>(ua->Address.lpSockaddr);
+                        result.push_back(sa->sin_addr);
+                    }
+                }
+            }
+        }
+#else
+        struct ifaddrs *ifap = nullptr;
+        if (getifaddrs(&ifap) == 0) {
+            for (auto *ifa = ifap; ifa; ifa = ifa->ifa_next) {
+                if (!ifa->ifa_addr) continue;
+                if (ifa->ifa_addr->sa_family != AF_INET) continue;
+                if (!(ifa->ifa_flags & IFF_UP)) continue;
+                if (ifa->ifa_flags & IFF_LOOPBACK) continue;
+                auto *sa = reinterpret_cast<struct sockaddr_in*>(ifa->ifa_addr);
+                result.push_back(sa->sin_addr);
+            }
+            freeifaddrs(ifap);
+        }
+#endif
+        return result;
+    }
+
+    void joinMulticastOnAllInterfaces(int sock, const std::vector<struct in_addr> &addrs)
+    {
+        struct ip_mreq req;
+        memset(&req, 0, sizeof(req));
+        req.imr_multiaddr.s_addr = htonl((((uint32_t)224U) << 24U) | ((uint32_t)251U));
+        for (const auto &addr : addrs) {
+            req.imr_interface = addr;
+            // Ignore errors — duplicates from the initial INADDR_ANY join are harmless
+            setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char*)&req, sizeof(req));
+        }
+    }
+
+    std::vector<uint32_t> getInterfaceAddrsAsU32(const std::vector<struct in_addr> &addrs)
+    {
+        std::vector<uint32_t> result;
+        result.reserve(addrs.size());
+        for (const auto &a : addrs) {
+            result.push_back(a.s_addr);
+        }
+        return result;
+    }
+
+    template<typename Func>
+    void sendOnAllInterfaces(int sock, const std::vector<uint32_t> &interfaces, Func fn)
+    {
+        for (auto iface : interfaces) {
+            struct in_addr addr;
+            addr.s_addr = iface;
+            setsockopt(sock, IPPROTO_IP, IP_MULTICAST_IF, (const char*)&addr, sizeof(addr));
+            fn();
+        }
+        if (interfaces.empty()) {
+            fn();
+        }
     }
 
     std::string mdnsStringToStd(mdns_string_t s)
@@ -194,11 +279,12 @@ namespace {
                            size_t name_offset, size_t name_length, size_t record_offset,
                            size_t record_length, void* user_data)
     {
-        (void)sock; (void)addrlen; (void)query_id; (void)rclass; (void)ttl;
+        (void)sock; (void)addrlen; (void)query_id; (void)rclass;
 
         DiscovererData *dd = static_cast<DiscovererData*>(user_data);
 
         if (entry == MDNS_ENTRYTYPE_QUESTION) return 0;
+        if (ttl == 0 && rtype != MDNS_RECORDTYPE_PTR) return 0;
 
         // Extract the record name
         size_t name_off = name_offset;
@@ -213,10 +299,23 @@ namespace {
                                                            dd->strbuf, sizeof(dd->strbuf));
             std::string instance = mdnsStringToStd(ptr_name);
             if (!instance.empty()) {
-                auto *si = findOrCreateService(*dd->services, instance, dd->time_now_ms, dd->changed);
-                if (!source_ip.empty() && si->ip_address != source_ip) {
-                    si->ip_address = source_ip;
-                    dd->changed = true;
+                if (ttl == 0) {
+                    // Goodbye packet — remove the service immediately
+                    auto &svcs = *dd->services;
+                    auto it = std::find_if(svcs.begin(), svcs.end(),
+                        [&](const MdnsDiscoverer::ServiceInfo &s) {
+                            return s.instance_name == instance;
+                        });
+                    if (it != svcs.end()) {
+                        svcs.erase(it);
+                        dd->changed = true;
+                    }
+                } else {
+                    auto *si = findOrCreateService(*dd->services, instance, dd->time_now_ms, dd->changed);
+                    if (!source_ip.empty() && si->ip_address != source_ip) {
+                        si->ip_address = source_ip;
+                        dd->changed = true;
+                    }
                 }
             }
         } else if (rtype == MDNS_RECORDTYPE_SRV) {
@@ -314,6 +413,10 @@ MdnsAdvertiser::MdnsAdvertiser(const std::string &host_user, int port)
         return;
     }
 
+    auto addrs = getLocalIPv4Addresses();
+    joinMulticastOnAllInterfaces(mdns_sock, addrs);
+    local_interfaces = getInterfaceAddrsAsU32(addrs);
+
     announce();
 }
 
@@ -361,9 +464,8 @@ void MdnsAdvertiser::setNumPlayers(int n)
 
 void MdnsAdvertiser::announce()
 {
-    // Send an mDNS announcement. Note that the announcements are not received by
-    // our discoverer class (which relies solely on queries and responses), but we
-    // send them anyway to be compliant with the mDNS spec.
+    // Send an mDNS announcement (multicast). Discoverers on port 5353 will
+    // receive these as well as query responses.
 
     if (mdns_sock < 0) return;
 
@@ -375,8 +477,10 @@ void MdnsAdvertiser::announce()
         additional, instance_name, hostname, (uint16_t)game_port,
         v_version, players_str, quest_key, host_username);
 
-    mdns_announce_multicast(mdns_sock, buffer.data(), buffer.size(),
-                            answer, nullptr, 0, additional, add_count);
+    sendOnAllInterfaces(mdns_sock, local_interfaces, [&]() {
+        mdns_announce_multicast(mdns_sock, buffer.data(), buffer.size(),
+                                answer, nullptr, 0, additional, add_count);
+    });
 }
 
 void MdnsAdvertiser::goodbye()
@@ -391,8 +495,10 @@ void MdnsAdvertiser::goodbye()
         additional, instance_name, hostname, (uint16_t)game_port,
         v_version, players_str, quest_key, host_username);
 
-    mdns_goodbye_multicast(mdns_sock, buffer.data(), buffer.size(),
-                           answer, nullptr, 0, additional, add_count);
+    sendOnAllInterfaces(mdns_sock, local_interfaces, [&]() {
+        mdns_goodbye_multicast(mdns_sock, buffer.data(), buffer.size(),
+                               answer, nullptr, 0, additional, add_count);
+    });
 }
 
 void MdnsAdvertiser::respondToQuery(int sock, const struct sockaddr* from, size_t addrlen,
@@ -427,10 +533,12 @@ void MdnsAdvertiser::respondToQuery(int sock, const struct sockaddr* from, size_
                                       answer, nullptr, 0,
                                       additional, add_count);
         } else {
-            mdns_query_answer_multicast(sock,
-                                        response_buffer.data(), response_buffer.size(),
-                                        answer, nullptr, 0,
-                                        additional, add_count);
+            sendOnAllInterfaces(sock, local_interfaces, [&]() {
+                mdns_query_answer_multicast(sock,
+                                            response_buffer.data(), response_buffer.size(),
+                                            answer, nullptr, 0,
+                                            additional, add_count);
+            });
         }
     }
 }
@@ -467,11 +575,24 @@ MdnsDiscoverer::MdnsDiscoverer()
       first_query_sent(false),
       buffer(BUFFER_SIZE, 0)
 {
-    // Open socket on ephemeral port (pass null for saddr)
+    // Open socket on port 5353 so that mdns.h clears MDNS_UNICAST_RESPONSE,
+    // causing the advertiser to reply via multicast rather than unicast.
+    struct sockaddr_in saddr;
+    memset(&saddr, 0, sizeof(saddr));
+    saddr.sin_family = AF_INET;
+    saddr.sin_port = htons(MDNS_PORT);
+    saddr.sin_addr.s_addr = INADDR_ANY;
+
     try {
-        mdns_sock = mdns_socket_open_ipv4(nullptr);
+        mdns_sock = mdns_socket_open_ipv4(&saddr);
     } catch (...) {
         mdns_sock = -1;
+    }
+
+    if (mdns_sock >= 0) {
+        auto addrs = getLocalIPv4Addresses();
+        joinMulticastOnAllInterfaces(mdns_sock, addrs);
+        local_interfaces = getInterfaceAddrsAsU32(addrs);
     }
 }
 
@@ -488,11 +609,13 @@ bool MdnsDiscoverer::poll(unsigned int time_now_ms)
 
     bool changed = !first_query_sent;
 
-    // Send query periodically
+    // Send query periodically on all interfaces
     if (!first_query_sent || (time_now_ms - last_query_time) >= QUERY_INTERVAL_MS) {
-        mdns_query_send(mdns_sock, MDNS_RECORDTYPE_PTR,
-                        SERVICE_TYPE, sizeof(SERVICE_TYPE) - 1,
-                        buffer.data(), buffer.size(), 0);
+        sendOnAllInterfaces(mdns_sock, local_interfaces, [&]() {
+            mdns_query_send(mdns_sock, MDNS_RECORDTYPE_PTR,
+                            SERVICE_TYPE, sizeof(SERVICE_TYPE) - 1,
+                            buffer.data(), buffer.size(), 0);
+        });
         last_query_time = time_now_ms;
         first_query_sent = true;
     }

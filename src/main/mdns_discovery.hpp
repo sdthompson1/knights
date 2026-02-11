@@ -63,6 +63,7 @@ private:
 
     std::vector<uint8_t> buffer;
     std::vector<uint8_t> response_buffer;
+    std::vector<uint32_t> local_interfaces;  // s_addr values for each NIC
 };
 
 // Client-side: discovers Knights games via mDNS
@@ -102,6 +103,7 @@ private:
     bool first_query_sent;
     std::vector<ServiceInfo> services;
     std::vector<uint8_t> buffer;
+    std::vector<uint32_t> local_interfaces;  // s_addr values for each NIC
 };
 
 #endif
