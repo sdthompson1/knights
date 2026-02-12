@@ -23,9 +23,9 @@
 
 #include "misc.hpp"
 
-#include "knights_app.hpp"
-
 #include "error_screen.hpp"
+#include "knights_app.hpp"
+#include "localization.hpp"
 #include "title_screen.hpp"
 
 #include "gui_button.hpp"
@@ -53,7 +53,7 @@ public:
         y += label->getHeight() + vpad;
         
         // create exit button
-        exit_button.reset(new GuiButton("Exit"));
+        exit_button.reset(new GuiButton(app.getLocalization().get(LocalKey("exit")).asUTF8()));
         exit_button->addActionListener(this);
         container->add(exit_button.get(), hpad + label->getWidth()/2 - exit_button->getWidth()/2, y);
         y += exit_button->getHeight() + vpad;

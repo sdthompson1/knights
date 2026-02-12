@@ -293,7 +293,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
                                         });
     }
 
-    const char * game_name = "Knights";
+    const UTF8String game_name = pimpl->localization.get(LocalKey("knights"));
 
     pimpl->server_config_filename = config_filename;
     pimpl->autostart = autostart;

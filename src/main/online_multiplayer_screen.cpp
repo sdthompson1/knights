@@ -347,6 +347,8 @@ OnlineMultiplayerScreenImpl::~OnlineMultiplayerScreenImpl()
 
 void OnlineMultiplayerScreenImpl::createFullGui()
 {
+    const Localization &loc = knights_app.getLocalization();
+
     // Remove the skeleton GUI as it is no longer needed
     gui.setTop(nullptr);
     centre.reset();
@@ -375,15 +377,15 @@ void OnlineMultiplayerScreenImpl::createFullGui()
     int y = 5;
     const int width = std::accumulate(widths.begin(), widths.end(), 0);
 
-    title_label.reset(new gcn::Label("Online Multiplayer Games"));
+    title_label.reset(new gcn::Label(loc.get(LocalKey("online_multiplayer_games")).asUTF8()));
     title_label->setForegroundColor(gcn::Color(0,0,128));
     container->add(title_label.get(), pad + width/2 - title_label->getWidth()/2, y);
     y += title_label->getHeight() + 2*pad;
 
-    games_label.reset(new gcn::Label("Available Games (double-click to join):"));
+    games_label.reset(new gcn::Label(loc.get(LocalKey("avail_games_click_to_join")).asUTF8()));
     container->add(games_label.get(), pad, y);
 
-    show_incompatible_checkbox.reset(new gcn::CheckBox("Show incompatible games"));
+    show_incompatible_checkbox.reset(new gcn::CheckBox(loc.get(LocalKey("show_incompat_games")).asUTF8()));
     show_incompatible_checkbox->addActionListener(this);
     show_incompatible_checkbox->setSelected(g_show_incompatible);
     container->add(show_incompatible_checkbox.get(), pad + width - show_incompatible_checkbox->getWidth(), y + games_label->getHeight()/2 - show_incompatible_checkbox->getHeight()/2);
@@ -391,9 +393,9 @@ void OnlineMultiplayerScreenImpl::createFullGui()
     y += games_label->getHeight() + pad;
 
     std::vector<std::string> titles;
-    titles.push_back("Host");
-    titles.push_back("Players");
-    titles.push_back("Status");
+    titles.push_back(loc.get(LocalKey("host")).asUTF8());
+    titles.push_back(loc.get(LocalKey("players")).asUTF8());
+    titles.push_back(loc.get(LocalKey("status")).asUTF8());
     games_titleblock.reset(new TitleBlock(titles, widths));
     games_titleblock->setBaseColor(gcn::Color(200, 200, 200));
     container->add(games_titleblock.get(), pad, y);
@@ -411,11 +413,11 @@ void OnlineMultiplayerScreenImpl::createFullGui()
 
     y += pad/2;
 
-    create_game_button.reset(new GuiButton("Create New Game"));
+    create_game_button.reset(new GuiButton(loc.get(LocalKey("create_new_game")).asUTF8()));
     create_game_button->addActionListener(this);
-    refresh_button.reset(new GuiButton("Refresh List"));
+    refresh_button.reset(new GuiButton(loc.get(LocalKey("refresh_list")).asUTF8()));
     refresh_button->addActionListener(this);
-    cancel_button.reset(new GuiButton("Cancel"));
+    cancel_button.reset(new GuiButton(loc.get(LocalKey("cancel")).asUTF8()));
     cancel_button->addActionListener(this);
     container->add(create_game_button.get(), pad, y);
     container->add(refresh_button.get(), 25 + create_game_button->getWidth() + pad, y);

@@ -63,42 +63,43 @@ private:
 StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
     : knights_app(app)
 {
+    const Localization &loc = app.getLocalization();
     const int w = 300, h = 40, vspace = 15, pad = 15, vspace2 = 40;
     
     container.reset(new gcn::Container);
     container->setOpaque(false);
-    
+
     const int x = pad;
     int y = pad;
     const int yinc = h + vspace;
 
 #ifdef ONLINE_PLATFORM
-    online_multiplayer.reset(new GuiButton("Online Multiplayer"));
+    online_multiplayer.reset(new GuiButton(loc.get(LocalKey("online_multiplayer")).asUTF8()));
     online_multiplayer->setSize(w,h);
     online_multiplayer->addActionListener(this);
     container->add(online_multiplayer.get(), x, y);
     y += yinc;
 #endif
 
-    lan_games.reset(new GuiButton("LAN Games"));
+    lan_games.reset(new GuiButton(loc.get(LocalKey("lan_games")).asUTF8()));
     lan_games->setSize(w,h);
     lan_games->addActionListener(this);
     container->add(lan_games.get(), x, y);
     y += yinc;
 
-    split_screen_mode.reset(new GuiButton("Split Screen Mode"));
+    split_screen_mode.reset(new GuiButton(loc.get(LocalKey("split_screen_mode")).asUTF8()));
     split_screen_mode->setSize(w,h);
     split_screen_mode->addActionListener(this);
     container->add(split_screen_mode.get(), x, y);
     y += yinc;
 
-    single_player_mode.reset(new GuiButton("Single Player Mode"));
+    single_player_mode.reset(new GuiButton(loc.get(LocalKey("single_player_mode")).asUTF8()));
     single_player_mode->setSize(w,h);
     single_player_mode->addActionListener(this);
     container->add(single_player_mode.get(), x, y);
     y += yinc;
     
-    exit.reset(new GuiButton("Cancel"));
+    exit.reset(new GuiButton(loc.get(LocalKey("cancel")).asUTF8()));
     exit->setSize(w,h);
     exit->addActionListener(this);
     container->add(exit.get(), x, y);
@@ -107,7 +108,7 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
     container->setSize(w + 2*pad, y - vspace + pad);
     panel2.reset(new GuiPanel(container.get()));
 
-    title.reset(new gcn::Label("START GAME"));
+    title.reset(new gcn::Label(loc.get(LocalKey("start_game_caps")).asUTF8()));
     title->setWidth(w+2*pad);
     title->setHeight(title->getHeight() + 2*pad);
     title->setAlignment(gcn::Graphics::CENTER);

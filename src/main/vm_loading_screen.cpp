@@ -138,7 +138,8 @@ void VMLoadingScreen::update()
 void VMLoadingScreen::draw(uint64_t, Coercri::GfxContext &gc)
 {
     if (!knights_app) return;
-    XCentre(gc, *knights_app->getFont(), knights_app->getFont()->getTextHeight() + 15, UTF8String::fromUTF8("LOADING"));
+    UTF8String message = knights_app->getLocalization().get(LocalKey("loading"));
+    XCentre(gc, *knights_app->getFont(), knights_app->getFont()->getTextHeight() + 15, message);
 }
 
 #endif  // USE_VM_LOBBY and ONLINE_PLATFORM

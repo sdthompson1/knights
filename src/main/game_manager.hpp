@@ -121,6 +121,7 @@ private:
     };
     std::vector<Name> names;
     const std::vector<Coercri::Color> &house_cols;
+    const Localization &localization;
 #ifdef ONLINE_PLATFORM
     OnlinePlatform &online_platform;
 #endif

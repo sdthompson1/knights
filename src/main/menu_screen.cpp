@@ -117,6 +117,8 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
       extended(extended), can_invite(can_invite),
       chat_reformatted(false)
 {
+    const Localization &loc = app.getLocalization();
+
     // create container
     container.reset(new gcn::Container);
     container->setOpaque(false);
@@ -138,7 +140,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
 
     // random quest button
     y_after_menu += 5;
-    random_quest_button.reset(new GuiButton("Random Quest"));
+    random_quest_button.reset(new GuiButton(loc.get(LocalKey("random_quest")).asUTF8()));
     random_quest_button->addActionListener(this);
     container->add(random_quest_button.get(), pad, y_after_menu);
     y_after_menu += random_quest_button->getHeight();
@@ -168,7 +170,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         house_colour_font.reset(new HouseColourFont(*title->getFont(), HOUSE_COL_WIDTH, HOUSE_COL_HEIGHT));
         
         // Add players area
-        players_title.reset(new gcn::Label("Players"));
+        players_title.reset(new gcn::Label(loc.get(LocalKey("players")).asUTF8()));
         container->add(players_title.get(), rhs_x, rhs_y);
         rhs_y += players_title->getHeight() + 4;
         players_listbox.reset(new gcn::ListBox);
@@ -180,7 +182,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         rhs_y += players_scrollarea->getHeight() + vpad_rhs*2;
 
         // Add house colour dropdown
-        house_colour_label.reset(new gcn::Label("Change Knight House Colour: "));
+        house_colour_label.reset(new gcn::Label(loc.get(LocalKey("change_house_colour")).asUTF8() + " "));
         container->add(house_colour_label.get(), rhs_x, rhs_y + 1);
         house_colour_list_model.reset(new HouseColourListModel(app.getGameManager()));
         house_colour_dropdown.reset(new gcn::DropDown);
@@ -193,7 +195,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         rhs_y += house_colour_dropdown->getHeight() + 1;
 
         // Add a small label
-        team_label.reset(new gcn::Label("(Knights of the same House Colour play on the same team.)"));
+        team_label.reset(new gcn::Label(loc.get(LocalKey("knights_of_same_colour")).asUTF8()));
         container->add(team_label.get(), rhs_x, rhs_y);
         rhs_y += team_label->getHeight() + vpad_rhs;
         
@@ -208,7 +210,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         if (!saved_chat.empty()) chat_field->setText(saved_chat.asUTF8());
         ybelow -= chat_field->getHeight();
 
-        chat_field_title.reset(new gcn::Label("Type here to chat"));
+        chat_field_title.reset(new gcn::Label(loc.get(LocalKey("type_here_to_chat")).asUTF8()));
         container->add(chat_field_title.get(), rhs_x, ybelow - chat_field_title->getHeight());
         ybelow -= chat_field_title->getHeight();
         ybelow -= (pad + vpad_rhs);
@@ -232,16 +234,18 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
     int y = y_after_menu + vpad_after_quest_box;
     if (extended) {
         // (this looks a little better with some extra spacing, as its next to the "Observe" button which is fairly big...)
-        exit_button.reset(new GuiButton("  Exit  "));
+        // TODO: Do this in a locale-specific way, e.g., we could measure the max size of the two strings
+        // and equalize the button sizes? Or just impose a minimum width perhaps?
+        exit_button.reset(new GuiButton("  " + loc.get(LocalKey("exit")).asUTF8() + "  "));
     } else {
-        exit_button.reset(new GuiButton("Exit"));
+        exit_button.reset(new GuiButton(loc.get(LocalKey("exit")).asUTF8()));
     }
     exit_button->addActionListener(this);
     container->add(exit_button.get(), container_width - pad - exit_button->getWidth(), y + button_yofs);
     if (extended) {
         const int exit_button_gap = 30;
 
-        ready_checkbox.reset(new gcn::CheckBox("Ready to Start"));
+        ready_checkbox.reset(new gcn::CheckBox(loc.get(LocalKey("ready_to_start")).asUTF8()));
         ready_checkbox->addActionListener(this);
         container->add(ready_checkbox.get(), pad, y + 2);
 
@@ -249,26 +253,26 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
 
 #ifdef ONLINE_PLATFORM
         if (can_invite) {
-            invite_button.reset(new GuiButton("Invite Friend"));
+            invite_button.reset(new GuiButton(loc.get(LocalKey("invite_friend")).asUTF8()));
             invite_button->addActionListener(this);
             container->add(invite_button.get(), x - invite_button->getWidth(), y + button_yofs);
             x -= invite_button->getWidth() + exit_button_gap;
         }
 #endif
 
-        join_button.reset(new GuiButton("Join Game"));
+        join_button.reset(new GuiButton(loc.get(LocalKey("join_game")).asUTF8()));
         join_button->addActionListener(this);
         container->add(join_button.get(), x - join_button->getWidth(), y + button_yofs);
         join_button->setVisible(false);
 
-        observe_button.reset(new GuiButton("Observe"));
+        observe_button.reset(new GuiButton(loc.get(LocalKey("observe")).asUTF8()));
         observe_button->addActionListener(this);
         container->add(observe_button.get(), x - observe_button->getWidth(), y + button_yofs);
 
-        observer_label.reset(new gcn::Label("You are observing this game. Click \"Join Game\" if you wish to play."));
+        observer_label.reset(new gcn::Label(loc.get(LocalKey("you_are_observing")).asUTF8()));
         container->add(observer_label.get(), pad, y + 2);
     } else {
-        start_button.reset(new GuiButton("Start"));
+        start_button.reset(new GuiButton(loc.get(LocalKey("start")).asUTF8()));
         start_button->addActionListener(this);
         container->add(start_button.get(), pad, y + button_yofs);
     }

@@ -437,7 +437,7 @@ namespace Coercri {
         if (params.resizable) flags |= SDL_WINDOW_RESIZABLE;
         if (params.maximized) flags |= SDL_WINDOW_MAXIMIZED;
 
-        SDL_Window *sdl_window = SDL_CreateWindow(params.title.c_str(),
+        SDL_Window *sdl_window = SDL_CreateWindow(params.title.asUTF8().c_str(),
                                                   SDL_WINDOWPOS_UNDEFINED,
                                                   SDL_WINDOWPOS_UNDEFINED,
                                                   width,

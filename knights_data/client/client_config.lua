@@ -70,7 +70,6 @@ dpy_dungeon_height = 176;   -- (11 squares)
 game_over_r = 180;
 game_over_g = 60;
 game_over_b = 60;
-game_over_msg = "CLICK MOUSE TO CONTINUE";
 game_over_fade_time = 300;
 game_over_black_time = 300;
 

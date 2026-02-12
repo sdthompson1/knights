@@ -1073,11 +1073,11 @@ bool MenuWrapper::checkNumPlayersStrict(LocalMsg &err_msg) const
             if (pimpl->num_players < info.min_players) {
                 ok = false;
                 error_num_value = info.min_players;
-                error_num_key = LocalKey("players");
+                error_num_key = LocalKey("players_lowercase");
             } else if (pimpl->num_teams < info.min_teams) {
                 ok = false;
                 error_num_value = info.min_teams;
-                error_num_key = LocalKey("teams");
+                error_num_key = LocalKey("teams_lowercase");
             }
 
             if (!ok) {

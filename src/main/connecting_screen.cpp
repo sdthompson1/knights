@@ -91,18 +91,16 @@ void ConnectingScreenImpl::setupGui(KnightsApp &ka, gcn::Gui &gui)
     const int pad = 10;
     int y = pad;
 
-    std::string text = "Connecting to ";
-    if (addr_display_name.empty()) {
-        text += address;
-    } else {
-        text += addr_display_name + " (" + address + ")";
-    }
-    text += "...";
-    label.reset(new gcn::Label(text));
+    std::vector<LocalParam> params;
+    params.push_back(LocalParam(UTF8String::fromUTF8Safe(address)));
+    params.push_back(LocalParam(UTF8String::fromUTF8Safe(addr_display_name)));
+    LocalKey key(addr_display_name.empty() ? "connecting_to" : "connecting_to_alt");
+    UTF8String text = ka.getLocalization().get(key, params);
+    label.reset(new gcn::Label(text.asUTF8()));
     container->add(label.get(), pad, y);
     y += label->getHeight() + pad;
     
-    cancel_button.reset(new GuiButton("Cancel"));
+    cancel_button.reset(new GuiButton(ka.getLocalization().get(LocalKey("cancel")).asUTF8()));
     cancel_button->addActionListener(this);
     container->add(cancel_button.get(), pad + label->getWidth() / 2 - cancel_button->getWidth() / 2, y);
 

@@ -61,6 +61,7 @@ private:
 TitleScreenImpl::TitleScreenImpl(KnightsApp &app, gcn::Gui &gui)
     : knights_app(app)
 {
+    const Localization &loc = app.getLocalization();
     const int w = 280, h = 40, vspace = 15, pad = 15, vspace2 = 40;
     
     container.reset(new gcn::Container);
@@ -70,31 +71,31 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, gcn::Gui &gui)
     int y = pad;
     const int yinc = h + vspace;
     
-    start_game.reset(new GuiButton("Start Game"));
+    start_game.reset(new GuiButton(loc.get(LocalKey("start_game")).asUTF8()));
     start_game->setSize(w,h);
     start_game->addActionListener(this);
     container->add(start_game.get(), x, y);
     y += yinc;
     
-    tutorial.reset(new GuiButton("Tutorial"));
+    tutorial.reset(new GuiButton(loc.get(LocalKey("tutorial")).asUTF8()));
     tutorial->setSize(w,h);
     tutorial->addActionListener(this);
     container->add(tutorial.get(), x, y);
     y += yinc;
 
-    options.reset(new GuiButton("Options"));
+    options.reset(new GuiButton(loc.get(LocalKey("options")).asUTF8()));
     options->setSize(w, h);
     options->addActionListener(this);
     container->add(options.get(), x, y);
     y += yinc;
 
-    credits.reset(new GuiButton("Credits"));
+    credits.reset(new GuiButton(loc.get(LocalKey("credits")).asUTF8()));
     credits->setSize(w, h);
     credits->addActionListener(this);
     container->add(credits.get(), x, y);
     y += yinc;
     
-    exit.reset(new GuiButton("Quit"));
+    exit.reset(new GuiButton(loc.get(LocalKey("quit")).asUTF8()));
     exit->setSize(w,h);
     exit->addActionListener(this);
     container->add(exit.get(), x, y);
@@ -103,7 +104,7 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, gcn::Gui &gui)
     container->setSize(w + 2*pad, y - vspace + pad);
     panel2.reset(new GuiPanel(container.get()));
 
-    title.reset(new gcn::Label("KNIGHTS"));
+    title.reset(new gcn::Label(loc.get(LocalKey("knights_caps")).asUTF8()));
     title->setWidth(w+2*pad);
     title->setHeight(title->getHeight() + 2*pad);
     title->setAlignment(gcn::Graphics::CENTER);

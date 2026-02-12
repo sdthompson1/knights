@@ -133,7 +133,7 @@ namespace {
 
     int ServerList::getNumberOfElements()
     {
-        if (discoverer && discoverer->isValid()) {
+        if (!hasError()) {
             return int(server_infos.size());
         } else {
             return 2;
@@ -142,16 +142,13 @@ namespace {
 
     std::string ServerList::getElementAt(int i)
     {
-        if (discoverer && discoverer->isValid()) {
+        if (!hasError()) {
             const ServerInfo *si = getServerAt(i);
             if (si) return ServerInfoToString(*si, knights_app.getLocalization());
             else return std::string();
         } else {
-            if (i==0) {
-                return "Cannot autodetect LAN games";
-            } else {
-                return "Please enter address manually below.";
-            }
+            LocalKey key(i == 0 ? "cannot_autodetect_lan" : "please_enter_address");
+            return knights_app.getLocalization().get(key).asUTF8();
         }
     }
 
@@ -317,6 +314,8 @@ namespace
 LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
     : knights_app(ka), window(win), gui(g)
 {
+    const Localization &loc = ka.getLocalization();
+
     server_list.reset(new ServerList(knights_app, knights_app.getTimer()));
 
     // Set up TabFont for formatting columns: Host | Address | Players | Status
@@ -336,15 +335,15 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     int y = 5;
     const int width = std::accumulate(widths.begin(), widths.end(), 0);
 
-    label1.reset(new gcn::Label("Available LAN Games (double-click to connect):"));
+    label1.reset(new gcn::Label(loc.get(LocalKey("avail_games_click_to_join")).asUTF8()));
 
-    title_label.reset(new gcn::Label("LAN Games"));
+    title_label.reset(new gcn::Label(loc.get(LocalKey("lan_games")).asUTF8()));
     title_label->setForegroundColor(gcn::Color(0,0,128));
     container->add(title_label.get(), pad + width/2 - title_label->getWidth()/2, y);
     y += title_label->getHeight() + 2*pad;
 
 #ifndef ONLINE_PLATFORM
-    name_label.reset(new gcn::Label("Player Name: "));
+    name_label.reset(new gcn::Label(loc.get(LocalKey("player_name_colon")).asUTF8() + " "));
     name_field.reset(new UTF8TextField);
     name_field->adjustSize();
     name_field->setWidth(width - name_label->getWidth());
@@ -358,10 +357,10 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     y += label1->getHeight() + pad;
 
     std::vector<std::string> titles;
-    titles.push_back("Host");
-    titles.push_back("Address");
-    titles.push_back("Players");
-    titles.push_back("Status");
+    titles.push_back(loc.get(LocalKey("host")).asUTF8());
+    titles.push_back(loc.get(LocalKey("address")).asUTF8());
+    titles.push_back(loc.get(LocalKey("players")).asUTF8());
+    titles.push_back(loc.get(LocalKey("status")).asUTF8());
     games_titleblock.reset(new TitleBlock(titles, widths));
     games_titleblock->setBaseColor(gcn::Color(200, 200, 200));
     container->add(games_titleblock.get(), pad, y);
@@ -377,10 +376,10 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     container->add(scroll_area.get(), pad, y);
     y += scroll_area->getHeight() + pad*3/2;
     
-    connect_button.reset(new GuiButton("Connect"));
+    connect_button.reset(new GuiButton(loc.get(LocalKey("connect")).asUTF8()));
     connect_button->addActionListener(this);
 
-    address_label.reset(new gcn::Label("Address: "));
+    address_label.reset(new gcn::Label(loc.get(LocalKey("address")).asUTF8() + ": "));
     const int address_field_width = width - address_label->getWidth() - connect_button->getWidth() - pad;
 
     address_field.reset(new UTF8TextField);
@@ -394,11 +393,11 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     container->add(connect_button.get(), pad + address_label->getWidth() + address_field_width + pad, y);
     y += connect_button->getHeight() + 15;
 
-    create_game_button.reset(new GuiButton("Create Game"));
+    create_game_button.reset(new GuiButton(loc.get(LocalKey("create_new_game")).asUTF8()));
     create_game_button->addActionListener(this);
-    refresh_list_button.reset(new GuiButton("Refresh List"));
+    refresh_list_button.reset(new GuiButton(loc.get(LocalKey("refresh_list")).asUTF8()));
     refresh_list_button->addActionListener(this);
-    cancel_button.reset(new GuiButton("Cancel"));
+    cancel_button.reset(new GuiButton(loc.get(LocalKey("cancel")).asUTF8()));
     cancel_button->addActionListener(this);
     container->add(create_game_button.get(), pad, y);
     container->add(refresh_list_button.get(), 25 + create_game_button->getWidth() + pad, y);
@@ -425,7 +424,7 @@ void LanGameScreenImpl::gotoErrorDialog(const std::string &msg)
     err_label.reset(new gcn::Label(msg));
     err_container->add(err_label.get(), err_pad, err_y);
     err_y += err_label->getHeight() + err_pad;
-    err_button.reset(new GuiButton("Back"));
+    err_button.reset(new GuiButton(knights_app.getLocalization().get(LocalKey("back")).asUTF8()));
     err_button->addActionListener(this);
     err_container->add(err_button.get(), err_pad + err_label->getWidth() / 2 - err_button->getWidth() / 2, err_y);
     err_container->setSize(2*err_pad + err_label->getWidth(), err_y + err_button->getHeight() + err_pad);
@@ -446,7 +445,7 @@ PlayerID LanGameScreenImpl::getPlayerID()
     return knights_app.getOnlinePlatform().getCurrentUserId();
 #else
     if (name_field->getText().empty()) {
-        gotoErrorDialog("You must enter a player name");
+        gotoErrorDialog(knights_app.getLocalization().get(LocalKey("you_must_enter_player_name")).asUTF8());
         return PlayerID();
     } else {
         UTF8String name = UTF8String::fromUTF8Safe(name_field->getText());
@@ -511,7 +510,7 @@ void LanGameScreenImpl::createGame()
 void LanGameScreenImpl::initiateConnection(const std::string &address, const std::string &display_name)
 {
     if (address.empty()) {
-        gotoErrorDialog("You must enter an address to connect to");
+        gotoErrorDialog(knights_app.getLocalization().get(LocalKey("you_must_enter_address")).asUTF8());
         return;
     }
 

@@ -308,7 +308,8 @@ LocalDisplay::LocalDisplay(const Localization &localization,
                            bool sgl_plyr,
                            bool tut,
                            bool tool_tips,
-                           const std::string &chat_keys,
+                           const UTF8String &global_chat_key,
+                           const UTF8String &team_chat_key,
                            const UTF8String &initial_chat_field_contents,
                            std::function<UTF8String(const PlayerID&)> player_name_lookup)
     : localization(localization),
@@ -372,12 +373,16 @@ LocalDisplay::LocalDisplay(const Localization &localization,
       action_bar_tool_tips(tool_tips),
       deathmatch_mode(dm_mode),
 
-      chat_msg("<Click here or press " + chat_keys + " to chat>"),
       initial_chat_field_contents(initial_chat_field_contents),
 
       quest_rqmts_minimized(false),
       force_setup_gui(false)
 {
+    std::vector<LocalParam> params;
+    params.push_back(LocalParam(global_chat_key));
+    params.push_back(LocalParam(team_chat_key));
+    chat_msg = localization.get(LocalKey("click_here_to_chat"), params).asUTF8();
+
     for (int i = 0; i < 2; ++i) {
         attack_mode[i] = false;
         allow_menu_open[i] = true;
@@ -470,12 +475,11 @@ void LocalDisplay::initialize(int nplyrs, const std::vector<PlayerID> &player_id
 
     if (tutorial_mode && controller1 && !controller1->usingActionBar()) {
         TutorialWindow win;
-        win.title = UTF8String::fromUTF8("NOTE");
-        win.msg = UTF8String::fromUTF8("You have selected old-style controls (keyboard only).\n\n"
-            "This tutorial is written for people who use the new-style controls (mouse "
-            "and keyboard). However, it is perfectly playable using either set of controls.\n\n"
-            "During the tutorial, both sets of controls will be available and you can use "
-            "whichever you prefer. Controls will be reset back to normal when the tutorial ends.");
+        win.title = localization.get(LocalKey("note"));
+        UTF8String new_para = UTF8String::fromUTF8("\n\n");
+        win.msg = localization.get(LocalKey("tutorial_note_1")) + new_para
+            + localization.get(LocalKey("tutorial_note_2")) + new_para
+            + localization.get(LocalKey("tutorial_note_3"));
         tutorial_popups.push_back(win);
         tutorial_windows.push_back(win);
     }
@@ -532,7 +536,8 @@ void LocalDisplay::setTimeLimitCaption()
     }
 
     if (time_limit_label) {
-        time_limit_label->setCaption("Time remaining: " + time_limit_string.asUTF8());
+        std::vector<LocalParam> params(1, LocalParam(time_limit_string));
+        time_limit_label->setCaption(localization.get(LocalKey("time_remaining"), params).asUTF8());
         time_limit_label->adjustSize();
         time_limit_string = UTF8String(); // don't draw both under the potion AND in the time limit label.
     }
@@ -569,7 +574,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
 
         // Add text field and labels, and the two buttons.
 
-        send_button.reset(new gcn::Button("Send"));
+        send_button.reset(new gcn::Button(localization.get(LocalKey("send")).asUTF8()));
         send_button->addActionListener(this);
         send_button->setBaseColor(gcn::Color(0x66, 0x66, 0x44));
         send_button->setForegroundColor(gcn::Color(255,255,255));
@@ -579,7 +584,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         const int chat_y = chat_area_y + chat_area_height - send_button->getHeight();
         container.add(send_button.get(), chat_area_x + chat_area_width - send_button->getWidth(), chat_y);
 
-        clear_button.reset(new gcn::Button("Clear"));
+        clear_button.reset(new gcn::Button(localization.get(LocalKey("clear")).asUTF8()));
         clear_button->addActionListener(this);
         clear_button->setBaseColor(gcn::Color(0x66, 0x66, 0x44));
         clear_button->setForegroundColor(gcn::Color(255,255,255));
@@ -622,7 +627,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
     }
 
     // "Messages" titleblock
-    std::vector<std::string> titles(1, "Messages");
+    std::vector<std::string> titles(1, localization.get(LocalKey("messages")).asUTF8());
     std::vector<int> widths(1, chat_area_width);
     chat_titleblock.reset(new TitleBlock(titles, widths));
     chat_titleblock->setFont(gui_font.get());
@@ -661,17 +666,17 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
         // Titles ("Player", "Kills", "Deaths" etc)
         titles.clear();
         titles.reserve(deathmatch_mode ? 3 : 4);
-        titles.push_back("Player");
+        titles.push_back(localization.get(LocalKey("player")).asUTF8());
         if (deathmatch_mode) {
-            titles.push_back("Score");
+            titles.push_back(localization.get(LocalKey("score")).asUTF8());
         } else {        
-            titles.push_back("Kills");
-            titles.push_back("Deaths");
+            titles.push_back(localization.get(LocalKey("kills")).asUTF8());
+            titles.push_back(localization.get(LocalKey("deaths")).asUTF8());
         }
-        titles.push_back("Ping");
+        titles.push_back(localization.get(LocalKey("ping")).asUTF8());
         widths.clear();
         widths.reserve(titles.size());
-        
+
         int num_width = gui_font->getWidth("9999");
         for (int i = 1; i < titles.size(); ++i) {
             num_width = std::max(num_width, gui_font->getWidth(titles[i]));
@@ -734,7 +739,7 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
 
     if (tutorial_mode) {
         // Titleblock -- note can reuse 'player_list_titleblock' since there is no player list in tutorial mode
-        std::vector<std::string> titles(1, "Tutorial");
+        std::vector<std::string> titles(1, localization.get(LocalKey("tutorial")).asUTF8());
         std::vector<int> widths(1, chat_area_width);
         plyr_list_titleblock.reset(new TitleBlock(titles, widths));
         plyr_list_titleblock->setFont(gui_font.get());
@@ -805,8 +810,10 @@ void LocalDisplay::setupGui(int chat_area_x, int chat_area_y, int chat_area_widt
                                 scroll_area_y, scroll_area_height, label_area_y, label_offset,
                                 show_label, dummy);
 
-        std::vector<std::string> titles(1, "Quest Requirements");
-        if (quest_rqmts_minimized) titles.front().append(" (click to show)");
+        std::vector<std::string> titles(1, localization.get(LocalKey("quest_requirements")).asUTF8());
+        if (quest_rqmts_minimized) {
+            titles.front().append(" " + localization.get(LocalKey("click_to_show")).asUTF8());
+        }
         std::vector<int> widths(1, quest_rqmts_width);
         quest_titleblock.reset(new TitleBlock(titles, widths));
         quest_titleblock->setFont(gui_font.get());
@@ -1156,14 +1163,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             have_sent_end_msg = true;
             TutorialWindow win;
             win.popup = true;
-            win.title = UTF8String::fromUTF8("Quest Complete");
-            win.msg = UTF8String::fromUTF8("Congratulations! You have completed your quest."
-                "^If you now want to play a proper game of Knights, you have the following options:"
-                "^* Multiplayer mode. Knights is designed first and foremost as a multiplayer game, and you can "
-                "play online, on a LAN, or in two-player split screen mode."
-                "^* Single Player mode. This is a good way to learn about the different types of quests and so on. Alternatively, if you "
-                "want a more challenging game, you can add a time limit and try to complete quests against the clock."
-                "^That concludes the tutorial. We will now return to the main menu.");
+            win.title = localization.get(LocalKey("quest_complete"));
+            win.msg = localization.get(LocalKey("tutorial_win_message"));
             popUpWindow(std::vector<TutorialWindow>(1,win));
             tutorial_selected_window = -1;
             updateTutorialWidget();
@@ -1199,6 +1200,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             if (winner_image) {
                 image = winner_image;
             } else {
+                // this is just a fallback in case the image doesn't exist for some reason,
+                // so the message doesn't need to be localized
                 gc.drawText(vp_x + 10, 50, *gm.getFont(), UTF8String::fromUTF8("WINNER"), Coercri::Color(255,255,255));
             }
         } else {
@@ -1221,7 +1224,7 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                                       my_colour_change ? *my_colour_change : ColourChange());
 
             if (!ready_msg_sent && !observer_mode && !tutorial_mode) {
-                const UTF8String msg = UTF8String::fromUTF8Safe(config_map.getString("game_over_msg"));
+                const UTF8String msg = localization.get(LocalKey("click_mouse"));
                 const int x = vp_x + vp_width/2 - gm.getFont()->getTextWidth(msg)/2;
                 gc.drawText(x,
                             image_y + new_height + 2*th,
@@ -1295,7 +1298,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
 
         // replace 'control characters' in the message
         std::string msg_utf8 = replaceSpecialChars(win.msg.asUTF8());
-        msg_utf8 += "\n\nPress SPACE to continue.";
+        msg_utf8 += "\n\n";
+        msg_utf8 += localization.get(LocalKey("press_space")).asUTF8();
 
         // figure out size/position of the window
         const int text_height = gm.getFont()->getTextHeight();
@@ -1396,7 +1400,7 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     }
 
     // "R" key does not appear in single player modes (is_paused ==> single player)
-    const char *q_key = "quit";
+    const char *q_key = "quit";  // Localization key
     const char *r_key = nullptr;
     if (!is_paused) {
         // In the multiplayer modes, show "Quit (disconnect)" instead of just "Quit"
@@ -1426,7 +1430,7 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     int pause_height = num_lines * th + th/2;
 
     // work out width
-    int maxw1 = gm.getFont()->getTextWidth(localization.get(LocalKey("esc")) + UTF8String::fromUTF8(":"));  // assumed wider than "Q:" and "R:"
+    int maxw1 = gm.getFont()->getTextWidth(localization.get(LocalKey("esc")) + UTF8String::fromUTF8(":"));  // assumed wider than "Q:" and "R:" (TODO: might need to rethink that?)
     int maxw2 = std::max(gm.getFont()->getTextWidth(return_msg),
                          std::max(gm.getFont()->getTextWidth(q_msg),
                                   gm.getFont()->getTextWidth(r_msg)));
@@ -1629,7 +1633,7 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
     if (vote_status_label && vote_button && vote_status.isDirty()) {
         Coercri::UTF8String vote_msg = vote_status.getStatusMessage(localization);
         if (vote_msg.empty()) {
-            vote_status_label->setCaption("Press ESC for more info & options");
+            vote_status_label->setCaption(localization.get(LocalKey("press_esc_for_more")).asUTF8());
             vote_status_label->adjustSize();
             vote_status_label->setForegroundColor(gcn::Color(170, 170, 170));
             vote_button->setVisible(false);

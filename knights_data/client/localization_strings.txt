@@ -1,3 +1,150 @@
+# Window title
+knights                         Knights
+
+
+# Title screen
+knights_caps                    KNIGHTS
+start_game                      Start Game
+tutorial                        Tutorial
+options                         Options
+credits                         Credits
+quit                            Quit
+
+
+# Start Game screen
+start_game_caps                 START GAME
+online_multiplayer              Online Multiplayer
+lan_games                       LAN Games
+split_screen_mode               Split Screen Mode
+single_player_mode              Single Player Mode
+cancel                          Cancel
+
+
+# Online Multiplayer screen
+online_multiplayer_games        Online Multiplayer Games
+avail_games_click_to_join       Available Games (double-click to join):
+show_incompat_games             Show incompatible games
+host                            Host
+players                         Players
+status                          Status
+create_new_game                 Create New Game
+refresh_list                    Refresh List
+
+
+# LAN Games screen
+player_name_colon               Player Name:
+address                         Address
+connect                         Connect
+back                            Back
+cannot_autodetect_lan           Cannot autodetect LAN games.
+please_enter_address            Please enter address manually below.
+you_must_enter_player_name      You must enter a player name
+you_must_enter_address          You must enter an address to connect to
+
+
+# Game statuses (for game list screens)
+unknown           Unknown
+selecting_quest   Selecting Quest
+playing_x         Playing ({0})
+
+
+# Options screen
+controls                        Controls
+show_controls_for               Show controls for:
+lan_internet_single             LAN / Internet / Single Player
+two_player_split                Two Player (Split Screen)
+control_system                  Control system:
+player_n                        Player {0}
+new_control_system              New control system (Mouse + Keyboard)
+original_amiga_controls         Original Amiga controls (Keyboard only)
+control_keys                    Control keys:
+chat_keys                       Chat keys:
+up_caps                         UP
+down_caps                       DOWN
+left_caps                       LEFT
+right_caps                      RIGHT
+action_caps                     ACTION
+suicide_caps                    SUICIDE
+global_chat_caps                GLOBAL CHAT
+team_chat_caps                  TEAM CHAT
+up_colon                        Up:
+down_colon                      Down:
+left_colon                      Left:
+right_colon                     Right:
+action_colon                    Action:
+suicide_colon                   Suicide:
+global_colon                    Global:
+team_colon                      Team:
+change                          Change
+press                           <Press>
+please_press_key_for            ** Please press a key for {0} **
+key_in_use                      Key already in use. Please choose another key.
+other_options                   Other Options
+display_mode                    Display Mode:
+windowed                        Windowed
+full_screen                     Full Screen
+graphics_scaling                Graphics Scaling:
+scale2x                         Scale2x
+pixelated                       Pixelated
+allow_fractional_scaling        Allow Fractional Scaling
+ok                              OK
+restore_defaults                Restore Defaults
+
+
+# Connecting screen
+connecting_to                   Connecting to {0}...
+connecting_to_alt               Connecting to {1} ({0})...
+
+
+# Error screen
+exit                            Exit
+
+
+# Loading screen
+loading                         LOADING
+
+
+# Quest selection menu
+random_quest                    Random Quest
+change_house_colour             Change Knight House Colour:
+knights_of_same_colour          (Knights of the same House Colour play on the same team.)
+type_here_to_chat               Type here to chat
+ready_to_start                  Ready to Start
+invite_friend                   Invite Friend
+observe                         Observe
+join_game                       Join Game
+you_are_observing               You are observing this game. Click "Join Game" if you wish to play.
+start                           Start
+
+
+# In-game screen
+player                          Player
+score                           Score
+kills                           Kills
+deaths                          Deaths
+ping                            Ping
+quest_requirements              Quest Requirements
+click_to_show                   (click to show)
+press_esc_for_more              Press ESC for more info & options
+messages                        Messages
+click_here_to_chat              <Click here or press {0} or {1} to chat>
+send                            Send
+clear                           Clear
+time_remaining                  Time remaining: {0}
+click_mouse                     CLICK MOUSE TO CONTINUE
+
+
+# Some tutorial messages
+note                            NOTE
+tutorial_note_1                 You have selected old-style controls (keyboard only).
+tutorial_note_2                 This tutorial is written for people who use the new-style controls (mouse and keyboard). However, it is perfectly playable using either set of controls.
+tutorial_note_3                 During the tutorial, both sets of controls will be available and you can use whichever you prefer. Controls will be reset back to normal when the tutorial ends.
+press_space                     Press SPACE to continue.
+quest_complete                  Quest Complete
+# Sorry for the long string below... Note that ^ starts a new paragraph (in this message only, not in general)
+tutorial_win_message            Congratulations! You have completed your quest.^If you now want to play a proper game of Knights, you have the following options:^* Multiplayer mode. Knights is designed first and foremost as a multiplayer game, and you can play online, on a LAN, or in two-player split screen mode.^* Single Player mode. This is a good way to learn about the different types of quests and so on. Alternatively, if you want a more challenging game, you can add a time limit and try to complete quests against the clock.^That concludes the tutorial. We will now return to the main menu.
+
+
 # Error messages
 unknown_error                   Unknown error
 access_denied                   Access denied
@@ -40,12 +187,6 @@ failed_join_lobby               Failed to join lobby
 lobby_connection_lost           Lobby connection lost
 
 
-# Game statuses (for multiplayer game list screen)
-unknown           Unknown
-selecting_quest   Selecting Quest
-playing_x         Playing ({0})
-
-
 # In-game messages
 team_chat_avail         Note: Team chat is available. Type /t at the start of your message to send to your team only.
 cant_change_obs         Cannot change observer status at this time. Please wait until the game has finished.
@@ -59,7 +200,27 @@ is_winner[one]          {0} is the winner!
 is_winner[other]        {0...} are the winners!
 game_completed          Game completed in {0}m {1}s.
 x_disconnected          {0} (Disconnected)
+x_observer              {0} (Observer)
+x_ready                 {0} (Ready)
+x_eliminated            {0} (Eliminated)
+x_team                  {0} (Team)
 could_not_generate      Could not generate a "{0}" dungeon for this quest. Using "{1}" instead.
+
+# More in-game messages
+lan_game_created                LAN game created.
+is_ready                        {0} is ready to start.
+is_not_ready                    {0} is no longer ready to start.
+game_started                    Game started.
+game_started_obs                Game started. You are observing this game.
+has_left                        {0} has left the game.
+no_longer_observing             {0} is no longer observing this game.
+you_have_joined                 You have joined the game.
+has_joined                      {0} has joined the game.
+you_are_now_observing           You are now observing this game.
+is_now_observing                {0} is now observing this game.
+use_arrow_keys_to_switch        Use arrow keys (left/right and up/down) to switch between players.
+you_have_reconnected            You have reconnected to this game.
+has_reconnected                 {0} has reconnected.
 
 
 # Controls
@@ -130,7 +291,6 @@ the_book              The book
 # Quest selection menu
 quest_sel             QUEST SELECTION
 tutorial_upper        TUTORIAL
-tutorial              Tutorial
 quest                 Quest
 mission_type          Mission Type
 type_of_book          Type of Book
@@ -218,8 +378,8 @@ medium                Medium
 fast                  Fast
 
 err_requires_at_least    ERROR: {0} = {1} requires at least {2} {3}.
-players                  players
-teams                    teams
+players_lowercase        players
+teams_lowercase          teams
 
 player_set_menu       {0} set "{1}" to "{2}".
 player_set_random     {0} selected a Random Quest.
@@ -282,11 +442,9 @@ desc_deathmatch_1               Deathmatch
 desc_deathmatch_2               Players get 1 point for killing an enemy knight, and -1 for a suicide. (Being killed by a monster doesn't affect your score.) The player with the highest score when time runs out is the winner.
 
 # In-game "pause mode" (ESC menu)
-knights_caps                    KNIGHTS
 game_paused_caps                GAME PAUSED
 esc                             ESC
 return_to_game                  Return to game
-quit                            Quit
 quit_disconnect                 Quit (disconnect)
 restart                         Restart quest
 vote_to_restart                 Vote to restart quest

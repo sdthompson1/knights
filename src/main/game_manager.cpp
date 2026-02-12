@@ -176,6 +176,7 @@ bool ChatList::isUpdated()
 
 NameList::NameList(const std::vector<Coercri::Color> &hc, KnightsApp &app)
     : house_cols(hc)
+    , localization(app.getLocalization())
 #ifdef ONLINE_PLATFORM
     , online_platform(app.getOnlinePlatform())
 #endif
@@ -290,17 +291,21 @@ int NameList::getNumberOfElements()
 std::string NameList::getElementAt(int i)
 {
     if (i < 0 || i >= names.size()) return "";
-    std::string result = nameLookup(names[i].id).asUTF8();
+    UTF8String result = nameLookup(names[i].id);
     if (names[i].observer) {
-        result += " (Observer)";
+        result = localization.get(LocalKey("x_observer"),
+                                  std::vector<LocalParam>(1, LocalParam(result)));
     } else {
-        if (names[i].ready) result += " (Ready)";
+        if (names[i].ready) {
+            result = localization.get(LocalKey("x_ready"),
+                                      std::vector<LocalParam>(1, LocalParam(result)));
+        }
         if (names[i].house_col >= 0 && names[i].house_col < house_cols.size()) {
-            result += "  ";
-            result += ColToText(house_cols[names[i].house_col]).asUTF8();
+            result += UTF8String::fromUTF8("  ");
+            result += ColToText(house_cols[names[i].house_col]);
         }
     }
-    return result;
+    return result.asUTF8();
 }
 
 UTF8String NameList::nameLookup(const PlayerID &id) const
@@ -399,7 +404,7 @@ namespace {
             }
             return widest_text + 8 + font.getHeight();  // getHeight is to allow for the 'drop down button' which is approximately square.
         } else {
-            return font.getWidth("99999 mins");
+            return font.getWidth("99999 minutes");  // should be approximately correct in all languages - not worth localizing
         }
     }
 
@@ -873,7 +878,7 @@ std::function<UTF8String(const PlayerID&)> GameManager::getPlayerNameLookup() co
         const Localization &localization = pimpl->knights_app.getLocalization();
         for (const auto& player : pimpl->saved_client_player_info) {
             if (player.id == id && player.client_state == ClientState::DISCONNECTED) {
-                return localization.get(LocalKey("x_disconnected"), name);
+                return pimpl->knights_app.getLocalization().get(LocalKey("x_disconnected"), name);
             }
         }
 
@@ -1047,7 +1052,7 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
         pimpl->chat_list.clear();
     }
     if (pimpl->is_lan_game && player_ids.size() == 1) {
-        pimpl->chat_list.add(UTF8String::fromUTF8("LAN game created."));
+        pimpl->chat_list.add(pimpl->knights_app.getLocalization().get(LocalKey("lan_game_created")));
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     } else if (pimpl->knights_app.getHostMigrationState() == HostMigrationState::MIGRATING
                && !already_started) {
@@ -1153,6 +1158,8 @@ void GameManager::updatePlayer(const PlayerID &player, const std::string &game, 
 
 void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list_orig)
 {
+    const Localization &localization = pimpl->knights_app.getLocalization();
+
     // First sort the player list
     std::vector<ClientPlayerInfo> player_list = player_list_orig;
 
@@ -1200,19 +1207,23 @@ void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list_or
 
     // Now transfer the sorted list to the UI (ingame_player_list).
     pimpl->ingame_player_list.clear();
+    std::vector<LocalParam> params;
     for (std::vector<ClientPlayerInfo>::const_iterator it = player_list.begin(); it != player_list.end(); ++it) {
         UTF8String str = ColToText(it->house_colour);
         str += UTF8String::fromUTF8(" ");
         str += pimpl->usernameLookup(it->id);
 
+        params.clear();
+        params.push_back(LocalParam(str));
+
         if (pimpl->ready_to_end.find(it->id) != pimpl->ready_to_end.end()) {
-            str += UTF8String::fromUTF8(" (Ready)"); // indicate players who have clicked.
+            str = localization.get(LocalKey("x_ready"), params);
         } else if (it->client_state == ClientState::DISCONNECTED) {
-            str += UTF8String::fromUTF8(" (Disconnected)");
+            str = localization.get(LocalKey("x_disconnected"), params);
         } else if (it->client_state == ClientState::ELIMINATED) {
-            str += UTF8String::fromUTF8(" (Eliminated)");
+            str = localization.get(LocalKey("x_eliminated"), params);
         } else if (it->client_state == ClientState::OBSERVER) {
-            str += UTF8String::fromUTF8(" (Observer)");
+            str = localization.get(LocalKey("x_observer"), params);
         }
 
         str += UTF8String::fromUTF8("\t");
@@ -1273,24 +1284,20 @@ void GameManager::playerVotedToRestart(const PlayerID &player, uint8_t flags, in
 
 void GameManager::setObsFlag(const PlayerID &id, bool new_obs_flag)
 {
+    const Localization &localization = pimpl->knights_app.getLocalization();
+
     // Update players list
     pimpl->game_namelist.alter(id, &new_obs_flag, 0, 0);
 
     // do message if needed
     if (id == pimpl->my_player_id) {
         pimpl->my_obs_flag = new_obs_flag;
-        if (new_obs_flag) {
-            pimpl->chat_list.add(UTF8String::fromUTF8("You are now observing this game."));
-        } else {
-            pimpl->chat_list.add(UTF8String::fromUTF8("You have joined the game."));
-        }
+        const char *local_key = new_obs_flag ? "you_are_now_observing" : "you_have_joined";
+        pimpl->chat_list.add(localization.get(LocalKey(local_key)));
     } else {
-        UTF8String name = pimpl->usernameLookup(id);
-        if (new_obs_flag) {
-            pimpl->chat_list.add(name + UTF8String::fromUTF8(" is now observing this game."));
-        } else {
-            pimpl->chat_list.add(name + UTF8String::fromUTF8(" has joined the game."));
-        }
+        const char *local_key = new_obs_flag ? "is_now_observing" : "has_joined";
+        std::vector<LocalParam> params(1, LocalParam(id));
+        pimpl->chat_list.add(localization.get(LocalKey(local_key), params));
     }
 
     pimpl->gui_invalid = true;
@@ -1382,6 +1389,8 @@ UTF8String GameManager::getQuestDescription() const
 void GameManager::startGame(int ndisplays, bool deathmatch_mode,
                             const std::vector<PlayerID> &player_ids, bool already_started)
 {
+    const Localization &localization = pimpl->knights_app.getLocalization();
+
     if (!pimpl->client_config) throw UnexpectedError("Cannot start game -- config not loaded");
 
     // reset the "end of game" timer for a new game
@@ -1437,21 +1446,21 @@ void GameManager::startGame(int ndisplays, bool deathmatch_mode,
     } else if (i_am_observer) {
         // Observer, either starting new game or rejoining existing one
         if (already_started) {
-            pimpl->chat_list.add(UTF8String::fromUTF8("You are now observing this game."));
+            pimpl->chat_list.add(localization.get(LocalKey("you_are_now_observing")));
         } else {
-            pimpl->chat_list.add(UTF8String::fromUTF8("Game started. You are observing this game."));
+            pimpl->chat_list.add(localization.get(LocalKey("game_started_obs")));
         }
         if (player_ids.size() > 2) {
-            pimpl->chat_list.add(UTF8String::fromUTF8("Use arrow keys (left/right and up/down) to switch between players."));
+            pimpl->chat_list.add(localization.get(LocalKey("use_arrow_keys_to_switch")));
         }
 
     } else if (already_started) {
         // Player, rejoining an existing game
-        pimpl->chat_list.add(UTF8String::fromUTF8("You have reconnected to this game."));
+        pimpl->chat_list.add(localization.get(LocalKey("you_have_reconnected")));
 
     } else {
         // Player, starting a new game
-        pimpl->chat_list.add(UTF8String::fromUTF8("Game started."));
+        pimpl->chat_list.add(localization.get(LocalKey("game_started")));
     }
 
     // clear ready flags
@@ -1515,18 +1524,20 @@ void GameManager::gotoMenu()
 
 void GameManager::playerJoinedThisGame(const PlayerID &id, bool obs_flag, int house_col)
 {
-    UTF8String name = pimpl->usernameLookup(id);
+    const Localization &localization = pimpl->knights_app.getLocalization();
+
+    std::vector<LocalParam> params(1, LocalParam(id));
     if (!obs_flag) {
         if (pimpl->game_in_progress) {
             // The only way to join a game while it is in progress is via reconnect - there
             // is no way for "new" players to enter a game in progress (currently)
-            pimpl->chat_list.add(name + UTF8String::fromUTF8(" has reconnected."));
+            pimpl->chat_list.add(localization.get(LocalKey("has_reconnected"), params));
         } else {
-            pimpl->chat_list.add(name + UTF8String::fromUTF8(" has joined the game."));
+            pimpl->chat_list.add(localization.get(LocalKey("has_joined"), params));
         }
         pimpl->game_namelist.add(id, false, false, house_col);
     } else {
-        pimpl->chat_list.add(name + UTF8String::fromUTF8(" is now observing this game."));
+        pimpl->chat_list.add(localization.get(LocalKey("is_now_observing"), params));
         pimpl->game_namelist.add(id, true, false, house_col);
     }
     pimpl->gui_invalid = true;
@@ -1547,12 +1558,9 @@ void GameManager::setAvailableHouseColours(const std::vector<Coercri::Color> &co
 
 void GameManager::playerLeftThisGame(const PlayerID &id, bool obs_flag)
 {
-    UTF8String msg = pimpl->usernameLookup(id);
-    if (obs_flag) {
-        msg += UTF8String::fromUTF8(" is no longer observing this game.");
-    } else {
-        msg += UTF8String::fromUTF8(" has left the game.");
-    }
+    std::vector<LocalParam> params(1, LocalParam(id));
+    const char *local_key = obs_flag ? "no_longer_observing" : "has_left";
+    UTF8String msg = pimpl->knights_app.getLocalization().get(LocalKey(local_key), params);
     pimpl->chat_list.add(msg);
     pimpl->game_namelist.remove(id);
     pimpl->gui_invalid = true;
@@ -1560,12 +1568,10 @@ void GameManager::playerLeftThisGame(const PlayerID &id, bool obs_flag)
 
 void GameManager::setReady(const PlayerID &id, bool ready)
 {
-    UTF8String name = pimpl->usernameLookup(id);
-    if (ready) {
-        pimpl->chat_list.add(name + UTF8String::fromUTF8(" is ready to start."));
-    } else {
-        pimpl->chat_list.add(name + UTF8String::fromUTF8(" is no longer ready to start."));
-    }
+    std::vector<LocalParam> params(1, LocalParam(id));
+    const char *local_key = ready ? "is_ready" : "is_not_ready";
+    UTF8String msg = pimpl->knights_app.getLocalization().get(LocalKey(local_key), params);
+    pimpl->chat_list.add(msg);
     pimpl->game_namelist.alter(id, 0, &ready, 0);
     if (id == pimpl->my_player_id) pimpl->my_ready_flag = ready;
     pimpl->gui_invalid = true;
@@ -1610,6 +1616,8 @@ namespace {
 
 void GameManager::chat(const PlayerID &whofrom, const UTF8String &msg)
 {
+    const Localization &localization = pimpl->knights_app.getLocalization();
+
     // Convert player ID to name
     UTF8String out = pimpl->usernameLookup(whofrom);
 
@@ -1642,9 +1650,9 @@ void GameManager::chat(const PlayerID &whofrom, const UTF8String &msg)
             // Drop this message as it is for a different team
             return;
         }
-        out += UTF8String::fromUTF8(" (Team)");
+        out = localization.get(LocalKey("x_team"), std::vector<LocalParam>(1, LocalParam(out)));
     } else if (observer) {
-        out += UTF8String::fromUTF8(" (Observer)");
+        out = localization.get(LocalKey("x_observer"), std::vector<LocalParam>(1, LocalParam(out)));
     }
 
     // Add colon and the stripped message itself

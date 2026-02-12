@@ -24,6 +24,7 @@
 #include "options.hpp"
 
 #include "knights_app.hpp"
+#include "localization.hpp"
 #include "options_screen.hpp"
 #include "title_screen.hpp"
 
@@ -41,62 +42,85 @@
 #include <sstream>
 
 namespace {
-    const char * control_names[] = { "UP", "DOWN", "LEFT", "RIGHT", "ACTION", "SUICIDE" };
-    const char * chat_names[] = { "GLOBAL CHAT", "TEAM CHAT" };
+    const LocalKey control_names[] = {
+        LocalKey("up_caps"),
+        LocalKey("down_caps"),
+        LocalKey("left_caps"),
+        LocalKey("right_caps"),
+        LocalKey("action_caps"),
+        LocalKey("suicide_caps")
+    };
+    const LocalKey chat_names[] = {
+        LocalKey("global_chat_caps"),
+        LocalKey("team_chat_caps")
+    };
 
     class ScalingListModel : public gcn::ListModel {
     public:
+        explicit ScalingListModel(const Localization &loc)
+            : localization(loc) { }
+
         std::string getElementAt(int i) {
-            if (i==0) return "Scale2x";
-            else return "Pixellated";
+            return localization.get(LocalKey(i == 0 ? "scale2x" : "pixelated")).asUTF8();
         }
 
         int getNumberOfElements() {
             return 2;
         }
+
+    private:
+        const Localization &localization;
     };
 
     class DisplayListModel : public gcn::ListModel {
     public:
+        explicit DisplayListModel(const Localization &loc)
+            : localization(loc) { }
+
         std::string getElementAt(int i) {
-            if (i == 0) {
-                return "Windowed";
-            } else if (i == 1) {
-                return "Full Screen";
-            } else {
-                return "";
-            }
+            return localization.get(LocalKey(i == 0 ? "windowed" : "full_screen")).asUTF8();
         }
 
         int getNumberOfElements() {
             return 2;
         }
+
+    private:
+        const Localization &localization;
     };
 
     class ShowControlsListModel : public gcn::ListModel {
     public:
+        explicit ShowControlsListModel(const Localization &loc)
+            : localization(loc) { }
+
         std::string getElementAt(int i) {
-            if (i==0) return "LAN / Internet / Single Player";
-            else return "Two Player (Split Screen)";
+            return localization.get(LocalKey(i == 0 ? "lan_internet_single" : "two_player_split")).asUTF8();
         }
 
         int getNumberOfElements() {
             return 2;
         }
+
+    private:
+        const Localization &localization;
     };
 
     class ControlSystemListModel : public gcn::ListModel {
     public:
-        ControlSystemListModel() { }
+        explicit ControlSystemListModel(const Localization &loc)
+            : localization(loc) { }
 
         std::string getElementAt(int i) {
-            if (i==0) return "New control system (Mouse + Keyboard)";
-            else return "Original Amiga controls (Keyboard only)";
+            return localization.get(LocalKey(i == 0 ? "new_control_system" : "original_amiga_controls")).asUTF8();
         }
 
         int getNumberOfElements() {
             return 2;
         }
+
+    private:
+        const Localization &localization;
     };
 }
 
@@ -137,7 +161,6 @@ private:
     boost::scoped_ptr<gcn::CheckBox> non_integer_checkbox;
     boost::scoped_ptr<gcn::Button> restore_button;
     boost::scoped_ptr<GuiTextWrap> bad_key_area;
-    boost::scoped_ptr<gcn::CheckBox> tooltip_checkbox;
 
     Options current_opts;
 
@@ -153,6 +176,8 @@ private:
 OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     : knights_app(app), current_opts(app.getOptions()), change_active(false)
 {
+    const Localization &loc = knights_app.getLocalization();
+
     previous_fullscreen = current_opts.fullscreen;
     
     container.reset(new gcn::Container);
@@ -164,40 +189,43 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
 
     // Controls
 
-    controls_title.reset(new gcn::Label("Controls"));
+    controls_title.reset(new gcn::Label(loc.get(LocalKey("controls")).asUTF8()));
     controls_title->setForegroundColor(gcn::Color(0,0,128));
     container->add(controls_title.get(), pad, y);
     y += controls_title->getHeight() + pad_small;
 
-    show_controls_label.reset(new gcn::Label("Show controls for: "));
+    show_controls_label.reset(new gcn::Label(loc.get(LocalKey("show_controls_for")).asUTF8() + " "));
     container->add(show_controls_label.get(), pad, y+1);
-    show_controls_listmodel.reset(new ShowControlsListModel);
+    show_controls_listmodel.reset(new ShowControlsListModel(loc));
     show_controls_dropdown.reset(new gcn::DropDown(show_controls_listmodel.get()));
     const int scdx = pad + show_controls_label->getWidth();
     show_controls_dropdown->addActionListener(this);
     container->add(show_controls_dropdown.get(), scdx, y);
     y += show_controls_dropdown->getHeight() + pad;
 
-    control_system_label.reset(new gcn::Label("Control system: "));
+    control_system_label.reset(new gcn::Label(loc.get(LocalKey("control_system")).asUTF8() + " "));
     container->add(control_system_label.get(), pad, y+1);
-    control_system_listmodel.reset(new ControlSystemListModel);
+    control_system_listmodel.reset(new ControlSystemListModel(loc));
     control_system_dropdown.reset(new gcn::DropDown(control_system_listmodel.get()));
     const int csx = pad + control_system_label->getWidth();
     control_system_dropdown->addActionListener(this);
     container->add(control_system_dropdown.get(), csx, y);
     y += control_system_dropdown->getHeight() + pad;
-    
-    control_label[0][0].reset(new gcn::Label("Player 1"));
+
+    std::vector<LocalParam> params;
+    params.push_back(LocalParam(1));
+    control_label[0][0].reset(new gcn::Label(loc.get(LocalKey("player_n"), params).asUTF8()));
     control_label[0][0]->setForegroundColor(gcn::Color(0,0,128));
-    control_label[1][0].reset(new gcn::Label("Player 2"));
+    params[0] = LocalParam(2);
+    control_label[1][0].reset(new gcn::Label(loc.get(LocalKey("player_n"), params).asUTF8()));
     control_label[1][0]->setForegroundColor(gcn::Color(0,0,128));
     for (int i = 0; i < 2; ++i) {
-        control_label[i][1].reset(new gcn::Label("Up:"));
-        control_label[i][2].reset(new gcn::Label("Down:"));
-        control_label[i][3].reset(new gcn::Label("Left:"));
-        control_label[i][4].reset(new gcn::Label("Right:"));
-        control_label[i][5].reset(new gcn::Label("Action:"));
-        control_label[i][6].reset(new gcn::Label("Suicide:"));
+        control_label[i][1].reset(new gcn::Label(loc.get(LocalKey("up_colon")).asUTF8()));
+        control_label[i][2].reset(new gcn::Label(loc.get(LocalKey("down_colon")).asUTF8()));
+        control_label[i][3].reset(new gcn::Label(loc.get(LocalKey("left_colon")).asUTF8()));
+        control_label[i][4].reset(new gcn::Label(loc.get(LocalKey("right_colon")).asUTF8()));
+        control_label[i][5].reset(new gcn::Label(loc.get(LocalKey("action_colon")).asUTF8()));
+        control_label[i][6].reset(new gcn::Label(loc.get(LocalKey("suicide_colon")).asUTF8()));
         for (int j = 0; j < 6; ++j) {
             control_setting[i][j].reset(new gcn::Label);
         }
@@ -208,7 +236,7 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     change_label->setForegroundColor(gcn::Color(128,0,0));
 
     const int cw0 = control_label[0][6]->getWidth() + 10;
-    const int cw1 = control_label[0][0]->getFont()->getWidth("RIGHT WINDOWS");  // longest possible key name
+    const int cw1 = control_label[0][0]->getFont()->getWidth("RIGHT WINDOWS");  // longest possible key name. TODO: use localized key names (will have to find the longest one)
     const int intercol = 50;
     const int overall_width = std::max(min_width, indent + (pad + cw0 + cw1)*2 + intercol);
 
@@ -231,7 +259,7 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     y += pad_small;
 
     for (int i = 0; i < 2; ++i) {
-        change_button[i].reset(new GuiButton("Change"));
+        change_button[i].reset(new GuiButton(loc.get(LocalKey("change")).asUTF8()));
         change_button[i]->addActionListener(this);
         container->add(change_button[i].get(), indent + pad + i*(cw0+cw1+intercol), y); // NOTE: y position is changed in transferToGui()
     }
@@ -239,10 +267,6 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
 
     y += change_button[0]->getHeight();
 
-    tooltip_checkbox.reset(new gcn::CheckBox("Show action bar tool tips"));
-    tooltip_checkbox->addActionListener(this);
-    container->add(tooltip_checkbox.get(), pad, y - 2 * (control_label[0][1]->getHeight() + pad_small) + 25);
-    
     y += 25;
 
     bad_key_area.reset(new GuiTextWrap);
@@ -250,15 +274,15 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     bad_key_area->setForegroundColor(gcn::Color(128,0,0));
     container->add(bad_key_area.get(), pad, y);
     
-    options_label.reset(new gcn::Label("Other Options"));
+    options_label.reset(new gcn::Label(loc.get(LocalKey("other_options")).asUTF8()));
     options_label->setForegroundColor(gcn::Color(0,0,128));
     container->add(options_label.get(), pad, y);
     y += options_label->getHeight() + pad_small + 2;
     
-    display_label.reset(new gcn::Label("Display Mode:"));
-    scaling_label.reset(new gcn::Label("Graphics Scaling:"));
+    display_label.reset(new gcn::Label(loc.get(LocalKey("display_mode")).asUTF8()));
+    scaling_label.reset(new gcn::Label(loc.get(LocalKey("graphics_scaling")).asUTF8()));
     const int ddx = pad + pad + scaling_label->getWidth();
-    display_listmodel.reset(new DisplayListModel);
+    display_listmodel.reset(new DisplayListModel(loc));
     display_dropdown.reset(new gcn::DropDown(display_listmodel.get()));
     display_dropdown->setWidth(overall_width - pad - extra_pad - ddx);
     display_dropdown->addActionListener(this);
@@ -266,7 +290,7 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     container->add(display_dropdown.get(), ddx, y);
     y += display_dropdown->getHeight() + pad_small + 2;
 
-    scaling_listmodel.reset(new ScalingListModel);
+    scaling_listmodel.reset(new ScalingListModel(loc));
     scaling_dropdown.reset(new gcn::DropDown(scaling_listmodel.get()));
     scaling_dropdown->setWidth(overall_width - pad - extra_pad - ddx);
     scaling_dropdown->addActionListener(this);
@@ -274,20 +298,20 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     container->add(scaling_dropdown.get(), ddx, y);
     y += scaling_dropdown->getHeight() + pad_small + 4;
 
-    non_integer_checkbox.reset(new gcn::CheckBox("Allow Non-Integer Scaling"));
+    non_integer_checkbox.reset(new gcn::CheckBox(loc.get(LocalKey("allow_fractional_scaling")).asUTF8()));
     non_integer_checkbox->addActionListener(this);
     container->add(non_integer_checkbox.get(), pad, y);
     y += non_integer_checkbox->getHeight() + 40;
 
-    restore_button.reset(new GuiButton("Restore Defaults"));
+    restore_button.reset(new GuiButton(loc.get(LocalKey("restore_defaults")).asUTF8()));
     restore_button->addActionListener(this);
     container->add(restore_button.get(), overall_width/2 - restore_button->getWidth()/2, y);
     
-    ok_button.reset(new GuiButton("OK"));
+    ok_button.reset(new GuiButton(loc.get(LocalKey("ok")).asUTF8()));
     ok_button->addActionListener(this);
     container->add(ok_button.get(), pad, y);
 
-    cancel_button.reset(new GuiButton("Cancel"));
+    cancel_button.reset(new GuiButton(loc.get(LocalKey("cancel")).asUTF8()));
     cancel_button->addActionListener(this);
     container->add(cancel_button.get(), overall_width - pad - cancel_button->getWidth(), y);
 
@@ -342,8 +366,6 @@ void OptionsScreenImpl::action(const gcn::ActionEvent &event)
     } else if (event.getSource() == control_system_dropdown.get()) {
         current_opts.new_control_system = (control_system_dropdown->getSelected() == 0);
         transferToGui();
-    } else if (event.getSource() == tooltip_checkbox.get()) {
-        current_opts.action_bar_tool_tips = tooltip_checkbox->isSelected();
     }
 }
 
@@ -359,24 +381,25 @@ void OptionsScreenImpl::keyReleased(gcn::KeyEvent &ke)
 
 void OptionsScreenImpl::transferToGui()
 {
+    const Localization &loc = knights_app.getLocalization();
+
     const bool split_screen = (show_controls_dropdown->getSelected() != 0);
     const bool new_ctrls = current_opts.new_control_system && !split_screen;
 
     control_system_dropdown->setSelected(new_ctrls ? 0 : 1);
     control_system_dropdown->setVisible(!split_screen);
 
-    tooltip_checkbox->setSelected(current_opts.action_bar_tool_tips);
-    //    tooltip_checkbox->setVisible(new_ctrls);
-    tooltip_checkbox->setVisible(false);
-
     if (split_screen) {
-        control_system_label->setCaption("Control keys:");
-        control_label[0][0]->setCaption("Player 1");
-        control_label[1][0]->setCaption("Player 2");
+        control_system_label->setCaption(loc.get(LocalKey("control_keys")).asUTF8());
+        std::vector<LocalParam> params;
+        params.push_back(LocalParam(1));
+        control_label[0][0]->setCaption(loc.get(LocalKey("player_n"), params).asUTF8());
+        params[0] = LocalParam(2);
+        control_label[1][0]->setCaption(loc.get(LocalKey("player_n"), params).asUTF8());
     } else {
-        control_system_label->setCaption("Control system: ");
-        control_label[0][0]->setCaption("Control keys:");
-        control_label[1][0]->setCaption("Chat keys:");
+        control_system_label->setCaption(loc.get(LocalKey("control_system")).asUTF8() + " ");
+        control_label[0][0]->setCaption(loc.get(LocalKey("control_keys")).asUTF8());
+        control_label[1][0]->setCaption(loc.get(LocalKey("chat_keys")).asUTF8());
     }
     control_system_label->adjustSize();
     control_label[0][0]->adjustSize();
@@ -393,7 +416,7 @@ void OptionsScreenImpl::transferToGui()
         for (int j = 0; j < 6; ++j) {
             if (change_active && change_player == i && j >= change_key) {
                 if (j == change_key) {
-                    control_setting[which_label][j]->setCaption("<Press>");
+                    control_setting[which_label][j]->setCaption(loc.get(LocalKey("press")).asUTF8());
                 } else {
                     control_setting[which_label][j]->setCaption("");
                 }
@@ -409,7 +432,7 @@ void OptionsScreenImpl::transferToGui()
         // global chat key setting
         control_setting[1][0]->setCaption(Coercri::KeyCodeToKeyName(current_opts.global_chat_key));
         if (change_active && change_player == 3 && change_key == 0) {
-            control_setting[1][0]->setCaption("<Press>");
+            control_setting[1][0]->setCaption(loc.get(LocalKey("press")).asUTF8());
         }
         control_setting[1][0]->adjustSize();
 
@@ -417,7 +440,7 @@ void OptionsScreenImpl::transferToGui()
         control_setting[1][1]->setCaption(Coercri::KeyCodeToKeyName(current_opts.team_chat_key));
         if (change_active && change_player == 3) {
             if (change_key == 1) {
-                control_setting[1][1]->setCaption("<Press>");
+                control_setting[1][1]->setCaption(loc.get(LocalKey("press")).asUTF8());
             } else {
                 control_setting[1][1]->setCaption("");
             }
@@ -430,9 +453,10 @@ void OptionsScreenImpl::transferToGui()
         change_button[1]->setVisible(false);
         change_label->setVisible(true);
 
-        std::string key_name = control_names[change_key];
-        if (!split_screen && change_player == 3) key_name = chat_names[change_key];
-        change_label->setCaption(std::string("** Please press a key for ") + key_name + " **");
+        UTF8String key_name = loc.get(control_names[change_key]);
+        if (!split_screen && change_player == 3) key_name = loc.get(chat_names[change_key]);
+        std::vector<LocalParam> params(1, LocalParam(key_name)); // TODO: replace with localized key names
+        change_label->setCaption(loc.get(LocalKey("please_press_key_for"), params).asUTF8());
         change_label->adjustSize();
         
         show_controls_dropdown->setEnabled(false);
@@ -470,11 +494,11 @@ void OptionsScreenImpl::transferToGui()
     
     // we also need to change the labels for the chat keys if required
     if (split_screen) {
-        control_label[1][1]->setCaption("Up:");
-        control_label[1][2]->setCaption("Down:");
+        control_label[1][1]->setCaption(loc.get(LocalKey("up_colon")).asUTF8());
+        control_label[1][2]->setCaption(loc.get(LocalKey("down_colon")).asUTF8());
     } else {
-        control_label[1][1]->setCaption("Global:");
-        control_label[1][2]->setCaption("Team:");
+        control_label[1][1]->setCaption(loc.get(LocalKey("global_colon")).asUTF8());
+        control_label[1][2]->setCaption(loc.get(LocalKey("team_colon")).asUTF8());
     }
     control_label[1][1]->adjustSize();
     control_label[1][2]->adjustSize();
@@ -531,7 +555,7 @@ void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, C
             }
 
             if (!allowed) {
-                bad_key_msg = UTF8String::fromUTF8("Key already in use. Please choose another key.");
+                bad_key_msg = knights_app.getLocalization().get(LocalKey("key_in_use"));
             }
 
             if (allowed) {

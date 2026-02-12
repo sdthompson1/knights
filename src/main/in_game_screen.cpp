@@ -109,11 +109,12 @@ void InGameScreen::setupDisplay()
     }
     
     const Options & options = knights_app.getOptions();
-    
-    const std::string chat_keys = 
-        Coercri::KeyCodeToKeyName(options.global_chat_key)
-        + " or " +
-        Coercri::KeyCodeToKeyName(options.team_chat_key);
+
+    // TODO: localize the key names
+    const UTF8String global_chat_key_string =
+        UTF8String::fromUTF8Safe(Coercri::KeyCodeToKeyName(options.global_chat_key));
+    const UTF8String team_chat_key_string =
+        UTF8String::fromUTF8Safe(Coercri::KeyCodeToKeyName(options.team_chat_key));
 
     display.reset(new LocalDisplay(knights_app.getLocalization(),
                                    knights_app.getConfigMap(),
@@ -148,7 +149,8 @@ void InGameScreen::setupDisplay()
                                    single_player,
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips,
-                                   chat_keys,
+                                   global_chat_key_string,
+                                   team_chat_key_string,
                                    stored_chat_field_contents,
                                    knights_app.getGameManager().getPlayerNameLookup()));
     knights_client->setKnightsCallbacks(display.get());

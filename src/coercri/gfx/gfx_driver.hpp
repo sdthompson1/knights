@@ -47,6 +47,7 @@
 #define COERCRI_GFX_DRIVER_HPP
 
 #include "graphic.hpp"
+#include "../core/utf8string.hpp"
 
 #include "boost/noncopyable.hpp"
 #include "boost/shared_ptr.hpp"
@@ -74,7 +75,7 @@ namespace Coercri {
         bool fullscreen; // note: width,height ignored if fullscreen is true
         bool maximized;
         bool vsync;
-        std::string title;
+        UTF8String title;
     };
 
     class GfxDriver : boost::noncopyable {

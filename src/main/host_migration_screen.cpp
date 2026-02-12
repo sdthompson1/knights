@@ -67,7 +67,7 @@ void HostMigrationScreenImpl::createGui(KnightsApp &ka, gcn::Gui &gui)
     container->add(label1.get(), total_width/2 - label1->getWidth()/2, y);
     y += label1->getHeight() + small_pad;
 
-    cancel_button.reset(new GuiButton("Cancel"));
+    cancel_button.reset(new GuiButton(ka.getLocalization().get(LocalKey("cancel")).asUTF8()));
     cancel_button->addActionListener(this);
     container->add(cancel_button.get(), total_width/2 - cancel_button->getWidth()/2, y);
     y += cancel_button->getHeight() + small_pad;

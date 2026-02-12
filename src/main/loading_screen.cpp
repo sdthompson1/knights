@@ -123,10 +123,12 @@ void LoadingScreen::update()
         PlayerID dummy_player_id;
         bool action_bar_controls;
         if (single_player_mode || tutorial_mode) {
-            dummy_player_id = PlayerID(UTF8String::fromUTF8("Player 1"));
+            std::vector<LocalParam> params(1, LocalParam(1));
+            UTF8String player_1 = knights_app->getLocalization().get(LocalKey("player_n"), params);
+            dummy_player_id = PlayerID(player_1);
             action_bar_controls = knights_app->getOptions().new_control_system || tutorial_mode;
         } else {
-            dummy_player_id = PlayerID(UTF8String::fromUTF8("#SplitScreenPlayer"));
+            dummy_player_id = PlayerID(UTF8String::fromUTF8("#SplitScreenPlayer"));  // this string isn't shown anywhere so doesn't need to be localized
             action_bar_controls = false;
         }
 
@@ -180,5 +182,6 @@ void LoadingScreen::update()
 void LoadingScreen::draw(uint64_t timestamp_us, Coercri::GfxContext &gc)
 {
     if (!knights_app) return;
-    XCentre(gc, *knights_app->getFont(), knights_app->getFont()->getTextHeight() + 15, UTF8String::fromUTF8("LOADING"));
+    UTF8String message = knights_app->getLocalization().get(LocalKey("loading"));
+    XCentre(gc, *knights_app->getFont(), knights_app->getFont()->getTextHeight() + 15, message);
 }

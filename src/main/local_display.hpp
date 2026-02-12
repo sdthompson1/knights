@@ -104,7 +104,8 @@ public:
                  bool sgl_plyr,
                  bool tutorial,
                  bool tool_tips,
-                 const std::string &chat_keys,
+                 const UTF8String &global_chat_key,
+                 const UTF8String &team_chat_key,
                  const UTF8String &initial_chat_field_contents,
                  std::function<UTF8String(const PlayerID&)> player_name_lookup);
     ~LocalDisplay();
