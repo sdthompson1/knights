@@ -25,6 +25,9 @@ MISC_CONFIG = {
 -- UDP port (used by Host LAN Game)
 port_number = 16399;
 
+-- Default Language (will be overridden by Steam language setting if available)
+language = "english";
+
 
 --
 -- Game config settings

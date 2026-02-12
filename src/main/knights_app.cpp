@@ -266,8 +266,12 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
                        bool autostart, Localization &localization)
     : pimpl(new KnightsAppImpl(localization))
 {
-    // Init online platform (if applicable) - do this first so that we
-    // can apply any required text filtering to the localization strings
+    // Initialize RNG
+    g_rng.initialize();
+
+    // Init online platform (if applicable) - allows us to read the
+    // user's chosen language (if available) and also filter the
+    // localization strings if needed
 #ifdef ONLINE_PLATFORM
 #ifdef ONLINE_PLATFORM_DUMMY
     pimpl->online_platform.reset(new DummyOnlinePlatform);
@@ -280,28 +284,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";
     RStream::Initialize(resource_dir);
 
-    // Read knights_data/client/localization_strings.txt
-    {
-        RStream file("client/localization_strings.txt");
-        pimpl->localization.readStrings(file,
-                                        [this](const UTF8String &str) {
-#ifdef ONLINE_PLATFORM
-                                            return pimpl->online_platform->filterGameContent(str);
-#else
-                                            return str;
-#endif
-                                        });
-    }
-
-    const UTF8String game_name = pimpl->localization.get(LocalKey("knights"));
-
-    pimpl->server_config_filename = config_filename;
-    pimpl->autostart = autostart;
-    
-    // initialize RNG
-    g_rng.initialize();
-
-    // read the client config
+    // Read the client config
     {
         // we use a simplified lua context in which all light userdatas represent
         // a (1-based) index into the config_gfx vector
@@ -311,13 +294,13 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         lua_State * const lua = lua_sh_ptr.get();
 
         SetupLuaConfigFunctions(lua, &pimpl->config_gfx);
-        LuaExecRStream(lua, "client/client_config.lua", 0, 0, 
+        LuaExecRStream(lua, "client/client_config.lua", 0, 0,
             false,    // look in root dir only
             false);   // no dofile namespace proposal
 
         lua_getglobal(lua, "MISC_CONFIG");
         PopConfigMap(lua, pimpl->config_map);
- 
+
         lua_getglobal(lua, "WINNER_IMAGE");
         pimpl->winner_image = PopGraphic(lua, &pimpl->config_gfx);
         lua_getglobal(lua, "LOSER_IMAGE");
@@ -335,6 +318,40 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         lua_getglobal(lua, "SPEECH_BUBBLE");
         pimpl->speech_bubble = PopGraphic(lua, &pimpl->config_gfx);
     }
+
+    // Read knights_data/client/localization_<language>.txt
+    {
+        std::string preferred_language, default_language;
+#ifdef ONLINE_PLATFORM
+        // Language from the online platform is preferred (if available)
+        preferred_language = pimpl->online_platform->getGameLanguage();
+#endif
+        // Language from knights_data/client/client_config.lua is the backup choice
+        default_language = pimpl->config_map.getString("language");
+
+        const std::string prefix = "client/localization_";
+        const std::string suffix = ".txt";
+        std::unique_ptr<RStream> file;
+        if (!preferred_language.empty() && RStream::Exists(prefix + preferred_language + suffix)) {
+            file = std::make_unique<RStream>(prefix + preferred_language + suffix);
+        } else {
+            file = std::make_unique<RStream>(prefix + default_language + suffix);
+        }
+
+        pimpl->localization.readStrings(*file,
+                                        [this](const UTF8String &str) {
+#ifdef ONLINE_PLATFORM
+                                            return pimpl->online_platform->filterGameContent(str);
+#else
+                                            return str;
+#endif
+                                        });
+    }
+
+    const UTF8String game_name = pimpl->localization.get(LocalKey("knights"));
+
+    pimpl->server_config_filename = config_filename;
+    pimpl->autostart = autostart;
 
     // initialize game options
     pimpl->options.reset(new Options);

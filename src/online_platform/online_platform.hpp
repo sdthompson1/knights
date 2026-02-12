@@ -159,6 +159,16 @@ public:
     // Filter a chat message from a given user. If the user is blocked this will return
     // an empty string; otherwise it returns a filtered version of the msg.
     virtual Coercri::UTF8String filterChatMessage(const PlayerID &sender, const Coercri::UTF8String &msg) = 0;
+
+
+    // Language Choice:
+
+    // This should return a language name in the same format that Steam would return
+    // (see https://partner.steamgames.com/doc/store/localization/languages, in particular
+    // the "API language code" column.)
+    // If the current game language is unknown, this can return an empty string instead.
+    virtual std::string getGameLanguage() { return std::string(); }
+
 };
 
 #endif  // ONLINE_PLATFORM
