@@ -242,6 +242,7 @@ public:
 
     // localization strings
     Localization &localization;
+    std::string preferred_language, default_language;
 
     // functions
     explicit KnightsAppImpl(Localization &loc)
@@ -321,21 +322,21 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     // Read knights_data/client/localization_<language>.txt
     {
-        std::string preferred_language, default_language;
 #ifdef ONLINE_PLATFORM
         // Language from the online platform is preferred (if available)
-        preferred_language = pimpl->online_platform->getGameLanguage();
+        pimpl->preferred_language = pimpl->online_platform->getGameLanguage();
 #endif
         // Language from knights_data/client/client_config.lua is the backup choice
-        default_language = pimpl->config_map.getString("language");
+        pimpl->default_language = pimpl->config_map.getString("language");
 
         const std::string prefix = "client/localization_";
         const std::string suffix = ".txt";
         std::unique_ptr<RStream> file;
-        if (!preferred_language.empty() && RStream::Exists(prefix + preferred_language + suffix)) {
-            file = std::make_unique<RStream>(prefix + preferred_language + suffix);
+        if (!pimpl->preferred_language.empty()
+        && RStream::Exists(prefix + pimpl->preferred_language + suffix)) {
+            file = std::make_unique<RStream>(prefix + pimpl->preferred_language + suffix);
         } else {
-            file = std::make_unique<RStream>(prefix + default_language + suffix);
+            file = std::make_unique<RStream>(prefix + pimpl->default_language + suffix);
         }
 
         pimpl->localization.readStrings(*file,
@@ -889,7 +890,7 @@ void KnightsApp::runKnights()
     } else {
         // Go to title screen.
         if (pimpl->options->first_time) {
-            initial_screen.reset(new CreditsScreen("client/first_time_message.txt", 60));
+            initial_screen.reset(new CreditsScreen("client/first_time_message_", ".txt", 60));
             pimpl->saveOptions();  // make sure they don't get the first time screen again
         } else {
             initial_screen.reset(new TitleScreen);
@@ -1295,4 +1296,14 @@ void KnightsApp::setQuestMessageCode(const LocalKey & quest_key)
 const Localization & KnightsApp::getLocalization() const
 {
     return pimpl->localization;
+}
+
+const std::string & KnightsApp::getPreferredLanguage() const
+{
+    return pimpl->preferred_language;
+}
+
+const std::string & KnightsApp::getDefaultLanguage() const
+{
+    return pimpl->default_language;
 }

@@ -39,7 +39,9 @@ using namespace boost;
 
 class CreditsScreenImpl : public gcn::MouseListener, public gcn::WidgetListener {
 public:
-    explicit CreditsScreenImpl(KnightsApp &kg, gcn::Gui &gui, const std::string &filename, int wlimit_);
+    explicit CreditsScreenImpl(KnightsApp &kg, gcn::Gui &gui,
+                               const std::string &prefix, const std::string &suffix,
+                               int wlimit);
     void mouseClicked(gcn::MouseEvent &event);
     void widgetResized(const gcn::Event &event);
     
@@ -51,17 +53,28 @@ private:
     int wlimit;
 };
 
-CreditsScreenImpl::CreditsScreenImpl(KnightsApp &app, gcn::Gui &gui, const std::string &filename, int wlimit_)
-    : knights_app(app), wlimit(wlimit_)
+CreditsScreenImpl::CreditsScreenImpl(KnightsApp &app, gcn::Gui &gui,
+                                     const std::string &prefix, const std::string &suffix,
+                                     int wlimit)
+    : knights_app(app), wlimit(wlimit)
 {
-    RStream str(filename.c_str());
+    const std::string lang1 = knights_app.getPreferredLanguage();
+    const std::string lang2 = knights_app.getDefaultLanguage();
+    std::unique_ptr<RStream> str;
+    if (!lang1.empty() && RStream::Exists(prefix + lang1 + suffix)) {
+        str = std::make_unique<RStream>(prefix + lang1 + suffix);
+    } else {
+        str = std::make_unique<RStream>(prefix + lang2 + suffix);
+    }
+
     std::string credits;
-    while (str) {
+    while (*str) {
         char c = 0;
-        str.get(c);
+        str->get(c);
         if (c != '\r') credits += c;
     }
-    
+    str.reset();
+
     text_wrap.reset(new GuiTextWrap);
     text_wrap->setForegroundColor(gcn::Color(255,255,255));
     text_wrap->setRich(true);
@@ -122,6 +135,6 @@ void CreditsScreenImpl::widgetResized(const gcn::Event &event)
 
 bool CreditsScreen::start(KnightsApp &knights_app, shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
-    pimpl.reset(new CreditsScreenImpl(knights_app, gui, filename, width));
+    pimpl.reset(new CreditsScreenImpl(knights_app, gui, prefix, suffix, width));
     return true;
 }

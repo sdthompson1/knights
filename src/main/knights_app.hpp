@@ -215,6 +215,8 @@ public:
     // Localization strings
     //
     const Localization & getLocalization() const;
+    const std::string & getPreferredLanguage() const;
+    const std::string & getDefaultLanguage() const;
 
 
 private:

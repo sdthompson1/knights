@@ -33,14 +33,16 @@ class CreditsScreenImpl;
 class CreditsScreen : public Screen {
 public:
     // This is used both for the Credits screen and for the First Time screen.
-    // The ctor parameter is the name of the text file to display.
-    explicit CreditsScreen(const std::string &f, int w = 999999) : filename(f), width(w) { }
+    // The prefix and suffix parameters give the filename to display:
+    // prefix + language_name + suffix.
+    explicit CreditsScreen(const std::string &prefix, const std::string &suffix, int w = 999999)
+        : prefix(prefix), suffix(suffix), width(w) { }
     
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
 
 private:
     boost::shared_ptr<CreditsScreenImpl> pimpl;
-    std::string filename;
+    std::string prefix, suffix;
     int width;  // width limit, in capital M's.
 };
 
