@@ -97,6 +97,7 @@ namespace {
             for (auto *a = addrs; a; a = a->Next) {
                 if (a->OperStatus != IfOperStatusUp) continue;
                 if (a->IfType == IF_TYPE_SOFTWARE_LOOPBACK) continue;
+                if (a->IfType == IF_TYPE_TUNNEL) continue;
                 for (auto *ua = a->FirstUnicastAddress; ua; ua = ua->Next) {
                     if (ua->Address.lpSockaddr->sa_family == AF_INET) {
                         auto *sa = reinterpret_cast<struct sockaddr_in*>(ua->Address.lpSockaddr);
@@ -109,10 +110,22 @@ namespace {
         struct ifaddrs *ifap = nullptr;
         if (getifaddrs(&ifap) == 0) {
             for (auto *ifa = ifap; ifa; ifa = ifa->ifa_next) {
+                // The interface must be IPv4 with a valid address
                 if (!ifa->ifa_addr) continue;
                 if (ifa->ifa_addr->sa_family != AF_INET) continue;
+                // The interface must be up and running and support multicast
                 if (!(ifa->ifa_flags & IFF_UP)) continue;
+                if (!(ifa->ifa_flags & IFF_MULTICAST)) continue;
+                // No point querying or advertising on loopback
                 if (ifa->ifa_flags & IFF_LOOPBACK) continue;
+                // Skip point-to-point interfaces as these are unlikely to support mDNS
+                if (ifa->ifa_flags & IFF_POINTOPOINT) continue;
+                // Skip well-known isolated virtual bridges (Docker, libvirt)
+                if (ifa->ifa_name) {
+                    std::string name(ifa->ifa_name);
+                    if (name.compare(0, 6, "docker") == 0) continue;
+                    if (name.compare(0, 5, "virbr") == 0) continue;
+                }
                 auto *sa = reinterpret_cast<struct sockaddr_in*>(ifa->ifa_addr);
                 result.push_back(sa->sin_addr);
             }
@@ -273,12 +286,6 @@ namespace {
             char ip_str[INET_ADDRSTRLEN] = {};
             const struct sockaddr_in *addr4 = reinterpret_cast<const struct sockaddr_in*>(from);
             inet_ntop(AF_INET, &addr4->sin_addr, ip_str, sizeof(ip_str));
-            return std::string(ip_str);
-        }
-        if (from && from->sa_family == AF_INET6) {
-            char ip_str[INET6_ADDRSTRLEN] = {};
-            const struct sockaddr_in6 *addr6 = reinterpret_cast<const struct sockaddr_in6*>(from);
-            inet_ntop(AF_INET6, &addr6->sin6_addr, ip_str, sizeof(ip_str));
             return std::string(ip_str);
         }
         return std::string();
