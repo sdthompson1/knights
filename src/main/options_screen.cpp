@@ -96,7 +96,15 @@ namespace {
             : localization(loc) { }
 
         std::string getElementAt(int i) {
-            return localization.get(LocalKey(i == 0 ? "lan_internet_single" : "two_player_split")).asUTF8();
+            if (i == 0) {
+#ifdef ONLINE_PLATFORM
+                return localization.get(LocalKey("online_lan_single")).asUTF8();
+#else
+                return localization.get(LocalKey("lan_single")).asUTF8();
+#endif
+            } else {
+                return localization.get(LocalKey("two_player_split")).asUTF8();
+            }
         }
 
         int getNumberOfElements() {

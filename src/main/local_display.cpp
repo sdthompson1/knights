@@ -1308,8 +1308,11 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         int t_x, t_y, t_w, t_h;
 
         for (int i = 0; i < 2; ++i) {
+
+            // On first pass - Use 45% of display width, or 40 "n" widths, whichever is larger
+            // On second pass - use 90% instead of 45%
             t_w = std::max(int(gc.getWidth() * (i==0 ? 0.45f : 0.9f)),
-                           gm.getFont()->getTextWidth(UTF8String::fromUTF8("nCongratulations! You have completed your quest.n")));
+                           gm.getFont()->getTextWidth(UTF8String::fromUTF8("n")) * 40);
             if (t_w > gc.getWidth()-6) t_w = gc.getWidth()-6;
             t_x = (gc.getWidth() - t_w)/2;
 
@@ -1320,11 +1323,12 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
             t_h = title_yofs + title_height + text_height + text_height * counter.count + bottom_margin;
             t_y = (gc.getHeight() - t_h)/2;
 
+            // If it fits on screen, break out of loop, otherwise go round again for a second attempt
             if (t_y >= 0) break;
         }
-            
+
         Coercri::Rectangle t_rect(t_x, t_y, t_w, t_h);
-        
+
         // draw the window itself
         const Coercri::Color col3(config_map.getInt("pause3r"), config_map.getInt("pause3g"), config_map.getInt("pause3b"));
         gc.fillRectangle(t_rect, Coercri::Color(0, 0, 0, config_map.getInt("pausealpha")));

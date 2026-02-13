@@ -228,19 +228,21 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
     }
 
     const int container_width = rhs_x + width_rhs + pad;
-    
+
     // Add the start and exit buttons
     const int button_yofs = -3;
     int y = y_after_menu + vpad_after_quest_box;
-    if (extended) {
-        // (this looks a little better with some extra spacing, as its next to the "Observe" button which is fairly big...)
-        // TODO: Do this in a locale-specific way, e.g., we could measure the max size of the two strings
-        // and equalize the button sizes? Or just impose a minimum width perhaps?
-        exit_button.reset(new GuiButton("  " + loc.get(LocalKey("exit")).asUTF8() + "  "));
-    } else {
-        exit_button.reset(new GuiButton(loc.get(LocalKey("exit")).asUTF8()));
-    }
+    exit_button.reset(new GuiButton(loc.get(LocalKey("exit")).asUTF8()));
     exit_button->addActionListener(this);
+
+    // In extended view, set a min width for both the Observe and Exit
+    // buttons (because they are next to each other and it looks odd
+    // if one of them is really small)
+    int min_exit_observe_width = extended ? exit_button->getFont()->getWidth("nnnnnn") : 0;
+    if (exit_button->getWidth() < min_exit_observe_width) {
+        exit_button->setWidth(min_exit_observe_width);
+    }
+
     container->add(exit_button.get(), container_width - pad - exit_button->getWidth(), y + button_yofs);
     if (extended) {
         const int exit_button_gap = 30;
@@ -267,6 +269,9 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
 
         observe_button.reset(new GuiButton(loc.get(LocalKey("observe")).asUTF8()));
         observe_button->addActionListener(this);
+        if (observe_button->getWidth() < min_exit_observe_width) {
+            observe_button->setWidth(min_exit_observe_width);
+        }
         container->add(observe_button.get(), x - observe_button->getWidth(), y + button_yofs);
 
         observer_label.reset(new gcn::Label(loc.get(LocalKey("you_are_observing")).asUTF8()));

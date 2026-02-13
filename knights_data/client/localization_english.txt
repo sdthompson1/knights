@@ -51,8 +51,9 @@ playing_x         Playing ({0})
 # Options screen
 controls                        Controls
 show_controls_for               Show controls for:
-lan_internet_single             LAN / Internet / Single Player
-two_player_split                Two Player (Split Screen)
+lan_single                      Normal Games (Single player, LAN)
+online_lan_single               Normal Games (Single player, LAN, Online)
+two_player_split                Split Screen Games
 control_system                  Control system:
 player_n                        Player {0}
 new_control_system              New control system (Mouse + Keyboard)
