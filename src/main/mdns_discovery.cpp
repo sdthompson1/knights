@@ -326,6 +326,9 @@ namespace {
         std::string source_ip = extractSourceIP(from);
 
         if (rtype == MDNS_RECORDTYPE_PTR) {
+            // Only process PTR records for our service type
+            if (record_name != SERVICE_TYPE) return 0;
+
             mdns_string_t ptr_name = mdns_record_parse_ptr(data, size, record_offset, record_length,
                                                            dd->strbuf, sizeof(dd->strbuf));
             std::string instance = mdnsStringToStd(ptr_name);
@@ -350,6 +353,12 @@ namespace {
                 }
             }
         } else if (rtype == MDNS_RECORDTYPE_SRV) {
+            // Only process SRV records for instances of our service type
+            const std::string suffix("._knights._udp.local.");
+            if (record_name.size() <= suffix.size() ||
+                record_name.compare(record_name.size() - suffix.size(), suffix.size(), suffix) != 0)
+                return 0;
+
             mdns_record_srv_t srv = mdns_record_parse_srv(data, size, record_offset, record_length,
                                                           dd->strbuf, sizeof(dd->strbuf));
             // record_name is the instance name for SRV records
@@ -370,6 +379,12 @@ namespace {
                 }
             }
         } else if (rtype == MDNS_RECORDTYPE_TXT) {
+            // Only process TXT records for instances of our service type
+            const std::string suffix("._knights._udp.local.");
+            if (record_name.size() <= suffix.size() ||
+                record_name.compare(record_name.size() - suffix.size(), suffix.size(), suffix) != 0)
+                return 0;
+
             mdns_record_txt_t txt_records[8];
             size_t txt_count = mdns_record_parse_txt(data, size, record_offset, record_length,
                                                      txt_records, 8);
