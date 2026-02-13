@@ -61,7 +61,8 @@ namespace Coercri {
                                                          GraphicFlags flags = GraphicFlags::None) override;
         virtual bool pollEvents() override;
         virtual bool waitEventMsec(int ms) override;
-        
+        virtual std::vector<Scancode> getKnownScancodes() override;
+
     private:
         SDLSubSystemHandle video_subsystem;
         std::vector<boost::weak_ptr<SDLWindow> > windows;

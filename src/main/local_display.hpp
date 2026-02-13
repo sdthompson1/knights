@@ -95,12 +95,13 @@ public:
                  VoteStatus &vote_status_,
                  KnightsClient &knights_client_,
                  gcn::Container &container_,
-                 const std::string &up_key,
-                 const std::string &down_key,
-                 const std::string &left_key,
-                 const std::string &right_key,
-                 const std::string &action_key,
-                 const std::string &suicide_key,
+                 const UTF8String &up_key,
+                 const UTF8String &down_key,
+                 const UTF8String &left_key,
+                 const UTF8String &right_key,
+                 const UTF8String &action_key,
+                 const UTF8String &suicide_key,
+                 const UTF8String &movement_keys,
                  bool sgl_plyr,
                  bool tutorial,
                  bool tool_tips,
@@ -136,7 +137,8 @@ public:
     // draw the quest info / press q to quit screen.
     // is_paused => say "GAME PAUSED" instead of "KNIGHTS"
     // blend => draw a blended black rectangle behind the pause display.
-    void drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm, 
+    void drawPauseDisplay(Coercri::GfxContext &gc, Coercri::Window &window,
+                          GfxManager &gm,
                           int vp_x, int vp_y, int vp_width, int vp_height,
                           bool is_paused, bool blend,
                           bool observer, int num_connected_players);
@@ -377,7 +379,7 @@ private:
     std::deque<TutorialWindow> tutorial_popups;
     std::vector<TutorialWindow> tutorial_windows;
     int tutorial_selected_window;
-    std::string up_string, down_string, left_string, right_string, action_string, suicide_string;
+    UTF8String up_string, down_string, left_string, right_string, action_string, suicide_string, movement_string;
 
     const Graphic *speech_bubble;
 

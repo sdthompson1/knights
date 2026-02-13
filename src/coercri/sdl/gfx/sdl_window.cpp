@@ -43,6 +43,7 @@
 #include "sdl_surface_from_pixels.hpp"
 #include "sdl_window.hpp"
 #include "../../core/coercri_error.hpp"
+#include "../../gfx/key_code.hpp"
 #include "../../gfx/pixel_array.hpp"
 
 #include <SDL2/SDL.h>
@@ -147,5 +148,20 @@ namespace Coercri {
     {
         boost::shared_ptr<SDL_Surface> surf = sdl_surface_from_pixels(pixels);
         SDL_SetWindowIcon(sdl_window, surf.get());
+    }
+
+    SDL_Scancode ScancodeReverseLookup(const std::string &name); // defined in sdl_gfx_driver.cpp
+
+    UTF8String SDLWindow::getKeyName(const Scancode &sc)
+    {
+        SDL_Scancode scancode = ScancodeReverseLookup(sc.getSymbolicName());
+        SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode);
+        const char *name = SDL_GetKeyName(keycode);
+        if (*name) {
+            return UTF8String::fromUTF8Safe(name);
+        } else {
+            // If SDL didn't give us a name, use the raw string instead
+            return UTF8String::fromUTF8Safe(sc.getSymbolicName());
+        }
     }
 }

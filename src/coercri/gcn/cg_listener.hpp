@@ -98,7 +98,7 @@ namespace Coercri {
         
         // Overridden from WindowListener:
         virtual void onResize(int new_width, int new_height);
-        virtual void onKey(KeyEventType type, KeyCode kc, KeyModifier mods);
+        virtual void onKey(KeyEventType type, const Scancode &scancode, KeyModifier mods);
         virtual void onTextInput(const UTF8String &txt);
         virtual void onMouseDown(int x, int y, MouseButton button);
         virtual void onMouseUp(int x, int y, MouseButton button);

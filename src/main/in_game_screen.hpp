@@ -62,14 +62,14 @@ public:
     virtual void update();
     virtual void draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc);
 
-    virtual void onMouseMove(int new_x, int new_y);
-    virtual void onMouseDown(int x, int y, Coercri::MouseButton m);
-    virtual void onMouseUp(int x, int y, Coercri::MouseButton m);
-    virtual void onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier);
-    virtual void onMinimize();
-    virtual void onUnminimize();
-    virtual void onGainFocus();
-    virtual void onLoseFocus();
+    virtual void onMouseMove(int new_x, int new_y) override;
+    virtual void onMouseDown(int x, int y, Coercri::MouseButton m) override;
+    virtual void onMouseUp(int x, int y, Coercri::MouseButton m) override;
+    virtual void onKey(Coercri::KeyEventType type, const Coercri::Scancode &scancode, Coercri::KeyModifier) override;
+    virtual void onMinimize() override;
+    virtual void onUnminimize() override;
+    virtual void onGainFocus() override;
+    virtual void onLoseFocus() override;
 
 private:
     void setupDisplay();
@@ -105,7 +105,7 @@ private:
     unsigned int focus_timer;
 
     // chat keys
-    Coercri::KeyCode global_chat_key, team_chat_key;
+    Coercri::Scancode global_chat_key, team_chat_key;
     bool waiting_to_focus_chat;
     bool waiting_to_chat_all;
     UTF8String stored_chat_field_contents;

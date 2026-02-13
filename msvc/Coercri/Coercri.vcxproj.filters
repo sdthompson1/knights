@@ -48,9 +48,6 @@
     <ClCompile Include="..\..\src\coercri\gfx\gfx_context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\coercri\gfx\key_name.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\coercri\gfx\load_bmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

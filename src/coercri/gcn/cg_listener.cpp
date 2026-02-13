@@ -145,7 +145,7 @@ namespace Coercri {
         }
     }
 
-    void CGListener::onKey(KeyEventType type, KeyCode kc, KeyModifier mods)
+    void CGListener::onKey(KeyEventType type, const Scancode &scancode, KeyModifier mods)
     {
         // only process PRESSED and AUTO_REPEAT events here.
         if (type == KEY_RELEASED) return;
@@ -157,46 +157,93 @@ namespace Coercri {
         // (because these are neither a special key nor do they generate a text event.)
         // but guichan doesn't do anything with such keypresses (afaik) so hopefully 
         // this won't matter.
-       
+
+        const std::string & name = scancode.getSymbolicName();
+        if (name.length() == 0) return;  // shouldn't happen
+
         gcn::Key k = 0;
-        switch (kc) {
-        case KC_BACKSPACE: k = gcn::Key::BACKSPACE; break;
-        case KC_DELETE: k = gcn::Key::DELETE; break;
-        case KC_DOWN: k = gcn::Key::DOWN; break;
-        case KC_END: k = gcn::Key::END; break;
-        case KC_ESCAPE: k = gcn::Key::ESCAPE; break;
-        case KC_F1: k = gcn::Key::F1; break;
-        case KC_F2: k = gcn::Key::F2; break;
-        case KC_F3: k = gcn::Key::F3; break;
-        case KC_F4: k = gcn::Key::F4; break;
-        case KC_F5: k = gcn::Key::F5; break;
-        case KC_F6: k = gcn::Key::F6; break;
-        case KC_F7: k = gcn::Key::F7; break;
-        case KC_F8: k = gcn::Key::F8; break;
-        case KC_F9: k = gcn::Key::F9; break;
-        case KC_F10: k = gcn::Key::F10; break;
-        case KC_F11: k = gcn::Key::F11; break;
-        case KC_F12: k = gcn::Key::F12; break;
-        case KC_F13: k = gcn::Key::F13; break;
-        case KC_F14: k = gcn::Key::F14; break;
-        case KC_F15: k = gcn::Key::F15; break;
-        case KC_HOME: k = gcn::Key::HOME; break;
-        case KC_INSERT: k = gcn::Key::INSERT; break;
-        case KC_LEFT: k = gcn::Key::LEFT; break;
-        case KC_LEFT_WINDOWS: k = gcn::Key::LEFT_SUPER; break;
-        case KC_PAGE_DOWN: k = gcn::Key::PAGE_DOWN; break;
-        case KC_PAGE_UP: k = gcn::Key::PAGE_UP; break;
-        case KC_PAUSE: k = gcn::Key::PAUSE; break;
-        case KC_PRINT_SCREEN: k = gcn::Key::PRINT_SCREEN; break;
-        case KC_RETURN: case KC_KP_ENTER: k = gcn::Key::ENTER; break;
-        case KC_RIGHT: k = gcn::Key::RIGHT; break;
-        case KC_RIGHT_WINDOWS: k = gcn::Key::RIGHT_SUPER; break;
-        case KC_TAB: k = gcn::Key::TAB; break;
-        case KC_UP: k = gcn::Key::UP; break;
-        default: return;    // Unknown key
+        switch (name[0]) {
+        case 'b':
+            if (name == "backspace") k = gcn::Key::BACKSPACE;
+            break;
+
+        case 'd':
+            if (name == "delete") k = gcn::Key::DELETE;
+            else if (name == "down") k = gcn::Key::DOWN;
+            break;
+
+        case 'e':
+            if (name == "end") k = gcn::Key::END;
+            else if (name == "escape") k = gcn::Key::ESCAPE;
+            break;
+
+        case 'f':
+            if (name.length() == 2) {
+                switch (name[1]) {
+                case '1': k = gcn::Key::F1; break;
+                case '2': k = gcn::Key::F2; break;
+                case '3': k = gcn::Key::F3; break;
+                case '4': k = gcn::Key::F4; break;
+                case '5': k = gcn::Key::F5; break;
+                case '6': k = gcn::Key::F6; break;
+                case '7': k = gcn::Key::F7; break;
+                case '8': k = gcn::Key::F8; break;
+                case '9': k = gcn::Key::F9; break;
+                }
+            } else if (name.length() == 3 && name[1] == '1') {
+                switch (name[2]) {
+                case '0': k = gcn::Key::F10; break;
+                case '1': k = gcn::Key::F11; break;
+                case '2': k = gcn::Key::F12; break;
+                case '3': k = gcn::Key::F13; break;
+                case '4': k = gcn::Key::F14; break;
+                case '5': k = gcn::Key::F15; break;
+                }
+            }
+            break;
+
+        case 'h':
+            if (name == "home") k = gcn::Key::HOME;
+            break;
+
+        case 'i':
+            if (name == "insert") k = gcn::Key::INSERT;
+            break;
+
+        case 'k':
+            if (name == "kp_enter") k = gcn::Key::ENTER;
+            break;
+
+        case 'l':
+            if (name == "left") k = gcn::Key::LEFT;
+            else if (name == "left_windows") k = gcn::Key::LEFT_SUPER;
+            break;
+
+        case 'p':
+            if (name == "page_down") k = gcn::Key::PAGE_DOWN;
+            else if (name == "page_up") k = gcn::Key::PAGE_UP;
+            else if (name == "pause") k = gcn::Key::PAUSE;
+            else if (name == "print_screen") k = gcn::Key::PRINT_SCREEN;
+            break;
+
+        case 'r':
+            if (name == "return") k = gcn::Key::ENTER;
+            else if (name == "right") k = gcn::Key::RIGHT;
+            else if (name == "right_windows") k = gcn::Key::RIGHT_SUPER;
+            break;
+
+        case 't':
+            if (name == "tab") k = gcn::Key::TAB;
+            break;
+
+        case 'u':
+            if (name == "up") k = gcn::Key::UP;
+            break;
         }
 
-        SendKeyToGuichan(pimpl->input, k, mods);
+        if (k != 0) {
+            SendKeyToGuichan(pimpl->input, k, mods);
+        }
     }
 
     void CGListener::onTextInput(const UTF8String &txt_in)

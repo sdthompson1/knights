@@ -43,10 +43,11 @@ public:
     Options();  // Sets the defaults
 
     bool first_time;  // Set to true by ctor, false by a successful LoadOptions.
-    
+
     // Controls for 3 players (P1/P2/Network games) and in order up/down/left/right/action/suicide.
     // 3rd player added in v011 of Knights.
-    Coercri::KeyCode ctrls[3][6];
+    // Changed to Scancode in version 7 of options file (Knights 028).
+    Coercri::Scancode ctrls[3][6];
     
     // Display settings
     bool use_scale2x;
@@ -65,7 +66,8 @@ public:
     bool action_bar_tool_tips;
 
     // added in version 5 of options file (version 020 of Knights)
-    Coercri::KeyCode global_chat_key, team_chat_key;
+    // changed to Scancode in version 7 of options file (Knights 028)
+    Coercri::Scancode global_chat_key, team_chat_key;
 
     // added in version 6 of options file (version 026 of Knights)
     bool maximized;

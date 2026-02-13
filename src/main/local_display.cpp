@@ -47,6 +47,7 @@
 #include "user_control.hpp"
 
 #include "gfx/rectangle.hpp"  // coercri
+#include "gfx/window.hpp"
 #include "gcn/cg_graphics.hpp"
 
 #include <iomanip>
@@ -303,8 +304,9 @@ LocalDisplay::LocalDisplay(const Localization &localization,
                            VoteStatus &vote_status_,
                            KnightsClient &knights_client_,
                            gcn::Container &container_,
-                           const std::string &u_key, const std::string &d_key, const std::string &l_key,
-                           const std::string &r_key, const std::string &a_key, const std::string &s_key,
+                           const UTF8String &u_key, const UTF8String &d_key, const UTF8String &l_key,
+                           const UTF8String &r_key, const UTF8String &a_key, const UTF8String &s_key,
+                           const UTF8String &movement_keys,
                            bool sgl_plyr,
                            bool tut,
                            bool tool_tips,
@@ -368,6 +370,7 @@ LocalDisplay::LocalDisplay(const Localization &localization,
       
       up_string(u_key), down_string(d_key), left_string(l_key), right_string(r_key),
       action_string(a_key), suicide_string(s_key),
+      movement_string(movement_keys),
       
       speech_bubble(speech_bubble_),
       action_bar_tool_tips(tool_tips),
@@ -984,31 +987,25 @@ std::string LocalDisplay::replaceSpecialChars(std::string msg) const
         } else if (msg[i] == '%' && i+1 < msg.size()) {
             switch (msg[i+1]) {
             case 'A':
-                msg.replace(i, 2, action_string);
+                msg.replace(i, 2, action_string.asUTF8());
                 break;
             case 'L':
-                msg.replace(i, 2, left_string);
+                msg.replace(i, 2, left_string.asUTF8());
                 break;
             case 'R':
-                msg.replace(i, 2, right_string);
+                msg.replace(i, 2, right_string.asUTF8());
                 break;
             case 'U':
-                msg.replace(i, 2, up_string);
+                msg.replace(i, 2, up_string.asUTF8());
                 break;
             case 'D':
-                msg.replace(i, 2, down_string);
+                msg.replace(i, 2, down_string.asUTF8());
                 break;
             case 'S':
-                msg.replace(i, 2, suicide_string);
+                msg.replace(i, 2, suicide_string.asUTF8());
                 break;
             case 'M':
-                if (left_string == "LEFT" && right_string == "RIGHT" && up_string == "UP" && down_string == "DOWN") { // a bit nasty, I know...
-                    msg.replace(i, 2, "ARROW KEYS");
-                } else if (left_string == "A" && right_string == "D" && up_string == "W" && down_string == "S") {
-                    msg.replace(i, 2, "WASD keys");
-                } else {
-                    msg.replace(i, 2, up_string + ", " + left_string + ", " + down_string + " and " + right_string + " keys");
-                }
+                msg.replace(i, 2, movement_string.asUTF8());
             }
         }
     }
@@ -1375,7 +1372,8 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     return status_area_y + status_area_height - vp_y;
 }
 
-void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm, 
+void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, Coercri::Window &window,
+                                    GfxManager &gm,
                                     int vp_x, int vp_y, int vp_width, int vp_height,
                                     bool is_paused, bool blend,
                                     bool observer, int num_connected_players)
@@ -1399,39 +1397,50 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
         gm.setFontSize(std::max(min_font_size, Round(ref_font_size * scale)));
     }
 
-    // "R" key does not appear in single player modes (is_paused ==> single player)
-    const char *q_key = "quit";  // Localization key
-    const char *r_key = nullptr;
+    // ESC, Q, R keys and messages
+    // Note: "R" key does not appear in single player modes (is_paused means single player)
+    Coercri::Scancode q_scancode("q"), r_scancode("r");
+    UTF8String esc_keyname = localization.get(LocalKey("esc"));
+    UTF8String q_keyname = window.getKeyName(q_scancode);
+    UTF8String r_keyname;
+    const char *q_msgkey = "quit";  // Localization key
+    const char *r_msgkey = nullptr;
     if (!is_paused) {
         // In the multiplayer modes, show "Quit (disconnect)" instead of just "Quit"
-        q_key = "quit_disconnect";
+        q_msgkey = "quit_disconnect";
 
         // Determine what to show for "R" key (if anything)
         if ((observer && num_connected_players == 0)
         || (!observer && num_connected_players == 1)
         || !blend) {  // !blend ==> split screen mode
             // Pressing R will restart immediately
-            r_key = "restart";
+            r_msgkey = "restart";
         } else if (!observer) {
             // Pressing R only votes to restart
-            r_key = "vote_to_restart";
+            r_msgkey = "vote_to_restart";
         }
         // Otherwise: I'm an observer and there are active players, so "R" key
         // is not available
+
+        if (r_msgkey) {
+            r_keyname = window.getKeyName(r_scancode);
+        }
     }
-    UTF8String return_msg = localization.get(LocalKey("return_to_game"));
-    UTF8String q_msg = localization.get(LocalKey(q_key));
-    UTF8String r_msg = r_key ? localization.get(LocalKey(r_key)) : UTF8String();
+    UTF8String esc_msg = localization.get(LocalKey("return_to_game"));
+    UTF8String q_msg = localization.get(LocalKey(q_msgkey));
+    UTF8String r_msg = r_msgkey ? localization.get(LocalKey(r_msgkey)) : UTF8String();
 
     // work out height
     int num_lines = 4;
-    if (r_key) ++num_lines;
+    if (r_msgkey) ++num_lines;
     if (menu_strings) num_lines += menu_strings->size();
     int pause_height = num_lines * th + th/2;
 
     // work out width
-    int maxw1 = gm.getFont()->getTextWidth(localization.get(LocalKey("esc")) + UTF8String::fromUTF8(":"));  // assumed wider than "Q:" and "R:" (TODO: might need to rethink that?)
-    int maxw2 = std::max(gm.getFont()->getTextWidth(return_msg),
+    int maxw1 = std::max(gm.getFont()->getTextWidth(esc_keyname),
+                         std::max(gm.getFont()->getTextWidth(q_keyname),
+                                  gm.getFont()->getTextWidth(r_keyname)));
+    int maxw2 = std::max(gm.getFont()->getTextWidth(esc_msg),
                          std::max(gm.getFont()->getTextWidth(q_msg),
                                   gm.getFont()->getTextWidth(r_msg)));
     if (menu_strings) {
@@ -1468,23 +1477,20 @@ void LocalDisplay::drawPauseDisplay(Coercri::GfxContext &gc, GfxManager &gm,
     // draw "header" lines
     const UTF8String pstr = localization.get(LocalKey(is_paused ? "game_paused_caps" : "knights_caps"));
     const int pwidth = gm.getFont()->getTextWidth(pstr);
-    
+
     gc.drawText(vp_x + vp_width/2 - pwidth/2, y, *gm.getFont(), pstr, col1);
     y += th;
     y += th/2;
-    
+
     DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm,
-                localization.get(LocalKey("esc")),
-                return_msg);
+                esc_keyname, esc_msg);
     y += th;
     DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm,
-                UTF8String::fromUTF8("Q"),
-                q_msg);
+                q_keyname, q_msg);
     y += th;
-    if (r_key) {
+    if (r_msgkey) {
         DrawKeyLine(vp_x + vp_width/2, y, col1, col2, gc, gm,
-                    UTF8String::fromUTF8("R"),
-                    r_msg);
+                    r_keyname, r_msg);
         y += th;
     }
     y += th;

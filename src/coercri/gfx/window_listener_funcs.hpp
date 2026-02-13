@@ -91,12 +91,12 @@ namespace Coercri {
     };
 
     struct OnKey {
-        OnKey(KeyEventType t_, KeyCode c_, KeyModifier m_) : t(t_), c(c_), m(m_) { }
+        OnKey(KeyEventType t_, const Scancode &c_, KeyModifier m_) : t(t_), c(c_), m(m_) { }
         void operator()(WindowListener *wl) const {
-            wl->onKey(t,c,m);
+            wl->onKey(t, c, m);
         }
-                            KeyEventType t;
-        KeyCode c;
+        KeyEventType t;
+        const Scancode &c;
         KeyModifier m;
     };
 

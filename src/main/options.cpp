@@ -33,31 +33,31 @@ Options::Options()
 {
     first_time = true;
     
-    ctrls[0][0] = Coercri::KC_W;
-    ctrls[0][1] = Coercri::KC_S;
-    ctrls[0][2] = Coercri::KC_A;
-    ctrls[0][3] = Coercri::KC_D;
-    ctrls[0][4] = Coercri::KC_Q;
-    ctrls[0][5] = Coercri::KC_F1;
+    ctrls[0][0] = Coercri::Scancode("w");
+    ctrls[0][1] = Coercri::Scancode("s");
+    ctrls[0][2] = Coercri::Scancode("a");
+    ctrls[0][3] = Coercri::Scancode("d");
+    ctrls[0][4] = Coercri::Scancode("q");
+    ctrls[0][5] = Coercri::Scancode("f1");
 
-    ctrls[1][0] = Coercri::KC_UP;
-    ctrls[1][1] = Coercri::KC_DOWN;
-    ctrls[1][2] = Coercri::KC_LEFT;
-    ctrls[1][3] = Coercri::KC_RIGHT;
-    ctrls[1][4] = Coercri::KC_RIGHT_CONTROL;
-    ctrls[1][5] = Coercri::KC_F12;
+    ctrls[1][0] = Coercri::Scancode("up");
+    ctrls[1][1] = Coercri::Scancode("down");
+    ctrls[1][2] = Coercri::Scancode("left");
+    ctrls[1][3] = Coercri::Scancode("right");
+    ctrls[1][4] = Coercri::Scancode("right_control");
+    ctrls[1][5] = Coercri::Scancode("f12");
 
-    ctrls[2][0] = Coercri::KC_W;
-    ctrls[2][1] = Coercri::KC_S;
-    ctrls[2][2] = Coercri::KC_A;
-    ctrls[2][3] = Coercri::KC_D;
-    ctrls[2][4] = Coercri::KC_Q;
-    ctrls[2][5] = Coercri::KC_F1;
+    ctrls[2][0] = Coercri::Scancode("w");
+    ctrls[2][1] = Coercri::Scancode("s");
+    ctrls[2][2] = Coercri::Scancode("a");
+    ctrls[2][3] = Coercri::Scancode("d");
+    ctrls[2][4] = Coercri::Scancode("q");
+    ctrls[2][5] = Coercri::Scancode("f1");
 
     // New control system is the default for new players.
     new_control_system = true;
     action_bar_tool_tips = true;
-    
+
     use_scale2x = true;
     fullscreen = false;  // Default to windowed mode (#169)
 
@@ -65,8 +65,8 @@ Options::Options()
     window_width = 1000;
     window_height = 780;
 
-    global_chat_key = Coercri::KC_TAB;
-    team_chat_key = Coercri::KC_BACKQUOTE;
+    global_chat_key = Coercri::Scancode("tab");
+    team_chat_key = Coercri::Scancode("backquote");
 
     maximized = true;
 }
@@ -88,22 +88,28 @@ Options LoadOptions(std::istream &str)
 
     const int version = buf[4] - '0';
 
-    if (version < 1 || version > 6) return Options();
+    if (version < 1 || version > 7) return Options();
     
     bool load_ok = false;
 
     // All Versions
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 6; ++j) {
-            if (i<2 || version >= 3) {
-                // Read from file.
-                int x;
-                str >> x;
-                o.ctrls[i][j] = Coercri::KeyCode(x);
+            if (version < 7) {
+                // Versions prior to 7 use integer keycodes which we
+                // can no longer read. Just skip over them, leaving
+                // keys at the default.
+                // Also, versions prior to 3 had only two sets of
+                // controls, not three.
+                if (i<2 || version >= 3) {
+                    int x;
+                    str >> x;
+                }
             } else {
-                // Versions prior to 3 only have 2 sets of controls in the file.
-                // Copy the "network games" controls from the P2 controls.
-                o.ctrls[i][j] = o.ctrls[1][j];
+                // Newer versions write the keys as strings.
+                std::string x;
+                str >> x;
+                o.ctrls[i][j] = Coercri::Scancode(x);
             }
         }
     }
@@ -129,12 +135,18 @@ Options LoadOptions(std::istream &str)
 
     // Version 5+
     if (version >= 5) {
-        int x;
-        str >> x;
-        o.global_chat_key = Coercri::KeyCode(x);
-
-        str >> x;
-        o.team_chat_key = Coercri::KeyCode(x);
+        if (version >= 7) {
+            std::string x;
+            str >> x;
+            o.global_chat_key = Coercri::Scancode(x);
+            str >> x;
+            o.team_chat_key = Coercri::Scancode(x);
+        } else {
+            // Skip numeric keycodes in earlier versions
+            int x;
+            str >> x;
+            str >> x;
+        }
     }
     // (for versions < 5, Options::Options() will have set up default
     // chat keys, which are fine for us.)
@@ -171,10 +183,10 @@ Options LoadOptions(std::istream &str)
 
 void SaveOptions(const Options &o, std::ostream &str)
 {
-    str << "KOPT6\n";
+    str << "KOPT7\n";
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 6; ++j) {
-            str << o.ctrls[i][j] << " ";
+            str << o.ctrls[i][j].getSymbolicName() << " ";
         }
         str << "\n";
     }
@@ -183,7 +195,7 @@ void SaveOptions(const Options &o, std::ostream &str)
     str << o.allow_non_integer_scaling << "\n";
     str << o.window_width << " " << o.window_height << "\n";
     str << o.new_control_system << " " << o.action_bar_tool_tips << "\n";
-    str << o.global_chat_key << " " << o.team_chat_key << "\n";
+    str << o.global_chat_key.getSymbolicName() << " " << o.team_chat_key.getSymbolicName() << "\n";
     str << o.maximized << "\n";
     str << o.player_name.asUTF8() << "\n";
 }

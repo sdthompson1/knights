@@ -107,14 +107,33 @@ void InGameScreen::setupDisplay()
             right_controller = &knights_app.getRightController();
         }
     }
-    
+
     const Options & options = knights_app.getOptions();
 
-    // TODO: localize the key names
-    const UTF8String global_chat_key_string =
-        UTF8String::fromUTF8Safe(Coercri::KeyCodeToKeyName(options.global_chat_key));
-    const UTF8String team_chat_key_string =
-        UTF8String::fromUTF8Safe(Coercri::KeyCodeToKeyName(options.team_chat_key));
+    // TODO: localize the key names? (getKeyName will return English in some cases)
+    const UTF8String global_chat_key_string = window->getKeyName(options.global_chat_key);
+    const UTF8String team_chat_key_string = window->getKeyName(options.team_chat_key);
+
+    // Work out the combined string for the movement keys
+    using Coercri::Scancode;
+    Scancode up = options.ctrls[2][0];
+    Scancode down = options.ctrls[2][1];
+    Scancode left = options.ctrls[2][2];
+    Scancode right = options.ctrls[2][3];
+    UTF8String movement_keys;
+    if (up == Scancode("up") && down == Scancode("down") && left == Scancode("left") && right == Scancode("right")) {
+        movement_keys = knights_app.getLocalization().get(LocalKey("arrow_keys"));
+    } else if (up == Scancode("w") && down == Scancode("s") && left == Scancode("a") && right == Scancode("d")) {
+        movement_keys = knights_app.getLocalization().get(LocalKey("wasd_keys"));
+    } else {
+        std::vector<LocalParam> params;
+        params.reserve(4);
+        params.push_back(LocalParam(window->getKeyName(up)));
+        params.push_back(LocalParam(window->getKeyName(left)));
+        params.push_back(LocalParam(window->getKeyName(down)));
+        params.push_back(LocalParam(window->getKeyName(right)));
+        movement_keys = knights_app.getLocalization().get(LocalKey("movement_keys"), params);
+    }
 
     display.reset(new LocalDisplay(knights_app.getLocalization(),
                                    knights_app.getConfigMap(),
@@ -140,12 +159,13 @@ void InGameScreen::setupDisplay()
                                    knights_app.getGameManager().getVoteStatus(),
                                    *knights_client,
                                    *container,
-                                   Coercri::KeyCodeToKeyName(options.ctrls[2][0]), 
-                                   Coercri::KeyCodeToKeyName(options.ctrls[2][1]),
-                                   Coercri::KeyCodeToKeyName(options.ctrls[2][2]),
-                                   Coercri::KeyCodeToKeyName(options.ctrls[2][3]),
-                                   Coercri::KeyCodeToKeyName(options.ctrls[2][4]),
-                                   Coercri::KeyCodeToKeyName(options.ctrls[2][5]),
+                                   window->getKeyName(options.ctrls[2][0]),
+                                   window->getKeyName(options.ctrls[2][1]),
+                                   window->getKeyName(options.ctrls[2][2]),
+                                   window->getKeyName(options.ctrls[2][3]),
+                                   window->getKeyName(options.ctrls[2][4]),
+                                   window->getKeyName(options.ctrls[2][5]),
+                                   movement_keys,
                                    single_player,
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips,
@@ -216,8 +236,8 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
             const int w = gc.getWidth();
             const int h = gc.getHeight();
             if (pause_mode) {
-                display->drawPauseDisplay(gc, gm, 0,   0, w/2, h, true, false, obs, ncp);
-                display->drawPauseDisplay(gc, gm, w/2, 0, w/2, h, true, false, obs, ncp);
+                display->drawPauseDisplay(gc, *window, gm, 0,   0, w/2, h, true, false, obs, ncp);
+                display->drawPauseDisplay(gc, *window, gm, w/2, 0, w/2, h, true, false, obs, ncp);
             } else {
                 display->drawSplitScreen(gc, gm, 0, 0, w, h);
             }
@@ -231,7 +251,7 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
             const int actual_height = display->drawObs(gc, gm, 0, 0, w, h1);
             display->updateGui(gm, 0, actual_height, gc.getWidth(), gc.getHeight() - actual_height, true);
             if (pause_mode) {
-                display->drawPauseDisplay(gc, gm, 0, 0, gc.getWidth(), gc.getHeight(), false, true, obs, ncp);
+                display->drawPauseDisplay(gc, *window, gm, 0, 0, gc.getWidth(), gc.getHeight(), false, true, obs, ncp);
             }
         }
     } else {
@@ -249,7 +269,7 @@ void InGameScreen::draw(uint64_t frame_timestamp_us, Coercri::GfxContext &gc)
 
         // Draw pause display. (Single player mode => paused, Network game => not paused.)
         if (pause_mode) {
-            display->drawPauseDisplay(gc, gm, 0, 0, gc.getWidth(), gc.getHeight(), single_player, true, obs, ncp);
+            display->drawPauseDisplay(gc, *window, gm, 0, 0, gc.getWidth(), gc.getHeight(), single_player, true, obs, ncp);
         }
     }
 }
@@ -328,7 +348,7 @@ void InGameScreen::onMouseUp(int x, int y, Coercri::MouseButton b)
     else if (b == Coercri::MB_RIGHT) mright = false;
 }
 
-void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier)
+void InGameScreen::onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc, Coercri::KeyModifier)
 {
     if (auto_mouse) window->showMousePointer(false);
 
@@ -339,12 +359,12 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
     
     const bool pressed = (type == Coercri::KEY_PRESSED);
     const bool is_game_over = display->isGameOver();
-    const bool escape_pressed = pressed && kc == Coercri::KC_ESCAPE;
-    const bool space_pressed = pressed && kc == Coercri::KC_SPACE;
-    const bool q_pressed = pressed && kc == Coercri::KC_Q;
-    const bool r_pressed = pressed && kc == Coercri::KC_R;
-    const bool tab_pressed = pressed && kc == global_chat_key;
-    const bool backtick_pressed = pressed && kc == team_chat_key;
+    const bool escape_pressed = pressed && sc.getSymbolicName() == "escape";
+    const bool space_pressed = pressed && sc.getSymbolicName() == "space";
+    const bool q_pressed = pressed && sc.getSymbolicName() == "q";
+    const bool r_pressed = pressed && sc.getSymbolicName() == "r";
+    const bool tab_pressed = pressed && sc == global_chat_key;
+    const bool backtick_pressed = pressed && sc == team_chat_key;
 
     // TAB or ` => toggle chat mode
     if (tab_pressed || backtick_pressed) {
@@ -411,22 +431,14 @@ void InGameScreen::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercr
     // Left/Right in Observe mode => change currently observed player (window 1)
     // Up/Down => the same, but for window 2 (#164)
     if (player_ids.size() > 2 && pressed) {
-        switch (kc) {
-        case Coercri::KC_LEFT:
+        if (sc.getSymbolicName() == "left") {
             display->cycleObsPlayer(0, -1);
-            break;
-
-        case Coercri::KC_RIGHT:
+        } else if (sc.getSymbolicName() == "right") {
             display->cycleObsPlayer(0, 1);
-            break;
-
-        case Coercri::KC_UP:
+        } else if (sc.getSymbolicName() == "up") {
             display->cycleObsPlayer(1, -1);
-            break;
-
-        case Coercri::KC_DOWN:
+        } else if (sc.getSymbolicName() == "down") {
             display->cycleObsPlayer(1, 1);
-            break;
         }
     }
 }

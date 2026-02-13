@@ -67,6 +67,10 @@ class SkullRenderer;
 class SoundManager;
 class VMKnightsLobby;
 
+namespace Coercri {
+    class GfxDriver;
+}
+
 enum DisplayType {
     DT_DONT_CARE,
     DT_WINDOWED,
@@ -118,6 +122,7 @@ public:
     const SkullRenderer * getSkullRenderer() const;
     const ConfigMap & getConfigMap() const;
     Coercri::Timer & getTimer() const;
+    Coercri::GfxDriver & getGfxDriver() const;
     Coercri::NetworkDriver & getLanNetworkDriver() const;
 #ifdef ONLINE_PLATFORM
     Coercri::NetworkDriver & getPlatformNetworkDriver() const;

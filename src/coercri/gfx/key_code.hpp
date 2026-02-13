@@ -3,8 +3,7 @@
  *   key_code.hpp
  *
  * PURPOSE:
- *   Key events, keycodes, modifier codes, function to convert keycode
- *   to key name.
+ *   Types and functions for working with keyboard keys.
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
@@ -49,154 +48,55 @@
 
 namespace Coercri {
 
-    // Key Codes
+    // Class to represent a keyboard scancode (i.e., a key identified
+    // by its position on the keyboard, rather than by the actual
+    // character that it produces -- the former is keyboard layout
+    // independent, the latter is not).
 
-    // NOTE: New KeyCodes should be added at the END, so that programs
-    // relying on the existing numeric codes do not break.
-    
-    enum KeyCode {
-        KC_0,
-        KC_1,
-        KC_2,
-        KC_3,
-        KC_4,
-        KC_5,
-        KC_6,
-        KC_7,
-        KC_8,
-        KC_9,
-        KC_A,
-        KC_AMPERSAND,
-        KC_ASTERISK,
-        KC_AT,
-        KC_B,
-        KC_BACKQUOTE,
-        KC_BACKSLASH,
-        KC_BACKSPACE,
-        KC_BREAK,
-        KC_C,
-        KC_CAPS_LOCK,
-        KC_CARET,
-        KC_CLEAR,
-        KC_COLON,
-        KC_COMMA,
-        KC_COMPOSE,
-        KC_D,
-        KC_DELETE,
-        KC_DOLLAR,
-        KC_DOUBLE_QUOTE,
-        KC_DOWN,
-        KC_E,
-        KC_END,
-        KC_EQUALS,
-        KC_ESCAPE,
-        KC_EURO,
-        KC_EXCLAIM,
-        KC_F,
-        KC_F1,
-        KC_F2,
-        KC_F3,
-        KC_F4,
-        KC_F5,
-        KC_F6,
-        KC_F7,
-        KC_F8,
-        KC_F9,
-        KC_F10,
-        KC_F11,
-        KC_F12,
-        KC_F13,
-        KC_F14,
-        KC_F15,
-        KC_G,
-        KC_GREATER,
-        KC_H,
-        KC_HASH,
-        KC_HELP,
-        KC_HOME,
-        KC_I,
-        KC_INSERT,
-        KC_J,
-        KC_K,
-        KC_KP_0,   // first numeric keypad key.
-        KC_KP_1,
-        KC_KP_2,
-        KC_KP_3,
-        KC_KP_4,
-        KC_KP_5,
-        KC_KP_6,
-        KC_KP_7,
-        KC_KP_8,
-        KC_KP_9,
-        KC_KP_DIVIDE,
-        KC_KP_ENTER,
-        KC_KP_EQUALS,
-        KC_KP_MINUS,
-        KC_KP_MULTIPLY,
-        KC_KP_PERIOD,
-        KC_KP_PLUS,   // last numeric keypad key.
-        KC_L,
-        KC_LEFT,
-        KC_LEFT_ALT,
-        KC_LEFT_BRACKET,
-        KC_LEFT_CONTROL,
-        KC_LEFT_META,
-        KC_LEFT_PAREN,
-        KC_LEFT_SHIFT,
-        KC_LEFT_WINDOWS,
-        KC_LESS,
-        KC_M,
-        KC_MENU,
-        KC_MODE,
-        KC_MINUS,
-        KC_N,
-        KC_NUM_LOCK,
-        KC_O,
-        KC_P,
-        KC_PAGE_DOWN,
-        KC_PAGE_UP,
-        KC_PAUSE,
-        KC_PERIOD,
-        KC_PLUS,
-        KC_POWER,
-        KC_PRINT_SCREEN,
-        KC_Q,
-        KC_QUESTION,
-        KC_R,
-        KC_RETURN,
-        KC_RIGHT,
-        KC_RIGHT_ALT,
-        KC_RIGHT_BRACKET,
-        KC_RIGHT_CONTROL,
-        KC_RIGHT_META,
-        KC_RIGHT_PAREN,
-        KC_RIGHT_SHIFT,
-        KC_RIGHT_WINDOWS,
-        KC_S,
-        KC_SCROLL_LOCK,
-        KC_SEMICOLON,
-        KC_SINGLE_QUOTE,
-        KC_SLASH,
-        KC_SPACE,
-        KC_SYSREQ,
-        KC_T,
-        KC_TAB,
-        KC_U,
-        KC_UNDERSCORE,
-        KC_UNDO,
-        KC_UP,
-        KC_V,
-        KC_W,
-        KC_X,
-        KC_Y,
-        KC_Z,
-        KC_PERCENT,
-        
-        KC_UNKNOWN
+    // Since there are so many keys (in various keyboard standards),
+    // we abandon the idea of trying to use numeric keycodes, and
+    // instead represent keys as ASCII strings!
+
+    // Note: Scancodes can be converted to user-readable names using
+    // Window::getKeyName.
+
+    // The symbolic names are supposed to be consistent across backends,
+    // and stable over time. Here are some examples that most keyboards
+    // will support:
+    //   "a" to "z"
+    //   "0" to "9"
+    //   "return", "kp_enter" (numeric keypad enter)
+    //   "tab", "backquote" (key above tab)
+    //   "space"
+    //   "backspace", "delete", "insert"
+    //   "home", "end", "page_up", "page_down"
+    //   "pause", "print_screen"
+    //   "escape"
+    //   "up", "down", "left", "right" (arrow keys)
+    //   "f1" to "f12" (or more)
+    //   "left_windows", "right_windows", "menu"
+    //   "left_control", "left_shift", "right_control", "right_shift"
+    // NB: Symbolic names never contain spaces.
+
+    class Scancode {
+    public:
+        // Construct an invalid Scancode with empty symbolic name
+        Scancode() { }
+
+        // Construct a Scancode from a symbolic ASCII name like "w" or
+        // "page_down"
+        explicit Scancode(const std::string &sym_name)
+            : sym_name(sym_name) { }
+
+        // Get the symbolic ASCII name -- e.g. for saving to a file
+        const std::string &getSymbolicName() const { return sym_name; }
+
+        // Equality comparison
+        bool operator==(const Scancode &other) const = default;
+
+    private:
+        std::string sym_name;
     };
-
-    std::string KeyCodeToKeyName(KeyCode kc);
-
 
     // Key Modifiers
     // (OR'd together)

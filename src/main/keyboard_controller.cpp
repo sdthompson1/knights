@@ -29,16 +29,16 @@
 class KeyboardListener : public Coercri::WindowListener {
 public:
     explicit KeyboardListener(KeyboardController &c) : ctrlr(c) { }
-    virtual void onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier);
-    virtual void onLoseFocus();
+    virtual void onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc, Coercri::KeyModifier) override;
+    virtual void onLoseFocus() override;
 
 private:
     KeyboardController &ctrlr;
 };
 
 KeyboardController::KeyboardController(bool using_action_bar_,
-                                       Coercri::KeyCode u, Coercri::KeyCode r, Coercri::KeyCode d,
-                                       Coercri::KeyCode l, Coercri::KeyCode f, Coercri::KeyCode s,
+                                       Coercri::Scancode u, Coercri::Scancode r, Coercri::Scancode d,
+                                       Coercri::Scancode l, Coercri::Scancode f, Coercri::Scancode s,
                                        boost::shared_ptr<Coercri::Window> w)
     : kbd_listener(new KeyboardListener(*this)), win(w),
       up_key(u), right_key(r), down_key(d), left_key(l), fire_key(f), suicide_key(s),
@@ -75,16 +75,16 @@ void KeyboardController::get(ControllerState &state) const
     }
 }
 
-void KeyboardListener::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier)
+void KeyboardListener::onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc, Coercri::KeyModifier)
 {
     if (type == Coercri::KEY_AUTO_REPEAT) return;  // we are not interested in auto-repeat events
     const bool p = (type == Coercri::KEY_PRESSED);
-    if (kc == ctrlr.up_key) { ctrlr.up = p; }
-    else if (kc == ctrlr.right_key) { ctrlr.right = p; }
-    else if (kc == ctrlr.down_key) { ctrlr.down = p; }
-    else if (kc == ctrlr.left_key) { ctrlr.left = p; }
-    else if (kc == ctrlr.fire_key) { ctrlr.fire = p; }
-    else if (kc == ctrlr.suicide_key) { ctrlr.suicide = p; }
+    if (sc == ctrlr.up_key) { ctrlr.up = p; }
+    else if (sc == ctrlr.right_key) { ctrlr.right = p; }
+    else if (sc == ctrlr.down_key) { ctrlr.down = p; }
+    else if (sc == ctrlr.left_key) { ctrlr.left = p; }
+    else if (sc == ctrlr.fire_key) { ctrlr.fire = p; }
+    else if (sc == ctrlr.suicide_key) { ctrlr.suicide = p; }
 }
 
 void KeyboardListener::onLoseFocus()

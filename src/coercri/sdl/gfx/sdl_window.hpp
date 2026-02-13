@@ -59,16 +59,17 @@ namespace Coercri {
         explicit SDLWindow(SDL_Window *win, bool vsync);
         ~SDLWindow();
 
-        virtual void getSize(int &w, int &h) const;
-        virtual bool hasFocus() const;
-        virtual void popToFront();
-        virtual void showMousePointer(bool shown);
-        virtual void switchToWindowed(int w, int h);
-        virtual void switchToFullScreen();
-        virtual bool isFullScreen() const;
-        virtual bool isMaximized() const;
-        virtual std::unique_ptr<GfxContext> createGfxContext();
-        virtual void setIcon(const PixelArray &);
+        virtual void getSize(int &w, int &h) const override;
+        virtual bool hasFocus() const override;
+        virtual void popToFront() override;
+        virtual void showMousePointer(bool shown) override;
+        virtual void switchToWindowed(int w, int h) override;
+        virtual void switchToFullScreen() override;
+        virtual bool isFullScreen() const override;
+        virtual bool isMaximized() const override;
+        virtual std::unique_ptr<GfxContext> createGfxContext() override;
+        virtual void setIcon(const PixelArray &) override;
+        virtual UTF8String getKeyName(const Scancode &) override;
 
         void addGraphicUsingThisWindow(const SDLGraphic *g) { gfx_using_this_window.insert(g); }
         void rmGraphicUsingThisWindow(const SDLGraphic *g) { gfx_using_this_window.erase(g); }

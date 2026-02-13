@@ -722,6 +722,11 @@ Coercri::Timer & KnightsApp::getTimer() const
     return *pimpl->timer;
 }
 
+Coercri::GfxDriver & KnightsApp::getGfxDriver() const
+{
+    return *pimpl->gfx_driver;
+}
+
 Coercri::NetworkDriver & KnightsApp::getLanNetworkDriver() const
 {
     return *pimpl->lan_net_driver;

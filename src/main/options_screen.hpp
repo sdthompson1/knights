@@ -30,7 +30,7 @@ class OptionsScreenImpl;
 
 class OptionsScreen : public Screen {
 public:
-    virtual ~OptionsScreen();
+    virtual ~OptionsScreen() { }
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
 
 private:

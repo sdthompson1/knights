@@ -35,6 +35,7 @@
 
 // coercri
 #include "gcn/cg_font.hpp"
+#include "gfx/gfx_driver.hpp"
 #include "gfx/window_listener.hpp"
 
 #include "boost/scoped_ptr.hpp"
@@ -126,19 +127,19 @@ namespace {
 
 class OptionsScreenImpl : public gcn::ActionListener, public gcn::KeyListener, public Coercri::WindowListener {
 public:
-    OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui);
-    void action(const gcn::ActionEvent &event);
-    void keyPressed(gcn::KeyEvent &ke);
-    void keyReleased(gcn::KeyEvent &ke);
-    void onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier);
+    OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
+    ~OptionsScreenImpl();
+    void action(const gcn::ActionEvent &event) override;
+    void keyPressed(gcn::KeyEvent &ke) override;
+    void keyReleased(gcn::KeyEvent &ke) override;
+    void onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc, Coercri::KeyModifier) override;
 
     void transferToGui();
     void setupChangeControls(int);
-    
-    boost::shared_ptr<Coercri::Window> window;
 
 private:
     KnightsApp &knights_app;
+    boost::shared_ptr<Coercri::Window> window;
     boost::scoped_ptr<GuiCentre> centre;
     boost::scoped_ptr<GuiPanel> panel;
     boost::scoped_ptr<gcn::Container> container;
@@ -173,8 +174,9 @@ private:
     UTF8String bad_key_msg;
 };
 
-OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
-    : knights_app(app), current_opts(app.getOptions()), change_active(false)
+OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui)
+    : knights_app(app), window(window),
+      current_opts(app.getOptions()), change_active(false)
 {
     const Localization &loc = knights_app.getLocalization();
 
@@ -235,8 +237,18 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     change_label->setVisible(false);
     change_label->setForegroundColor(gcn::Color(128,0,0));
 
+    // Find the width of the longest known key name!
+    int max_key_width = 0;
+    for (const auto & scancode : knights_app.getGfxDriver().getKnownScancodes()) {
+        UTF8String name = window->getKeyName(scancode);
+        int w = control_label[0][0]->getFont()->getWidth(name.asUTF8());
+        if (w > max_key_width) {
+            max_key_width = w;
+        }
+    }
+
     const int cw0 = control_label[0][6]->getWidth() + 10;
-    const int cw1 = control_label[0][0]->getFont()->getWidth("RIGHT WINDOWS");  // longest possible key name. TODO: use localized key names (will have to find the longest one)
+    const int cw1 = max_key_width;
     const int intercol = 50;
     const int overall_width = std::max(min_width, indent + (pad + cw0 + cw1)*2 + intercol);
 
@@ -324,6 +336,17 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, gcn::Gui &gui)
     gui.setTop(centre.get());
 
     gui.addGlobalKeyListener(this);
+    window->addWindowListener(this);
+}
+
+OptionsScreenImpl::~OptionsScreenImpl()
+{
+    if (window) {
+        window->rmWindowListener(this);
+    }
+    // Note: no need to remove global key listener, because the
+    // framework destroys and re-creates the Gui between screens
+    // anyway, so it will be removed at that point.
 }
 
 void OptionsScreenImpl::action(const gcn::ActionEvent &event)
@@ -421,7 +444,8 @@ void OptionsScreenImpl::transferToGui()
                     control_setting[which_label][j]->setCaption("");
                 }
             } else {
-                control_setting[which_label][j]->setCaption(Coercri::KeyCodeToKeyName(current_opts.ctrls[i][j]));
+                UTF8String name = window->getKeyName(current_opts.ctrls[i][j]);
+                control_setting[which_label][j]->setCaption(name.asUTF8());
             }
             control_setting[which_label][j]->adjustSize();
         }
@@ -430,14 +454,16 @@ void OptionsScreenImpl::transferToGui()
     // now the chat keys (overrides the above)
     if (!split_screen) {
         // global chat key setting
-        control_setting[1][0]->setCaption(Coercri::KeyCodeToKeyName(current_opts.global_chat_key));
+        UTF8String global_chat_name = window->getKeyName(current_opts.global_chat_key);
+        control_setting[1][0]->setCaption(global_chat_name.asUTF8());
         if (change_active && change_player == 3 && change_key == 0) {
             control_setting[1][0]->setCaption(loc.get(LocalKey("press")).asUTF8());
         }
         control_setting[1][0]->adjustSize();
 
         // team chat key setting
-        control_setting[1][1]->setCaption(Coercri::KeyCodeToKeyName(current_opts.team_chat_key));
+        UTF8String team_chat_name = window->getKeyName(current_opts.team_chat_key);
+        control_setting[1][1]->setCaption(team_chat_name.asUTF8());
         if (change_active && change_player == 3) {
             if (change_key == 1) {
                 control_setting[1][1]->setCaption(loc.get(LocalKey("press")).asUTF8());
@@ -447,7 +473,7 @@ void OptionsScreenImpl::transferToGui()
         }
         control_setting[1][1]->adjustSize();
     }
-    
+
     if (change_active) {
         change_button[0]->setVisible(false);
         change_button[1]->setVisible(false);
@@ -513,7 +539,7 @@ void OptionsScreenImpl::transferToGui()
     bad_key_area->setVisible(!show_lower);
     bad_key_area->setText(bad_key_msg);
     bad_key_area->adjustHeight();
-    
+
     if (window) window->invalidateAll();
 }
 
@@ -526,28 +552,28 @@ void OptionsScreenImpl::setupChangeControls(int i)
     transferToGui();
 }
 
-void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, Coercri::KeyModifier)
+void OptionsScreenImpl::onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc, Coercri::KeyModifier)
 {
     if (type == Coercri::KEY_PRESSED && change_active) {
 
-        if (kc == Coercri::KC_ESCAPE) {
+        if (sc.getSymbolicName() == "escape") {
             // cancel!
             change_active = false;
             bad_key_msg = UTF8String();
 
         } else {
             bool allowed = true;
-            
+
             // Check for duplicate control keys
             if (change_player == 3) {
                 // special case: changing chat keys
-                if (change_key == 1 && kc == current_opts.global_chat_key) {
+                if (change_key == 1 && sc == current_opts.global_chat_key) {
                     allowed = false;
                 }
             } else {
                 // normal case: changing player controls
                 for (int i = 0; i < change_key; ++i) {
-                    if (current_opts.ctrls[change_player][i] == kc) {
+                    if (current_opts.ctrls[change_player][i] == sc) {
                         allowed = false;
                         break;
                     }
@@ -562,22 +588,22 @@ void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, C
                 if (change_player == 3) {
                     // special case: changing chat keys
                     if (change_key == 0) {
-                        current_opts.global_chat_key = kc;
+                        current_opts.global_chat_key = sc;
                         change_key = 1;
                     } else {
-                        current_opts.team_chat_key = kc;
+                        current_opts.team_chat_key = sc;
                         change_active = false;
                     }
                 } else {
                     // normal case: changing player controls
                     
-                    current_opts.ctrls[change_player][change_key] = kc;
+                    current_opts.ctrls[change_player][change_key] = sc;
                     ++change_key;
                     
                     const bool four_key_mode = 
                         current_opts.new_control_system     // Using NEW control system (4-key) for LAN/Internet/SglPlyr
                         && show_controls_dropdown->getSelected() == 0;  // Currently editing ctrls for LAN/Internet/SglPlyr
-                    
+
                     if (change_key >= 6 || (four_key_mode && change_key >= 4)) {
                         change_active = false;
                     }
@@ -593,14 +619,7 @@ void OptionsScreenImpl::onKey(Coercri::KeyEventType type, Coercri::KeyCode kc, C
 
 bool OptionsScreen::start(KnightsApp &app, boost::shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
-    pimpl.reset(new OptionsScreenImpl(app, gui));
+    pimpl.reset(new OptionsScreenImpl(app, w, gui));
     pimpl->transferToGui();
-    w->addWindowListener(pimpl.get());
-    pimpl->window = w;
     return true;
-}
-
-OptionsScreen::~OptionsScreen()
-{
-    if (pimpl->window) pimpl->window->rmWindowListener(pimpl.get());
 }

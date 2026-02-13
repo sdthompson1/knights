@@ -50,6 +50,7 @@
 
 #include "boost/weak_ptr.hpp"
 #include <map>
+#include <iostream>
 
 #include <SDL2/SDL.h>
 
@@ -57,145 +58,293 @@ namespace Coercri {
 
     namespace {
 
-        // Global key tables
-        std::map<SDL_Keycode, KeyCode> g_keytable;
+        // Key to scancode conversions
+        std::map<SDL_Scancode, std::string> g_keytable;
+        std::map<std::string, SDL_Scancode> g_reverse_keytable;
 
         void InitKeyTable()
         {
             if (!g_keytable.empty()) return;  // already initialized
 
-            g_keytable[SDLK_BACKSPACE] = KC_BACKSPACE;
-            g_keytable[SDLK_TAB] = KC_TAB;
-            g_keytable[SDLK_CLEAR] = KC_CLEAR;
-            g_keytable[SDLK_RETURN] = KC_RETURN;
-            g_keytable[SDLK_PAUSE] = KC_PAUSE;
-            g_keytable[SDLK_ESCAPE] = KC_ESCAPE;
-            g_keytable[SDLK_SPACE] = KC_SPACE;
-            g_keytable[SDLK_EXCLAIM] = KC_EXCLAIM;
-            g_keytable[SDLK_QUOTEDBL] = KC_DOUBLE_QUOTE;
-            g_keytable[SDLK_HASH] = KC_HASH;
-            g_keytable[SDLK_DOLLAR] = KC_DOLLAR;
-            g_keytable[SDLK_AMPERSAND] = KC_AMPERSAND;
-            g_keytable[SDLK_QUOTE] = KC_SINGLE_QUOTE;
-            g_keytable[SDLK_LEFTPAREN] = KC_LEFT_PAREN;
-            g_keytable[SDLK_RIGHTPAREN] = KC_RIGHT_PAREN;
-            g_keytable[SDLK_ASTERISK] = KC_ASTERISK;
-            g_keytable[SDLK_PLUS] = KC_PLUS;
-            g_keytable[SDLK_COMMA] = KC_COMMA;
-            g_keytable[SDLK_MINUS] = KC_MINUS;
-            g_keytable[SDLK_PERIOD] = KC_PERIOD;
-            g_keytable[SDLK_SLASH] = KC_SLASH;
-            g_keytable[SDLK_0] = KC_0;
-            g_keytable[SDLK_1] = KC_1;
-            g_keytable[SDLK_2] = KC_2;
-            g_keytable[SDLK_3] = KC_3;
-            g_keytable[SDLK_4] = KC_4;
-            g_keytable[SDLK_5] = KC_5;
-            g_keytable[SDLK_6] = KC_6;
-            g_keytable[SDLK_7] = KC_7;
-            g_keytable[SDLK_8] = KC_8;
-            g_keytable[SDLK_9] = KC_9;
-            g_keytable[SDLK_COLON] = KC_COLON;
-            g_keytable[SDLK_SEMICOLON] = KC_SEMICOLON;
-            g_keytable[SDLK_LESS] = KC_LESS;
-            g_keytable[SDLK_EQUALS] = KC_EQUALS;
-            g_keytable[SDLK_GREATER] = KC_GREATER;
-            g_keytable[SDLK_QUESTION] = KC_QUESTION;
-            g_keytable[SDLK_AT] = KC_AT;
-            g_keytable[SDLK_LEFTBRACKET] = KC_LEFT_BRACKET;
-            g_keytable[SDLK_BACKSLASH] = KC_BACKSLASH;
-            g_keytable[SDLK_RIGHTBRACKET] = KC_RIGHT_BRACKET;
-            g_keytable[SDLK_CARET] = KC_CARET;
-            g_keytable[SDLK_UNDERSCORE] = KC_UNDERSCORE;
-            g_keytable[SDLK_BACKQUOTE] = KC_BACKQUOTE;
-            g_keytable[SDLK_a] = KC_A;
-            g_keytable[SDLK_b] = KC_B;
-            g_keytable[SDLK_c] = KC_C;
-            g_keytable[SDLK_d] = KC_D;
-            g_keytable[SDLK_e] = KC_E;
-            g_keytable[SDLK_f] = KC_F;
-            g_keytable[SDLK_g] = KC_G;
-            g_keytable[SDLK_h] = KC_H;
-            g_keytable[SDLK_i] = KC_I;
-            g_keytable[SDLK_j] = KC_J;
-            g_keytable[SDLK_k] = KC_K;
-            g_keytable[SDLK_l] = KC_L;
-            g_keytable[SDLK_m] = KC_M;
-            g_keytable[SDLK_n] = KC_N;
-            g_keytable[SDLK_o] = KC_O;
-            g_keytable[SDLK_p] = KC_P;
-            g_keytable[SDLK_q] = KC_Q;
-            g_keytable[SDLK_r] = KC_R;
-            g_keytable[SDLK_s] = KC_S;
-            g_keytable[SDLK_t] = KC_T;
-            g_keytable[SDLK_u] = KC_U;
-            g_keytable[SDLK_v] = KC_V;
-            g_keytable[SDLK_w] = KC_W;
-            g_keytable[SDLK_x] = KC_X;
-            g_keytable[SDLK_y] = KC_Y;
-            g_keytable[SDLK_z] = KC_Z;
-            g_keytable[SDLK_DELETE] = KC_DELETE;
-            g_keytable[SDLK_KP_0] = KC_KP_0;
-            g_keytable[SDLK_KP_1] = KC_KP_1;
-            g_keytable[SDLK_KP_2] = KC_KP_2;
-            g_keytable[SDLK_KP_3] = KC_KP_3;
-            g_keytable[SDLK_KP_4] = KC_KP_4;
-            g_keytable[SDLK_KP_5] = KC_KP_5;
-            g_keytable[SDLK_KP_6] = KC_KP_6;
-            g_keytable[SDLK_KP_7] = KC_KP_7;
-            g_keytable[SDLK_KP_8] = KC_KP_8;
-            g_keytable[SDLK_KP_9] = KC_KP_9;
-            g_keytable[SDLK_KP_PERIOD] = KC_KP_PERIOD;
-            g_keytable[SDLK_KP_DIVIDE] = KC_KP_DIVIDE;
-            g_keytable[SDLK_KP_MULTIPLY] = KC_KP_MULTIPLY;
-            g_keytable[SDLK_KP_MINUS] = KC_KP_MINUS;
-            g_keytable[SDLK_KP_PLUS] = KC_KP_PLUS;
-            g_keytable[SDLK_KP_ENTER] = KC_KP_ENTER;
-            g_keytable[SDLK_KP_EQUALS] = KC_KP_EQUALS;
-            g_keytable[SDLK_UP] = KC_UP;
-            g_keytable[SDLK_DOWN] = KC_DOWN;
-            g_keytable[SDLK_RIGHT] = KC_RIGHT;
-            g_keytable[SDLK_LEFT] = KC_LEFT;
-            g_keytable[SDLK_INSERT] = KC_INSERT;
-            g_keytable[SDLK_HOME] = KC_HOME;
-            g_keytable[SDLK_END] = KC_END;
-            g_keytable[SDLK_PAGEUP] = KC_PAGE_UP;
-            g_keytable[SDLK_PAGEDOWN] = KC_PAGE_DOWN;
-            g_keytable[SDLK_F1] = KC_F1;
-            g_keytable[SDLK_F2] = KC_F2;
-            g_keytable[SDLK_F3] = KC_F3;
-            g_keytable[SDLK_F4] = KC_F4;
-            g_keytable[SDLK_F5] = KC_F5;
-            g_keytable[SDLK_F6] = KC_F6;
-            g_keytable[SDLK_F7] = KC_F7;
-            g_keytable[SDLK_F8] = KC_F8;
-            g_keytable[SDLK_F9] = KC_F9;
-            g_keytable[SDLK_F10] = KC_F10;
-            g_keytable[SDLK_F11] = KC_F11;
-            g_keytable[SDLK_F12] = KC_F12;
-            g_keytable[SDLK_F13] = KC_F13;
-            g_keytable[SDLK_F14] = KC_F14;
-            g_keytable[SDLK_F15] = KC_F15;
-            g_keytable[SDLK_NUMLOCKCLEAR] = KC_NUM_LOCK;
-            g_keytable[SDLK_CAPSLOCK] = KC_CAPS_LOCK;
-            g_keytable[SDLK_SCROLLLOCK] = KC_SCROLL_LOCK;
-            g_keytable[SDLK_RSHIFT] = KC_RIGHT_SHIFT;
-            g_keytable[SDLK_LSHIFT] = KC_LEFT_SHIFT;
-            g_keytable[SDLK_RCTRL] = KC_RIGHT_CONTROL;
-            g_keytable[SDLK_LCTRL] = KC_LEFT_CONTROL;
-            g_keytable[SDLK_RALT] = KC_RIGHT_ALT;            
-            g_keytable[SDLK_LALT] = KC_LEFT_ALT;
-            g_keytable[SDLK_LGUI] = KC_LEFT_WINDOWS;
-            g_keytable[SDLK_RGUI] = KC_RIGHT_WINDOWS;
-            g_keytable[SDLK_MODE] = KC_MODE;
-            g_keytable[SDLK_HELP] = KC_HELP;
-            g_keytable[SDLK_PRINTSCREEN] = KC_PRINT_SCREEN;
-            g_keytable[SDLK_SYSREQ] = KC_SYSREQ;
-            g_keytable[SDLK_MENU] = KC_MENU;
-            g_keytable[SDLK_APPLICATION] = KC_MENU;
-            g_keytable[SDLK_POWER] = KC_POWER;
-            g_keytable[SDLK_CURRENCYUNIT] = KC_EURO;
-            g_keytable[SDLK_UNDO] = KC_UNDO;
+            g_keytable[SDL_SCANCODE_A] = "a";
+            g_keytable[SDL_SCANCODE_B] = "b";
+            g_keytable[SDL_SCANCODE_C] = "c";
+            g_keytable[SDL_SCANCODE_D] = "d";
+            g_keytable[SDL_SCANCODE_E] = "e";
+            g_keytable[SDL_SCANCODE_F] = "f";
+            g_keytable[SDL_SCANCODE_G] = "g";
+            g_keytable[SDL_SCANCODE_H] = "h";
+            g_keytable[SDL_SCANCODE_I] = "i";
+            g_keytable[SDL_SCANCODE_J] = "j";
+            g_keytable[SDL_SCANCODE_K] = "k";
+            g_keytable[SDL_SCANCODE_L] = "l";
+            g_keytable[SDL_SCANCODE_M] = "m";
+            g_keytable[SDL_SCANCODE_N] = "n";
+            g_keytable[SDL_SCANCODE_O] = "o";
+            g_keytable[SDL_SCANCODE_P] = "p";
+            g_keytable[SDL_SCANCODE_Q] = "q";
+            g_keytable[SDL_SCANCODE_R] = "r";
+            g_keytable[SDL_SCANCODE_S] = "s";
+            g_keytable[SDL_SCANCODE_T] = "t";
+            g_keytable[SDL_SCANCODE_U] = "u";
+            g_keytable[SDL_SCANCODE_V] = "v";
+            g_keytable[SDL_SCANCODE_W] = "w";
+            g_keytable[SDL_SCANCODE_X] = "x";
+            g_keytable[SDL_SCANCODE_Y] = "y";
+            g_keytable[SDL_SCANCODE_Z] = "z";
+
+            g_keytable[SDL_SCANCODE_1] = "1";
+            g_keytable[SDL_SCANCODE_2] = "2";
+            g_keytable[SDL_SCANCODE_3] = "3";
+            g_keytable[SDL_SCANCODE_4] = "4";
+            g_keytable[SDL_SCANCODE_5] = "5";
+            g_keytable[SDL_SCANCODE_6] = "6";
+            g_keytable[SDL_SCANCODE_7] = "7";
+            g_keytable[SDL_SCANCODE_8] = "8";
+            g_keytable[SDL_SCANCODE_9] = "9";
+            g_keytable[SDL_SCANCODE_0] = "0";
+
+            g_keytable[SDL_SCANCODE_RETURN] = "return";
+            g_keytable[SDL_SCANCODE_ESCAPE] = "escape";
+            g_keytable[SDL_SCANCODE_BACKSPACE] = "backspace";
+            g_keytable[SDL_SCANCODE_TAB] = "tab";
+            g_keytable[SDL_SCANCODE_SPACE] = "space";
+
+            g_keytable[SDL_SCANCODE_MINUS] = "minus";
+            g_keytable[SDL_SCANCODE_EQUALS] = "equals";
+            g_keytable[SDL_SCANCODE_LEFTBRACKET] = "left_bracket";
+            g_keytable[SDL_SCANCODE_RIGHTBRACKET] = "right_bracket";
+            g_keytable[SDL_SCANCODE_BACKSLASH] = "backslash";
+            g_keytable[SDL_SCANCODE_NONUSHASH] = "backslash";  // SDL_SCANCODE_NONUSHASH is almost never generated by SDL, and anyway should be considered identical to SDL_SCANCODE_BACKSLASH
+
+            g_keytable[SDL_SCANCODE_SEMICOLON] = "semicolon";
+            g_keytable[SDL_SCANCODE_APOSTROPHE] = "single_quote";
+            g_keytable[SDL_SCANCODE_GRAVE] = "backquote";
+            g_keytable[SDL_SCANCODE_COMMA] = "comma";
+            g_keytable[SDL_SCANCODE_PERIOD] = "period";
+            g_keytable[SDL_SCANCODE_SLASH] = "slash";
+
+            g_keytable[SDL_SCANCODE_CAPSLOCK] = "caps_lock";
+
+            g_keytable[SDL_SCANCODE_F1] = "f1";
+            g_keytable[SDL_SCANCODE_F2] = "f2";
+            g_keytable[SDL_SCANCODE_F3] = "f3";
+            g_keytable[SDL_SCANCODE_F4] = "f4";
+            g_keytable[SDL_SCANCODE_F5] = "f5";
+            g_keytable[SDL_SCANCODE_F6] = "f6";
+            g_keytable[SDL_SCANCODE_F7] = "f7";
+            g_keytable[SDL_SCANCODE_F8] = "f8";
+            g_keytable[SDL_SCANCODE_F9] = "f9";
+            g_keytable[SDL_SCANCODE_F10] = "f10";
+            g_keytable[SDL_SCANCODE_F11] = "f11";
+            g_keytable[SDL_SCANCODE_F12] = "f12";
+
+            g_keytable[SDL_SCANCODE_PRINTSCREEN] = "print_screen";
+            g_keytable[SDL_SCANCODE_SCROLLLOCK] = "scroll_lock";
+            g_keytable[SDL_SCANCODE_PAUSE] = "pause";
+            g_keytable[SDL_SCANCODE_INSERT] = "insert";
+
+            g_keytable[SDL_SCANCODE_HOME] = "home";
+            g_keytable[SDL_SCANCODE_PAGEUP] = "page_up";
+            g_keytable[SDL_SCANCODE_DELETE] = "delete";
+            g_keytable[SDL_SCANCODE_END] = "end";
+            g_keytable[SDL_SCANCODE_PAGEDOWN] = "page_down";
+            g_keytable[SDL_SCANCODE_RIGHT] = "right";
+            g_keytable[SDL_SCANCODE_LEFT] = "left";
+            g_keytable[SDL_SCANCODE_DOWN] = "down";
+            g_keytable[SDL_SCANCODE_UP] = "up";
+
+            g_keytable[SDL_SCANCODE_NUMLOCKCLEAR] = "num_lock";
+
+            g_keytable[SDL_SCANCODE_KP_DIVIDE] = "kp_divide";
+            g_keytable[SDL_SCANCODE_KP_MULTIPLY] = "kp_multiply";
+            g_keytable[SDL_SCANCODE_KP_MINUS] = "kp_minus";
+            g_keytable[SDL_SCANCODE_KP_PLUS] = "kp_plus";
+            g_keytable[SDL_SCANCODE_KP_ENTER] = "kp_enter";
+            g_keytable[SDL_SCANCODE_KP_1] = "kp_1";
+            g_keytable[SDL_SCANCODE_KP_2] = "kp_2";
+            g_keytable[SDL_SCANCODE_KP_3] = "kp_3";
+            g_keytable[SDL_SCANCODE_KP_4] = "kp_4";
+            g_keytable[SDL_SCANCODE_KP_5] = "kp_5";
+            g_keytable[SDL_SCANCODE_KP_6] = "kp_6";
+            g_keytable[SDL_SCANCODE_KP_7] = "kp_7";
+            g_keytable[SDL_SCANCODE_KP_8] = "kp_8";
+            g_keytable[SDL_SCANCODE_KP_9] = "kp_9";
+            g_keytable[SDL_SCANCODE_KP_0] = "kp_0";
+            g_keytable[SDL_SCANCODE_KP_PERIOD] = "kp_period";
+
+            g_keytable[SDL_SCANCODE_NONUSBACKSLASH] = "non_us_backslash";
+
+            g_keytable[SDL_SCANCODE_APPLICATION] = "menu";  // we don't distinguish between this and SDL_SCANCODE_MENU (which is very rare anyway)
+            g_keytable[SDL_SCANCODE_POWER] = "power";
+            g_keytable[SDL_SCANCODE_KP_EQUALS] = "kp_equals";
+            g_keytable[SDL_SCANCODE_F13] = "f13";
+            g_keytable[SDL_SCANCODE_F14] = "f14";
+            g_keytable[SDL_SCANCODE_F15] = "f15";
+            g_keytable[SDL_SCANCODE_F16] = "f16";
+            g_keytable[SDL_SCANCODE_F17] = "f17";
+            g_keytable[SDL_SCANCODE_F18] = "f18";
+            g_keytable[SDL_SCANCODE_F19] = "f19";
+            g_keytable[SDL_SCANCODE_F20] = "f20";
+            g_keytable[SDL_SCANCODE_F21] = "f21";
+            g_keytable[SDL_SCANCODE_F22] = "f22";
+            g_keytable[SDL_SCANCODE_F23] = "f23";
+            g_keytable[SDL_SCANCODE_F24] = "f24";
+            g_keytable[SDL_SCANCODE_EXECUTE] = "execute";
+            g_keytable[SDL_SCANCODE_HELP] = "help";
+            g_keytable[SDL_SCANCODE_MENU] = "menu";
+            g_keytable[SDL_SCANCODE_SELECT] = "select";
+            g_keytable[SDL_SCANCODE_STOP] = "stop";
+            g_keytable[SDL_SCANCODE_AGAIN] = "again";
+            g_keytable[SDL_SCANCODE_UNDO] = "undo";
+            g_keytable[SDL_SCANCODE_CUT] = "cut";
+            g_keytable[SDL_SCANCODE_COPY] = "copy";
+            g_keytable[SDL_SCANCODE_PASTE] = "paste";
+            g_keytable[SDL_SCANCODE_FIND] = "find";
+            g_keytable[SDL_SCANCODE_MUTE] = "mute";
+            g_keytable[SDL_SCANCODE_VOLUMEUP] = "volume_up";
+            g_keytable[SDL_SCANCODE_VOLUMEDOWN] = "volume_down";
+
+            g_keytable[SDL_SCANCODE_KP_COMMA] = "kp_comma";
+            g_keytable[SDL_SCANCODE_KP_EQUALSAS400] = "kp_equals";
+
+            g_keytable[SDL_SCANCODE_INTERNATIONAL1] = "international_1";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL2] = "international_2";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL3] = "international_3";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL4] = "international_4";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL5] = "international_5";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL6] = "international_6";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL7] = "international_7";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL8] = "international_8";
+            g_keytable[SDL_SCANCODE_INTERNATIONAL9] = "international_9";
+
+            g_keytable[SDL_SCANCODE_LANG1] = "lang_1";
+            g_keytable[SDL_SCANCODE_LANG2] = "lang_2";
+            g_keytable[SDL_SCANCODE_LANG3] = "lang_3";
+            g_keytable[SDL_SCANCODE_LANG4] = "lang_4";
+            g_keytable[SDL_SCANCODE_LANG5] = "lang_5";
+            g_keytable[SDL_SCANCODE_LANG6] = "lang_6";
+            g_keytable[SDL_SCANCODE_LANG7] = "lang_7";
+            g_keytable[SDL_SCANCODE_LANG8] = "lang_8";
+            g_keytable[SDL_SCANCODE_LANG9] = "lang_9";
+
+            g_keytable[SDL_SCANCODE_ALTERASE] = "alt_erase";
+            g_keytable[SDL_SCANCODE_SYSREQ] = "sys_req";
+            g_keytable[SDL_SCANCODE_CANCEL] = "cancel";
+            g_keytable[SDL_SCANCODE_CLEAR] = "clear";
+            g_keytable[SDL_SCANCODE_PRIOR] = "prior";
+            g_keytable[SDL_SCANCODE_RETURN2] = "return2";
+            g_keytable[SDL_SCANCODE_SEPARATOR] = "separator";
+            g_keytable[SDL_SCANCODE_OUT] = "out";
+            g_keytable[SDL_SCANCODE_OPER] = "oper";
+            g_keytable[SDL_SCANCODE_CLEARAGAIN] = "clear_again";
+            g_keytable[SDL_SCANCODE_CRSEL] = "crsel";
+            g_keytable[SDL_SCANCODE_EXSEL] = "exsel";
+
+            g_keytable[SDL_SCANCODE_KP_00] = "kp_00";
+            g_keytable[SDL_SCANCODE_KP_000] = "kp_000";
+            g_keytable[SDL_SCANCODE_THOUSANDSSEPARATOR] = "thousands_separator";
+            g_keytable[SDL_SCANCODE_DECIMALSEPARATOR] = "decimal_separator";
+            g_keytable[SDL_SCANCODE_CURRENCYUNIT] = "currency_unit";
+            g_keytable[SDL_SCANCODE_CURRENCYSUBUNIT] = "currency_subunit";
+            g_keytable[SDL_SCANCODE_KP_LEFTPAREN] = "kp_left_paren";
+            g_keytable[SDL_SCANCODE_KP_RIGHTPAREN] = "kp_right_paren";
+            g_keytable[SDL_SCANCODE_KP_LEFTBRACE] = "kp_left_brace";
+            g_keytable[SDL_SCANCODE_KP_RIGHTBRACE] = "kp_right_brace";
+            g_keytable[SDL_SCANCODE_KP_TAB] = "kp_tab";
+            g_keytable[SDL_SCANCODE_KP_BACKSPACE] = "kp_backspace";
+            g_keytable[SDL_SCANCODE_KP_A] = "kp_a";
+            g_keytable[SDL_SCANCODE_KP_B] = "kp_b";
+            g_keytable[SDL_SCANCODE_KP_C] = "kp_c";
+            g_keytable[SDL_SCANCODE_KP_D] = "kp_d";
+            g_keytable[SDL_SCANCODE_KP_E] = "kp_e";
+            g_keytable[SDL_SCANCODE_KP_F] = "kp_f";
+            g_keytable[SDL_SCANCODE_KP_XOR] = "kp_xor";
+            g_keytable[SDL_SCANCODE_KP_POWER] = "kp_power";
+            g_keytable[SDL_SCANCODE_KP_PERCENT] = "kp_percent";
+            g_keytable[SDL_SCANCODE_KP_LESS] = "kp_less";
+            g_keytable[SDL_SCANCODE_KP_GREATER] = "kp_greater";
+            g_keytable[SDL_SCANCODE_KP_AMPERSAND] = "kp_ampersand";
+            g_keytable[SDL_SCANCODE_KP_DBLAMPERSAND] = "kp_double_ampersand";
+            g_keytable[SDL_SCANCODE_KP_VERTICALBAR] = "kp_vertical_bar";
+            g_keytable[SDL_SCANCODE_KP_DBLVERTICALBAR] = "kp_double_vertical_bar";
+            g_keytable[SDL_SCANCODE_KP_COLON] = "kp_colon";
+            g_keytable[SDL_SCANCODE_KP_HASH] = "kp_hash";
+            g_keytable[SDL_SCANCODE_KP_SPACE] = "kp_space";
+            g_keytable[SDL_SCANCODE_KP_AT] = "kp_at";
+            g_keytable[SDL_SCANCODE_KP_EXCLAM] = "kp_exclam";
+            g_keytable[SDL_SCANCODE_KP_MEMSTORE] = "kp_mem_store";
+            g_keytable[SDL_SCANCODE_KP_MEMRECALL] = "kp_mem_recall";
+            g_keytable[SDL_SCANCODE_KP_MEMCLEAR] = "kp_mem_clear";
+            g_keytable[SDL_SCANCODE_KP_MEMADD] = "kp_mem_add";
+            g_keytable[SDL_SCANCODE_KP_MEMSUBTRACT] = "kp_mem_subtract";
+            g_keytable[SDL_SCANCODE_KP_MEMMULTIPLY] = "kp_mem_multiply";
+            g_keytable[SDL_SCANCODE_KP_MEMDIVIDE] = "kp_mem_divide";
+            g_keytable[SDL_SCANCODE_KP_PLUSMINUS] = "kp_plus_minus";
+            g_keytable[SDL_SCANCODE_KP_CLEAR] = "kp_clear";
+            g_keytable[SDL_SCANCODE_KP_CLEARENTRY] = "kp_clear_entry";
+            g_keytable[SDL_SCANCODE_KP_BINARY] = "kp_binary";
+            g_keytable[SDL_SCANCODE_KP_OCTAL] = "kp_octal";
+            g_keytable[SDL_SCANCODE_KP_DECIMAL] = "kp_decimal";
+            g_keytable[SDL_SCANCODE_KP_HEXADECIMAL] = "kp_hexadecimal";
+
+            g_keytable[SDL_SCANCODE_LCTRL] = "left_control";
+            g_keytable[SDL_SCANCODE_LSHIFT] = "left_shift";
+            g_keytable[SDL_SCANCODE_LALT] = "left_alt";
+            g_keytable[SDL_SCANCODE_LGUI] = "left_windows";
+            g_keytable[SDL_SCANCODE_RCTRL] = "right_control";
+            g_keytable[SDL_SCANCODE_RSHIFT] = "right_shift";
+            g_keytable[SDL_SCANCODE_RALT] = "right_alt";
+            g_keytable[SDL_SCANCODE_RGUI] = "right_windows";
+            g_keytable[SDL_SCANCODE_MODE] = "mode";
+
+            g_keytable[SDL_SCANCODE_AUDIONEXT] = "audio_next";
+            g_keytable[SDL_SCANCODE_AUDIOPREV] = "audio_prev";
+            g_keytable[SDL_SCANCODE_AUDIOSTOP] = "audio_stop";
+            g_keytable[SDL_SCANCODE_AUDIOPLAY] = "audio_play";
+            g_keytable[SDL_SCANCODE_AUDIOMUTE] = "audio_mute";
+
+            g_keytable[SDL_SCANCODE_MEDIASELECT] = "media_select";
+            g_keytable[SDL_SCANCODE_WWW] = "www";
+            g_keytable[SDL_SCANCODE_MAIL] = "mail";
+            g_keytable[SDL_SCANCODE_CALCULATOR] = "calculator";
+            g_keytable[SDL_SCANCODE_COMPUTER] = "computer";
+            g_keytable[SDL_SCANCODE_AC_SEARCH] = "ac_search";
+            g_keytable[SDL_SCANCODE_AC_HOME] = "ac_home";
+            g_keytable[SDL_SCANCODE_AC_BACK] = "ac_back";
+            g_keytable[SDL_SCANCODE_AC_FORWARD] = "ac_forward";
+            g_keytable[SDL_SCANCODE_AC_STOP] = "ac_stop";
+            g_keytable[SDL_SCANCODE_AC_REFRESH] = "ac_refresh";
+            g_keytable[SDL_SCANCODE_AC_BOOKMARKS] = "ac_bookmarks";
+
+            // Note: We skip the so-called "Walther keys" since it seems these were removed in SDL3 anyway
+
+            g_keytable[SDL_SCANCODE_AUDIOREWIND] = "audio_rewind";
+            g_keytable[SDL_SCANCODE_AUDIOFASTFORWARD] = "audio_fast_forward";
+
+            // The following are recent additions i.e. they don't
+            // exist in older SDL2 versions. Perhaps they can be
+            // uncommented in a few years once everyone has upgraded.
+            // On the other hand, these are very rare/obscure keys so
+            // probably no-one will care about them anyway!
+            //g_keytable[SDL_SCANCODE_SOFTLEFT] = "soft_left";
+            //g_keytable[SDL_SCANCODE_SOFTRIGHT] = "soft_right";
+            //g_keytable[SDL_SCANCODE_CALL] = "call";
+            //g_keytable[SDL_SCANCODE_ENDCALL] = "end_call";
+
+
+            // Now create the reverse mapping
+            for (const auto & item : g_keytable) {
+                SDL_Scancode scancode_in = item.first;
+                const std::string &name_in = item.second;
+                SDL_Scancode & scancode_out = g_reverse_keytable[name_in];
+                // Keep the lowest scancode_in corresponding to each
+                // name_in. (This seems to work well.)
+                if (scancode_out == 0     // not set yet
+                || scancode_in < scancode_out) {   // we found a "better" scancode
+                    scancode_out = scancode_in;
+                }
+            }
         }
 
         int GetModifiers(unsigned int sdl_mod)
@@ -291,9 +440,21 @@ namespace Coercri {
 
             case SDL_KEYDOWN:
             case SDL_KEYUP:
-                {
+                if (focus_window) {
+                    // Convert to a Coercri::Scancode
+                    SDL_Scancode scancode_num = event.key.keysym.scancode;
+                    auto key_it = g_keytable.find(scancode_num);
+
+                    Scancode scancode;
+                    if (key_it == g_keytable.end()) {
+                        // Didn't find it. Give it a name like "sdl_scancode_12345"
+                        scancode = Scancode("sdl_scancode_" + std::to_string(scancode_num));
+                    } else {
+                        // Use our standardized name from the lookup table
+                        scancode = Scancode(key_it->second);
+                    }
+
                     // Find out what kind of key event this is.
-                    const SDL_Keycode keysym = event.key.keysym.sym;
                     KeyEventType type;
                     if (event.type == SDL_KEYDOWN) {
                         if (event.key.repeat) {
@@ -305,18 +466,11 @@ namespace Coercri {
                         type = KEY_RELEASED;
                     }
                     
-                    // Find the corresponding KeyCode.
-                    KeyCode kc = KC_UNKNOWN;
-                    std::map<SDL_Keycode, KeyCode>::const_iterator key_it = g_keytable.find(keysym);
-                    if (key_it != g_keytable.end()) kc = key_it->second;
-
                     // Find the modifiers.
                     const int modifiers = GetModifiers(event.key.keysym.mod);
-                    
-                    // Send the key event, if required.
-                    if (kc != KC_UNKNOWN && focus_window) {
-                        focus_window->forEachListener(OnKey(type, kc, KeyModifier(modifiers)));
-                    }
+
+                    // Send the key event.
+                    focus_window->forEachListener(OnKey(type, scancode, KeyModifier(modifiers)));
                 }
                 break;
 
@@ -405,6 +559,25 @@ namespace Coercri {
 
     } // namespace
 
+
+    // Helper called by sdl_window.cpp
+    SDL_Scancode ScancodeReverseLookup(const std::string &name)
+    {
+        constexpr std::string_view prefix = "sdl_scancode_";
+        if (name.starts_with(prefix)) {
+            long int i = std::strtol(name.c_str() + prefix.size(), nullptr, 10);
+            if (i > 0 && i < SDL_NUM_SCANCODES) {
+                return SDL_Scancode(i);
+            }
+        } else {
+            auto it = g_reverse_keytable.find(name);
+            if (it != g_reverse_keytable.end()) {
+                return it->second;
+            }
+        }
+        return SDL_SCANCODE_UNKNOWN;
+    }
+    
 
     //
     // SDLGfxDriver implementation
@@ -504,5 +677,15 @@ namespace Coercri {
         } else {
             return false;
         }
+    }
+
+    std::vector<Scancode> SDLGfxDriver::getKnownScancodes()
+    {
+        std::vector<Scancode> result;
+        result.reserve(g_reverse_keytable.size());
+        for (const auto &item : g_reverse_keytable) {
+            result.push_back(Scancode(item.first));
+        }
+        return result;
     }
 }

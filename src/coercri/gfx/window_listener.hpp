@@ -90,7 +90,7 @@ namespace Coercri {
         // applications clear any "key pressed" flags they may be
         // holding whenever the window loses focus.
         
-        virtual void onKey(KeyEventType type, KeyCode code, KeyModifier mods) { }
+        virtual void onKey(KeyEventType type, const Scancode &code, KeyModifier mods) { }
 
 
         // Text input events

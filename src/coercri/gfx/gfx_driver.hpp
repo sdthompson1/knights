@@ -47,6 +47,7 @@
 #define COERCRI_GFX_DRIVER_HPP
 
 #include "graphic.hpp"
+#include "key_code.hpp"
 #include "../core/utf8string.hpp"
 
 #include "boost/noncopyable.hpp"
@@ -103,6 +104,13 @@ namespace Coercri {
         // Wait for one event to occur or the specified number of milliseconds to elapse
         // (whichever happens first). Returns TRUE if an event occurred.
         virtual bool waitEventMsec(int ms) = 0;
+
+        // Get all "well known" keyboard scancodes for this implementation.
+        // Note: key events might return scancodes outside this list, but
+        // at least all of the most common keys should be included.
+        // Also: backends should try not to include duplicates, but it is
+        // not ruled out that duplicates may be present in the result.
+        virtual std::vector<Scancode> getKnownScancodes() = 0;
     };
 
 }

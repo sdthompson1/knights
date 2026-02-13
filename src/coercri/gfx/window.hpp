@@ -48,6 +48,7 @@
 #include "rectangle.hpp"
 #include "region.hpp"
 #include "../core/coercri_error.hpp"
+#include "../core/utf8string.hpp"
 
 #include "boost/shared_ptr.hpp"
 #include <vector>
@@ -56,6 +57,7 @@ namespace Coercri {
 
     class GfxContext;
     class PixelArray;
+    class Scancode;
     class WindowListener;
     
     class Window {
@@ -105,7 +107,15 @@ namespace Coercri {
         // Set the icon for this window. (Only some backends actually implement this.)
         virtual void setIcon(const PixelArray &) = 0;
 
-        
+        // Convert a keyboard scancode to a user-readable name. The
+        // name will be localized in simple cases (e.g. single-letter
+        // keys) but will be in English in more complex cases (e.g.
+        // "Page Up").
+        // Note: this is a method of Window because, at least on some
+        // operating systems, the keyboard layout, and hence key
+        // names, might be window-dependent.
+        virtual UTF8String getKeyName(const Scancode &scancode) = 0;
+
 
         //
         // Non-virtual functions

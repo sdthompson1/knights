@@ -111,7 +111,6 @@
     <ClCompile Include="..\..\src\coercri\sdl\sound\sdl_sound_driver.cpp" />
     <ClCompile Include="..\..\src\coercri\timer\generic_timer.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\gfx_context.cpp" />
-    <ClCompile Include="..\..\src\coercri\gfx\key_name.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\load_bmp.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\region.cpp" />
     <ClCompile Include="..\..\src\coercri\gfx\window.cpp" />

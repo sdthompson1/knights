@@ -144,6 +144,13 @@ quest_complete                  Quest Complete
 # Sorry for the long string below... Note that ^ starts a new paragraph (in this message only, not in general)
 tutorial_win_message            Congratulations! You have completed your quest.^If you now want to play a proper game of Knights, you have the following options:^* Multiplayer mode. Knights is designed first and foremost as a multiplayer game, and you can play online, on a LAN, or in two-player split screen mode.^* Single Player mode. This is a good way to learn about the different types of quests and so on. Alternatively, if you want a more challenging game, you can add a time limit and try to complete quests against the clock.^That concludes the tutorial. We will now return to the main menu.
 
+# Messages used to describe the movement keys early in the tutorial
+# "wasd_keys" and "arrow_keys" are used for common default settings, and
+# "movement_keys" is used when the user has customized the controls
+wasd_keys                       WASD keys
+arrow_keys                      arrow keys
+movement_keys                   {0}, {1}, {2} and {3} keys
+
 
 # Error messages
 unknown_error                   Unknown error
