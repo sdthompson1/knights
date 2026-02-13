@@ -38,6 +38,7 @@
 #include "menu.hpp"
 #include "menu_item.hpp"
 #include "menu_screen.hpp"
+#include "my_dropdown.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "rstream_error.hpp"
@@ -75,23 +76,6 @@ namespace {
         std::deque<FormattedLine> &output;
         const gcn::Font *font;
         bool printed;
-    };
-
-
-    // customize dropdown drawing a bit. I want to be able to change the foreground color
-    // without also changing the colour of the "down-arrow" drawn in the dropdown's button.
-    // I also want to disable mousewheel use, to prevent abuse. (Trac #66.)
-    class MyDropDown : public gcn::DropDown {
-    public:
-        explicit MyDropDown(gcn::ListModel *lm) : gcn::DropDown(lm) { }
-        void drawButton(gcn::Graphics * graphics) {
-            gcn::Color old_fg_col = getForegroundColor();
-            setForegroundColor(gcn::Color(0,0,0));
-            gcn::DropDown::drawButton(graphics);
-            setForegroundColor(old_fg_col);
-        }
-        void mouseWheelMovedDown(gcn::MouseEvent &) { }
-        void mouseWheelMovedUp(gcn::MouseEvent &) { }
     };
 
     UTF8String AddTimestamp(const UTF8String &msg)
@@ -353,7 +337,7 @@ namespace {
                 textfield->addActionListener(listener);
             } else {
                 list_model.reset(new MenuListModel);
-                dropdown.reset(new MyDropDown(list_model.get()));
+                dropdown.reset(new MyDropDown(list_model.get(), MouseWheelScrolling::DISABLED));
                 dropdown->adjustHeight();
                 dropdown->addSelectionListener(listener2);
             }

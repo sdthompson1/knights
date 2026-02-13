@@ -25,6 +25,7 @@
 
 #include "knights_app.hpp"
 #include "localization.hpp"
+#include "my_dropdown.hpp"
 #include "options_screen.hpp"
 #include "title_screen.hpp"
 
@@ -133,11 +134,12 @@ namespace {
     };
 }
 
-class OptionsScreenImpl : public gcn::ActionListener, public gcn::KeyListener, public Coercri::WindowListener {
+class OptionsScreenImpl : public gcn::ActionListener, public gcn::SelectionListener, public gcn::KeyListener, public Coercri::WindowListener {
 public:
     OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     ~OptionsScreenImpl();
     void action(const gcn::ActionEvent &event) override;
+    void valueChanged(const gcn::SelectionEvent &event) override;
     void keyPressed(gcn::KeyEvent &ke) override;
     void keyReleased(gcn::KeyEvent &ke) override;
     void onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc, Coercri::KeyModifier) override;
@@ -178,13 +180,14 @@ private:
     int change_player;
 
     bool previous_fullscreen;
+    bool in_transfer_to_gui;
 
     UTF8String bad_key_msg;
 };
 
 OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui)
     : knights_app(app), window(window),
-      current_opts(app.getOptions()), change_active(false)
+      current_opts(app.getOptions()), change_active(false), in_transfer_to_gui(false)
 {
     const Localization &loc = knights_app.getLocalization();
 
@@ -207,18 +210,18 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     show_controls_label.reset(new gcn::Label(loc.get(LocalKey("show_controls_for")).asUTF8() + " "));
     container->add(show_controls_label.get(), pad, y+1);
     show_controls_listmodel.reset(new ShowControlsListModel(loc));
-    show_controls_dropdown.reset(new gcn::DropDown(show_controls_listmodel.get()));
+    show_controls_dropdown.reset(new MyDropDown(show_controls_listmodel.get(), MouseWheelScrolling::ENABLED));
     const int scdx = pad + show_controls_label->getWidth();
-    show_controls_dropdown->addActionListener(this);
+    show_controls_dropdown->addSelectionListener(this);
     container->add(show_controls_dropdown.get(), scdx, y);
     y += show_controls_dropdown->getHeight() + pad;
 
     control_system_label.reset(new gcn::Label(loc.get(LocalKey("control_system")).asUTF8() + " "));
     container->add(control_system_label.get(), pad, y+1);
     control_system_listmodel.reset(new ControlSystemListModel(loc));
-    control_system_dropdown.reset(new gcn::DropDown(control_system_listmodel.get()));
+    control_system_dropdown.reset(new MyDropDown(control_system_listmodel.get(), MouseWheelScrolling::ENABLED));
     const int csx = pad + control_system_label->getWidth();
-    control_system_dropdown->addActionListener(this);
+    control_system_dropdown->addSelectionListener(this);
     container->add(control_system_dropdown.get(), csx, y);
     y += control_system_dropdown->getHeight() + pad;
 
@@ -303,17 +306,17 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     scaling_label.reset(new gcn::Label(loc.get(LocalKey("graphics_scaling")).asUTF8()));
     const int ddx = pad + pad + scaling_label->getWidth();
     display_listmodel.reset(new DisplayListModel(loc));
-    display_dropdown.reset(new gcn::DropDown(display_listmodel.get()));
+    display_dropdown.reset(new MyDropDown(display_listmodel.get(), MouseWheelScrolling::ENABLED));
     display_dropdown->setWidth(overall_width - pad - extra_pad - ddx);
-    display_dropdown->addActionListener(this);
+    display_dropdown->addSelectionListener(this);
     container->add(display_label.get(), pad, y);
     container->add(display_dropdown.get(), ddx, y);
     y += display_dropdown->getHeight() + pad_small + 2;
 
     scaling_listmodel.reset(new ScalingListModel(loc));
-    scaling_dropdown.reset(new gcn::DropDown(scaling_listmodel.get()));
+    scaling_dropdown.reset(new MyDropDown(scaling_listmodel.get(), MouseWheelScrolling::ENABLED));
     scaling_dropdown->setWidth(overall_width - pad - extra_pad - ddx);
-    scaling_dropdown->addActionListener(this);
+    scaling_dropdown->addSelectionListener(this);
     container->add(scaling_label.get(), pad, y);
     container->add(scaling_dropdown.get(), ddx, y);
     y += scaling_dropdown->getHeight() + pad_small + 4;
@@ -383,15 +386,22 @@ void OptionsScreenImpl::action(const gcn::ActionEvent &event)
         setupChangeControls(show_controls_dropdown->getSelected() ? 0 : 2);
     } else if (event.getSource() == change_button[1].get()) {
         setupChangeControls(show_controls_dropdown->getSelected() ? 1 : 3);
-    } else if (event.getSource() == scaling_dropdown.get()) {
-        current_opts.use_scale2x = (scaling_dropdown->getSelected() == 0);
     } else if (event.getSource() == non_integer_checkbox.get()) {
         current_opts.allow_non_integer_scaling = non_integer_checkbox->isSelected();
-    } else if (event.getSource() == display_dropdown.get()) {
-        current_opts.fullscreen = (display_dropdown->getSelected() != 0);
     } else if (event.getSource() == restore_button.get()) {
         current_opts = Options();
         transferToGui();
+    }
+}
+
+void OptionsScreenImpl::valueChanged(const gcn::SelectionEvent &event)
+{
+    if (in_transfer_to_gui) return;
+
+    if (event.getSource() == scaling_dropdown.get()) {
+        current_opts.use_scale2x = (scaling_dropdown->getSelected() == 0);
+    } else if (event.getSource() == display_dropdown.get()) {
+        current_opts.fullscreen = (display_dropdown->getSelected() != 0);
     } else if (event.getSource() == show_controls_dropdown.get()) {
         transferToGui();
     } else if (event.getSource() == control_system_dropdown.get()) {
@@ -412,6 +422,7 @@ void OptionsScreenImpl::keyReleased(gcn::KeyEvent &ke)
 
 void OptionsScreenImpl::transferToGui()
 {
+    in_transfer_to_gui = true;
     const Localization &loc = knights_app.getLocalization();
 
     const bool split_screen = (show_controls_dropdown->getSelected() != 0);
@@ -548,6 +559,7 @@ void OptionsScreenImpl::transferToGui()
     bad_key_area->setText(bad_key_msg);
     bad_key_area->adjustHeight();
 
+    in_transfer_to_gui = false;
     if (window) window->invalidateAll();
 }
 
