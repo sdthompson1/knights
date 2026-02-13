@@ -1713,8 +1713,7 @@ const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mle
     } else if (plyr == 1 && controller2) {
         controller2->get(ctrlr);
         // Controller 2 always uses suicide key (rather than action bar).
-        mleft = ctrlr.suicide;
-        mright = false;
+        mleft = mright = ctrlr.suicide;
         mx = my = -1;
     }
 
