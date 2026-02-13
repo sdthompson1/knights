@@ -22,19 +22,14 @@
 
 Aside from the translations themselves, the following localization tasks are still TODO:
 
-  - Minor code fixes
-     - The comment "this looks a little better with some extra spacing" in menu_screen.cpp needs to be addressed properly.
-     - LocalDisplay::replaceSpecialChars has some hard coded strings for key names - needs some refactoring.
-     - LocalDisplay has a hard coded string ("Congratulations! ...") which it uses to estimate the width required for some dialog box. This could be replaced with some metric based on the font (e.g. some number of "n" widths, or something) to make it language independent.
-
-  - The key names (strings like "PAGE DOWN" or "SPACE") are not localizable yet. 
-    - This affects the Options screen, where you can view (and change) the control keys for the game. It also affects the in-game message "Press TAB or ` to chat" (this message dynamically updates if you change the chat keys in the options). I believe there are also some Tutorial messages which change depending on the selected control keys.
-    - Note: as well as localizing the actual key names, also look out for the hard coded "RIGHT WINDOWS" string in options_screen.cpp, which the code assumes is the longest possible key name.
-    - Note: There's also a localization key `"esc"` in `localization_<langname>.txt`. If we do localize key names then this might become redundant (i.e. we would use the name for the "esc" key instead).
+  - The key names (strings like "Page Down" or "Space") are not localizable yet.
+     - We are just using the SDL function `SDL_GetKeyName` which returns localized names in some cases (e.g. for the single-letter keys) but English names in other cases (e.g. "Page Up").
+     - This affects the Options screen (where you can view and change the control keys), the in-game message "Press Tab or ` to chat", and some Tutorial messages.
+     - If there was demand for it, we could potentially add a database of common keys and their localized names in each language. But this has not been done so far.
 
   - The ESC in-game menu uses some shortcut keys such as "Q" to quit or "R" to restart. It might make sense to allow these letters to be changed in different languages.
 
-  - The "Winner" and "Loser" images contain text. This should ideally be translated as well, but the game doesn't contain any mechanism for loading different image files based on language, so we are stuck with the English versions for now. Also, we would need an artist (or someone with MS Paint skills!) to make the new images.
+  - The "Winner" and "Loser" images contain text. This should ideally be translated, but the game doesn't contain any mechanism for loading different image files based on language, so we are stuck with the English versions for now. Also, of course, we would need an artist (or someone with MS Paint skills!) to make the new images.
 
   - The Steam store page isn't done yet, but when it is, the text will have to be translated to different languages, clearly.
 
