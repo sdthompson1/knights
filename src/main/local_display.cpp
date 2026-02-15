@@ -310,6 +310,7 @@ LocalDisplay::LocalDisplay(const Localization &localization,
                            bool sgl_plyr,
                            bool tut,
                            bool tool_tips,
+                           bool allow_screen_flash,
                            const UTF8String &global_chat_key,
                            const UTF8String &team_chat_key,
                            const UTF8String &initial_chat_field_contents,
@@ -374,6 +375,7 @@ LocalDisplay::LocalDisplay(const Localization &localization,
       
       speech_bubble(speech_bubble_),
       action_bar_tool_tips(tool_tips),
+      allow_screen_flash(allow_screen_flash),
       deathmatch_mode(dm_mode),
 
       initial_chat_field_contents(initial_chat_field_contents),
@@ -1238,8 +1240,11 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     if (draw_in_game_screen) {
 
         // Check whether screen should flash
-        const bool screen_flash = (time_us >= flash_screen_start_us[player_num]
-                                  && time_us <= flash_screen_start_us[player_num] + config_map.getInt("screen_flash_time")*1000);
+        bool screen_flash = (time_us >= flash_screen_start_us[player_num]
+                             && time_us <= flash_screen_start_us[player_num] + config_map.getInt("screen_flash_time")*1000);
+        if (!allow_screen_flash) {
+            screen_flash = false;
+        }
 
         // Draw the coloured background if screen is flashing
         if (screen_flash) {

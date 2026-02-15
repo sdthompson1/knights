@@ -69,6 +69,7 @@ Options::Options()
     team_chat_key = Coercri::Scancode("backquote");
 
     maximized = true;
+    allow_screen_flash = true;
 }
 
 Options LoadOptions(std::istream &str)
@@ -155,6 +156,11 @@ Options LoadOptions(std::istream &str)
     if (version >= 6) {
         str >> o.maximized;
     }
+
+    // Version 7+
+    if (version >= 7) {
+        str >> o.allow_screen_flash;
+    }
     
     // Version 3+ -- Player Name
     // (Leave this to the end since we want to ignore loading errors)
@@ -197,5 +203,6 @@ void SaveOptions(const Options &o, std::ostream &str)
     str << o.new_control_system << " " << o.action_bar_tool_tips << "\n";
     str << o.global_chat_key.getSymbolicName() << " " << o.team_chat_key.getSymbolicName() << "\n";
     str << o.maximized << "\n";
+    str << o.allow_screen_flash << "\n";
     str << o.player_name.asUTF8() << "\n";
 }

@@ -169,6 +169,7 @@ void InGameScreen::setupDisplay()
                                    single_player,
                                    tutorial_mode,
                                    knights_app.getOptions().action_bar_tool_tips,
+                                   knights_app.getOptions().allow_screen_flash,
                                    global_chat_key_string,
                                    team_chat_key_string,
                                    stored_chat_field_contents,

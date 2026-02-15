@@ -170,6 +170,7 @@ private:
     boost::scoped_ptr<DisplayListModel> display_listmodel;
     boost::scoped_ptr<gcn::DropDown> scaling_dropdown, display_dropdown;
     boost::scoped_ptr<gcn::CheckBox> non_integer_checkbox;
+    boost::scoped_ptr<gcn::CheckBox> screen_flash_checkbox;
     boost::scoped_ptr<gcn::Button> restore_button;
     boost::scoped_ptr<GuiTextWrap> bad_key_area;
 
@@ -324,7 +325,12 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     non_integer_checkbox.reset(new gcn::CheckBox(loc.get(LocalKey("allow_fractional_scaling")).asUTF8()));
     non_integer_checkbox->addActionListener(this);
     container->add(non_integer_checkbox.get(), pad, y);
-    y += non_integer_checkbox->getHeight() + 40;
+    y += non_integer_checkbox->getHeight() + pad_small + 4;
+
+    screen_flash_checkbox.reset(new gcn::CheckBox(loc.get(LocalKey("allow_screen_flash")).asUTF8()));
+    screen_flash_checkbox->addActionListener(this);
+    container->add(screen_flash_checkbox.get(), pad, y);
+    y += screen_flash_checkbox->getHeight() + 40;
 
     restore_button.reset(new GuiButton(loc.get(LocalKey("restore_defaults")).asUTF8()));
     restore_button->addActionListener(this);
@@ -388,6 +394,8 @@ void OptionsScreenImpl::action(const gcn::ActionEvent &event)
         setupChangeControls(show_controls_dropdown->getSelected() ? 1 : 3);
     } else if (event.getSource() == non_integer_checkbox.get()) {
         current_opts.allow_non_integer_scaling = non_integer_checkbox->isSelected();
+    } else if (event.getSource() == screen_flash_checkbox.get()) {
+        current_opts.allow_screen_flash = screen_flash_checkbox->isSelected();
     } else if (event.getSource() == restore_button.get()) {
         current_opts = Options();
         transferToGui();
@@ -515,6 +523,7 @@ void OptionsScreenImpl::transferToGui()
     }
     scaling_dropdown->setSelected(1-int(current_opts.use_scale2x));
     non_integer_checkbox->setSelected(current_opts.allow_non_integer_scaling);
+    screen_flash_checkbox->setSelected(current_opts.allow_screen_flash);
     display_dropdown->setSelected(current_opts.fullscreen ? 1 : 0);
 
     for (int i = 0; i < 2; ++i) {
@@ -555,6 +564,7 @@ void OptionsScreenImpl::transferToGui()
     display_dropdown->setVisible(show_lower);
     scaling_dropdown->setVisible(show_lower);
     non_integer_checkbox->setVisible(show_lower);
+    screen_flash_checkbox->setVisible(show_lower);
     bad_key_area->setVisible(!show_lower);
     bad_key_area->setText(bad_key_msg);
     bad_key_area->adjustHeight();

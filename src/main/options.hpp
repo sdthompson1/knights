@@ -71,6 +71,9 @@ public:
 
     // added in version 6 of options file (version 026 of Knights)
     bool maximized;
+
+    // added in version 7 of options file (version 027 of Knights)
+    bool allow_screen_flash;
 };
 
 Options LoadOptions(std::istream &);

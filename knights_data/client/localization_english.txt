@@ -88,6 +88,7 @@ graphics_scaling                Graphics Scaling:
 scale2x                         Scale2x
 pixelated                       Pixelated
 allow_fractional_scaling        Allow Fractional Scaling
+allow_screen_flash              Allow screen flash effect (wands and pentagrams)
 ok                              OK
 restore_defaults                Restore Defaults
 

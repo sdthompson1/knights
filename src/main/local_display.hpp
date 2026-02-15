@@ -105,6 +105,7 @@ public:
                  bool sgl_plyr,
                  bool tutorial,
                  bool tool_tips,
+                 bool allow_screen_flash,
                  const UTF8String &global_chat_key,
                  const UTF8String &team_chat_key,
                  const UTF8String &initial_chat_field_contents,
@@ -384,6 +385,7 @@ private:
     const Graphic *speech_bubble;
 
     bool action_bar_tool_tips;
+    bool allow_screen_flash;
     bool deathmatch_mode;
     std::string chat_msg;  // a fixed string, contains message "Press TAB to chat" or similar
     UTF8String initial_chat_field_contents;  // if non-empty, setupGui will set chat field to this string, then clear this string
