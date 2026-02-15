@@ -31,8 +31,6 @@
 #include "local_dungeon_view.hpp"
 #include "round.hpp"
 
-#include <iostream>
-
 namespace {
     // NB item_depth must be greater than the other depths here.
     const int speech_depth = -300;

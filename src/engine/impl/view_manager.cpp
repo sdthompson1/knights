@@ -176,7 +176,7 @@ void ViewManager::uploadRoomSquares(const Player &p)
             // upload the square. if the player's cached square is invalid then the square will be sent always,
             // otherwise it will only be sent if this is the first time this player/observer has ever seen this square.
             const bool square_invalid = cache[index];
-            
+
             uploadSquare(p.getDungeonView(), dmap,
                          MapCoord(x + top_left.getX(), y + top_left.getY()),
                          x, y,
@@ -764,12 +764,13 @@ void ViewManager::sendCurrentRoom(int player, DungeonView &dview)
 
     const Player &p = *players[player];
 
-    if (p.getKnight() && p.getKnight()->getMap()) {
-        const DungeonMap &dmap = *p.getKnight()->getMap();
-        if (dmap.getRoomMap()) {
+    boost::shared_ptr<DungeonMap> dmap_ptr = Mediator::instance().getMap();
+    if (dmap_ptr && dmap_ptr->getRoomMap()) {
+        DungeonMap &dmap = *dmap_ptr;
 
-            // Current Room
-            const int current_room = p.getCurrentRoom();
+        // Current Room
+        const int current_room = p.getCurrentRoom();
+        if (current_room >= 0) {
 
             MapCoord top_left;
             int width, height;
