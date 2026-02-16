@@ -56,6 +56,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace {
     struct ChatPrinter : Printer {
@@ -502,6 +503,8 @@ public:
 #endif
     }
 
+    void setPlayedWith(const PlayerID &id);
+
     void showNewLeader();
 
     KnightsApp &knights_app;
@@ -557,6 +560,10 @@ public:
     bool deathmatch_mode;
 
     bool game_in_progress;
+
+#ifdef ONLINE_PLATFORM
+    std::unordered_set<PlayerID> recently_played_with;
+#endif
 };
 
 void GameManagerImpl::showNewLeader()
@@ -1091,12 +1098,35 @@ void GameManager::playerConnected(const PlayerID &id)
     pimpl->lobby_namelist.add(id, false, false, 0);
     pimpl->gui_invalid = true;
 
-#ifdef ONLINE_PLATFORM
     // Set "recently played with" for this player
-    OnlinePlatform &platform = pimpl->knights_app.getOnlinePlatform();
-    if (id != platform.getCurrentUserId()) {
-        platform.setPlayedWith(id);
+    pimpl->setPlayedWith(id);
+}
+
+void GameManagerImpl::setPlayedWith(const PlayerID &id)
+{
+#ifdef ONLINE_PLATFORM
+    // Don't set recently played with for ourself!
+    OnlinePlatform &platform = knights_app.getOnlinePlatform();
+    if (id == platform.getCurrentUserId()) {
+        return;
     }
+
+    // If we already called OnlinePlatform::setPlayedWith for this player,
+    // then don't keep spamming it
+    if (recently_played_with.find(id) != recently_played_with.end()) {
+        return;
+    }
+
+    // Don't allow unbounded growth of recently_played_with
+    if (recently_played_with.size() > 100) {
+        recently_played_with.clear();
+    }
+
+    // Add this player to recently_played_with set
+    recently_played_with.insert(id);
+
+    // Notify the platform that we recently played with this person
+    platform.setPlayedWith(id);
 #endif
 }
 
@@ -1146,6 +1176,9 @@ void GameManager::updatePlayer(const PlayerID &player, const std::string &game, 
         pimpl->lobby_namelist.add(player, false, false, 0);
     }
     pimpl->gui_invalid = true;
+
+    // Set "recently played with" for this player
+    pimpl->setPlayedWith(player);
 }
 
 void GameManager::playerList(const std::vector<ClientPlayerInfo> &player_list_orig)
