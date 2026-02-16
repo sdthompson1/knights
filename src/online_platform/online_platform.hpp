@@ -136,6 +136,15 @@ public:
     virtual Coercri::NetworkDriver & getNetworkDriver() = 0;
 
 
+    // Recently Played With:
+
+    // Call this to mark that the current user recently played with
+    // the given other player. For example on Steam this means the
+    // other player will appear in the "Recently Played With" list in
+    // the Steam client.
+    virtual void setPlayedWith(const PlayerID &other_player) = 0;
+
+
     // Overlay:
 
     // For platforms that have an overlay (i.e. Steam) this function

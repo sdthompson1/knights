@@ -1090,6 +1090,14 @@ void GameManager::playerConnected(const PlayerID &id)
 {
     pimpl->lobby_namelist.add(id, false, false, 0);
     pimpl->gui_invalid = true;
+
+#ifdef ONLINE_PLATFORM
+    // Set "recently played with" for this player
+    OnlinePlatform &platform = pimpl->knights_app.getOnlinePlatform();
+    if (id != platform.getCurrentUserId()) {
+        platform.setPlayedWith(id);
+    }
+#endif
 }
 
 void GameManager::playerDisconnected(const PlayerID &id)
