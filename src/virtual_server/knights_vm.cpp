@@ -42,27 +42,28 @@ namespace {
     // Fds 0, 1, 2 reserved for stdin, stdout, stderr respectively.
     // Fd 3 is reserved for the tick device.
     // Fds 4 and above are used for RStream files.
-    const uint32_t TICK_DEVICE_FD = 3;
-    const uint32_t BASE_FILE_DESCRIPTOR = 4;
+    constexpr uint32_t TICK_DEVICE_FD = 3;
+    constexpr uint32_t BASE_FILE_DESCRIPTOR = 4;
 
     // One plus address of last byte of the main stack area.
     // We place this BYTES_PER_PAGE below the top of memory, just to allow a little
     // bit of a buffer zone above the stack, before the addresses start
     // wrapping around.
-    const uint32_t MAIN_STACK_TOP = ~(RiscVM::BYTES_PER_PAGE - 1);
+    constexpr uint32_t MAIN_STACK_TOP = ~(RiscVM::BYTES_PER_PAGE - 1);
 
     // Resource limits - hard coded here.
-    const int MAX_OPEN_FILES = 1000;
-    const uint32_t MAX_DATA_BYTES = 100 * 1024 * 1024;  // Max difference between program break and initial program break.
-    const uint32_t MAX_STACK_BYTES = 512 * 1024;   // Size of each stack area, in bytes.
+    constexpr int MAX_OPEN_FILES = 1000;
+    constexpr uint32_t MAX_DATA_BYTES = 100 * 1024 * 1024;  // Max difference between program break and initial program break.
+    constexpr uint32_t MAX_STACK_BYTES = 512 * 1024;   // Size of each stack area, in bytes.
+    constexpr uint32_t MAX_CHECKPOINTS = 1000000;
 
     // Error codes.
-    const int NEWLIB_ENOENT = 2;     // No such file or directory
-    const int NEWLIB_EIO = 5;        // I/O error
-    const int NEWLIB_EBADF = 9;      // Bad file number
-    const int NEWLIB_EINVAL = 22;    // Invalid argument
-    const int NEWLIB_ENFILE = 23;    // Too many open files in system
-    const int NEWLIB_ENOSYS = 88;    // Function not implemented
+    constexpr int NEWLIB_ENOENT = 2;     // No such file or directory
+    constexpr int NEWLIB_EIO = 5;        // I/O error
+    constexpr int NEWLIB_EBADF = 9;      // Bad file number
+    constexpr int NEWLIB_EINVAL = 22;    // Invalid argument
+    constexpr int NEWLIB_ENFILE = 23;    // Too many open files in system
+    constexpr int NEWLIB_ENOSYS = 88;    // Function not implemented
 }
 
 KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
@@ -789,6 +790,12 @@ void KnightsVM::getVMConfig(Coercri::OutputByteBuf &buf) const
     buf.writeUlong(checksum_addr);
     buf.writeUlong(next_checksum_timer_ms);
     hasher.writeInternalState(buf);
+    buf.writeUlong(checkpoints.size());
+    for (const auto & checkpoint : checkpoints) {
+        buf.writeUlong(checkpoint.timer_ms);
+        buf.writeUlong(uint32_t(checkpoint.checksum));
+        buf.writeUlong(uint32_t(checkpoint.checksum >> 32));
+    }
 }
 
 void KnightsVM::putVMConfig(Coercri::InputByteBuf &buf)
@@ -894,6 +901,16 @@ void KnightsVM::putVMConfig(Coercri::InputByteBuf &buf)
     checksum_addr = buf.readUlong();
     next_checksum_timer_ms = buf.readUlong();
     hasher = XXHash(buf);
+    uint32_t num_checkpoints = buf.readUlong();
+    checkpoints.clear();
+    for (uint32_t i = 0; i < num_checkpoints; ++i) {
+        Checkpoint checkpoint;
+        checkpoint.timer_ms = buf.readUlong();
+        uint32_t low_word = buf.readUlong();
+        uint32_t high_word = buf.readUlong();
+        checkpoint.checksum = uint64_t(low_word) | (uint64_t(high_word) << 32);
+        checkpoints.push_back(checkpoint);
+    }
 }
 
 void KnightsVM::adjustGuardPageAllocations(uint32_t old_guard_page_address, uint32_t new_guard_page_address)
@@ -1071,6 +1088,9 @@ void KnightsVM::updateRollingChecksum()
         chk.timer_ms = timer_ms;
         chk.checksum = hasher.finalHash();
         checkpoints.push_back(chk);
+        if (checkpoints.size() > MAX_CHECKPOINTS) {
+            throw std::runtime_error("too many checkpoints");
+        }
 
     } else {
         // We found a new page to add; add the address and contents to the hasher.
