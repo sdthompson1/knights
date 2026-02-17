@@ -23,23 +23,42 @@
 
 #include "gui_numeric_field.hpp"
 
+#include "core/utf8string.hpp"
+
 void GuiNumericField::keyPressed(gcn::KeyEvent &key_event)
 {
     const std::string old_text = getText();
-    
-    if (key_event.getKey().isCharacter() && !key_event.getKey().isNumber()) {
-        // reject the key (non-numeric character)
-        key_event.consume();
-    } else if (key_event.getKey().isNumber() && old_text.length() >= max_digits) {
-        // reject the key (will make the text longer than 2 chars)
-        key_event.consume();
-    } else {
-        // let the parent class handle it
-        gcn::TextField::keyPressed(key_event);
-    }
+
+    // Let the parent class handle it (arrow keys, backspace, delete, home, end, etc.)
+    gcn::TextField::keyPressed(key_event);
 
     // If the text has changed then fire an action event.
     if (old_text != getText()) {
         distributeActionEvent();
     }
+}
+
+void GuiNumericField::receiveTextInput(const Coercri::UTF8String &text)
+{
+    const std::string &utf8_str = text.asUTF8();
+
+    // Filter to only digit characters, respecting max_digits
+    std::string filtered;
+    for (char c : utf8_str) {
+        if (c >= '0' && c <= '9' && mText.length() + filtered.length() < static_cast<size_t>(max_digits)) {
+            filtered += c;
+        }
+    }
+
+    if (filtered.empty()) {
+        return;
+    }
+
+    // Insert at the current caret position
+    mText.insert(mCaretPosition, filtered);
+    mCaretPosition += filtered.length();
+    fixScroll();
+
+    // Fire an action event since the field contents changed
+    distributeActionEvent();
 }

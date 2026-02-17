@@ -26,6 +26,8 @@
 
 #include "guichan.hpp"
 
+#include "gcn/text_input_receiver.hpp"
+
 #include <string>
 
 //
@@ -38,10 +40,11 @@
 // 3) fires an ActionEvent whenever the field contents are changed,
 //    not just when RETURN is pressed.
 
-class GuiNumericField : public gcn::TextField {
+class GuiNumericField : public gcn::TextField, public Coercri::TextInputReceiver {
 public:
     explicit GuiNumericField(int max_digits_) : max_digits(max_digits_) { }
-    virtual void keyPressed(gcn::KeyEvent &event);
+    virtual void keyPressed(gcn::KeyEvent &event) override;
+    virtual void receiveTextInput(const Coercri::UTF8String &text) override;
 private:
     int max_digits;
 };
