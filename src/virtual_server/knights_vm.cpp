@@ -621,17 +621,20 @@ void KnightsVM::handleInvalidAddress(uint32_t addr)
 {
     uint32_t page_num_mask = ~(BYTES_PER_PAGE - 1);
     if ((addr & page_num_mask) == second_stack_guard) {
-        allocatePage(second_stack_guard);
-        second_stack_guard -= BYTES_PER_PAGE;
-        if (isPageAllocated(second_stack_guard)) {
+        // Don't allow second stack guard to run into another allocated area
+        if (isPageAllocated(second_stack_guard - BYTES_PER_PAGE)) {
             throw std::runtime_error("Thread stack guard page is allocated (shouldn't happen?)");
         }
 
-        // Do not allow the secondary stack guard page to sink below its minimum allowed value.
+        // Do not allow the secondary stack to sink below its minimum allowed address.
         // (See comments in KnightsVM constructor for the calculations.)
-        if (second_stack_guard < MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE * 2) {
+        if (second_stack_guard < MAIN_STACK_TOP - MAX_STACK_BYTES * 2 - BYTES_PER_PAGE) {
             throw std::runtime_error("Thread stack overflow");
         }
+
+        // Allocate the guard page and move the guard down
+        allocatePage(second_stack_guard);
+        second_stack_guard -= BYTES_PER_PAGE;
 
     } else {
         RiscVM::handleInvalidAddress(addr);
