@@ -44,13 +44,13 @@ public:
 
 class TaskManager {
 public:
-    TaskManager() : gvt(0) { }
+    TaskManager() : gvt(0), stopped(false) { }
     
     void addTask(boost::shared_ptr<Task> t, TaskPri pri, int exec_time);
     void changeTaskPri(boost::shared_ptr<Task> t, TaskPri new_pri);
     void changeExecTime(boost::shared_ptr<Task> t, int new_exec_time);
     void rmTask(boost::shared_ptr<Task> t);  // does nothing if t not found in the taskmanager
-    void rmAllTasks();
+    void rmAllTasks();  // Removes all tasks and also prevents further tasks from being added
     
     // This increases time then runs tasks as they become ready.
     void advanceToTime(int target_time);
@@ -68,6 +68,8 @@ private:
     QueueType task_queue[NUM_QUEUES];
 
     QueueType::iterator findTask(boost::shared_ptr<Task>);
+
+    bool stopped; // true if rmAllTasks has been called
 };
 
 #endif

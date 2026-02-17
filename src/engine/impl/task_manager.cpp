@@ -41,6 +41,8 @@ TaskManager::QueueType::iterator TaskManager::findTask(boost::shared_ptr<Task> t
 
 void TaskManager::addTask(boost::shared_ptr<Task> t, TaskPri pri, int exec_time)
 {
+    if (stopped) return;
+
     ASSERT(t->time == -1); // same task must never be added twice.
     t->pri = pri;
     t->time = exec_time;
@@ -85,11 +87,13 @@ void TaskManager::rmAllTasks()
         }
         task_queue[i].clear();
     }
+
+    stopped = true;  // prevents further tasks from being added
 }
 
 void TaskManager::advanceToTime(int target_time)
 {
-    // Time should not go backwards -- don't want any of those nasty paradoxes :)
+    // Time should not go backwards
     if (target_time <= gvt) return;
 
     // For now, just run all the normal-pri tasks first, then all the low-pri tasks.
