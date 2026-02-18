@@ -641,7 +641,7 @@ namespace Coercri {
         // Remove expired weak ptrs from this->windows
         for (auto iter = windows.begin(); iter != windows.end(); ) {
             if (iter->expired()) {
-                windows.erase(iter);
+                iter = windows.erase(iter);
             } else {
                 ++iter;
             }

@@ -109,7 +109,7 @@ namespace Coercri {
         }
 
         // If the old subsys has no references, quit it
-        if (*ref_count == 0) {
+        if (subsys != 0 && *ref_count == 0) {
             SDL_QuitSubSystem(subsys);
         }
 
