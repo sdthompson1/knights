@@ -123,6 +123,16 @@ void DummyOnlinePlatform::addChecksumFilter(uint64_t checksum)
     filter_checksum = checksum;
 }
 
+bool DummyOnlinePlatform::hasLobbyListChanged()
+{
+    // Check cache: if we have data from less than 5 seconds ago, getLobbyList() will return
+    // cached result, so we return false here.
+    // If it has been 5 seconds or more, getLobbyList() will re-query, so return true here.
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - last_lobby_list_time);
+    return (elapsed.count() >= 5);
+}
+
 std::vector<std::string> DummyOnlinePlatform::getLobbyList()
 {
     std::vector<std::string> result;

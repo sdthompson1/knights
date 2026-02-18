@@ -194,8 +194,6 @@ private:
     boost::shared_ptr<Coercri::Window> window;
     gcn::Gui &gui;
     
-    unsigned int last_refresh_time;
-
     boost::scoped_ptr<GameList> game_list;
 
     boost::scoped_ptr<gcn::Label> title_label;
@@ -325,7 +323,7 @@ namespace
 }
 
 OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
-    : knights_app(ka), window(win), gui(g), last_refresh_time(ka.getTimer().getMsec() - 10000)
+    : knights_app(ka), window(win), gui(g)
 {
     // Set up skeleton GUI (rest will be created once our checksum is known)
     container.reset(new gcn::Container);
@@ -453,9 +451,14 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
         // Remember setting for next time this UI is opened
         g_show_incompatible = show_incompatible_checkbox->isSelected();
 
-    } else if (event.getSource() == refresh_button.get()) {
+        // Tell OnlinePlatform to re-query lobbies asap
+        // (as the filters have changed and we want the UI to update in a timely fashion)
         knights_app.getOnlinePlatform().refreshLobbyList();
-        refreshGameList();
+
+    } else if (event.getSource() == refresh_button.get()) {
+        // User pressed the refresh button
+        // Tell OnlinePlatform to re-query lobbies asap
+        knights_app.getOnlinePlatform().refreshLobbyList();
     }
 }
 
@@ -487,6 +490,12 @@ void OnlineMultiplayerScreenImpl::createGame()
 
 void OnlineMultiplayerScreenImpl::refreshGameList()
 {
+    // Optimization: if the OnlinePlatform tells us that the game list hasn't changed,
+    // then return immediately.
+    if (!knights_app.getOnlinePlatform().hasLobbyListChanged()) {
+        return;
+    }
+
     // Remember the currently selected lobby ID before refreshing
     std::string selected_lobby_id;
     int current_selection = listbox->getSelected();
@@ -529,14 +538,7 @@ void OnlineMultiplayerScreenImpl::update()
     }
 
     // Refresh the GameList if required.
-    // Note: Online platform caches the getLobbyList results so refreshing
-    // the UI relatively frequently (every 200ms) should be OK
-    const unsigned int refresh_interval = 200;
-    const unsigned int current_time = knights_app.getTimer().getMsec();
-    if (current_time - last_refresh_time >= refresh_interval) {
-        refreshGameList();
-        last_refresh_time = current_time;
-    }
+    refreshGameList();
 }
 
 bool OnlineMultiplayerScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)

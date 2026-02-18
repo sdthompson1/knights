@@ -104,8 +104,15 @@ public:
     virtual void addChecksumFilter(uint64_t checksum) = 0;
 
     // Search for lobbies to join. Returns a vector of lobby ID strings.
-    // Note: this can be called frequently (e.g. every 200ms) as results are cached.
-    // (TODO: Add a method to request a manual refresh of the list.)
+    //  - The OnlinePlatform subclass is expected to throttle requests to the server, so even
+    //    if the game calls getLobbyList() a lot, only a limited number of actual requests
+    //    are made; cached results are returned for the other calls.
+    //  - The game can use hasLobbyListChanged() to determine whether it is worth calling
+    //    getLobbyList() again. If hasLobbyListChanged() returns false, this means the next
+    //    call to getLobbyList() will definitely return the same as the previous call.
+    //    Otherwise, the next getLobbyList() call might (or might not) return a different
+    //    result from last time.
+    virtual bool hasLobbyListChanged() = 0;
     virtual std::vector<std::string> getLobbyList() = 0;
 
     // Force a manual refresh of the cached getLobbyList results.

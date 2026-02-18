@@ -57,6 +57,7 @@ public:
     // Lobby search and filtering
     virtual void clearLobbyFilters() override;
     virtual void addChecksumFilter(uint64_t checksum) override;
+    virtual bool hasLobbyListChanged() override;
     virtual std::vector<std::string> getLobbyList() override;
     void refreshLobbyList() override;
 
