@@ -39,9 +39,6 @@ max_chat_lines = 300;
 -- Animation settings
 bat_anim_timescale = 65;
 
--- Control settings
-menu_delay = 500;            -- delay between pressing fire and menu appearing
-
 -- Graphics settings
 death_draw_map_time = 1500; -- how long to show the map after death
 

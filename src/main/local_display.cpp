@@ -1702,7 +1702,7 @@ const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mle
     }
     
     // set up some constants
-    const int64_t menu_delay_us = int64_t(config_map.getInt("menu_delay")) * 1000; // cutoff btwn 'tapping' and 'holding' fire. (Note value in config file is ms not us.)
+    const int64_t menu_delay_us = 500 * 1000; // cutoff btwn 'tapping' and 'holding' fire.
     const bool approached = dungeon_view[plyr]->isApproached();
     
     // get current controller state
