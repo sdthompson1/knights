@@ -241,7 +241,7 @@ std::vector<ChatMessage> DummyPlatformLobby::receiveChatMessages()
     return messages;
 }
 
-uint64_t DummyPlatformLobby::getChecksum() const
+uint64_t DummyPlatformLobby::getChecksum()
 {
     return cached_checksum;
 }

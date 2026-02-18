@@ -79,7 +79,7 @@ public:
 
     // Returns the checksum of this lobby's game data.
     // Only valid when getState() == JOINED.
-    virtual uint64_t getChecksum() const = 0;
+    virtual uint64_t getChecksum() = 0;
 };
 
 #endif
