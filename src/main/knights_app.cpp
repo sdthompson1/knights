@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "compute_checksum.hpp"
 #include "config_map.hpp"
 #include "credits_screen.hpp"
 #include "dummy_online_platform.hpp"
@@ -1220,7 +1221,8 @@ void KnightsAppImpl::updateOnlinePlatform()
     if (!invited_lobby_id.empty()) {
         // Go to VMLoadingScreen
         OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
-        uint64_t my_checksum = 0;  // Dummy value
+        // Compute our checksum to pass to VMLoadingScreen (brief blocking call, acceptable here).
+        uint64_t my_checksum = ComputeLocalChecksum(online_platform->getBuildId());
         requested_screen = std::make_unique<VMLoadingScreen>(invited_lobby_id, vis, my_checksum);
     }
 #endif

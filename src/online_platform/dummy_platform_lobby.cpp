@@ -30,6 +30,7 @@
 #include "utf8string.hpp"
 #include <chrono>
 #include <cstring>
+#include <sstream>
 
 #define PLATFORM_NAME "dummy"
 
@@ -124,9 +125,12 @@ void DummyPlatformLobby::updateCachedInfo()
                         // Skip num_players (4 bytes)
                         pos += 4;
 
-                        // Skip checksum (null-terminated)
+                        // Parse checksum (null-terminated decimal string)
                         null_pos = response_data.find('\0', pos);
                         if (null_pos != std::string::npos) {
+                            std::string checksum_str = response_data.substr(pos, null_pos - pos);
+                            std::istringstream iss(checksum_str);
+                            iss >> cached_checksum;
                             pos = null_pos + 1;
 
                             // Skip status_key (null-terminated)
@@ -235,6 +239,11 @@ std::vector<ChatMessage> DummyPlatformLobby::receiveChatMessages()
     }
 
     return messages;
+}
+
+uint64_t DummyPlatformLobby::getChecksum() const
+{
+    return cached_checksum;
 }
 
 #endif

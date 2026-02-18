@@ -76,6 +76,10 @@ public:
 
     // Returns all chat messages since the last call (or since joining if first call)
     virtual std::vector<ChatMessage> receiveChatMessages() = 0;
+
+    // Returns the checksum of this lobby's game data.
+    // Only valid when getState() == JOINED.
+    virtual uint64_t getChecksum() const = 0;
 };
 
 #endif

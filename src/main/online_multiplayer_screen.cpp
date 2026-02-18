@@ -34,6 +34,7 @@
 #include "make_scroll_area.hpp"
 #include "online_multiplayer_screen.hpp"
 #include "online_platform.hpp"
+#include "compute_checksum.hpp"
 #include "rstream.hpp"
 #include "start_game_screen.hpp"
 #include "tab_font.hpp"
@@ -148,7 +149,8 @@ namespace {
                                 uint64_t &checksum,
                                 bool &checksum_done,
                                 std::string &&build_id)
-            : mutex(mutex), checksum(checksum), checksum_done(checksum_done) {}
+            : mutex(mutex), checksum(checksum), checksum_done(checksum_done),
+              build_id(std::move(build_id)) {}
         void operator()();
     private:
         boost::mutex &mutex;
@@ -159,14 +161,7 @@ namespace {
 
     void ChecksumThread::operator()()
     {
-        // Construct a hash of knights_data/server file contents,
-        // together with build ID from the online platform.
-        XXHash hasher(0);
-        hasher.updateHashPartial(reinterpret_cast<uint8_t*>(build_id.data()), build_id.length());
-        RStream::HashDirectory("server", hasher);
-        uint64_t value = hasher.finalHash();
-
-        // Write result back to the main thread
+        uint64_t value = ComputeLocalChecksum(build_id);
         boost::unique_lock lock(mutex);
         checksum = value;
         checksum_done = true;
@@ -482,8 +477,7 @@ void OnlineMultiplayerScreenImpl::joinGame(const std::string &lobby_id)
 void OnlineMultiplayerScreenImpl::createGame()
 {
     // For now, go directly to VMLoadingScreen
-    // TODO: Instead we should probably go to a create game screen where the user can set options
-    OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PUBLIC; // Temporary value
+    OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PUBLIC; // TODO: Maybe allow user to select visibility? (e.g. friends-only games)
     std::unique_ptr<Screen> loading_screen(new VMLoadingScreen("", vis, my_checksum));
     knights_app.requestScreenChange(std::move(loading_screen));
 }

@@ -101,6 +101,8 @@ boost::shared_ptr<KnightsClient>
                                   std::unique_ptr<VMKnightsLobby> kts_lobby,
                                   uint64_t my_checksum)
 {
+    this->my_checksum = my_checksum;
+
     // Create the platform lobby
     if (lobby_id.empty()) {
         platform_lobby = online_platform.createLobby(vis, my_checksum);
@@ -188,6 +190,14 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
 
         if (host_migration_state == HostMigrationState::NOT_IN_GAME) {
             // Now that platform lobby is ready, we can send the initial login messages
+
+            // Validate checksum compatibility before joining
+            if (my_checksum != platform_lobby->getChecksum()) {
+                error_key = LocalKey("incompatible_game");
+                return;
+            }
+
+            // Now join the game!
             knights_client->setPlayerIdAndControls(online_platform.getCurrentUserId(),
                                                    new_control_system);
             knights_client->joinGame("#VMGame");

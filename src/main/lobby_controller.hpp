@@ -89,7 +89,6 @@ public:
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     // If lobby_id empty this creates a new lobby (with given visibility),
     // otherwise it joins an existing lobby.
-    // Note: my_checksum is only relevant when creating a lobby.
     boost::shared_ptr<KnightsClient> createVMGame(OnlinePlatform &online_platform,
                                                   const std::string &lobby_id,
                                                   OnlinePlatform::Visibility vis,
@@ -144,6 +143,10 @@ private:
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<PlatformLobby> platform_lobby;
     bool created_by_me;  // True if the platform lobby was originally created by the current user
+#endif
+
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    uint64_t my_checksum = 0;
 #endif
 
 #ifdef USE_VM_LOBBY
