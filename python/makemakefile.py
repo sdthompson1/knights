@@ -120,8 +120,7 @@ print (f"""# Makefile for Knights
 #   The following command (as root) will install the required dependencies
 #   for building Knights:
 #     apt install libboost-dev libboost-thread-dev libsdl2-dev \\
-#       libfreetype6-dev libfontconfig-dev \\
-#       liblua5.4-dev libenet-dev pkg-config
+#       libfreetype6-dev liblua5.4-dev libenet-dev pkg-config
 #   (Note: your distribution might have a newer Lua version available,
 #   in which case it should be fine to use that instead.)
 #
@@ -129,8 +128,7 @@ print (f"""# Makefile for Knights
 # Arch Linux:
 #
 #   The following command should install the required dependencies:
-#     pacman -S base-devel boost boost-libs sdl2 freetype2 \\
-#       fontconfig lua enet
+#     pacman -S base-devel boost boost-libs sdl2 freetype2 lua enet
 #
 #   For Arch you need to edit LUA_CFLAGS and LUA_LIBS below.
 #   Simply change "lua-c++" to "lua++". (This is needed because Arch
@@ -140,8 +138,7 @@ print (f"""# Makefile for Knights
 # Other distributions:
 #
 #   Use whatever method is available on your distribution for installing
-#   the required libraries: boost, SDL2, freetype, fontconfig,
-#   enet, and lua.
+#   the required libraries: boost, SDL2, freetype, enet, and lua.
 #
 #   Note that Knights requires a C++ (not C) version of Lua.
 #   Some Linux distributions only provide a C version, which is not
@@ -221,7 +218,7 @@ LUA_LIBS = `pkg-config lua-c++ --libs`
 {online_platform_comment}
 ONLINE_PLATFORM_FLAGS = {online_platform_flags}
 
-CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG $(ONLINE_PLATFORM_FLAGS)
+CPPFLAGS = -DDATA_DIR=$(DATA_DIR) -DNDEBUG $(ONLINE_PLATFORM_FLAGS)
 CFLAGS = -O2 -ffast-math -pthread
 CXXFLAGS = $(CFLAGS) -std=c++20
 LDFLAGS = -pthread
@@ -284,7 +281,7 @@ pkg_link_flags_knights = "`pkg-config sdl2 --libs` `pkg-config freetype2 --libs`
 # Print target for Knights binary
 print ("""
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-\t$(CXX) $(LDFLAGS) -o $@ $^ """ + pkg_link_flags_knights + """ -lfontconfig -lX11 $(BOOST_LIBS)
+\t$(CXX) $(LDFLAGS) -o $@ $^ """ + pkg_link_flags_knights + """ -lX11 $(BOOST_LIBS)
 """)
 
 

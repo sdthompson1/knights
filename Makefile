@@ -16,8 +16,7 @@
 #   The following command (as root) will install the required dependencies
 #   for building Knights:
 #     apt install libboost-dev libboost-thread-dev libsdl2-dev \
-#       libfreetype6-dev libfontconfig-dev \
-#       liblua5.4-dev libenet-dev pkg-config
+#       libfreetype6-dev liblua5.4-dev libenet-dev pkg-config
 #   (Note: your distribution might have a newer Lua version available,
 #   in which case it should be fine to use that instead.)
 #
@@ -25,8 +24,7 @@
 # Arch Linux:
 #
 #   The following command should install the required dependencies:
-#     pacman -S base-devel boost boost-libs sdl2 freetype2 \
-#       fontconfig lua enet
+#     pacman -S base-devel boost boost-libs sdl2 freetype2 lua enet
 #
 #   For Arch you need to edit LUA_CFLAGS and LUA_LIBS below.
 #   Simply change "lua-c++" to "lua++". (This is needed because Arch
@@ -36,8 +34,7 @@
 # Other distributions:
 #
 #   Use whatever method is available on your distribution for installing
-#   the required libraries: boost, SDL2, freetype, fontconfig,
-#   enet, and lua.
+#   the required libraries: boost, SDL2, freetype, enet, and lua.
 #
 #   Note that Knights requires a C++ (not C) version of Lua.
 #   Some Linux distributions only provide a C version, which is not
@@ -118,7 +115,7 @@ LUA_LIBS = `pkg-config lua-c++ --libs`
 # of Knights, hence ONLINE_PLATFORM_FLAGS is empty.
 ONLINE_PLATFORM_FLAGS = 
 
-CPPFLAGS = -DUSE_FONTCONFIG -DDATA_DIR=$(DATA_DIR) -DNDEBUG $(ONLINE_PLATFORM_FLAGS)
+CPPFLAGS = -DDATA_DIR=$(DATA_DIR) -DNDEBUG $(ONLINE_PLATFORM_FLAGS)
 CFLAGS = -O2 -ffast-math -pthread
 CXXFLAGS = $(CFLAGS) -std=c++20
 LDFLAGS = -pthread
@@ -1532,7 +1529,7 @@ src/shared/impl/user_control.o: src/shared/impl/user_control.cpp
 	  rm -f $*.d
 
 $(KNIGHTS_BINARY_NAME): $(OFILES_MAIN)
-	$(CXX) $(LDFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` $(LUA_LIBS) `pkg-config libenet --libs` -lfontconfig -lX11 $(BOOST_LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ `pkg-config sdl2 --libs` `pkg-config freetype2 --libs` $(LUA_LIBS) `pkg-config libenet --libs` -lX11 $(BOOST_LIBS)
 
 
 clean:
