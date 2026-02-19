@@ -148,6 +148,7 @@ enum ServerMessageCode {
     SERVER_CANCEL_CONTINUOUS_MESSAGES = 113,  // no data
     SERVER_ADD_CONTINUOUS_MESSAGE = 114,  // followed by LocalMsg
     SERVER_SET_SPEECH_BUBBLE = 115,  // followed by varint (id), ubyte (show flag)
+    SERVER_SET_ITEM_NULL = 116,      // followed by room-coord
 
     // minimap
     SERVER_SET_MAP_SIZE = 150,       // followed by 2 ubytes (width, height)

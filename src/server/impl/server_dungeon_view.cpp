@@ -83,7 +83,7 @@ void ServerDungeonView::appendDungeonViewCmds(int observer_num, std::vector<ubyt
 
         const int idx = cmd_it->y * current_room_width + cmd_it->x;
         const SquareState seen = room_data.square_seen[idx];
-        const bool must_send = cmd_it->force || (seen != SEEN);
+        const bool must_send = cmd_it->force || (seen == UNSEEN);
 
         if (must_send) {
             switch (cmd_it->type) {
@@ -99,21 +99,19 @@ void ServerDungeonView::appendDungeonViewCmds(int observer_num, std::vector<ubyt
                 WriteRoomCoord(buf, cmd_it->x, cmd_it->y);
                 break;
             case Cmd::SET_ITEM:
-                {
-                    // default state for unseen squares is no item so no point sending 
-                    // "SET_ITEM NULL" cmds in that case... it just wastes bandwidth
-                    const bool they_already_know = (seen==UNSEEN) && cmd_it->gfx == 0;
-                    if (!they_already_know) {
-                        buf.writeUbyte(SERVER_SET_ITEM);
-                        WriteRoomCoord(buf, cmd_it->x, cmd_it->y);
-                        buf.writeVarInt(cmd_it->gfx ? cmd_it->gfx->getID() : 0);
-                    }
+                if (cmd_it->gfx) {
+                    buf.writeUbyte(SERVER_SET_ITEM);
+                    WriteRoomCoord(buf, cmd_it->x, cmd_it->y);
+                    buf.writeVarInt(cmd_it->gfx->getID());
+                } else {
+                    buf.writeUbyte(SERVER_SET_ITEM_NULL);
+                    WriteRoomCoord(buf, cmd_it->x, cmd_it->y);
                 }
                 break;
             }
         }
 
-        if (seen != SEEN) {
+        if (seen == UNSEEN) {
             // Mark the square as seen, so that future (unforced) updates are not re-sent unnecessarily.
             // Note: we want all commands in a "batch" to be sent BEFORE marking the square seen.
             // So look ahead at the next cmd and if it's on this square too, then hold off on setting 'seen'.
@@ -164,7 +162,7 @@ void ServerDungeonView::setCurrentRoom(int r, int width, int height)
                 for (std::vector<Cmd>::const_iterator cmd_it = cmds.begin(); cmd_it != cmds.end(); ++cmd_it) {
                     if (cmd_it->force) {
                         const int idx = cmd_it->y * current_room_width + cmd_it->x;
-                        it->second.square_seen[idx] = ITEM_CLEARED;  // make sure the item gets resent. fixes scroll bug.
+                        it->second.square_seen[idx] = UNSEEN;
                     }
                 }
             }

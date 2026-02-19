@@ -733,6 +733,14 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
+        case SERVER_SET_ITEM_NULL:
+            {
+                int x, y;
+                ReadRoomCoord(buf, x, y);
+                if (dungeon_view) dungeon_view->setItem(x, y, nullptr, true);
+            }
+            break;
+
         case SERVER_PLACE_ICON:
             {
                 int x, y;

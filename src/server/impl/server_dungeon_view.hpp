@@ -78,8 +78,7 @@ private:
 
     enum SquareState {
         UNSEEN,
-        SEEN,
-        ITEM_CLEARED
+        SEEN
     };
     
     struct RoomData {
