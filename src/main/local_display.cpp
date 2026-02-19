@@ -1017,17 +1017,16 @@ std::string LocalDisplay::replaceSpecialChars(std::string msg) const
 void LocalDisplay::setupFonts(GfxManager &gm)
 {
     // setup "my_font" (used for chat, and player-name captions in observer mode)
-    // TODO better font loading method?
     if (!my_font) {
-        gm.setFontSize(14);
+        gm.setFontSize(config_map.getInt("font_size"));
         my_font = gm.getFont();
     }
     if (!txt_font) {
-        txt_font = my_font; // TODO resize dynamically based on screen size?
+        txt_font = my_font;
     }
     if (!gui_font) {
         gui_font.reset(new Coercri::CGFont(my_font));
-        gm.setFontSize(13);
+        gm.setFontSize(config_map.getInt("small_font_size"));
         gui_small_font.reset(new Coercri::CGFont(gm.getFont()));
     }
 }

@@ -120,7 +120,7 @@ namespace {
     // GlyphCreator implementation using FreeType
     class FreetypeGlyphCreator : public Coercri::GlyphCreator {
     public:
-        FreetypeGlyphCreator(boost::shared_ptr<Coercri::FTLibraryWrapper> library, boost::shared_ptr<std::istream> str, int size);
+        FreetypeGlyphCreator(boost::shared_ptr<Coercri::FTLibraryWrapper> library, boost::shared_ptr<std::istream> str, int size, bool force_autohint);
         ~FreetypeGlyphCreator();
 
         Coercri::GlyphData createGlyph(char32_t codepoint) override;
@@ -134,12 +134,15 @@ namespace {
         FT_Face face;
         int ascent;
         int line_height;
+        bool force_autohint;
     };
 
     FreetypeGlyphCreator::FreetypeGlyphCreator(boost::shared_ptr<Coercri::FTLibraryWrapper> library,
                                                boost::shared_ptr<std::istream> str,
-                                               int size)
-        : ft_library(std::move(library)), stream(std::move(str)), face(nullptr)
+                                               int size,
+                                               bool force_autohint)
+        : ft_library(std::move(library)), stream(std::move(str)), face(nullptr),
+          force_autohint(force_autohint)
     {
         // Calculate the file size, this is needed by Freetype
         stream->seekg(0, std::ios::end);
@@ -194,11 +197,11 @@ namespace {
         FT_UInt glyph_index = FT_Get_Char_Index(face, codepoint);
 
         // Load glyph image into the slot (erase previous one).
-        // NOTE: we use FT_LOAD_FORCE_AUTOHINT, this is because
-        // the results (in my opinion) look better with the
-        // freetype autohinter, as compared to the native TrueType
-        // hinting.
-        FT_Error err = FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT);
+        int flags = FT_LOAD_RENDER;
+        if (force_autohint) {
+            flags |= FT_LOAD_FORCE_AUTOHINT;
+        }
+        FT_Error err = FT_Load_Glyph(face, glyph_index, flags);
         if (err) {
             // Return empty glyph with zero advance on error
             return result;
@@ -248,8 +251,9 @@ Coercri::FreetypeTTFLoader::FreetypeTTFLoader(boost::shared_ptr<Coercri::GfxDriv
 }
 
 boost::shared_ptr<Coercri::Font> Coercri::FreetypeTTFLoader::loadFont(boost::shared_ptr<std::istream> str,
-                                                                      int size)
+                                                                      int size,
+                                                                      bool force_autohint)
 {
-    auto glyph_creator = std::make_unique<FreetypeGlyphCreator>(ft_library, std::move(str), size);
+    auto glyph_creator = std::make_unique<FreetypeGlyphCreator>(ft_library, std::move(str), size, force_autohint);
     return boost::make_shared<LazyBitmapFont>(gfx_driver, std::move(glyph_creator));
 }

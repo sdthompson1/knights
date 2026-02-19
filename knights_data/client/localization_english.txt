@@ -185,7 +185,6 @@ error_in_respawn_func           Error in respawn function: {0}
 message_too_long                Message too long
 game_hasnt_started              Game hasn't started or could not be found
 config_key_not_found            Config key '{0}' not found
-could_not_load_font             Could not load font! Check fonts.txt
 cxx_error_is                    C++ error: {0}
 incompatible_game               This game is running a different version of Knights or using modified game data
 connection_lost                 The network connection has been lost

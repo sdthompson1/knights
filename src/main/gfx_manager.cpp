@@ -27,20 +27,22 @@
 #include "gfx_manager.hpp"
 #include "graphic.hpp"
 #include "graphic_transform.hpp"
-#include "load_font.hpp"
 #include "my_exceptions.hpp"
+#include "rstream.hpp"
 
 #include "gfx/load_bmp.hpp"  // coercri
 
 GfxManager::GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                        boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
-                       const std::vector<std::string> &ttf_font_names_,
+                       const std::string &font_filename,  // includes "client/" prefix
+                       bool font_force_autohint,
                        unsigned char invis_alpha_,
                        FileCache &fc)
     : gfx_driver(gfx_driver_),
       ttf_loader(ttf_loader_),
       file_cache(fc),
-      ttf_font_names(ttf_font_names_),
+      font_filename(font_filename),
+      font_force_autohint(font_force_autohint),
       font_size(0),
       npix(0),
       invis_alpha(invis_alpha_)
@@ -60,7 +62,8 @@ boost::shared_ptr<Coercri::Font> GfxManager::getFont()
 void GfxManager::setFontSize(int new_size)
 {
     if (font_size == new_size) return;
-    font = LoadFont(gfx_driver, *ttf_loader, ttf_font_names, new_size);
+    boost::shared_ptr<RStream> str(new RStream(font_filename));
+    font = ttf_loader->loadFont(str, new_size, font_force_autohint);
     font_size = new_size;
 }  
 

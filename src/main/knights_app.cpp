@@ -43,7 +43,6 @@
 #include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_sandbox.hpp"
-#include "load_font.hpp"
 #include "loading_screen.hpp"
 #include "localization.hpp"
 #include "my_ctype.hpp"
@@ -433,35 +432,20 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         }
     }
 
-    // Get the font names.
-    std::vector<std::string> ttf_font_names;
-    {
-        RStream str("client/fonts.txt");
-
-        while (str) {
-            std::string x;
-            getline(str, x);
-        
-            // Left trim
-            x.erase(x.begin(), find_if(x.begin(), x.end(), [](char c) { return !IsSpace(c); }));
-            // Right trim
-            x.erase(find_if(x.rbegin(), x.rend(), [](char c) { return !IsSpace(c); }).base(), x.end());
-            
-            if (x.empty() || x[0] == '#') continue;
-            ttf_font_names.push_back(x);
-        }
-    }
-
     // Font for the gui
-    pimpl->font = LoadFont(pimpl->gfx_driver,
-                           *pimpl->ttf_loader,
-                           ttf_font_names,
-                           pimpl->config_map.getInt("font_size"));
+    {
+        boost::shared_ptr<RStream> str(new RStream("client/" + pimpl->config_map.getString("font_name")));
+        pimpl->font = pimpl->ttf_loader->loadFont(str,
+                                                  pimpl->config_map.getInt("font_size"),
+                                                  pimpl->config_map.getInt("font_force_autohint"));
+    }
 
     // Setup gfx & sound managers
     pimpl->gfx_manager.reset(
-        new GfxManager(pimpl->gfx_driver, pimpl->ttf_loader,
-                       ttf_font_names,
+        new GfxManager(pimpl->gfx_driver,
+                       pimpl->ttf_loader,
+                       "client/" + pimpl->config_map.getString("font_name"),
+                       pimpl->config_map.getInt("font_force_autohint"),
                        static_cast<unsigned char>(pimpl->config_map.getInt("invisalpha")),
                        pimpl->file_cache));
     setupGfxResizer();

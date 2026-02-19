@@ -54,9 +54,12 @@ max_fps = 0;
 
 
 -- Font
-font_size = 15;       -- Font size for title screens, menus etc
-dpy_font_base_size = 600;   -- Controls the in-game font size
-dpy_font_min_size = 14;   -- Smallest allowed font size in game
+font_name = "Inter_18pt-Regular.ttf";   -- Font filename, relative to knights_data/client/
+font_force_autohint = 0;    -- 0 = use default setting, 1 = use Freetype auto-hinter
+font_size = 15;        -- Font size for most places in game (title screens, menus, chat text, etc.)
+small_font_size = 14;  -- Slightly smaller size used for some UI text
+dpy_font_base_size = 600;   -- Controls scaling of ESC menu text (and text above knights like "Poison" or "Super")
+dpy_font_min_size = 14;   -- Smallest allowed size for the ESC menu text
 
 -- Display layout
 dpy_viewport_width = 160;

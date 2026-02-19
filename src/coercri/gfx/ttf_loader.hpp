@@ -61,9 +61,14 @@ namespace Coercri {
         // it to lazily load font data as needed. (E.g. SDL_TTF
         // appears to work this way.) Therefore we pass the istream as
         // a shared_ptr, rather than simply an istream&.
-        
+
+        // Note: the meaning of force_autohint is up to the TTFLoader
+        // subclass, but FreetypeTTFLoader uses this to control the
+        // FT_LOAD_FORCE_AUTOHINT flag.
+
         virtual boost::shared_ptr<Font> loadFont(boost::shared_ptr<std::istream> str,
-                                                 int size) = 0;
+                                                 int size,
+                                                 bool force_autohint) = 0;
     };
 }
 
