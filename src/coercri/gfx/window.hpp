@@ -75,8 +75,8 @@ namespace Coercri {
         // Query whether the window currently has focus
         virtual bool hasFocus() const = 0;
 
-        // Bring the window to the front and give it focus (if the OS allows this).
-        virtual void popToFront() = 0;
+        // Flash the window briefly to attract the user's attention.
+        virtual void flash() = 0;
         
         // Show or hide the mouse pointer.
         virtual void showMousePointer(bool shown) = 0;

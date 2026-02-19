@@ -87,8 +87,8 @@ bool ErrorScreen::start(KnightsApp &app, shared_ptr<Coercri::Window>, gcn::Gui &
     app.resetAll();
     pimpl.reset(new ErrorScreenImpl(app, gui, msg));
 
-    // Pop window to front when there is an error. This is useful in case you were waiting on the
+    // Flash window when there is an error. This is useful in case you were waiting on the
     // lobby screen (with the window minimized) and you got disconnected.
-    app.popWindowToFront();
+    app.flashWindow();
     return true;
 }

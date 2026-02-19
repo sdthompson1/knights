@@ -94,8 +94,8 @@ public:
 
     bool screenChangePending() const;
 
-    // Pop window to front
-    void popWindowToFront();
+    // Flash window briefly to attract user's attention
+    void flashWindow();
     
     // Resets global game data (called when we go back to the title screen)
     void resetAll();

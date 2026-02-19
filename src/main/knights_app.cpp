@@ -545,9 +545,9 @@ void KnightsApp::requestQuit()
     pimpl->running = false;
 }
 
-void KnightsApp::popWindowToFront()
+void KnightsApp::flashWindow()
 {
-    pimpl->window->popToFront();
+    pimpl->window->flash();
 }
 
 void KnightsApp::repeatLastMouseInput()

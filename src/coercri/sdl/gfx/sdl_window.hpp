@@ -61,7 +61,7 @@ namespace Coercri {
 
         virtual void getSize(int &w, int &h) const override;
         virtual bool hasFocus() const override;
-        virtual void popToFront() override;
+        virtual void flash() override;
         virtual void showMousePointer(bool shown) override;
         virtual void switchToWindowed(int w, int h) override;
         virtual void switchToFullScreen() override;
