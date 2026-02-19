@@ -52,7 +52,7 @@ public:
     // Returns all chat messages since the last call (or since joining if first call)
     virtual std::vector<ChatMessage> receiveChatMessages() override;
 
-    virtual uint64_t getChecksum() const override;
+    virtual uint64_t getChecksum() override;
 
 private:
     DummyOnlinePlatform* platform;
