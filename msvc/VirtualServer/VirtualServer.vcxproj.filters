@@ -84,6 +84,9 @@
     <ClCompile Include="..\..\src\virtual_server\risc_vm-21.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>    
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-22.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>    
     <ClCompile Include="..\..\src\virtual_server\tick_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
