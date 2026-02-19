@@ -165,8 +165,10 @@ void SyncClient::receiveCatchupTicks(Coercri::InputByteBuf &buf,
     vm.runTicks(msg.data() + buf.getPos(),
                 msg.data() + buf.getPos() + length,
                 &vm_output_data);
-
     buf.skip(length);
+
+    // discard any checksums that result from the catchup ticks
+    vm.getCheckpoints();
 }
 
 #endif
