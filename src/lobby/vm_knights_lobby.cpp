@@ -48,7 +48,8 @@
 // Constants
 namespace {
     constexpr int CONNECT_RETRY_MIN_MS = 1000;
-    constexpr int CONNECT_RETRY_MAX_MS = 3000;
+    constexpr int CONNECT_RETRY_INITIAL_MAX_MS = 3000;
+    constexpr int CONNECT_RETRY_CAP_MS = 15000;
     constexpr int CONNECT_TIMEOUT_MS = 60 * 1000;
 }
 
@@ -73,23 +74,28 @@ struct VMKnightsLobbyImpl {
           leader_port(0),
           next_reconnect_time_ms(0),
           give_up_time_ms(0),
+          current_retry_max_ms(CONNECT_RETRY_INITIAL_MAX_MS),
           retry_logic_enabled(false),
           failure_reported(false)
     {}
 
     void disableRetryLogic() {
         next_reconnect_time_ms = give_up_time_ms = 0;
+        current_retry_max_ms = CONNECT_RETRY_INITIAL_MAX_MS;
         retry_logic_enabled = false;
     }
 
     void enableRetryLogic(unsigned int time_now_ms) {
-        next_reconnect_time_ms = time_now_ms + g_rng.getInt(CONNECT_RETRY_MIN_MS, CONNECT_RETRY_MAX_MS);
+        current_retry_max_ms = CONNECT_RETRY_INITIAL_MAX_MS;
+        next_reconnect_time_ms = time_now_ms + g_rng.getInt(CONNECT_RETRY_MIN_MS, current_retry_max_ms);
         give_up_time_ms = time_now_ms + CONNECT_TIMEOUT_MS;
         retry_logic_enabled = true;
     }
 
     void setupNextRetry(unsigned int time_now_ms) {
-        next_reconnect_time_ms = time_now_ms + g_rng.getInt(CONNECT_RETRY_MIN_MS, CONNECT_RETRY_MAX_MS);
+        // Back off by 50% each attempt, capped at CONNECT_RETRY_CAP_MS
+        current_retry_max_ms = std::min(current_retry_max_ms * 3 / 2, CONNECT_RETRY_CAP_MS);
+        next_reconnect_time_ms = time_now_ms + g_rng.getInt(CONNECT_RETRY_MIN_MS, current_retry_max_ms);
     }
 
     // background thread
@@ -117,6 +123,7 @@ struct VMKnightsLobbyImpl {
     // retry logic
     unsigned int next_reconnect_time_ms;
     unsigned int give_up_time_ms;
+    int current_retry_max_ms;
     bool retry_logic_enabled;
     bool failure_reported;
 };
