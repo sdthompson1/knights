@@ -105,6 +105,7 @@
     <ClCompile Include="..\..\src\virtual_server\risc_vm-19.cpp" />
     <ClCompile Include="..\..\src\virtual_server\risc_vm-20.cpp" />
     <ClCompile Include="..\..\src\virtual_server\risc_vm-21.cpp" />
+    <ClCompile Include="..\..\src\virtual_server\risc_vm-22.cpp" />
     <ClCompile Include="..\..\src\virtual_server\tick_data.cpp" />
   </ItemGroup>
   <ItemGroup>

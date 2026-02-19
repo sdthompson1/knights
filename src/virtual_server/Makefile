@@ -50,6 +50,7 @@ CXX = riscv32-unknown-elf-g++
 CXXFLAGS = -Iboost_1_88_0 -Ilua-5.4.8/src \
 	-I. -I../coercri -I../misc -I../rstream -I../shared -I../server -I../engine -I../protocol \
 	-DNDEBUG -DVIRTUAL_SERVER \
+	--std=c++20 \
 	-O2 -ffast-math \
 	-Wl,--emit-relocs \
 	-include climits
