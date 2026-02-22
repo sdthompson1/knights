@@ -31,6 +31,7 @@
 
 #include "boost/shared_ptr.hpp"
 
+#include <filesystem>
 #include <memory>
 
 class KnightsClient;
@@ -73,18 +74,21 @@ public:
 
     boost::shared_ptr<KnightsClient> startLocalGame(boost::shared_ptr<Coercri::Timer> timer,
                                                     boost::shared_ptr<KnightsConfig> config,
-                                                    const std::string &game_name);
+                                                    const std::string &game_name,
+                                                    std::filesystem::path modules_path);
 
     boost::shared_ptr<KnightsClient> hostLanGame(Coercri::NetworkDriver &net_driver,
                                                  boost::shared_ptr<Coercri::Timer> timer,
                                                  int port,
                                                  boost::shared_ptr<KnightsConfig> config,
-                                                 const std::string &game_name);
+                                                 const std::string &game_name,
+                                                 std::filesystem::path modules_path);
 
     boost::shared_ptr<KnightsClient> joinRemoteServer(Coercri::NetworkDriver &net_driver,
                                                       boost::shared_ptr<Coercri::Timer> timer,
                                                       const std::string &address,
-                                                      int port);
+                                                      int port,
+                                                      std::filesystem::path modules_path);
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
     // If lobby_id empty this creates a new lobby (with given visibility),
@@ -93,7 +97,8 @@ public:
                                                   const std::string &lobby_id,
                                                   OnlinePlatform::Visibility vis,
                                                   std::unique_ptr<VMKnightsLobby> kts_lobby,
-                                                  uint64_t my_checksum);
+                                                  uint64_t my_checksum,
+                                                  std::filesystem::path modules_path);
 #endif
 
 

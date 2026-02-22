@@ -18,11 +18,9 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
-module(...)
-
 dofile("messages.lua")
 
-local C = require("classic")
+local B = base
 
 local table_merge = kts.table_merge
 
@@ -34,16 +32,16 @@ local table_merge = kts.table_merge
 -- things) when you pick it up.
 stuff_with_gem = kts.ItemType {
    type = "magic",
-   graphic = C.g_stuff_bag,
+   graphic = B.g_stuff_bag,
    on_pick_up = function()
       -- Give the actor the stuff
-      kts.GiveItem(cxt.actor, C.i_gem, 1)
-      kts.GiveItem(cxt.actor, C.i_bolts, 3)
-      kts.GiveItem(cxt.actor, C.i_daggers, 4)
+      kts.GiveItem(cxt.actor, B.i_gem, 1)
+      kts.GiveItem(cxt.actor, B.i_bolts, 3)
+      kts.GiveItem(cxt.actor, B.i_daggers, 4)
 
       -- Display the tutorial message
-      local n = kts.GetNumHeld(cxt.actor, C.i_gem)
-      local m = { title = stuff_title, graphics = { C.g_floor1, C.g_stuff_bag }, body = stuff_msg }
+      local n = kts.GetNumHeld(cxt.actor, B.i_gem)
+      local m = { title = stuff_title, graphics = { B.g_floor1, B.g_stuff_bag }, body = stuff_msg }
       if n == 5 then
          m.body = m.body .. stuff_msg_final
       else
@@ -57,21 +55,21 @@ stuff_with_gem = kts.ItemType {
 }
 
 -- Prevent bats flying over switches
-new_acc = table_merge( C.switch_acc, { flying="blocked" })
-C.t_switch_up.access = new_acc
-C.t_switch_down.access = new_acc
+new_acc = table_merge( B.switch_acc, { flying="blocked" })
+B.t_switch_up.access = new_acc
+B.t_switch_down.access = new_acc
 
 -- A version of t_switch_up that appears as a wall on the mini map.
-switch_new = kts.Tile( table_merge( C.t_switch_up.table, { map_as = "wall" }))
+switch_new = kts.Tile( table_merge( B.t_switch_up.table, { map_as = "wall" }))
 
 -- Potions/scrolls with fixed effects
 function make_potion(effect, hint, set_flag)
    return kts.ItemType {
       type = "magic",
-      graphic = C.g_potion,
+      graphic = B.g_potion,
       fragile = true,
       on_pick_up = function()
-         C.snd_drink()
+         B.snd_drink()
          kts.Delay(750)
          effect()
          tutorial_msg(hint)
@@ -83,33 +81,33 @@ end
 function make_scroll(effect, hint)
    return kts.ItemType {
       type = "magic",
-      graphic = C.g_scroll,
+      graphic = B.g_scroll,
       on_pick_up = function() 
-         C.zap() 
+         B.zap()
          effect()
          tutorial_msg(hint)
       end
    }
 end
 
-poison_potion = make_potion(C.poison, 61, true)
-regeneration_potion = make_potion(C.regeneration, 60)
-super_potion = make_potion(C.super, 42)
-quickness_scroll = make_scroll(C.quickness, 71)
+poison_potion = make_potion(B.poison, 61, true)
+regeneration_potion = make_potion(B.regeneration, 60)
+super_potion = make_potion(B.super, 42)
+quickness_scroll = make_scroll(B.quickness, 71)
 
-low_damage_bolt = kts.ItemType( table_merge( C.i_bolts.table, { missile_damage = C.rng_range(1,2) } ))
+low_damage_bolt = kts.ItemType( table_merge( B.i_bolts.table, { missile_damage = B.rng_range(1,2) } ))
 
 -- Modify the pentagram to teleport to a fixed location instead of randomly.
 -- Quickest way to do this is to modify "my_teleport" in classic module.
-function C.my_teleport()
-   C.snd_teleport()
+function B.my_teleport()
+   B.snd_teleport()
    kts.TeleportTo(cxt.actor, {x=33, y=31})
 end   
 
 -- Also modify zombify effect to print tutorial message 78
 -- (The pentagram is the only way you can get zombified in this tutorial.)
-old_zombify = C.my_zombify
-function C.my_zombify()
+old_zombify = B.my_zombify
+function B.my_zombify()
    old_zombify()
    tutorial_msg(78)
    death_flag = true
@@ -120,27 +118,27 @@ end
 ----------------------------------------------------------------------
 
 tiles = {}
-for i,v in pairs(C.tile_table) do
+for i,v in pairs(B.tile_table) do
    tiles[i] = v
 end
-tiles[96]  = { C.t_table_small, C.i_key1 }
-tiles[97]  = { C.t_floor1, C.i_hammer }
-tiles[98]  = { C.t_floor1, C.i_lockpicks }
-tiles[99]  = { C.t_floor1, C.i_poison_trap }
-tiles[100] = { C.t_floor1, C.i_blade_trap }
-tiles[101] = { C.t_floor1, C.i_staff }
-tiles[102] = { C.t_floor1, C.i_bear_trap }
-tiles[103] = { C.t_floor1, C.i_axe }
-tiles[104] = { C.t_floor1, {C.i_dagger,8} }
-tiles[105] = { C.t_floor1, C.i_crossbow }
-tiles[106] = { C.t_floor1, {C.i_bolts,8} }
-tiles[108] = { C.t_floor1, quickness_scroll }
-tiles[110] = { C.t_floor6, stuff_with_gem }
-tiles[111] = { C.t_floor1, C.m_zombie }
-tiles[113] = { C.t_floorpp, C.i_gem }
-tiles[114] = { C.t_table_south, C.i_gem }
+tiles[96]  = { B.t_table_small, B.i_key1 }
+tiles[97]  = { B.t_floor1, B.i_hammer }
+tiles[98]  = { B.t_floor1, B.i_lockpicks }
+tiles[99]  = { B.t_floor1, B.i_poison_trap }
+tiles[100] = { B.t_floor1, B.i_blade_trap }
+tiles[101] = { B.t_floor1, B.i_staff }
+tiles[102] = { B.t_floor1, B.i_bear_trap }
+tiles[103] = { B.t_floor1, B.i_axe }
+tiles[104] = { B.t_floor1, {B.i_dagger,8} }
+tiles[105] = { B.t_floor1, B.i_crossbow }
+tiles[106] = { B.t_floor1, {B.i_bolts,8} }
+tiles[108] = { B.t_floor1, quickness_scroll }
+tiles[110] = { B.t_floor6, stuff_with_gem }
+tiles[111] = { B.t_floor1, B.m_zombie }
+tiles[113] = { B.t_floorpp, B.i_gem }
+tiles[114] = { B.t_table_south, B.i_gem }
 tiles[115] = switch_new
-tiles[116] = { C.t_floor1, C.i_gem }
+tiles[116] = { B.t_floor1, B.i_gem }
 
 tutorial_segs = kts.LoadSegments(tiles, "tutorial_map.txt")
 
@@ -226,7 +224,7 @@ function start_tutorial()
          height = 1,
          data = { { type = "block" } }
       },
-      wall = C.t_wall_normal,
+      wall = B.t_wall_normal,
       segments = tutorial_segs,
       entry_type = "none",
       allow_rotate = false
@@ -243,11 +241,11 @@ function start_tutorial()
 
    -- Place items in chests
    kts.PlaceItem({x=31,y=33}, super_potion)
-   kts.PlaceItem({x=32,y=33}, C.i_gem)
-   kts.SetBladeTrap({x=33,y=33}, C.i_blade_trap, low_damage_bolt, "north")
+   kts.PlaceItem({x=32,y=33}, B.i_gem)
+   kts.SetBladeTrap({x=33,y=33}, B.i_blade_trap, low_damage_bolt, "north")
    kts.PlaceItem({x=4,y=36}, poison_potion)
    kts.PlaceItem({x=5,y=36}, regeneration_potion)
-   kts.PlaceItem({x=8,y=34}, C.i_gem)
+   kts.PlaceItem({x=8,y=34}, B.i_gem)
    kts.LockDoor({x=8,y=34}, "pick_only")
 
    -- Install custom respawn function
@@ -352,7 +350,7 @@ function _G.rf_sw_puzzle()
             kts.RemoveTile(secret_door_pos, v)
          end
       end
-      kts.AddTile(secret_door_pos, C.t_floor1)
+      kts.AddTile(secret_door_pos, B.t_floor1)
    end
 end
 
@@ -405,7 +403,7 @@ function spawn_bat()
       if math.abs(pos.x-kt_pos.x) > 1 or math.abs(pos.y-kt_pos.y) > 1 or
       kts.RandomChance(bat_level*0.2 - 0.2) then
          
-         local bat = kts.AddMonster(bat_pits[n], C.m_vampire_bat)
+         local bat = kts.AddMonster(bat_pits[n], B.m_vampire_bat)
          if bat ~= nil then
             bat_count = bat_count + 1
             table.insert(bat_list, bat)
@@ -601,20 +599,20 @@ function bat_start_msg()
          t = string.format(bat_mission_title_2, bat_level)
       end
       kts.PopUpWindow{title = t, 
-                      graphics = {C.g_wooden_floor, C.g_vbat_1},
+                      graphics = {B.g_wooden_floor, B.g_vbat_1},
                       body = string.format(bat_mission_text, bats_remaining)}
    end
 end
 
 function generic_bat_failed_msg()
    kts.PopUpWindow{title = bat_failed_title,
-                   graphics = {C.g_wooden_floor, C.g_vbat_1},
+                   graphics = {B.g_wooden_floor, B.g_vbat_1},
                    body = bat_failed_text}
 end
 
 function generic_bat_success_msg()
    kts.PopUpWindow{title = bat_success_title,
-                   graphics = {C.g_wooden_floor, C.g_vbat_1},
+                   graphics = {B.g_wooden_floor, B.g_vbat_1},
                    body = bat_success_text}
 end
 
@@ -630,8 +628,8 @@ skull_tile = kts.Tile {
                       "east",
                       low_damage_bolt,
                       false )
-      C.click_sound(cxt.pos)
-      C.crossbow_sound(cxt.pos)
+      B.click_sound(cxt.pos)
+      B.crossbow_sound(cxt.pos)
       tutorial_msg(50)
    end,
 
@@ -654,7 +652,7 @@ end
 ----------------------------------------------------------------------
 
 function check_gems()
-    if kts.GetNumHeld(cxt.actor, C.i_gem) >= 5 then
+    if kts.GetNumHeld(cxt.actor, B.i_gem) >= 5 then
         kts.WinGame(cxt.actor)
     else
         kts.FlashMessage({key="gem_required", params={5}, plural=5})
@@ -665,10 +663,10 @@ end
 -- Modify the home on_approach actions, because we don't use the
 -- standard Dsetup system.
 -- (Also add tutorial hints...)
-C.t_home_north.on_approach = check_gems
-C.t_home_south.on_approach = nil
+B.t_home_north.on_approach = check_gems
+B.t_home_south.on_approach = nil
 
-C.t_home_north.on_hit = function() tutorial_msg(11) end
+B.t_home_north.on_hit = function() tutorial_msg(11) end
 
 
 ----------------------------------------------------------------------
@@ -703,12 +701,12 @@ function add_msg(x, y, n)
    -- Otherwise use on_walk_over
    local f = "on_walk_over"
    for _,v in pairs(tiles) do
-      if v.table == C.t_chest_north.table
-         or v.table == C.t_chest_east.table
-         or v.table == C.t_chest_south.table
-         or v.table == C.t_chest_west.table
-         or v.table == C.t_switch_up.table
-         or v.table == C.t_switch_down.table then
+      if v.table == B.t_chest_north.table
+         or v.table == B.t_chest_east.table
+         or v.table == B.t_chest_south.table
+         or v.table == B.t_chest_west.table
+         or v.table == B.t_switch_up.table
+         or v.table == B.t_switch_down.table then
             f = "on_activate"
             break
       end
@@ -725,7 +723,7 @@ end
 
 gem_hint_seen = false
 function gem_hint()
-   if kts.GetNumHeld(cxt.actor, C.i_gem) == 0 and not gem_hint_seen then
+   if kts.GetNumHeld(cxt.actor, B.i_gem) == 0 and not gem_hint_seen then
       -- The purpose of gem_hint_seen is to prevent this message being displayed
       -- if they die, get returned to the top of the map, 
       -- then walk over this trigger point again with no gems.
@@ -743,7 +741,7 @@ end
 -- Similar thing for exiting skull room.
 gems_left_behind_seen = false
 function gems_left_behind()
-   if kts.GetNumHeld(cxt.actor, C.i_gem) == 0 and not gems_left_behind_seen then
+   if kts.GetNumHeld(cxt.actor, B.i_gem) == 0 and not gems_left_behind_seen then
       tutorial_msg(51)
    end
    gems_left_behind_seen = true
@@ -751,7 +749,7 @@ end
 
 function almost_home_msg()
    if kts.IsDoorOpen{x=3,y=11} then
-      if kts.GetNumHeld(cxt.actor, C.i_gem) >= 5 then
+      if kts.GetNumHeld(cxt.actor, B.i_gem) >= 5 then
          tutorial_msg(68)
       else
          tutorial_msg(69)
@@ -815,20 +813,20 @@ function add_msgs()
 end
 
 -- Messages when certain items are picked up
-C.i_hammer.on_pick_up = function() tutorial_msg(6) end
-C.i_key1.on_pick_up = function() tutorial_msg(39) end
-C.i_lockpicks.on_pick_up = function() tutorial_msg(54) end
-C.i_bear_trap.on_pick_up = function() tutorial_msg(72) end
-C.i_poison_trap.on_pick_up = function() tutorial_msg(73) end
-C.i_blade_trap.on_pick_up = function() tutorial_msg(74) end
+B.i_hammer.on_pick_up = function() tutorial_msg(6) end
+B.i_key1.on_pick_up = function() tutorial_msg(39) end
+B.i_lockpicks.on_pick_up = function() tutorial_msg(54) end
+B.i_bear_trap.on_pick_up = function() tutorial_msg(72) end
+B.i_poison_trap.on_pick_up = function() tutorial_msg(73) end
+B.i_blade_trap.on_pick_up = function() tutorial_msg(74) end
 
 -- Message when try to open locked iron door near start point
-old_unlock_fail = C.t_iron_door_horiz.on_unlock_fail
-C.t_iron_door_horiz.on_unlock_fail = function()
+old_unlock_fail = B.t_iron_door_horiz.on_unlock_fail
+B.t_iron_door_horiz.on_unlock_fail = function()
    old_unlock_fail()
    if cxt.actor_pos.y == 10 then
       tutorial_msg(3)
-   elseif kts.GetNumHeld(cxt.actor, C.i_lockpicks) >= 1 then
+   elseif kts.GetNumHeld(cxt.actor, B.i_lockpicks) >= 1 then
       tutorial_msg(75)
    else
       tutorial_msg(76)
@@ -836,35 +834,35 @@ C.t_iron_door_horiz.on_unlock_fail = function()
 end
 
 -- Message when try to open locked door to skull room
-old_unlock_fail_vert = C.t_iron_door_vert.on_unlock_fail
-C.t_iron_door_vert.on_unlock_fail = function()
+old_unlock_fail_vert = B.t_iron_door_vert.on_unlock_fail
+B.t_iron_door_vert.on_unlock_fail = function()
    old_unlock_fail_vert()
    tutorial_msg(48)
 end
 
 -- Message when try to open locked wooden door
-old_unlock_fail_2 = C.t_door_vert_locked.on_unlock_fail
-C.t_door_vert_locked.on_unlock_fail = function()
+old_unlock_fail_2 = B.t_door_vert_locked.on_unlock_fail
+B.t_door_vert_locked.on_unlock_fail = function()
    old_unlock_fail_2()
    tutorial_msg(9)
 end
 
 -- Message when try to open locked chest
-old_unlock_fail_chest = C.t_chest_south.on_unlock_fail
-C.t_chest_south.on_unlock_fail = function()
+old_unlock_fail_chest = B.t_chest_south.on_unlock_fail
+B.t_chest_south.on_unlock_fail = function()
    old_unlock_fail_chest()
    tutorial_msg(62)
 end
 
 -- Message when hit closed iron door
-old_on_hit_v = C.t_iron_door_vert.on_hit
-C.t_iron_door_vert.on_hit = function()
+old_on_hit_v = B.t_iron_door_vert.on_hit
+B.t_iron_door_vert.on_hit = function()
    old_on_hit_v()
    tutorial_msg(10)
 end
 
-old_on_hit_h = C.t_iron_door_horiz.on_hit
-C.t_iron_door_horiz.on_hit = function()
+old_on_hit_h = B.t_iron_door_horiz.on_hit
+B.t_iron_door_horiz.on_hit = function()
    old_on_hit_h()
    tutorial_msg(10)
 end
@@ -872,8 +870,8 @@ end
 
 -- Messages when gems picked up
 gem_pickup_flag = { false,false,false,false,false }
-C.i_gem.on_pick_up = function()
-   local n = kts.GetNumHeld(cxt.actor, C.i_gem)
+B.i_gem.on_pick_up = function()
+   local n = kts.GetNumHeld(cxt.actor, B.i_gem)
 
    -- Show each gem msg only once
    if gem_pickup_flag[n] then return end
@@ -883,7 +881,7 @@ C.i_gem.on_pick_up = function()
       tutorial_msg(18)
    else
       local m = { title = gem_title,
-                  graphics = {C.g_floor1, C.g_gem} }
+                  graphics = {B.g_floor1, B.g_gem} }
       if n < 4 then
          m.body = string.format(gem_msg, n, 5 - n)
       elseif n == 4 then

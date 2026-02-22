@@ -23,8 +23,8 @@
 
 #include "knights_vm.hpp"
 
-#include "rstream.hpp"
 #include "rstream_error.hpp"
+#include "vfs.hpp"
 
 #include "network/byte_buf.hpp"
 
@@ -41,7 +41,7 @@
 namespace {
     // Fds 0, 1, 2 reserved for stdin, stdout, stderr respectively.
     // Fd 3 is reserved for the tick device.
-    // Fds 4 and above are used for RStream files.
+    // Fds 4 and above are used for VFS files.
     constexpr uint32_t TICK_DEVICE_FD = 3;
     constexpr uint32_t BASE_FILE_DESCRIPTOR = 4;
 
@@ -66,9 +66,12 @@ namespace {
     constexpr int NEWLIB_ENOSYS = 88;    // Function not implemented
 }
 
-KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
+KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_,
+                     std::vector<std::string> module_names_,
+                     VFS modules_vfs)
     : RiscVM(MAIN_STACK_TOP - 16)   // Start with 16 zero bytes pushed onto the main stack.
     , hasher(0)
+    , vfs(modules_vfs)
 {
     // There is no tick data initially
     tick_data_ptr = tick_data_end = NULL;
@@ -77,8 +80,8 @@ KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
     // Initial timer
     timer_ms = 0;
 
-    // RStream files enabled initially
-    rstream_enabled = true;
+    // VFS files enabled initially
+    vfs_enabled = true;
 
     // The main stack area runs from MAIN_STACK_TOP - MAX_STACK_BYTES (inclusive)
     // to MAIN_STACK_TOP (exclusive).
@@ -111,8 +114,9 @@ KnightsVM::KnightsVM(std::vector<unsigned char> && random_data_)
     alt_t3 = alt_t4 = alt_t5 = alt_t6 = 0;
     alt_pc = 0;
 
-    // Random seed
+    // Random seed and module names
     random_data = std::move(random_data_);
+    module_names = std::move(module_names_);
 
     // Checksumming
     next_checksum_timer_ms = 1;
@@ -257,11 +261,11 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
                 setA0(TICK_DEVICE_FD);
                 break;
 
-            case PT_RSTREAM_FILE:
+            case PT_VFS_FILE:
 #ifdef LOG_ECALLS
-                printf(" - Opening RStream file: %s\n", filename.c_str());
+                printf(" - Opening VFS file: %s\n", filename.c_str());
 #endif
-                setA0(openRstreamFile(filename));
+                setA0(openVFSFile(filename));
                 break;
 
             default:
@@ -312,7 +316,7 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
             } else if (fd >= BASE_FILE_DESCRIPTOR
                        && file_index < files.size()
                        && files[file_index]) {
-                // RStream file
+                // VFS file
 
                 if (files[file_index]->eof()) {
                     // We already reached eof for this file
@@ -399,7 +403,7 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
             if (fd >= BASE_FILE_DESCRIPTOR
             && file_index < files.size()
             && files[file_index]) {
-                // RStream file is being closed
+                // VFS file is being closed
                 files[file_index].reset();
                 setA0(0);  // success
 
@@ -467,8 +471,8 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
 #ifdef LOG_ECALLS
         printf("END_TICK %d ms\n", getA0());
 #endif
-        // Disable rstream files after the first tick
-        rstream_enabled = false;
+        // Disable VFS files after the first tick
+        vfs_enabled = false;
         files.clear();  // Closes any files that are still open
         return ECALL_END_TICK;
 
@@ -494,6 +498,63 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         }
         return ECALL_CONTINUE;
 
+    case 5005:
+        // Get Module Name. Index = a0, buf addr = a1, buf size = a2.
+        {
+#ifdef LOG_ECALLS
+            printf("GET_MODULE_NAME\n");
+#endif
+            int32_t index = static_cast<int32_t>(getA0());
+            uint32_t buf_addr = getA1();
+            uint32_t buf_size = getA2();
+            if (index < 0 || static_cast<size_t>(index) >= module_names.size()) {
+                setA0(static_cast<uint32_t>(-1));
+            } else {
+                const std::string &name = module_names[index];
+                uint32_t len = name.size();
+                if (len + 1 > buf_size) {
+                    throw std::runtime_error("Module name buffer too small");
+                }
+                for (uint32_t i = 0; i < len; ++i) {
+                    writeByte(buf_addr + i, static_cast<uint8_t>(name[i]));
+                }
+                writeByte(buf_addr + len, 0);
+                setA0(len);
+            }
+        }
+        return ECALL_CONTINUE;
+
+    case 5006:
+        // VFS Disable All.
+#ifdef LOG_ECALLS
+        printf("VFS_DISABLE_ALL\n");
+#endif
+        if (vfs_enabled) {
+            vfs.disableAll();
+        }
+        return ECALL_CONTINUE;
+
+    case 5007:
+        // VFS Enable. vfs_path string address = a0.
+        {
+#ifdef LOG_ECALLS
+            printf("VFS_ENABLE\n");
+#endif
+            if (vfs_enabled) {
+                std::string vfs_path;
+                uint32_t addr = getA0();
+                while (true) {
+                    uint8_t ch = readByteU(addr);
+                    if (ch == 0) break;
+                    vfs_path += ch;
+                    if (vfs_path.size() > 10000) throw std::runtime_error("VFS path too long");
+                    ++addr;
+                }
+                vfs.enable(vfs_path);
+            }
+        }
+        return ECALL_CONTINUE;
+
     default:
         // Unknown syscall.
 #if defined(LOG_ECALLS) || defined(LOG_UNKNOWN_CALLS)
@@ -516,9 +577,9 @@ KnightsVM::PathType KnightsVM::interpretPath(std::string &resource_filename)
         ++addr;
     }
 
-    if (path.substr(0, 4) == "RES:") {
+    if (path.substr(0, 4) == "VFS:") {
         resource_filename = path.substr(4);
-        return PT_RSTREAM_FILE;
+        return PT_VFS_FILE;
 
     } else if (path.substr(0, 5) == "TICK:") {
         return PT_TICK_DEVICE;
@@ -528,31 +589,18 @@ KnightsVM::PathType KnightsVM::interpretPath(std::string &resource_filename)
     }
 }
 
-int KnightsVM::openRstreamFile(const std::string &resource_filename)
+int KnightsVM::openVFSFile(const std::string &resource_filename)
 {
     // Not allowed to read RStream files after first tick
-    if (!rstream_enabled) {
-        return -NEWLIB_ENOENT;
-    }
-
-    // Normalize the filename
-    std::string normalized_filename;
-    try {
-        normalized_filename = RStream::NormalizePath(resource_filename);
-    } catch (RStreamError&) {
-        return -NEWLIB_ENOENT;
-    }
-
-    // The VM should only be accessing server/ files
-    if (!normalized_filename.starts_with("server/")) {
+    if (!vfs_enabled) {
         return -NEWLIB_ENOENT;
     }
 
     // Try to open the file
     bool error = false;
-    std::unique_ptr<RStream> str;
+    std::unique_ptr<std::ifstream> str;
     try {
-        str.reset(new RStream(normalized_filename));
+        str.reset(new std::ifstream(vfs.open(resource_filename)));
     } catch (RStreamError&) {
         // Ignore RStream errors, pass them back to the VM instead
         error = true;
@@ -1057,7 +1105,7 @@ void KnightsVM::updateRollingChecksum()
         lane[0] = (uint64_t(alt_t3) << 32) | alt_t4;
         lane[1] = (uint64_t(alt_t5) << 32) | alt_t6;
         lane[2] = alt_pc;
-        lane[3] = (rstream_enabled ? 4 : 0) | (files.empty() ? 2 : 0) | (random_data.empty() ? 1 : 0);
+        lane[3] = (vfs_enabled ? 4 : 0) | (files.empty() ? 2 : 0) | (random_data.empty() ? 1 : 0);
         hasher.updateHash(lane);
     }
 

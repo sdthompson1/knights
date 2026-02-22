@@ -38,16 +38,19 @@
 VMLoadingScreen::Loader::Loader(Coercri::NetworkDriver &net_driver,
                                 Coercri::Timer &timer,
                                 const PlayerID &local_user_id,
-                                bool new_control_system)
+                                bool new_control_system,
+                                std::vector<std::string> module_names,
+                                VFS &&module_vfs)
     : net_driver(net_driver), timer(timer), local_user_id(local_user_id),
-      new_control_system(new_control_system)
+      new_control_system(new_control_system), module_names(std::move(module_names)),
+      module_vfs(std::move(module_vfs))
 {}
 
 void VMLoadingScreen::Loader::operator()()
 {
     // Creating a VMKnightsLobby is time-consuming, so we do it in a separate thread
     try {
-        vm_knights_lobby = std::make_unique<VMKnightsLobby>(net_driver, timer, local_user_id, new_control_system);
+        vm_knights_lobby = std::make_unique<VMKnightsLobby>(net_driver, timer, local_user_id, new_control_system, std::move(module_names), std::move(module_vfs));
 
     } catch (ExceptionBase &e) {
         error_msg = e.getMsg();
@@ -85,9 +88,14 @@ bool VMLoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, 
 
     // Now start loading the new game (in background thread)
     knights_app = &ka;
+
+    std::vector<std::string> module_names;
+    VFS vfs;
+    ka.getModules(false, module_names, vfs);
+
     PlayerID local_user_id = ka.getOnlinePlatform().getCurrentUserId();
     bool new_control_system = ka.getOptions().new_control_system;
-    loader = std::make_unique<Loader>(ka.getPlatformNetworkDriver(), ka.getTimer(), local_user_id, new_control_system);
+    loader = std::make_unique<Loader>(ka.getPlatformNetworkDriver(), ka.getTimer(), local_user_id, new_control_system, std::move(module_names), std::move(vfs));
     loader_thread = boost::thread(boost::ref(*loader));
     return false;  // no gui required
 }

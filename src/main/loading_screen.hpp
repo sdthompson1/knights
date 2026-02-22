@@ -28,6 +28,7 @@
 #include "my_exceptions.hpp"
 #include "player_id.hpp"
 #include "screen.hpp"
+#include "vfs.hpp"
 
 #include "boost/thread.hpp"
 #include <string>
@@ -43,19 +44,22 @@ public:
                   bool tutorial,
                   bool autostart);
     virtual ~LoadingScreen();
-    virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window>, gcn::Gui &);
-    virtual void update();
-    virtual void draw(uint64_t, Coercri::GfxContext &gc);
+    virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window>, gcn::Gui &) override;
+    virtual void update() override;
+    virtual void draw(uint64_t, Coercri::GfxContext &gc) override;
 
 private:
     struct Loader {
-        explicit Loader(const std::string & config_filename, bool menu_strict_);
+        Loader(const std::vector<std::string> & module_names,
+               const VFS &module_vfs,
+               bool menu_strict);
         void operator()();
 
         LocalMsg error_msg;
         std::unique_ptr<LuaError> lua_error;
 
-        std::string knights_config_filename;
+        std::vector<std::string> module_names;
+        VFS module_vfs;
         bool menu_strict;
         boost::shared_ptr<KnightsConfig> knights_config;
     };

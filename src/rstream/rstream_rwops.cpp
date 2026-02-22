@@ -23,11 +23,13 @@
 
 #include "rstream_rwops.hpp"
 
+#include <fstream>
+
 namespace {
 
 int Rseek(SDL_RWops *context, int offset, int whence)
 {
-	RStream *str = static_cast<RStream *>(context->hidden.unknown.data1);
+	std::ifstream *str = static_cast<std::ifstream *>(context->hidden.unknown.data1);
 	switch (whence) {
 	case SEEK_SET:
         str->seekg(offset, std::ios_base::beg);
@@ -41,15 +43,15 @@ int Rseek(SDL_RWops *context, int offset, int whence)
 	default:
 		return -1; // error
 	}
-	if (!str) return -1;
+	if (!*str) return -1;
 	else return str->tellg();
 }
 
 int Rread(SDL_RWops *context, void *ptr, int size, int maxnum)
 {
-	RStream *str = static_cast<RStream *>(context->hidden.unknown.data1);
+	std::ifstream *str = static_cast<std::ifstream *>(context->hidden.unknown.data1);
 	str->read(static_cast<char*>(ptr), size*maxnum);
-	if (!str) return -1;
+	if (!*str) return -1;
 	else return str->gcount() / size;
 }
 
@@ -60,7 +62,7 @@ int Rwrite(SDL_RWops *context, const void *ptr, int size, int maxnum)
 
 int Rclose(SDL_RWops *context)
 {
-	RStream *str = static_cast<RStream *>(context->hidden.unknown.data1);
+	std::ifstream *str = static_cast<std::ifstream *>(context->hidden.unknown.data1);
 	delete str;
 	delete context;
 	return 0;
@@ -69,12 +71,11 @@ int Rclose(SDL_RWops *context)
 }  // namespace
 
 
-SDL_RWops* RWFromRStream(const std::string &resource_name)
+SDL_RWops* RWFromVFS(const VFS &vfs, const std::string &vfs_path)
 {
-	// hmm, not quite exception safe. that's the price of a c-like interface
-	// (although could write a c++ wrapper i guess).
+	// NB: not quite exception safe, that's the price of a C-like interface.
 	SDL_RWops *rw = new SDL_RWops;
-	RStream *str = new RStream(resource_name);
+	std::ifstream *str = new std::ifstream(vfs.open(vfs_path));
 	rw->seek = &Rseek;
 	rw->read = &Rread;
 	rw->write = &Rwrite;

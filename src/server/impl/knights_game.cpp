@@ -37,7 +37,6 @@
 #include "read_write_loc.hpp"
 #include "read_write_player_id.hpp"
 #include "rng.hpp"
-#include "rstream.hpp"
 #include "server_callbacks.hpp"
 #include "sh_ptr_eq.hpp"
 #include "sound.hpp"

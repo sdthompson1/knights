@@ -42,7 +42,7 @@ void LoadingScreen::Loader::operator()()
         // (which complicates thread safety) so we do it in the main
         // thread.
         
-        knights_config.reset(new KnightsConfig(knights_config_filename, menu_strict));
+        knights_config.reset(new KnightsConfig(module_vfs, module_names, menu_strict));
 
     } catch (LuaError &err) {
         lua_error.reset(new LuaError(err));
@@ -55,17 +55,23 @@ void LoadingScreen::Loader::operator()()
     }
 }
 
-LoadingScreen::Loader::Loader(const std::string & config_filename, bool menu_strict_)
-: knights_config_filename(config_filename), menu_strict(menu_strict_)
+LoadingScreen::Loader::Loader(const std::vector<std::string> & module_names,
+                              const VFS & module_vfs,
+                              bool menu_strict_)
+    : module_names(module_names),
+      module_vfs(module_vfs),
+      menu_strict(menu_strict)
 { }
 
 bool LoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui &)
 {
     knights_app = &ka;
-    loader.reset(new Loader(
-        tutorial_mode ? "main_tutorial.lua" :
-                        ka.getKnightsConfigFilename(), 
-        menu_strict_mode));
+
+    std::vector<std::string> module_names;
+    VFS vfs;
+    ka.getModules(tutorial_mode, module_names, vfs);
+
+    loader.reset(new Loader(module_names, vfs, menu_strict_mode));
 
     boost::thread new_thread(boost::ref(*loader));
     loader_thread.swap(new_thread);

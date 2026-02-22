@@ -23,29 +23,25 @@
 
 #include "misc.hpp"
 
-#include "file_cache.hpp"
+#include "my_exceptions.hpp"
 #include "sound.hpp"
 #include "sound_manager.hpp"
+#include "vfs.hpp"
 
-bool SoundManager::loadSound(const Sound &sound)
+void SoundManager::loadSound(const VFS &vfs, const Sound &sound)
 {
     if (sound_map.find(&sound) == sound_map.end()) {
-        boost::shared_ptr<std::istream> str = file_cache.openFile(sound.getFileInfo());
-        if (str) {
-            if (sound_driver) {
-                sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
-            } else {
-                // No sound driver available (maybe this machine doesn't have audio)
-                // but at least we have verified that the sound file exists, which should
-                // be enough
-                sound_map.insert(std::make_pair(&sound, nullptr));
-            }
+        std::ifstream raw_str = vfs.open(sound.getFilename());
+        boost::shared_ptr<std::ifstream> str(new std::ifstream(std::move(raw_str)));
+        if (sound_driver) {
+            sound_map.insert(std::make_pair(&sound, sound_driver->loadSound(str)));
         } else {
-            return false;
+            // No sound driver available (maybe this machine doesn't have audio)
+            // but at least we have verified that the sound file exists, which should
+            // be enough
+            sound_map.insert(std::make_pair(&sound, nullptr));
         }
     }
-
-    return true;
 }
 
 void SoundManager::playSound(const Sound &sound, int frequency)
@@ -54,9 +50,7 @@ void SoundManager::playSound(const Sound &sound, int frequency)
     
     std::map<const Sound *, boost::shared_ptr<Coercri::Sound> >::iterator it = sound_map.find(&sound);
     if (it == sound_map.end()) {
-        loadSound(sound);
-        it = sound_map.find(&sound);
-        ASSERT(it != sound_map.end());
+        throw UnexpectedError("sound not loaded");
     }
     sound_driver->playSound(it->second, frequency);
 }

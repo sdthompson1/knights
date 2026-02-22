@@ -36,7 +36,6 @@ struct lua_State;
 //
 
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
-                  const char *filename,
-                  const std::string &cwd);
+                  const char *filename);
 
 #endif

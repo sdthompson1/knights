@@ -24,12 +24,12 @@
 #include "misc.hpp"
 
 #include "graphic.hpp"
-#include "rstream.hpp"
+#include "lua_vfs.hpp"
 
 #include "include_lua.hpp"
 
 Graphic::Graphic(const Graphic &rhs)
-    : file(rhs.file), hx(rhs.hx), hy(rhs.hy), r(rhs.r), g(rhs.g), b(rhs.b),
+    : filename(rhs.filename), hx(rhs.hx), hy(rhs.hy), r(rhs.r), g(rhs.g), b(rhs.b),
       size_hint_num(rhs.size_hint_num), size_hint_denom(rhs.size_hint_denom),
       id(rhs.id)
 {
@@ -39,8 +39,8 @@ Graphic::Graphic(const Graphic &rhs)
 }
 
 Graphic::Graphic(int id_, Coercri::InputByteBuf &buf)
-    : file(buf)
 {
+    filename = buf.readString();
     hx = buf.readVarIntClamp(-1000, 1000);
     hy = buf.readVarIntClamp(-1000, 1000);
     r = buf.readVarIntClamp(-1, 255);
@@ -58,7 +58,7 @@ Graphic::Graphic(int id_, Coercri::InputByteBuf &buf)
 
 void Graphic::serialize(Coercri::OutputByteBuf &buf) const
 {
-    file.serialize(buf);
+    buf.writeString(filename);
     buf.writeVarInt(hx);
     buf.writeVarInt(hy);
     buf.writeVarInt(r);
@@ -81,13 +81,13 @@ std::unique_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
 
     int x=0, y=0, r=-1, g=-1, b=-1;
     int size_hint_num = 1, size_hint_denom = 1;
-    
+
     if (nargs > 1) {
-        
+
         r = luaL_checkinteger(lua, 2);
         g = luaL_checkinteger(lua, 3);
         b = luaL_checkinteger(lua, 4);
-        
+
         if (nargs > 4) {
             x = luaL_checkinteger(lua, 5);
             y = luaL_checkinteger(lua, 6);
@@ -99,10 +99,9 @@ std::unique_ptr<Graphic> CreateGraphicFromLua(lua_State *lua)
         }
     }
 
-    lua_getglobal(lua, "_CWD");  // [_CWD]
-    const char *cwd = lua_tostring(lua, -1); // Note: could be NULL; using GetCWD would probably be better
-    std::unique_ptr<Graphic> gfx(new Graphic(FileInfo(filename, cwd), x, y, r, g, b, size_hint_num, size_hint_denom));
+    std::string resolved_filename = LuaResolveFile(lua, filename);
+    std::unique_ptr<Graphic> gfx(new Graphic(resolved_filename, x, y, r, g, b, size_hint_num, size_hint_denom));
     lua_pop(lua, 1);  // []
-    
+
     return gfx;
 }

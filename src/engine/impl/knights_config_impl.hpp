@@ -46,7 +46,6 @@ class CoordTransform;
 class DungeonGenerator;
 class DungeonMap;
 class EventManager;
-class FileInfo;
 class GoreManager;
 class Graphic;
 class HomeManager;
@@ -63,6 +62,7 @@ class StuffManager;
 class TaskManager;
 class Tile;
 class UserControl;
+class VFS;
 
 class KnightsConfigImpl {
 public:
@@ -71,7 +71,11 @@ public:
     // ctor, dtor
     //
 
-    KnightsConfigImpl(const std::string &config_filename, bool menu_strict);
+    // Note: The given VFS should have each module to be loaded as a
+    // separate mount point.
+    KnightsConfigImpl(const VFS &vfs,
+                      const std::vector<std::string> &module_names,
+                      bool menu_strict);
     ~KnightsConfigImpl();
 
 
@@ -123,7 +127,7 @@ public:
                                     std::vector<boost::shared_ptr<Tile> > &corpse_tiles);
     Overlay * addLuaOverlay(std::unique_ptr<Overlay> p);
     Segment * addLuaSegment(std::unique_ptr<Segment> p);
-    Sound * addLuaSound(const FileInfo &fi);  // creates the sound and adds it.
+    Sound * addLuaSound(const std::string &filename);  // creates the sound and adds it.
 
     void setOverlayOffsets(lua_State *lua); // reads args from lua indices 1,2,3...
     

@@ -49,7 +49,6 @@
 
 class ConfigMap;
 class Controller;
-class FileCache;
 class GameManager;
 class GfxManager;
 class Graphic;
@@ -65,6 +64,7 @@ class PotionRenderer;
 class Screen;
 class SkullRenderer;
 class SoundManager;
+class VFS;
 class VMKnightsLobby;
 
 namespace Coercri {
@@ -79,7 +79,7 @@ enum DisplayType {
 
 class KnightsApp {
 public:
-    KnightsApp(DisplayType dt, const std::filesystem::path &resource_dir, const std::string &config_filename,
+    KnightsApp(DisplayType dt, const std::filesystem::path &resource_dir,
                bool autostart, Localization &localization);
 
     // Start the main loop
@@ -111,7 +111,7 @@ public:
     const Controller & getNetGameController() const;
     GfxManager & getGfxManager() const;
     SoundManager & getSoundManager() const;
-    FileCache & getFileCache() const;
+    const VFS & getClientVFS() const;  // Get a VFS containing the knights_data/client files (at the root)
     const Graphic * getWinnerImage() const;
     const Graphic * getLoserImage() const;
     const Graphic * getMenuGfxCentre() const;
@@ -127,6 +127,15 @@ public:
 #ifdef ONLINE_PLATFORM
     Coercri::NetworkDriver & getPlatformNetworkDriver() const;
 #endif
+
+    // Modules
+    // For now this just returns a fixed list of modules, and a corresponding VFS
+    // (Later, we might replace this with something more complicated that uses Steam Workshop
+    // and/or allows users to choose which modules to activate when creating a game)
+    void getModules(bool tutorial,
+                    std::vector<std::string> &module_names_out,
+                    VFS &vfs_out);
+    std::filesystem::path getModulesPath() const;
 
     // get the width/height to be used for windowed mode.
     void getWindowedModeSize(int &width, int &height);
@@ -184,8 +193,6 @@ public:
     //
     // The lobby objects will be deleted when resetAll is called.
     //
-
-    const std::string & getKnightsConfigFilename() const;
 
     boost::shared_ptr<KnightsClient> startLocalGame(boost::shared_ptr<KnightsConfig> config,
                                                     const std::string &game_name);

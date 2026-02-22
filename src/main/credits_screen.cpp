@@ -26,8 +26,8 @@
 #include "credits_screen.hpp"
 #include "gui_text_wrap.hpp"
 #include "knights_app.hpp"
-#include "rstream.hpp"
 #include "title_screen.hpp"
+#include "vfs.hpp"
 
 // coercri
 #include "gcn/cg_font.hpp"
@@ -60,20 +60,21 @@ CreditsScreenImpl::CreditsScreenImpl(KnightsApp &app, gcn::Gui &gui,
 {
     const std::string lang1 = knights_app.getPreferredLanguage();
     const std::string lang2 = knights_app.getDefaultLanguage();
-    std::unique_ptr<RStream> str;
-    if (!lang1.empty() && RStream::Exists(prefix + lang1 + suffix)) {
-        str = std::make_unique<RStream>(prefix + lang1 + suffix);
+    const VFS &vfs = app.getClientVFS();
+    std::ifstream str;
+    if (!lang1.empty() && vfs.exists(prefix + lang1 + suffix)) {
+        str = vfs.open(prefix + lang1 + suffix);
     } else {
-        str = std::make_unique<RStream>(prefix + lang2 + suffix);
+        str = vfs.open(prefix + lang2 + suffix);
     }
 
     std::string credits;
-    while (*str) {
+    while (str) {
         char c = 0;
-        str->get(c);
+        str.get(c);
         if (c != '\r') credits += c;
     }
-    str.reset();
+    str.close();
 
     text_wrap.reset(new GuiTextWrap);
     text_wrap->setForegroundColor(gcn::Color(255,255,255));

@@ -68,11 +68,12 @@ namespace {
 class KnightsClientImpl {
 public:
     // ctor
-    explicit KnightsClientImpl(bool allow_untrusted_strings)
+    KnightsClientImpl(bool allow_untrusted_strings, std::filesystem::path modules_path)
         : ndisplays(0), player(0),
           knights_callbacks(0), client_callbacks(0),
           next_announcement_is_error(false),
-          allow_untrusted_strings(allow_untrusted_strings)
+          allow_untrusted_strings(allow_untrusted_strings),
+          modules_path(std::move(modules_path))
     {
         for (int i = 0; i < 2; ++i) last_cts_ctrl[i] = 0;
     }
@@ -88,6 +89,7 @@ public:
     bool next_announcement_is_error;
     bool allow_untrusted_strings;
     std::vector<UTF8String> pending_chat_messages;
+    std::filesystem::path modules_path;
 
     // helper functions
     void receiveConfiguration(Coercri::InputByteBuf &buf);
@@ -102,8 +104,8 @@ public:
     }
 };
 
-KnightsClient::KnightsClient(bool allow_untrusted_strings)
-    : pimpl(new KnightsClientImpl(allow_untrusted_strings))
+KnightsClient::KnightsClient(bool allow_untrusted_strings, std::filesystem::path modules_path)
+    : pimpl(new KnightsClientImpl(allow_untrusted_strings, std::move(modules_path)))
 {
     // Write the initial version string.
     Coercri::OutputByteBuf buf(pimpl->out);
@@ -1110,6 +1112,10 @@ std::vector<UTF8String> KnightsClient::getPendingChatMessages()
 void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 {
     client_config.reset(new ClientConfig);  // wipe out the old client config if there is one.
+
+    // For now, just set module_vfs to the hard-coded path "knights_data/modules".
+    // If we support Steam Workshop in the future, we can do something more complicated here instead.
+    client_config->module_vfs.add(modules_path, "");
 
     constexpr int MAX_COUNT = 100000;
 

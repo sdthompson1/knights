@@ -26,12 +26,12 @@
 #include "sound.hpp"
 
 Sound::Sound(int id_, Coercri::InputByteBuf &buf)
-    : file(buf)
 {
     id = id_;
+    filename = buf.readString();
 }
 
 void Sound::serialize(Coercri::OutputByteBuf &buf) const
 {
-    file.serialize(buf);
+    buf.writeString(filename);
 }

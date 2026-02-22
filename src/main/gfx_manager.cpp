@@ -23,24 +23,22 @@
 
 #include "misc.hpp"
 
-#include "file_cache.hpp"
 #include "gfx_manager.hpp"
 #include "graphic.hpp"
 #include "graphic_transform.hpp"
 #include "my_exceptions.hpp"
-#include "rstream.hpp"
 
 #include "gfx/load_bmp.hpp"  // coercri
 
 GfxManager::GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                        boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
-                       const std::string &font_filename,  // includes "client/" prefix
+                       const VFS &font_vfs,
+                       const std::string &font_filename,
                        bool font_force_autohint,
-                       unsigned char invis_alpha_,
-                       FileCache &fc)
+                       unsigned char invis_alpha_)
     : gfx_driver(gfx_driver_),
       ttf_loader(ttf_loader_),
-      file_cache(fc),
+      font_vfs(font_vfs),
       font_filename(font_filename),
       font_force_autohint(font_force_autohint),
       font_size(0),
@@ -62,23 +60,22 @@ boost::shared_ptr<Coercri::Font> GfxManager::getFont()
 void GfxManager::setFontSize(int new_size)
 {
     if (font_size == new_size) return;
-    boost::shared_ptr<RStream> str(new RStream(font_filename));
+    boost::shared_ptr<std::ifstream> str(new std::ifstream(font_vfs.open(font_filename)));
     font = ttf_loader->loadFont(str, new_size, font_force_autohint);
     font_size = new_size;
 }  
 
 
-
-void GfxManager::loadGraphic(const Graphic &gfx, bool permanent)
+void GfxManager::loadGraphic(const VFS &vfs, const Graphic &gfx, bool permanent)
 {
     // Note: We don't (yet) bother to optimize the case where the same filename,
     // but a different hx/hy/r/g/b is being loaded. The BMP file is loaded twice in that case.
     GfxMap::const_iterator it = gfx_map.find(&gfx);
     if (it == gfx_map.end()) {
         // Open the file. Only BMP format supported for now.
-        boost::shared_ptr<std::istream> str = file_cache.openFile(gfx.getFileInfo());
+        std::ifstream str = vfs.open(gfx.getFilename());
 
-        Coercri::PixelArray pixels = Coercri::LoadBMP(*str);
+        Coercri::PixelArray pixels = Coercri::LoadBMP(str);
 
         // Apply colour key if necessary
         if (gfx.getR() != -1) {

@@ -39,6 +39,7 @@
 #define GFX_MANAGER_HPP
 
 #include "colour_change.hpp"
+#include "vfs.hpp"
 
 // coercri
 #include "gfx/font.hpp"
@@ -53,7 +54,6 @@
 #include <map>
 
 class ColourChange;
-class FileCache;
 class GfxResizer;
 class Graphic;
 
@@ -61,10 +61,10 @@ class GfxManager {
 public:
     GfxManager(boost::shared_ptr<Coercri::GfxDriver> gfx_driver_,
                boost::shared_ptr<Coercri::TTFLoader> ttf_loader_,
+               const VFS &font_vfs,
                const std::string &font_filename,
                bool font_force_autohint,
-               unsigned char invis_alpha_,
-               FileCache &fc);
+               unsigned char invis_alpha_);
     ~GfxManager();
     
     // Fonts and text
@@ -74,7 +74,7 @@ public:
 
     // Graphics
 
-    void loadGraphic(const Graphic &gfx, bool permanent = false);
+    void loadGraphic(const VFS &vfs, const Graphic &gfx, bool permanent = false);
     void deleteAllGraphics();  // doesn't delete the "permanent" ones.
     
     void getGraphicSize(const Graphic &gfx, int &width, int &height) const;
@@ -140,10 +140,10 @@ private:
     
 private:
     // Data
+    VFS font_vfs;
     boost::shared_ptr<Coercri::GfxDriver> gfx_driver;
     boost::shared_ptr<GfxResizer> gfx_resizer;
-    FileCache &file_cache;
-    
+
     // Font data
     boost::shared_ptr<Coercri::TTFLoader> ttf_loader;
     std::string font_filename;

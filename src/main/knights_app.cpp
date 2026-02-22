@@ -28,7 +28,6 @@
 #include "credits_screen.hpp"
 #include "dummy_online_platform.hpp"
 #include "error_screen.hpp"
-#include "file_cache.hpp"
 #include "frame_timer.hpp"
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
@@ -42,7 +41,9 @@
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
+#include "lua_vfs.hpp"
 #include "lua_sandbox.hpp"
+#include "read_module_names.hpp"
 #include "loading_screen.hpp"
 #include "localization.hpp"
 #include "my_ctype.hpp"
@@ -51,10 +52,10 @@
 #include "options.hpp"
 #include "potion_renderer.hpp"
 #include "rng.hpp"
-#include "rstream.hpp"
 #include "skull_renderer.hpp"
 #include "sound_manager.hpp"
 #include "title_screen.hpp"
+#include "vfs.hpp"
 #include "vm_knights_lobby.hpp"
 #include "vm_loading_screen.hpp"
 
@@ -201,7 +202,6 @@ public:
 
     boost::shared_ptr<GfxManager> gfx_manager;
     boost::shared_ptr<SoundManager> sound_manager;
-    FileCache file_cache;
     boost::shared_ptr<Controller> left_controller, right_controller, net_game_controller;
 
     boost::shared_ptr<Coercri::Font> font;
@@ -229,8 +229,6 @@ public:
 
     LobbyController lobby_controller;
 
-    std::string server_config_filename;
-
     // mDNS advertiser for LAN game discovery
     std::unique_ptr<MdnsAdvertiser> mdns_advertiser;
 
@@ -243,6 +241,10 @@ public:
     // localization strings
     Localization &localization;
     std::string preferred_language, default_language;
+
+    // saved paths
+    VFS client_vfs;
+    std::filesystem::path modules_path;
 
     // functions
     explicit KnightsAppImpl(Localization &loc)
@@ -263,7 +265,7 @@ public:
 // Constructor (One-Time Initialization)
 /////////////////////////////////////////////////////
 
-KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &resource_dir, const std::string &config_filename,
+KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &resource_dir,
                        bool autostart, Localization &localization)
     : pimpl(new KnightsAppImpl(localization))
 {
@@ -281,9 +283,14 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 #endif
 #endif
 
-    // Initialize resource lib
-    std::cout << "Loading data files from \"" << resource_dir.string() << "\".\n";
-    RStream::Initialize(resource_dir);
+    // Find knights_data directory, and create a VFS for accessing knights_data/client/
+    std::cout << "Loading data files from \"" << resource_dir.string() << "\"." << std::endl;
+    VFS client_vfs;
+    client_vfs.add(resource_dir / "client", "");
+    pimpl->client_vfs = client_vfs;
+
+    // Save the modules directory for use in getModules
+    pimpl->modules_path = resource_dir / "modules";
 
     // Read the client config
     {
@@ -293,9 +300,10 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         // which returns 0, we end up with an invalid index.)
         boost::shared_ptr<lua_State> lua_sh_ptr = MakeLuaSandbox();
         lua_State * const lua = lua_sh_ptr.get();
+        SetLuaVFS(lua, client_vfs);
 
         SetupLuaConfigFunctions(lua, &pimpl->config_gfx);
-        LuaExecRStream(lua, "client/client_config.lua", 0, 0,
+        LuaExecRStream(lua, "client_config.lua", 0, 0,
             false,    // look in root dir only
             false);   // no dofile namespace proposal
 
@@ -329,17 +337,17 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         // Language from knights_data/client/client_config.lua is the backup choice
         pimpl->default_language = pimpl->config_map.getString("language");
 
-        const std::string prefix = "client/localization_";
+        const std::string prefix = "localization_";
         const std::string suffix = ".txt";
-        std::unique_ptr<RStream> file;
+        std::ifstream file;
         if (!pimpl->preferred_language.empty()
-        && RStream::Exists(prefix + pimpl->preferred_language + suffix)) {
-            file = std::make_unique<RStream>(prefix + pimpl->preferred_language + suffix);
+        && client_vfs.exists(prefix + pimpl->preferred_language + suffix)) {
+            file = client_vfs.open(prefix + pimpl->preferred_language + suffix);
         } else {
-            file = std::make_unique<RStream>(prefix + pimpl->default_language + suffix);
+            file = client_vfs.open(prefix + pimpl->default_language + suffix);
         }
 
-        pimpl->localization.readStrings(*file,
+        pimpl->localization.readStrings(file,
                                         [this](const UTF8String &str) {
 #ifdef ONLINE_PLATFORM
                                             return pimpl->online_platform->filterGameContent(str);
@@ -351,7 +359,6 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     const UTF8String game_name = pimpl->localization.get(LocalKey("knights"));
 
-    pimpl->server_config_filename = config_filename;
     pimpl->autostart = autostart;
 
     // initialize game options
@@ -415,7 +422,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     // Set the window icon
     {
-        RStream str("client/knights_icon_48.bmp");
+        std::ifstream str = client_vfs.open("gfx/knights_icon_48.bmp");
         Coercri::PixelArray parr = Coercri::LoadBMP(str);
         // do color keying
         for (int j = 0; j < parr.getHeight(); ++j) {
@@ -434,7 +441,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     // Font for the gui
     {
-        boost::shared_ptr<RStream> str(new RStream("client/" + pimpl->config_map.getString("font_name")));
+        boost::shared_ptr<std::ifstream> str(new std::ifstream(client_vfs.open(pimpl->config_map.getString("font_name"))));
         pimpl->font = pimpl->ttf_loader->loadFont(str,
                                                   pimpl->config_map.getInt("font_size"),
                                                   pimpl->config_map.getInt("font_force_autohint"));
@@ -444,17 +451,17 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     pimpl->gfx_manager.reset(
         new GfxManager(pimpl->gfx_driver,
                        pimpl->ttf_loader,
-                       "client/" + pimpl->config_map.getString("font_name"),
+                       client_vfs,
+                       pimpl->config_map.getString("font_name"),
                        pimpl->config_map.getInt("font_force_autohint"),
-                       static_cast<unsigned char>(pimpl->config_map.getInt("invisalpha")),
-                       pimpl->file_cache));
+                       static_cast<unsigned char>(pimpl->config_map.getInt("invisalpha"))));
     setupGfxResizer();
-    pimpl->sound_manager.reset(new SoundManager(pimpl->sound_driver, pimpl->file_cache));
+    pimpl->sound_manager.reset(new SoundManager(pimpl->sound_driver));
 
     // Load all the graphics at this point
     // These are added as "permanent" so that we don't have to keep reloading them after a reset.
     for (std::vector<boost::shared_ptr<Graphic> >::iterator it = pimpl->config_gfx.begin(); it != pimpl->config_gfx.end(); ++it) {
-        pimpl->gfx_manager->loadGraphic(**it, true);
+        pimpl->gfx_manager->loadGraphic(client_vfs, **it, true);
     }
     
     // Setup Controllers
@@ -652,11 +659,6 @@ SoundManager & KnightsApp::getSoundManager() const
     return *pimpl->sound_manager;
 }
 
-FileCache & KnightsApp::getFileCache() const
-{
-    return pimpl->file_cache;
-}
-
 const Graphic * KnightsApp::getLoserImage() const
 {
     return pimpl->loser_image;
@@ -715,6 +717,36 @@ Coercri::GfxDriver & KnightsApp::getGfxDriver() const
 Coercri::NetworkDriver & KnightsApp::getLanNetworkDriver() const
 {
     return *pimpl->lan_net_driver;
+}
+
+const VFS & KnightsApp::getClientVFS() const
+{
+    return pimpl->client_vfs;
+}
+
+void KnightsApp::getModules(bool tutorial,
+                            std::vector<std::string> &module_names_out,
+                            VFS &vfs_out)
+{
+    if (tutorial) {
+        module_names_out = {"base", "tutorial"};
+    } else {
+        // for now, just build a temporary VFS at knights_data/modules/
+        // so that we can load modules.txt
+        VFS modules_root_vfs;
+        modules_root_vfs.add(pimpl->modules_path, "");
+        module_names_out = ReadModuleNames(modules_root_vfs, "modules.txt");
+    }
+
+    vfs_out = VFS();
+    for (const std::string &name : module_names_out) {
+        vfs_out.add(pimpl->modules_path / name, name);
+    }
+}
+
+std::filesystem::path KnightsApp::getModulesPath() const
+{
+    return pimpl->modules_path;
 }
 
 #ifdef ONLINE_PLATFORM
@@ -880,7 +912,7 @@ void KnightsApp::runKnights()
     } else {
         // Go to title screen.
         if (pimpl->options->first_time) {
-            initial_screen.reset(new CreditsScreen("client/first_time_message_", ".txt", 60));
+            initial_screen.reset(new CreditsScreen("first_time_message_", ".txt", 60));
             pimpl->saveOptions();  // make sure they don't get the first time screen again
         } else {
             initial_screen.reset(new TitleScreen);
@@ -1111,28 +1143,27 @@ void KnightsApp::runKnights()
 // Network Game Handling
 //////////////////////////////////////////////
 
-const std::string & KnightsApp::getKnightsConfigFilename() const
-{
-    return pimpl->server_config_filename;
-}
-
 boost::shared_ptr<KnightsClient> KnightsApp::startLocalGame(boost::shared_ptr<KnightsConfig> config,
                                                             const std::string &game_name)
 {
-    return pimpl->lobby_controller.startLocalGame(pimpl->timer, config, game_name);
+    return pimpl->lobby_controller.startLocalGame(pimpl->timer, config, game_name, pimpl->modules_path);
 }
 
 boost::shared_ptr<KnightsClient> KnightsApp::hostLanGame(int port,
                                                          boost::shared_ptr<KnightsConfig> config,
                                                          const std::string &game_name)
 {
-    return pimpl->lobby_controller.hostLanGame(*pimpl->lan_net_driver, pimpl->timer, port, config, game_name);
+    return pimpl->lobby_controller.hostLanGame(*pimpl->lan_net_driver, pimpl->timer, port,
+                                               config, game_name,
+                                               pimpl->modules_path);
 }
 
 boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string &address,
                                                               int port)
 {
-    return pimpl->lobby_controller.joinRemoteServer(*pimpl->lan_net_driver, pimpl->timer, address, port);
+    return pimpl->lobby_controller.joinRemoteServer(*pimpl->lan_net_driver, pimpl->timer,
+                                                    address, port,
+                                                    pimpl->modules_path);
 }
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
@@ -1145,7 +1176,8 @@ boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lob
                                                 lobby_id,
                                                 vis,
                                                 std::move(kts_lobby),
-                                                my_checksum);
+                                                my_checksum,
+                                                pimpl->modules_path);
 }
 
 HostMigrationState KnightsApp::getHostMigrationState() const

@@ -128,7 +128,7 @@ INSTALL = install
 ########################################################################
 
 
-OFILES_MAIN = src/client/client_config.o src/client/knights_client.o src/coercri/core/utf8string.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_network_driver.o src/coercri/gcn/cg_font.o src/coercri/gcn/cg_graphics.o src/coercri/gcn/cg_image.o src/coercri/gcn/cg_input.o src/coercri/gcn/cg_listener.o src/coercri/gfx/freetype_ttf_loader.o src/coercri/gfx/gfx_context.o src/coercri/gfx/lazy_bitmap_font.o src/coercri/gfx/load_bmp.o src/coercri/gfx/region.o src/coercri/gfx/window.o src/coercri/network/byte_buf.o src/coercri/sdl/core/istream_rwops.o src/coercri/sdl/core/sdl_error.o src/coercri/sdl/core/sdl_pref_path.o src/coercri/sdl/core/sdl_subsystem_handle.o src/coercri/sdl/gfx/sdl_gfx_context.o src/coercri/sdl/gfx/sdl_gfx_driver.o src/coercri/sdl/gfx/sdl_graphic.o src/coercri/sdl/gfx/sdl_surface_from_pixels.o src/coercri/sdl/gfx/sdl_window.o src/coercri/sdl/sound/sdl_sound_driver.o src/coercri/timer/generic_timer.o src/engine/impl/action_data.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_traps.o src/engine/impl/control.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_monster_type.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/legacy_action.o src/engine/impl/load_segments.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_func.o src/engine/impl/lua_game_setup.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_wrapper.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/monster_type.o src/engine/impl/overlay_lua_ctor.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/quest_hint_manager.o src/engine/impl/random_int.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/user_control_lua_ctor.o src/engine/impl/view_manager.o src/external/guichan/src/actionevent.o src/external/guichan/src/basiccontainer.o src/external/guichan/src/cliprectangle.o src/external/guichan/src/color.o src/external/guichan/src/defaultfont.o src/external/guichan/src/event.o src/external/guichan/src/exception.o src/external/guichan/src/focushandler.o src/external/guichan/src/font.o src/external/guichan/src/genericinput.o src/external/guichan/src/graphics.o src/external/guichan/src/gui.o src/external/guichan/src/guichan.o src/external/guichan/src/image.o src/external/guichan/src/imagefont.o src/external/guichan/src/inputevent.o src/external/guichan/src/key.o src/external/guichan/src/keyevent.o src/external/guichan/src/keyinput.o src/external/guichan/src/mouseevent.o src/external/guichan/src/mouseinput.o src/external/guichan/src/rectangle.o src/external/guichan/src/selectionevent.o src/external/guichan/src/widget.o src/external/guichan/src/widgets/button.o src/external/guichan/src/widgets/checkbox.o src/external/guichan/src/widgets/container.o src/external/guichan/src/widgets/dropdown.o src/external/guichan/src/widgets/icon.o src/external/guichan/src/widgets/imagebutton.o src/external/guichan/src/widgets/label.o src/external/guichan/src/widgets/listbox.o src/external/guichan/src/widgets/radiobutton.o src/external/guichan/src/widgets/scrollarea.o src/external/guichan/src/widgets/slider.o src/external/guichan/src/widgets/tab.o src/external/guichan/src/widgets/tabbedarea.o src/external/guichan/src/widgets/textbox.o src/external/guichan/src/widgets/textfield.o src/external/guichan/src/widgets/window.o src/lobby/follower_state.o src/lobby/leader_state.o src/lobby/memory_block_compressor.o src/lobby/memory_block_decompressor.o src/lobby/simple_knights_lobby.o src/lobby/sync_client.o src/lobby/sync_host.o src/lobby/vm_knights_lobby.o src/main/action_bar.o src/main/adjust_list_box_size.o src/main/connecting_screen.o src/main/credits_screen.o src/main/draw.o src/main/entity_map.o src/main/error_screen.o src/main/file_cache.o src/main/frame_timer.o src/main/game_manager.o src/main/gfx_manager.o src/main/gfx_resizer_compose.o src/main/gfx_resizer_nearest_nbr.o src/main/gfx_resizer_scale2x.o src/main/graphic_transform.o src/main/gui_button.o src/main/gui_centre.o src/main/gui_draw_box.o src/main/gui_numeric_field.o src/main/gui_panel.o src/main/gui_simple_container.o src/main/gui_text_wrap.o src/main/host_migration_screen.o src/main/house_colour_font.o src/main/in_game_screen.o src/main/keyboard_controller.o src/main/knights_app.o src/main/lan_game_screen.o src/main/loading_screen.o src/main/lobby_controller.o src/main/local_display.o src/main/local_dungeon_view.o src/main/local_mini_map.o src/main/local_status_display.o src/main/main.o src/main/make_scroll_area.o src/main/mdns_discovery.o src/main/menu_screen.o src/main/my_dropdown.o src/main/online_multiplayer_screen.o src/main/options.o src/main/options_screen.o src/main/potion_renderer.o src/main/skull_renderer.o src/main/sound_manager.o src/main/start_game_screen.o src/main/tab_font.o src/main/text_formatter.o src/main/title_block.o src/main/title_screen.o src/main/utf8_text_field.o src/main/vm_loading_screen.o src/main/x_centre.o src/misc/config_map.o src/misc/find_knights_data_dir.o src/misc/localization.o src/misc/rng.o src/misc/round.o src/misc/xxhash.o src/rstream/rstream.o src/rstream/rstream_error.o src/rstream/rstream_find.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/my_menu_listeners.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/file_info.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_ref.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/overlay.o src/shared/impl/read_write_loc.o src/shared/impl/read_write_player_id.o src/shared/impl/sound.o src/shared/impl/trim.o src/shared/impl/user_control.o 
+OFILES_MAIN = src/client/client_config.o src/client/knights_client.o src/coercri/core/utf8string.o src/coercri/enet/enet_network_connection.o src/coercri/enet/enet_network_driver.o src/coercri/gcn/cg_font.o src/coercri/gcn/cg_graphics.o src/coercri/gcn/cg_image.o src/coercri/gcn/cg_input.o src/coercri/gcn/cg_listener.o src/coercri/gfx/freetype_ttf_loader.o src/coercri/gfx/gfx_context.o src/coercri/gfx/lazy_bitmap_font.o src/coercri/gfx/load_bmp.o src/coercri/gfx/region.o src/coercri/gfx/window.o src/coercri/network/byte_buf.o src/coercri/sdl/core/istream_rwops.o src/coercri/sdl/core/sdl_error.o src/coercri/sdl/core/sdl_pref_path.o src/coercri/sdl/core/sdl_subsystem_handle.o src/coercri/sdl/gfx/sdl_gfx_context.o src/coercri/sdl/gfx/sdl_gfx_driver.o src/coercri/sdl/gfx/sdl_graphic.o src/coercri/sdl/gfx/sdl_surface_from_pixels.o src/coercri/sdl/gfx/sdl_window.o src/coercri/sdl/sound/sdl_sound_driver.o src/coercri/timer/generic_timer.o src/engine/impl/action_data.o src/engine/impl/anim_lua_ctor.o src/engine/impl/concrete_traps.o src/engine/impl/control.o src/engine/impl/control_actions.o src/engine/impl/coord_transform.o src/engine/impl/create_monster_type.o src/engine/impl/create_tile.o src/engine/impl/creature.o src/engine/impl/dispel_magic.o src/engine/impl/dungeon_generator.o src/engine/impl/dungeon_layout.o src/engine/impl/dungeon_map.o src/engine/impl/entity.o src/engine/impl/event_manager.o src/engine/impl/gore_manager.o src/engine/impl/healing_task.o src/engine/impl/home_manager.o src/engine/impl/item.o src/engine/impl/item_check_task.o src/engine/impl/item_generator.o src/engine/impl/item_respawn_task.o src/engine/impl/item_type.o src/engine/impl/knight.o src/engine/impl/knight_task.o src/engine/impl/knights_config.o src/engine/impl/knights_config_impl.o src/engine/impl/knights_engine.o src/engine/impl/legacy_action.o src/engine/impl/load_segments.o src/engine/impl/lockable.o src/engine/impl/lua_check.o src/engine/impl/lua_exec_coroutine.o src/engine/impl/lua_func.o src/engine/impl/lua_game_setup.o src/engine/impl/lua_ingame.o src/engine/impl/lua_setup.o src/engine/impl/lua_userdata.o src/engine/impl/magic_actions.o src/engine/impl/magic_map.o src/engine/impl/mediator.o src/engine/impl/menu_wrapper.o src/engine/impl/missile.o src/engine/impl/monster.o src/engine/impl/monster_definitions.o src/engine/impl/monster_manager.o src/engine/impl/monster_support.o src/engine/impl/monster_task.o src/engine/impl/monster_type.o src/engine/impl/overlay_lua_ctor.o src/engine/impl/player.o src/engine/impl/player_task.o src/engine/impl/quest_hint_manager.o src/engine/impl/random_int.o src/engine/impl/room_map.o src/engine/impl/script_actions.o src/engine/impl/segment.o src/engine/impl/segment_set.o src/engine/impl/special_tiles.o src/engine/impl/stuff_bag.o src/engine/impl/sweep.o src/engine/impl/task_manager.o src/engine/impl/teleport.o src/engine/impl/tile.o src/engine/impl/time_limit_task.o src/engine/impl/user_control_lua_ctor.o src/engine/impl/view_manager.o src/external/guichan/src/actionevent.o src/external/guichan/src/basiccontainer.o src/external/guichan/src/cliprectangle.o src/external/guichan/src/color.o src/external/guichan/src/defaultfont.o src/external/guichan/src/event.o src/external/guichan/src/exception.o src/external/guichan/src/focushandler.o src/external/guichan/src/font.o src/external/guichan/src/genericinput.o src/external/guichan/src/graphics.o src/external/guichan/src/gui.o src/external/guichan/src/guichan.o src/external/guichan/src/image.o src/external/guichan/src/imagefont.o src/external/guichan/src/inputevent.o src/external/guichan/src/key.o src/external/guichan/src/keyevent.o src/external/guichan/src/keyinput.o src/external/guichan/src/mouseevent.o src/external/guichan/src/mouseinput.o src/external/guichan/src/rectangle.o src/external/guichan/src/selectionevent.o src/external/guichan/src/widget.o src/external/guichan/src/widgets/button.o src/external/guichan/src/widgets/checkbox.o src/external/guichan/src/widgets/container.o src/external/guichan/src/widgets/dropdown.o src/external/guichan/src/widgets/icon.o src/external/guichan/src/widgets/imagebutton.o src/external/guichan/src/widgets/label.o src/external/guichan/src/widgets/listbox.o src/external/guichan/src/widgets/radiobutton.o src/external/guichan/src/widgets/scrollarea.o src/external/guichan/src/widgets/slider.o src/external/guichan/src/widgets/tab.o src/external/guichan/src/widgets/tabbedarea.o src/external/guichan/src/widgets/textbox.o src/external/guichan/src/widgets/textfield.o src/external/guichan/src/widgets/window.o src/lobby/follower_state.o src/lobby/leader_state.o src/lobby/memory_block_compressor.o src/lobby/memory_block_decompressor.o src/lobby/simple_knights_lobby.o src/lobby/sync_client.o src/lobby/sync_host.o src/lobby/vm_knights_lobby.o src/main/action_bar.o src/main/adjust_list_box_size.o src/main/connecting_screen.o src/main/credits_screen.o src/main/draw.o src/main/entity_map.o src/main/error_screen.o src/main/frame_timer.o src/main/game_manager.o src/main/gfx_manager.o src/main/gfx_resizer_compose.o src/main/gfx_resizer_nearest_nbr.o src/main/gfx_resizer_scale2x.o src/main/graphic_transform.o src/main/gui_button.o src/main/gui_centre.o src/main/gui_draw_box.o src/main/gui_numeric_field.o src/main/gui_panel.o src/main/gui_simple_container.o src/main/gui_text_wrap.o src/main/host_migration_screen.o src/main/house_colour_font.o src/main/in_game_screen.o src/main/keyboard_controller.o src/main/knights_app.o src/main/lan_game_screen.o src/main/loading_screen.o src/main/lobby_controller.o src/main/local_display.o src/main/local_dungeon_view.o src/main/local_mini_map.o src/main/local_status_display.o src/main/main.o src/main/make_scroll_area.o src/main/mdns_discovery.o src/main/menu_screen.o src/main/my_dropdown.o src/main/online_multiplayer_screen.o src/main/options.o src/main/options_screen.o src/main/potion_renderer.o src/main/skull_renderer.o src/main/sound_manager.o src/main/start_game_screen.o src/main/tab_font.o src/main/text_formatter.o src/main/title_block.o src/main/title_screen.o src/main/utf8_text_field.o src/main/vm_loading_screen.o src/main/x_centre.o src/misc/config_map.o src/misc/find_knights_data_dir.o src/misc/localization.o src/misc/rng.o src/misc/round.o src/misc/xxhash.o src/rstream/rstream_error.o src/rstream/vfs.o src/server/impl/knights_game.o src/server/impl/knights_server.o src/server/impl/my_menu_listeners.o src/server/impl/server_callbacks.o src/server/impl/server_dungeon_view.o src/server/impl/server_mini_map.o src/server/impl/server_status_display.o src/shared/impl/anim.o src/shared/impl/colour_change.o src/shared/impl/graphic.o src/shared/impl/lua_exec.o src/shared/impl/lua_func_wrapper.o src/shared/impl/lua_load_from_rstream.o src/shared/impl/lua_module.o src/shared/impl/lua_ref.o src/shared/impl/lua_sandbox.o src/shared/impl/lua_traceback.o src/shared/impl/lua_vfs.o src/shared/impl/map_support.o src/shared/impl/menu.o src/shared/impl/menu_item.o src/shared/impl/overlay.o src/shared/impl/read_module_names.o src/shared/impl/read_write_loc.o src/shared/impl/read_write_player_id.o src/shared/impl/sound.o src/shared/impl/trim.o src/shared/impl/user_control.o 
 
 
 
@@ -136,13 +136,13 @@ build: $(KNIGHTS_BINARY_NAME)
 
 
 src/client/client_config.o: src/client/client_config.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/shared  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/client/knights_client.o: src/client/knights_client.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/shared  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -946,49 +946,49 @@ src/external/guichan/src/widgets/window.o: src/external/guichan/src/widgets/wind
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/follower_state.o: src/lobby/follower_state.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/leader_state.o: src/lobby/leader_state.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/memory_block_compressor.o: src/lobby/memory_block_compressor.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/memory_block_decompressor.o: src/lobby/memory_block_decompressor.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/simple_knights_lobby.o: src/lobby/simple_knights_lobby.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/sync_client.o: src/lobby/sync_client.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/sync_host.o: src/lobby/sync_host.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/lobby/vm_knights_lobby.o: src/lobby/vm_knights_lobby.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/client -Isrc/coercri -Isrc/misc -Isrc/protocol -Isrc/rstream -Isrc/server -Isrc/shared -Isrc/virtual_server  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
@@ -1030,12 +1030,6 @@ src/main/entity_map.o: src/main/entity_map.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/main/error_screen.o: src/main/error_screen.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/lobby -Isrc/misc -Isrc/online_platform -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
-src/main/file_cache.o: src/main/file_cache.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` `pkg-config sdl2 --cflags` -Isrc/client -Isrc/coercri -Isrc/engine -Isrc/external -Isrc/external/guichan/include -Isrc/lobby -Isrc/misc -Isrc/online_platform -Isrc/rstream -Isrc/shared -I.  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -1347,19 +1341,13 @@ src/misc/xxhash.o: src/misc/xxhash.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/rstream/rstream.o: src/rstream/rstream.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/misc  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
 src/rstream/rstream_error.o: src/rstream/rstream_error.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/misc  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/rstream/rstream_find.o: src/rstream/rstream_find.cpp
+src/rstream/vfs.o: src/rstream/vfs.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/misc  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -1419,12 +1407,6 @@ src/shared/impl/colour_change.o: src/shared/impl/colour_change.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
-src/shared/impl/file_info.o: src/shared/impl/file_info.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
-	@cp $*.d $*.P; \
-	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-	  rm -f $*.d
 src/shared/impl/graphic.o: src/shared/impl/graphic.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
@@ -1473,6 +1455,12 @@ src/shared/impl/lua_traceback.o: src/shared/impl/lua_traceback.cpp
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
+src/shared/impl/lua_vfs.o: src/shared/impl/lua_vfs.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
 src/shared/impl/map_support.o: src/shared/impl/map_support.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
@@ -1492,6 +1480,12 @@ src/shared/impl/menu_item.o: src/shared/impl/menu_item.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 	  rm -f $*.d
 src/shared/impl/overlay.o: src/shared/impl/overlay.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+	  rm -f $*.d
+src/shared/impl/read_module_names.o: src/shared/impl/read_module_names.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LUA_CFLAGS) `pkg-config libenet --cflags` -Isrc/coercri -Isrc/kconfig -Isrc/misc -Isrc/protocol -Isrc/shared -Isrc/rstream  -MD -c -o $@ $<
 	@cp $*.d $*.P; \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -1548,332 +1542,304 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 -D knights_data/client/localization_english.txt $(DATA_DIR)/client/localization_english.txt
 	$(INSTALL) -m 644 -D knights_data/client/first_time_message_english.txt $(DATA_DIR)/client/first_time_message_english.txt
 	$(INSTALL) -m 644 -D knights_data/client/client_config.lua $(DATA_DIR)/client/client_config.lua
-	$(INSTALL) -m 644 -D knights_data/client/knights_icon_48.bmp $(DATA_DIR)/client/knights_icon_48.bmp
 	$(INSTALL) -m 644 -D knights_data/client/credits_english.txt $(DATA_DIR)/client/credits_english.txt
 	$(INSTALL) -m 644 -D knights_data/client/Inter_18pt-Regular.ttf $(DATA_DIR)/client/Inter_18pt-Regular.ttf
-	$(INSTALL) -m 644 -D knights_data/client/std_files/squelch.wav $(DATA_DIR)/client/std_files/squelch.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/table_horiz.bmp $(DATA_DIR)/client/std_files/table_horiz.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_1s.bmp $(DATA_DIR)/client/std_files/ogre_strike_1s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/broken_wood_4.bmp $(DATA_DIR)/client/std_files/broken_wood_4.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_vbat_1.bmp $(DATA_DIR)/client/std_files/dead_vbat_1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/stuff_bag.bmp $(DATA_DIR)/client/std_files/stuff_bag.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_1w.bmp $(DATA_DIR)/client/std_files/ogre_strike_1w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/hammer_south.bmp $(DATA_DIR)/client/std_files/hammer_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/home_east.bmp $(DATA_DIR)/client/std_files/home_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/vdoor_background.bmp $(DATA_DIR)/client/std_files/vdoor_background.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/vbat3.bmp $(DATA_DIR)/client/std_files/vbat3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/health2.bmp $(DATA_DIR)/client/std_files/health2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/hammer_west.bmp $(DATA_DIR)/client/std_files/hammer_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/home_south.bmp $(DATA_DIR)/client/std_files/home_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp3e.bmp $(DATA_DIR)/client/std_files/ktp3e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp6n.bmp $(DATA_DIR)/client/std_files/ktp6n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_beartrap.bmp $(DATA_DIR)/client/std_files/menu_beartrap.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_hic.bmp $(DATA_DIR)/client/std_files/door_hic.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/screech.wav $(DATA_DIR)/client/std_files/screech.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp8w.bmp $(DATA_DIR)/client/std_files/ktp8w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp1s.bmp $(DATA_DIR)/client/std_files/ktp1s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/barrel.bmp $(DATA_DIR)/client/std_files/barrel.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wooden_pit.bmp $(DATA_DIR)/client/std_files/wooden_pit.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/stairs_top.bmp $(DATA_DIR)/client/std_files/stairs_top.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/parry.wav $(DATA_DIR)/client/std_files/parry.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_vgc.bmp $(DATA_DIR)/client/std_files/door_vgc.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom4e.bmp $(DATA_DIR)/client/std_files/zom4e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/hammer_north.bmp $(DATA_DIR)/client/std_files/hammer_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor8.bmp $(DATA_DIR)/client/std_files/floor8.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp5s.bmp $(DATA_DIR)/client/std_files/ktp5s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor5.bmp $(DATA_DIR)/client/std_files/floor5.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_walk_1n.bmp $(DATA_DIR)/client/std_files/ogre_walk_1n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_1e.bmp $(DATA_DIR)/client/std_files/ogre_strike_1e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/home_north.bmp $(DATA_DIR)/client/std_files/home_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/beartrap_south.bmp $(DATA_DIR)/client/std_files/beartrap_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp7e.bmp $(DATA_DIR)/client/std_files/ktp7e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom2n.bmp $(DATA_DIR)/client/std_files/zom2n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_pickup.bmp $(DATA_DIR)/client/std_files/menu_pickup.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/key.bmp $(DATA_DIR)/client/std_files/key.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chest_south.bmp $(DATA_DIR)/client/std_files/chest_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dagger_north.bmp $(DATA_DIR)/client/std_files/dagger_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wand_east.bmp $(DATA_DIR)/client/std_files/wand_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_vbat_2.bmp $(DATA_DIR)/client/std_files/dead_vbat_2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/axe_north.bmp $(DATA_DIR)/client/std_files/axe_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_1n.bmp $(DATA_DIR)/client/std_files/ogre_strike_1n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_walk_1e.bmp $(DATA_DIR)/client/std_files/ogre_walk_1e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/broken_wood_1.bmp $(DATA_DIR)/client/std_files/broken_wood_1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/stairs_west.bmp $(DATA_DIR)/client/std_files/stairs_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/vbat2.bmp $(DATA_DIR)/client/std_files/vbat2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp3w.bmp $(DATA_DIR)/client/std_files/ktp3w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wand_north.bmp $(DATA_DIR)/client/std_files/wand_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp2e.bmp $(DATA_DIR)/client/std_files/ktp2e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/health0.bmp $(DATA_DIR)/client/std_files/health0.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wand_west.bmp $(DATA_DIR)/client/std_files/wand_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/inv_lockpicks.bmp $(DATA_DIR)/client/std_files/inv_lockpicks.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull1.bmp $(DATA_DIR)/client/std_files/skull1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp5w.bmp $(DATA_DIR)/client/std_files/ktp5w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp4s.bmp $(DATA_DIR)/client/std_files/ktp4s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/inv_overdraw.bmp $(DATA_DIR)/client/std_files/inv_overdraw.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/staff_south.bmp $(DATA_DIR)/client/std_files/staff_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp1w.bmp $(DATA_DIR)/client/std_files/ktp1w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_3n.bmp $(DATA_DIR)/client/std_files/ogre_strike_3n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/hammer_east.bmp $(DATA_DIR)/client/std_files/hammer_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_suicide.bmp $(DATA_DIR)/client/std_files/menu_suicide.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pillar.bmp $(DATA_DIR)/client/std_files/pillar.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/sword_west.bmp $(DATA_DIR)/client/std_files/sword_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_open_close.bmp $(DATA_DIR)/client/std_files/menu_open_close.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/open_chest_south.bmp $(DATA_DIR)/client/std_files/open_chest_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/staff_north.bmp $(DATA_DIR)/client/std_files/staff_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull2.bmp $(DATA_DIR)/client/std_files/skull2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/beartrap_north.bmp $(DATA_DIR)/client/std_files/beartrap_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_drop_gem.bmp $(DATA_DIR)/client/std_files/menu_drop_gem.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/broken_wood_3.bmp $(DATA_DIR)/client/std_files/broken_wood_3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wand_south.bmp $(DATA_DIR)/client/std_files/wand_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chair_west.bmp $(DATA_DIR)/client/std_files/chair_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_crossbow.bmp $(DATA_DIR)/client/std_files/menu_crossbow.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dagger_south.bmp $(DATA_DIR)/client/std_files/dagger_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull_down.bmp $(DATA_DIR)/client/std_files/skull_down.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_hio.bmp $(DATA_DIR)/client/std_files/door_hio.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/switch_up.bmp $(DATA_DIR)/client/std_files/switch_up.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_stand_2s.bmp $(DATA_DIR)/client/std_files/ogre_stand_2s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp6e.bmp $(DATA_DIR)/client/std_files/ktp6e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom2e.bmp $(DATA_DIR)/client/std_files/zom2e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/daggers.bmp $(DATA_DIR)/client/std_files/daggers.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/staff.bmp $(DATA_DIR)/client/std_files/staff.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pentagram.bmp $(DATA_DIR)/client/std_files/pentagram.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull3.bmp $(DATA_DIR)/client/std_files/skull3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_knight_2.bmp $(DATA_DIR)/client/std_files/dead_knight_2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/crossbow.bmp $(DATA_DIR)/client/std_files/crossbow.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp1n.bmp $(DATA_DIR)/client/std_files/ktp1n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/inv_bolt.bmp $(DATA_DIR)/client/std_files/inv_bolt.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull_up.bmp $(DATA_DIR)/client/std_files/skull_up.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/home_west.bmp $(DATA_DIR)/client/std_files/home_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/winner.bmp $(DATA_DIR)/client/std_files/winner.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_vbat_3.bmp $(DATA_DIR)/client/std_files/dead_vbat_3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/loser.bmp $(DATA_DIR)/client/std_files/loser.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/stairs_east.bmp $(DATA_DIR)/client/std_files/stairs_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_hwo.bmp $(DATA_DIR)/client/std_files/door_hwo.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom3n.bmp $(DATA_DIR)/client/std_files/zom3n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom2s.bmp $(DATA_DIR)/client/std_files/zom2s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dagger_east.bmp $(DATA_DIR)/client/std_files/dagger_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/closed_bear_trap.bmp $(DATA_DIR)/client/std_files/closed_bear_trap.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/sword_north.bmp $(DATA_DIR)/client/std_files/sword_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/book_north.bmp $(DATA_DIR)/client/std_files/book_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pit_o.bmp $(DATA_DIR)/client/std_files/pit_o.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/bolts.bmp $(DATA_DIR)/client/std_files/bolts.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/bolt_vert.bmp $(DATA_DIR)/client/std_files/bolt_vert.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/staff_west.bmp $(DATA_DIR)/client/std_files/staff_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull_left.bmp $(DATA_DIR)/client/std_files/skull_left.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp5n.bmp $(DATA_DIR)/client/std_files/ktp5n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pith_c.bmp $(DATA_DIR)/client/std_files/pith_c.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_hgc.bmp $(DATA_DIR)/client/std_files/door_hgc.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/potion.bmp $(DATA_DIR)/client/std_files/potion.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pith_o.bmp $(DATA_DIR)/client/std_files/pith_o.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/axe_east.bmp $(DATA_DIR)/client/std_files/axe_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom1n.bmp $(DATA_DIR)/client/std_files/zom1n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_walk_1s.bmp $(DATA_DIR)/client/std_files/ogre_walk_1s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor1.bmp $(DATA_DIR)/client/std_files/floor1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wall.bmp $(DATA_DIR)/client/std_files/wall.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/blood_icon.bmp $(DATA_DIR)/client/std_files/blood_icon.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/inv_key1.bmp $(DATA_DIR)/client/std_files/inv_key1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_stand_2e.bmp $(DATA_DIR)/client/std_files/ogre_stand_2e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom3e.bmp $(DATA_DIR)/client/std_files/zom3e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/axe.bmp $(DATA_DIR)/client/std_files/axe.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_axe.bmp $(DATA_DIR)/client/std_files/menu_axe.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wand.bmp $(DATA_DIR)/client/std_files/wand.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_vio.bmp $(DATA_DIR)/client/std_files/door_vio.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/blade_trap.bmp $(DATA_DIR)/client/std_files/blade_trap.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp4e.bmp $(DATA_DIR)/client/std_files/ktp4e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/inv_key3.bmp $(DATA_DIR)/client/std_files/inv_key3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/table_east.bmp $(DATA_DIR)/client/std_files/table_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_knight_1.bmp $(DATA_DIR)/client/std_files/dead_knight_1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor6.bmp $(DATA_DIR)/client/std_files/floor6.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp1e.bmp $(DATA_DIR)/client/std_files/ktp1e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/crystal_ball.bmp $(DATA_DIR)/client/std_files/crystal_ball.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/table_small.bmp $(DATA_DIR)/client/std_files/table_small.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/wooden_floor.bmp $(DATA_DIR)/client/std_files/wooden_floor.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/beartrap_west.bmp $(DATA_DIR)/client/std_files/beartrap_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/health4.bmp $(DATA_DIR)/client/std_files/health4.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom2w.bmp $(DATA_DIR)/client/std_files/zom2w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/switch_down.bmp $(DATA_DIR)/client/std_files/switch_down.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_blade_trap.bmp $(DATA_DIR)/client/std_files/menu_blade_trap.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ugh.wav $(DATA_DIR)/client/std_files/ugh.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/open_chest_west.bmp $(DATA_DIR)/client/std_files/open_chest_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_zombie.bmp $(DATA_DIR)/client/std_files/dead_zombie.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/blood_1.bmp $(DATA_DIR)/client/std_files/blood_1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/large_table_vert.bmp $(DATA_DIR)/client/std_files/large_table_vert.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pit_c.bmp $(DATA_DIR)/client/std_files/pit_c.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor2.bmp $(DATA_DIR)/client/std_files/floor2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_vwo.bmp $(DATA_DIR)/client/std_files/door_vwo.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/inv_key2.bmp $(DATA_DIR)/client/std_files/inv_key2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp7w.bmp $(DATA_DIR)/client/std_files/ktp7w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/sword_south.bmp $(DATA_DIR)/client/std_files/sword_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/table_south.bmp $(DATA_DIR)/client/std_files/table_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_fist.bmp $(DATA_DIR)/client/std_files/menu_fist.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/inv_dagger.bmp $(DATA_DIR)/client/std_files/inv_dagger.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/book_west.bmp $(DATA_DIR)/client/std_files/book_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_centre.bmp $(DATA_DIR)/client/std_files/menu_centre.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/book_east.bmp $(DATA_DIR)/client/std_files/book_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp2s.bmp $(DATA_DIR)/client/std_files/ktp2s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/hdoor_background.bmp $(DATA_DIR)/client/std_files/hdoor_background.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/gem.bmp $(DATA_DIR)/client/std_files/gem.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_3s.bmp $(DATA_DIR)/client/std_files/ogre_strike_3s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/speech_bubble.bmp $(DATA_DIR)/client/std_files/speech_bubble.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp6s.bmp $(DATA_DIR)/client/std_files/ktp6s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor9.bmp $(DATA_DIR)/client/std_files/floor9.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/table_north.bmp $(DATA_DIR)/client/std_files/table_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/vbat1.bmp $(DATA_DIR)/client/std_files/vbat1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_hgo.bmp $(DATA_DIR)/client/std_files/door_hgo.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/table_vert.bmp $(DATA_DIR)/client/std_files/table_vert.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_vgo.bmp $(DATA_DIR)/client/std_files/door_vgo.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/bolt_horiz.bmp $(DATA_DIR)/client/std_files/bolt_horiz.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp8e.bmp $(DATA_DIR)/client/std_files/ktp8e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp2n.bmp $(DATA_DIR)/client/std_files/ktp2n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/open_chest_east.bmp $(DATA_DIR)/client/std_files/open_chest_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/health3.bmp $(DATA_DIR)/client/std_files/health3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp6w.bmp $(DATA_DIR)/client/std_files/ktp6w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_walk_1w.bmp $(DATA_DIR)/client/std_files/ogre_walk_1w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_stand_2n.bmp $(DATA_DIR)/client/std_files/ogre_stand_2n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/stairs_north.bmp $(DATA_DIR)/client/std_files/stairs_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/stairs_south.bmp $(DATA_DIR)/client/std_files/stairs_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/small_skull.bmp $(DATA_DIR)/client/std_files/small_skull.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_knight_3.bmp $(DATA_DIR)/client/std_files/dead_knight_3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_3e.bmp $(DATA_DIR)/client/std_files/ogre_strike_3e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor4.bmp $(DATA_DIR)/client/std_files/floor4.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zombie2.wav $(DATA_DIR)/client/std_files/zombie2.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pressure_plate.bmp $(DATA_DIR)/client/std_files/pressure_plate.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp4n.bmp $(DATA_DIR)/client/std_files/ktp4n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor7.bmp $(DATA_DIR)/client/std_files/floor7.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/cage.bmp $(DATA_DIR)/client/std_files/cage.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pitv_o.bmp $(DATA_DIR)/client/std_files/pitv_o.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/pitv_c.bmp $(DATA_DIR)/client/std_files/pitv_c.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/poison_trap.bmp $(DATA_DIR)/client/std_files/poison_trap.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/book_south.bmp $(DATA_DIR)/client/std_files/book_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/axe_west.bmp $(DATA_DIR)/client/std_files/axe_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/table_west.bmp $(DATA_DIR)/client/std_files/table_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chair_north.bmp $(DATA_DIR)/client/std_files/chair_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dagger.bmp $(DATA_DIR)/client/std_files/dagger.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_hwc.bmp $(DATA_DIR)/client/std_files/door_hwc.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp8s.bmp $(DATA_DIR)/client/std_files/ktp8s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_strike_3w.bmp $(DATA_DIR)/client/std_files/ogre_strike_3w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp2w.bmp $(DATA_DIR)/client/std_files/ktp2w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_vwc.bmp $(DATA_DIR)/client/std_files/door_vwc.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/health1.bmp $(DATA_DIR)/client/std_files/health1.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/staff_east.bmp $(DATA_DIR)/client/std_files/staff_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull4.bmp $(DATA_DIR)/client/std_files/skull4.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_highlight.bmp $(DATA_DIR)/client/std_files/menu_highlight.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/skull_right.bmp $(DATA_DIR)/client/std_files/skull_right.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp3s.bmp $(DATA_DIR)/client/std_files/ktp3s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp8n.bmp $(DATA_DIR)/client/std_files/ktp8n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/vbatbite.bmp $(DATA_DIR)/client/std_files/vbatbite.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp5e.bmp $(DATA_DIR)/client/std_files/ktp5e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chair_south.bmp $(DATA_DIR)/client/std_files/chair_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom4s.bmp $(DATA_DIR)/client/std_files/zom4s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chest_north.bmp $(DATA_DIR)/client/std_files/chest_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_empty.bmp $(DATA_DIR)/client/std_files/menu_empty.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chest_east.bmp $(DATA_DIR)/client/std_files/chest_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/drink.wav $(DATA_DIR)/client/std_files/drink.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp4w.bmp $(DATA_DIR)/client/std_files/ktp4w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dagger_west.bmp $(DATA_DIR)/client/std_files/dagger_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/blood_3.bmp $(DATA_DIR)/client/std_files/blood_3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom1e.bmp $(DATA_DIR)/client/std_files/zom1e.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/scroll.bmp $(DATA_DIR)/client/std_files/scroll.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door_vic.bmp $(DATA_DIR)/client/std_files/door_vic.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/open_chest_north.bmp $(DATA_DIR)/client/std_files/open_chest_north.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/blood_2.bmp $(DATA_DIR)/client/std_files/blood_2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp7s.bmp $(DATA_DIR)/client/std_files/ktp7s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_dagger.bmp $(DATA_DIR)/client/std_files/menu_dagger.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zombie3.wav $(DATA_DIR)/client/std_files/zombie3.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom3s.bmp $(DATA_DIR)/client/std_files/zom3s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom1s.bmp $(DATA_DIR)/client/std_files/zom1s.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/haystack.bmp $(DATA_DIR)/client/std_files/haystack.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/book.bmp $(DATA_DIR)/client/std_files/book.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/hammer.bmp $(DATA_DIR)/client/std_files/hammer.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_poison_trap.bmp $(DATA_DIR)/client/std_files/menu_poison_trap.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp3n.bmp $(DATA_DIR)/client/std_files/ktp3n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/broken_wood_2.bmp $(DATA_DIR)/client/std_files/broken_wood_2.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor3.bmp $(DATA_DIR)/client/std_files/floor3.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/click.wav $(DATA_DIR)/client/std_files/click.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_drop.bmp $(DATA_DIR)/client/std_files/menu_drop.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom4w.bmp $(DATA_DIR)/client/std_files/zom4w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/axe_south.bmp $(DATA_DIR)/client/std_files/axe_south.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/dead_knight_4.bmp $(DATA_DIR)/client/std_files/dead_knight_4.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/large_table_horiz.bmp $(DATA_DIR)/client/std_files/large_table_horiz.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/beartrap_east.bmp $(DATA_DIR)/client/std_files/beartrap_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom3w.bmp $(DATA_DIR)/client/std_files/zom3w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/broken_wood_5.bmp $(DATA_DIR)/client/std_files/broken_wood_5.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ogre_stand_2w.bmp $(DATA_DIR)/client/std_files/ogre_stand_2w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_diagonal_arrow.bmp $(DATA_DIR)/client/std_files/menu_diagonal_arrow.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/open_bear_trap.bmp $(DATA_DIR)/client/std_files/open_bear_trap.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/sword_east.bmp $(DATA_DIR)/client/std_files/sword_east.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/floor10.bmp $(DATA_DIR)/client/std_files/floor10.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom1w.bmp $(DATA_DIR)/client/std_files/zom1w.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/ktp7n.bmp $(DATA_DIR)/client/std_files/ktp7n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/zom4n.bmp $(DATA_DIR)/client/std_files/zom4n.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/menu_lockpicks.bmp $(DATA_DIR)/client/std_files/menu_lockpicks.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chest_west.bmp $(DATA_DIR)/client/std_files/chest_west.bmp
-	$(INSTALL) -m 644 -D knights_data/client/std_files/door.wav $(DATA_DIR)/client/std_files/door.wav
-	$(INSTALL) -m 644 -D knights_data/client/std_files/chair_east.bmp $(DATA_DIR)/client/std_files/chair_east.bmp
-	$(INSTALL) -m 644 -D knights_data/server/main.lua $(DATA_DIR)/server/main.lua
-	$(INSTALL) -m 644 -D knights_data/server/main_tutorial.lua $(DATA_DIR)/server/main_tutorial.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/sounds.lua $(DATA_DIR)/server/classic/sounds.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/general_stuff.lua $(DATA_DIR)/server/classic/general_stuff.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/init.lua $(DATA_DIR)/server/classic/init.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/menus.lua $(DATA_DIR)/server/classic/menus.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/controls.lua $(DATA_DIR)/server/classic/controls.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/monsters.lua $(DATA_DIR)/server/classic/monsters.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/preset_quests.lua $(DATA_DIR)/server/classic/preset_quests.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/tile_funcs.lua $(DATA_DIR)/server/classic/tile_funcs.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/dungeon_layouts.lua $(DATA_DIR)/server/classic/dungeon_layouts.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/graphics.lua $(DATA_DIR)/server/classic/graphics.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/gnome_rooms.txt $(DATA_DIR)/server/classic/gnome_rooms.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/quest_funcs.lua $(DATA_DIR)/server/classic/quest_funcs.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/table_merge.lua $(DATA_DIR)/server/classic/table_merge.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/tiles.lua $(DATA_DIR)/server/classic/tiles.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/magic.lua $(DATA_DIR)/server/classic/magic.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/items.lua $(DATA_DIR)/server/classic/items.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/item_generation.lua $(DATA_DIR)/server/classic/item_generation.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/misc_config.lua $(DATA_DIR)/server/classic/misc_config.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/dungeon_setup.lua $(DATA_DIR)/server/classic/dungeon_setup.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/quest_description.lua $(DATA_DIR)/server/classic/quest_description.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/guarded_exits.txt $(DATA_DIR)/server/classic/guarded_exits.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/special_pentagrams.txt $(DATA_DIR)/server/classic/special_pentagrams.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/liche_tombs.txt $(DATA_DIR)/server/classic/liche_tombs.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/segments.lua $(DATA_DIR)/server/classic/segments.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/anims.lua $(DATA_DIR)/server/classic/anims.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/standard_rooms.txt $(DATA_DIR)/server/classic/standard_rooms.txt
-	$(INSTALL) -m 644 -D knights_data/server/tutorial/init.lua $(DATA_DIR)/server/tutorial/init.lua
-	$(INSTALL) -m 644 -D knights_data/server/tutorial/tutorial_map.txt $(DATA_DIR)/server/tutorial/tutorial_map.txt
-	$(INSTALL) -m 644 -D knights_data/server/tutorial/messages.lua $(DATA_DIR)/server/tutorial/messages.lua
-	$(INSTALL) -m 644 -D knights_data/server/menu/init.lua $(DATA_DIR)/server/menu/init.lua
-	$(INSTALL) -m 644 -D knights_data/server/main.lua $(DATA_DIR)/server/main.lua
-	$(INSTALL) -m 644 -D knights_data/server/main_tutorial.lua $(DATA_DIR)/server/main_tutorial.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/sounds.lua $(DATA_DIR)/server/classic/sounds.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/general_stuff.lua $(DATA_DIR)/server/classic/general_stuff.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/init.lua $(DATA_DIR)/server/classic/init.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/menus.lua $(DATA_DIR)/server/classic/menus.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/controls.lua $(DATA_DIR)/server/classic/controls.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/monsters.lua $(DATA_DIR)/server/classic/monsters.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/preset_quests.lua $(DATA_DIR)/server/classic/preset_quests.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/tile_funcs.lua $(DATA_DIR)/server/classic/tile_funcs.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/dungeon_layouts.lua $(DATA_DIR)/server/classic/dungeon_layouts.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/graphics.lua $(DATA_DIR)/server/classic/graphics.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/gnome_rooms.txt $(DATA_DIR)/server/classic/gnome_rooms.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/quest_funcs.lua $(DATA_DIR)/server/classic/quest_funcs.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/table_merge.lua $(DATA_DIR)/server/classic/table_merge.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/tiles.lua $(DATA_DIR)/server/classic/tiles.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/magic.lua $(DATA_DIR)/server/classic/magic.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/items.lua $(DATA_DIR)/server/classic/items.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/item_generation.lua $(DATA_DIR)/server/classic/item_generation.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/misc_config.lua $(DATA_DIR)/server/classic/misc_config.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/dungeon_setup.lua $(DATA_DIR)/server/classic/dungeon_setup.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/quest_description.lua $(DATA_DIR)/server/classic/quest_description.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/guarded_exits.txt $(DATA_DIR)/server/classic/guarded_exits.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/special_pentagrams.txt $(DATA_DIR)/server/classic/special_pentagrams.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/liche_tombs.txt $(DATA_DIR)/server/classic/liche_tombs.txt
-	$(INSTALL) -m 644 -D knights_data/server/classic/segments.lua $(DATA_DIR)/server/classic/segments.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/anims.lua $(DATA_DIR)/server/classic/anims.lua
-	$(INSTALL) -m 644 -D knights_data/server/classic/standard_rooms.txt $(DATA_DIR)/server/classic/standard_rooms.txt
-	$(INSTALL) -m 644 -D knights_data/server/tutorial/init.lua $(DATA_DIR)/server/tutorial/init.lua
-	$(INSTALL) -m 644 -D knights_data/server/tutorial/tutorial_map.txt $(DATA_DIR)/server/tutorial/tutorial_map.txt
-	$(INSTALL) -m 644 -D knights_data/server/tutorial/messages.lua $(DATA_DIR)/server/tutorial/messages.lua
-	$(INSTALL) -m 644 -D knights_data/server/menu/init.lua $(DATA_DIR)/server/menu/init.lua
+	$(INSTALL) -m 644 -D knights_data/client/gfx/health2.bmp $(DATA_DIR)/client/gfx/health2.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/health0.bmp $(DATA_DIR)/client/gfx/health0.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/skull1.bmp $(DATA_DIR)/client/gfx/skull1.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/skull2.bmp $(DATA_DIR)/client/gfx/skull2.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/skull3.bmp $(DATA_DIR)/client/gfx/skull3.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/winner.bmp $(DATA_DIR)/client/gfx/winner.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/loser.bmp $(DATA_DIR)/client/gfx/loser.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/health4.bmp $(DATA_DIR)/client/gfx/health4.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/menu_centre.bmp $(DATA_DIR)/client/gfx/menu_centre.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/speech_bubble.bmp $(DATA_DIR)/client/gfx/speech_bubble.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/health3.bmp $(DATA_DIR)/client/gfx/health3.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/health1.bmp $(DATA_DIR)/client/gfx/health1.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/skull4.bmp $(DATA_DIR)/client/gfx/skull4.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/menu_highlight.bmp $(DATA_DIR)/client/gfx/menu_highlight.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/knights_icon_48.bmp $(DATA_DIR)/client/gfx/knights_icon_48.bmp
+	$(INSTALL) -m 644 -D knights_data/client/gfx/menu_empty.bmp $(DATA_DIR)/client/gfx/menu_empty.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/modules.txt $(DATA_DIR)/modules/modules.txt
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/init.lua $(DATA_DIR)/modules/spiders_v3/init.lua
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/menus.lua $(DATA_DIR)/modules/spiders_v3/menus.lua
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/spider.lua $(DATA_DIR)/modules/spiders_v3/spider.lua
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/depends.txt $(DATA_DIR)/modules/spiders_v3/depends.txt
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/dead_spider.bmp $(DATA_DIR)/modules/spiders_v3/gfx/dead_spider.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/tutorial/init.lua $(DATA_DIR)/modules/tutorial/init.lua
+	$(INSTALL) -m 644 -D knights_data/modules/tutorial/depends.txt $(DATA_DIR)/modules/tutorial/depends.txt
+	$(INSTALL) -m 644 -D knights_data/modules/tutorial/tutorial_map.txt $(DATA_DIR)/modules/tutorial/tutorial_map.txt
+	$(INSTALL) -m 644 -D knights_data/modules/tutorial/messages.lua $(DATA_DIR)/modules/tutorial/messages.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds.lua $(DATA_DIR)/modules/base/sounds.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/general_stuff.lua $(DATA_DIR)/modules/base/general_stuff.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/init.lua $(DATA_DIR)/modules/base/init.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/menus.lua $(DATA_DIR)/modules/base/menus.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/controls.lua $(DATA_DIR)/modules/base/controls.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/monsters.lua $(DATA_DIR)/modules/base/monsters.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/preset_quests.lua $(DATA_DIR)/modules/base/preset_quests.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/tile_funcs.lua $(DATA_DIR)/modules/base/tile_funcs.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/dungeon_layouts.lua $(DATA_DIR)/modules/base/dungeon_layouts.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/graphics.lua $(DATA_DIR)/modules/base/graphics.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/quest_funcs.lua $(DATA_DIR)/modules/base/quest_funcs.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/table_merge.lua $(DATA_DIR)/modules/base/table_merge.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/tiles.lua $(DATA_DIR)/modules/base/tiles.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/magic.lua $(DATA_DIR)/modules/base/magic.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/items.lua $(DATA_DIR)/modules/base/items.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/item_generation.lua $(DATA_DIR)/modules/base/item_generation.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/misc_config.lua $(DATA_DIR)/modules/base/misc_config.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/dungeon_setup.lua $(DATA_DIR)/modules/base/dungeon_setup.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/quest_description.lua $(DATA_DIR)/modules/base/quest_description.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/segments.lua $(DATA_DIR)/modules/base/segments.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/anims.lua $(DATA_DIR)/modules/base/anims.lua
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/table_horiz.bmp $(DATA_DIR)/modules/base/gfx/table_horiz.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/broken_wood_4.bmp $(DATA_DIR)/modules/base/gfx/broken_wood_4.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_vbat_1.bmp $(DATA_DIR)/modules/base/gfx/dead_vbat_1.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/stuff_bag.bmp $(DATA_DIR)/modules/base/gfx/stuff_bag.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/hammer_south.bmp $(DATA_DIR)/modules/base/gfx/hammer_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/home_east.bmp $(DATA_DIR)/modules/base/gfx/home_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/vdoor_background.bmp $(DATA_DIR)/modules/base/gfx/vdoor_background.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/vbat3.bmp $(DATA_DIR)/modules/base/gfx/vbat3.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/hammer_west.bmp $(DATA_DIR)/modules/base/gfx/hammer_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/home_south.bmp $(DATA_DIR)/modules/base/gfx/home_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp3e.bmp $(DATA_DIR)/modules/base/gfx/ktp3e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp6n.bmp $(DATA_DIR)/modules/base/gfx/ktp6n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_beartrap.bmp $(DATA_DIR)/modules/base/gfx/menu_beartrap.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_hic.bmp $(DATA_DIR)/modules/base/gfx/door_hic.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp8w.bmp $(DATA_DIR)/modules/base/gfx/ktp8w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp1s.bmp $(DATA_DIR)/modules/base/gfx/ktp1s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/barrel.bmp $(DATA_DIR)/modules/base/gfx/barrel.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wooden_pit.bmp $(DATA_DIR)/modules/base/gfx/wooden_pit.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/stairs_top.bmp $(DATA_DIR)/modules/base/gfx/stairs_top.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_vgc.bmp $(DATA_DIR)/modules/base/gfx/door_vgc.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom4e.bmp $(DATA_DIR)/modules/base/gfx/zom4e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/hammer_north.bmp $(DATA_DIR)/modules/base/gfx/hammer_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor8.bmp $(DATA_DIR)/modules/base/gfx/floor8.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp5s.bmp $(DATA_DIR)/modules/base/gfx/ktp5s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor5.bmp $(DATA_DIR)/modules/base/gfx/floor5.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/home_north.bmp $(DATA_DIR)/modules/base/gfx/home_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/beartrap_south.bmp $(DATA_DIR)/modules/base/gfx/beartrap_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp7e.bmp $(DATA_DIR)/modules/base/gfx/ktp7e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom2n.bmp $(DATA_DIR)/modules/base/gfx/zom2n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_pickup.bmp $(DATA_DIR)/modules/base/gfx/menu_pickup.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/key.bmp $(DATA_DIR)/modules/base/gfx/key.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chest_south.bmp $(DATA_DIR)/modules/base/gfx/chest_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dagger_north.bmp $(DATA_DIR)/modules/base/gfx/dagger_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wand_east.bmp $(DATA_DIR)/modules/base/gfx/wand_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_vbat_2.bmp $(DATA_DIR)/modules/base/gfx/dead_vbat_2.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/axe_north.bmp $(DATA_DIR)/modules/base/gfx/axe_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/broken_wood_1.bmp $(DATA_DIR)/modules/base/gfx/broken_wood_1.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/stairs_west.bmp $(DATA_DIR)/modules/base/gfx/stairs_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/vbat2.bmp $(DATA_DIR)/modules/base/gfx/vbat2.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp3w.bmp $(DATA_DIR)/modules/base/gfx/ktp3w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wand_north.bmp $(DATA_DIR)/modules/base/gfx/wand_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp2e.bmp $(DATA_DIR)/modules/base/gfx/ktp2e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wand_west.bmp $(DATA_DIR)/modules/base/gfx/wand_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/inv_lockpicks.bmp $(DATA_DIR)/modules/base/gfx/inv_lockpicks.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp5w.bmp $(DATA_DIR)/modules/base/gfx/ktp5w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp4s.bmp $(DATA_DIR)/modules/base/gfx/ktp4s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/inv_overdraw.bmp $(DATA_DIR)/modules/base/gfx/inv_overdraw.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/staff_south.bmp $(DATA_DIR)/modules/base/gfx/staff_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp1w.bmp $(DATA_DIR)/modules/base/gfx/ktp1w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/hammer_east.bmp $(DATA_DIR)/modules/base/gfx/hammer_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_suicide.bmp $(DATA_DIR)/modules/base/gfx/menu_suicide.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pillar.bmp $(DATA_DIR)/modules/base/gfx/pillar.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/sword_west.bmp $(DATA_DIR)/modules/base/gfx/sword_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_open_close.bmp $(DATA_DIR)/modules/base/gfx/menu_open_close.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/open_chest_south.bmp $(DATA_DIR)/modules/base/gfx/open_chest_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/staff_north.bmp $(DATA_DIR)/modules/base/gfx/staff_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/beartrap_north.bmp $(DATA_DIR)/modules/base/gfx/beartrap_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_drop_gem.bmp $(DATA_DIR)/modules/base/gfx/menu_drop_gem.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/broken_wood_3.bmp $(DATA_DIR)/modules/base/gfx/broken_wood_3.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wand_south.bmp $(DATA_DIR)/modules/base/gfx/wand_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chair_west.bmp $(DATA_DIR)/modules/base/gfx/chair_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_crossbow.bmp $(DATA_DIR)/modules/base/gfx/menu_crossbow.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dagger_south.bmp $(DATA_DIR)/modules/base/gfx/dagger_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/skull_down.bmp $(DATA_DIR)/modules/base/gfx/skull_down.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_hio.bmp $(DATA_DIR)/modules/base/gfx/door_hio.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/switch_up.bmp $(DATA_DIR)/modules/base/gfx/switch_up.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp6e.bmp $(DATA_DIR)/modules/base/gfx/ktp6e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom2e.bmp $(DATA_DIR)/modules/base/gfx/zom2e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/daggers.bmp $(DATA_DIR)/modules/base/gfx/daggers.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/staff.bmp $(DATA_DIR)/modules/base/gfx/staff.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pentagram.bmp $(DATA_DIR)/modules/base/gfx/pentagram.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_knight_2.bmp $(DATA_DIR)/modules/base/gfx/dead_knight_2.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/crossbow.bmp $(DATA_DIR)/modules/base/gfx/crossbow.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp1n.bmp $(DATA_DIR)/modules/base/gfx/ktp1n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/inv_bolt.bmp $(DATA_DIR)/modules/base/gfx/inv_bolt.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/skull_up.bmp $(DATA_DIR)/modules/base/gfx/skull_up.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/home_west.bmp $(DATA_DIR)/modules/base/gfx/home_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_vbat_3.bmp $(DATA_DIR)/modules/base/gfx/dead_vbat_3.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/stairs_east.bmp $(DATA_DIR)/modules/base/gfx/stairs_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_hwo.bmp $(DATA_DIR)/modules/base/gfx/door_hwo.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom3n.bmp $(DATA_DIR)/modules/base/gfx/zom3n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom2s.bmp $(DATA_DIR)/modules/base/gfx/zom2s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dagger_east.bmp $(DATA_DIR)/modules/base/gfx/dagger_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/closed_bear_trap.bmp $(DATA_DIR)/modules/base/gfx/closed_bear_trap.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/sword_north.bmp $(DATA_DIR)/modules/base/gfx/sword_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/book_north.bmp $(DATA_DIR)/modules/base/gfx/book_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pit_o.bmp $(DATA_DIR)/modules/base/gfx/pit_o.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/bolts.bmp $(DATA_DIR)/modules/base/gfx/bolts.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/bolt_vert.bmp $(DATA_DIR)/modules/base/gfx/bolt_vert.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/staff_west.bmp $(DATA_DIR)/modules/base/gfx/staff_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/skull_left.bmp $(DATA_DIR)/modules/base/gfx/skull_left.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp5n.bmp $(DATA_DIR)/modules/base/gfx/ktp5n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pith_c.bmp $(DATA_DIR)/modules/base/gfx/pith_c.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_hgc.bmp $(DATA_DIR)/modules/base/gfx/door_hgc.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/potion.bmp $(DATA_DIR)/modules/base/gfx/potion.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pith_o.bmp $(DATA_DIR)/modules/base/gfx/pith_o.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/axe_east.bmp $(DATA_DIR)/modules/base/gfx/axe_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom1n.bmp $(DATA_DIR)/modules/base/gfx/zom1n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor1.bmp $(DATA_DIR)/modules/base/gfx/floor1.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wall.bmp $(DATA_DIR)/modules/base/gfx/wall.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/blood_icon.bmp $(DATA_DIR)/modules/base/gfx/blood_icon.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/inv_key1.bmp $(DATA_DIR)/modules/base/gfx/inv_key1.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom3e.bmp $(DATA_DIR)/modules/base/gfx/zom3e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/axe.bmp $(DATA_DIR)/modules/base/gfx/axe.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_axe.bmp $(DATA_DIR)/modules/base/gfx/menu_axe.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wand.bmp $(DATA_DIR)/modules/base/gfx/wand.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_vio.bmp $(DATA_DIR)/modules/base/gfx/door_vio.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/blade_trap.bmp $(DATA_DIR)/modules/base/gfx/blade_trap.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp4e.bmp $(DATA_DIR)/modules/base/gfx/ktp4e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/inv_key3.bmp $(DATA_DIR)/modules/base/gfx/inv_key3.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/table_east.bmp $(DATA_DIR)/modules/base/gfx/table_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_knight_1.bmp $(DATA_DIR)/modules/base/gfx/dead_knight_1.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor6.bmp $(DATA_DIR)/modules/base/gfx/floor6.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp1e.bmp $(DATA_DIR)/modules/base/gfx/ktp1e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/crystal_ball.bmp $(DATA_DIR)/modules/base/gfx/crystal_ball.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/table_small.bmp $(DATA_DIR)/modules/base/gfx/table_small.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/wooden_floor.bmp $(DATA_DIR)/modules/base/gfx/wooden_floor.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/beartrap_west.bmp $(DATA_DIR)/modules/base/gfx/beartrap_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom2w.bmp $(DATA_DIR)/modules/base/gfx/zom2w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/switch_down.bmp $(DATA_DIR)/modules/base/gfx/switch_down.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_blade_trap.bmp $(DATA_DIR)/modules/base/gfx/menu_blade_trap.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/open_chest_west.bmp $(DATA_DIR)/modules/base/gfx/open_chest_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_zombie.bmp $(DATA_DIR)/modules/base/gfx/dead_zombie.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/blood_1.bmp $(DATA_DIR)/modules/base/gfx/blood_1.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/large_table_vert.bmp $(DATA_DIR)/modules/base/gfx/large_table_vert.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pit_c.bmp $(DATA_DIR)/modules/base/gfx/pit_c.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor2.bmp $(DATA_DIR)/modules/base/gfx/floor2.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_vwo.bmp $(DATA_DIR)/modules/base/gfx/door_vwo.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/inv_key2.bmp $(DATA_DIR)/modules/base/gfx/inv_key2.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp7w.bmp $(DATA_DIR)/modules/base/gfx/ktp7w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/sword_south.bmp $(DATA_DIR)/modules/base/gfx/sword_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/table_south.bmp $(DATA_DIR)/modules/base/gfx/table_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_fist.bmp $(DATA_DIR)/modules/base/gfx/menu_fist.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/inv_dagger.bmp $(DATA_DIR)/modules/base/gfx/inv_dagger.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/book_west.bmp $(DATA_DIR)/modules/base/gfx/book_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/book_east.bmp $(DATA_DIR)/modules/base/gfx/book_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp2s.bmp $(DATA_DIR)/modules/base/gfx/ktp2s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/hdoor_background.bmp $(DATA_DIR)/modules/base/gfx/hdoor_background.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/gem.bmp $(DATA_DIR)/modules/base/gfx/gem.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp6s.bmp $(DATA_DIR)/modules/base/gfx/ktp6s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor9.bmp $(DATA_DIR)/modules/base/gfx/floor9.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/table_north.bmp $(DATA_DIR)/modules/base/gfx/table_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/vbat1.bmp $(DATA_DIR)/modules/base/gfx/vbat1.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_hgo.bmp $(DATA_DIR)/modules/base/gfx/door_hgo.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/table_vert.bmp $(DATA_DIR)/modules/base/gfx/table_vert.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_vgo.bmp $(DATA_DIR)/modules/base/gfx/door_vgo.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/bolt_horiz.bmp $(DATA_DIR)/modules/base/gfx/bolt_horiz.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp8e.bmp $(DATA_DIR)/modules/base/gfx/ktp8e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp2n.bmp $(DATA_DIR)/modules/base/gfx/ktp2n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/open_chest_east.bmp $(DATA_DIR)/modules/base/gfx/open_chest_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp6w.bmp $(DATA_DIR)/modules/base/gfx/ktp6w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/stairs_north.bmp $(DATA_DIR)/modules/base/gfx/stairs_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/stairs_south.bmp $(DATA_DIR)/modules/base/gfx/stairs_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/small_skull.bmp $(DATA_DIR)/modules/base/gfx/small_skull.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_knight_3.bmp $(DATA_DIR)/modules/base/gfx/dead_knight_3.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor4.bmp $(DATA_DIR)/modules/base/gfx/floor4.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pressure_plate.bmp $(DATA_DIR)/modules/base/gfx/pressure_plate.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp4n.bmp $(DATA_DIR)/modules/base/gfx/ktp4n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor7.bmp $(DATA_DIR)/modules/base/gfx/floor7.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/cage.bmp $(DATA_DIR)/modules/base/gfx/cage.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pitv_o.bmp $(DATA_DIR)/modules/base/gfx/pitv_o.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/pitv_c.bmp $(DATA_DIR)/modules/base/gfx/pitv_c.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/poison_trap.bmp $(DATA_DIR)/modules/base/gfx/poison_trap.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/book_south.bmp $(DATA_DIR)/modules/base/gfx/book_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/axe_west.bmp $(DATA_DIR)/modules/base/gfx/axe_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/table_west.bmp $(DATA_DIR)/modules/base/gfx/table_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chair_north.bmp $(DATA_DIR)/modules/base/gfx/chair_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dagger.bmp $(DATA_DIR)/modules/base/gfx/dagger.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_hwc.bmp $(DATA_DIR)/modules/base/gfx/door_hwc.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp8s.bmp $(DATA_DIR)/modules/base/gfx/ktp8s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp2w.bmp $(DATA_DIR)/modules/base/gfx/ktp2w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_vwc.bmp $(DATA_DIR)/modules/base/gfx/door_vwc.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/staff_east.bmp $(DATA_DIR)/modules/base/gfx/staff_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/skull_right.bmp $(DATA_DIR)/modules/base/gfx/skull_right.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp3s.bmp $(DATA_DIR)/modules/base/gfx/ktp3s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp8n.bmp $(DATA_DIR)/modules/base/gfx/ktp8n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/vbatbite.bmp $(DATA_DIR)/modules/base/gfx/vbatbite.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp5e.bmp $(DATA_DIR)/modules/base/gfx/ktp5e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chair_south.bmp $(DATA_DIR)/modules/base/gfx/chair_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom4s.bmp $(DATA_DIR)/modules/base/gfx/zom4s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chest_north.bmp $(DATA_DIR)/modules/base/gfx/chest_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chest_east.bmp $(DATA_DIR)/modules/base/gfx/chest_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp4w.bmp $(DATA_DIR)/modules/base/gfx/ktp4w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dagger_west.bmp $(DATA_DIR)/modules/base/gfx/dagger_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/blood_3.bmp $(DATA_DIR)/modules/base/gfx/blood_3.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom1e.bmp $(DATA_DIR)/modules/base/gfx/zom1e.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/scroll.bmp $(DATA_DIR)/modules/base/gfx/scroll.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/door_vic.bmp $(DATA_DIR)/modules/base/gfx/door_vic.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/open_chest_north.bmp $(DATA_DIR)/modules/base/gfx/open_chest_north.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/blood_2.bmp $(DATA_DIR)/modules/base/gfx/blood_2.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp7s.bmp $(DATA_DIR)/modules/base/gfx/ktp7s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_dagger.bmp $(DATA_DIR)/modules/base/gfx/menu_dagger.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom3s.bmp $(DATA_DIR)/modules/base/gfx/zom3s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom1s.bmp $(DATA_DIR)/modules/base/gfx/zom1s.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/haystack.bmp $(DATA_DIR)/modules/base/gfx/haystack.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/book.bmp $(DATA_DIR)/modules/base/gfx/book.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/hammer.bmp $(DATA_DIR)/modules/base/gfx/hammer.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_poison_trap.bmp $(DATA_DIR)/modules/base/gfx/menu_poison_trap.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp3n.bmp $(DATA_DIR)/modules/base/gfx/ktp3n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/broken_wood_2.bmp $(DATA_DIR)/modules/base/gfx/broken_wood_2.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor3.bmp $(DATA_DIR)/modules/base/gfx/floor3.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_drop.bmp $(DATA_DIR)/modules/base/gfx/menu_drop.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom4w.bmp $(DATA_DIR)/modules/base/gfx/zom4w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/axe_south.bmp $(DATA_DIR)/modules/base/gfx/axe_south.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/dead_knight_4.bmp $(DATA_DIR)/modules/base/gfx/dead_knight_4.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/large_table_horiz.bmp $(DATA_DIR)/modules/base/gfx/large_table_horiz.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/beartrap_east.bmp $(DATA_DIR)/modules/base/gfx/beartrap_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom3w.bmp $(DATA_DIR)/modules/base/gfx/zom3w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/broken_wood_5.bmp $(DATA_DIR)/modules/base/gfx/broken_wood_5.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_diagonal_arrow.bmp $(DATA_DIR)/modules/base/gfx/menu_diagonal_arrow.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/open_bear_trap.bmp $(DATA_DIR)/modules/base/gfx/open_bear_trap.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/sword_east.bmp $(DATA_DIR)/modules/base/gfx/sword_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/floor10.bmp $(DATA_DIR)/modules/base/gfx/floor10.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom1w.bmp $(DATA_DIR)/modules/base/gfx/zom1w.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/ktp7n.bmp $(DATA_DIR)/modules/base/gfx/ktp7n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/zom4n.bmp $(DATA_DIR)/modules/base/gfx/zom4n.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/menu_lockpicks.bmp $(DATA_DIR)/modules/base/gfx/menu_lockpicks.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chest_west.bmp $(DATA_DIR)/modules/base/gfx/chest_west.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/gfx/chair_east.bmp $(DATA_DIR)/modules/base/gfx/chair_east.bmp
+	$(INSTALL) -m 644 -D knights_data/modules/base/maps/gnome_rooms.txt $(DATA_DIR)/modules/base/maps/gnome_rooms.txt
+	$(INSTALL) -m 644 -D knights_data/modules/base/maps/guarded_exits.txt $(DATA_DIR)/modules/base/maps/guarded_exits.txt
+	$(INSTALL) -m 644 -D knights_data/modules/base/maps/special_pentagrams.txt $(DATA_DIR)/modules/base/maps/special_pentagrams.txt
+	$(INSTALL) -m 644 -D knights_data/modules/base/maps/liche_tombs.txt $(DATA_DIR)/modules/base/maps/liche_tombs.txt
+	$(INSTALL) -m 644 -D knights_data/modules/base/maps/standard_rooms.txt $(DATA_DIR)/modules/base/maps/standard_rooms.txt
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/squelch.wav $(DATA_DIR)/modules/base/sounds/squelch.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/screech.wav $(DATA_DIR)/modules/base/sounds/screech.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/parry.wav $(DATA_DIR)/modules/base/sounds/parry.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/ugh.wav $(DATA_DIR)/modules/base/sounds/ugh.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/zombie2.wav $(DATA_DIR)/modules/base/sounds/zombie2.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/drink.wav $(DATA_DIR)/modules/base/sounds/drink.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/zombie3.wav $(DATA_DIR)/modules/base/sounds/zombie3.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/click.wav $(DATA_DIR)/modules/base/sounds/click.wav
+	$(INSTALL) -m 644 -D knights_data/modules/base/sounds/door.wav $(DATA_DIR)/modules/base/sounds/door.wav
 
 install_docs:
 	$(INSTALL) -m 755 -d $(DOC_DIR)
@@ -1966,300 +1932,304 @@ uninstall:
 	rm -f $(DATA_DIR)/client/localization_english.txt
 	rm -f $(DATA_DIR)/client/first_time_message_english.txt
 	rm -f $(DATA_DIR)/client/client_config.lua
-	rm -f $(DATA_DIR)/client/knights_icon_48.bmp
 	rm -f $(DATA_DIR)/client/credits_english.txt
 	rm -f $(DATA_DIR)/client/Inter_18pt-Regular.ttf
-	rm -f $(DATA_DIR)/client/std_files/squelch.wav
-	rm -f $(DATA_DIR)/client/std_files/table_horiz.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_1s.bmp
-	rm -f $(DATA_DIR)/client/std_files/broken_wood_4.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_vbat_1.bmp
-	rm -f $(DATA_DIR)/client/std_files/stuff_bag.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_1w.bmp
-	rm -f $(DATA_DIR)/client/std_files/hammer_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/home_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/vdoor_background.bmp
-	rm -f $(DATA_DIR)/client/std_files/vbat3.bmp
-	rm -f $(DATA_DIR)/client/std_files/health2.bmp
-	rm -f $(DATA_DIR)/client/std_files/hammer_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/home_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp3e.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp6n.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_beartrap.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_hic.bmp
-	rm -f $(DATA_DIR)/client/std_files/screech.wav
-	rm -f $(DATA_DIR)/client/std_files/ktp8w.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp1s.bmp
-	rm -f $(DATA_DIR)/client/std_files/barrel.bmp
-	rm -f $(DATA_DIR)/client/std_files/wooden_pit.bmp
-	rm -f $(DATA_DIR)/client/std_files/stairs_top.bmp
-	rm -f $(DATA_DIR)/client/std_files/parry.wav
-	rm -f $(DATA_DIR)/client/std_files/door_vgc.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom4e.bmp
-	rm -f $(DATA_DIR)/client/std_files/hammer_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor8.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp5s.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor5.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_walk_1n.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_1e.bmp
-	rm -f $(DATA_DIR)/client/std_files/home_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/beartrap_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp7e.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom2n.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_pickup.bmp
-	rm -f $(DATA_DIR)/client/std_files/key.bmp
-	rm -f $(DATA_DIR)/client/std_files/chest_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/dagger_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/wand_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_vbat_2.bmp
-	rm -f $(DATA_DIR)/client/std_files/axe_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_1n.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_walk_1e.bmp
-	rm -f $(DATA_DIR)/client/std_files/broken_wood_1.bmp
-	rm -f $(DATA_DIR)/client/std_files/stairs_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/vbat2.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp3w.bmp
-	rm -f $(DATA_DIR)/client/std_files/wand_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp2e.bmp
-	rm -f $(DATA_DIR)/client/std_files/health0.bmp
-	rm -f $(DATA_DIR)/client/std_files/wand_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/inv_lockpicks.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull1.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp5w.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp4s.bmp
-	rm -f $(DATA_DIR)/client/std_files/inv_overdraw.bmp
-	rm -f $(DATA_DIR)/client/std_files/staff_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp1w.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_3n.bmp
-	rm -f $(DATA_DIR)/client/std_files/hammer_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_suicide.bmp
-	rm -f $(DATA_DIR)/client/std_files/pillar.bmp
-	rm -f $(DATA_DIR)/client/std_files/sword_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_open_close.bmp
-	rm -f $(DATA_DIR)/client/std_files/open_chest_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/staff_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull2.bmp
-	rm -f $(DATA_DIR)/client/std_files/beartrap_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_drop_gem.bmp
-	rm -f $(DATA_DIR)/client/std_files/broken_wood_3.bmp
-	rm -f $(DATA_DIR)/client/std_files/wand_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/chair_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_crossbow.bmp
-	rm -f $(DATA_DIR)/client/std_files/dagger_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull_down.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_hio.bmp
-	rm -f $(DATA_DIR)/client/std_files/switch_up.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_stand_2s.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp6e.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom2e.bmp
-	rm -f $(DATA_DIR)/client/std_files/daggers.bmp
-	rm -f $(DATA_DIR)/client/std_files/staff.bmp
-	rm -f $(DATA_DIR)/client/std_files/pentagram.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull3.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_knight_2.bmp
-	rm -f $(DATA_DIR)/client/std_files/crossbow.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp1n.bmp
-	rm -f $(DATA_DIR)/client/std_files/inv_bolt.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull_up.bmp
-	rm -f $(DATA_DIR)/client/std_files/home_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/winner.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_vbat_3.bmp
-	rm -f $(DATA_DIR)/client/std_files/loser.bmp
-	rm -f $(DATA_DIR)/client/std_files/stairs_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_hwo.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom3n.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom2s.bmp
-	rm -f $(DATA_DIR)/client/std_files/dagger_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/closed_bear_trap.bmp
-	rm -f $(DATA_DIR)/client/std_files/sword_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/book_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/pit_o.bmp
-	rm -f $(DATA_DIR)/client/std_files/bolts.bmp
-	rm -f $(DATA_DIR)/client/std_files/bolt_vert.bmp
-	rm -f $(DATA_DIR)/client/std_files/staff_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull_left.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp5n.bmp
-	rm -f $(DATA_DIR)/client/std_files/pith_c.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_hgc.bmp
-	rm -f $(DATA_DIR)/client/std_files/potion.bmp
-	rm -f $(DATA_DIR)/client/std_files/pith_o.bmp
-	rm -f $(DATA_DIR)/client/std_files/axe_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom1n.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_walk_1s.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor1.bmp
-	rm -f $(DATA_DIR)/client/std_files/wall.bmp
-	rm -f $(DATA_DIR)/client/std_files/blood_icon.bmp
-	rm -f $(DATA_DIR)/client/std_files/inv_key1.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_stand_2e.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom3e.bmp
-	rm -f $(DATA_DIR)/client/std_files/axe.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_axe.bmp
-	rm -f $(DATA_DIR)/client/std_files/wand.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_vio.bmp
-	rm -f $(DATA_DIR)/client/std_files/blade_trap.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp4e.bmp
-	rm -f $(DATA_DIR)/client/std_files/inv_key3.bmp
-	rm -f $(DATA_DIR)/client/std_files/table_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_knight_1.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor6.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp1e.bmp
-	rm -f $(DATA_DIR)/client/std_files/crystal_ball.bmp
-	rm -f $(DATA_DIR)/client/std_files/table_small.bmp
-	rm -f $(DATA_DIR)/client/std_files/wooden_floor.bmp
-	rm -f $(DATA_DIR)/client/std_files/beartrap_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/health4.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom2w.bmp
-	rm -f $(DATA_DIR)/client/std_files/switch_down.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_blade_trap.bmp
-	rm -f $(DATA_DIR)/client/std_files/ugh.wav
-	rm -f $(DATA_DIR)/client/std_files/open_chest_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_zombie.bmp
-	rm -f $(DATA_DIR)/client/std_files/blood_1.bmp
-	rm -f $(DATA_DIR)/client/std_files/large_table_vert.bmp
-	rm -f $(DATA_DIR)/client/std_files/pit_c.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor2.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_vwo.bmp
-	rm -f $(DATA_DIR)/client/std_files/inv_key2.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp7w.bmp
-	rm -f $(DATA_DIR)/client/std_files/sword_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/table_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_fist.bmp
-	rm -f $(DATA_DIR)/client/std_files/inv_dagger.bmp
-	rm -f $(DATA_DIR)/client/std_files/book_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_centre.bmp
-	rm -f $(DATA_DIR)/client/std_files/book_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp2s.bmp
-	rm -f $(DATA_DIR)/client/std_files/hdoor_background.bmp
-	rm -f $(DATA_DIR)/client/std_files/gem.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_3s.bmp
-	rm -f $(DATA_DIR)/client/std_files/speech_bubble.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp6s.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor9.bmp
-	rm -f $(DATA_DIR)/client/std_files/table_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/vbat1.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_hgo.bmp
-	rm -f $(DATA_DIR)/client/std_files/table_vert.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_vgo.bmp
-	rm -f $(DATA_DIR)/client/std_files/bolt_horiz.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp8e.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp2n.bmp
-	rm -f $(DATA_DIR)/client/std_files/open_chest_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/health3.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp6w.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_walk_1w.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_stand_2n.bmp
-	rm -f $(DATA_DIR)/client/std_files/stairs_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/stairs_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/small_skull.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_knight_3.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_3e.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor4.bmp
-	rm -f $(DATA_DIR)/client/std_files/zombie2.wav
-	rm -f $(DATA_DIR)/client/std_files/pressure_plate.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp4n.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor7.bmp
-	rm -f $(DATA_DIR)/client/std_files/cage.bmp
-	rm -f $(DATA_DIR)/client/std_files/pitv_o.bmp
-	rm -f $(DATA_DIR)/client/std_files/pitv_c.bmp
-	rm -f $(DATA_DIR)/client/std_files/poison_trap.bmp
-	rm -f $(DATA_DIR)/client/std_files/book_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/axe_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/table_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/chair_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/dagger.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_hwc.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp8s.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_strike_3w.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp2w.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_vwc.bmp
-	rm -f $(DATA_DIR)/client/std_files/health1.bmp
-	rm -f $(DATA_DIR)/client/std_files/staff_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull4.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_highlight.bmp
-	rm -f $(DATA_DIR)/client/std_files/skull_right.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp3s.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp8n.bmp
-	rm -f $(DATA_DIR)/client/std_files/vbatbite.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp5e.bmp
-	rm -f $(DATA_DIR)/client/std_files/chair_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom4s.bmp
-	rm -f $(DATA_DIR)/client/std_files/chest_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_empty.bmp
-	rm -f $(DATA_DIR)/client/std_files/chest_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/drink.wav
-	rm -f $(DATA_DIR)/client/std_files/ktp4w.bmp
-	rm -f $(DATA_DIR)/client/std_files/dagger_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/blood_3.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom1e.bmp
-	rm -f $(DATA_DIR)/client/std_files/scroll.bmp
-	rm -f $(DATA_DIR)/client/std_files/door_vic.bmp
-	rm -f $(DATA_DIR)/client/std_files/open_chest_north.bmp
-	rm -f $(DATA_DIR)/client/std_files/blood_2.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp7s.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_dagger.bmp
-	rm -f $(DATA_DIR)/client/std_files/zombie3.wav
-	rm -f $(DATA_DIR)/client/std_files/zom3s.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom1s.bmp
-	rm -f $(DATA_DIR)/client/std_files/haystack.bmp
-	rm -f $(DATA_DIR)/client/std_files/book.bmp
-	rm -f $(DATA_DIR)/client/std_files/hammer.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_poison_trap.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp3n.bmp
-	rm -f $(DATA_DIR)/client/std_files/broken_wood_2.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor3.bmp
-	rm -f $(DATA_DIR)/client/std_files/click.wav
-	rm -f $(DATA_DIR)/client/std_files/menu_drop.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom4w.bmp
-	rm -f $(DATA_DIR)/client/std_files/axe_south.bmp
-	rm -f $(DATA_DIR)/client/std_files/dead_knight_4.bmp
-	rm -f $(DATA_DIR)/client/std_files/large_table_horiz.bmp
-	rm -f $(DATA_DIR)/client/std_files/beartrap_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom3w.bmp
-	rm -f $(DATA_DIR)/client/std_files/broken_wood_5.bmp
-	rm -f $(DATA_DIR)/client/std_files/ogre_stand_2w.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_diagonal_arrow.bmp
-	rm -f $(DATA_DIR)/client/std_files/open_bear_trap.bmp
-	rm -f $(DATA_DIR)/client/std_files/sword_east.bmp
-	rm -f $(DATA_DIR)/client/std_files/floor10.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom1w.bmp
-	rm -f $(DATA_DIR)/client/std_files/ktp7n.bmp
-	rm -f $(DATA_DIR)/client/std_files/zom4n.bmp
-	rm -f $(DATA_DIR)/client/std_files/menu_lockpicks.bmp
-	rm -f $(DATA_DIR)/client/std_files/chest_west.bmp
-	rm -f $(DATA_DIR)/client/std_files/door.wav
-	rm -f $(DATA_DIR)/client/std_files/chair_east.bmp
-	rm -f $(DATA_DIR)/server/main.lua
-	rm -f $(DATA_DIR)/server/main_tutorial.lua
-	rm -f $(DATA_DIR)/server/classic/sounds.lua
-	rm -f $(DATA_DIR)/server/classic/general_stuff.lua
-	rm -f $(DATA_DIR)/server/classic/init.lua
-	rm -f $(DATA_DIR)/server/classic/menus.lua
-	rm -f $(DATA_DIR)/server/classic/controls.lua
-	rm -f $(DATA_DIR)/server/classic/monsters.lua
-	rm -f $(DATA_DIR)/server/classic/preset_quests.lua
-	rm -f $(DATA_DIR)/server/classic/tile_funcs.lua
-	rm -f $(DATA_DIR)/server/classic/dungeon_layouts.lua
-	rm -f $(DATA_DIR)/server/classic/graphics.lua
-	rm -f $(DATA_DIR)/server/classic/gnome_rooms.txt
-	rm -f $(DATA_DIR)/server/classic/quest_funcs.lua
-	rm -f $(DATA_DIR)/server/classic/table_merge.lua
-	rm -f $(DATA_DIR)/server/classic/tiles.lua
-	rm -f $(DATA_DIR)/server/classic/magic.lua
-	rm -f $(DATA_DIR)/server/classic/items.lua
-	rm -f $(DATA_DIR)/server/classic/item_generation.lua
-	rm -f $(DATA_DIR)/server/classic/misc_config.lua
-	rm -f $(DATA_DIR)/server/classic/dungeon_setup.lua
-	rm -f $(DATA_DIR)/server/classic/quest_description.lua
-	rm -f $(DATA_DIR)/server/classic/guarded_exits.txt
-	rm -f $(DATA_DIR)/server/classic/special_pentagrams.txt
-	rm -f $(DATA_DIR)/server/classic/liche_tombs.txt
-	rm -f $(DATA_DIR)/server/classic/segments.lua
-	rm -f $(DATA_DIR)/server/classic/anims.lua
-	rm -f $(DATA_DIR)/server/classic/standard_rooms.txt
-	rm -f $(DATA_DIR)/server/tutorial/init.lua
-	rm -f $(DATA_DIR)/server/tutorial/tutorial_map.txt
-	rm -f $(DATA_DIR)/server/tutorial/messages.lua
-	rm -f $(DATA_DIR)/server/menu/init.lua
+	rm -f $(DATA_DIR)/client/gfx/health2.bmp
+	rm -f $(DATA_DIR)/client/gfx/health0.bmp
+	rm -f $(DATA_DIR)/client/gfx/skull1.bmp
+	rm -f $(DATA_DIR)/client/gfx/skull2.bmp
+	rm -f $(DATA_DIR)/client/gfx/skull3.bmp
+	rm -f $(DATA_DIR)/client/gfx/winner.bmp
+	rm -f $(DATA_DIR)/client/gfx/loser.bmp
+	rm -f $(DATA_DIR)/client/gfx/health4.bmp
+	rm -f $(DATA_DIR)/client/gfx/menu_centre.bmp
+	rm -f $(DATA_DIR)/client/gfx/speech_bubble.bmp
+	rm -f $(DATA_DIR)/client/gfx/health3.bmp
+	rm -f $(DATA_DIR)/client/gfx/health1.bmp
+	rm -f $(DATA_DIR)/client/gfx/skull4.bmp
+	rm -f $(DATA_DIR)/client/gfx/menu_highlight.bmp
+	rm -f $(DATA_DIR)/client/gfx/knights_icon_48.bmp
+	rm -f $(DATA_DIR)/client/gfx/menu_empty.bmp
+	rm -f $(DATA_DIR)/modules/modules.txt
+	rm -f $(DATA_DIR)/modules/spiders_v3/init.lua
+	rm -f $(DATA_DIR)/modules/spiders_v3/menus.lua
+	rm -f $(DATA_DIR)/modules/spiders_v3/spider.lua
+	rm -f $(DATA_DIR)/modules/spiders_v3/depends.txt
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4w.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2s.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3e.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2n.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4n.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2w.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1s.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4s.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3n.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3s.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2e.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1w.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3w.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/dead_spider.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1n.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1e.bmp
+	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4e.bmp
+	rm -f $(DATA_DIR)/modules/tutorial/init.lua
+	rm -f $(DATA_DIR)/modules/tutorial/depends.txt
+	rm -f $(DATA_DIR)/modules/tutorial/tutorial_map.txt
+	rm -f $(DATA_DIR)/modules/tutorial/messages.lua
+	rm -f $(DATA_DIR)/modules/base/sounds.lua
+	rm -f $(DATA_DIR)/modules/base/general_stuff.lua
+	rm -f $(DATA_DIR)/modules/base/init.lua
+	rm -f $(DATA_DIR)/modules/base/menus.lua
+	rm -f $(DATA_DIR)/modules/base/controls.lua
+	rm -f $(DATA_DIR)/modules/base/monsters.lua
+	rm -f $(DATA_DIR)/modules/base/preset_quests.lua
+	rm -f $(DATA_DIR)/modules/base/tile_funcs.lua
+	rm -f $(DATA_DIR)/modules/base/dungeon_layouts.lua
+	rm -f $(DATA_DIR)/modules/base/graphics.lua
+	rm -f $(DATA_DIR)/modules/base/quest_funcs.lua
+	rm -f $(DATA_DIR)/modules/base/table_merge.lua
+	rm -f $(DATA_DIR)/modules/base/tiles.lua
+	rm -f $(DATA_DIR)/modules/base/magic.lua
+	rm -f $(DATA_DIR)/modules/base/items.lua
+	rm -f $(DATA_DIR)/modules/base/item_generation.lua
+	rm -f $(DATA_DIR)/modules/base/misc_config.lua
+	rm -f $(DATA_DIR)/modules/base/dungeon_setup.lua
+	rm -f $(DATA_DIR)/modules/base/quest_description.lua
+	rm -f $(DATA_DIR)/modules/base/segments.lua
+	rm -f $(DATA_DIR)/modules/base/anims.lua
+	rm -f $(DATA_DIR)/modules/base/gfx/table_horiz.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/broken_wood_4.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_vbat_1.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/stuff_bag.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/hammer_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/home_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/vdoor_background.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/vbat3.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/hammer_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/home_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp3e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp6n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_beartrap.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_hic.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp8w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp1s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/barrel.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wooden_pit.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/stairs_top.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_vgc.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom4e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/hammer_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor8.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp5s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor5.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/home_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/beartrap_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp7e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom2n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_pickup.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/key.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chest_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dagger_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wand_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_vbat_2.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/axe_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/broken_wood_1.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/stairs_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/vbat2.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp3w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wand_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp2e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wand_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/inv_lockpicks.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp5w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp4s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/inv_overdraw.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/staff_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp1w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/hammer_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_suicide.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pillar.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/sword_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_open_close.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/open_chest_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/staff_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/beartrap_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_drop_gem.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/broken_wood_3.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wand_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chair_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_crossbow.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dagger_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/skull_down.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_hio.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/switch_up.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp6e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom2e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/daggers.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/staff.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pentagram.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_knight_2.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/crossbow.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp1n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/inv_bolt.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/skull_up.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/home_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_vbat_3.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/stairs_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_hwo.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom3n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom2s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dagger_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/closed_bear_trap.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/sword_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/book_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pit_o.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/bolts.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/bolt_vert.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/staff_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/skull_left.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp5n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pith_c.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_hgc.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/potion.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pith_o.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/axe_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom1n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor1.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wall.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/blood_icon.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/inv_key1.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom3e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/axe.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_axe.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wand.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_vio.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/blade_trap.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp4e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/inv_key3.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/table_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_knight_1.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor6.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp1e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/crystal_ball.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/table_small.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/wooden_floor.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/beartrap_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom2w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/switch_down.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_blade_trap.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/open_chest_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_zombie.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/blood_1.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/large_table_vert.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pit_c.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor2.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_vwo.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/inv_key2.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp7w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/sword_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/table_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_fist.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/inv_dagger.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/book_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/book_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp2s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/hdoor_background.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/gem.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp6s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor9.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/table_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/vbat1.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_hgo.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/table_vert.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_vgo.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/bolt_horiz.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp8e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp2n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/open_chest_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp6w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/stairs_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/stairs_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/small_skull.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_knight_3.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor4.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pressure_plate.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp4n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor7.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/cage.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pitv_o.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/pitv_c.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/poison_trap.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/book_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/axe_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/table_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chair_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dagger.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_hwc.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp8s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp2w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_vwc.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/staff_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/skull_right.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp3s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp8n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/vbatbite.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp5e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chair_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom4s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chest_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chest_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp4w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dagger_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/blood_3.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom1e.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/scroll.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/door_vic.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/open_chest_north.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/blood_2.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp7s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_dagger.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom3s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom1s.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/haystack.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/book.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/hammer.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_poison_trap.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp3n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/broken_wood_2.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor3.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_drop.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom4w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/axe_south.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/dead_knight_4.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/large_table_horiz.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/beartrap_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom3w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/broken_wood_5.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_diagonal_arrow.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/open_bear_trap.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/sword_east.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/floor10.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom1w.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/ktp7n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/zom4n.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/menu_lockpicks.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chest_west.bmp
+	rm -f $(DATA_DIR)/modules/base/gfx/chair_east.bmp
+	rm -f $(DATA_DIR)/modules/base/maps/gnome_rooms.txt
+	rm -f $(DATA_DIR)/modules/base/maps/guarded_exits.txt
+	rm -f $(DATA_DIR)/modules/base/maps/special_pentagrams.txt
+	rm -f $(DATA_DIR)/modules/base/maps/liche_tombs.txt
+	rm -f $(DATA_DIR)/modules/base/maps/standard_rooms.txt
+	rm -f $(DATA_DIR)/modules/base/sounds/squelch.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/screech.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/parry.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/ugh.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/zombie2.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/drink.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/zombie3.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/click.wav
+	rm -f $(DATA_DIR)/modules/base/sounds/door.wav
 	rm -f $(DOC_DIR)/COPYRIGHT.txt
 	rm -f $(DOC_DIR)/README.txt
 	rm -f $(DOC_DIR)/ACKNOWLEDGMENTS.txt

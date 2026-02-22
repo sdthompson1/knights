@@ -24,7 +24,7 @@
 #ifndef COMPUTE_CHECKSUM_HPP
 #define COMPUTE_CHECKSUM_HPP
 
-#include "rstream.hpp"
+#include "vfs.hpp"
 #include "xxhash.hpp"
 #include <string>
 
@@ -32,7 +32,7 @@ inline uint64_t ComputeLocalChecksum(const std::string &build_id)
 {
     XXHash hasher(0);
     hasher.updateHashPartial(reinterpret_cast<const uint8_t*>(build_id.data()), build_id.length());
-    RStream::HashDirectory("server", hasher);
+    //RStream::HashDirectory("server", hasher);  // TODO: solve checksumming problem for modules!
     return hasher.finalHash();
 }
 

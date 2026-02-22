@@ -1,5 +1,5 @@
 /*
- * rstream_find.hpp
+ * read_module_names.hpp
  *
  * This file is part of Knights.
  *
@@ -21,23 +21,16 @@
  *
  */
 
-#ifndef RSTREAM_FIND_HPP
-#define RSTREAM_FIND_HPP
+#ifndef READ_MODULE_NAMES_HPP
+#define READ_MODULE_NAMES_HPP
 
-//
-// Given a path "input_path" and a directory "cwd", this function
-// returns either "cwd / input_path" if this exists, or just
-// "input_path" otherwise.
-//
-// Exception: if the input_path begins with a slash or backslash, then
-// "cwd" is ignored and "input_path" is returned unmodified.
-//
-// This is intended for cases where you want to look for a file either
-// in some "current directory", or in the base directory.
-//
+#include <string>
+#include <vector>
 
-std::string RStreamFind(const std::string &input_path,
-                        const std::string &cwd);
+class VFS;
+
+// Reads a given file from the vfs, and parses module names from it.
+std::vector<std::string> ReadModuleNames(const VFS &vfs,
+                                         const std::string &filename);
 
 #endif
-

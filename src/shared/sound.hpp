@@ -22,14 +22,12 @@
  */
 
 /*
- * Stores FileInfo for a Sound.
+ * Stores ID and filename for a Sound.
  *
  */
 
 #ifndef SOUND_HPP
 #define SOUND_HPP
-
-#include "file_info.hpp"
 
 #include "network/byte_buf.hpp"
 
@@ -37,18 +35,18 @@
 
 class Sound {
 public:
-    Sound(int id_, const FileInfo &file_)
-        : id(id_), file(file_) { }
+    Sound(int id_, const std::string &filename_)
+        : id(id_), filename(filename_) { }
 
     int getID() const { return id; }
-    const FileInfo & getFileInfo() const { return file; }
+    const std::string & getFilename() const { return filename; }
 
     explicit Sound(int id_, Coercri::InputByteBuf &buf);
     void serialize(Coercri::OutputByteBuf &buf) const;
     
 private:
     int id;
-    FileInfo file;
+    std::string filename;
 };
 
 #endif

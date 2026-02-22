@@ -1016,13 +1016,13 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
 
     // Pre-load all the graphics and sounds, so that they don't have to be
     // loaded during gameplay, and also so that any errors can be detected
-    // at this point
+    // at this point.
     try {
         for (std::vector<const Graphic *>::const_iterator it = conf->graphics.begin(); it != conf->graphics.end(); ++it) {
-            pimpl->knights_app.getGfxManager().loadGraphic(**it);
+            pimpl->knights_app.getGfxManager().loadGraphic(conf->module_vfs, **it);
         }
         for (std::vector<const Sound *>::const_iterator it = conf->sounds.begin(); it != conf->sounds.end(); ++it) {
-            pimpl->knights_app.getSoundManager().loadSound(**it);
+            pimpl->knights_app.getSoundManager().loadSound(conf->module_vfs, **it);
         }
     } catch (RStreamError &err) {
         if (pimpl->knights_client->allowUntrustedStrings()) {

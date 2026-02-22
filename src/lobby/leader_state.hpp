@@ -32,6 +32,7 @@
 class KnightsVM;
 class SyncHost;
 class TickWriter;
+class VFS;
 
 namespace Coercri {
     class NetworkConnection;
@@ -52,7 +53,9 @@ public:
     // It also opens a single connection to the VM representing the local player, but
     // does not issue the CLIENT_JOIN_GAME command (the caller must do that).
     LeaderState(Coercri::Timer &timer,
-                const PlayerID &local_user_id);
+                const PlayerID &local_user_id,
+                std::vector<std::string> module_names,
+                VFS &&modules_vfs);
 
     // This is the same as the previous constructor except that it starts from an
     // existing KnightsVM state instead of booting up a new one. The existing KnightsVM

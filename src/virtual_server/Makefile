@@ -144,9 +144,8 @@ CXXFILES = \
 	misc/rng.cpp \
 	misc/round.cpp \
 	misc/xxhash.cpp \
-	rstream/rstream.cpp \
 	rstream/rstream_error.cpp \
-	rstream/rstream_find.cpp \
+	rstream/vfs.cpp \
 	server/impl/knights_game.cpp \
 	server/impl/knights_server.cpp \
 	server/impl/my_menu_listeners.cpp \
@@ -156,7 +155,6 @@ CXXFILES = \
 	server/impl/server_status_display.cpp \
 	shared/impl/anim.cpp \
 	shared/impl/colour_change.cpp \
-	shared/impl/file_info.cpp \
 	shared/impl/graphic.cpp \
 	shared/impl/lua_exec.cpp \
 	shared/impl/lua_func_wrapper.cpp \
@@ -165,10 +163,12 @@ CXXFILES = \
 	shared/impl/lua_ref.cpp \
 	shared/impl/lua_sandbox.cpp \
 	shared/impl/lua_traceback.cpp \
+	shared/impl/lua_vfs.cpp \
 	shared/impl/map_support.cpp \
 	shared/impl/menu.cpp \
 	shared/impl/menu_item.cpp \
 	shared/impl/overlay.cpp \
+	shared/impl/read_module_names.cpp \
 	shared/impl/read_write_loc.cpp \
 	shared/impl/read_write_player_id.cpp \
 	shared/impl/sound.cpp \

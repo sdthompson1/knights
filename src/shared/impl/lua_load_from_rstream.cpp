@@ -25,9 +25,9 @@
 
 #include "lua_exec.hpp"
 #include "lua_load_from_rstream.hpp"
+#include "lua_vfs.hpp"
 #include "my_exceptions.hpp"
-#include "rstream.hpp"
-#include "rstream_find.hpp"
+#include "vfs.hpp"
 
 #include "include_lua.hpp"
 
@@ -36,7 +36,7 @@
 namespace {
     struct ReadContext {
         std::string filename;
-        RStream * str;
+        std::ifstream * str;
         char buf[512];
     };
     
@@ -55,31 +55,14 @@ namespace {
         return &rc->buf[0];
     }
 
-    std::string GetCWD(lua_State *lua)
-    {
-        // Returns CWD, or empty path if CWD not set.
-        std::string result;
-        lua_getglobal(lua, "_CWD");
-        const char *p = lua_tostring(lua, -1);
-        if (p) {
-            result = p;
-        }
-        lua_pop(lua, 1);
-        return result;   
-    }
-
-    void SetCWD(lua_State *lua, const std::string &path)
-    {
-        lua_pushstring(lua, path.c_str());
-        lua_setglobal(lua, "_CWD");
-    }
 }
 
 // Load and execute lua code in rstream named 'filename'
 void LuaExecRStream(lua_State *lua, const std::string &filename,
                     int nargs, int nresults,
                     bool look_in_cwd,
-                    bool use_dofile_namespace_proposal)
+                    bool use_dofile_namespace_proposal,
+                    int env_table_idx)
 {
     // Catch exceptions and convert them to lua errors if required.
     try {
@@ -88,14 +71,14 @@ void LuaExecRStream(lua_State *lua, const std::string &filename,
         std::string to_load;
         
         if (look_in_cwd) {
-            to_load = RStreamFind(filename, old_cwd);
+            to_load = LuaResolveFile(lua, filename);
         } else {
             to_load = filename;
         }
-        
+
         // open stream
         // (may throw)
-        RStream str(to_load);
+        std::ifstream str = GetLuaVFS(lua).open(to_load);
 
         if (!str) {
             // Throw a C++ error.
@@ -105,9 +88,9 @@ void LuaExecRStream(lua_State *lua, const std::string &filename,
         }
 
         // Set _CWD to the new cwd
-        std::string parent_dir = RStream::NormalizePath(to_load + "/..");
+        std::string parent_dir = VFS::normalizePath(to_load + "/..");
         SetCWD(lua, parent_dir);
-        
+
         // now load it (pushes lua function onto the stack)
         // note: we accept only text chunks, for security reasons
         ReadContext rc;
@@ -149,13 +132,18 @@ void LuaExecRStream(lua_State *lua, const std::string &filename,
 
             lua_pop(lua, 1);  // [<stuff> args func]
         }
-        // else: We have been called from the top level. There is no previous function, so _G is the 
+        // else: We have been called from the top level. There is no previous function, so _G is the
         // appropriate thing to use as the environment.
+
+        if (env_table_idx != 0) {
+            lua_pushvalue(lua, env_table_idx);   // push copy of env table
+            lua_setupvalue(lua, -2, 1);          // set _ENV on chunk, pops copy
+        }
 
         // stack is currently [<stuff> arg1 .. argn func]
         // change this to [<stuff> func arg1 .. argn], as required for LuaExec
         lua_insert(lua, -nargs-1);
-        
+
         // execute the script
         // stack will be changed to [<stuff> result1 .. resultn]
         LuaExec(lua, nargs, nresults);

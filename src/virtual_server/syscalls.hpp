@@ -64,6 +64,14 @@ bool vs_game_thread_running();
 // Get random seed data (used during init)
 void vs_get_random_data(void *ptr, int num_bytes);
 
+// Get a module name by index (used during init).
+// Writes null-terminated name to buf. Returns string length, or -1 if index out of range.
+int vs_get_module_name(int index, char *buf, int buf_size);
+
+// VFS control (used during init, to control which mount points are accessible)
+void vs_vfs_disable_all();
+void vs_vfs_enable(const char *vfs_path);
+
 // Functions called from game thread:
 
 // Switch from game to main thread. 'param' is passed back. (This will

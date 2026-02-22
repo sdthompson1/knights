@@ -71,6 +71,7 @@ class Sound;
 class StuffManager;
 class TaskManager;
 class UserControl;
+class VFS;
 
 struct lua_State;
 
@@ -86,7 +87,12 @@ public:
     // NOTE: The KnightsConfig should live at least as long as the
     // KnightsGame, as it owns certain objects (tiles, graphics etc)
     // that are used during the game.
-    KnightsConfig(const std::string &config_filename, bool menu_strict);
+    // Also: The given VFS should contain each of the modules to be
+    // loaded as a separate mount point (so that they can be individually
+    // enabled and disabled according to the dependencies of each module).
+    KnightsConfig(const VFS &vfs,
+                  const std::vector<std::string> &module_names,
+                  bool menu_strict);
 
     // Get lists of all anims, graphics etc that will be used in the
     // game. This is used in network games to send lists of these

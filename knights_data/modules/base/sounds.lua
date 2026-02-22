@@ -21,15 +21,15 @@
 
 -- SOUND FILES
 
-s_click = kts.Sound("click.wav")
-s_door = kts.Sound("door.wav")
-s_drink = kts.Sound("drink.wav")
-s_parry = kts.Sound("parry.wav")
-s_screech = kts.Sound("screech.wav")
-s_squelch = kts.Sound("squelch.wav")
-s_ugh = kts.Sound("ugh.wav")
-s_zombie2 = kts.Sound("zombie2.wav")
-s_zombie3 = kts.Sound("zombie3.wav")
+s_click = kts.Sound("sounds/click.wav")
+s_door = kts.Sound("sounds/door.wav")
+s_drink = kts.Sound("sounds/drink.wav")
+s_parry = kts.Sound("sounds/parry.wav")
+s_screech = kts.Sound("sounds/screech.wav")
+s_squelch = kts.Sound("sounds/squelch.wav")
+s_ugh = kts.Sound("sounds/ugh.wav")
+s_zombie2 = kts.Sound("sounds/zombie2.wav")
+s_zombie3 = kts.Sound("sounds/zombie3.wav")
 
 
 -- FUNCTIONS TO PLAY VARIOUS SOUNDS

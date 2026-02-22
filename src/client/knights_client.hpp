@@ -42,6 +42,7 @@
 
 #include "boost/noncopyable.hpp"
 
+#include <filesystem>
 #include <memory>
 #include <vector>
 
@@ -55,7 +56,7 @@ class KnightsClient : boost::noncopyable {
 public:
     typedef unsigned char ubyte;
 
-    explicit KnightsClient(bool allow_untrusted_strings);
+    KnightsClient(bool allow_untrusted_strings, std::filesystem::path modules_path);
     ~KnightsClient();
 
     bool allowUntrustedStrings() const;

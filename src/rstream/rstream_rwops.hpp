@@ -22,10 +22,8 @@
  */
 
 /*
- * Create an SDL_RWops structure from an rstream.
+ * Create an SDL_RWops structure from a VFS file.
  * Note that it will be read-only; the write functions will fail (returning -1).
- *
- * NB: Could easily convert this to a general "iostream_rwops" class.
  *
  * NB: This is not actually used currently (as at 10-May-2024).
  *
@@ -34,14 +32,12 @@
 #ifndef RSTREAM_RWOPS_HPP
 #define RSTREAM_RWOPS_HPP
 
-#include "rstream.hpp"
+#include "vfs.hpp"
 
 #include <SDL_rwops.h>
 
-
-// At the moment can load only from a resource name,
-// but extension to loading from a given rstream is easy.
-// The returned ptr must be freed in usual way (using SDL_RWclose)
-SDL_RWops* RWFromRStream(const std::string &resource_name);
+// Open vfs_path in the given VFS and wrap it in an SDL_RWops.
+// The returned ptr must be freed in the usual way (using SDL_RWclose).
+SDL_RWops* RWFromVFS(const VFS &vfs, const std::string &vfs_path);
 
 #endif  // RSTREAM_RWOPS_HPP

@@ -43,23 +43,20 @@
 #include <map>
 #include <string>
 
-class FileCache;
 class Sound;
+class VFS;
 
 class SoundManager {
 public:
-    SoundManager(boost::shared_ptr<Coercri::SoundDriver> d,
-                 FileCache &fc)
-        : sound_driver(d), file_cache(fc) { }
-    
-    bool loadSound(const Sound &sound);
+    SoundManager(boost::shared_ptr<Coercri::SoundDriver> d)
+        : sound_driver(d) { }
+
+    void loadSound(const VFS &vfs, const Sound &sound);
     void playSound(const Sound &sound, int frequency);
     void clear();  // unloads all sounds.
     
 private:
     boost::shared_ptr<Coercri::SoundDriver> sound_driver;
-    FileCache &file_cache;
-    
     std::map<const Sound*, boost::shared_ptr<Coercri::Sound> > sound_map;
 };
 

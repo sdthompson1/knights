@@ -35,7 +35,6 @@
 #include "online_multiplayer_screen.hpp"
 #include "online_platform.hpp"
 #include "compute_checksum.hpp"
-#include "rstream.hpp"
 #include "start_game_screen.hpp"
 #include "tab_font.hpp"
 #include "title_block.hpp"

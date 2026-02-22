@@ -27,9 +27,12 @@
 #if defined(USE_VM_LOBBY) && defined(ONLINE_PLATFORM)
 
 #include "screen.hpp"
+#include "vfs.hpp"
 #include "online_platform.hpp"
+
 #include "boost/thread.hpp"
 #include <string>
+#include <vector>
 
 class VMKnightsLobby;
 
@@ -53,7 +56,9 @@ private:
         Loader(Coercri::NetworkDriver &net_driver,
                Coercri::Timer &timer,
                const PlayerID &local_user_id,
-               bool new_control_system);
+               bool new_control_system,
+               std::vector<std::string> module_names,
+               VFS &&module_vfs);
         void operator()();
 
         // Inputs
@@ -61,6 +66,8 @@ private:
         Coercri::Timer &timer;
         PlayerID local_user_id;
         bool new_control_system;
+        std::vector<std::string> module_names;
+        VFS module_vfs;
 
         // Outputs
         LocalMsg error_msg;

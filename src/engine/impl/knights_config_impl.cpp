@@ -32,15 +32,15 @@
 #include "graphic.hpp"
 #include "home_manager.hpp"
 #include "knights_config_impl.hpp"
-#include "lua_ingame.hpp"
 #include "lua_exec.hpp"
 #include "lua_game_setup.hpp"
-#include "magic_actions.hpp"
-#include "script_actions.hpp"
+#include "lua_ingame.hpp"
 #include "lua_load_from_rstream.hpp"
+#include "lua_vfs.hpp"
 #include "lua_sandbox.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
+#include "magic_actions.hpp"
 #include "menu_wrapper.hpp"
 #include "monster_manager.hpp"
 #include "monster_task.hpp"
@@ -48,13 +48,15 @@
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
+#include "read_module_names.hpp"
 #include "rng.hpp"
-#include "rstream.hpp"
+#include "script_actions.hpp"
 #include "segment.hpp"
 #include "sound.hpp"
 #include "stuff_bag.hpp"
 #include "task_manager.hpp"
 #include "tile.hpp"
+#include "vfs.hpp"
 
 #include "include_lua.hpp"
 
@@ -103,7 +105,9 @@ namespace {
     }
 }
 
-KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool menu_strict)
+KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
+                                     const std::vector<std::string> &module_names,
+                                     bool menu_strict)
     : doing_config(true),
       knight_anim(0), default_item(0),
       stuff_bag_graphic(0),
@@ -124,14 +128,60 @@ KnightsConfigImpl::KnightsConfigImpl(const std::string &config_file_name, bool m
 
         // Add the standard controls
         AddStandardControls(lua, this);
-        
-        // Load some lua code into the context
-        LuaExecRStream(lua, 
-                       std::string("server/") + config_file_name,
-                       0, 
-                       0, 
-                       false,    // look in top level rsrc directory only
-                       false);   // no dofile namespace proposal
+
+        // Create the registry table that stores finished module tables
+        lua_newtable(lua);
+        lua_setfield(lua, LUA_REGISTRYINDEX, "_MODULES");
+
+        // Load each Lua module
+        for (const std::string & module_name : module_names) {
+            // Read depends.txt
+            std::vector<std::string> deps = ReadModuleNames(module_vfs, module_name + "/depends.txt");
+
+            // Disable all mounts, then mount the module itself plus its dependencies
+            VFS vfs = module_vfs;
+            vfs.disableAll();
+            vfs.enable(module_name);
+            for (const auto &dep : deps) {
+                vfs.enable(dep);
+            }
+            SetLuaVFS(lua, vfs);
+
+            // 1. Create module env table M = {} with __index = _G as fallback
+            lua_newtable(lua);                                            // [M]
+            lua_createtable(lua, 0, 1);                                   // [M meta]
+            lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);        // [M meta G]
+            lua_setfield(lua, -2, "__index");                             // [M meta]
+            lua_setmetatable(lua, -2);                                    // [M]
+
+            // 2. Inject each dependency's table into M by name
+            lua_getfield(lua, LUA_REGISTRYINDEX, "_MODULES");             // [M _MODULES]
+            for (const auto &dep : deps) {
+                lua_getfield(lua, -1, dep.c_str());                       // [M _MODULES dep_table]
+                lua_setfield(lua, -3, dep.c_str());                       // [M _MODULES]
+            }
+            lua_pop(lua, 1);                                              // [M]
+
+            // 3. Load and run init.lua with M as _ENV
+            const int env_idx = lua_gettop(lua);
+            LuaExecRStream(lua,
+                           module_name + "/init.lua",
+                           0,
+                           0,
+                           false,    // look in root only (no cwd lookup)
+                           false,    // no namespace proposal (called from C)
+                           env_idx);
+
+            // 4. Store M in registry for later modules to depend on
+            lua_getfield(lua, LUA_REGISTRYINDEX, "_MODULES");             // [M _MODULES]
+            lua_pushvalue(lua, -2);                                       // [M _MODULES M]
+            lua_setfield(lua, -2, module_name.c_str());                   // [M _MODULES]
+            lua_pop(lua, 2);                                              // []
+        }
+
+        // After initialization, clear the VFS so that Lua
+        // can no longer access files.
+        SetLuaVFS(lua, VFS());
 
         // Get the "kts" table
         lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);  // [env]
@@ -667,10 +717,10 @@ Segment * KnightsConfigImpl::addLuaSegment(unique_ptr<Segment> p)
     return q;
 }
 
-Sound * KnightsConfigImpl::addLuaSound(const FileInfo &fi)
+Sound * KnightsConfigImpl::addLuaSound(const std::string &filename)
 {
     const int new_id = lua_sounds.size() + 1;
-    Sound * p = new Sound(new_id, fi);
+    Sound * p = new Sound(new_id, filename);
     lua_sounds.push_back(p);
     return p;
 }

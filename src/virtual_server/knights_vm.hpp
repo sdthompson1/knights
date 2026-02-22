@@ -26,9 +26,10 @@
 
 #include "risc_vm.hpp"  // This is built by src/virtual_server/Makefile
 #include "tick_data.hpp"
+#include "vfs.hpp"
 #include "xxhash.hpp"
 
-#include <istream>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -89,9 +90,11 @@ struct MemoryBlock {
 
 class KnightsVM : public RiscVM, private TickCallbacks {
 public:
-    // Constructor. Pass SEED_SIZE bytes of random data
+    // Constructor. Pass SEED_SIZE bytes of random data and a list of module names.
     enum { SEED_SIZE = 32 };
-    KnightsVM(std::vector<unsigned char> && random_data_);
+    KnightsVM(std::vector<unsigned char> && random_data_,
+              std::vector<std::string> module_names_,
+              VFS modules_vfs);
 
 
     // runTicks starts (or resumes) VM execution.
@@ -106,7 +109,7 @@ public:
 
     // During the first tick (ONLY), the VM is allowed to read files
     // from the host "knights_data" directory (by using paths of the
-    // form "RES:dir/filename").
+    // form "VFS:dir/filename").
 
     // Execution continues until the next END_TICK syscall. The
     // parameter to that syscall (representing the number of
@@ -122,7 +125,7 @@ public:
     // The VM execution is guaranteed to be deterministic, so if two
     // VMs are given the same "initial_time_ms" in the constructor,
     // and the same runTicks calls are made (with identical tick data),
-    // and the same "RES:" files are available to both machines
+    // and the same "VFS:" files are available to both machines
     // (during the first tick), then the two VMs will end up in
     // exactly the same state.
 
@@ -173,9 +176,9 @@ private:
     EcallResult handleEcall();
 
     // Helpers for ecall handling
-    enum PathType { PT_ERROR, PT_TICK_DEVICE, PT_RSTREAM_FILE };
+    enum PathType { PT_ERROR, PT_TICK_DEVICE, PT_VFS_FILE };
     PathType interpretPath(std::string &resource_name);
-    int openRstreamFile(const std::string &resource_name);  // returns fd or error code
+    int openVFSFile(const std::string &resource_name);  // returns fd or error code
     void contextSwitch();
 
     // RiscVM overrides
@@ -206,9 +209,10 @@ private:
     // Timer (increased by onNewTick)
     uint32_t timer_ms;
 
-    // Access to RStream files
-    bool rstream_enabled;  // True during first tick only
-    std::vector<std::unique_ptr<std::istream> > files;
+    // Access to VFS files
+    bool vfs_enabled;  // True during first tick only
+    VFS vfs;
+    std::vector<std::unique_ptr<std::ifstream> > files;
 
     // Stack guard address for the thread stack
     uint32_t second_stack_guard;
@@ -222,8 +226,9 @@ private:
     uint32_t alt_t3, alt_t4, alt_t5, alt_t6;
     uint32_t alt_pc;
 
-    // Random seed data (only used during first tick)
+    // Random seed data and module names (only used during first tick)
     std::vector<unsigned char> random_data;
+    std::vector<std::string> module_names;
 
     // Checksumming
     std::vector<Checkpoint> checkpoints;

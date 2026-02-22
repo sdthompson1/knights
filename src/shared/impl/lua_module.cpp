@@ -26,7 +26,6 @@
 #include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_module.hpp"
-#include "rstream.hpp"
 
 #include "include_lua.hpp"
 
@@ -55,182 +54,6 @@ namespace {
         return lua_gettop(lua);
     }
 
-    std::string ModNameToFilename(const char *modname)
-    {
-        // module "a.b.c" converts to "server/a/b/c/init.lua".
-        
-        std::string result = "server/";
-        for (const char *p = modname; *p != 0; ++p) {
-            if (*p == '.') result += '/';
-            else result += *p;
-        }
-        result += "/init.lua";
-        return result;
-    }        
-
-    int Require(lua_State *lua)
-    {
-        // This is a cut-down version of the standard lua require function, ll_require.
-
-        const char *name = luaL_checkstring(lua, 1);
-
-        lua_settop(lua, 1);   // [name]
-        lua_getfield(lua, LUA_REGISTRYINDEX, "_LOADED");   // [name _LOADED]
-        lua_getfield(lua, 2, name);   // [name _LOADED _LOADED[name]]
-
-        if (lua_toboolean(lua, -1)) {
-            // package is already loaded
-            return 1;
-        }
-
-        // else must load package
-
-        lua_pop(lua, 1);  // [name _LOADED]
-
-        const std::string filename = ModNameToFilename(name);
-        
-        // we must pass module name and file name as arguments.
-        lua_pushstring(lua, name);                 // [name _LOADED name]
-        lua_pushstring(lua, filename.c_str());     // [name _LOADED name filename]
-
-        // Run the module.
-        LuaExecRStream(lua, filename, 2, 1, 
-            false,   // look in 'server' dir only (not cwd)
-            false);  // no dofile namespace proposal
-
-        // [name _LOADED result]
-
-        if (!lua_isnil(lua, -1)) {
-            lua_setfield(lua, 2, name);   // [name _LOADED] and set _LOADED[name] = result
-        }
-
-        lua_getfield(lua, 2, name);   // [name _LOADED _LOADED[name]]
-
-        if (lua_isnil(lua, -1)) {
-            // module did not set a value in _LOADED[name]
-            lua_pushboolean(lua, 1);   // [name _LOADED nil true]
-            lua_pushvalue(lua, -1);    // [name _LOADED nil true true]
-            lua_setfield(lua, 2, name);  // [name _LOADED nil true] and set _LOADED[name]=true
-        }
-
-        return 1;   // Return the contents of _LOADED[name].
-    }
-    
-
-    //
-    // "module" function
-    // Note this is considerably changed from the Lua 5.1 version.
-    //
-
-    int PrivIndex(lua_State *lua)
-    {
-        /* This is equivalent to the following Lua code:
-
-             function PrivMeta.__index(_, k)
-                local x = M[k]     -- M is the first (and only) upvalue
-                if x ~= nil then
-                   return x
-                else
-                   return _G[k]    -- _G is the "real" global table (LUA_RIDX_GLOBALS)
-                end
-             end
-        */
-
-        // NOTE: This function does not throw C++ exceptions (although
-        // it might throw Lua errors). Therefore, it is safe to use
-        // with lua_pushcclosure w/o the PushCClosure wrapper.
-
-        ASSERT(lua_gettop(lua) == 2);
-
-        // local x = M[k]
-        lua_pushvalue(lua, 2);      // [_ k k]
-        lua_gettable(lua, lua_upvalueindex(1));   // [_ k x]
-
-        // if x ~= nil
-        if (!lua_isnil(lua, -1)) {
-
-            // return x
-            return 1;
-
-        } else {
-            // return _G[k]
-            lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);    // [_ k x G]
-            lua_pushvalue(lua, 2);   // [_ k x G k]
-            lua_gettable(lua, -2);    // [_ k x G[k]]
-            return 1;
-        }
-    }
-
-    int Module(lua_State *lua)
-    {
-        /* This does the rough equivalent of the following lua code:
-
-              local M = {}
-              package.loaded[...] = M
-
-              local Priv = {}
-              local PrivMeta = {
-                 __index = <See above>,
-                 __newindex = M
-              }
-              setmetatable(Priv, PrivMeta)
-
-           And it also sets _ENV in the parent frame to Priv.
-
-           NOTE: The reason to use a proxy table "Priv", instead of
-           setting _ENV to M directly, is to ensure that global
-           symbols (e.g. "print") do not appear in the module table.
-           [e.g. local M = require("somemodule"); assert(M.print == nil); ]
-        */
-
-        // fetch "..." argument
-        const char *name = luaL_checkstring(lua, 1);
-        if (!name) {
-            luaL_error(lua, "'module': first argument must be module name");
-        }
-
-        // find the parent call frame
-        lua_Debug ar;
-        if (lua_getstack(lua, 1, &ar) == 0 ||
-          lua_getinfo(lua, "f", &ar) == 0 ||       // [caller]
-          lua_iscfunction(lua, -1)) {
-            luaL_error(lua, "'module' called from C");
-        }
-
-        // local M = {}
-        lua_newtable(lua);     // [f M]
-
-        // package.loaded[...] = M
-        lua_getfield(lua, LUA_REGISTRYINDEX, "_LOADED");   // [f M _LOADED]
-        lua_pushvalue(lua, -2);       // [f M _LOADED M] 
-        lua_setfield(lua, -2, name);  // [f M _LOADED]
-        lua_pop(lua, 1);              // [f M]
-
-        // local Priv = {}
-        // local PrivMeta = {}
-        lua_newtable(lua);
-        lua_createtable(lua, 0, 2);  // [f M Priv PrivMeta]
-
-        // function PrivMeta.__index
-        // (Don't use PushCFunction, we need maximum efficiency here)
-        lua_pushvalue(lua, -3);               // [f M Priv PrivMeta M]
-        lua_pushcclosure(lua, &PrivIndex, 1); // [f M Priv PrivMeta __index]
-        lua_setfield(lua, -2, "__index");     // [f M Priv PrivMeta]
-
-        // PrivMeta.__newindex = M
-        lua_pushvalue(lua, -3);                  // [f M Priv PrivMeta M]
-        lua_setfield(lua, -2, "__newindex");     // [f M Priv PrivMeta]
-
-        // setmetatable(Priv, PrivMeta)
-        lua_setmetatable(lua, -2);            // [f M Priv]
-
-        // Now set _ENV in the parent (f) to Priv
-        lua_setupvalue(lua, -3, 1);           // [f M]
-
-        return 0;
-    }
-
-    
     //
     // Strict Checking of Globals (#203)
     //
@@ -397,21 +220,7 @@ void AddModuleFuncs(lua_State *lua)
     PushCFunction(lua, &DoFile);
     lua_setglobal(lua, "dofile");
 
-    // Global "require" function
-    PushCFunction(lua, &Require);
-    lua_setglobal(lua, "require");
-
-    // Global "module" function
-    PushCFunction(lua, &Module);
-    lua_setglobal(lua, "module");
-
     // Global "use_strict" function
     PushCFunction(lua, &UseStrict);
     lua_setglobal(lua, "use_strict");
-
-    // "package" table
-    lua_createtable(lua, 0, 1);  // [{}]
-    luaL_getsubtable(lua, LUA_REGISTRYINDEX, "_LOADED");   // [{} {}]  (second tbl is also in registry as _LOADED)
-    lua_setfield(lua, -2, "loaded");    // [{loaded={}}]
-    lua_setglobal(lua, "package");      // []
 }

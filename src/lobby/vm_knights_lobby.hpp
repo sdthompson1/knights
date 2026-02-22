@@ -30,6 +30,10 @@
 
 #include "network/network_connection.hpp"
 
+#include <string>
+#include <vector>
+
+class VFS;
 class VMKnightsLobbyImpl;
 
 namespace Coercri {
@@ -59,7 +63,9 @@ public:
     VMKnightsLobby(Coercri::NetworkDriver &net_driver,
                    Coercri::Timer &timer,
                    const PlayerID &local_user_id,
-                   bool new_control_system);
+                   bool new_control_system,
+                   std::vector<std::string> module_names,
+                   VFS &&modules_vfs);
 
     // Destructor - this will shut down the VM, signal the background
     // thread to stop (and wait for it to exit), and close any network

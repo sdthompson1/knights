@@ -25,29 +25,30 @@
 
 #include "knights_config_impl.hpp"
 #include "load_segments.hpp"
+#include "lua_vfs.hpp"
 #include "lua_userdata.hpp"
-#include "rstream.hpp"
-#include "rstream_find.hpp"
 #include "segment.hpp"
 #include "trim.hpp"
+#include "vfs.hpp"
 
 #include "include_lua.hpp"
 
 using std::unique_ptr;
 
 void LoadSegments(lua_State *lua, KnightsConfigImpl *kc,
-                  const char *filename, const std::string &cwd)
+                  const char *filename)
 {
     // [tiletbl]
-    
-    std::string to_load = RStreamFind(filename, cwd);
-    RStream str(to_load);
+
+    const VFS & vfs = GetLuaVFS(lua);
+    std::string to_load = LuaResolveFile(lua, filename);
+    std::ifstream str = vfs.open(to_load);
 
     lua_newtable(lua);    // [tiletbl result]
     lua_insert(lua, -2);  // [result tiletbl]
 
     int idx = 1;
-    
+
     while (1) {
         std::string x;
         std::getline(str, x);

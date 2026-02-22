@@ -87,14 +87,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\rstream\rstream.cpp" />
+    <ClCompile Include="..\..\src\rstream\vfs.cpp" />
     <ClCompile Include="..\..\src\rstream\rstream_error.cpp" />
-    <ClCompile Include="..\..\src\rstream\rstream_find.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\rstream\rstream.hpp" />
+    <ClInclude Include="..\..\src\rstream\vfs.hpp" />
     <ClInclude Include="..\..\src\rstream\rstream_error.hpp" />
-    <ClInclude Include="..\..\src\rstream\rstream_find.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

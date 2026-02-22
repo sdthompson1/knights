@@ -131,14 +131,16 @@ struct VMKnightsLobbyImpl {
 VMKnightsLobby::VMKnightsLobby(Coercri::NetworkDriver &net_driver,
                                Coercri::Timer &timer,
                                const PlayerID &local_user_id,
-                               bool new_control_system)
+                               bool new_control_system,
+                               std::vector<std::string> module_names,
+                               VFS &&modules_vfs)
 {
     // Initialize pimpl fields
     pimpl = std::make_unique<VMKnightsLobbyImpl>(net_driver, timer, local_user_id, new_control_system);
 
     // Become leader initially (which starts the VM and runs an
     // initial tick), but do not open the listening port yet
-    pimpl->leader = std::make_unique<LeaderState>(timer, local_user_id);
+    pimpl->leader = std::make_unique<LeaderState>(timer, local_user_id, std::move(module_names), std::move(modules_vfs));
 
     // Start background thread
     pimpl->background_thread = boost::thread(VMKnightsLobbyThread(*pimpl));
@@ -220,7 +222,8 @@ void VMKnightsLobby::becomeFollower(const std::string &address, int port)
 // Mutex should be locked when this is called
 void VMKnightsLobby::rejoinGame()
 {
-    KnightsClient client(false); // don't allow untrusted strings
+    KnightsClient client(false,  // don't allow untrusted strings
+                         std::filesystem::path());  // modules path is not required for this
     client.setPlayerIdAndControls(pimpl->local_user_id, pimpl->new_control_system);
     client.joinGame("#VMGame");
     std::vector<unsigned char> data;

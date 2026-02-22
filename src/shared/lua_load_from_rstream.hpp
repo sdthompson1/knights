@@ -45,6 +45,7 @@ struct lua_State;
 void LuaExecRStream(lua_State *lua, const std::string &filename,
                     int nargs, int nresults,
                     bool look_in_cwd,
-                    bool use_dofile_namespace_proposal);
+                    bool use_dofile_namespace_proposal,
+                    int env_table_idx = 0);
 
 #endif

@@ -30,9 +30,9 @@
 #include "knights_config.hpp"
 #include "knights_server.hpp"
 #include "rng.hpp"
-#include "rstream.hpp"
 #include "syscalls.hpp"
 #include "tick_data.hpp"
+#include "vfs.hpp"
 #include "timer/timer.hpp"
 
 #include <iostream>
@@ -153,8 +153,22 @@ int main()
                              "",       // no motd file
                              "");      // no old_motd file
 
+        // Get module names from host
+        std::vector<std::string> module_names;
+        {
+            char buf[256];
+            for (int i = 0; ; ++i) {
+                int len = vs_get_module_name(i, buf, sizeof(buf));
+                if (len < 0) break;
+                module_names.emplace_back(buf, len);
+            }
+        }
+
+        // Create a dummy VFS
+        VFS vfs;
+
         // Create a single KnightsGame on the server.
-        boost::shared_ptr<KnightsConfig> config(new KnightsConfig("main.lua", false));
+        boost::shared_ptr<KnightsConfig> config(new KnightsConfig(vfs, module_names, false));
         server.startNewGame(config, "#VMGame");
 
         // Create VMTickCallbacks

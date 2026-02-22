@@ -55,7 +55,9 @@ namespace {
 //
 
 LeaderState::LeaderState(Coercri::Timer &timer,
-                         const PlayerID &local_user_id)
+                         const PlayerID &local_user_id,
+                         std::vector<std::string> module_names,
+                         VFS &&modules_vfs)
     : timer(timer)
 {
     // Make a random seed
@@ -66,7 +68,7 @@ LeaderState::LeaderState(Coercri::Timer &timer,
     }
 
     // Make a new KnightsVM
-    knights_vm.reset(new KnightsVM(std::move(seed)));
+    knights_vm.reset(new KnightsVM(std::move(seed), std::move(module_names), std::move(modules_vfs)));
 
     // Run an initial tick to force everything to load
     tick_writer.reset(new TickWriter(tick_data));

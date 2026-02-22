@@ -89,19 +89,20 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\shared\impl\anim.cpp" />
     <ClCompile Include="..\..\src\shared\impl\colour_change.cpp" />
-    <ClCompile Include="..\..\src\shared\impl\file_info.cpp" />
     <ClCompile Include="..\..\src\shared\impl\graphic.cpp" />
     <ClCompile Include="..\..\src\shared\impl\lua_exec.cpp" />
     <ClCompile Include="..\..\src\shared\impl\lua_func_wrapper.cpp" />
     <ClCompile Include="..\..\src\shared\impl\lua_load_from_rstream.cpp" />
     <ClCompile Include="..\..\src\shared\impl\lua_module.cpp" />
     <ClCompile Include="..\..\src\shared\impl\lua_ref.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\lua_vfs.cpp" />
     <ClCompile Include="..\..\src\shared\impl\lua_sandbox.cpp" />
     <ClCompile Include="..\..\src\shared\impl\lua_traceback.cpp" />
     <ClCompile Include="..\..\src\shared\impl\map_support.cpp" />
     <ClCompile Include="..\..\src\shared\impl\menu.cpp" />
     <ClCompile Include="..\..\src\shared\impl\menu_item.cpp" />
     <ClCompile Include="..\..\src\shared\impl\overlay.cpp" />
+    <ClCompile Include="..\..\src\shared\impl\read_module_names.cpp" />
     <ClCompile Include="..\..\src\shared\impl\read_write_loc.cpp" />
     <ClCompile Include="..\..\src\shared\impl\read_write_player_id.cpp" />
     <ClCompile Include="..\..\src\shared\impl\sound.cpp" />
@@ -112,7 +113,6 @@
     <ClInclude Include="..\..\src\shared\anim.hpp" />
     <ClInclude Include="..\..\src\shared\colour_change.hpp" />
     <ClInclude Include="..\..\src\shared\dungeon_view.hpp" />
-    <ClInclude Include="..\..\src\shared\file_info.hpp" />
     <ClInclude Include="..\..\src\shared\game_info.hpp" />
     <ClInclude Include="..\..\src\shared\graphic.hpp" />
     <ClInclude Include="..\..\src\shared\knights_callbacks.hpp" />
@@ -121,6 +121,7 @@
     <ClInclude Include="..\..\src\shared\lua_load_from_rstream.hpp" />
     <ClInclude Include="..\..\src\shared\impl\lua_module.hpp" />
     <ClInclude Include="..\..\src\shared\lua_ref.hpp" />
+    <ClInclude Include="..\..\src\shared\lua_vfs.hpp" />
     <ClInclude Include="..\..\src\shared\lua_sandbox.hpp" />
     <ClInclude Include="..\..\src\shared\lua_traceback.hpp" />
     <ClInclude Include="..\..\src\shared\map_support.hpp" />
@@ -131,6 +132,7 @@
     <ClInclude Include="..\..\src\shared\overlay.hpp" />
     <ClInclude Include="..\..\src\shared\potion_magic.hpp" />
     <ClInclude Include="..\..\src\protocol\protocol.hpp" />
+    <ClInclude Include="..\..\src\shared\read_module_names.hpp" />
     <ClInclude Include="..\..\src\shared\read_write_loc.hpp" />
     <ClInclude Include="..\..\src\shared\read_write_player_id.hpp" />
     <ClInclude Include="..\..\src\shared\sound.hpp" />

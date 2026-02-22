@@ -105,6 +105,46 @@ void vs_get_random_data(void *ptr, int num_bytes)
     );
 }
 
+int vs_get_module_name(int index, char *buf, int buf_size)
+{
+    int result;
+    asm volatile(
+        "mv a0, %1\n\t"         // 'index' in a0
+        "mv a1, %2\n\t"         // 'buf' in a1
+        "mv a2, %3\n\t"         // 'buf_size' in a2
+        "li a7, 5005\n\t"       // Syscall number in a7
+        "ecall\n\t"             // Make syscall
+        "mv %0, a0"             // Return result from a0
+        : "=r" (result)
+        : "r" (index), "r" (buf), "r" (buf_size)
+        : "a0", "a1", "a2", "a7", "memory"
+    );
+    return result;
+}
+
+void vs_vfs_disable_all()
+{
+    asm volatile(
+        "li a7, 5006\n\t"
+        "ecall"
+        :
+        :
+        : "a7"
+    );
+}
+
+void vs_vfs_enable(const char *vfs_path)
+{
+    asm volatile(
+        "mv a0, %0\n\t"
+        "li a7, 5007\n\t"
+        "ecall"
+        :
+        : "r" (vfs_path)
+        : "a0", "a7"
+    );
+}
+
 void vs_switch_to_main_thread(unsigned int param)
 {
     asm volatile(

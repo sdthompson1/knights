@@ -33,6 +33,7 @@
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_ref.hpp"
+#include "lua_vfs.hpp"
 #include "lua_setup.hpp"
 #include "lua_userdata.hpp"
 #include "my_exceptions.hpp"
@@ -131,17 +132,9 @@ namespace {
         KnightsConfigImpl *kc = GetKC(lua, "Segments");        
         const char *filename = luaL_checkstring(lua, 2);
 
-        std::string cwd;
-        lua_getglobal(lua, "_CWD");  // [.. cwd]
-        const char *p = lua_tostring(lua, -1);
-        if (p) {
-            cwd = p;
-        }
-        lua_pop(lua, 1); // [..]
-
         lua_pushvalue(lua, 1);  // [.. tiletable]
 
-        LoadSegments(lua, kc, filename, cwd);  // [.. segments]
+        LoadSegments(lua, kc, filename);  // [.. segments]
         
         return 1;
     }        
@@ -154,9 +147,8 @@ namespace {
         KnightsConfigImpl *kc = GetKC(lua, "Sounds");
         const char *filename = luaL_checkstring(lua, 1);
 
-        lua_getglobal(lua, "_CWD"); // [_CWD]
-        const char *cwd = lua_tostring(lua, -1);  // Note: could be NULL; using GetCWD would probably be better
-        Sound * sound = kc->addLuaSound(FileInfo(filename, cwd));
+        std::string resolved_filename = LuaResolveFile(lua, filename);
+        Sound * sound = kc->addLuaSound(resolved_filename);
         lua_pop(lua, 1);  // []
 
         NewLuaPtr<Sound>(lua, sound);  // [snd]

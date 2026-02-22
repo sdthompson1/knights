@@ -31,8 +31,10 @@
 // constructor
 //
 
-KnightsConfig::KnightsConfig(const std::string &config_filename, bool menu_strict)
-    : pimpl(new KnightsConfigImpl(config_filename, menu_strict))
+KnightsConfig::KnightsConfig(const VFS &vfs,
+                             const std::vector<std::string> &module_names,
+                             bool menu_strict)
+    : pimpl(new KnightsConfigImpl(vfs, module_names, menu_strict))
 { }
 
 void KnightsConfig::getAnims(std::vector<const Anim*> &anims) const

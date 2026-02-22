@@ -61,10 +61,12 @@ void LobbyController::resetAll()
 boost::shared_ptr<KnightsClient>
     LobbyController::startLocalGame(boost::shared_ptr<Coercri::Timer> timer,
                                     boost::shared_ptr<KnightsConfig> config,
-                                    const std::string &game_name)
+                                    const std::string &game_name,
+                                    std::filesystem::path modules_path)
 {
     knights_lobby.reset(new SimpleKnightsLobby(timer, config, game_name));
-    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings for local game
+    knights_client.reset(new KnightsClient(true,   // Allow untrusted strings for local game
+                                           std::move(modules_path)));
     return knights_client;
 }
 
@@ -73,10 +75,12 @@ boost::shared_ptr<KnightsClient>
                                  boost::shared_ptr<Coercri::Timer> timer,
                                  int port,
                                  boost::shared_ptr<KnightsConfig> config,
-                                 const std::string &game_name)
+                                 const std::string &game_name,
+                                 std::filesystem::path modules_path)
 {
     knights_lobby.reset(new SimpleKnightsLobby(net_driver, timer, port, config, game_name));
-    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings for LAN game
+    knights_client.reset(new KnightsClient(true, // Allow untrusted strings for LAN game
+                                           std::move(modules_path)));
     return knights_client;
 }
 
@@ -84,10 +88,12 @@ boost::shared_ptr<KnightsClient>
     LobbyController::joinRemoteServer(Coercri::NetworkDriver &net_driver,
                                       boost::shared_ptr<Coercri::Timer> timer,
                                       const std::string &address,
-                                      int port)
+                                      int port,
+                                      std::filesystem::path modules_path)
 {
     knights_lobby.reset(new SimpleKnightsLobby(net_driver, timer, address, port));
-    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings (we assume that players trust any server that they choose to connect to)
+    knights_client.reset(new KnightsClient(true, // Allow untrusted strings (we assume that players trust any server that they choose to connect to)
+                                           std::move(modules_path)));
     return knights_client;
 }
 
@@ -99,7 +105,8 @@ boost::shared_ptr<KnightsClient>
                                   const std::string &lobby_id,
                                   OnlinePlatform::Visibility vis,
                                   std::unique_ptr<VMKnightsLobby> kts_lobby,
-                                  uint64_t my_checksum)
+                                  uint64_t my_checksum,
+                                  std::filesystem::path modules_path)
 {
     this->my_checksum = my_checksum;
 
@@ -131,7 +138,8 @@ boost::shared_ptr<KnightsClient>
     vm_lobby_leader_id = PlayerID();
 
     // Create the client
-    knights_client.reset(new KnightsClient(false)); // Don't trust arbitrary strings coming from VM
+    knights_client.reset(new KnightsClient(false,  // Don't trust arbitrary strings coming from VM
+                                           std::move(modules_path)));
     return knights_client;
 }
 #endif

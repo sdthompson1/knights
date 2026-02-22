@@ -15,24 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\rstream\rstream.cpp">
+    <ClCompile Include="..\..\src\rstream\vfs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\rstream\rstream_error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\rstream\rstream_find.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\rstream\rstream.hpp">
+    <ClInclude Include="..\..\src\rstream\vfs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\rstream\rstream_error.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\rstream\rstream_find.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

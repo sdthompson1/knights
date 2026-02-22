@@ -78,7 +78,6 @@ namespace {
     void ParseCmdLineArgs(int argc, char const * const * argv,
                           DisplayType & display_type,
                           std::filesystem::path & data_dir,
-                          std::string & config_filename,
                           bool & autostart)
     {
         for (int i = 1; i < argc; ++i) {
@@ -87,8 +86,6 @@ namespace {
                 display_type = DT_FULLSCREEN;
             } else if (arg == "-w" || arg == "--window") {
                 display_type = DT_WINDOWED;
-            } else if (arg == "-c" || arg == "--config") {
-                config_filename = ReadParam(i, argc, argv);
             } else if (arg == "-d" || arg == "--datadir") {
                 data_dir = ReadParam(i, argc, argv);
             } else if (arg == "-a" || arg == "--autostart") {
@@ -138,16 +135,15 @@ int main(int argc, char * argv[])
 
         // Set defaults for cmd line arguments.
         DisplayType display_type = DT_DONT_CARE;
-        std::string config_filename = "main.lua";
         bool autostart = false;
 
         std::filesystem::path data_dir = default_data_dir;
 
         // Parse the cmd line arguments
-        ParseCmdLineArgs(argc, argv, display_type, data_dir, config_filename, autostart);
+        ParseCmdLineArgs(argc, argv, display_type, data_dir, autostart);
         
         // Run the game itself:
-        KnightsApp app(display_type, data_dir, config_filename, autostart, localization);
+        KnightsApp app(display_type, data_dir, autostart, localization);
         app.runKnights();
 
 #ifdef ONLINE_PLATFORM
@@ -165,8 +161,6 @@ int main(int argc, char * argv[])
         std::cout << "Configuration options:\n";
         std::cout << "  -a, --autostart: Automatically start game with default settings\n";
         std::cout << "     (used by map editor)\n";
-        std::cout << "  -c, --config [filename]: Set config file to use\n";
-        std::cout << "     (default: main.lua)\n";
         std::cout << "  -d, --datadir [directory name]: Set location of 'knights_data' directory\n";
         std::cout << "     (default: " << default_data_dir << ")\n";
         std::cout << "\n";
