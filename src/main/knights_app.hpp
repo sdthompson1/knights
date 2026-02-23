@@ -30,6 +30,7 @@
 #ifndef KNIGHTS_APP_HPP
 #define KNIGHTS_APP_HPP
 
+#include "game_module_spec.hpp"
 #include "lobby_controller.hpp"  // for HostMigrationState enum
 #include "online_platform.hpp"
 #include "utf8string.hpp"
@@ -58,6 +59,7 @@ class KnightsConfig;
 class KnightsServer;
 class Localization;
 class LocalKey;
+class ModuleManager;
 class Options;
 class PlayerID;
 class PotionRenderer;
@@ -128,14 +130,8 @@ public:
     Coercri::NetworkDriver & getPlatformNetworkDriver() const;
 #endif
 
-    // Modules
-    // For now this just returns a fixed list of modules, and a corresponding VFS
-    // (Later, we might replace this with something more complicated that uses Steam Workshop
-    // and/or allows users to choose which modules to activate when creating a game)
-    void getModules(bool tutorial,
-                    std::vector<std::string> &module_names_out,
-                    VFS &vfs_out);
-    std::filesystem::path getModulesPath() const;
+    // Module Manager
+    ModuleManager &getModuleManager();
 
     // get the width/height to be used for windowed mode.
     void getWindowedModeSize(int &width, int &height);
@@ -157,14 +153,6 @@ public:
     // GameManager methods
     //
 
-    // single player means PAUSE requests will be sent to server, and chat will be blocked.
-    void createGameManager(boost::shared_ptr<KnightsClient> knights_client,
-                           bool single_player,
-                           bool tutorial_mode,
-                           bool autostart_mode,
-                           bool can_invite,
-                           const PlayerID &my_player_id);
-    void destroyGameManager();
     GameManager & getGameManager();
 
 
@@ -184,34 +172,23 @@ public:
 
 
     //
-    // KnightsLobby methods
-    //
-    // These create an appropriate KnightsLobby representing a new
-    // game, and return a KnightsClient object for the game code to
-    // use. (For online platform games, a corresponding PlatformLobby
-    // is also created.)
-    //
-    // The lobby objects will be deleted when resetAll is called.
+    // Starting a new game
     //
 
-    boost::shared_ptr<KnightsClient> startLocalGame(boost::shared_ptr<KnightsConfig> config,
-                                                    const std::string &game_name);
-    boost::shared_ptr<KnightsClient> hostLanGame(int port,
-                                                 boost::shared_ptr<KnightsConfig> config,
-                                                 const std::string &game_name);
-    boost::shared_ptr<KnightsClient> joinRemoteServer(const std::string &address,
-                                                      int port);
+    void startTutorial();
+    void startSinglePlayerGame();
+    void startSplitScreenGame();
+    void hostLanGame(const PlayerID &local_player_id);
+    void joinLanGame(const PlayerID &local_player_id, const std::string &address, int port, const std::string &display_name);
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    // If lobby_id empty this creates a new lobby (with given visibility),
-    // otherwise it joins an existing lobby.
-    boost::shared_ptr<KnightsClient> createVMGame(const std::string &lobby_id,
-                                                  OnlinePlatform::Visibility vis,
-                                                  std::unique_ptr<VMKnightsLobby> kts_lobby,
-                                                  uint64_t my_checksum);
+    void hostOnlineGame(OnlinePlatform::Visibility vis);
+    void joinOnlineGame(const std::string &platform_lobby_id);
+
     HostMigrationState getHostMigrationState() const;
     void setHostMigrationStateInGame();
     PlayerID getCurrentLeader() const;
+
     void inviteFriendToLobby();
 #endif
 

@@ -47,10 +47,11 @@ STATUS_SUCCESS = 0x00
 STATUS_ERROR = 0x01
 
 class Lobby:
-    def __init__(self, lobby_id: str, leader_user_id: str, checksum: bytes):
+    def __init__(self, lobby_id: str, leader_user_id: str, checksum: bytes, module_names: list):
         self.lobby_id = lobby_id
         self.leader_user_id = leader_user_id
         self.checksum = checksum
+        self.module_names = module_names
         self.members: Set[str] = {leader_user_id}
         self.created_time = time.time()
         self.status_key = ""  # LocalKey string
@@ -219,12 +220,17 @@ class LobbyServer:
         with self.lock:
             lobby_id = str(self.next_lobby_id)
             self.next_lobby_id += 1
-            
-            lobby = Lobby(lobby_id, user_id, payload)
+
+            # Payload: checksum (null-terminated) + module names (null-terminated) + empty terminator
+            parts = payload.split(b'\0')
+            checksum_bytes = parts[0]
+            module_names = [p.decode() for p in parts[1:] if p]
+
+            lobby = Lobby(lobby_id, user_id, checksum_bytes, module_names)
             self.lobbies[lobby_id] = lobby
             self.user_lobbies[user_id] = lobby_id
         
-        print(f"User {user_id} created lobby {lobby_id}")
+        print(f"User {user_id} created lobby {lobby_id} (modules: {module_names})")
         return self.create_success_response(lobby_id.encode())
     
     def handle_get_lobby_list(self, client_socket: socket.socket, payload: bytes) -> bytes:
@@ -319,6 +325,11 @@ class LobbyServer:
 
             # Add lobby_state
             response_data += lobby.lobby_state.encode() + b'\0'
+
+            # Add module list: num_modules (4 bytes LE) + module names (null-terminated)
+            response_data += struct.pack('<I', len(lobby.module_names))
+            for m in lobby.module_names:
+                response_data += m.encode() + b'\0'
 
         return self.create_success_response(response_data)
     

@@ -603,10 +603,9 @@ int KnightsVM::openVFSFile(const std::string &resource_filename)
         str.reset(new std::ifstream(vfs.open(resource_filename)));
     } catch (RStreamError&) {
         // Ignore RStream errors, pass them back to the VM instead
-        error = true;
     }
-    // Also set error flag if str is invalid for any reason
-    if (!*str) error = true;
+    // Set error flag if exception was caught or if *str was invalid for any reason
+    if (!str || !*str) error = true;
 
     // If error occurred, assume it is "file not found" and pass it back to VM
     if (error) {

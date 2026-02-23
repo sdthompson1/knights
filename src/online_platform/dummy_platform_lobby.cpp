@@ -156,12 +156,28 @@ void DummyPlatformLobby::updateCachedInfo()
                                         null_pos = response_data.find('\0', pos);
                                         if (null_pos != std::string::npos) {
                                             std::string state_str = response_data.substr(pos, null_pos - pos);
+                                            pos = null_pos + 1;
                                             if (state_str == "JOINED") {
                                                 current_state = State::JOINED;
                                             } else if (state_str == "FAILED") {
                                                 current_state = State::FAILED;
                                             }
                                         }
+                                    }
+
+                                    // Parse module list
+                                    cached_module_names.clear();
+                                    uint32_t num_modules = 0;
+                                    if (pos + 4 <= response_data.length()) {
+                                        std::memcpy(&num_modules, response_data.data() + pos, 4);
+                                        pos += 4;
+                                    }
+                                    for (uint32_t i = 0; i < num_modules; ++i) {
+                                        null_pos = response_data.find('\0', pos);
+                                        if (null_pos == std::string::npos) break;
+                                        cached_module_names.push_back(
+                                            response_data.substr(pos, null_pos - pos));
+                                        pos = null_pos + 1;
                                     }
                                 }
                             }
@@ -241,9 +257,9 @@ std::vector<ChatMessage> DummyPlatformLobby::receiveChatMessages()
     return messages;
 }
 
-uint64_t DummyPlatformLobby::getChecksum()
+GameModuleSpec DummyPlatformLobby::getModuleSpec()
 {
-    return cached_checksum;
+    return {cached_module_names, cached_checksum};
 }
 
 #endif

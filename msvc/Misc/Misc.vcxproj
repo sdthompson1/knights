@@ -94,6 +94,7 @@
     <ClInclude Include="..\..\src\misc\copy_if.hpp" />
     <ClInclude Include="..\..\src\misc\exception_base.hpp" />
     <ClInclude Include="..\..\src\misc\find_knights_data_dir.hpp" />
+    <ClInclude Include="..\..\src\misc\game_module_spec.hpp" />
     <ClInclude Include="..\..\src\misc\localization.hpp" />
     <ClInclude Include="..\..\src\misc\misc.hpp" />
     <ClInclude Include="..\..\src\misc\my_ctype.hpp" />

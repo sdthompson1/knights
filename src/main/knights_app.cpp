@@ -23,8 +23,8 @@
 
 #include "misc.hpp"
 
-#include "compute_checksum.hpp"
 #include "config_map.hpp"
+#include "connecting_screen.hpp"
 #include "credits_screen.hpp"
 #include "dummy_online_platform.hpp"
 #include "error_screen.hpp"
@@ -38,11 +38,14 @@
 #include "host_migration_screen.hpp"
 #include "keyboard_controller.hpp"
 #include "knights_app.hpp"
+#include "knights_client.hpp"
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
 #include "lua_vfs.hpp"
 #include "lua_sandbox.hpp"
+#include "game_module_spec.hpp"
+#include "module_manager.hpp"
 #include "read_module_names.hpp"
 #include "loading_screen.hpp"
 #include "localization.hpp"
@@ -57,7 +60,6 @@
 #include "title_screen.hpp"
 #include "vfs.hpp"
 #include "vm_knights_lobby.hpp"
-#include "vm_loading_screen.hpp"
 
 // coercri
 #include "core/coercri_error.hpp"
@@ -245,10 +247,14 @@ public:
     // saved paths
     VFS client_vfs;
     std::filesystem::path modules_path;
+    std::unique_ptr<ModuleManager> module_manager;
 
     // functions
     explicit KnightsAppImpl(Localization &loc)
-        : running(true), player_name_changed(false), localization(loc) { }
+        : running(true),
+          player_name_changed(false),
+          localization(loc)
+    { }
 
     void initOptions();
     void saveOptions();
@@ -258,7 +264,9 @@ public:
 
     void processMdnsMessages();
 
-    void updateOnlinePlatform();
+    void updateOnlinePlatform(KnightsApp &ka);
+
+    void startLocalGame(KnightsApp &ka, bool single_player, bool tutorial_mode, bool autostart_mode);
 };
 
 /////////////////////////////////////////////////////
@@ -291,6 +299,12 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     // Save the modules directory for use in getModules
     pimpl->modules_path = resource_dir / "modules";
+#ifdef ONLINE_PLATFORM
+    pimpl->module_manager = std::make_unique<ModuleManager>(pimpl->modules_path, pimpl->online_platform->getBuildId());
+#else
+    pimpl->module_manager = std::make_unique<ModuleManager>(pimpl->modules_path);
+#endif
+    pimpl->lobby_controller.setModuleManager(pimpl->module_manager.get());
 
     // Read the client config
     {
@@ -572,7 +586,7 @@ void KnightsApp::resetAll()
     pimpl->lobby_controller.resetAll();
 
     // Shut down the GameManager (important to do this BEFORE accessing gfxmanager/soundmanager)
-    destroyGameManager();
+    pimpl->game_manager.reset();
 
     // Wipe out all loaded graphics / sounds.
     unloadGraphicsAndSounds();
@@ -724,29 +738,9 @@ const VFS & KnightsApp::getClientVFS() const
     return pimpl->client_vfs;
 }
 
-void KnightsApp::getModules(bool tutorial,
-                            std::vector<std::string> &module_names_out,
-                            VFS &vfs_out)
+ModuleManager &KnightsApp::getModuleManager()
 {
-    if (tutorial) {
-        module_names_out = {"base", "tutorial"};
-    } else {
-        // for now, just build a temporary VFS at knights_data/modules/
-        // so that we can load modules.txt
-        VFS modules_root_vfs;
-        modules_root_vfs.add(pimpl->modules_path, "");
-        module_names_out = ReadModuleNames(modules_root_vfs, "modules.txt");
-    }
-
-    vfs_out = VFS();
-    for (const std::string &name : module_names_out) {
-        vfs_out.add(pimpl->modules_path / name, name);
-    }
-}
-
-std::filesystem::path KnightsApp::getModulesPath() const
-{
-    return pimpl->modules_path;
+    return *pimpl->module_manager;
 }
 
 #ifdef ONLINE_PLATFORM
@@ -905,21 +899,21 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
 
 void KnightsApp::runKnights()
 {
-    std::unique_ptr<Screen> initial_screen;
-
     if (pimpl->autostart) {
-        initial_screen.reset(new LoadingScreen(-1, PlayerID(), true, true, false, true));  // single player on, menu-strict on, tutorial off, autostart on
+        // startLocalGame will request screen change to LoadingScreen.
+        pimpl->startLocalGame(*this, true, false, true);
     } else {
         // Go to title screen.
+        std::unique_ptr<Screen> initial_screen;
         if (pimpl->options->first_time) {
             initial_screen.reset(new CreditsScreen("first_time_message_", ".txt", 60));
             pimpl->saveOptions();  // make sure they don't get the first time screen again
         } else {
             initial_screen.reset(new TitleScreen);
         }
+        requestScreenChange(std::move(initial_screen));
     }
 
-    requestScreenChange(std::move(initial_screen));
     executeScreenChange();
 
     // Error Handling system.
@@ -959,8 +953,11 @@ void KnightsApp::runKnights()
             // Handle mDNS messages if necessary
             pimpl->processMdnsMessages();
 
+            // Update Lobby Controller
+            pimpl->lobby_controller.update();
+
             // Update Online Platform
-            pimpl->updateOnlinePlatform();
+            pimpl->updateOnlinePlatform(*this);
 
 
             // Read input from the network (e.g. server telling us to move a knight on-screen)
@@ -1140,44 +1137,184 @@ void KnightsApp::runKnights()
 
 
 //////////////////////////////////////////////
-// Network Game Handling
+// Start New Games
 //////////////////////////////////////////////
 
-boost::shared_ptr<KnightsClient> KnightsApp::startLocalGame(boost::shared_ptr<KnightsConfig> config,
-                                                            const std::string &game_name)
+void KnightsAppImpl::startLocalGame(KnightsApp &ka,
+                                    bool single_player,
+                                    bool tutorial_mode,
+                                    bool autostart_mode)
 {
-    return pimpl->lobby_controller.startLocalGame(pimpl->timer, config, game_name, pimpl->modules_path);
+    std::vector<std::string> modules_to_load;
+    if (tutorial_mode) {
+        modules_to_load.push_back("tutorial");
+    } else {
+        modules_to_load = module_manager->getEnabledModules();
+    }
+    modules_to_load = module_manager->resolveModuleList(modules_to_load);
+    boost::shared_ptr<KnightsClient> client = lobby_controller.startLocalGame(timer,
+                                                                              modules_to_load);
+
+    std::vector<LocalParam> params(1, LocalParam(1));
+    UTF8String player_1 = ka.getLocalization().get(LocalKey("player_n"), params);
+    PlayerID dummy_player_id(player_1);
+
+    if (game_manager) throw UnexpectedError("GameManager already exists");
+    game_manager.reset(new GameManager(ka,
+                                       client,
+                                       timer,
+                                       single_player,
+                                       tutorial_mode,
+                                       autostart_mode,
+                                       false,   // can_invite
+                                       dummy_player_id));
+
+    client->setClientCallbacks(game_manager.get());
+    client->setPlayerIdAndControls(dummy_player_id,
+                                   tutorial_mode || options->new_control_system);
+
+    if (single_player || tutorial_mode) {
+        game_manager->tryJoinGame("#SplitScreenGame");
+        if (autostart_mode) {
+            client->setReady(true);
+        }
+    } else {
+        game_manager->tryJoinGameSplitScreen("#SplitScreenGame");
+    }
+
+    // Put up a loading screen while we wait for the game to start
+    ka.requestScreenChange(std::make_unique<LoadingScreen>());
 }
 
-boost::shared_ptr<KnightsClient> KnightsApp::hostLanGame(int port,
-                                                         boost::shared_ptr<KnightsConfig> config,
-                                                         const std::string &game_name)
+void KnightsApp::startTutorial()
 {
-    return pimpl->lobby_controller.hostLanGame(*pimpl->lan_net_driver, pimpl->timer, port,
-                                               config, game_name,
-                                               pimpl->modules_path);
+    // Note: we don't update the module manager here. It should already
+    // be updated from initialization
+    pimpl->startLocalGame(*this, true, true, true);
 }
 
-boost::shared_ptr<KnightsClient> KnightsApp::joinRemoteServer(const std::string &address,
-                                                              int port)
+void KnightsApp::startSinglePlayerGame()
 {
-    return pimpl->lobby_controller.joinRemoteServer(*pimpl->lan_net_driver, pimpl->timer,
-                                                    address, port,
-                                                    pimpl->modules_path);
+    pimpl->startLocalGame(*this, true, false, false);
+}
+
+void KnightsApp::startSplitScreenGame()
+{
+    pimpl->startLocalGame(*this, false, false, false);
+}
+
+void KnightsApp::hostLanGame(const PlayerID &local_player_id)
+{
+    const int server_port = getConfigMap().getInt("port_number");
+
+    boost::shared_ptr<KnightsClient> client =
+        pimpl->lobby_controller.hostLanGame(*pimpl->lan_net_driver,
+                                            pimpl->timer,
+                                            server_port);
+
+    if (pimpl->game_manager) throw UnexpectedError("GameManager already exists");
+    pimpl->game_manager.reset(new GameManager(*this,
+                                              client,
+                                              pimpl->timer,
+                                              false,  // single player
+                                              false,  // tutorial
+                                              false,  // autostart
+                                              false,   // can_invite
+                                              local_player_id));
+
+    client->setClientCallbacks(pimpl->game_manager.get());
+    client->setPlayerIdAndControls(local_player_id, pimpl->options->new_control_system);
+
+    // Start mDNS advertiser for LAN game discovery
+    startMdnsAdvertiser(local_player_id.getUserName(), server_port);
+
+    pimpl->game_manager->tryJoinGame("#LanGame");
+
+    // Put up a loading screen while we wait for the server to start up
+    requestScreenChange(std::make_unique<LoadingScreen>());
+}
+
+void KnightsApp::joinLanGame(const PlayerID &local_player_id,
+                             const std::string &address,
+                             int port,
+                             const std::string &display_name)
+{
+    boost::shared_ptr<KnightsClient> client =
+        pimpl->lobby_controller.joinLanGame(*pimpl->lan_net_driver,
+                                            pimpl->timer,
+                                            address,
+                                            port);
+
+    if (pimpl->game_manager) throw UnexpectedError("GameManager already exists");
+    pimpl->game_manager.reset(new GameManager(*this,
+                                              client,
+                                              pimpl->timer,
+                                              false,  // single player
+                                              false,  // tutorial
+                                              false,  // autostart
+                                              false,   // can_invite
+                                              local_player_id));
+
+    client->setClientCallbacks(pimpl->game_manager.get());
+    client->setPlayerIdAndControls(local_player_id, pimpl->options->new_control_system);
+
+    pimpl->game_manager->tryJoinGame("#LanGame");
+
+    // Go to the ConnectingScreen while we wait for the connection
+    requestScreenChange(std::make_unique<ConnectingScreen>(address, display_name));
 }
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-boost::shared_ptr<KnightsClient> KnightsApp::createVMGame(const std::string &lobby_id,
-                                                          OnlinePlatform::Visibility vis,
-                                                          std::unique_ptr<VMKnightsLobby> kts_lobby,
-                                                          uint64_t my_checksum)
+void KnightsApp::hostOnlineGame(OnlinePlatform::Visibility vis)
 {
-    return pimpl->lobby_controller.createVMGame(*pimpl->online_platform,
-                                                lobby_id,
-                                                vis,
-                                                std::move(kts_lobby),
-                                                my_checksum,
-                                                pimpl->modules_path);
+    boost::shared_ptr<KnightsClient> client =
+        pimpl->lobby_controller.hostOnlineGame(*pimpl->online_platform,
+                                               *pimpl->timer,
+                                               pimpl->options->new_control_system,
+                                               vis);
+
+    PlayerID local_player_id = pimpl->online_platform->getCurrentUserId();
+
+    if (pimpl->game_manager) throw UnexpectedError("GameManager already exists");
+    pimpl->game_manager.reset(new GameManager(*this,
+                                              client,
+                                              pimpl->timer,
+                                              false,  // single player
+                                              false,  // tutorial
+                                              false,  // autostart
+                                              true,   // can_invite
+                                              local_player_id));
+
+    client->setClientCallbacks(pimpl->game_manager.get());
+    client->setPlayerIdAndControls(local_player_id, pimpl->options->new_control_system);
+
+    // Go to the HostMigrationScreen while we wait for the connection
+    requestScreenChange(std::make_unique<HostMigrationScreen>(LocalKey("creating_game")));
+}
+
+void KnightsApp::joinOnlineGame(const std::string &platform_lobby_id)
+{
+    boost::shared_ptr<KnightsClient> client =
+        pimpl->lobby_controller.joinOnlineGame(*pimpl->online_platform,
+                                               platform_lobby_id);
+
+    PlayerID local_player_id = pimpl->online_platform->getCurrentUserId();
+
+    if (pimpl->game_manager) throw UnexpectedError("GameManager already exists");
+    pimpl->game_manager.reset(new GameManager(*this,
+                                              client,
+                                              pimpl->timer,
+                                              false,  // single player
+                                              false,  // tutorial
+                                              false,  // autostart
+                                              true,   // can_invite
+                                              local_player_id));
+
+    client->setClientCallbacks(pimpl->game_manager.get());
+    client->setPlayerIdAndControls(local_player_id, pimpl->options->new_control_system);
+
+    // Go to the HostMigrationScreen while we wait for the connection
+    requestScreenChange(std::make_unique<HostMigrationScreen>(LocalKey("connecting_to_game")));
 }
 
 HostMigrationState KnightsApp::getHostMigrationState() const
@@ -1205,7 +1342,7 @@ void KnightsApp::inviteFriendToLobby()
 // Online Platform Update
 //////////////////////////////////////////////
 
-void KnightsAppImpl::updateOnlinePlatform()
+void KnightsAppImpl::updateOnlinePlatform(KnightsApp &ka)
 {
 #ifdef ONLINE_PLATFORM
     online_platform->update();
@@ -1215,8 +1352,11 @@ void KnightsAppImpl::updateOnlinePlatform()
     LocalKey error_key;
     LocalKey host_migration_key;
     bool del_gfx_sounds = false;
-    lobby_controller.checkHostMigration(*online_platform, options->new_control_system,
-                                        error_key, host_migration_key, del_gfx_sounds);
+    lobby_controller.checkHostMigration(*online_platform,
+                                        *timer,
+                                        options->new_control_system,
+                                        host_migration_key,
+                                        del_gfx_sounds);
 
     // Host migration: Delete gfx and sounds if requested
     if (del_gfx_sounds) {
@@ -1225,21 +1365,14 @@ void KnightsAppImpl::updateOnlinePlatform()
     }
 
     // Host migration: Change the screen if requested
-    if (error_key != LocalKey()) {
-        UTF8String msg = localization.get(error_key);
-        requested_screen = std::make_unique<ErrorScreen>(msg);
-    } else if (host_migration_key != LocalKey()) {
+    if (host_migration_key != LocalKey()) {
         requested_screen = std::make_unique<HostMigrationScreen>(host_migration_key);
     }
 
     // Check lobby join (e.g. we accepted an invite)
     std::string invited_lobby_id = online_platform->getRequestedLobbyToJoin();
     if (!invited_lobby_id.empty()) {
-        // Go to VMLoadingScreen
-        OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
-        // Compute our checksum to pass to VMLoadingScreen (brief blocking call, acceptable here).
-        uint64_t my_checksum = ComputeLocalChecksum(online_platform->getBuildId());
-        requested_screen = std::make_unique<VMLoadingScreen>(invited_lobby_id, vis, my_checksum);
+        ka.joinOnlineGame(invited_lobby_id);
     }
 #endif
 #endif
@@ -1268,23 +1401,6 @@ void KnightsAppImpl::processMdnsMessages()
 //////////////////////////////////////////////
 // Game Manager
 //////////////////////////////////////////////
-
-void KnightsApp::createGameManager(boost::shared_ptr<KnightsClient> knights_client,
-                                   bool single_player,
-                                   bool tutorial_mode,
-                                   bool autostart_mode,
-                                   bool can_invite,
-                                   const PlayerID &my_player_id)
-{
-    if (pimpl->game_manager) throw UnexpectedError("GameManager created twice");
-    pimpl->game_manager.reset(new GameManager(*this, knights_client, pimpl->timer, single_player, tutorial_mode,
-                                              autostart_mode, can_invite, my_player_id));
-}
-
-void KnightsApp::destroyGameManager()
-{
-    pimpl->game_manager.reset();
-}
 
 GameManager & KnightsApp::getGameManager()
 {

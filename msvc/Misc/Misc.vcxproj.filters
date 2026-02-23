@@ -47,6 +47,9 @@
     <ClInclude Include="..\..\src\misc\find_knights_data_dir.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\misc\game_module_spec.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\misc\localization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

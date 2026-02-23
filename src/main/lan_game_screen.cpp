@@ -25,7 +25,6 @@
 
 #include "adjust_list_box_size.hpp"
 #include "config_map.hpp"
-#include "connecting_screen.hpp"
 #include "error_screen.hpp"
 #include "lan_game_screen.hpp"
 #include "gui_button.hpp"
@@ -224,7 +223,7 @@ namespace {
     //
     // MyListBox
     // Reimplements ListBox::mouseClicked to listen for double clicks
-    // and goes to ConnectingScreen if one is received.
+    // and initiates a connection if one is received.
     //
 
     class MyListBox : public gcn::ListBox {
@@ -502,9 +501,7 @@ void LanGameScreenImpl::createGame()
 {
     PlayerID player_id = getPlayerID();
     if (player_id.empty()) return;
-    const int server_port = knights_app.getConfigMap().getInt("port_number");
-    std::unique_ptr<Screen> loading_screen(new LoadingScreen(server_port, player_id, false, false, false, false));
-    knights_app.requestScreenChange(std::move(loading_screen));
+    knights_app.hostLanGame(player_id);
 }
 
 void LanGameScreenImpl::initiateConnection(const std::string &address, const std::string &display_name)
@@ -518,8 +515,7 @@ void LanGameScreenImpl::initiateConnection(const std::string &address, const std
     if (player_id.empty()) return;
 
     const int port = knights_app.getConfigMap().getInt("port_number");
-    std::unique_ptr<Screen> connecting_screen(new ConnectingScreen(address, port, display_name, player_id));
-    knights_app.requestScreenChange(std::move(connecting_screen));
+    knights_app.joinLanGame(player_id, address, port, display_name);
 }
 
 

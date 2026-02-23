@@ -29,6 +29,8 @@
 #include "platform_lobby.hpp"
 
 #include <chrono>
+#include <string>
+#include <vector>
 
 class DummyOnlinePlatform; // Forward declaration
 
@@ -52,7 +54,7 @@ public:
     // Returns all chat messages since the last call (or since joining if first call)
     virtual std::vector<ChatMessage> receiveChatMessages() override;
 
-    virtual uint64_t getChecksum() override;
+    virtual GameModuleSpec getModuleSpec() override;
 
 private:
     DummyOnlinePlatform* platform;
@@ -60,6 +62,7 @@ private:
     PlayerID leader_id;
     State current_state;
     uint64_t cached_checksum = 0;
+    std::vector<std::string> cached_module_names;
     std::chrono::steady_clock::time_point last_query_time;
 
     void updateCachedInfo();

@@ -26,20 +26,19 @@
 #include "misc.hpp"
 
 #include "adjust_list_box_size.hpp"
+#include "game_module_spec.hpp"
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 #include "knights_app.hpp"
 #include "loading_screen.hpp"
 #include "make_scroll_area.hpp"
+#include "module_manager.hpp"
 #include "online_multiplayer_screen.hpp"
 #include "online_platform.hpp"
-#include "compute_checksum.hpp"
 #include "start_game_screen.hpp"
 #include "tab_font.hpp"
 #include "title_block.hpp"
-#include "vm_loading_screen.hpp"
-#include "xxhash.hpp"
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread.hpp"
@@ -53,61 +52,91 @@ namespace {
         GameInfo(const std::string &lobby_id, const Coercri::UTF8String &leader_name, int players,
                  const LocalKey &game_status_key,
                  const std::vector<LocalParam> &game_status_params,
-                 uint64_t chksum)
+                 const GameModuleSpec &game_module_spec,
+                 bool is_compatible,
+                 std::vector<std::string> missing_modules)
             : lobby_id(lobby_id), leader_name(leader_name), num_players(players),
               game_status_key(game_status_key),
               game_status_params(game_status_params),
-              checksum(chksum)
+              game_module_spec(game_module_spec),
+              is_compatible(is_compatible),
+              missing_modules(std::move(missing_modules))
         { }
         std::string lobby_id;
         Coercri::UTF8String leader_name;
         int num_players;
         LocalKey game_status_key;
         std::vector<LocalParam> game_status_params;
-        uint64_t checksum;
+        GameModuleSpec game_module_spec;
+        bool is_compatible;
+        std::vector<std::string> missing_modules;  // non-empty iff !is_compatible due to missing modules
     };
 
     class GameList : public gcn::ListModel {
     public:
-        explicit GameList(KnightsApp &app);
+        explicit GameList(KnightsApp &app, bool show_incompatible);
         void refresh();
+        void refilter(bool show_incompatible);
         virtual int getNumberOfElements();
         virtual std::string getElementAt(int i);
         const GameInfo * getGameAt(int i) const;
 
     private:
-        std::vector<GameInfo> games;
+        void buildDisplayList();
+        std::vector<GameInfo> all_games;
+        std::vector<int> display_indices;
+        bool show_incompatible;
         KnightsApp &knights_app;
     };
 
-    GameList::GameList(KnightsApp &app)
-        : knights_app(app)
+    GameList::GameList(KnightsApp &app, bool show_incompatible_)
+        : show_incompatible(show_incompatible_), knights_app(app)
     {
         refresh();
+    }
+
+    void GameList::buildDisplayList()
+    {
+        display_indices.clear();
+        for (int i = 0; i < int(all_games.size()); ++i) {
+            if (show_incompatible || all_games[i].is_compatible) {
+                display_indices.push_back(i);
+            }
+        }
     }
 
     void GameList::refresh()
     {
         OnlinePlatform &platform = knights_app.getOnlinePlatform();
         std::vector<std::string> lobbies = platform.getLobbyList();
-        games.clear();
+        all_games.clear();
         for (const auto & lobby_id : lobbies) {
             OnlinePlatform::LobbyInfo info = platform.getLobbyInfo(lobby_id);
             Coercri::UTF8String leader_name = platform.lookupUserName(info.leader_id);
-            games.push_back(GameInfo(lobby_id, leader_name, info.num_players,
-                                     info.game_status_key, info.game_status_params, info.checksum));
+            std::vector<std::string> missing;
+            bool compat = knights_app.getModuleManager().isCompatible(info.game_module_spec, missing);
+            all_games.push_back(GameInfo(lobby_id, leader_name, info.num_players,
+                                         info.game_status_key, info.game_status_params,
+                                         info.game_module_spec, compat, std::move(missing)));
         }
+        buildDisplayList();
+    }
+
+    void GameList::refilter(bool show_incompatible_)
+    {
+        show_incompatible = show_incompatible_;
+        buildDisplayList();
     }
 
     int GameList::getNumberOfElements()
     {
-        return int(games.size());
+        return int(display_indices.size());
     }
 
     std::string GameList::getElementAt(int i)
     {
-        if (i >= 0 && i < int(games.size())) {
-            const GameInfo &game = games[i];
+        if (i >= 0 && i < int(display_indices.size())) {
+            const GameInfo &game = all_games[display_indices[i]];
             std::string result = game.leader_name.asUTF8();
             result += "\t";
             result += std::to_string(game.num_players);
@@ -124,8 +153,8 @@ namespace {
 
     const GameInfo * GameList::getGameAt(int i) const
     {
-        if (i >= 0 && i < int(games.size())) {
-            return &games[i];
+        if (i >= 0 && i < int(display_indices.size())) {
+            return &all_games[display_indices[i]];
         }
         return nullptr;
     }
@@ -142,46 +171,17 @@ namespace {
         OnlineMultiplayerScreenImpl &screen_impl;
     };
 
-    class ChecksumThread {
-    public:
-        explicit ChecksumThread(boost::mutex &mutex,
-                                uint64_t &checksum,
-                                bool &checksum_done,
-                                std::string &&build_id)
-            : mutex(mutex), checksum(checksum), checksum_done(checksum_done),
-              build_id(std::move(build_id)) {}
-        void operator()();
-    private:
-        boost::mutex &mutex;
-        uint64_t &checksum;
-        bool &checksum_done;
-        std::string build_id;
-    };
-
-    void ChecksumThread::operator()()
-    {
-        uint64_t value = ComputeLocalChecksum(build_id);
-        boost::unique_lock lock(mutex);
-        checksum = value;
-        checksum_done = true;
-    }
-
     bool g_show_incompatible = false;
 }
 
 class OnlineMultiplayerScreenImpl : public gcn::ActionListener {
 public:
     OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g);
-    ~OnlineMultiplayerScreenImpl();
-    void createFullGui();
     void action(const gcn::ActionEvent &event);
-    void setLobbyFilters(bool show_incompat);
     void joinGame(const std::string &lobby_id);
     void createGame();
     void update();
     void refreshGameList();
-
-    uint64_t myChecksum() const { return my_checksum; }
 
 private:
     KnightsApp &knights_app;
@@ -204,11 +204,6 @@ private:
     boost::scoped_ptr<gcn::Button> create_game_button;
     boost::shared_ptr<gcn::Font> cg_font;
     std::unique_ptr<gcn::Font> tab_font;
-
-    boost::mutex mutex;  // Protects my_checksum and checksum_done
-    uint64_t my_checksum;
-    bool checksum_done = false;
-    boost::thread checksum_thread;
 };
 
 namespace
@@ -220,12 +215,20 @@ namespace
         if (mouse_event.getButton() == gcn::MouseEvent::LEFT && mouse_event.getClickCount() == 2) {
             const GameInfo *gi = game_list.getGameAt(getSelected());
             if (gi) {
-                bool is_incompatible = (gi->checksum != screen_impl.myChecksum());
-                if (is_incompatible) {
-                    throw ExceptionBase(LocalKey("incompatible_game"));
-                } else {
-                    screen_impl.joinGame(gi->lobby_id);
+                if (!gi->is_compatible) {
+                    if (!gi->missing_modules.empty()) {
+                        std::string list;
+                        for (const auto &m : gi->missing_modules) {
+                            if (!list.empty()) list += ", ";
+                            list += m;
+                        }
+                        throw ExceptionBase(LocalMsg{LocalKey("missing_modules_game"),
+                            {LocalParam(Coercri::UTF8String::fromUTF8Safe(list))}});
+                    } else {
+                        throw ExceptionBase(LocalKey("incompatible_game"));
+                    }
                 }
+                screen_impl.joinGame(gi->lobby_id);
             }
         }
     }
@@ -282,7 +285,7 @@ namespace
         {
             // Check if this game has an incompatible checksum
             const GameInfo *game_info = game_list.getGameAt(i);
-            bool is_incompatible = (game_info && game_info->checksum != screen_impl.myChecksum());
+            bool is_incompatible = game_info && !game_info->is_compatible;
 
             if (i == mSelected)
             {
@@ -319,39 +322,15 @@ namespace
 OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
     : knights_app(ka), window(win), gui(g)
 {
-    // Set up skeleton GUI (rest will be created once our checksum is known)
-    container.reset(new gcn::Container);
-    container->setOpaque(false);
-    centre.reset(new GuiCentre(container.get()));
-    gui.setTop(centre.get());
-
-    // Start a background thread to checksum all knights_data files
-    ChecksumThread thr(mutex, my_checksum, checksum_done, knights_app.getOnlinePlatform().getBuildId());
-    checksum_thread = std::move(boost::thread(thr));
-}
-
-OnlineMultiplayerScreenImpl::~OnlineMultiplayerScreenImpl()
-{
-    if (checksum_thread.joinable()) {
-        checksum_thread.join();
-    }
-}
-
-void OnlineMultiplayerScreenImpl::createFullGui()
-{
     const Localization &loc = knights_app.getLocalization();
 
-    // Remove the skeleton GUI as it is no longer needed
-    gui.setTop(nullptr);
-    centre.reset();
-    container.reset();
+    // Update the modules list so our "incompatibility" calculations are up to date.
+    // Note: this will cause a small UI hitch (because it is a blocking call) but
+    // hopefully it will be acceptable.
+    knights_app.getModuleManager().update();
 
-    // Initialize lobby filters based on initial setting for
-    // incompatible games checkbox
-    setLobbyFilters(g_show_incompatible);
-
-    // Create game list (using the initial filters)
-    game_list.reset(new GameList(knights_app));
+    // Create game list
+    game_list.reset(new GameList(knights_app, g_show_incompatible));
 
     // Set up TabFont for formatting columns: Leader | Players | Status
     std::vector<int> widths;
@@ -419,14 +398,7 @@ void OnlineMultiplayerScreenImpl::createFullGui()
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
-
-    // This sequence is needed to get the GUI to display:
-    int w, h;
-    window->getSize(w, h);
-    centre->setSize(w, h);
     gui.setTop(centre.get());
-    gui.logic();
-    window->invalidateAll();
 }
 
 void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
@@ -440,14 +412,11 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
         createGame();
 
     } else if (event.getSource() == show_incompatible_checkbox.get()) {
-        setLobbyFilters(show_incompatible_checkbox->isSelected());
-
-        // Remember setting for next time this UI is opened
-        g_show_incompatible = show_incompatible_checkbox->isSelected();
-
-        // Tell OnlinePlatform to re-query lobbies asap
-        // (as the filters have changed and we want the UI to update in a timely fashion)
-        knights_app.getOnlinePlatform().refreshLobbyList();
+        g_show_incompatible = show_incompatible_checkbox->isSelected(); // Remember the setting for next time
+        game_list->refilter(g_show_incompatible);
+        listbox->setSelected(-1);
+        AdjustListBoxSize(*listbox, *scroll_area);
+        window->invalidateAll();
 
     } else if (event.getSource() == refresh_button.get()) {
         // User pressed the refresh button
@@ -456,29 +425,16 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
     }
 }
 
-void OnlineMultiplayerScreenImpl::setLobbyFilters(bool show_incompat)
-{
-    OnlinePlatform &platform = knights_app.getOnlinePlatform();
-    platform.clearLobbyFilters();
-    if (!show_incompat) {
-        platform.addChecksumFilter(myChecksum());
-    }
-}
-
 void OnlineMultiplayerScreenImpl::joinGame(const std::string &lobby_id)
 {
-    // Go to VMLoadingScreen
-    OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PRIVATE; // Dummy value
-    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen(lobby_id, vis, my_checksum));
-    knights_app.requestScreenChange(std::move(loading_screen));
+    knights_app.joinOnlineGame(lobby_id);
 }
 
 void OnlineMultiplayerScreenImpl::createGame()
 {
-    // For now, go directly to VMLoadingScreen
-    OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PUBLIC; // TODO: Maybe allow user to select visibility? (e.g. friends-only games)
-    std::unique_ptr<Screen> loading_screen(new VMLoadingScreen("", vis, my_checksum));
-    knights_app.requestScreenChange(std::move(loading_screen));
+    // TODO: Maybe allow user to select visibility? (e.g. friends-only games)
+    OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PUBLIC;
+    knights_app.hostOnlineGame(vis);
 }
 
 void OnlineMultiplayerScreenImpl::refreshGameList()
@@ -498,7 +454,7 @@ void OnlineMultiplayerScreenImpl::refreshGameList()
             selected_lobby_id = selected_game->lobby_id;
         }
     }
-    
+
     // Create new game list
     game_list->refresh();
     AdjustListBoxSize(*listbox, *scroll_area);
@@ -513,23 +469,13 @@ void OnlineMultiplayerScreenImpl::refreshGameList()
             }
         }
     }
-    
+
     // Invalidate the window to ensure the UI updates
     window->invalidateAll();
 }
 
 void OnlineMultiplayerScreenImpl::update()
 {
-    // Hold off until the checksum is ready.
-    if (checksum_thread.joinable()) {
-        boost::unique_lock lock(mutex);
-        if (!checksum_done) return;
-        checksum_thread.join();
-
-        // Once checksum is available, activate the GUI
-        createFullGui();
-    }
-
     // Refresh the GameList if required.
     refreshGameList();
 }

@@ -26,9 +26,193 @@
 #include "client_callbacks.hpp"
 #include "exception_base.hpp"
 #include "knights_client.hpp"
+#include "knights_config.hpp"
 #include "lobby_controller.hpp"
+#include "module_manager.hpp"
 #include "simple_knights_lobby.hpp"
 #include "vm_knights_lobby.hpp"
+
+namespace {
+    struct LoaderBase {
+        LoaderBase(boost::mutex &mutex,
+                   bool &done,
+                   std::unique_ptr<KnightsLobby> &knights_lobby_out,
+#ifdef USE_VM_LOBBY
+                   VMKnightsLobby *& vm_knights_lobby_out,
+#endif
+                   LocalMsg &error_msg_out,
+                   std::unique_ptr<LuaError> &lua_error_out)
+            : done(done),
+              knights_lobby_out(knights_lobby_out),
+#ifdef USE_VM_LOBBY
+              vm_knights_lobby_out(vm_knights_lobby_out),
+#endif
+              error_msg_out(error_msg_out),
+              lua_error_out(lua_error_out),
+              mutex(mutex)
+        { }
+
+        virtual void load(std::unique_ptr<KnightsLobby> &knights_lobby
+#ifdef USE_VM_LOBBY
+                          , VMKnightsLobby *& vm_knights_lobby
+#endif
+                          ) = 0;
+
+        void operator()() {
+            try {
+                std::unique_ptr<KnightsLobby> kl;
+#ifdef USE_VM_LOBBY
+                VMKnightsLobby *vkl = nullptr;
+#endif
+                load(kl
+#ifdef USE_VM_LOBBY
+                     , vkl
+#endif
+                     );
+                boost::unique_lock lock(mutex);
+                done = true;
+                knights_lobby_out = std::move(kl);
+#ifdef USE_VM_LOBBY
+                vm_knights_lobby_out = vkl;
+#endif
+
+            } catch (LuaError &err) {
+                boost::unique_lock lock(mutex);
+                done = true;
+                lua_error_out.reset(new LuaError(err));
+
+            } catch (ExceptionBase &err) {
+                boost::unique_lock lock(mutex);
+                done = true;
+                error_msg_out = err.getMsg();
+
+            } catch (std::exception &e) {
+                boost::unique_lock lock(mutex);
+                done = true;
+                error_msg_out = {LocalKey("cxx_error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what()))}};
+
+            } catch (...) {
+                boost::unique_lock lock(mutex);
+                done = true;
+                error_msg_out = {LocalKey("unknown_error")};
+            }
+        }
+
+        boost::mutex &mutex;
+        bool &done;
+        std::unique_ptr<KnightsLobby> &knights_lobby_out;
+#ifdef USE_VM_LOBBY
+        VMKnightsLobby *& vm_knights_lobby_out;
+#endif
+        LocalMsg &error_msg_out;
+        std::unique_ptr<LuaError> &lua_error_out;
+    };
+
+    struct SimpleLoader : LoaderBase {
+        SimpleLoader(boost::shared_ptr<Coercri::Timer> timer,
+                     std::vector<std::string> module_names,
+                     VFS module_vfs,
+                     Coercri::NetworkDriver *net_driver,
+                     int port,
+                     boost::mutex &mutex,
+                     bool &done,
+                     std::unique_ptr<KnightsLobby> &knights_lobby_out,
+#ifdef USE_VM_LOBBY
+                     VMKnightsLobby *& dummy,
+#endif
+                     LocalMsg &error_msg_out,
+                     std::unique_ptr<LuaError> &lua_error_out)
+            : LoaderBase(mutex,
+                         done,
+                         knights_lobby_out,
+#ifdef USE_VM_LOBBY
+                         dummy,
+#endif
+                         error_msg_out,
+                         lua_error_out),
+              timer(std::move(timer)),
+              module_names(std::move(module_names)),
+              module_vfs(std::move(module_vfs)),
+              net_driver(net_driver),
+              port(port)
+        { }
+
+        void load(std::unique_ptr<KnightsLobby> &knights_lobby
+#ifdef USE_VM_LOBBY
+                  , VMKnightsLobby *& dummy
+#endif
+                  ) override
+        {
+            bool menu_strict = (net_driver == nullptr);
+            boost::shared_ptr<KnightsConfig> config(new KnightsConfig(module_vfs, module_names, menu_strict));
+
+            if (net_driver) {
+                // LAN mode
+                knights_lobby.reset(new SimpleKnightsLobby(*net_driver, timer, port, config, "#LanGame"));
+            } else {
+                // Single player or split screen mode (both use the name "#SplitScreenGame")
+                knights_lobby.reset(new SimpleKnightsLobby(timer, config, "#SplitScreenGame"));
+            }
+        }
+
+        boost::shared_ptr<Coercri::Timer> timer;
+        std::vector<std::string> module_names;
+        VFS module_vfs;
+        Coercri::NetworkDriver *net_driver;
+        int port;
+    };
+
+#ifdef USE_VM_LOBBY
+    struct VMLoader : LoaderBase {
+        VMLoader(Coercri::NetworkDriver &net_driver,
+                 Coercri::Timer &timer,
+                 PlayerID local_user_id,
+                 bool new_control_system,
+                 std::vector<std::string> module_names,
+                 VFS module_vfs,
+                 boost::mutex &mutex,
+                 bool &done,
+                 std::unique_ptr<KnightsLobby> &knights_lobby_out,
+                 VMKnightsLobby* &vm_knights_lobby_out,
+                 LocalMsg &error_msg_out,
+                 std::unique_ptr<LuaError> &lua_error_out)
+            : LoaderBase(mutex,
+                         done,
+                         knights_lobby_out,
+                         vm_knights_lobby_out,
+                         error_msg_out,
+                         lua_error_out),
+              net_driver(net_driver),
+              timer(timer),
+              local_user_id(std::move(local_user_id)),
+              new_control_system(new_control_system),
+              module_names(std::move(module_names)),
+              module_vfs(std::move(module_vfs))
+        { }
+
+        void load(std::unique_ptr<KnightsLobby> &knights_lobby,
+                  VMKnightsLobby *& vm_knights_lobby) override
+        {
+            std::unique_ptr<VMKnightsLobby> lobby =
+                std::make_unique<VMKnightsLobby>(net_driver,
+                                                 timer,
+                                                 local_user_id,
+                                                 new_control_system,
+                                                 std::move(module_names),
+                                                 std::move(module_vfs));
+            vm_knights_lobby = lobby.get();
+            knights_lobby = std::move(lobby);
+        }
+
+        Coercri::NetworkDriver &net_driver;
+        Coercri::Timer &timer;
+        PlayerID local_user_id;
+        bool new_control_system;
+        std::vector<std::string> module_names;
+        VFS module_vfs;
+    };
+#endif  // USE_VM_LOBBY
+}
 
 LobbyController::LobbyController()
 {
@@ -43,6 +227,12 @@ LobbyController::LobbyController()
 
 void LobbyController::resetAll()
 {
+    // If the loader thread is still running, we must wait for it to
+    // stop at this point.
+    if (loader_thread.joinable()) {
+        loader_thread.join();
+    }
+
     knights_client.reset();
     knights_lobby.reset();
 
@@ -60,89 +250,181 @@ void LobbyController::resetAll()
 
 boost::shared_ptr<KnightsClient>
     LobbyController::startLocalGame(boost::shared_ptr<Coercri::Timer> timer,
-                                    boost::shared_ptr<KnightsConfig> config,
-                                    const std::string &game_name,
-                                    std::filesystem::path modules_path)
+                                    const std::vector<std::string> &modules_to_load)
 {
-    knights_lobby.reset(new SimpleKnightsLobby(timer, config, game_name));
+    resetAll();
+
+    // Get the currently selected modules
+    module_manager->update();  // Will block for short time, probably acceptable
+    std::vector<std::string> module_names = module_manager->resolveModuleList(modules_to_load);
+    VFS vfs = module_manager->getVFS(module_names);
+
+    // Start loading the server in the background
+    loader_done = false;
+    loader_thread = boost::thread(SimpleLoader(timer,
+                                               std::move(module_names),
+                                               vfs,
+                                               nullptr,
+                                               -1,
+                                               loader_mutex,
+                                               loader_done,
+                                               knights_lobby,
+#ifdef USE_VM_LOBBY
+                                               vm_knights_lobby,
+#endif
+                                               loader_error_msg,
+                                               loader_lua_error));
+
+    // Make the KnightsClient
     knights_client.reset(new KnightsClient(true,   // Allow untrusted strings for local game
-                                           std::move(modules_path)));
+                                           std::move(vfs)));
     return knights_client;
 }
 
 boost::shared_ptr<KnightsClient>
     LobbyController::hostLanGame(Coercri::NetworkDriver &net_driver,
                                  boost::shared_ptr<Coercri::Timer> timer,
-                                 int port,
-                                 boost::shared_ptr<KnightsConfig> config,
-                                 const std::string &game_name,
-                                 std::filesystem::path modules_path)
+                                 int port)
 {
-    knights_lobby.reset(new SimpleKnightsLobby(net_driver, timer, port, config, game_name));
+    resetAll();
+
+    // Get the currently selected modules
+    module_manager->update();  // Will block for short time, probably acceptable
+    std::vector<std::string> module_names =
+        module_manager->resolveModuleList(module_manager->getEnabledModules());
+    VFS vfs = module_manager->getVFS(module_names);
+
+    // Start loading the server in the background
+    loader_done = false;
+    loader_thread = boost::thread(SimpleLoader(timer,
+                                               std::move(module_names),
+                                               vfs,
+                                               &net_driver,
+                                               port,
+                                               loader_mutex,
+                                               loader_done,
+                                               knights_lobby,
+#ifdef USE_VM_LOBBY
+                                               vm_knights_lobby,
+#endif
+                                               loader_error_msg,
+                                               loader_lua_error));
+
+    // Make the KnightsClient
     knights_client.reset(new KnightsClient(true, // Allow untrusted strings for LAN game
-                                           std::move(modules_path)));
+                                           std::move(vfs)));
     return knights_client;
 }
 
 boost::shared_ptr<KnightsClient>
-    LobbyController::joinRemoteServer(Coercri::NetworkDriver &net_driver,
-                                      boost::shared_ptr<Coercri::Timer> timer,
-                                      const std::string &address,
-                                      int port,
-                                      std::filesystem::path modules_path)
+    LobbyController::joinLanGame(Coercri::NetworkDriver &net_driver,
+                                 boost::shared_ptr<Coercri::Timer> timer,
+                                 const std::string &address,
+                                 int port)
 {
+    resetAll();
+
+    // Get a module VFS for all local modules.
+    module_manager->update();  // Will block for short time, probably acceptable
+    VFS vfs = module_manager->getAllInstalledVFS();
+
+    // Since we are joining we can just create the SimpleKnightsLobby directly here
     knights_lobby.reset(new SimpleKnightsLobby(net_driver, timer, address, port));
-    knights_client.reset(new KnightsClient(true, // Allow untrusted strings (we assume that players trust any server that they choose to connect to)
-                                           std::move(modules_path)));
+    knights_client.reset(new KnightsClient(true, // Allow untrusted strings (we assume that players trust any LAN game that they choose to connect to)
+                                           std::move(vfs)));
     return knights_client;
 }
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-// If lobby_id empty this creates a new lobby (with given visibility),
-// otherwise it joins an existing lobby
 boost::shared_ptr<KnightsClient>
-    LobbyController::createVMGame(OnlinePlatform &online_platform,
-                                  const std::string &lobby_id,
-                                  OnlinePlatform::Visibility vis,
-                                  std::unique_ptr<VMKnightsLobby> kts_lobby,
-                                  uint64_t my_checksum,
-                                  std::filesystem::path modules_path)
+    LobbyController::hostOnlineGame(OnlinePlatform &online_platform,
+                                    Coercri::Timer &timer,
+                                    bool new_control_system,
+                                    OnlinePlatform::Visibility vis)
 {
-    this->my_checksum = my_checksum;
+    resetAll();
+
+    // Get the modules we are using and their checksums
+    module_manager->update();  // Will block for short time, probably acceptable
+    GameModuleSpec spec;
+    spec.module_names = module_manager->resolveModuleList(module_manager->getEnabledModules());
+    spec.checksum = module_manager->computeCombinedChecksum(spec.module_names);
+    VFS vfs = module_manager->getVFS(spec.module_names);
 
     // Create the platform lobby
-    if (lobby_id.empty()) {
-        platform_lobby = online_platform.createLobby(vis, my_checksum);
-        created_by_me = true;
+    platform_lobby = online_platform.createLobby(vis, spec);
+    created_by_me = true;
 
-        if (platform_lobby) {
-            // Set initial status
-            std::vector<LocalParam> no_params;
-            platform_lobby->setGameStatus(LocalKey("selecting_quest"), no_params);
-        } else {
-            throw ExceptionBase(LocalKey("failed_create_lobby"));
-        }
-
+    if (platform_lobby) {
+        // Set initial status
+        std::vector<LocalParam> no_params;
+        platform_lobby->setGameStatus(LocalKey("selecting_quest"), no_params);
     } else {
-        platform_lobby = online_platform.joinLobby(lobby_id);
-        created_by_me = false;
-
-        if (!platform_lobby) {
-            throw ExceptionBase(LocalKey("failed_join_lobby"));
-        }
+        throw ExceptionBase(LocalKey("failed_create_lobby"));
     }
 
-    // Install the given knights lobby
-    vm_knights_lobby = kts_lobby.get();
-    knights_lobby = std::move(kts_lobby);
-    vm_lobby_leader_id = PlayerID();
+    // Start creating the VMKnightsLobby in the background
+    loader_done = false;
+    loader_thread = boost::thread(VMLoader(online_platform.getNetworkDriver(),
+                                           timer,
+                                           online_platform.getCurrentUserId(),
+                                           new_control_system,
+                                           spec.module_names,
+                                           vfs,
+                                           loader_mutex,
+                                           loader_done,
+                                           knights_lobby,
+                                           vm_knights_lobby,
+                                           loader_error_msg,
+                                           loader_lua_error));
+
+    // Make the KnightsClient
+    knights_client.reset(new KnightsClient(false,  // Don't trust strings in an online platform game
+                                           std::move(vfs)));
+    return knights_client;
+}
+
+boost::shared_ptr<KnightsClient>
+    LobbyController::joinOnlineGame(OnlinePlatform &online_platform,
+                                    const std::string &platform_lobby_id)
+{
+    resetAll();
+
+    // Get a module VFS for all local modules.
+    module_manager->update();  // Will block for short time, probably acceptable
+    VFS vfs = module_manager->getAllInstalledVFS();
+
+    // Join the platform lobby
+    platform_lobby = online_platform.joinLobby(platform_lobby_id);
+    created_by_me = false;
+
+    if (!platform_lobby) {
+        throw ExceptionBase(LocalKey("failed_join_lobby"));
+    }
 
     // Create the client
     knights_client.reset(new KnightsClient(false,  // Don't trust arbitrary strings coming from VM
-                                           std::move(modules_path)));
+                                           vfs));
     return knights_client;
 }
 #endif
+
+void LobbyController::update()
+{
+    if (loader_thread.joinable()) {
+        boost::unique_lock lock(loader_mutex);
+        if (!loader_done) return;
+        loader_thread.join();
+
+        // If loader returned an error, signal it back to the main app code
+        if (loader_error_msg.key != LocalKey()) {
+            throw ExceptionBase(loader_error_msg);
+        }
+        if (loader_lua_error.get()) {
+            throw *loader_lua_error;
+        }
+    }
+}
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
 HostMigrationState LobbyController::getHostMigrationState() const
@@ -170,42 +452,72 @@ void LobbyController::inviteFriendToLobby()
         platform_lobby->openInviteUI();
     }
 }
+#endif
 
+#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
 void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
+                                         Coercri::Timer &timer,
                                          bool new_control_system,
-                                         LocalKey &error_key,
                                          LocalKey &host_migration_key,
                                          bool &del_gfx_sounds)
 {
+    // If loading in progress, wait for it before doing anything else
+    if (loader_thread.joinable()) {
+        return;
+    }
+
+    // If we were kicked out of the platform lobby, go to ErrorScreen
     if (platform_lobby && platform_lobby->getState() == PlatformLobby::State::FAILED) {
-        // We were kicked out of the lobby for some reason. Go to ErrorScreen.
         if (host_migration_state == HostMigrationState::NOT_IN_GAME) {
             if (created_by_me) {
-                error_key = LocalKey("failed_create_lobby");
+                throw ExceptionBase(LocalKey("failed_create_lobby"));
             } else {
-                error_key = LocalKey("failed_join_lobby");
+                throw ExceptionBase(LocalKey("failed_join_lobby"));
             }
         } else {
-            error_key = LocalKey("lobby_connection_lost");
+            throw ExceptionBase(LocalKey("lobby_connection_lost"));
         }
+    }
 
-    } else if (platform_lobby
-               && platform_lobby->getState() == PlatformLobby::State::JOINED
-               && !platform_lobby->getLeaderId().empty()
-               && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
+    // Check if we have a new leader
+    if (platform_lobby
+    && platform_lobby->getState() == PlatformLobby::State::JOINED
+    && !platform_lobby->getLeaderId().empty()
+    && platform_lobby->getLeaderId() != vm_lobby_leader_id) {
 
         // Platform lobby has finished setting up, OR leader has changed
 
         if (host_migration_state == HostMigrationState::NOT_IN_GAME) {
-            // Now that platform lobby is ready, we can send the initial login messages
 
-            // Validate checksum compatibility before joining
-            if (my_checksum != platform_lobby->getChecksum()) {
-                error_key = LocalKey("incompatible_game");
+            if (vm_knights_lobby == nullptr) {
+                // Now that we have joined the lobby, we can check that game is compatible
+                GameModuleSpec spec = platform_lobby->getModuleSpec();
+                std::vector<std::string> missing_modules;
+                if (!module_manager->isCompatible(spec, missing_modules)) {
+                    throw ExceptionBase(LocalKey("incompatible_game"));
+                }
+
+                // We haven't booted our local VM yet - do so now.
+                VFS vfs = module_manager->getVFS(spec.module_names);
+                loader_done = false;
+                loader_thread = boost::thread(VMLoader(online_platform.getNetworkDriver(),
+                                                       timer,
+                                                       online_platform.getCurrentUserId(),
+                                                       new_control_system,
+                                                       spec.module_names,
+                                                       vfs,
+                                                       loader_mutex,
+                                                       loader_done,
+                                                       knights_lobby,
+                                                       vm_knights_lobby,
+                                                       loader_error_msg,
+                                                       loader_lua_error));
+
+                // Return, and come back when the loader thread is finished!
                 return;
             }
 
-            // Now join the game!
+            // The local VM has finished booting. Join the game now.
             knights_client->setPlayerIdAndControls(online_platform.getCurrentUserId(),
                                                    new_control_system);
             knights_client->joinGame("#VMGame");
@@ -241,14 +553,18 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
         }
         host_migration_key = LocalKey(msg_key);
 
-    } else if (platform_lobby
-               && host_migration_state == HostMigrationState::IN_GAME
-               && !vm_knights_lobby->connected()) {
+        return;
+    }
 
+    // Check if we have lost connection
+    if (platform_lobby
+    && host_migration_state == HostMigrationState::IN_GAME
+    && !vm_knights_lobby->connected()) {
         // Lost connection, and the VMKnightsLobby is attempting to reconnect.
         // Here we just change the screen.
         host_migration_state = HostMigrationState::RECONNECTING;
         host_migration_key = LocalKey("connection_lost_reconnecting");
+        return;
     }
 }
 #endif
@@ -273,7 +589,7 @@ void LobbyController::setQuestMessageCode(OnlinePlatform &online_platform, const
 
 void LobbyController::readIncomingMessages()
 {
-    if (knights_lobby) {
+    if (!loader_thread.joinable() && knights_lobby) {
         knights_lobby->readIncomingMessages(*knights_client);
     }
 
@@ -295,7 +611,7 @@ void LobbyController::readIncomingMessages()
 
 void LobbyController::sendOutgoingMessages()
 {
-    if (knights_lobby) {
+    if (!loader_thread.joinable() && knights_lobby) {
         knights_lobby->sendOutgoingMessages(*knights_client);
     }
 
@@ -314,7 +630,7 @@ void LobbyController::sendOutgoingMessages()
 
 int LobbyController::getNumberOfPlayers() const
 {
-    if (knights_lobby) {
+    if (!loader_thread.joinable() && knights_lobby) {
         return knights_lobby->getNumberOfPlayers();
     } else {
         return 0;

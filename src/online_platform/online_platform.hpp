@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 
+#include "game_module_spec.hpp"
 #include "platform_lobby.hpp"
 
 #include "localization.hpp"
@@ -91,17 +92,13 @@ public:
         LocalKey game_status_key;
         std::vector<LocalParam> game_status_params;
 
-        // Game data and build checksum (uint64_t)
-        uint64_t checksum;
+        // Module spec (resolved load order + hash-of-module-checksums)
+        GameModuleSpec game_module_spec;
     };
 
     // Create a new lobby
-    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis, uint64_t checksum) = 0;
-
-    // Set lobby filter. If filters are enabled, getLobbyList will return results filtered
-    // accordingly, but note that the list might not update immediately.
-    virtual void clearLobbyFilters() = 0;
-    virtual void addChecksumFilter(uint64_t checksum) = 0;
+    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis,
+                                                        const GameModuleSpec &game_info) = 0;
 
     // Search for lobbies to join. Returns a vector of lobby ID strings.
     //  - The OnlinePlatform subclass is expected to throttle requests to the server, so even

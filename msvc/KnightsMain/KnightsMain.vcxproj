@@ -153,6 +153,7 @@
     <ClCompile Include="..\..\src\main\main.cpp" />
     <ClCompile Include="..\..\src\main\make_scroll_area.cpp" />
     <ClCompile Include="..\..\src\main\menu_screen.cpp" />
+    <ClCompile Include="..\..\src\main\module_manager.cpp" />
     <ClCompile Include="..\..\src\main\my_dropdown.cpp" />
     <ClCompile Include="..\..\src\main\online_multiplayer_screen.cpp" />
     <ClCompile Include="..\..\src\main\options.cpp" />
@@ -166,7 +167,6 @@
     <ClCompile Include="..\..\src\main\utf8_text_field.cpp" />
     <ClCompile Include="..\..\src\main\title_block.cpp" />
     <ClCompile Include="..\..\src\main\title_screen.cpp" />
-    <ClCompile Include="..\..\src\main\vm_loading_screen.cpp" />
     <ClCompile Include="..\..\src\main\x_centre.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -210,6 +210,7 @@
     <ClInclude Include="..\..\src\main\local_status_display.hpp" />
     <ClInclude Include="..\..\src\main\make_scroll_area.hpp" />
     <ClInclude Include="..\..\src\main\menu_screen.hpp" />
+    <ClInclude Include="..\..\src\main\module_manager.hpp" />
     <ClInclude Include="..\..\src\main\my_dropdown.hpp" />
     <ClInclude Include="..\..\src\main\online_multiplayer_screen.hpp" />
     <ClInclude Include="..\..\src\main\options.hpp" />
@@ -224,7 +225,6 @@
     <ClInclude Include="..\..\src\main\utf8_text_field.hpp" />
     <ClInclude Include="..\..\src\main\title_block.hpp" />
     <ClInclude Include="..\..\src\main\title_screen.hpp" />
-    <ClInclude Include="..\..\src\main\vm_loading_screen.hpp" />
     <ClInclude Include="..\..\src\main\x_centre.hpp" />
   </ItemGroup>
   <ItemGroup>

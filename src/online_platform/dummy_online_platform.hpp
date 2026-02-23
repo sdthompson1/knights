@@ -52,11 +52,10 @@ public:
     virtual Coercri::UTF8String lookupUserName(const PlayerID& platform_user_id) override;
 
     // Returns a new DummyPlatformLobby
-    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis, uint64_t checksum) override;
+    virtual std::unique_ptr<PlatformLobby> createLobby(Visibility vis,
+                                                        const GameModuleSpec &game_info) override;
 
-    // Lobby search and filtering
-    virtual void clearLobbyFilters() override;
-    virtual void addChecksumFilter(uint64_t checksum) override;
+    // Lobby search
     virtual bool hasLobbyListChanged() override;
     virtual std::vector<std::string> getLobbyList() override;
     void refreshLobbyList() override;

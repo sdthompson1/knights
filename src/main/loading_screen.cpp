@@ -23,166 +23,18 @@
 
 #include "misc.hpp"
 
-#include "config_map.hpp"
-#include "error_screen.hpp"
-#include "game_manager.hpp"
 #include "knights_app.hpp"
-#include "knights_client.hpp"
-#include "knights_config.hpp"
 #include "loading_screen.hpp"
-#include "options.hpp"
 #include "x_centre.hpp"
 
-void LoadingScreen::Loader::operator()()
-{
-    try {
-        // the loading of the config is slow, especially in a debug
-        // build, so we do it in a separate thread. the loading of
-        // everything else is faster, and requires calls into coercri
-        // (which complicates thread safety) so we do it in the main
-        // thread.
-        
-        knights_config.reset(new KnightsConfig(module_vfs, module_names, menu_strict));
-
-    } catch (LuaError &err) {
-        lua_error.reset(new LuaError(err));
-    } catch (ExceptionBase &err) {
-        error_msg = err.getMsg();
-    } catch (std::exception &e) {
-        error_msg = {LocalKey("cxx_error_is"), {LocalParam(Coercri::UTF8String::fromUTF8Safe(e.what()))}};
-    } catch (...) {
-        error_msg = {LocalKey("unknown_error")};
-    }
-}
-
-LoadingScreen::Loader::Loader(const std::vector<std::string> & module_names,
-                              const VFS & module_vfs,
-                              bool menu_strict_)
-    : module_names(module_names),
-      module_vfs(module_vfs),
-      menu_strict(menu_strict)
+LoadingScreen::LoadingScreen()
+    : knights_app(nullptr)
 { }
 
 bool LoadingScreen::start(KnightsApp &ka, boost::shared_ptr<Coercri::Window>, gcn::Gui &)
 {
     knights_app = &ka;
-
-    std::vector<std::string> module_names;
-    VFS vfs;
-    ka.getModules(tutorial_mode, module_names, vfs);
-
-    loader.reset(new Loader(module_names, vfs, menu_strict_mode));
-
-    boost::thread new_thread(boost::ref(*loader));
-    loader_thread.swap(new_thread);
-    return false;
-}
-
-LoadingScreen::LoadingScreen(int port, const PlayerID &id, bool single_player, bool menu_strict,
-                             bool tutorial, bool autostart)
-    : knights_app(0), server_port(port), player_id(id), single_player_mode(single_player),
-      menu_strict_mode(menu_strict),
-      tutorial_mode(tutorial),
-      autostart_mode(autostart)
-{ }
-
-LoadingScreen::~LoadingScreen()
-{
-    // The loading screen might potentially be destroyed while the loader thread is
-    // still running (e.g. if someone accepts an invite while they are on the loading screen).
-    // In that case, we must wait for the loader thread to finish (as there is no way
-    // to interrupt it).
-    if (loader_thread.joinable()) {
-        loader_thread.join();
-    }
-}
-
-void LoadingScreen::update()
-{
-    if (!knights_app || !loader) return;
-
-    if (loader_thread.joinable()) {
-        loader_thread.timed_join(boost::posix_time::milliseconds(10));
-        return;
-    }
-
-    // LuaErrors should be re-thrown in this thread. Other errors should just go directly
-    // to ErrorScreen.
-    if (loader->lua_error.get()) {
-        throw *loader->lua_error;
-    }
-    if (loader->error_msg.key != LocalKey()) {
-        Coercri::UTF8String msg = knights_app->getLocalization().get(loader->error_msg);
-        std::unique_ptr<Screen> error_screen(new ErrorScreen(msg));
-        knights_app->requestScreenChange(std::move(error_screen));
-        return;
-    }
-
-    if (server_port < 0) {
-        // Local Game
-
-        // create server & game
-        boost::shared_ptr<KnightsClient> client =
-            knights_app->startLocalGame(loader->knights_config, "#SplitScreenGame");
-
-        // set dummy player ID.
-        PlayerID dummy_player_id;
-        bool action_bar_controls;
-        if (single_player_mode || tutorial_mode) {
-            std::vector<LocalParam> params(1, LocalParam(1));
-            UTF8String player_1 = knights_app->getLocalization().get(LocalKey("player_n"), params);
-            dummy_player_id = PlayerID(player_1);
-            action_bar_controls = knights_app->getOptions().new_control_system || tutorial_mode;
-        } else {
-            dummy_player_id = PlayerID(UTF8String::fromUTF8("#SplitScreenPlayer"));  // this string isn't shown anywhere so doesn't need to be localized
-            action_bar_controls = false;
-        }
-
-        // set up the local client
-        knights_app->createGameManager(client, single_player_mode, tutorial_mode, autostart_mode,
-                                       false,  // can_invite
-                                       dummy_player_id);
-        client->setClientCallbacks(&knights_app->getGameManager());
-        client->setPlayerIdAndControls(dummy_player_id, action_bar_controls);
-
-        // Join the game in split screen mode. This will take us to MenuScreen automatically.
-        if (single_player_mode || tutorial_mode) {
-            knights_app->getGameManager().tryJoinGame("#SplitScreenGame");
-            if (autostart_mode) {
-                // go straight into the game
-                client->setReady(true);
-            }
-        } else {
-            knights_app->getGameManager().tryJoinGameSplitScreen("#SplitScreenGame");
-        }
-
-    } else {
-        // Host LAN Game
-
-        // create server & game
-        boost::shared_ptr<KnightsClient> client =
-            knights_app->hostLanGame(server_port, loader->knights_config, "#LanGame");
-
-        // set up the local client
-        knights_app->createGameManager(client,
-                                       false,  // single_player
-                                       false,  // tutorial
-                                       false,  // autostart
-                                       false,  // can_invite
-                                       player_id);
-        client->setClientCallbacks(&knights_app->getGameManager());
-
-        // Start mDNS advertiser for LAN game discovery
-        knights_app->startMdnsAdvertiser(player_id.getUserName(), server_port);
-
-        // Set our player ID.
-        client->setPlayerIdAndControls(player_id, knights_app->getOptions().new_control_system);
-        
-        // Join the game -- this will take us to MenuScreen automatically.
-        knights_app->getGameManager().tryJoinGame("#LanGame");
-    }
-
-    loader.reset();
+    return false;  // GUI not required
 }
 
 void LoadingScreen::draw(uint64_t timestamp_us, Coercri::GfxContext &gc)

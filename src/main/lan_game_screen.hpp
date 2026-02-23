@@ -37,8 +37,6 @@ public:
 
 private:
     boost::shared_ptr<LanGameScreenImpl> pimpl;
-    std::string title;
-    bool internet;
 };
 
 #endif

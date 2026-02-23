@@ -25,19 +25,28 @@
 #define LOBBY_CONTROLLER_HPP
 
 #include "knights_lobby.hpp"
+#include "localization.hpp"
+#include "my_exceptions.hpp"
 #include "online_platform.hpp"
 #include "player_id.hpp"
 #include "utf8string.hpp"
 
 #include "boost/shared_ptr.hpp"
+#include "boost/thread.hpp"
 
 #include <filesystem>
 #include <memory>
+#include <string>
+#include <vector>
 
 class KnightsClient;
 class KnightsConfig;
 class LocalKey;
+class ModuleManager;
+
+#ifdef USE_VM_LOBBY
 class VMKnightsLobby;
+#endif
 
 namespace Coercri {
     class NetworkDriver;
@@ -64,84 +73,76 @@ class LobbyController {
 public:
     LobbyController();
 
+    void setModuleManager(ModuleManager *mm) { module_manager = mm; }
 
     // Reset
-
     void resetAll();
 
-
-    // Creating new games
-
+    // Create a local game
     boost::shared_ptr<KnightsClient> startLocalGame(boost::shared_ptr<Coercri::Timer> timer,
-                                                    boost::shared_ptr<KnightsConfig> config,
-                                                    const std::string &game_name,
-                                                    std::filesystem::path modules_path);
+                                                    const std::vector<std::string> &modules_to_load);
 
+    // Create a LAN game
     boost::shared_ptr<KnightsClient> hostLanGame(Coercri::NetworkDriver &net_driver,
                                                  boost::shared_ptr<Coercri::Timer> timer,
-                                                 int port,
-                                                 boost::shared_ptr<KnightsConfig> config,
-                                                 const std::string &game_name,
-                                                 std::filesystem::path modules_path);
+                                                 int port);
 
-    boost::shared_ptr<KnightsClient> joinRemoteServer(Coercri::NetworkDriver &net_driver,
-                                                      boost::shared_ptr<Coercri::Timer> timer,
-                                                      const std::string &address,
-                                                      int port,
-                                                      std::filesystem::path modules_path);
+
+    // Join a LAN game
+    boost::shared_ptr<KnightsClient> joinLanGame(Coercri::NetworkDriver &net_driver,
+                                                 boost::shared_ptr<Coercri::Timer> timer,
+                                                 const std::string &address,
+                                                 int port);
 
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    // If lobby_id empty this creates a new lobby (with given visibility),
-    // otherwise it joins an existing lobby.
-    boost::shared_ptr<KnightsClient> createVMGame(OnlinePlatform &online_platform,
-                                                  const std::string &lobby_id,
-                                                  OnlinePlatform::Visibility vis,
-                                                  std::unique_ptr<VMKnightsLobby> kts_lobby,
-                                                  uint64_t my_checksum,
-                                                  std::filesystem::path modules_path);
+    boost::shared_ptr<KnightsClient> hostOnlineGame(OnlinePlatform &online_platform,
+                                                    Coercri::Timer &timer,
+                                                    bool new_control_system,
+                                                    OnlinePlatform::Visibility vis);
+
+    boost::shared_ptr<KnightsClient> joinOnlineGame(OnlinePlatform &online_platform,
+                                                    const std::string &platform_lobby_id);
 #endif
 
+    // This currently just checks for loading errors and throws an exception if found.
+    void update();
 
-    // Host migration
 #if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
+    // Host migration
     HostMigrationState getHostMigrationState() const;
     void setHostMigrationStateInGame();  // Called by GameManager to notify that game has begun
     PlayerID getCurrentLeader() const;
 
-    void inviteFriendToLobby();
-
-    // This is called periodically (by KnightsApp::updateOnlinePlatform)
-    // On output, if error_key non-empty, should go to ErrorScreen
-    // On output, if host_migration_key non-empty, should go to HostMigrationScreen
-    // On output, if del_gfx_sounds is true, should clear gfx_manager and sound_manager
-    // [If these parameters seem a little weird, it is because this class was refactored out
-    // from some other code, and not everything has been fully disentangled at this time!]
+    // This is called periodically (by KnightsApp::updateOnlinePlatform).
+    // On output, if host_migration_key non-empty, should go to HostMigrationScreen.
+    // On output, if del_gfx_sounds is true, should clear gfx_manager and sound_manager.
+    // This function can also throw exceptions on errors.
     void checkHostMigration(OnlinePlatform &online_platform,
+                            Coercri::Timer &timer,
                             bool new_control_system,
-                            LocalKey &error_key,
                             LocalKey &host_migration_key,
                             bool &del_gfx_sounds);
 #endif
 
-
-    // Set quest message code (updates platform lobby status info if applicable)
 #ifdef ONLINE_PLATFORM
+    // Set quest message code (updates platform lobby status info if applicable)
     void setQuestMessageCode(OnlinePlatform &online_platform, const LocalKey &quest_key);
+
+    // Invite friend (opens platform invite UI)
+    void inviteFriendToLobby();
 #endif
 
-
     // Called during main game loop
-
     void readIncomingMessages();
     void sendOutgoingMessages();
 
-
     // Get number of players, if known (returns 0 if not known)
-
     int getNumberOfPlayers() const;
 
 
 private:
+    ModuleManager *module_manager = nullptr;
+
     boost::shared_ptr<KnightsClient> knights_client;
     std::unique_ptr<KnightsLobby> knights_lobby;
 
@@ -150,15 +151,19 @@ private:
     bool created_by_me;  // True if the platform lobby was originally created by the current user
 #endif
 
-#if defined(ONLINE_PLATFORM) && defined(USE_VM_LOBBY)
-    uint64_t my_checksum = 0;
-#endif
-
 #ifdef USE_VM_LOBBY
-    VMKnightsLobby *vm_knights_lobby;
+    VMKnightsLobby *vm_knights_lobby;  // If non-null, points to knights_lobby, but downcast to VMKnightsLobby
     PlayerID vm_lobby_leader_id;
     HostMigrationState host_migration_state;
 #endif
+
+    // The loader thread is responsible for creating the KnightsLobby,
+    // which shouldn't be touched while the loader thread is active.
+    boost::thread loader_thread;
+    boost::mutex loader_mutex;
+    bool loader_done;
+    LocalMsg loader_error_msg;
+    std::unique_ptr<LuaError> loader_lua_error;
 };
 
 #endif   // LOBBY_CONTROLLER_HPP

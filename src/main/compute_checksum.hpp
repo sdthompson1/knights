@@ -26,13 +26,14 @@
 
 #include "vfs.hpp"
 #include "xxhash.hpp"
-#include <string>
+#include <filesystem>
 
-inline uint64_t ComputeLocalChecksum(const std::string &build_id)
+inline uint64_t ComputeLocalChecksum(const std::filesystem::path &dir_path)
 {
+    VFS vfs;
+    vfs.add(dir_path, "dir");
     XXHash hasher(0);
-    hasher.updateHashPartial(reinterpret_cast<const uint8_t*>(build_id.data()), build_id.length());
-    //RStream::HashDirectory("server", hasher);  // TODO: solve checksumming problem for modules!
+    vfs.hashDirectory("dir", hasher);
     return hasher.finalHash();
 }
 

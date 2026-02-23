@@ -68,12 +68,12 @@ namespace {
 class KnightsClientImpl {
 public:
     // ctor
-    KnightsClientImpl(bool allow_untrusted_strings, std::filesystem::path modules_path)
+    KnightsClientImpl(bool allow_untrusted_strings, VFS modules_vfs)
         : ndisplays(0), player(0),
           knights_callbacks(0), client_callbacks(0),
           next_announcement_is_error(false),
           allow_untrusted_strings(allow_untrusted_strings),
-          modules_path(std::move(modules_path))
+          modules_vfs(std::move(modules_vfs))
     {
         for (int i = 0; i < 2; ++i) last_cts_ctrl[i] = 0;
     }
@@ -89,7 +89,7 @@ public:
     bool next_announcement_is_error;
     bool allow_untrusted_strings;
     std::vector<UTF8String> pending_chat_messages;
-    std::filesystem::path modules_path;
+    VFS modules_vfs;
 
     // helper functions
     void receiveConfiguration(Coercri::InputByteBuf &buf);
@@ -104,8 +104,8 @@ public:
     }
 };
 
-KnightsClient::KnightsClient(bool allow_untrusted_strings, std::filesystem::path modules_path)
-    : pimpl(new KnightsClientImpl(allow_untrusted_strings, std::move(modules_path)))
+KnightsClient::KnightsClient(bool allow_untrusted_strings, VFS modules_vfs)
+    : pimpl(new KnightsClientImpl(allow_untrusted_strings, std::move(modules_vfs)))
 {
     // Write the initial version string.
     Coercri::OutputByteBuf buf(pimpl->out);
@@ -968,7 +968,7 @@ void KnightsClient::connectionFailed()
 void KnightsClient::setPlayerIdAndControls(const PlayerID &id, bool action_bar_ctrls)
 {
 #ifdef LOG_MSGS
-    std::cout << "Sending CLIENT_SET_PLAYER_ID: " << id.getDebugString() << std::endl;
+    std::cout << "Sending CLIENT_SET_PLAYER_ID " << id.getDebugString() << std::endl;
 #endif
     Coercri::OutputByteBuf buf(pimpl->out);
     buf.writeUbyte(CLIENT_SET_PLAYER_ID);
@@ -979,6 +979,9 @@ void KnightsClient::setPlayerIdAndControls(const PlayerID &id, bool action_bar_c
 
 void KnightsClient::joinGame(const std::string &game_name)
 {
+#ifdef LOG_MSGS
+    std::cout << "Sending CLIENT_JOIN_GAME " << game_name << std::endl;
+#endif
     Coercri::OutputByteBuf buf(pimpl->out);
     buf.writeUbyte(CLIENT_JOIN_GAME);
     buf.writeString(game_name);
@@ -1112,10 +1115,7 @@ std::vector<UTF8String> KnightsClient::getPendingChatMessages()
 void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 {
     client_config.reset(new ClientConfig);  // wipe out the old client config if there is one.
-
-    // For now, just set module_vfs to the hard-coded path "knights_data/modules".
-    // If we support Steam Workshop in the future, we can do something more complicated here instead.
-    client_config->module_vfs.add(modules_path, "");
+    client_config->module_vfs = modules_vfs;
 
     constexpr int MAX_COUNT = 100000;
 

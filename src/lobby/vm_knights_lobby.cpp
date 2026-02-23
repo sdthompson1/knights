@@ -222,8 +222,9 @@ void VMKnightsLobby::becomeFollower(const std::string &address, int port)
 // Mutex should be locked when this is called
 void VMKnightsLobby::rejoinGame()
 {
+    VFS empty_vfs;
     KnightsClient client(false,  // don't allow untrusted strings
-                         std::filesystem::path());  // modules path is not required for this
+                         empty_vfs);  // we are using this client only to send, so it won't need a VFS
     client.setPlayerIdAndControls(pimpl->local_user_id, pimpl->new_control_system);
     client.joinGame("#VMGame");
     std::vector<unsigned char> data;

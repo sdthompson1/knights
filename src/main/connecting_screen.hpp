@@ -26,24 +26,25 @@
 
 #include "screen.hpp"
 
-#include "boost/shared_ptr.hpp"
+#include <memory>
 #include <string>
 
 class ConnectingScreenImpl;
 class PlayerID;
 
-// This screen is used for connecting to LAN games
+// Display a "Connecting to..." message and a Cancel button.
+// This screen will remain until something else moves us into the game, or
+// the user clicks the cancel button.
 
 class ConnectingScreen : public Screen {
 public:
     ConnectingScreen(const std::string &address,
-                     int port,
-                     const std::string &address_display_name,   // e.g. hostname if address is IP addr
-                     const PlayerID &player_id);
+                     const std::string &address_display_name);   // e.g. hostname if address is IP addr
+    ~ConnectingScreen();
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
-    virtual void update();
+
 private:
-    boost::shared_ptr<ConnectingScreenImpl> pimpl;
+    std::unique_ptr<ConnectingScreenImpl> pimpl;
 };
 
 #endif

@@ -126,6 +126,9 @@
     <ClCompile Include="..\..\src\main\menu_screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\main\module_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\main\my_dropdown.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -165,9 +168,6 @@
     <ClCompile Include="..\..\src\main\title_screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\main\vm_loading_screen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>    
     <ClCompile Include="..\..\src\main\x_centre.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -290,6 +290,9 @@
     <ClInclude Include="..\..\src\main\menu_screen.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\main\module_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\main\my_dropdown.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -332,9 +335,6 @@
     <ClInclude Include="..\..\src\main\title_screen.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\main\vm_loading_screen.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>    
     <ClInclude Include="..\..\src\main\x_centre.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

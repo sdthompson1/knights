@@ -129,13 +129,14 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
         new_screen.reset(new StartGameScreen);
         
     } else if (event.getSource() == tutorial.get()) {
-        // Go to LoadingScreen in tutorial mode
-        new_screen.reset(new LoadingScreen(-1, PlayerID(), true, true, true, true));
+        knights_app.startTutorial();
 
     } else if (event.getSource() == options.get()) {
         new_screen.reset(new OptionsScreen);
+
     } else if (event.getSource() == credits.get()) {
         new_screen.reset(new CreditsScreen("credits_", ".txt"));
+
     } else if (event.getSource() == exit.get()) {
         knights_app.requestQuit();
     }

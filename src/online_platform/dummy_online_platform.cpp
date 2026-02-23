@@ -26,6 +26,7 @@
 #include "misc.hpp"
 #include "dummy_online_platform.hpp"
 #include "dummy_platform_lobby.hpp"
+#include "game_module_spec.hpp"
 #include "localization.hpp"
 
 #include "enet/enet_network_driver.hpp"
@@ -96,31 +97,31 @@ Coercri::UTF8String DummyOnlinePlatform::lookupUserName(const PlayerID& platform
     }
 }
 
-std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis, uint64_t checksum)
+std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis,
+                                                                  const GameModuleSpec &game_info)
 {
-    // Note: 'vis' parameter is ignored for DummyOnlinePlaform
+    // Note: 'vis' parameter is ignored for DummyOnlinePlatform
 
     if (!connected) return nullptr;
 
-    std::ostringstream oss;
-    oss << checksum;
-    if (sendMessage(MSG_CREATE_LOBBY, oss.str())) {
+    // Payload: checksum decimal string (null-terminated) + module names (each null-terminated)
+    //          + empty string terminator (i.e. extra '\0' at end)
+    std::string payload;
+    payload += std::to_string(game_info.checksum);
+    payload += '\0';
+    for (const auto &name : game_info.module_names) {
+        payload += name;
+        payload += '\0';
+    }
+    payload += '\0';  // list terminator (empty string)
+
+    if (sendMessage(MSG_CREATE_LOBBY, payload)) {
         std::string lobby_id;
         if (receiveResponse(lobby_id)) {
             return std::make_unique<DummyPlatformLobby>(this, lobby_id);
         }
     }
     return nullptr;
-}
-
-void DummyOnlinePlatform::clearLobbyFilters()
-{
-    filter_checksum.reset();
-}
-
-void DummyOnlinePlatform::addChecksumFilter(uint64_t checksum)
-{
-    filter_checksum = checksum;
 }
 
 bool DummyOnlinePlatform::hasLobbyListChanged()
@@ -170,9 +171,7 @@ std::vector<std::string> DummyOnlinePlatform::getLobbyList()
                             std::istringstream iss(checksum_str);
                             uint64_t checksum = 0;
                             iss >> checksum;
-                            if (!filter_checksum.has_value() || *filter_checksum == checksum) {
-                                result.push_back(lobby_id);
-                            }
+                            result.push_back(lobby_id);
                         } else {
                             break;
                         }
@@ -246,7 +245,7 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
                 std::string checksum_str = response_data.substr(pos, null_pos - pos);
                 pos = null_pos + 1;
                 std::istringstream iss(checksum_str);
-                iss >> info.checksum;
+                iss >> info.game_module_spec.checksum;
             }
 
             // Parse status key
@@ -272,14 +271,25 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
             }
 
             // Skip lobby_state (null-terminated)
-            // Note: This field is not currently used by this function but is part of the protocol
             if (pos < response_data.size()) {
                 null_pos = response_data.find('\0', pos);
                 if (null_pos != std::string::npos) {
-                    // std::string lobby_state = response_data.substr(pos, null_pos - pos);
-                    // Could be "JOINED" or "FAILED" but we don't use it here
                     pos = null_pos + 1;
                 }
+            }
+
+            // Parse module list: num_modules (4 bytes LE) + module names (null-terminated)
+            uint32_t num_modules = 0;
+            if (pos + 4 <= response_data.size()) {
+                std::memcpy(&num_modules, response_data.data() + pos, 4);
+                pos += 4;
+            }
+            for (uint32_t i = 0; i < num_modules; ++i) {
+                null_pos = response_data.find('\0', pos);
+                if (null_pos == std::string::npos) break;
+                info.game_module_spec.module_names.push_back(
+                    response_data.substr(pos, null_pos - pos));
+                pos = null_pos + 1;
             }
         }
     }

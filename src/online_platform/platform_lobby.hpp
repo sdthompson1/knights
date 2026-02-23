@@ -26,6 +26,7 @@
 
 #ifdef ONLINE_PLATFORM
 
+#include "game_module_spec.hpp"
 #include "player_id.hpp"
 #include "utf8string.hpp"
 
@@ -77,9 +78,9 @@ public:
     // Returns all chat messages since the last call (or since joining if first call)
     virtual std::vector<ChatMessage> receiveChatMessages() = 0;
 
-    // Returns the checksum of this lobby's game data.
+    // Returns the game module spec that was used when the lobby was created.
     // Only valid when getState() == JOINED.
-    virtual uint64_t getChecksum() = 0;
+    virtual GameModuleSpec getModuleSpec() = 0;
 };
 
 #endif

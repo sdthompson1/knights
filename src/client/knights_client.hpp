@@ -39,10 +39,10 @@
 #define KNIGHTS_CLIENT_HPP
 
 #include "utf8string.hpp"
+#include "vfs.hpp"
 
 #include "boost/noncopyable.hpp"
 
-#include <filesystem>
 #include <memory>
 #include <vector>
 
@@ -56,7 +56,8 @@ class KnightsClient : boost::noncopyable {
 public:
     typedef unsigned char ubyte;
 
-    KnightsClient(bool allow_untrusted_strings, std::filesystem::path modules_path);
+    KnightsClient(bool allow_untrusted_strings,
+                  VFS modules_vfs);  // Needed so that client can load all gfx and sounds locally
     ~KnightsClient();
 
     bool allowUntrustedStrings() const;

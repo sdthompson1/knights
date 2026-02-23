@@ -61,6 +61,7 @@
 #include "include_lua.hpp"
 
 #include <sstream>
+#include <unordered_set>
 
 #ifdef __LP64__
 #include <stdint.h>
@@ -134,15 +135,26 @@ KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
         lua_setfield(lua, LUA_REGISTRYINDEX, "_MODULES");
 
         // Load each Lua module
+        std::unordered_set<std::string> loaded;
         for (const std::string & module_name : module_names) {
             // Read depends.txt
-            std::vector<std::string> deps = ReadModuleNames(module_vfs, module_name + "/depends.txt");
+            ModuleNameList dep_list = ReadModuleNames(module_vfs, module_name + "/depends.txt");
+            const std::vector<std::string> &deps = dep_list.names;
+
+            // Soft deps are only active if already loaded earlier in the load order
+            std::vector<std::string> active_soft_deps;
+            for (const auto &s : dep_list.soft_names) {
+                if (loaded.count(s)) active_soft_deps.push_back(s);
+            }
 
             // Disable all mounts, then mount the module itself plus its dependencies
             VFS vfs = module_vfs;
             vfs.disableAll();
             vfs.enable(module_name);
             for (const auto &dep : deps) {
+                vfs.enable(dep);
+            }
+            for (const auto &dep : active_soft_deps) {
                 vfs.enable(dep);
             }
             SetLuaVFS(lua, vfs);
@@ -157,6 +169,10 @@ KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
             // 2. Inject each dependency's table into M by name
             lua_getfield(lua, LUA_REGISTRYINDEX, "_MODULES");             // [M _MODULES]
             for (const auto &dep : deps) {
+                lua_getfield(lua, -1, dep.c_str());                       // [M _MODULES dep_table]
+                lua_setfield(lua, -3, dep.c_str());                       // [M _MODULES]
+            }
+            for (const auto &dep : active_soft_deps) {
                 lua_getfield(lua, -1, dep.c_str());                       // [M _MODULES dep_table]
                 lua_setfield(lua, -3, dep.c_str());                       // [M _MODULES]
             }
@@ -177,6 +193,8 @@ KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
             lua_pushvalue(lua, -2);                                       // [M _MODULES M]
             lua_setfield(lua, -2, module_name.c_str());                   // [M _MODULES]
             lua_pop(lua, 2);                                              // []
+
+            loaded.insert(module_name);
         }
 
         // After initialization, clear the VFS so that Lua
