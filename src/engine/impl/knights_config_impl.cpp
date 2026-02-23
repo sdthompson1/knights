@@ -137,8 +137,15 @@ KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
         // Load each Lua module
         std::unordered_set<std::string> loaded;
         for (const std::string & module_name : module_names) {
+            // Disable all mounts, then mount the module itself.
+            // This must happen before reading depends.txt, so that in VM mode the
+            // host-side VFS state allows access to this module's files.
+            VFS vfs = module_vfs;
+            vfs.disableAll();
+            vfs.enable(module_name);
+
             // Read depends.txt
-            ModuleNameList dep_list = ReadModuleNames(module_vfs, module_name + "/depends.txt");
+            ModuleNameList dep_list = ReadModuleNames(vfs, module_name + "/depends.txt");
             const std::vector<std::string> &deps = dep_list.names;
 
             // Soft deps are only active if already loaded earlier in the load order
@@ -147,10 +154,7 @@ KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
                 if (loaded.count(s)) active_soft_deps.push_back(s);
             }
 
-            // Disable all mounts, then mount the module itself plus its dependencies
-            VFS vfs = module_vfs;
-            vfs.disableAll();
-            vfs.enable(module_name);
+            // Also enable the dependencies
             for (const auto &dep : deps) {
                 vfs.enable(dep);
             }

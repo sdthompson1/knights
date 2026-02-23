@@ -50,7 +50,13 @@ namespace {
               error_msg_out(error_msg_out),
               lua_error_out(lua_error_out),
               mutex(mutex)
-        { }
+        {
+            done = false;
+            knights_lobby_out.reset();
+            vm_knights_lobby_out = nullptr;
+            error_msg_out = LocalMsg();
+            lua_error_out.reset();
+        }
 
         virtual void load(std::unique_ptr<KnightsLobby> &knights_lobby
 #ifdef USE_VM_LOBBY
@@ -246,6 +252,10 @@ void LobbyController::resetAll()
     vm_lobby_leader_id = PlayerID();
     host_migration_state = HostMigrationState::NOT_IN_GAME;
 #endif
+
+    loader_done = false;
+    loader_error_msg = LocalMsg();
+    loader_lua_error.reset();
 }
 
 boost::shared_ptr<KnightsClient>
@@ -260,7 +270,6 @@ boost::shared_ptr<KnightsClient>
     VFS vfs = module_manager->getVFS(module_names);
 
     // Start loading the server in the background
-    loader_done = false;
     loader_thread = boost::thread(SimpleLoader(timer,
                                                std::move(module_names),
                                                vfs,
@@ -295,7 +304,6 @@ boost::shared_ptr<KnightsClient>
     VFS vfs = module_manager->getVFS(module_names);
 
     // Start loading the server in the background
-    loader_done = false;
     loader_thread = boost::thread(SimpleLoader(timer,
                                                std::move(module_names),
                                                vfs,
@@ -364,7 +372,6 @@ boost::shared_ptr<KnightsClient>
     }
 
     // Start creating the VMKnightsLobby in the background
-    loader_done = false;
     loader_thread = boost::thread(VMLoader(online_platform.getNetworkDriver(),
                                            timer,
                                            online_platform.getCurrentUserId(),
@@ -499,7 +506,6 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
 
                 // We haven't booted our local VM yet - do so now.
                 VFS vfs = module_manager->getVFS(spec.module_names);
-                loader_done = false;
                 loader_thread = boost::thread(VMLoader(online_platform.getNetworkDriver(),
                                                        timer,
                                                        online_platform.getCurrentUserId(),
