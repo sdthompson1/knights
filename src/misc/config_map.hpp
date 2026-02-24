@@ -28,6 +28,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 struct lua_State;
 
@@ -42,6 +43,7 @@ public:
     void setInt(const std::string &key, int val) { ints.insert(std::make_pair(key, val)); }
     void setFloat(const std::string &key, float val) { floats.insert(std::make_pair(key, val)); }
     void setString(const std::string &key, const std::string &val) { strings.insert(std::make_pair(key, val)); }
+    void setStringList(const std::string &key, const std::vector<std::string> &val) { string_lists.insert(std::make_pair(key, val)); }
 
     int getInt(const std::string &key) const {
         std::map<std::string, int>::const_iterator it = ints.find(key);
@@ -62,10 +64,17 @@ public:
         else return it->second;
     }
 
+    const std::vector<std::string> & getStringList(const std::string &key) const {
+        std::map<std::string, std::vector<std::string>>::const_iterator it = string_lists.find(key);
+        if (it == string_lists.end()) throw BadConfig(key);
+        else return it->second;
+    }
+
 private:
     std::map<std::string, int> ints;
     std::map<std::string, float> floats;
     std::map<std::string, std::string> strings;
+    std::map<std::string, std::vector<std::string>> string_lists;
 };
 
 // Pop a Lua table from the top of the stack and use it to initialize

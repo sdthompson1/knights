@@ -29,6 +29,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <unordered_set>
 
 LocalParam::LocalParam(const LocalKey &lk) : type(Type::LOCAL_KEY), local_key(lk) {}
 
@@ -130,6 +131,8 @@ LocalMsg PopLocalMsgFromLua(lua_State *lua)
 void Localization::readStrings(std::istream &file,
                                std::function<Coercri::UTF8String (const Coercri::UTF8String &)> filter_func)
 {
+    std::unordered_set<LocalKey> seen;
+
     std::string line;
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == '#') continue; // skip empty lines and comments
@@ -155,9 +158,10 @@ void Localization::readStrings(std::istream &file,
 
                 LocalKey local_key(key);
 
-                if (strings.find(local_key) != strings.end()) {
+                if (seen.find(local_key) != seen.end()) {
                     throw std::runtime_error("Duplicate localization key: " + key);
                 }
+                seen.insert(local_key);
 
                 strings[local_key] = filter_func(Coercri::UTF8String::fromUTF8(message));
             }

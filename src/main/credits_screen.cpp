@@ -58,14 +58,14 @@ CreditsScreenImpl::CreditsScreenImpl(KnightsApp &app, gcn::Gui &gui,
                                      int wlimit)
     : knights_app(app), wlimit(wlimit)
 {
-    const std::string lang1 = knights_app.getPreferredLanguage();
-    const std::string lang2 = knights_app.getDefaultLanguage();
+    const std::vector<std::string> & languages = knights_app.getPreferredLanguages();
     const VFS &vfs = app.getClientVFS();
     std::ifstream str;
-    if (!lang1.empty() && vfs.exists(prefix + lang1 + suffix)) {
-        str = vfs.open(prefix + lang1 + suffix);
-    } else {
-        str = vfs.open(prefix + lang2 + suffix);
+    for (const auto & lang : languages) {
+        if (vfs.exists(prefix + lang + suffix)) {
+            str = vfs.open(prefix + lang + suffix);
+            break;
+        }
     }
 
     std::string credits;

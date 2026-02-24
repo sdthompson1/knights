@@ -54,6 +54,7 @@
 #include "mdns_discovery.hpp"
 #include "options.hpp"
 #include "potion_renderer.hpp"
+#include "read_localization.hpp"
 #include "rng.hpp"
 #include "skull_renderer.hpp"
 #include "sound_manager.hpp"
@@ -242,7 +243,7 @@ public:
 
     // localization strings
     Localization &localization;
-    std::string preferred_language, default_language;
+    std::vector<std::string> preferred_languages;
 
     // saved paths
     VFS client_vfs;
@@ -342,33 +343,35 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         pimpl->speech_bubble = PopGraphic(lua, &pimpl->config_gfx);
     }
 
-    // Read knights_data/client/localization_<language>.txt
+    // Determine preferred language(s) and read
+    // knights_data/client/localization_<language>.txt
     {
+        std::string game_language;
 #ifdef ONLINE_PLATFORM
         // Language from the online platform is preferred (if available)
-        pimpl->preferred_language = pimpl->online_platform->getGameLanguage();
+        game_language = pimpl->online_platform->getGameLanguage();
+        if (!game_language.empty()) {
+            pimpl->preferred_languages.push_back(game_language);
+        }
 #endif
-        // Language from knights_data/client/client_config.lua is the backup choice
-        pimpl->default_language = pimpl->config_map.getString("language");
+        // Add languages from "languages" key in knights_data/client/client_config.lua
+        for (const auto &lang : pimpl->config_map.getStringList("languages")) {
+            if (lang != game_language) {
+                pimpl->preferred_languages.push_back(lang);
+            }
+        }
 
         const std::string prefix = "localization_";
         const std::string suffix = ".txt";
-        std::ifstream file;
-        if (!pimpl->preferred_language.empty()
-        && client_vfs.exists(prefix + pimpl->preferred_language + suffix)) {
-            file = client_vfs.open(prefix + pimpl->preferred_language + suffix);
-        } else {
-            file = client_vfs.open(prefix + pimpl->default_language + suffix);
-        }
 
-        pimpl->localization.readStrings(file,
-                                        [this](const UTF8String &str) {
+        ReadLocalization(pimpl->localization,
+                         client_vfs,
 #ifdef ONLINE_PLATFORM
-                                            return pimpl->online_platform->filterGameContent(str);
-#else
-                                            return str;
+                         *pimpl->online_platform,
 #endif
-                                        });
+                         prefix,
+                         suffix,
+                         pimpl->preferred_languages);
     }
 
     const UTF8String game_name = pimpl->localization.get(LocalKey("knights"));
@@ -1437,12 +1440,7 @@ const Localization & KnightsApp::getLocalization() const
     return pimpl->localization;
 }
 
-const std::string & KnightsApp::getPreferredLanguage() const
+const std::vector<std::string> & KnightsApp::getPreferredLanguages() const
 {
-    return pimpl->preferred_language;
-}
-
-const std::string & KnightsApp::getDefaultLanguage() const
-{
-    return pimpl->default_language;
+    return pimpl->preferred_languages;
 }

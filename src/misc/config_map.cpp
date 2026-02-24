@@ -50,6 +50,23 @@ void PopConfigMap(lua_State *lua, ConfigMap &cmap)
                 }
             } else if (lua_type(lua, -1) == LUA_TSTRING) {
                 cmap.setString(key, lua_tostring(lua, -1));
+            } else if (lua_type(lua, -1) == LUA_TTABLE) {
+                std::vector<std::string> list;
+                for (int i = 1; ; ++i) {
+                    lua_rawgeti(lua, -1, i);
+                    if (lua_isnil(lua, -1)) {
+                        lua_pop(lua, 1);
+                        break;
+                    }
+                    if (lua_type(lua, -1) != LUA_TSTRING) {
+                        lua_pop(lua, 1);
+                        throw LuaError(std::string("error in MISC_CONFIG: field '")
+                            + key + "' array contains non-string value");
+                    }
+                    list.push_back(lua_tostring(lua, -1));
+                    lua_pop(lua, 1);
+                }
+                cmap.setStringList(key, list);
             } else {
                 throw LuaError(std::string("error in MISC_CONFIG: field '")
                     + key = "' has incorrect type");

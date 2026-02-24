@@ -25,8 +25,11 @@ MISC_CONFIG = {
 -- UDP port (used by Host LAN Game)
 port_number = 16399;
 
--- Default Language (will be overridden by Steam language setting if available)
-language = "english";
+-- Game languages, in order of preference (left-most preferred).
+-- Note: If a language setting is available from Steam, it will automatically
+-- be added to the front of this list, so this list is just a "fallback" in
+-- case the Steam language is unavailable for some reason.
+languages = {"english"};
 
 
 --

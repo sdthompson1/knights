@@ -132,8 +132,11 @@ public:
         name_lookup = [](const PlayerID &id) { return id.getUserName(); };
     }
 
-    // Read strings from a file
-    // Strings are passed through the given function for filtering
+    // Read strings from a file.
+    // Strings are passed through the given function for filtering.
+    // If keys in the file clash with existing keys in this Localization object,
+    // then the existing keys are replaced.
+    // If the file contains two or more copies of the same key, an error will be thrown.
     void readStrings(std::istream &file,
                      std::function<Coercri::UTF8String (const Coercri::UTF8String &)> filter_func);
 

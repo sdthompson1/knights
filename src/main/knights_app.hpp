@@ -203,8 +203,7 @@ public:
     // Localization strings
     //
     const Localization & getLocalization() const;
-    const std::string & getPreferredLanguage() const;
-    const std::string & getDefaultLanguage() const;
+    const std::vector<std::string> & getPreferredLanguages() const; // Leftmost languages in this list are preferred over rightmost.
 
 
 private:
