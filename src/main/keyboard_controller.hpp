@@ -36,8 +36,8 @@
 #include "gfx/key_code.hpp"
 #include "gfx/window.hpp"
 
-#include "boost/scoped_ptr.hpp"
 #include "boost/weak_ptr.hpp"
+#include <memory>
 
 class KeyboardListener;
 
@@ -54,7 +54,7 @@ public:
     
 private:
     friend class KeyboardListener;
-    boost::scoped_ptr<KeyboardListener> kbd_listener;
+    std::unique_ptr<KeyboardListener> kbd_listener;
     boost::weak_ptr<Coercri::Window> win;
     Coercri::Scancode up_key, right_key, down_key, left_key, fire_key, suicide_key;
     bool up, right, down, left, fire, suicide;

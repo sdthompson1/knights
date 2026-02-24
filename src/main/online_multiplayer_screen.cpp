@@ -40,7 +40,7 @@
 #include "tab_font.hpp"
 #include "title_block.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 #include "boost/thread.hpp"
 #include "gcn/cg_font.hpp"
 #include <vector>
@@ -188,20 +188,20 @@ private:
     boost::shared_ptr<Coercri::Window> window;
     gcn::Gui &gui;
     
-    boost::scoped_ptr<GameList> game_list;
+    std::unique_ptr<GameList> game_list;
 
-    boost::scoped_ptr<gcn::Label> title_label;
-    boost::scoped_ptr<GuiCentre> centre;
-    boost::scoped_ptr<GuiPanel> panel;
-    boost::scoped_ptr<gcn::Container> container;
-    boost::scoped_ptr<gcn::Label> games_label;
-    boost::scoped_ptr<TitleBlock> games_titleblock;
+    std::unique_ptr<gcn::Label> title_label;
+    std::unique_ptr<GuiCentre> centre;
+    std::unique_ptr<GuiPanel> panel;
+    std::unique_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::Label> games_label;
+    std::unique_ptr<TitleBlock> games_titleblock;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
-    boost::scoped_ptr<gcn::ListBox> listbox;
-    boost::scoped_ptr<gcn::CheckBox> show_incompatible_checkbox;
-    boost::scoped_ptr<gcn::Button> refresh_button;
-    boost::scoped_ptr<gcn::Button> cancel_button;
-    boost::scoped_ptr<gcn::Button> create_game_button;
+    std::unique_ptr<gcn::ListBox> listbox;
+    std::unique_ptr<gcn::CheckBox> show_incompatible_checkbox;
+    std::unique_ptr<gcn::Button> refresh_button;
+    std::unique_ptr<gcn::Button> cancel_button;
+    std::unique_ptr<gcn::Button> create_game_button;
     boost::shared_ptr<gcn::Font> cg_font;
     std::unique_ptr<gcn::Font> tab_font;
 };

@@ -39,7 +39,7 @@
 #include "gfx/gfx_driver.hpp"
 #include "gfx/window_listener.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 
 #include <sstream>
 
@@ -150,29 +150,29 @@ public:
 private:
     KnightsApp &knights_app;
     boost::shared_ptr<Coercri::Window> window;
-    boost::scoped_ptr<GuiCentre> centre;
-    boost::scoped_ptr<GuiPanel> panel;
-    boost::scoped_ptr<gcn::Container> container;
-    boost::scoped_ptr<gcn::Button> ok_button, cancel_button;
-    boost::scoped_ptr<gcn::Label> controls_title;
-    boost::scoped_ptr<gcn::Label> show_controls_label;
-    boost::scoped_ptr<gcn::DropDown> show_controls_dropdown;
-    boost::scoped_ptr<gcn::ListModel> show_controls_listmodel;
-    boost::scoped_ptr<gcn::Label> control_system_label;
-    boost::scoped_ptr<gcn::DropDown> control_system_dropdown;
-    boost::scoped_ptr<ControlSystemListModel> control_system_listmodel;
-    boost::scoped_ptr<gcn::Label> control_label[2][7];
-    boost::scoped_ptr<gcn::Label> control_setting[2][6];
-    boost::scoped_ptr<gcn::Button> change_button[2];
-    boost::scoped_ptr<gcn::Label> change_label;
-    boost::scoped_ptr<gcn::Label> options_label, scaling_label, display_label;
-    boost::scoped_ptr<gcn::ListModel> scaling_listmodel;
-    boost::scoped_ptr<DisplayListModel> display_listmodel;
-    boost::scoped_ptr<gcn::DropDown> scaling_dropdown, display_dropdown;
-    boost::scoped_ptr<gcn::CheckBox> non_integer_checkbox;
-    boost::scoped_ptr<gcn::CheckBox> screen_flash_checkbox;
-    boost::scoped_ptr<gcn::Button> restore_button;
-    boost::scoped_ptr<GuiTextWrap> bad_key_area;
+    std::unique_ptr<GuiCentre> centre;
+    std::unique_ptr<GuiPanel> panel;
+    std::unique_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::Button> ok_button, cancel_button;
+    std::unique_ptr<gcn::Label> controls_title;
+    std::unique_ptr<gcn::Label> show_controls_label;
+    std::unique_ptr<gcn::DropDown> show_controls_dropdown;
+    std::unique_ptr<gcn::ListModel> show_controls_listmodel;
+    std::unique_ptr<gcn::Label> control_system_label;
+    std::unique_ptr<gcn::DropDown> control_system_dropdown;
+    std::unique_ptr<ControlSystemListModel> control_system_listmodel;
+    std::unique_ptr<gcn::Label> control_label[2][7];
+    std::unique_ptr<gcn::Label> control_setting[2][6];
+    std::unique_ptr<gcn::Button> change_button[2];
+    std::unique_ptr<gcn::Label> change_label;
+    std::unique_ptr<gcn::Label> options_label, scaling_label, display_label;
+    std::unique_ptr<gcn::ListModel> scaling_listmodel;
+    std::unique_ptr<DisplayListModel> display_listmodel;
+    std::unique_ptr<gcn::DropDown> scaling_dropdown, display_dropdown;
+    std::unique_ptr<gcn::CheckBox> non_integer_checkbox;
+    std::unique_ptr<gcn::CheckBox> screen_flash_checkbox;
+    std::unique_ptr<gcn::Button> restore_button;
+    std::unique_ptr<GuiTextWrap> bad_key_area;
 
     Options current_opts;
 

@@ -33,7 +33,6 @@
 // coercri
 #include "gfx/color.hpp"
 
-#include "boost/scoped_ptr.hpp"
 #include "boost/shared_ptr.hpp"
 #include <map>
 #include <string>

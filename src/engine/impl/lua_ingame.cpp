@@ -54,9 +54,8 @@
 
 #include "include_lua.hpp"
 
-#include "boost/scoped_ptr.hpp"
-
 #include <cstring>
+#include <memory>
 #include <iostream>
 
 class Player;
@@ -795,8 +794,7 @@ namespace {
         const ActionMaker *maker = static_cast<const ActionMaker *>(lua_touserdata(lua, lua_upvalueindex(2)));
 
         // Call the maker to produce a LegacyAction.
-        // Store in a scoped_ptr
-        boost::scoped_ptr<LegacyAction> action( maker->make(p) );
+        std::unique_ptr<LegacyAction> action( maker->make(p) );
 
         // Create the ActionData from cxt
         ActionData ad( lua );
@@ -813,7 +811,7 @@ namespace {
     {
         LuaActionPars p(lua);
         const ActionMaker *maker = static_cast<const ActionMaker *>(lua_touserdata(lua, lua_upvalueindex(2)));
-        boost::scoped_ptr<LegacyAction> action( maker->make(p) );
+        std::unique_ptr<LegacyAction> action( maker->make(p) );
         ActionData ad(lua);
         bool result = action->possible(ad);
         lua_pushboolean(lua, result);

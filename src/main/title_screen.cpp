@@ -36,7 +36,7 @@
 
 #include "guichan.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 using namespace boost;
 
 class TitleScreenImpl : public gcn::ActionListener {
@@ -46,16 +46,16 @@ public:
     
 private:
     KnightsApp &knights_app;
-    scoped_ptr<GuiCentre> centre;
-    scoped_ptr<gcn::Container> outer_container;
-    scoped_ptr<GuiPanel> panel1, panel2;
-    scoped_ptr<gcn::Container> container;
-    scoped_ptr<gcn::Label> title;
-    scoped_ptr<gcn::Button> start_game;
-    scoped_ptr<gcn::Button> tutorial;
-    scoped_ptr<gcn::Button> options;
-    scoped_ptr<gcn::Button> credits;
-    scoped_ptr<gcn::Button> exit;
+    std::unique_ptr<GuiCentre> centre;
+    std::unique_ptr<gcn::Container> outer_container;
+    std::unique_ptr<GuiPanel> panel1, panel2;
+    std::unique_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::Label> title;
+    std::unique_ptr<gcn::Button> start_game;
+    std::unique_ptr<gcn::Button> tutorial;
+    std::unique_ptr<gcn::Button> options;
+    std::unique_ptr<gcn::Button> credits;
+    std::unique_ptr<gcn::Button> exit;
 };
 
 TitleScreenImpl::TitleScreenImpl(KnightsApp &app, gcn::Gui &gui)

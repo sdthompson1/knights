@@ -43,7 +43,6 @@
 #include "user_control.hpp"
 #include "vote_flags.hpp"
 
-#include "boost/scoped_ptr.hpp"
 #include "boost/weak_ptr.hpp"
 
 #ifdef VIRTUAL_SERVER

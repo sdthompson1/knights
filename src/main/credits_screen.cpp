@@ -34,7 +34,7 @@
 
 #include "guichan.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 using namespace boost;
 
 class CreditsScreenImpl : public gcn::MouseListener, public gcn::WidgetListener {
@@ -47,9 +47,9 @@ public:
     
 private:
     KnightsApp &knights_app;
-    scoped_ptr<GuiTextWrap> text_wrap;
-    scoped_ptr<gcn::ScrollArea> scroll_area;
-    scoped_ptr<gcn::Container> container;
+    std::unique_ptr<GuiTextWrap> text_wrap;
+    std::unique_ptr<gcn::ScrollArea> scroll_area;
+    std::unique_ptr<gcn::Container> container;
     int wlimit;
 };
 

@@ -32,7 +32,7 @@
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 using namespace boost;
 
 class ErrorScreenImpl : public gcn::ActionListener {
@@ -75,11 +75,11 @@ public:
 
 private:
     KnightsApp &knights_app;
-    scoped_ptr<GuiCentre> centre;
-    scoped_ptr<GuiPanel> panel;
-    scoped_ptr<gcn::Container> container;
-    scoped_ptr<gcn::Label> label;
-    scoped_ptr<gcn::Button> exit_button;
+    std::unique_ptr<GuiCentre> centre;
+    std::unique_ptr<GuiPanel> panel;
+    std::unique_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::Label> label;
+    std::unique_ptr<gcn::Button> exit_button;
 };
 
 bool ErrorScreen::start(KnightsApp &app, shared_ptr<Coercri::Window>, gcn::Gui &gui)

@@ -33,7 +33,7 @@
 #include "menu.hpp"
 
 #include "boost/noncopyable.hpp"
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 #include <vector>
 
 class Anim;
@@ -53,7 +53,7 @@ public:
     std::vector<const Sound*> sounds;
     std::vector<const UserControl*> standard_controls;
     std::vector<const UserControl*> other_controls;
-    boost::scoped_ptr<Menu> menu;
+    std::unique_ptr<Menu> menu;
     int approach_offset;
 };
 

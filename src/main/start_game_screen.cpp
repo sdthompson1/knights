@@ -36,7 +36,7 @@
 
 #include "guichan.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 using namespace boost;
 
 class StartGameScreenImpl : public gcn::ActionListener {
@@ -46,18 +46,18 @@ public:
     
 private:
     KnightsApp &knights_app;
-    scoped_ptr<GuiCentre> centre;
-    scoped_ptr<gcn::Container> outer_container;
-    scoped_ptr<GuiPanel> panel1, panel2;
-    scoped_ptr<gcn::Container> container;
-    scoped_ptr<gcn::Label> title;
+    std::unique_ptr<GuiCentre> centre;
+    std::unique_ptr<gcn::Container> outer_container;
+    std::unique_ptr<GuiPanel> panel1, panel2;
+    std::unique_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::Label> title;
 #ifdef ONLINE_PLATFORM
-    scoped_ptr<gcn::Button> online_multiplayer;
+    std::unique_ptr<gcn::Button> online_multiplayer;
 #endif
-    scoped_ptr<gcn::Button> lan_games;
-    scoped_ptr<gcn::Button> split_screen_mode;
-    scoped_ptr<gcn::Button> single_player_mode;
-    scoped_ptr<gcn::Button> exit;
+    std::unique_ptr<gcn::Button> lan_games;
+    std::unique_ptr<gcn::Button> split_screen_mode;
+    std::unique_ptr<gcn::Button> single_player_mode;
+    std::unique_ptr<gcn::Button> exit;
 };
 
 StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)

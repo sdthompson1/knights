@@ -36,7 +36,7 @@
 
 #include "gfx/window_listener.hpp"  // coercri
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 
 #include <string>
 #include <vector>
@@ -91,7 +91,7 @@ private:
     boost::shared_ptr<KnightsClient> knights_client;
     boost::shared_ptr<const ClientConfig> client_config;
 
-    boost::scoped_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::Container> container;
 
     // held across initialization only:
     std::vector<PlayerID> init_player_ids;

@@ -42,7 +42,7 @@
 #include "gfx/gfx_context.hpp"
 #include "timer/timer.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 
 #include <cstdint>
 #include <functional>
@@ -339,28 +339,28 @@ private:
     gcn::Container &container;
     bool chat_updated;
     int prev_gui_x, prev_gui_y, prev_gui_width, prev_gui_height;
-    boost::scoped_ptr<Coercri::CGFont> gui_font, gui_small_font;
-    boost::scoped_ptr<gcn::ListBox> chat_listbox;
-    boost::scoped_ptr<gcn::ScrollArea> chat_scrollarea;
-    boost::scoped_ptr<TitleBlock> chat_titleblock;
-    boost::scoped_ptr<UTF8TextField> chat_field;
-    boost::scoped_ptr<gcn::Button> send_button, clear_button;
-    boost::scoped_ptr<TitleBlock> plyr_list_titleblock;
-    boost::scoped_ptr<TabFont> tab_font;
+    std::unique_ptr<Coercri::CGFont> gui_font, gui_small_font;
+    std::unique_ptr<gcn::ListBox> chat_listbox;
+    std::unique_ptr<gcn::ScrollArea> chat_scrollarea;
+    std::unique_ptr<TitleBlock> chat_titleblock;
+    std::unique_ptr<UTF8TextField> chat_field;
+    std::unique_ptr<gcn::Button> send_button, clear_button;
+    std::unique_ptr<TitleBlock> plyr_list_titleblock;
+    std::unique_ptr<TabFont> tab_font;
     boost::shared_ptr<gcn::Font> house_colour_font;
-    boost::scoped_ptr<gcn::ListBox> plyr_list_listbox;
-    boost::scoped_ptr<gcn::ScrollArea> plyr_list_scrollarea;
-    boost::scoped_ptr<class TutorialWidget> tutorial_widget;
-    boost::scoped_ptr<gcn::ScrollArea> tutorial_scrollarea;
-    boost::scoped_ptr<gcn::Label> tutorial_label;
-    boost::scoped_ptr<gcn::Button> tutorial_left, tutorial_right;
-    boost::scoped_ptr<gcn::Label> time_limit_label;
+    std::unique_ptr<gcn::ListBox> plyr_list_listbox;
+    std::unique_ptr<gcn::ScrollArea> plyr_list_scrollarea;
+    std::unique_ptr<class TutorialWidget> tutorial_widget;
+    std::unique_ptr<gcn::ScrollArea> tutorial_scrollarea;
+    std::unique_ptr<gcn::Label> tutorial_label;
+    std::unique_ptr<gcn::Button> tutorial_left, tutorial_right;
+    std::unique_ptr<gcn::Label> time_limit_label;
 
-    boost::scoped_ptr<TitleBlock> quest_titleblock;
-    boost::scoped_ptr<gcn::ListBox> quest_listbox;
-    boost::scoped_ptr<gcn::ScrollArea> quest_scrollarea;
-    boost::scoped_ptr<gcn::Label> vote_status_label;
-    boost::scoped_ptr<gcn::Button> vote_button;
+    std::unique_ptr<TitleBlock> quest_titleblock;
+    std::unique_ptr<gcn::ListBox> quest_listbox;
+    std::unique_ptr<gcn::ScrollArea> quest_scrollarea;
+    std::unique_ptr<gcn::Label> vote_status_label;
+    std::unique_ptr<gcn::Button> vote_button;
 
     boost::shared_ptr<Coercri::Font> my_font, txt_font;
 

@@ -48,7 +48,7 @@
 #include "gcn/cg_font.hpp"
 
 // boost, std
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 #include <cstring>
 #include <numeric>
 #include <set>
@@ -257,34 +257,34 @@ private:
     boost::shared_ptr<Coercri::Window> window;
     gcn::Gui &gui;
 
-    boost::scoped_ptr<ServerList> server_list;
+    std::unique_ptr<ServerList> server_list;
 
-    boost::scoped_ptr<gcn::Label> title_label;
-    boost::scoped_ptr<GuiCentre> centre;
-    boost::scoped_ptr<GuiPanel> panel;
-    boost::scoped_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::Label> title_label;
+    std::unique_ptr<GuiCentre> centre;
+    std::unique_ptr<GuiPanel> panel;
+    std::unique_ptr<gcn::Container> container;
 #ifndef ONLINE_PLATFORM
-    boost::scoped_ptr<gcn::Label> name_label;
-    boost::scoped_ptr<UTF8TextField> name_field;
+    std::unique_ptr<gcn::Label> name_label;
+    std::unique_ptr<UTF8TextField> name_field;
 #endif
-    boost::scoped_ptr<gcn::Label> label1;
-    boost::scoped_ptr<TitleBlock> games_titleblock;
+    std::unique_ptr<gcn::Label> label1;
+    std::unique_ptr<TitleBlock> games_titleblock;
     boost::shared_ptr<gcn::Font> cg_font;
     std::unique_ptr<gcn::Font> tab_font;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
-    boost::scoped_ptr<gcn::ListBox> listbox;
-    boost::scoped_ptr<gcn::Label> address_label;
-    boost::scoped_ptr<UTF8TextField> address_field;
-    boost::scoped_ptr<gcn::Button> connect_button;
-    boost::scoped_ptr<gcn::Button> create_game_button;
-    boost::scoped_ptr<gcn::Button> refresh_list_button;
-    boost::scoped_ptr<gcn::Button> cancel_button;
+    std::unique_ptr<gcn::ListBox> listbox;
+    std::unique_ptr<gcn::Label> address_label;
+    std::unique_ptr<UTF8TextField> address_field;
+    std::unique_ptr<gcn::Button> connect_button;
+    std::unique_ptr<gcn::Button> create_game_button;
+    std::unique_ptr<gcn::Button> refresh_list_button;
+    std::unique_ptr<gcn::Button> cancel_button;
 
-    boost::scoped_ptr<GuiCentre> err_centre;
-    boost::scoped_ptr<GuiPanel> err_panel;
-    boost::scoped_ptr<gcn::Container> err_container;
-    boost::scoped_ptr<gcn::Label> err_label;
-    boost::scoped_ptr<gcn::Button> err_button;
+    std::unique_ptr<GuiCentre> err_centre;
+    std::unique_ptr<GuiPanel> err_panel;
+    std::unique_ptr<gcn::Container> err_container;
+    std::unique_ptr<gcn::Label> err_label;
+    std::unique_ptr<gcn::Button> err_button;
 
     static std::string previous_address;
 };

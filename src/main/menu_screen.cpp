@@ -40,7 +40,7 @@
 
 #include "house_colour_font.hpp"
 
-#include "boost/scoped_ptr.hpp"
+#include <memory>
 #include <sstream>
 
 namespace {
@@ -74,34 +74,34 @@ public:
     gcn::Gui &gui;
     boost::shared_ptr<Coercri::Window> window;
 
-    boost::scoped_ptr<GuiCentre> centre;
-    boost::scoped_ptr<GuiPanel> panel;
-    boost::scoped_ptr<gcn::Container> container;
-    boost::scoped_ptr<gcn::CheckBox> ready_checkbox;
-    boost::scoped_ptr<GuiButton> start_button;
-    boost::scoped_ptr<GuiButton> observe_button;
-    boost::scoped_ptr<GuiButton> exit_button;
-    boost::scoped_ptr<GuiButton> random_quest_button;
-    boost::scoped_ptr<gcn::Label> label, title, observer_label;
-    boost::scoped_ptr<GuiTextWrap> quest_description_box;
+    std::unique_ptr<GuiCentre> centre;
+    std::unique_ptr<GuiPanel> panel;
+    std::unique_ptr<gcn::Container> container;
+    std::unique_ptr<gcn::CheckBox> ready_checkbox;
+    std::unique_ptr<GuiButton> start_button;
+    std::unique_ptr<GuiButton> observe_button;
+    std::unique_ptr<GuiButton> exit_button;
+    std::unique_ptr<GuiButton> random_quest_button;
+    std::unique_ptr<gcn::Label> label, title, observer_label;
+    std::unique_ptr<GuiTextWrap> quest_description_box;
     std::unique_ptr<gcn::ScrollArea> quest_description_scroll_area;
     
-    boost::scoped_ptr<gcn::Label> house_colour_label, team_label;
-    boost::scoped_ptr<gcn::DropDown> house_colour_dropdown;
-    boost::scoped_ptr<HouseColourListModel> house_colour_list_model;
-    boost::scoped_ptr<GuiButton> join_button;
+    std::unique_ptr<gcn::Label> house_colour_label, team_label;
+    std::unique_ptr<gcn::DropDown> house_colour_dropdown;
+    std::unique_ptr<HouseColourListModel> house_colour_list_model;
+    std::unique_ptr<GuiButton> join_button;
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<GuiButton> invite_button;
 #endif
-    boost::scoped_ptr<gcn::ListBox> players_listbox;
+    std::unique_ptr<gcn::ListBox> players_listbox;
     std::unique_ptr<gcn::ScrollArea> players_scrollarea;
-    boost::scoped_ptr<gcn::Label> players_title;
-    boost::scoped_ptr<gcn::ListBox> chat_listbox;
+    std::unique_ptr<gcn::Label> players_title;
+    std::unique_ptr<gcn::ListBox> chat_listbox;
     std::unique_ptr<gcn::ScrollArea> chat_scrollarea;
-    boost::scoped_ptr<gcn::Label> chat_field_title;
-    boost::scoped_ptr<UTF8TextField> chat_field;
+    std::unique_ptr<gcn::Label> chat_field_title;
+    std::unique_ptr<UTF8TextField> chat_field;
 
-    boost::scoped_ptr<HouseColourFont> house_colour_font;
+    std::unique_ptr<HouseColourFont> house_colour_font;
     
     bool extended;
     bool can_invite;
