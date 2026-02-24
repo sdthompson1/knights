@@ -204,6 +204,9 @@ public:
     //
     const Localization & getLocalization() const;
     const std::vector<std::string> & getPreferredLanguages() const; // Leftmost languages in this list are preferred over rightmost.
+    void reloadLocalizationForGame(const VFS &module_vfs,
+                                   const std::vector<std::string> &module_names);
+    void restoreDefaultLocalization();
 
 
 private:

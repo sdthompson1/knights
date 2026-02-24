@@ -1567,27 +1567,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 -D knights_data/client/gfx/knights_icon_48.bmp $(DATA_DIR)/client/gfx/knights_icon_48.bmp
 	$(INSTALL) -m 644 -D knights_data/client/gfx/menu_empty.bmp $(DATA_DIR)/client/gfx/menu_empty.bmp
 	$(INSTALL) -m 644 -D knights_data/modules/modules.txt $(DATA_DIR)/modules/modules.txt
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/init.lua $(DATA_DIR)/modules/spiders_v3/init.lua
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/menus.lua $(DATA_DIR)/modules/spiders_v3/menus.lua
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/spider.lua $(DATA_DIR)/modules/spiders_v3/spider.lua
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/depends.txt $(DATA_DIR)/modules/spiders_v3/depends.txt
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4w.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2s.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3e.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2n.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4n.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2w.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1s.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4s.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3n.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3s.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3s.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid2e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid2e.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1w.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid3w.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid3w.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/dead_spider.bmp $(DATA_DIR)/modules/spiders_v3/gfx/dead_spider.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1n.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1n.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid1e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid1e.bmp
-	$(INSTALL) -m 644 -D knights_data/modules/spiders_v3/gfx/spid4e.bmp $(DATA_DIR)/modules/spiders_v3/gfx/spid4e.bmp
 	$(INSTALL) -m 644 -D knights_data/modules/tutorial/init.lua $(DATA_DIR)/modules/tutorial/init.lua
 	$(INSTALL) -m 644 -D knights_data/modules/tutorial/depends.txt $(DATA_DIR)/modules/tutorial/depends.txt
 	$(INSTALL) -m 644 -D knights_data/modules/tutorial/tutorial_map.txt $(DATA_DIR)/modules/tutorial/tutorial_map.txt
@@ -1957,27 +1936,6 @@ uninstall:
 	rm -f $(DATA_DIR)/client/gfx/knights_icon_48.bmp
 	rm -f $(DATA_DIR)/client/gfx/menu_empty.bmp
 	rm -f $(DATA_DIR)/modules/modules.txt
-	rm -f $(DATA_DIR)/modules/spiders_v3/init.lua
-	rm -f $(DATA_DIR)/modules/spiders_v3/menus.lua
-	rm -f $(DATA_DIR)/modules/spiders_v3/spider.lua
-	rm -f $(DATA_DIR)/modules/spiders_v3/depends.txt
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4w.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2s.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3e.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2n.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4n.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2w.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1s.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4s.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3n.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3s.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid2e.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1w.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid3w.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/dead_spider.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1n.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid1e.bmp
-	rm -f $(DATA_DIR)/modules/spiders_v3/gfx/spid4e.bmp
 	rm -f $(DATA_DIR)/modules/tutorial/init.lua
 	rm -f $(DATA_DIR)/modules/tutorial/depends.txt
 	rm -f $(DATA_DIR)/modules/tutorial/tutorial_map.txt

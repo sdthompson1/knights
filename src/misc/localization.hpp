@@ -132,6 +132,9 @@ public:
         name_lookup = [](const PlayerID &id) { return id.getUserName(); };
     }
 
+    // Clear all strings (but keep the name_lookup function)
+    void clear() { strings.clear(); }
+
     // Read strings from a file.
     // Strings are passed through the given function for filtering.
     // If keys in the file clash with existing keys in this Localization object,

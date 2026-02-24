@@ -89,6 +89,7 @@ public:
     // join game success/failure
     // NOTE: The returned ClientConfig will remain valid for as long as we are connected to the game
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
+                                  const std::vector<std::string> &module_names,
                                   int my_house_colour,
                                   const std::vector<PlayerID> &player_ids,
                                   const std::vector<bool> &ready_flags,

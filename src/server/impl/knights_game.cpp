@@ -402,6 +402,15 @@ namespace {
             }
         }
 
+        // Module names list (so client can construct VFS and load localization)
+        {
+            const auto &module_names = impl.knights_config->getModuleNames();
+            buf.writeVarInt(module_names.size());
+            for (const auto &name : module_names) {
+                buf.writeString(name);
+            }
+        }
+
         // Final byte of SERVER_JOIN_GAME_ACCEPTED tells whether the game has already
         // been started
         buf.writeUbyte(already_started ? 1 : 0);

@@ -343,8 +343,7 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
         pimpl->speech_bubble = PopGraphic(lua, &pimpl->config_gfx);
     }
 
-    // Determine preferred language(s) and read
-    // knights_data/client/localization_<language>.txt
+    // Determine preferred language(s)
     {
         std::string game_language;
 #ifdef ONLINE_PLATFORM
@@ -360,19 +359,10 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
                 pimpl->preferred_languages.push_back(lang);
             }
         }
-
-        const std::string prefix = "localization_";
-        const std::string suffix = ".txt";
-
-        ReadLocalization(pimpl->localization,
-                         client_vfs,
-#ifdef ONLINE_PLATFORM
-                         *pimpl->online_platform,
-#endif
-                         prefix,
-                         suffix,
-                         pimpl->preferred_languages);
     }
+
+    // Load the initial localization files
+    restoreDefaultLocalization();
 
     const UTF8String game_name = pimpl->localization.get(LocalKey("knights"));
 
@@ -585,6 +575,9 @@ void KnightsApp::setPlayerName(const UTF8String &name)
 
 void KnightsApp::resetAll()
 {
+    // Reload localization strings in case they were changed by a mod
+    restoreDefaultLocalization();
+
     // Reset lobby controller (this destroys the currently active game, if any)
     pimpl->lobby_controller.resetAll();
 
@@ -1443,4 +1436,40 @@ const Localization & KnightsApp::getLocalization() const
 const std::vector<std::string> & KnightsApp::getPreferredLanguages() const
 {
     return pimpl->preferred_languages;
+}
+
+void KnightsApp::reloadLocalizationForGame(const VFS &module_vfs,
+                                           const std::vector<std::string> &module_names)
+{
+    // Reset and re-read the base client localization strings
+    restoreDefaultLocalization();
+
+    // Now overlay module localization strings, in dependency order
+    const std::string suffix = ".txt";
+    for (const auto &module_name : module_names) {
+        const std::string prefix = module_name + "/localization_";
+        ReadLocalization(pimpl->localization,
+                         module_vfs,
+#ifdef ONLINE_PLATFORM
+                         *pimpl->online_platform,
+#endif
+                         prefix,
+                         suffix,
+                         pimpl->preferred_languages);
+    }
+}
+
+void KnightsApp::restoreDefaultLocalization()
+{
+    pimpl->localization.clear();
+    const std::string prefix = "localization_";
+    const std::string suffix = ".txt";
+    ReadLocalization(pimpl->localization,
+                     pimpl->client_vfs,
+#ifdef ONLINE_PLATFORM
+                     *pimpl->online_platform,
+#endif
+                     prefix,
+                     suffix,
+                     pimpl->preferred_languages);
 }

@@ -133,7 +133,7 @@ VMKnightsLobby::VMKnightsLobby(Coercri::NetworkDriver &net_driver,
                                const PlayerID &local_user_id,
                                bool new_control_system,
                                std::vector<std::string> module_names,
-                               VFS &&modules_vfs)
+                               VFS modules_vfs)
 {
     // Initialize pimpl fields
     pimpl = std::make_unique<VMKnightsLobbyImpl>(net_driver, timer, local_user_id, new_control_system);
@@ -222,9 +222,7 @@ void VMKnightsLobby::becomeFollower(const std::string &address, int port)
 // Mutex should be locked when this is called
 void VMKnightsLobby::rejoinGame()
 {
-    VFS empty_vfs;
-    KnightsClient client(false,  // don't allow untrusted strings
-                         empty_vfs);  // we are using this client only to send, so it won't need a VFS
+    KnightsClient client(false);  // don't allow untrusted strings
     client.setPlayerIdAndControls(pimpl->local_user_id, pimpl->new_control_system);
     client.joinGame("#VMGame");
     std::vector<unsigned char> data;

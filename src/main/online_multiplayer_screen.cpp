@@ -220,7 +220,7 @@ namespace
                         std::string list;
                         for (const auto &m : gi->missing_modules) {
                             if (!list.empty()) list += ", ";
-                            list += m;
+                            list += "'" + m + "'";
                         }
                         throw ExceptionBase(LocalMsg{LocalKey("missing_modules_game"),
                             {LocalParam(Coercri::UTF8String::fromUTF8Safe(list))}});

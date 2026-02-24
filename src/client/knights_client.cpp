@@ -68,12 +68,11 @@ namespace {
 class KnightsClientImpl {
 public:
     // ctor
-    KnightsClientImpl(bool allow_untrusted_strings, VFS modules_vfs)
+    explicit KnightsClientImpl(bool allow_untrusted_strings)
         : ndisplays(0), player(0),
           knights_callbacks(0), client_callbacks(0),
           next_announcement_is_error(false),
-          allow_untrusted_strings(allow_untrusted_strings),
-          modules_vfs(std::move(modules_vfs))
+          allow_untrusted_strings(allow_untrusted_strings)
     {
         for (int i = 0; i < 2; ++i) last_cts_ctrl[i] = 0;
     }
@@ -89,7 +88,6 @@ public:
     bool next_announcement_is_error;
     bool allow_untrusted_strings;
     std::vector<UTF8String> pending_chat_messages;
-    VFS modules_vfs;
 
     // helper functions
     void receiveConfiguration(Coercri::InputByteBuf &buf);
@@ -104,8 +102,8 @@ public:
     }
 };
 
-KnightsClient::KnightsClient(bool allow_untrusted_strings, VFS modules_vfs)
-    : pimpl(new KnightsClientImpl(allow_untrusted_strings, std::move(modules_vfs)))
+KnightsClient::KnightsClient(bool allow_untrusted_strings)
+    : pimpl(new KnightsClientImpl(allow_untrusted_strings))
 {
     // Write the initial version string.
     Coercri::OutputByteBuf buf(pimpl->out);
@@ -201,6 +199,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     observers.push_back(pimpl->readPlayerID(buf));
                 }
 
+                const int n_modules = buf.readVarIntThrow(0, 10000);
+                std::vector<std::string> module_names;
+                module_names.reserve(n_modules);
+                for (int i = 0; i < n_modules; ++i) {
+                    module_names.push_back(buf.readString());
+                }
+
                 bool already_started = (buf.readUbyte() != 0);
 
 #ifdef LOG_MSGS
@@ -208,6 +213,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 #endif
 
                 if (client_cb) client_cb->joinGameAccepted(pimpl->client_config,
+                                                           module_names,
                                                            my_house_colour,
                                                            players, ready_flags, hse_cols,
                                                            observers,
@@ -1115,7 +1121,6 @@ std::vector<UTF8String> KnightsClient::getPendingChatMessages()
 void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 {
     client_config.reset(new ClientConfig);  // wipe out the old client config if there is one.
-    client_config->module_vfs = modules_vfs;
 
     constexpr int MAX_COUNT = 100000;
 

@@ -107,6 +107,7 @@ public:
     const Menu & getMenu() const;
     int getApproachOffset() const;  // clients will need to know this for rendering purposes.
     void getHouseColours(std::vector<Coercri::Color> &cols) const;   // for use on the menu screen.
+    const std::vector<std::string> & getModuleNames() const;
     
     // Menu related functions:
 

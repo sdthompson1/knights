@@ -44,7 +44,7 @@ class VFS;
 // object then it will be overwritten.
 //
 void ReadLocalization(Localization &localization,
-                      VFS &vfs,
+                      const VFS &vfs,
 #ifdef ONLINE_PLATFORM
                       OnlinePlatform &online_platform,
 #endif

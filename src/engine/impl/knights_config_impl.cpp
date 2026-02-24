@@ -107,12 +107,13 @@ namespace {
 }
 
 KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
-                                     const std::vector<std::string> &module_names,
+                                     const std::vector<std::string> &module_names_,
                                      bool menu_strict)
     : doing_config(true),
       knight_anim(0), default_item(0),
       stuff_bag_graphic(0),
-      blood_icon(0)
+      blood_icon(0),
+      module_names(module_names_)
 {
     try {
 
@@ -136,7 +137,7 @@ KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
 
         // Load each Lua module
         std::unordered_set<std::string> loaded;
-        for (const std::string & module_name : module_names) {
+        for (const std::string & module_name : module_names_) {
             // Disable all mounts, then mount the module itself.
             // This must happen before reading depends.txt, so that in VM mode the
             // host-side VFS state allows access to this module's files.

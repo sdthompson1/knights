@@ -31,7 +31,6 @@
 #define CLIENT_CONFIG_HPP
 
 #include "menu.hpp"
-#include "vfs.hpp"
 
 #include "boost/noncopyable.hpp"
 #include "boost/scoped_ptr.hpp"
@@ -47,9 +46,6 @@ class ClientConfig : boost::noncopyable {
 public:
     ClientConfig() : approach_offset(0) { }
     ~ClientConfig();   // calls delete on all the stored ptrs.
-
-    // VFS containing the Lua modules required for this game.
-    VFS module_vfs;
 
     std::vector<const Graphic*> graphics;
     std::vector<const Anim*> anims;

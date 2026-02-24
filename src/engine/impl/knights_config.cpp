@@ -152,3 +152,8 @@ bool KnightsConfig::runGameStartup(std::string &err_msg)
 {
     return pimpl->getMenuWrapper().runGameStartup(err_msg);
 }
+
+const std::vector<std::string> & KnightsConfig::getModuleNames() const
+{
+    return pimpl->getModuleNames();
+}

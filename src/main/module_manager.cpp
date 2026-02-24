@@ -126,6 +126,11 @@ void ModuleManager::update()
     pimpl->enabled_modules = std::move(enabled_names);
 }
 
+bool ModuleManager::isModuleInstalled(const std::string &module_name) const
+{
+    return pimpl->index.count(module_name) != 0;
+}
+
 std::vector<std::string> ModuleManager::getEnabledModules() const
 {
     return pimpl->enabled_modules;
@@ -244,13 +249,6 @@ VFS ModuleManager::getVFS(const std::vector<std::string> &modules) const
     return result;
 }
 
-VFS ModuleManager::getAllInstalledVFS() const
-{
-    VFS result;
-    result.add(pimpl->modules_path, "");
-    return result;
-}
-
 uint64_t ModuleManager::computeCombinedChecksum(const std::vector<std::string> &modules) const
 {
     XXHash hasher(0);
@@ -297,13 +295,8 @@ bool ModuleManager::isCompatible(const GameModuleSpec &other_spec,
 {
     missing_modules_out.clear();
 
-    std::unordered_set<std::string> our_modules;
-    for (const auto &info : pimpl->modules) {
-        our_modules.insert(info.name);
-    }
-
     for (const auto &other_module : other_spec.module_names) {
-        if (our_modules.count(other_module) == 0) {
+        if (pimpl->index.count(other_module) == 0) {
             missing_modules_out.push_back(other_module);
         }
     }

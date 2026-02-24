@@ -235,6 +235,7 @@ public:
     virtual void connectionAccepted(int server_version) override;
     
     virtual void joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
+                                  const std::vector<std::string> &module_names,
                                   int my_house_colour,
                                   const std::vector<PlayerID> &player_ids,
                                   const std::vector<bool> &ready_flags,

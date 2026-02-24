@@ -30,6 +30,7 @@
 #include "lobby_controller.hpp"
 #include "module_manager.hpp"
 #include "simple_knights_lobby.hpp"
+#include "vfs.hpp"
 #include "vm_knights_lobby.hpp"
 
 namespace {
@@ -274,7 +275,7 @@ boost::shared_ptr<KnightsClient>
     // Start loading the server in the background
     loader_thread = boost::thread(SimpleLoader(timer,
                                                std::move(module_names),
-                                               vfs,
+                                               std::move(vfs),
                                                nullptr,
                                                -1,
                                                loader_mutex,
@@ -287,8 +288,7 @@ boost::shared_ptr<KnightsClient>
                                                loader_lua_error));
 
     // Make the KnightsClient
-    knights_client.reset(new KnightsClient(true,   // Allow untrusted strings for local game
-                                           std::move(vfs)));
+    knights_client.reset(new KnightsClient(true));  // Allow untrusted strings for local game
     return knights_client;
 }
 
@@ -308,7 +308,7 @@ boost::shared_ptr<KnightsClient>
     // Start loading the server in the background
     loader_thread = boost::thread(SimpleLoader(timer,
                                                std::move(module_names),
-                                               vfs,
+                                               std::move(vfs),
                                                &net_driver,
                                                port,
                                                loader_mutex,
@@ -321,8 +321,7 @@ boost::shared_ptr<KnightsClient>
                                                loader_lua_error));
 
     // Make the KnightsClient
-    knights_client.reset(new KnightsClient(true, // Allow untrusted strings for LAN game
-                                           std::move(vfs)));
+    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings for LAN game
     return knights_client;
 }
 
@@ -334,14 +333,13 @@ boost::shared_ptr<KnightsClient>
 {
     resetAll();
 
-    // Get a module VFS for all local modules.
+    // Ensure that we have up-to-date modules catalogue (joinGameAccepted
+    // will need this)
     module_manager->update();  // Will block for short time, probably acceptable
-    VFS vfs = module_manager->getAllInstalledVFS();
 
     // Since we are joining we can just create the SimpleKnightsLobby directly here
     knights_lobby.reset(new SimpleKnightsLobby(net_driver, timer, address, port));
-    knights_client.reset(new KnightsClient(true, // Allow untrusted strings (we assume that players trust any LAN game that they choose to connect to)
-                                           std::move(vfs)));
+    knights_client.reset(new KnightsClient(true)); // Allow untrusted strings (we assume that players trust any LAN game that they choose to connect to)
     return knights_client;
 }
 
@@ -379,7 +377,7 @@ boost::shared_ptr<KnightsClient>
                                            online_platform.getCurrentUserId(),
                                            new_control_system,
                                            spec.module_names,
-                                           vfs,
+                                           std::move(vfs),
                                            loader_mutex,
                                            loader_done,
                                            knights_lobby,
@@ -388,8 +386,7 @@ boost::shared_ptr<KnightsClient>
                                            loader_lua_error));
 
     // Make the KnightsClient
-    knights_client.reset(new KnightsClient(false,  // Don't trust strings in an online platform game
-                                           std::move(vfs)));
+    knights_client.reset(new KnightsClient(false));  // Don't trust strings in an online platform game
     return knights_client;
 }
 
@@ -399,9 +396,9 @@ boost::shared_ptr<KnightsClient>
 {
     resetAll();
 
-    // Get a module VFS for all local modules.
+    // Ensure we have up-to-date module catalogue (joinGameAccepted will need this,
+    // as will the isCompatible check on completion of the platform lobby join)
     module_manager->update();  // Will block for short time, probably acceptable
-    VFS vfs = module_manager->getAllInstalledVFS();
 
     // Join the platform lobby
     platform_lobby = online_platform.joinLobby(platform_lobby_id);
@@ -412,8 +409,7 @@ boost::shared_ptr<KnightsClient>
     }
 
     // Create the client
-    knights_client.reset(new KnightsClient(false,  // Don't trust arbitrary strings coming from VM
-                                           vfs));
+    knights_client.reset(new KnightsClient(false));  // Don't trust arbitrary strings coming from VM
     return knights_client;
 }
 #endif

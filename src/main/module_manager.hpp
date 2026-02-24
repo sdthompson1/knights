@@ -42,6 +42,9 @@ public:
     // Re-read available modules and their checksums from disk
     void update();
 
+    // Determine if a module is installed/available locally
+    bool isModuleInstalled(const std::string &module_name) const;
+
     // Get the user's currently enabled module list (for creating new games)
     std::vector<std::string> getEnabledModules() const;
 
@@ -51,9 +54,6 @@ public:
 
     // Get a VFS corresponding to a list of modules
     VFS getVFS(const std::vector<std::string> &modules) const;
-
-    // Get a VFS including all locally installed modules
-    VFS getAllInstalledVFS() const;
 
     // Get the checksum for a game that uses a particular (resolved) list of modules
     uint64_t computeCombinedChecksum(const std::vector<std::string> &modules) const;

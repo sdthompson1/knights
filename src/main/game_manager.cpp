@@ -30,6 +30,8 @@
 #include "game_manager.hpp"
 #include "gfx_manager.hpp"
 #include "graphic.hpp"
+#include "module_manager.hpp"
+#include "vfs.hpp"
 #include "gui_numeric_field.hpp"
 #include "house_colour_font.hpp"
 #include "in_game_screen.hpp"
@@ -981,6 +983,7 @@ void GameManager::connectionAccepted(int server_version)
 }
 
 void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
+                                   const std::vector<std::string> &module_names,
                                    int my_house_colour,
                                    const std::vector<PlayerID> &player_ids,
                                    const std::vector<bool> &ready_flags,
@@ -1014,16 +1017,38 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     // Resize the MenuChoices to the proper size
     pimpl->menu_choices.resize(pimpl->menu->getNumItems());
 
-    // Pre-load all the graphics and sounds, so that they don't have to be
-    // loaded during gameplay, and also so that any errors can be detected
-    // at this point.
+    // Check that modules sent by the server are available locally,
+    // and throw a localized exception if not
+    std::string missing_names;
+    for (const auto &name : module_names) {
+        if (!pimpl->knights_app.getModuleManager().isModuleInstalled(name)) {
+            if (!missing_names.empty()) missing_names += ", ";
+            missing_names += "'" + name + "'";
+        }
+    }
+    if (!missing_names.empty()) {
+        std::vector<LocalParam> params;
+        if (pimpl->knights_client->allowUntrustedStrings()) {
+            params.push_back(LocalParam(Coercri::UTF8String::fromUTF8Safe(missing_names)));
+        }
+        throw ExceptionBase({LocalKey("missing_modules_game"), params});
+    }
+
     try {
+        // Create a VFS from the module names sent by the server
+        VFS module_vfs = pimpl->knights_app.getModuleManager().getVFS(module_names);
+
+        // Load all graphics and sounds
         for (std::vector<const Graphic *>::const_iterator it = conf->graphics.begin(); it != conf->graphics.end(); ++it) {
-            pimpl->knights_app.getGfxManager().loadGraphic(conf->module_vfs, **it);
+            pimpl->knights_app.getGfxManager().loadGraphic(module_vfs, **it);
         }
         for (std::vector<const Sound *>::const_iterator it = conf->sounds.begin(); it != conf->sounds.end(); ++it) {
-            pimpl->knights_app.getSoundManager().loadSound(conf->module_vfs, **it);
+            pimpl->knights_app.getSoundManager().loadSound(module_vfs, **it);
         }
+
+        // Reload localization with module overrides
+        pimpl->knights_app.reloadLocalizationForGame(module_vfs, module_names);
+
     } catch (RStreamError &err) {
         if (pimpl->knights_client->allowUntrustedStrings()) {
             throw;
