@@ -53,7 +53,9 @@ namespace {
         {
             done = false;
             knights_lobby_out.reset();
+#ifdef USE_VM_LOBBY
             vm_knights_lobby_out = nullptr;
+#endif
             error_msg_out = LocalMsg();
             lua_error_out.reset();
         }
