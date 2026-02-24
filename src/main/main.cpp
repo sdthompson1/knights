@@ -36,8 +36,9 @@
 
 #ifdef WIN32
 #include "windows.h"
-#include <SDL2/SDL.h>
 #endif
+
+#include <SDL2/SDL.h>
 
 #include <sstream>
 #include <string>
@@ -193,16 +194,13 @@ int main(int argc, char * argv[])
     }
 
     if (!err_msg.empty()) {
-#ifdef WIN32
-        ::MessageBox(0, err_msg.c_str(), "Knights", MB_OK | MB_ICONERROR);
-#else
         cout << err_msg << endl;
-#endif
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Knights", err_msg.c_str(), nullptr);
     }
 
     return (!err_msg.empty() ? 1 : 0);
 }
-    
+
 } // extern "C"
 
 
