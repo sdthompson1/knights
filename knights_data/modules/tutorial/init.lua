@@ -98,7 +98,7 @@ quickness_scroll = make_scroll(B.quickness, 71)
 low_damage_bolt = kts.ItemType( table_merge( B.i_bolts.table, { missile_damage = B.rng_range(1,2) } ))
 
 -- Modify the pentagram to teleport to a fixed location instead of randomly.
--- Quickest way to do this is to modify "my_teleport" in classic module.
+-- Quickest way to do this is to modify "my_teleport" in base module.
 function B.my_teleport()
    B.snd_teleport()
    kts.TeleportTo(cxt.actor, {x=33, y=31})
