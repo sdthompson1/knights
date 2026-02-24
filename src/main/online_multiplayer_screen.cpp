@@ -222,8 +222,12 @@ namespace
                             if (!list.empty()) list += ", ";
                             list += "'" + m + "'";
                         }
+                        // Filter list through the online platform, just to be safe!
+                        Coercri::UTF8String filtered_list =
+                            knights_app.getOnlinePlatform().filterGameContent(
+                                Coercri::UTF8String::fromUTF8Safe(list));
                         throw ExceptionBase(LocalMsg{LocalKey("missing_modules_game"),
-                            {LocalParam(Coercri::UTF8String::fromUTF8Safe(list))}});
+                                                     {LocalParam(filtered_list)}});
                     } else {
                         throw ExceptionBase(LocalKey("incompatible_game"));
                     }
