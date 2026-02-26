@@ -182,6 +182,9 @@
     <ClInclude Include="..\..\src\main\adjust_list_box_size.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\main\compute_checksum.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\main\connecting_screen.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
