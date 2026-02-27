@@ -586,6 +586,7 @@ namespace Coercri {
     SDLGfxDriver::SDLGfxDriver()
         : video_subsystem(SDL_INIT_VIDEO)
     {
+        SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
         InitKeyTable();
     }
 
