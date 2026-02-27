@@ -147,24 +147,55 @@ namespace Coercri {
 
     void CGListener::onKey(KeyEventType type, const Scancode &scancode, KeyModifier mods)
     {
-        // only process PRESSED and AUTO_REPEAT events here.
+        const std::string & name = scancode.getSymbolicName();
+
+        // Special case for shift keys
+        // This is needed because UTF8TextField pays attention to MouseEvent::isShiftPressed.
+        // Guichan sets that field based on the last KeyInputs it has seen, so we do need
+        // to send the shift key inputs to Guichan.
+        if (name == "left_shift" || name == "right_shift") {
+            unsigned int gcn_type;
+            if (type == KEY_PRESSED) {
+                gcn_type = gcn::KeyInput::PRESSED;
+            } else if (type == KEY_RELEASED) {
+                gcn_type = gcn::KeyInput::RELEASED;
+            } else {
+                return;
+            }
+            gcn::Key gcn_key;
+            if (name[0] == 'l') {
+                gcn_key = gcn::Key::LEFT_SHIFT;
+            } else {
+                gcn_key = gcn::Key::RIGHT_SHIFT;
+            }
+            gcn::KeyInput gcn_input(gcn_key, gcn_type);
+            gcn_input.setShiftPressed(type == KEY_PRESSED);
+            pimpl->input.addKeyInput(gcn_input);
+            return;
+        }
+
+        // From now on we only care about PRESSED and AUTO_REPEAT events, not RELEASED.
         if (type == KEY_RELEASED) return;
 
-        // only process 'special' keys. (the normal "text" keys will be
-        // processed by onTextInput.)
+        // We only send keys that are meaningful for guichan key handling:
+        // arrows, backspace/delete, tab, etc.
 
-        // note: this does mean guichan will not get keypresses such as ctrl+c currently 
-        // (because these are neither a special key nor do they generate a text event.)
-        // but guichan doesn't do anything with such keypresses (afaik) so hopefully 
-        // this won't matter.
-
-        const std::string & name = scancode.getSymbolicName();
         if (name.length() == 0) return;  // shouldn't happen
 
         gcn::Key k = 0;
         switch (name[0]) {
+        case 'a':
+            // needed for ctrl-a (select all)
+            if (name == "a" && mods == KM_CONTROL) k = 'a';
+            break;
+
         case 'b':
             if (name == "backspace") k = gcn::Key::BACKSPACE;
+            break;
+
+        case 'c':
+            // needed for ctrl-c (copy)
+            if (name == "c" && mods == KM_CONTROL) k = 'c';
             break;
 
         case 'd':
@@ -238,6 +269,16 @@ namespace Coercri {
 
         case 'u':
             if (name == "up") k = gcn::Key::UP;
+            break;
+
+        case 'v':
+            // needed for ctrl-v (paste)
+            if (name == "v" && mods == KM_CONTROL) k = 'v';
+            break;
+
+        case 'x':
+            // needed for ctrl-x (cut)
+            if (name == "x" && mods == KM_CONTROL) k = 'x';
             break;
         }
 

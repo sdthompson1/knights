@@ -40,17 +40,41 @@
 // a byte position within the UTF-8 string, while ensuring operations (cursor
 // movement, deletion) work on character boundaries.
 //
+// Also adds text selection support with keyboard (Shift+Arrow/Home/End, Ctrl+A)
+// and mouse (click+drag, Shift+click), plus clipboard integration (Ctrl+X/C/V).
+//
 
 class UTF8TextField : public gcn::TextField, public Coercri::TextInputReceiver {
 public:
-    UTF8TextField() : gcn::TextField() { }
-    explicit UTF8TextField(const std::string& text) : gcn::TextField(text) { }
+    UTF8TextField() : gcn::TextField(), mSelectionStart(0), mHasSelection(false) { }
+    explicit UTF8TextField(const std::string& text) : gcn::TextField(text), mSelectionStart(0), mHasSelection(false) { }
 
     // Override keyPressed to handle character stepping correctly (code points rather than bytes)
+    // and to support Shift+arrow selection, Ctrl+A, Ctrl+X/C/V.
     virtual void keyPressed(gcn::KeyEvent &event) override;
 
     // TextInputReceiver interface implementation
     virtual void receiveTextInput(const Coercri::UTF8String &text) override;
+
+    // Override draw to render selection highlight
+    virtual void draw(gcn::Graphics* graphics) override;
+
+    // Override mouse handlers for click and drag selection
+    virtual void mousePressed(gcn::MouseEvent &mouseEvent) override;
+    virtual void mouseDragged(gcn::MouseEvent &mouseEvent) override;
+
+private:
+    unsigned int mSelectionStart;  // byte offset - anchor point of selection
+    bool mHasSelection;            // whether a selection is active
+
+    unsigned int selectionLeft() const;
+    unsigned int selectionRight() const;
+    std::string getSelectedText() const;
+    void deleteSelectedText();
+    void clearSelection();
+    void startSelectionIfNeeded();
+    void moveWordLeft();
+    void moveWordRight();
 };
 
 #endif
