@@ -337,7 +337,7 @@ for root, dirs, files in os.walk('docs'):
             print ("\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/third_party_licences")
         elif (root.find("manual") != -1):
             print ("\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)/manual")
-        else:
+        elif f != "safety.md":
             print ("\t$(INSTALL) -m 644 " + os.path.join(root, f) + " $(DOC_DIR)")
 
 print()
@@ -360,7 +360,7 @@ for root, dirs, files in os.walk('docs'):
             print ("\trm -f $(DOC_DIR)/third_party_licences/" + os.path.basename(f))
         elif (root.find("manual") != -1):
             print ("\trm -f $(DOC_DIR)/manual/" + os.path.basename(f))
-        else:
+        elif f != "safety.md":
             print ("\trm -f $(DOC_DIR)/" + os.path.basename(f))
 
 print()
