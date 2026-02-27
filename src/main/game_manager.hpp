@@ -104,6 +104,7 @@ public:
     void clearReady();
     void clear();
     void remove(const PlayerID &id);
+    bool anyReady() const;
 
     // overridden from gcn::ListModel
     virtual int getNumberOfElements() override;

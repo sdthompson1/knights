@@ -270,6 +270,16 @@ void NameList::remove(const PlayerID &x)
     }
 }
 
+bool NameList::anyReady() const
+{
+    for (const auto &name : names) {
+        if (!name.observer && name.ready) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int NameList::getNumberOfElements()
 {
     return names.size();
@@ -1618,10 +1628,26 @@ void GameManager::playerLeftThisGame(const PlayerID &id, bool obs_flag)
 
 void GameManager::setReady(const PlayerID &id, bool ready)
 {
+    // Add chat message: "<Name> is ready" (or "not ready")
     std::vector<LocalParam> params(1, LocalParam(id));
     const char *local_key = ready ? "is_ready" : "is_not_ready";
     UTF8String msg = pimpl->knights_app.getLocalization().get(LocalKey(local_key), params);
     pimpl->chat_list.add(msg);
+
+    // Flash window if the player's attention is required:
+    //  - someone (not me) has set themselves ready
+    //  - I am not an observer (observers don't need to respond, so
+    //    we shouldn't bother them)
+    //  - no-one else is ready yet (i.e. this was the first player
+    //    to become ready; prevents annoying multiple flashes)
+    if (ready
+    && id != pimpl->my_player_id
+    && !pimpl->my_obs_flag
+    && !pimpl->game_namelist.anyReady()) {
+        pimpl->knights_app.flashWindow();
+    }
+
+    // Update state as required
     pimpl->game_namelist.alter(id, 0, &ready, 0);
     if (id == pimpl->my_player_id) pimpl->my_ready_flag = ready;
     pimpl->gui_invalid = true;

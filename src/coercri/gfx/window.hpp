@@ -76,6 +76,10 @@ namespace Coercri {
         virtual bool hasFocus() const = 0;
 
         // Flash the window briefly to attract the user's attention.
+        // Note: this only works if this window is currently
+        // unfocused. Reasoning: If the window is focused then
+        // presumably the user's attention is already on it, so no
+        // flashing is required.
         virtual void flash() = 0;
         
         // Show or hide the mouse pointer.

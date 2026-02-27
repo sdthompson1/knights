@@ -100,7 +100,9 @@ namespace Coercri {
 
     void SDLWindow::flash()
     {
-        SDL_FlashWindow(sdl_window, SDL_FLASH_BRIEFLY);
+        if (!(SDL_GetWindowFlags(sdl_window) & SDL_WINDOW_INPUT_FOCUS)) {
+            SDL_FlashWindow(sdl_window, SDL_FLASH_BRIEFLY);
+        }
     }
 
     void SDLWindow::showMousePointer(bool shown)
