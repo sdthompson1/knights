@@ -306,6 +306,12 @@ void UTF8TextField::keyPressed(gcn::KeyEvent &keyEvent)
     case gcn::Key::DELETE:
         if (mHasSelection) {
             deleteSelectedText();
+        } else if (is_control_held) {
+            // Ctrl+Delete: delete forward one word
+            unsigned int start = mCaretPosition;
+            moveWordRight();
+            mText.erase(start, mCaretPosition - start);
+            mCaretPosition = start;
         } else if (mCaretPosition < mText.size()) {
             std::string::iterator it = mText.begin() + mCaretPosition;
             std::string::iterator start_it = it;
@@ -325,6 +331,11 @@ void UTF8TextField::keyPressed(gcn::KeyEvent &keyEvent)
     case gcn::Key::BACKSPACE:
         if (mHasSelection) {
             deleteSelectedText();
+        } else if (is_control_held) {
+            // Ctrl+Backspace: delete backward one word
+            unsigned int end_pos = mCaretPosition;
+            moveWordLeft();
+            mText.erase(mCaretPosition, end_pos - mCaretPosition);
         } else if (mCaretPosition > 0) {
             std::string::iterator it = mText.begin() + mCaretPosition;
             std::string::iterator end_it = it;
