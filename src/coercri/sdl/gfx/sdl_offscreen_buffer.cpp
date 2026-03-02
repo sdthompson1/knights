@@ -1,9 +1,6 @@
 /*
  * FILE:
- *   sdl_gfx_context.hpp
- *
- * PURPOSE:
- *   Implement GfxContext for SDL
+ *   sdl_offscreen_buffer.cpp
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
@@ -12,7 +9,7 @@
  *   Copyright (C) Stephen Thompson, 2008 - 2026.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
- *   is permitted under the terms of the Boost Software License, Version 1.0, 
+ *   is permitted under the terms of the Boost Software License, Version 1.0,
  *   the text of which is displayed below.
  *
  *   Boost Software License - Version 1.0 - August 17th, 2003
@@ -41,56 +38,40 @@
  *
  */
 
-#ifndef COERCRI_SDL_GFX_CONTEXT_HPP
-#define COERCRI_SDL_GFX_CONTEXT_HPP
+#include "sdl_offscreen_buffer.hpp"
+#include "sdl_gfx_context.hpp"
+#include "../../core/coercri_error.hpp"
 
-#include "../../gfx/gfx_context.hpp"
-#include "../../gfx/rectangle.hpp"
-
-#include <SDL2/SDL.h>
-
-#include <stack>
+#include <string>
 
 namespace Coercri {
 
-    class SDLWindow;
+    SDLOffscreenBuffer::SDLOffscreenBuffer(SDLWindow *window_, SDL_Renderer *renderer_, int w, int h)
+        : window(window_), renderer(renderer_), width(w), height(h), texture(nullptr)
+    {
+        SDL_RendererInfo info;
+        Uint32 format = SDL_PIXELFORMAT_RGBA8888;
+        if (SDL_GetRendererInfo(renderer, &info) == 0 && info.num_texture_formats > 0) {
+            format = info.texture_formats[0];
+        }
 
-    class SDLGfxContext : public GfxContext {
-    public:
-        SDLGfxContext(SDLWindow *window, SDL_Renderer *renderer, bool is_offscreen = false);
-        virtual ~SDLGfxContext();
+        texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_TARGET, w, h);
+        if (!texture) {
+            throw CoercriError(std::string("SDL_CreateTexture failed: ") + SDL_GetError());
+        }
+    }
 
-        virtual void setClipRectangle(const Rectangle &rect);
-        virtual void clearClipRectangle();
-        virtual Rectangle getClipRectangle() const;
+    SDLOffscreenBuffer::~SDLOffscreenBuffer()
+    {
+        SDL_DestroyTexture(texture);
+    }
 
-        virtual int getWidth() const;
-        virtual int getHeight() const;
-        
-        virtual void clearScreen(Color col);
-        virtual void plotPixel(int x, int y, Color col);
-        virtual void drawGraphic(int x, int y, const Graphic &graphic);
-        virtual void drawGraphicModulated(int x, int y, const Graphic &graphic, Color col);
-        virtual void drawGraphicRegionModulated(int x, int y, const Graphic &graphic, const Rectangle &src_rect, Color col);
-
-        virtual void drawLine(int x1, int y1, int x2, int y2, Color col);
-        virtual void drawRectangle(const Rectangle &rect, Color col);
-        virtual void fillRectangle(const Rectangle &rect, Color col);
-
-        virtual void drawOffscreenBuffer(int x, int y, const OffscreenBuffer &buf);
-
-        virtual boost::shared_ptr<PixelArray> takeScreenshot();
-
-    private:
-        void loadClipRectangle();
-
-    private:
-        SDLWindow *window;
-        SDL_Renderer *renderer;
-        Rectangle clip_rectangle;
-        bool is_offscreen;
-    };
+    std::unique_ptr<GfxContext> SDLOffscreenBuffer::createGfxContext()
+    {
+        if (SDL_SetRenderTarget(renderer, texture) != 0) {
+            throw CoercriError(std::string("SDL_SetRenderTarget failed: ") + SDL_GetError());
+        }
+        return std::unique_ptr<GfxContext>(new SDLGfxContext(window, renderer, /*is_offscreen=*/true));
+    }
 
 }
-
-#endif

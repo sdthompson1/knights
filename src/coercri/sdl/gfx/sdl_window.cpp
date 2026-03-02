@@ -40,6 +40,7 @@
 
 #include "sdl_gfx_context.hpp"
 #include "sdl_graphic.hpp"
+#include "sdl_offscreen_buffer.hpp"
 #include "sdl_surface_from_pixels.hpp"
 #include "sdl_window.hpp"
 #include "../../core/coercri_error.hpp"
@@ -144,6 +145,13 @@ namespace Coercri {
     {
         std::unique_ptr<GfxContext> p(new SDLGfxContext(this, sdl_renderer));
         return p;
+    }
+
+    std::unique_ptr<OffscreenBuffer> SDLWindow::createOffscreenBuffer()
+    {
+        int w, h;
+        getSize(w, h);
+        return std::unique_ptr<OffscreenBuffer>(new SDLOffscreenBuffer(this, sdl_renderer, w, h));
     }
 
     void SDLWindow::setIcon(const PixelArray &pixels)

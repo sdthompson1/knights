@@ -56,6 +56,7 @@
 namespace Coercri {
 
     class GfxContext;
+    class OffscreenBuffer;
     class PixelArray;
     class Scancode;
     class WindowListener;
@@ -107,6 +108,9 @@ namespace Coercri {
         // 2) a GfxContext should not exist across a call to GfxDriver::pollEvents.
         // 3) the window should not be destroyed while there is an outstanding GfxContext.
         virtual std::unique_ptr<GfxContext> createGfxContext() = 0;
+
+        // Create an off-screen buffer with the same dimensions as the window.
+        virtual std::unique_ptr<OffscreenBuffer> createOffscreenBuffer() = 0;
         
         // Set the icon for this window. (Only some backends actually implement this.)
         virtual void setIcon(const PixelArray &) = 0;

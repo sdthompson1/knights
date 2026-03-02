@@ -40,21 +40,26 @@
 
 #include "sdl_gfx_context.hpp"
 #include "sdl_graphic.hpp"
+#include "sdl_offscreen_buffer.hpp"
 
 #include "../../core/coercri_error.hpp"
 #include "../../gfx/font.hpp"
 
 namespace Coercri {
 
-    SDLGfxContext::SDLGfxContext(SDLWindow *wind, SDL_Renderer *rend)
-        : window(wind), renderer(rend)
+    SDLGfxContext::SDLGfxContext(SDLWindow *wind, SDL_Renderer *rend, bool is_offscreen_)
+        : window(wind), renderer(rend), is_offscreen(is_offscreen_)
     {
         clearClipRectangle();
     }
 
     SDLGfxContext::~SDLGfxContext()
     {
-        SDL_RenderPresent(renderer);
+        if (is_offscreen) {
+            SDL_SetRenderTarget(renderer, NULL);   // restore window as target
+        } else {
+            SDL_RenderPresent(renderer);           // present the frame
+        }
     }
 
     void SDLGfxContext::setClipRectangle(const Rectangle &rect)
@@ -169,6 +174,15 @@ namespace Coercri {
 
         SDL_SetRenderDrawColor(renderer, col.r, col.g, col.b, col.a);
         SDL_RenderFillRect(renderer, &sdl_rect);
+    }
+
+    void SDLGfxContext::drawOffscreenBuffer(int x, int y, const OffscreenBuffer &buf)
+    {
+        const SDLOffscreenBuffer *sdl_buf = dynamic_cast<const SDLOffscreenBuffer*>(&buf);
+        if (sdl_buf) {
+            SDL_Rect dst = { x, y, sdl_buf->getWidth(), sdl_buf->getHeight() };
+            SDL_RenderCopy(renderer, sdl_buf->getTexture(), NULL, &dst);
+        }
     }
 
     boost::shared_ptr<PixelArray> SDLGfxContext::takeScreenshot()

@@ -1,9 +1,9 @@
 /*
  * FILE:
- *   sdl_gfx_context.hpp
+ *   offscreen_buffer.hpp
  *
  * PURPOSE:
- *   Implement GfxContext for SDL
+ *   Interface for an off-screen rendering buffer.
  *
  * AUTHOR:
  *   Stephen Thompson <stephen@solarflare.org.uk>
@@ -12,7 +12,7 @@
  *   Copyright (C) Stephen Thompson, 2008 - 2026.
  *
  *   This file is part of the "Coercri" software library. Usage of "Coercri"
- *   is permitted under the terms of the Boost Software License, Version 1.0, 
+ *   is permitted under the terms of the Boost Software License, Version 1.0,
  *   the text of which is displayed below.
  *
  *   Boost Software License - Version 1.0 - August 17th, 2003
@@ -41,54 +41,32 @@
  *
  */
 
-#ifndef COERCRI_SDL_GFX_CONTEXT_HPP
-#define COERCRI_SDL_GFX_CONTEXT_HPP
+#ifndef COERCRI_OFFSCREEN_BUFFER_HPP
+#define COERCRI_OFFSCREEN_BUFFER_HPP
 
-#include "../../gfx/gfx_context.hpp"
-#include "../../gfx/rectangle.hpp"
-
-#include <SDL2/SDL.h>
-
-#include <stack>
+#include <memory>
 
 namespace Coercri {
 
-    class SDLWindow;
+    class GfxContext;
 
-    class SDLGfxContext : public GfxContext {
+    // An off-screen rendering buffer. Rendered content can be composited
+    // onto a window using GfxContext::drawOffscreenBuffer.
+    //
+    // Lifecycle rules:
+    //  - Only one GfxContext (window or offscreen) may exist at a time;
+    //    they share the same underlying renderer.
+    //  - Do not hold an offscreen GfxContext across pollEvents().
+    //  - If the window is resized, the caller must recreate the OffscreenBuffer
+    //    (it has a fixed size).
+    //  - Destroying the GfxContext returned by createGfxContext() does NOT
+    //    present to screen - it only restores the render target to the window.
+    class OffscreenBuffer {
     public:
-        SDLGfxContext(SDLWindow *window, SDL_Renderer *renderer, bool is_offscreen = false);
-        virtual ~SDLGfxContext();
-
-        virtual void setClipRectangle(const Rectangle &rect);
-        virtual void clearClipRectangle();
-        virtual Rectangle getClipRectangle() const;
-
-        virtual int getWidth() const;
-        virtual int getHeight() const;
-        
-        virtual void clearScreen(Color col);
-        virtual void plotPixel(int x, int y, Color col);
-        virtual void drawGraphic(int x, int y, const Graphic &graphic);
-        virtual void drawGraphicModulated(int x, int y, const Graphic &graphic, Color col);
-        virtual void drawGraphicRegionModulated(int x, int y, const Graphic &graphic, const Rectangle &src_rect, Color col);
-
-        virtual void drawLine(int x1, int y1, int x2, int y2, Color col);
-        virtual void drawRectangle(const Rectangle &rect, Color col);
-        virtual void fillRectangle(const Rectangle &rect, Color col);
-
-        virtual void drawOffscreenBuffer(int x, int y, const OffscreenBuffer &buf);
-
-        virtual boost::shared_ptr<PixelArray> takeScreenshot();
-
-    private:
-        void loadClipRectangle();
-
-    private:
-        SDLWindow *window;
-        SDL_Renderer *renderer;
-        Rectangle clip_rectangle;
-        bool is_offscreen;
+        virtual ~OffscreenBuffer() {}
+        virtual int getWidth() const = 0;
+        virtual int getHeight() const = 0;
+        virtual std::unique_ptr<GfxContext> createGfxContext() = 0;
     };
 
 }

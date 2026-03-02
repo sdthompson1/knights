@@ -78,6 +78,9 @@
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_offscreen_buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_graphic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -141,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\gfx\gfx_context.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\coercri\gfx\offscreen_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\gfx\gfx_driver.hpp">
@@ -216,6 +222,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_offscreen_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_graphic.hpp">

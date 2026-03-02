@@ -45,6 +45,7 @@
 #define COERCRI_GFX_CONTEXT_HPP
 
 #include "color.hpp"
+#include "offscreen_buffer.hpp"
 #include "rectangle.hpp"
 
 #include "boost/shared_ptr.hpp"
@@ -100,6 +101,9 @@ namespace Coercri {
         virtual void drawRectangle(const Rectangle &rect, Color col);  // draws outline only.
         virtual void fillRectangle(const Rectangle &rect, Color col);  // draws a solid rectangle.
         virtual void plotPixelBatch(const Pixel *buf_start, int num_pixels);
+
+        // Blit an off-screen buffer onto this context at position (x, y).
+        virtual void drawOffscreenBuffer(int x, int y, const OffscreenBuffer &buf) = 0;
 
         // Take a screenshot. Captures what has been drawn so far
         // into a PixelArray.

@@ -104,6 +104,7 @@
     <ClCompile Include="..\..\src\coercri\sdl\core\sdl_subsystem_handle.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_context.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.cpp" />
+    <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_offscreen_buffer.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_graphic.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_surface_from_pixels.cpp" />
     <ClCompile Include="..\..\src\coercri\sdl\gfx\sdl_window.cpp" />
@@ -140,11 +141,13 @@
     <ClInclude Include="..\..\src\coercri\sdl\gfx\pixels.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_gfx_context.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_gfx_driver.hpp" />
+    <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_offscreen_buffer.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_graphic.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\gfx\sdl_window.hpp" />
     <ClInclude Include="..\..\src\coercri\sdl\sound\sdl_sound_driver.hpp" />
     <ClInclude Include="..\..\src\coercri\timer\generic_timer.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\gfx_context.hpp" />
+    <ClInclude Include="..\..\src\coercri\gfx\offscreen_buffer.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\gfx_driver.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\graphic.hpp" />
     <ClInclude Include="..\..\src\coercri\gfx\key_code.hpp" />

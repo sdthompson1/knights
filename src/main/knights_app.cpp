@@ -268,6 +268,8 @@ public:
     void updateOnlinePlatform(KnightsApp &ka);
 
     void startLocalGame(KnightsApp &ka, bool single_player, bool tutorial_mode, bool autostart_mode);
+
+    void drawWindow(Coercri::GfxContext &gc, const FrameTimer &ft);
 };
 
 /////////////////////////////////////////////////////
@@ -893,6 +895,15 @@ void KnightsAppImpl::popSkullSetup(lua_State *lua)
 // Main Routine (runKnights)
 //////////////////////////////////////////////
 
+void KnightsAppImpl::drawWindow(Coercri::GfxContext &gc, const FrameTimer &ft)
+{
+    gc.clearClipRectangle();
+    gc.clearScreen(Coercri::Color(0,0,0));
+    cg_listener->draw(gc);
+    current_screen->draw(ft.getFrameTimestampUsec(), gc);
+    window->cancelInvalidRegion();
+}
+
 void KnightsApp::runKnights()
 {
     if (pimpl->autostart) {
@@ -920,6 +931,10 @@ void KnightsApp::runKnights()
     FrameTimer frame_timer(*pimpl->timer,
                            pimpl->config_map.getInt("max_fps"));
     bool actively_drawing = false;
+
+    // Redraw kludge for Steam overlay!
+    std::unique_ptr<Coercri::OffscreenBuffer> offscreen_buffer;
+    bool offscreen_buffer_up_to_date = false;
 
     // Main Loop
     while (pimpl->running) {
@@ -988,9 +1003,11 @@ void KnightsApp::runKnights()
             // Work out if we need to draw.
             // (Draw if window needsRepaint(), but not if the screen is about to change.)
             bool need_draw = pimpl->window->needsRepaint();
+            bool draw_directly_to_window = need_draw;
 #ifdef ONLINE_PLATFORM
-            if (!need_draw && pimpl->online_platform->needsRepaint()) {
+            if (!need_draw && pimpl->online_platform->needConstantRepaint()) {
                 need_draw = true;
+                draw_directly_to_window = false;
             }
 #endif
             if (screenChangePending()) {
@@ -998,18 +1015,38 @@ void KnightsApp::runKnights()
             }
 
             if (need_draw) {
-                // Repaint the window.
-                std::unique_ptr<Coercri::GfxContext> gc = pimpl->window->createGfxContext();
+                if (draw_directly_to_window) {
+                    // Normal case
+                    std::unique_ptr<Coercri::GfxContext> gc = pimpl->window->createGfxContext();
+                    pimpl->drawWindow(*gc, frame_timer);
+                    offscreen_buffer_up_to_date = false;
 
-                gc->clearClipRectangle();
-                gc->clearScreen(Coercri::Color(0,0,0));
-                pimpl->cg_listener->draw(*gc);
-                pimpl->current_screen->draw(
-                    frame_timer.getFrameTimestampUsec(),
-                    *gc);
-                pimpl->window->cancelInvalidRegion();
+                } else {
+                    // Case where we would normally not draw at all, but Steam overlay
+                    // forces us to draw an identical copy of the previous frame!
 
-                gc.reset();
+                    // First create (or recreate) offscreen buffer if needed
+                    int w, h;
+                    pimpl->window->getSize(w, h);
+                    if (!offscreen_buffer || w != offscreen_buffer->getWidth() || h != offscreen_buffer->getHeight()) {
+                        offscreen_buffer_up_to_date = false;
+                        offscreen_buffer = pimpl->window->createOffscreenBuffer();
+                    }
+
+                    // Now repaint the offscreen buffer if needed
+                    if (!offscreen_buffer_up_to_date) {
+                        std::unique_ptr<Coercri::GfxContext> gc = offscreen_buffer->createGfxContext();
+                        pimpl->drawWindow(*gc, frame_timer);
+                        offscreen_buffer_up_to_date = true;
+                    }
+
+                    // Blit offscreen buffer to the screen
+                    // (This is faster, and uses less CPU, than redrawing the entire
+                    // screen from scratch every frame, especially if we encounter
+                    // a long period where repeated frames are needed.)
+                    std::unique_ptr<Coercri::GfxContext> gc = pimpl->window->createGfxContext();
+                    gc->drawOffscreenBuffer(0, 0, *offscreen_buffer);
+                }
             }
 
             actively_drawing = need_draw;

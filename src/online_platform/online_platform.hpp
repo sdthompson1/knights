@@ -151,13 +151,9 @@ public:
 
     // Overlay:
 
-    // For platforms that have an overlay (i.e. Steam) this function
-    // will return true if the overlay needs to be repainted right
-    // now. For other platforms it always returns false.
-    // NB: If implementing this for Steam, don't simply return BOverlayNeedsRepaint();
-    // instead, return true if BOverlayNeedsRepaint() has returned true at any time
-    // in the last 1 second or so. This makes the overlay much smoother and less laggy.
-    virtual bool needsRepaint() { return false; }
+    // Return true if the screen needs constant repainting
+    // (e.g. for Steam Overlay)
+    virtual bool needConstantRepaint() { return false; }
 
 
     // Build ID:

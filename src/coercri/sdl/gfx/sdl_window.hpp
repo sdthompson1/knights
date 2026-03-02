@@ -68,6 +68,7 @@ namespace Coercri {
         virtual bool isFullScreen() const override;
         virtual bool isMaximized() const override;
         virtual std::unique_ptr<GfxContext> createGfxContext() override;
+        virtual std::unique_ptr<OffscreenBuffer> createOffscreenBuffer() override;
         virtual void setIcon(const PixelArray &) override;
         virtual UTF8String getKeyName(const Scancode &) override;
 
