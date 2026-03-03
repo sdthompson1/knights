@@ -33,6 +33,7 @@
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 #include "gui_text_wrap.hpp"
+#include "tooltip_widget.hpp"
 
 // coercri
 #include "gcn/cg_font.hpp"
@@ -134,7 +135,7 @@ namespace {
     };
 }
 
-class OptionsScreenImpl : public gcn::ActionListener, public gcn::SelectionListener, public gcn::KeyListener, public Coercri::WindowListener {
+class OptionsScreenImpl : public gcn::ActionListener, public gcn::SelectionListener, public gcn::KeyListener, public gcn::MouseListener, public Coercri::WindowListener {
 public:
     OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     ~OptionsScreenImpl();
@@ -143,6 +144,9 @@ public:
     void keyPressed(gcn::KeyEvent &ke) override;
     void keyReleased(gcn::KeyEvent &ke) override;
     void onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc, Coercri::KeyModifier) override;
+
+    void mouseEntered(gcn::MouseEvent &e) override;
+    void mouseExited(gcn::MouseEvent &e) override;
 
     void transferToGui();
     void setupChangeControls(int);
@@ -171,6 +175,8 @@ private:
     std::unique_ptr<gcn::DropDown> scaling_dropdown, display_dropdown;
     std::unique_ptr<gcn::CheckBox> non_integer_checkbox;
     std::unique_ptr<gcn::CheckBox> screen_flash_checkbox;
+    std::unique_ptr<TooltipWidget> fractional_scaling_tooltip;
+    std::unique_ptr<TooltipWidget> screen_flash_tooltip;
     std::unique_ptr<gcn::Button> restore_button;
     std::unique_ptr<GuiTextWrap> bad_key_area;
 
@@ -344,6 +350,24 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     cancel_button->addActionListener(this);
     container->add(cancel_button.get(), overall_width - pad - cancel_button->getWidth(), y);
 
+    // Tooltips -- added last so they render on top of all other widgets
+    const int TOOLTIP_MAX_WIDTH = overall_width - 45;
+    Coercri::Timer &tmr = knights_app.getTimer();
+
+    fractional_scaling_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("allow_fractional_scaling_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    screen_flash_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("allow_screen_flash_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+
+    auto place_tooltip = [&](TooltipWidget *tt, gcn::Widget *cb) {
+        container->add(tt, cb->getX() + 15, cb->getY() - tt->getHeight() - 3);
+    };
+    place_tooltip(fractional_scaling_tooltip.get(), non_integer_checkbox.get());
+    place_tooltip(screen_flash_tooltip.get(),       screen_flash_checkbox.get());
+
+    non_integer_checkbox->addMouseListener(this);
+    screen_flash_checkbox->addMouseListener(this);
+
     y += cancel_button->getHeight();
     y += pad;
 
@@ -416,6 +440,22 @@ void OptionsScreenImpl::valueChanged(const gcn::SelectionEvent &event)
         current_opts.new_control_system = (control_system_dropdown->getSelected() == 0);
         transferToGui();
     }
+}
+
+void OptionsScreenImpl::mouseEntered(gcn::MouseEvent &e)
+{
+    if (e.getSource() == non_integer_checkbox.get())
+        fractional_scaling_tooltip->scheduleShow();
+    else if (e.getSource() == screen_flash_checkbox.get())
+        screen_flash_tooltip->scheduleShow();
+}
+
+void OptionsScreenImpl::mouseExited(gcn::MouseEvent &e)
+{
+    if (e.getSource() == non_integer_checkbox.get())
+        fractional_scaling_tooltip->cancelShow();
+    else if (e.getSource() == screen_flash_checkbox.get())
+        screen_flash_tooltip->cancelShow();
 }
 
 void OptionsScreenImpl::keyPressed(gcn::KeyEvent &ke)
@@ -545,7 +585,7 @@ void OptionsScreenImpl::transferToGui()
 
     // Position the change label to same Y as change button (Trac #120)
     change_label->setY(change_button[0]->getY());
-    
+
     // we also need to change the labels for the chat keys if required
     if (split_screen) {
         control_label[1][1]->setCaption(loc.get(LocalKey("up_colon")).asUTF8());
@@ -565,6 +605,10 @@ void OptionsScreenImpl::transferToGui()
     scaling_dropdown->setVisible(show_lower);
     non_integer_checkbox->setVisible(show_lower);
     screen_flash_checkbox->setVisible(show_lower);
+    if (!show_lower) {
+        fractional_scaling_tooltip->cancelShow();
+        screen_flash_tooltip->cancelShow();
+    }
     bad_key_area->setVisible(!show_lower);
     bad_key_area->setText(bad_key_msg);
     bad_key_area->adjustHeight();

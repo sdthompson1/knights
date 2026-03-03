@@ -114,16 +114,17 @@ namespace Coercri {
     bool CGListener::processInput()
     {
         if (!pimpl->gui_enabled) return false;
-        
-        if (pimpl->input.inputWaiting()) {
-            pimpl->gui->logic();
+
+        bool had_input = pimpl->input.inputWaiting();  // snapshot before logic() drains the queues
+        pimpl->gui->logic();
+        if (had_input) {
             pimpl->window->invalidateAll();
             return true;
         } else {
             return false;
         }
     }
-    
+
     void CGListener::draw(GfxContext &gc)
     {
         if (!pimpl->gui_enabled) return;

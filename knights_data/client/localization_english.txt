@@ -89,6 +89,8 @@ scale2x                         Scale2x
 pixelated                       Pixelated
 allow_fractional_scaling        Allow Fractional Scaling
 allow_screen_flash              Allow screen flash effect (wands and pentagrams)
+allow_fractional_scaling_tooltip	When enabled, the game window can be scaled by non-integer amounts. This may produce slightly blurry graphics but makes better use of available screen space.
+allow_screen_flash_tooltip	When enabled, the screen will flash briefly when certain magical effects occur, such as wand attacks and pentagrams.
 ok                              OK
 restore_defaults                Restore Defaults
 
