@@ -316,7 +316,7 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     display_dropdown.reset(new MyDropDown(display_listmodel.get(), MouseWheelScrolling::ENABLED));
     display_dropdown->setWidth(overall_width - pad - extra_pad - ddx);
     display_dropdown->addSelectionListener(this);
-    container->add(display_label.get(), pad, y);
+    container->add(display_label.get(), pad, y+1);
     container->add(display_dropdown.get(), ddx, y);
     y += display_dropdown->getHeight() + pad_small + 2;
 
@@ -324,7 +324,7 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     scaling_dropdown.reset(new MyDropDown(scaling_listmodel.get(), MouseWheelScrolling::ENABLED));
     scaling_dropdown->setWidth(overall_width - pad - extra_pad - ddx);
     scaling_dropdown->addSelectionListener(this);
-    container->add(scaling_label.get(), pad, y);
+    container->add(scaling_label.get(), pad, y+1);
     container->add(scaling_dropdown.get(), ddx, y);
     y += scaling_dropdown->getHeight() + pad_small + 4;
 
