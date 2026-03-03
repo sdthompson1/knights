@@ -34,6 +34,8 @@ int TextFormatter::printString(const Coercri::UTF8String &text_utf8)
 {
     Coercri::UTF8String line;
     std::string::size_type fit_bytes = 0;
+    int      current_line_width  = 0;
+    uint32_t prev_cp_for_advance = 0;
     const std::string &text = text_utf8.asUTF8();
     std::string::const_iterator it = text.begin();
 
@@ -81,10 +83,22 @@ int TextFormatter::printString(const Coercri::UTF8String &text_utf8)
         
         // If we got a code-point then append it to our line
         std::string::size_type old_line_length = line.asUTF8().length();
-        if (cp != 0) line += UTF8String::fromCodePoint(cp);
+        if (cp != 0) {
+            const uint32_t ucp = static_cast<uint32_t>(cp);
+            if (prev_cp_for_advance == 0) {
+                current_line_width += printer.getTextWidth(UTF8String::fromCodePoint(ucp));
+            } else {
+                current_line_width +=
+                    printer.getTextWidth(UTF8String::fromCodePoint(prev_cp_for_advance)
+                                       + UTF8String::fromCodePoint(ucp))
+                  - printer.getTextWidth(UTF8String::fromCodePoint(prev_cp_for_advance));
+            }
+            line += UTF8String::fromCodePoint(ucp);
+            prev_cp_for_advance = ucp;
+        }
 
         // Calculate the new line length
-        const int line_width = printer.getTextWidth(line);
+        const int line_width = current_line_width;
 
         // Check to see if we are at a possible line break point.
         // (This means a non-space character where the next character IS a space.)
@@ -119,6 +133,14 @@ int TextFormatter::printString(const Coercri::UTF8String &text_utf8)
             }
             line = Coercri::UTF8String::fromUTF8Safe(line.asUTF8().substr(fit_bytes, std::string::npos));
             fit_bytes = 0;
+
+            // Reseed running width and last codepoint for the new line
+            current_line_width = printer.getTextWidth(line);
+            prev_cp_for_advance = 0;
+            if (!line.asUTF8().empty()) {
+                auto end = line.asUTF8().end();
+                prev_cp_for_advance = utf8::prior(end, line.asUTF8().begin());
+            }
         }
     }
 
