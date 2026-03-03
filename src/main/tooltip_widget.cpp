@@ -84,6 +84,7 @@ void TooltipWidget::scheduleShow()
 {
     pending_show = true;
     show_start_msec = timer.getMsec();
+    requestMoveToTop();
 }
 
 void TooltipWidget::cancelShow()

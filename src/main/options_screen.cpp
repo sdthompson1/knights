@@ -147,6 +147,7 @@ public:
 
     void mouseEntered(gcn::MouseEvent &e) override;
     void mouseExited(gcn::MouseEvent &e) override;
+    void mousePressed(gcn::MouseEvent &e) override;
 
     void transferToGui();
     void setupChangeControls(int);
@@ -160,10 +161,10 @@ private:
     std::unique_ptr<gcn::Button> ok_button, cancel_button;
     std::unique_ptr<gcn::Label> controls_title;
     std::unique_ptr<gcn::Label> show_controls_label;
-    std::unique_ptr<gcn::DropDown> show_controls_dropdown;
+    std::unique_ptr<MyDropDown> show_controls_dropdown;
     std::unique_ptr<gcn::ListModel> show_controls_listmodel;
     std::unique_ptr<gcn::Label> control_system_label;
-    std::unique_ptr<gcn::DropDown> control_system_dropdown;
+    std::unique_ptr<MyDropDown> control_system_dropdown;
     std::unique_ptr<ControlSystemListModel> control_system_listmodel;
     std::unique_ptr<gcn::Label> control_label[2][7];
     std::unique_ptr<gcn::Label> control_setting[2][6];
@@ -172,9 +173,13 @@ private:
     std::unique_ptr<gcn::Label> options_label, scaling_label, display_label;
     std::unique_ptr<gcn::ListModel> scaling_listmodel;
     std::unique_ptr<DisplayListModel> display_listmodel;
-    std::unique_ptr<gcn::DropDown> scaling_dropdown, display_dropdown;
+    std::unique_ptr<MyDropDown> scaling_dropdown, display_dropdown;
     std::unique_ptr<gcn::CheckBox> non_integer_checkbox;
     std::unique_ptr<gcn::CheckBox> screen_flash_checkbox;
+    std::unique_ptr<TooltipWidget> show_controls_tooltip;
+    std::unique_ptr<TooltipWidget> control_system_tooltip;
+    std::unique_ptr<TooltipWidget> control_system_split_tooltip;
+    std::unique_ptr<TooltipWidget> graphics_scaling_tooltip;
     std::unique_ptr<TooltipWidget> fractional_scaling_tooltip;
     std::unique_ptr<TooltipWidget> screen_flash_tooltip;
     std::unique_ptr<gcn::Button> restore_button;
@@ -354,6 +359,14 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     const int TOOLTIP_MAX_WIDTH = overall_width - 45;
     Coercri::Timer &tmr = knights_app.getTimer();
 
+    show_controls_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("show_controls_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    control_system_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("control_system_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    control_system_split_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("control_system_split_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    graphics_scaling_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("graphics_scaling_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
     fractional_scaling_tooltip.reset(new TooltipWidget(
         loc.get(LocalKey("allow_fractional_scaling_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
     screen_flash_tooltip.reset(new TooltipWidget(
@@ -362,9 +375,23 @@ OptionsScreenImpl::OptionsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri:
     auto place_tooltip = [&](TooltipWidget *tt, gcn::Widget *cb) {
         container->add(tt, cb->getX() + 15, cb->getY() - tt->getHeight() - 3);
     };
+    container->add(show_controls_tooltip.get(),
+        show_controls_label->getX() + 15,
+        show_controls_dropdown->getY() + show_controls_dropdown->getHeight() + 3);
+    const int cs_tooltip_x = control_system_label->getX() + 15;
+    const int cs_tooltip_y = control_system_dropdown->getY() + control_system_dropdown->getHeight() + 3;
+    container->add(control_system_tooltip.get(),       cs_tooltip_x, cs_tooltip_y);
+    container->add(control_system_split_tooltip.get(), cs_tooltip_x, cs_tooltip_y);
+    place_tooltip(graphics_scaling_tooltip.get(),   scaling_label.get());
     place_tooltip(fractional_scaling_tooltip.get(), non_integer_checkbox.get());
     place_tooltip(screen_flash_tooltip.get(),       screen_flash_checkbox.get());
 
+    show_controls_label->addMouseListener(this);
+    show_controls_dropdown->addMouseListener(this);
+    control_system_label->addMouseListener(this);
+    control_system_dropdown->addMouseListener(this);
+    scaling_label->addMouseListener(this);
+    scaling_dropdown->addMouseListener(this);
     non_integer_checkbox->addMouseListener(this);
     screen_flash_checkbox->addMouseListener(this);
 
@@ -444,18 +471,53 @@ void OptionsScreenImpl::valueChanged(const gcn::SelectionEvent &event)
 
 void OptionsScreenImpl::mouseEntered(gcn::MouseEvent &e)
 {
-    if (e.getSource() == non_integer_checkbox.get())
+    if (e.getSource() == show_controls_label.get() || e.getSource() == show_controls_dropdown.get()) {
+        if (!show_controls_dropdown->isDroppedDown()) {
+            show_controls_tooltip->scheduleShow();
+        }
+    } else if (e.getSource() == control_system_label.get() || e.getSource() == control_system_dropdown.get()) {
+        if (show_controls_dropdown->getSelected() != 0) {
+            control_system_split_tooltip->scheduleShow();
+        } else if (!control_system_dropdown->isDroppedDown()) {
+            control_system_tooltip->scheduleShow();
+        }
+    } else if (e.getSource() == scaling_label.get() || e.getSource() == scaling_dropdown.get()) {
+        if (!scaling_dropdown->isDroppedDown()) {
+            graphics_scaling_tooltip->scheduleShow();
+        }
+    } else if (e.getSource() == non_integer_checkbox.get()) {
         fractional_scaling_tooltip->scheduleShow();
-    else if (e.getSource() == screen_flash_checkbox.get())
+    } else if (e.getSource() == screen_flash_checkbox.get()) {
         screen_flash_tooltip->scheduleShow();
+    }
+}
+
+void OptionsScreenImpl::mousePressed(gcn::MouseEvent &e)
+{
+    if (e.getSource() == show_controls_dropdown.get()) {
+        show_controls_tooltip->cancelShow();
+    } else if (e.getSource() == control_system_dropdown.get()) {
+        control_system_tooltip->cancelShow();
+        control_system_split_tooltip->cancelShow();
+    } else if (e.getSource() == scaling_dropdown.get()) {
+        graphics_scaling_tooltip->cancelShow();
+    }
 }
 
 void OptionsScreenImpl::mouseExited(gcn::MouseEvent &e)
 {
-    if (e.getSource() == non_integer_checkbox.get())
+    if (e.getSource() == show_controls_label.get() || e.getSource() == show_controls_dropdown.get()) {
+        show_controls_tooltip->cancelShow();
+    } else if (e.getSource() == control_system_label.get() || e.getSource() == control_system_dropdown.get()) {
+        control_system_tooltip->cancelShow();
+        control_system_split_tooltip->cancelShow();
+    } else if (e.getSource() == scaling_label.get() || e.getSource() == scaling_dropdown.get()) {
+        graphics_scaling_tooltip->cancelShow();
+    } else if (e.getSource() == non_integer_checkbox.get()) {
         fractional_scaling_tooltip->cancelShow();
-    else if (e.getSource() == screen_flash_checkbox.get())
+    } else if (e.getSource() == screen_flash_checkbox.get()) {
         screen_flash_tooltip->cancelShow();
+    }
 }
 
 void OptionsScreenImpl::keyPressed(gcn::KeyEvent &ke)
@@ -478,6 +540,11 @@ void OptionsScreenImpl::transferToGui()
 
     control_system_dropdown->setSelected(new_ctrls ? 0 : 1);
     control_system_dropdown->setVisible(!split_screen);
+    if (split_screen) {
+        control_system_tooltip->cancelShow();
+    } else {
+        control_system_split_tooltip->cancelShow();
+    }
 
     if (split_screen) {
         control_system_label->setCaption(loc.get(LocalKey("control_keys")).asUTF8());
@@ -606,6 +673,9 @@ void OptionsScreenImpl::transferToGui()
     non_integer_checkbox->setVisible(show_lower);
     screen_flash_checkbox->setVisible(show_lower);
     if (!show_lower) {
+        control_system_tooltip->cancelShow();
+        control_system_split_tooltip->cancelShow();
+        graphics_scaling_tooltip->cancelShow();
         fractional_scaling_tooltip->cancelShow();
         screen_flash_tooltip->cancelShow();
     }

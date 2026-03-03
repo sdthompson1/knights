@@ -89,7 +89,11 @@ scale2x                         Scale2x
 pixelated                       Pixelated
 allow_fractional_scaling        Allow Fractional Scaling
 allow_screen_flash              Allow screen flash effect (wands and pentagrams)
-allow_fractional_scaling_tooltip	When enabled, the game window can be scaled by non-integer amounts. This may produce slightly blurry graphics but makes better use of available screen space.
+show_controls_tooltip	        Controls can be customized independently for "normal" games, and the two-player split-screen mode.
+control_system_tooltip	        Choose your preferred control scheme. The new control system uses directional keys to move and mouse clicks to perform actions. The Amiga-style system is keyboard-only.
+control_system_split_tooltip    Note that only the Amiga-style (keyboard-only) controls are available in split screen mode, as both players share a single mouse.
+graphics_scaling_tooltip	Selects the graphics scaling method. "Scale2x" uses a smoothing algorithm for softer-looking graphics. "Pixelated" uses nearest-neighbour scaling, preserving sharp pixel edges.
+allow_fractional_scaling_tooltip	When enabled, the in-game graphics can be scaled by non-integer amounts. This may produce slightly blurry graphics but makes better use of available screen space.
 allow_screen_flash_tooltip	When enabled, the screen will flash briefly when certain magical effects occur, such as wand attacks and pentagrams.
 ok                              OK
 restore_defaults                Restore Defaults

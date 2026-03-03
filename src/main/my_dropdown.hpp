@@ -48,6 +48,7 @@ enum class MouseWheelScrolling { DISABLED, ENABLED };
 class MyDropDown : public gcn::DropDown {
 public:
     MyDropDown(gcn::ListModel *listModel, MouseWheelScrolling mouse_wheel);
+    bool isDroppedDown() const { return mDroppedDown; }
     void drawButton(gcn::Graphics *graphics) override;
     void keyPressed(gcn::KeyEvent &keyEvent) override;
     void mouseWheelMovedDown(gcn::MouseEvent &mouseEvent) override;
