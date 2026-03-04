@@ -33,24 +33,31 @@
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
+#include "gui_text_wrap.hpp"
+#include "utf8string.hpp"
 
 #include "guichan.hpp"
 
+#include <algorithm>
 #include <memory>
 using namespace boost;
 
-class StartGameScreenImpl : public gcn::ActionListener {
+class StartGameScreenImpl : public gcn::ActionListener, public gcn::MouseListener {
 public:
-    StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui);
+    StartGameScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     void action(const gcn::ActionEvent &event);
-    
+    void mouseEntered(gcn::MouseEvent &e) override;
+    void mouseExited(gcn::MouseEvent &e) override;
+
 private:
     KnightsApp &knights_app;
+    boost::shared_ptr<Coercri::Window> window;
     std::unique_ptr<GuiCentre> centre;
     std::unique_ptr<gcn::Container> outer_container;
     std::unique_ptr<GuiPanel> panel1, panel2;
     std::unique_ptr<gcn::Container> container;
     std::unique_ptr<gcn::Label> title;
+    std::unique_ptr<GuiTextWrap> help_text;
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<gcn::Button> online_multiplayer;
 #endif
@@ -60,8 +67,8 @@ private:
     std::unique_ptr<gcn::Button> exit;
 };
 
-StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
-    : knights_app(app)
+StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui)
+    : knights_app(app), window(win)
 {
     const Localization &loc = app.getLocalization();
     const int w = 300, h = 40, vspace = 15, pad = 15, vspace2 = 40;
@@ -114,14 +121,78 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, gcn::Gui &gui)
     title->setAlignment(gcn::Graphics::CENTER);
     panel1.reset(new GuiPanel(title.get()));
 
+    // Size the help text based on font metrics and window width
+    const int m_width = title->getFont()->getWidth("M");
+    int win_w, win_h;
+    window->getSize(win_w, win_h);
+    const int text_wrap_width = std::min(40 * m_width, win_w);
+    const int text_height = 4 * title->getFont()->getHeight();
+
+    help_text.reset(new GuiTextWrap);
+    help_text->setWidth(text_wrap_width);
+    help_text->setHeight(text_height);
+    help_text->setCentred(true);
+    help_text->setOpaque(true);
+    help_text->setBackgroundColor(gcn::Color(0, 0, 0));
+    help_text->setForegroundColor(gcn::Color(255, 255, 255));
+
+    // Layout: add (text_height + vspace) of padding above the panels to match
+    // the help text below them. This keeps GuiCentre placing the panels at
+    // exactly the same vertical position as before.
+    const int panel_w = panel2->getWidth();
+    const int outer_w = std::max(panel_w, text_wrap_width);
+    const int panel_x = (outer_w - panel_w) / 2;
+    const int text_x = (outer_w - text_wrap_width) / 2;
+    const int top_pad = text_height + vspace2;
+    const int panel1_y = top_pad;
+    const int buttons_y = panel1_y + panel1->getHeight() + vspace2;
+    const int text_y = buttons_y + panel2->getHeight() + vspace2;
+
     outer_container.reset(new gcn::Container);
     outer_container->setOpaque(false);
-    outer_container->add(panel1.get(), 0, 0);
-    outer_container->add(panel2.get(), 0, panel1->getHeight() + vspace2);
-    outer_container->setSize(panel2->getWidth(), panel1->getHeight() + vspace2 + panel2->getHeight());
+    outer_container->add(panel1.get(), panel_x, panel1_y);
+    outer_container->add(panel2.get(), panel_x, buttons_y);
+    outer_container->add(help_text.get(), text_x, text_y);
+    outer_container->setSize(outer_w, text_y + text_height);
+
+#ifdef ONLINE_PLATFORM
+    online_multiplayer->addMouseListener(this);
+#endif
+    lan_games->addMouseListener(this);
+    split_screen_mode->addMouseListener(this);
+    single_player_mode->addMouseListener(this);
+    exit->addMouseListener(this);
 
     centre.reset(new GuiCentre(outer_container.get()));
     gui.setTop(centre.get());
+}
+
+void StartGameScreenImpl::mouseEntered(gcn::MouseEvent &e)
+{
+    const Localization &loc = knights_app.getLocalization();
+    UTF8String desc;
+#ifdef ONLINE_PLATFORM
+    if (e.getSource() == online_multiplayer.get()) {
+        desc = loc.get(LocalKey("online_multiplayer_desc"));
+    } else
+#endif
+    if (e.getSource() == lan_games.get()) {
+        desc = loc.get(LocalKey("lan_games_desc"));
+    } else if (e.getSource() == split_screen_mode.get()) {
+        desc = loc.get(LocalKey("split_screen_desc"));
+    } else if (e.getSource() == single_player_mode.get()) {
+        desc = loc.get(LocalKey("single_player_desc"));
+    } else if (e.getSource() == exit.get()) {
+        desc = loc.get(LocalKey("cancel_desc"));
+    }
+    help_text->setText(desc);
+    window->invalidateAll();
+}
+
+void StartGameScreenImpl::mouseExited(gcn::MouseEvent &e)
+{
+    help_text->setText(UTF8String());
+    window->invalidateAll();
 }
 
 void StartGameScreenImpl::action(const gcn::ActionEvent &event)
@@ -157,6 +228,6 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 bool StartGameScreen::start(KnightsApp &knights_app, shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
     knights_app.resetAll();
-    pimpl.reset(new StartGameScreenImpl(knights_app, gui));
+    pimpl.reset(new StartGameScreenImpl(knights_app, w, gui));
     return true;
 }

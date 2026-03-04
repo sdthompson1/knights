@@ -68,14 +68,14 @@ void GuiTextWrap::draw(gcn::Graphics *graphics)
     graphics->setColor(getForegroundColor());
 
     ActualPrinter p(getWidth(), *getFont(), graphics);
-    TextFormatter formatter(p, getWidth(), rich);
+    TextFormatter formatter(p, getWidth(), rich, centred);
     formatter.printString(text);
 }
 
 void GuiTextWrap::adjustHeight()
 {
     ActualPrinter p(getWidth(), *getFont(), 0);
-    TextFormatter formatter(p, getWidth(), rich);
+    TextFormatter formatter(p, getWidth(), rich, centred);
     setHeight(formatter.printString(text));
 }
 

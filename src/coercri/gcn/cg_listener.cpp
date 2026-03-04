@@ -375,4 +375,10 @@ namespace Coercri {
     {
         onMouseMove(pimpl->last_mouse_x, pimpl->last_mouse_y);
     }
+
+    void CGListener::getLastMousePosition(int &x, int &y) const
+    {
+        x = pimpl->last_mouse_x;
+        y = pimpl->last_mouse_y;
+    }
 }

@@ -42,7 +42,7 @@ struct Printer {
 
 class TextFormatter {
 public:
-    TextFormatter(Printer &p, int width, bool rich);
+    TextFormatter(Printer &p, int width, bool rich, bool do_centre = false);
 
     // print a string, breaking into separate lines if necessary
     // returns the total height printed.

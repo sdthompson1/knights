@@ -519,6 +519,12 @@ bool KnightsApp::screenChangePending() const
 void KnightsApp::executeScreenChange()
 {
     if (screenChangePending()) {
+        // Save mouse position before destroying the old CGListener
+        int last_mouse_x = 0, last_mouse_y = 0;
+        if (pimpl->cg_listener) {
+            pimpl->cg_listener->getLastMousePosition(last_mouse_x, last_mouse_y);
+        }
+
         // Completely destroy the gui, then re-create it. This seems to be necessary
         // to avoid certain dangling reference problems (Trac #18).
         pimpl->window->rmWindowListener(pimpl->cg_listener.get());
@@ -527,13 +533,18 @@ void KnightsApp::executeScreenChange()
         pimpl->cg_listener.reset(new Coercri::CGListener(pimpl->window, pimpl->gui, pimpl->timer));
         pimpl->window->addWindowListener(pimpl->cg_listener.get());
         pimpl->cg_listener->disableGui();
-        
+
         // Swap screens
         pimpl->current_screen = std::move(pimpl->requested_screen);   // clears requested_screen
 
         // Initialize the new screen, and bring up the gui if required
         const bool requires_gui = pimpl->current_screen->start(*this, pimpl->window, *pimpl->gui);
-        if (requires_gui) pimpl->cg_listener->enableGui();
+        if (requires_gui) {
+            pimpl->cg_listener->enableGui();
+            // Replay the mouse position so guichan fires mouseEntered correctly
+            // if the cursor is already over a widget when the new screen opens.
+            pimpl->cg_listener->onMouseMove(last_mouse_x, last_mouse_y);
+        }
 
         // Ensure the screen gets repainted
         pimpl->window->invalidateAll();

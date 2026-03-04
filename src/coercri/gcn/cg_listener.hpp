@@ -81,6 +81,7 @@ namespace Coercri {
 
         // This is to work around a bug in guichan
         void repeatLastMouseInput();
+        void getLastMousePosition(int &x, int &y) const;
         
         // Access the underlying GUI object. Useful for e.g. setting
         // the top widget.

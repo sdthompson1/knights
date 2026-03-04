@@ -26,8 +26,8 @@
 
 #include "external/utf8.h"
 
-TextFormatter::TextFormatter(Printer &p, int width, bool rich)
-    : printer(p), max_line_width(width), is_rich(rich), do_centre(false), y(0)
+TextFormatter::TextFormatter(Printer &p, int width, bool rich, bool do_centre)
+    : printer(p), max_line_width(width), is_rich(rich), do_centre(do_centre), y(0)
 { }
 
 int TextFormatter::printString(const Coercri::UTF8String &text_utf8)
