@@ -31,8 +31,6 @@
 
 Options::Options()
 {
-    first_time = true;
-    
     ctrls[0][0] = Coercri::Scancode("w");
     ctrls[0][1] = Coercri::Scancode("s");
     ctrls[0][2] = Coercri::Scancode("a");
@@ -75,7 +73,6 @@ Options::Options()
 Options LoadOptions(std::istream &str)
 {
     Options o;
-    o.first_time = false;
 
     char buf[8] = {0};
     str.getline(buf, 6);

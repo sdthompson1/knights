@@ -42,8 +42,6 @@ class Options {
 public:
     Options();  // Sets the defaults
 
-    bool first_time;  // Set to true by ctor, false by a successful LoadOptions.
-
     // Controls for 3 players (P1/P2/Network games) and in order up/down/left/right/action/suicide.
     // 3rd player added in v011 of Knights.
     // Changed to Scancode in version 7 of options file (Knights 028).

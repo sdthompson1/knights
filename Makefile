@@ -1558,7 +1558,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 755 $(KNIGHTS_BINARY_NAME) $(BIN_DIR)
 	$(INSTALL) -m 755 -d $(DATA_DIR)
 	$(INSTALL) -m 644 -D knights_data/client/localization_english.txt $(DATA_DIR)/client/localization_english.txt
-	$(INSTALL) -m 644 -D knights_data/client/first_time_message_english.txt $(DATA_DIR)/client/first_time_message_english.txt
 	$(INSTALL) -m 644 -D knights_data/client/client_config.lua $(DATA_DIR)/client/client_config.lua
 	$(INSTALL) -m 644 -D knights_data/client/credits_english.txt $(DATA_DIR)/client/credits_english.txt
 	$(INSTALL) -m 644 -D knights_data/client/Inter_18pt-Regular.ttf $(DATA_DIR)/client/Inter_18pt-Regular.ttf
@@ -1927,7 +1926,6 @@ install_docs:
 uninstall:
 	rm -f $(BIN_DIR)/$(KNIGHTS_BINARY_NAME)
 	rm -f $(DATA_DIR)/client/localization_english.txt
-	rm -f $(DATA_DIR)/client/first_time_message_english.txt
 	rm -f $(DATA_DIR)/client/client_config.lua
 	rm -f $(DATA_DIR)/client/credits_english.txt
 	rm -f $(DATA_DIR)/client/Inter_18pt-Regular.ttf

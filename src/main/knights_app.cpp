@@ -25,7 +25,6 @@
 
 #include "config_map.hpp"
 #include "connecting_screen.hpp"
-#include "credits_screen.hpp"
 #include "dummy_online_platform.hpp"
 #include "error_screen.hpp"
 #include "frame_timer.hpp"
@@ -923,12 +922,7 @@ void KnightsApp::runKnights()
     } else {
         // Go to title screen.
         std::unique_ptr<Screen> initial_screen;
-        if (pimpl->options->first_time) {
-            initial_screen.reset(new CreditsScreen("first_time_message_", ".txt", 60));
-            pimpl->saveOptions();  // make sure they don't get the first time screen again
-        } else {
-            initial_screen.reset(new TitleScreen);
-        }
+        initial_screen.reset(new TitleScreen);
         requestScreenChange(std::move(initial_screen));
     }
 
