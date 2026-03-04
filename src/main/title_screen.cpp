@@ -127,7 +127,7 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     help_text->setWidth(text_wrap_width);
     help_text->setHeight(text_height);
     help_text->setCentred(true);
-    help_text->setOpaque(true);
+    help_text->setOpaque(false);
     help_text->setBackgroundColor(gcn::Color(0, 0, 0));
     help_text->setForegroundColor(gcn::Color(255, 255, 255));
 
