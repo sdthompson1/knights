@@ -39,6 +39,7 @@
 #include "start_game_screen.hpp"
 #include "tab_font.hpp"
 #include "title_block.hpp"
+#include "tooltip_widget.hpp"
 
 #include <memory>
 #include "boost/thread.hpp"
@@ -174,10 +175,12 @@ namespace {
     bool g_show_incompatible = false;
 }
 
-class OnlineMultiplayerScreenImpl : public gcn::ActionListener {
+class OnlineMultiplayerScreenImpl : public gcn::ActionListener, public gcn::MouseListener {
 public:
     OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g);
     void action(const gcn::ActionEvent &event);
+    void mouseEntered(gcn::MouseEvent &e) override;
+    void mouseExited(gcn::MouseEvent &e) override;
     void joinGame(const std::string &lobby_id);
     void createGame();
     void update();
@@ -202,6 +205,7 @@ private:
     std::unique_ptr<gcn::Button> refresh_button;
     std::unique_ptr<gcn::Button> cancel_button;
     std::unique_ptr<gcn::Button> create_game_button;
+    std::unique_ptr<TooltipWidget> show_incompatible_tooltip;
     boost::shared_ptr<gcn::Font> cg_font;
     std::unique_ptr<gcn::Font> tab_font;
 };
@@ -364,6 +368,13 @@ OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::
     show_incompatible_checkbox->addActionListener(this);
     show_incompatible_checkbox->setSelected(g_show_incompatible);
     container->add(show_incompatible_checkbox.get(), pad + width - show_incompatible_checkbox->getWidth(), y + games_label->getHeight()/2 - show_incompatible_checkbox->getHeight()/2);
+    show_incompatible_checkbox->addMouseListener(this);
+
+    show_incompatible_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("show_incompat_games_tooltip")), width - 4*pad, knights_app.getTimer(), *window));
+    container->add(show_incompatible_tooltip.get(),
+                   show_incompatible_checkbox->getX() + show_incompatible_checkbox->getWidth() - show_incompatible_tooltip->getWidth() - 5,
+                   show_incompatible_checkbox->getY() + show_incompatible_checkbox->getHeight() + 3);
 
     y += games_label->getHeight() + pad;
 
@@ -426,6 +437,20 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
         // User pressed the refresh button
         // Tell OnlinePlatform to re-query lobbies asap
         knights_app.getOnlinePlatform().refreshLobbyList();
+    }
+}
+
+void OnlineMultiplayerScreenImpl::mouseEntered(gcn::MouseEvent &e)
+{
+    if (e.getSource() == show_incompatible_checkbox.get()) {
+        show_incompatible_tooltip->scheduleShow();
+    }
+}
+
+void OnlineMultiplayerScreenImpl::mouseExited(gcn::MouseEvent &e)
+{
+    if (e.getSource() == show_incompatible_checkbox.get()) {
+        show_incompatible_tooltip->cancelShow();
     }
 }
 

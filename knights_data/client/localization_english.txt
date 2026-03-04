@@ -24,6 +24,7 @@ cancel                          Cancel
 online_multiplayer_games        Online Multiplayer Games
 avail_games_click_to_join       Available Games (double-click to join):
 show_incompat_games             Show incompatible games
+show_incompat_games_tooltip     When enabled, all games are shown in the list, even those that you cannot join (because the host is running a different Knights version or has unexpected changes to game data files). Incompatible games are shown in red.
 host                            Host
 players                         Players
 status                          Status
