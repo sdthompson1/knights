@@ -38,9 +38,9 @@ address                         Address
 connect                         Connect
 back                            Back
 cannot_autodetect_lan           Cannot autodetect LAN games.
-please_enter_address            Please enter address manually below.
 you_must_enter_player_name      You must enter a player name
 you_must_enter_address          You must enter an address to connect to
+lan_connect_help                Games on the local network should be detected automatically. If a game does not appear, you can manually enter its address below, and click Connect. If connection fails, check that UDP port {0} is open (e.g. check firewall settings).
 
 
 # Game statuses (for game list screens)

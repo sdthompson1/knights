@@ -28,6 +28,7 @@
 #include "error_screen.hpp"
 #include "lan_game_screen.hpp"
 #include "gui_button.hpp"
+#include "gui_text_wrap.hpp"
 #include "loading_screen.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
@@ -135,7 +136,7 @@ namespace {
         if (!hasError()) {
             return int(server_infos.size());
         } else {
-            return 2;
+            return 1;
         }
     }
 
@@ -146,8 +147,7 @@ namespace {
             if (si) return ServerInfoToString(*si, knights_app.getLocalization());
             else return std::string();
         } else {
-            LocalKey key(i == 0 ? "cannot_autodetect_lan" : "please_enter_address");
-            return knights_app.getLocalization().get(key).asUTF8();
+            return knights_app.getLocalization().get(LocalKey("cannot_autodetect_lan")).asUTF8();
         }
     }
 
@@ -276,6 +276,7 @@ private:
     std::unique_ptr<gcn::Label> address_label;
     std::unique_ptr<UTF8TextField> address_field;
     std::unique_ptr<gcn::Button> connect_button;
+    std::unique_ptr<GuiTextWrap> help_label;
     std::unique_ptr<gcn::Button> create_game_button;
     std::unique_ptr<gcn::Button> refresh_list_button;
     std::unique_ptr<gcn::Button> cancel_button;
@@ -373,8 +374,17 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     listbox->setWidth(width);
     scroll_area = MakeScrollArea(*listbox, width, 350 - games_titleblock->getHeight());
     container->add(scroll_area.get(), pad, y);
-    y += scroll_area->getHeight() + pad*3/2;
-    
+    y += scroll_area->getHeight() + 15;
+
+    const int port = knights_app.getConfigMap().getInt("port_number");
+    help_label.reset(new GuiTextWrap);
+    help_label->setWidth(width);
+    help_label->setText(loc.get(LocalKey("lan_connect_help"), {LocalParam(port)}));
+    help_label->adjustHeight();
+    help_label->setForegroundColor(gcn::Color(40, 40, 40));
+    container->add(help_label.get(), pad, y);
+    y += help_label->getHeight() + 12;
+
     connect_button.reset(new GuiButton(loc.get(LocalKey("connect")).asUTF8()));
     connect_button->addActionListener(this);
 
