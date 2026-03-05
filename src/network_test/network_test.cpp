@@ -253,7 +253,8 @@ public:
 
 class TestStatusDisplay : public StatusDisplay {
 public:
-    void setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max)
+    void setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max,
+                     const LocalKey &mouse_over_hint_key)
     {
         Log("stat: set backpack");
     }

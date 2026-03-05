@@ -159,7 +159,8 @@ public:
     // This routine reads the joystick/controller, and converts this
     // information to a UserControl. It also activates the on-screen
     // menu (when fire is held down) if necessary.
-    const UserControl * readControl(int plyr, int mx, int my, bool mleft, bool mright);
+    const UserControl * readControl(int plyr, bool mleft, bool mright);
+    void setMousePosition(int mx, int my) { last_mx = mx; last_my = my; }
 
     // Tell us if anyone has won yet. (ie has winGame() or loseGame() been called yet.)
     bool isGameOver() const {
@@ -278,11 +279,21 @@ private:
     // slot_controls: contains controls currently assigned to the action bar, or the "tap" slot.
     const UserControl * slot_controls[2][TOTAL_NUM_SLOTS];
 
-    // mouse_over_slot: which slot is the mouse currently over.
+    // mouse_over_slot: which action bar slot is the mouse currently over.
     // could also be TAP_SLOT if the mouse is not over any action bar slot, or NO_SLOT if the mouse is
     // over a gui control and therefore LMB controls should be disabled.
     // NB: does not update while LMB held down, this means controls "stick" until you release the mouse button.
     int mouse_over_slot[2];
+
+    // last known mouse position (screen coords). -1 if not yet set.
+    int last_mx;
+    int last_my;
+
+    // inventory tooltip: which player display and slot is being hovered (-1 if none),
+    // and when hover started (microseconds).
+    int last_hover_player;
+    int last_hover_slot;
+    int64_t hover_start_us;
 
     // lmb_down: True if the LMB was down on the previous frame.
     bool lmb_down[2];

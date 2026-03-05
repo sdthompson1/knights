@@ -37,6 +37,7 @@
 #include "gfx/font.hpp"
 #include "gfx/gfx_context.hpp"
 #include "gfx/graphic.hpp"
+#include "gfx/rectangle.hpp"
 
 #include "boost/shared_ptr.hpp"
 
@@ -51,6 +52,14 @@ class Entity;
 class GfxManager;
 class MapCoord;
 
+// Sentinel slot numbers for non-backpack tooltip areas
+const int POTION_BOTTLE_SLOT = 1;
+const int SKULLS_SLOT = 2;
+
+struct DrawnBackpackSlot {
+    int slot;
+    Coercri::Rectangle rect;
+};
 
 class DrawUI {
 public:
@@ -59,7 +68,8 @@ public:
     static void drawBackpackEntry(Coercri::GfxContext &gc, int x, int y, int width, int height,
                                   GfxManager &gm, int num_slots, int spacing, int gem_height,
                                   int slot, const Graphic *gfx, const Graphic *overdraw,
-                                  int no_carried, int no_max);
+                                  int no_carried, int no_max,
+                                  std::vector<DrawnBackpackSlot> &drawn_slots);
     
     // Draw a text message over a certain square
     // d_left, d_top, d_width, d_height give the dungeon rectangle

@@ -29,6 +29,7 @@
 #ifndef SKULL_RENDERER_HPP
 #define SKULL_RENDERER_HPP
 
+#include "draw.hpp"
 #include "gfx/gfx_context.hpp" // from coercri
 
 #include <vector>
@@ -56,7 +57,8 @@ public:
     //
 
     // draw (clip rectangle should be unset, will be taken care of by this func)
-    void draw(Coercri::GfxContext &gc, GfxManager &gm, int no_skulls, int left, int top, float scale) const;
+    void draw(Coercri::GfxContext &gc, GfxManager &gm, int no_skulls, int left, int top, float scale,
+              std::vector<DrawnBackpackSlot> &drawn_slots) const;
    
 private:
     std::vector<const Graphic *> gfx;

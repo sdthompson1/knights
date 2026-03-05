@@ -127,6 +127,7 @@ i_dagger = kts.ItemType {
     backpack_graphic = g_inv_dagger,
     backpack_overdraw = g_inv_overdraw_small,
     backpack_slot = 13,
+    mouse_over_hint_key = "inv_daggers",
     overlay = kts.Overlay { g_dagger_north, g_dagger_east, g_dagger_south, g_dagger_west },
 
     max_stack = 10,
@@ -170,6 +171,7 @@ i_bolts = kts.ItemType {
     backpack_graphic = g_inv_bolt,
     backpack_overdraw = g_inv_overdraw_small,
     backpack_slot = 14,
+    mouse_over_hint_key = "inv_bolts",
     max_stack = 10,
 
     missile_anim = a_bolt,
@@ -368,6 +370,7 @@ i_poison_trap = kts.ItemType {
     backpack_graphic = g_menu_poison_trap,
     backpack_overdraw = g_inv_overdraw_big,
     backpack_slot = 11,
+    mouse_over_hint_key = "inv_poison_traps",
     control = kts.Control {
        action = function()
           kts.SetPoisonTrapOld()
@@ -387,6 +390,7 @@ i_blade_trap = kts.ItemType {
     backpack_graphic = g_menu_blade_trap,
     backpack_overdraw = g_inv_overdraw_big,
     backpack_slot = 12,
+    mouse_over_hint_key = "inv_blade_traps",
     control = kts.Control {
        action = function()
           kts.SetBladeTrapOld(i_bolt_trap)
@@ -416,7 +420,8 @@ i_key1 = kts.ItemType (
   table_merge( basic_key, {
     backpack_graphic = g_inv_key1,
     backpack_slot = 20,
-    key = 1
+    key = 1,
+    mouse_over_hint_key = "inv_key"
   }
 ))
 
@@ -424,7 +429,8 @@ i_key2 = kts.ItemType(
   table_merge( basic_key, {
     backpack_graphic = g_inv_key2,
     backpack_slot = 21,
-    key = 2
+    key = 2,
+    mouse_over_hint_key = "inv_key"
   }
 ))
 
@@ -432,7 +438,8 @@ i_key3 = kts.ItemType(
   table_merge( basic_key, {
     backpack_graphic = g_inv_key3,
     backpack_slot = 22,
-    key = 3
+    key = 3,
+    mouse_over_hint_key = "inv_key"
   }
 ))
 
@@ -441,6 +448,7 @@ i_lockpicks = kts.ItemType(
     backpack_graphic = g_inv_lockpicks,
     backpack_slot = 23,
     key = -1,
+    mouse_over_hint_key = "inv_picks",
     control = kts.Control {
        action = function()
           kts.PickLock(0.02, 140)
@@ -468,7 +476,8 @@ i_gem = kts.ItemType {
     graphic = g_gem,
     backpack_graphic = g_menu_drop_gem,
     backpack_slot = 30,
-    critical = "a_gem"
+    critical = "a_gem",
+    mouse_over_hint_key = "inv_gems"
 }
 
 --

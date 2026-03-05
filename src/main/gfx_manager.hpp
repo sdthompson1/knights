@@ -89,6 +89,9 @@ public:
                                 const ColourChange &cc, 
                                 bool semitransparent = false); // used for drawing invisible teammates
 
+    void accumulateBoundingBox(int x, int y, const Graphic &gfx, int new_width, int new_height,
+                               Coercri::Rectangle &bbox);
+
 private:
     // typedefs, structs
 

@@ -464,7 +464,7 @@ int Knight::addToBackpack(ItemType &itype, int no_to_add)
     if (no > maxno && maxno != 0) no = maxno;
     if (no != oldno) getPlayer()->getStatusDisplay().setBackpack
                          (itype.getBackpackSlot(), itype.getBackpackGraphic(),
-                          itype.getBackpackOverdraw(), no, maxno);
+                          itype.getBackpackOverdraw(), no, maxno, itype.getMouseOverHintKey());
     return no - oldno;
 }
 
@@ -479,10 +479,11 @@ void Knight::rmFromBackpack(const ItemType &itype, int no_to_rm)
         // Number has fallen to zero. Delete it from the backpack vector entirely.
         if (idx < backpack.size()-1) swap(backpack[idx], backpack.back());
         backpack.pop_back();
-        getPlayer()->getStatusDisplay().setBackpack(itype.getBackpackSlot(),0,0,0,0);
+        getPlayer()->getStatusDisplay().setBackpack(itype.getBackpackSlot(),0,0,0,0, LocalKey());
     } else {
         getPlayer()->getStatusDisplay().setBackpack(itype.getBackpackSlot(),
-            itype.getBackpackGraphic(), itype.getBackpackOverdraw(), no, getMaxNo(itype));
+            itype.getBackpackGraphic(), itype.getBackpackOverdraw(), no, getMaxNo(itype),
+            itype.getMouseOverHintKey());
     }
 }
 

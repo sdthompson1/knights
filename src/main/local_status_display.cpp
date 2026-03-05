@@ -93,14 +93,15 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     const int inv_height = int(ref_inventory_height * scale);
     const int inv_x = x + Round(ref_inventory_left * scale) + (inv_width - Round(ref_inventory_width * scale)) / 2;
     const int inv_y = y + Round(ref_inventory_top * scale);
-    
+
     // Draw backpack icons. (This is handled by DrawUI)
+    drawn_slots.clear();
     for (std::map<int, BackpackEntry>::iterator it = backpack.begin(); it != backpack.end(); ++it) {
         DrawUI::drawBackpackEntry(gc,
                                   inv_x, inv_y, inv_width, inv_height,
                                   gm, num_inventory_slots, ref_inventory_spacing, ref_inventory_gem_height,
                                   it->first, it->second.gfx, it->second.overdraw, it->second.no_carried,
-                                  it->second.no_max);
+                                  it->second.no_max, drawn_slots);
     }
 
     if (menu_open) {
@@ -144,7 +145,7 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
     if (skull_renderer) {
         const int phy_skulls_left = Round(float(ref_skulls_left) * scale) + x;
         const int phy_skulls_top = Round(float(ref_skulls_top) * scale) + y;
-        skull_renderer->draw(gc, gm, nskulls, phy_skulls_left, phy_skulls_top, scale);
+        skull_renderer->draw(gc, gm, nskulls, phy_skulls_left, phy_skulls_top, scale, drawn_slots);
     }
 
     // Draw Potion Bottle
@@ -154,7 +155,7 @@ void LocalStatusDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
         const int phy_potion_left = Round(float(ref_potion_left) * scale) + x;
         const int phy_potion_top = Round(float(ref_top) * scale) + y;
         potion_renderer->draw(time, gc, gm, health, magic, poison_immun,
-                              phy_potion_left, phy_potion_top, scale);
+                              phy_potion_left, phy_potion_top, scale, drawn_slots);
         if (show_time) {
             const int phy_x = Round(float(ref_time_x) * scale) + x 
                     - gm.getFont()->getTextWidth(time_limit_string)/2;
@@ -189,13 +190,15 @@ void LocalStatusDisplay::setMenuGraphic(MapDirection d, const Graphic *g)
 }
 
 void LocalStatusDisplay::setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw,
-                                     int no_carried, int no_max)
+                                     int no_carried, int no_max,
+                                     const LocalKey &mouse_over_hint_key)
 {
     BackpackEntry be;
     be.gfx = gfx;
     be.overdraw = overdraw;
     be.no_carried = no_carried;
     be.no_max = no_max;
+    be.mouse_over_hint_key = mouse_over_hint_key;
     backpack.erase(slot);
     backpack.insert(std::make_pair(slot, be));
 }
@@ -220,4 +223,27 @@ void LocalStatusDisplay::setQuestHints(const std::vector<LocalMsg> &rqmts)
 {
     quest_hints = rqmts;
     need_gui_update = true;
+}
+
+UTF8String LocalStatusDisplay::getMouseOverHint(int mx, int my, const Localization &loc,
+                                                  int &hovered_slot, int &center_x, int &hit_top_y) const
+{
+    for (const DrawnBackpackSlot &s : drawn_slots) {
+        if (!Coercri::PointInRect(s.rect, mx, my)) continue;
+        hovered_slot = s.slot;
+        center_x = s.rect.getLeft() + s.rect.getWidth() / 2;
+        hit_top_y = s.rect.getTop();
+        if (s.slot == POTION_BOTTLE_SLOT) {
+            return loc.get(LocalKey("tooltip_health"),
+                           {LocalParam(health), LocalParam(potion_renderer->getMaxHealth())});
+        } else if (s.slot == SKULLS_SLOT) {
+            return loc.get(LocalKey("tooltip_deaths"), {LocalParam(nskulls)});
+        } else {
+            auto it = backpack.find(s.slot);
+            if (it != backpack.end() && !it->second.mouse_over_hint_key.getKey().empty())
+                return loc.get(it->second.mouse_over_hint_key, {LocalParam(it->second.no_carried)});
+        }
+    }
+    hovered_slot = -1;
+    return UTF8String();
 }

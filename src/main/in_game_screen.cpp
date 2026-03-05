@@ -282,11 +282,14 @@ void InGameScreen::update()
     const std::vector<PlayerID> & player_ids = display->getPlayerIDsForObsMode();
     const int nplayers = display->getNPlayers();    
 
+    // Update mouse position (used for inventory tooltips in all modes including observer)
+    display->setMousePosition(mx, my);
+
     // Read controllers
     if (player_ids.empty()) { // NOT in observer mode
         ASSERT(nplayers == 1 || nplayers == 2);
-        knights_client->sendControl(0, display->readControl(0, mx, my, mleft, mright));
-        if (nplayers == 2) knights_client->sendControl(1, display->readControl(1, -1, -1, false, false));
+        knights_client->sendControl(0, display->readControl(0, mleft, mright));
+        if (nplayers == 2) knights_client->sendControl(1, display->readControl(1, false, false));
     }
 
     // Make sure sounds get played

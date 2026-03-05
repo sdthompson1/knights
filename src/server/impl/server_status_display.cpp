@@ -28,7 +28,8 @@
 #include "read_write_loc.hpp"
 #include "server_status_display.hpp"
 
-void ServerStatusDisplay::setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max)
+void ServerStatusDisplay::setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max,
+                                      const LocalKey &mouse_over_hint_key)
 {
     Coercri::OutputByteBuf buf(out);
     buf.writeUbyte(SERVER_SET_BACKPACK);
@@ -37,6 +38,7 @@ void ServerStatusDisplay::setBackpack(int slot, const Graphic *gfx, const Graphi
     buf.writeVarInt(overdraw ? overdraw->getID() : 0);
     buf.writeUbyte(no_carried);
     buf.writeUbyte(no_max);
+    buf.writeString(mouse_over_hint_key.getKey());
 }
 
 void ServerStatusDisplay::addSkull()

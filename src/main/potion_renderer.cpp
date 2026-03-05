@@ -53,7 +53,8 @@ void PotionRenderer::addColour(Colour col)
 }
 
 void PotionRenderer::draw(int time, Coercri::GfxContext &gc, GfxManager &gm, int health, PotionMagic magic,
-                          bool poison_immunity, int left, int top, float scale) const
+                          bool poison_immunity, int left, int top, float scale,
+                          std::vector<DrawnBackpackSlot> &drawn_slots) const
 {
     // Find out which graphic to draw
     if (health < 0) health = 0;
@@ -64,7 +65,11 @@ void PotionRenderer::draw(int time, Coercri::GfxContext &gc, GfxManager &gm, int
     gm.getGraphicSize(*gr, width, height);
     width = Round(float(width) * scale);
     height = Round(float(height) * scale);
-    
+
+    Coercri::Rectangle bbox;
+    gm.accumulateBoundingBox(left, top, *gr, width, height, bbox);
+    drawn_slots.push_back({POTION_BOTTLE_SLOT, bbox});
+
     // Check if poison immunity colour change should be used.
     if (poison_immunity) {
         const int s = (time / config_map.getInt("pot_flash_time")) % config_map.getInt("pi_flash_delay");

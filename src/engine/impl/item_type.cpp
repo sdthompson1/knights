@@ -94,6 +94,10 @@ ItemType::ItemType(lua_State *lua, int idx)
     }
     lua_pop(lua, 1); // []
 
+    lua_getfield(lua, idx, "mouse_over_hint_key");
+    if (const char *p = lua_tostring(lua, -1)) mouse_over_hint_key = LocalKey(p);
+    lua_pop(lua, 1);
+
     loaded = 0;  // set separately via 'setLoaded', see also KnightsConfigImpl::addLuaItemType
 
     lua_pushvalue(lua, idx);
@@ -176,6 +180,9 @@ void ItemType::newIndex(lua_State *lua)
 
     } else if (k == "max_stack") {
         max_stack = lua_tointeger(lua, 3);
+
+    } else if (k == "mouse_over_hint_key") {
+        if (const char *p = lua_tostring(lua, 3)) mouse_over_hint_key = LocalKey(p);
 
     } else if (k == "melee_action") {
         lua_pushvalue(lua, 3);

@@ -32,6 +32,7 @@
 #include "config_map.hpp"
 #include "draw.hpp"
 #include "gfx_manager.hpp"
+#include "graphic.hpp"
 #include "round.hpp"
 
 // coercri
@@ -55,31 +56,34 @@ void DrawUI::drawBackpackEntry(Coercri::GfxContext &gc,
                                int left, int top, int width, int height,
                                GfxManager &gm, int num_slots, int spacing, int gem_height,
                                int slot, const Graphic *gfx, const Graphic *overdraw_,
-                               int no_carried, int no_max)
+                               int no_carried, int no_max,
+                               std::vector<DrawnBackpackSlot> &drawn_slots)
 {
     if (!gfx) return;
     if (no_carried == 0) return;
     if (spacing < 1) spacing = 1;
 
     const Graphic *overdraw = overdraw_ ? overdraw_ : gfx;
-    
+
     // assumption: all item gfx, including gems, are the same width (although
     // not necessarily the same height).
     int gfx_width, gfx_height, overdraw_width, overdraw_height;
     gm.getGraphicSize(*gfx, gfx_width, gfx_height);
     gm.getGraphicSize(*overdraw, overdraw_width, overdraw_height);
-    
+
     const int width_of_each = width / num_slots;
     const float scale_factor = float(width_of_each) / float(gfx_width);
     const int rescaled_height = Round(float(gfx_height) * scale_factor);
     const int rescaled_overdraw_height = Round(float(overdraw_height) * scale_factor);
     const int rescaled_spacing = std::max(1, Round(float(spacing) * scale_factor));
     const int rescaled_gem_height = Round(float(gem_height) * scale_factor);
-    
+
     // Slots: 11, 12, ... 19 are Normal Items
     // 20 = Lock Picks
     // 21, 22, 23 = Keys.
     // 30 = Gems
+
+    Coercri::Rectangle bbox;
 
     if (slot > 10 && slot < 20) {
         // Normal items are drawn in a column format, starting from the 2nd slot
@@ -93,32 +97,42 @@ void DrawUI::drawBackpackEntry(Coercri::GfxContext &gc,
             const int num = height - rescaled_gem_height - rescaled_height;
             if (no_carried > no_max) no_max = no_carried;
             for (int j = 0; j < no_carried; ++j) {
-                gm.drawTransformedGraphic(gc, x, top + num*j/no_max, *gfx, width_of_each, rescaled_height);
+                int y = top + num*j/no_max;
+                gm.drawTransformedGraphic(gc, x, y, *gfx, width_of_each, rescaled_height);
+                gm.accumulateBoundingBox(x, y, *gfx, width_of_each, rescaled_height, bbox);
             }
         } else {
             // use supplied spacing; extra ones are just dropped.
             const int jmax = (height - rescaled_gem_height - rescaled_height) / rescaled_spacing;
             for (int j = std::min(no_carried-1, jmax); j >= 0; --j) {
-                gm.drawTransformedGraphic(gc, x, top + j*rescaled_spacing, j ? *overdraw : *gfx, width_of_each,
-                                          j ? rescaled_overdraw_height : rescaled_height);
+                int y = top + j*rescaled_spacing;
+                const Graphic &g = j ? *overdraw : *gfx;
+                int h = j ? rescaled_overdraw_height : rescaled_height;
+                gm.drawTransformedGraphic(gc, x, y, g, width_of_each, h);
+                gm.accumulateBoundingBox(x, y, g, width_of_each, h, bbox);
             }
         }
-        
+
     } else if (slot >= 20 && slot <= 29) {
         // Keys are drawn downwards from the top, in the leftmost slot.
         // NB no_carried and no_max are ignored for keys and lockpicks.
         const int x = left;
         const int y = top + rescaled_height*(slot-20);
         gm.drawTransformedGraphic(gc, x, y, *gfx, width_of_each, rescaled_height);
+        gm.accumulateBoundingBox(x, y, *gfx, width_of_each, rescaled_height, bbox);
 
     } else if (slot == 30) {
         // Gems are drawn UNDERNEATH the normal inventory slots, in a right to left order.
         int x = left + width_of_each*(num_slots-1);
         const int y = top + height - rescaled_gem_height;
         for (int i = 0; i < no_carried; ++i) {
-            gm.drawTransformedGraphic(gc, x, y, *gfx, width_of_each, rescaled_height);
+            gm.drawTransformedGraphic(gc, x, y, *gfx, width_of_each, rescaled_gem_height);
+            gm.accumulateBoundingBox(x, y, *gfx, width_of_each, rescaled_gem_height, bbox);
             x -= width_of_each;
         }
+    }
+    if (!bbox.isDegenerate()) {
+        drawn_slots.push_back({slot, bbox});
     }
 }
 

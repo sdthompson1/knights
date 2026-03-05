@@ -33,7 +33,8 @@ public:
     typedef unsigned char ubyte;
     explicit ServerStatusDisplay(std::vector<ubyte> &out_) : out(out_) { }
 
-    virtual void setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max);
+    virtual void setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw, int no_carried, int no_max,
+                             const LocalKey &mouse_over_hint_key);
     virtual void addSkull();
     virtual void setHealth(int h);
     virtual void setPotionMagic(PotionMagic pm, bool poison_immunity);

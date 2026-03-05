@@ -24,12 +24,14 @@
 #ifndef LOCAL_STATUS_DISPLAY_HPP
 #define LOCAL_STATUS_DISPLAY_HPP
 
+#include "draw.hpp"
 #include "map_support.hpp"
 #include "status_display.hpp"
 
 #include "gfx/gfx_context.hpp" // coercri
 
 #include <map>
+#include <vector>
 
 class GfxManager;
 class Graphic;
@@ -67,13 +69,18 @@ public:
     // get quest info
     const std::vector<LocalMsg> & getQuestHints() const { return quest_hints; }
     bool needQuestHintUpdate() { const bool result = need_gui_update; need_gui_update = false; return result; }
-    
+
+    // inventory hover hint
+    UTF8String getMouseOverHint(int mx, int my, const Localization &loc,
+                                int &hovered_slot, int &center_x, int &hit_top_y) const;
+
     //
     // functions from StatusDisplay
     //
 
     void setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw,
-                     int no_carried, int no_max);
+                     int no_carried, int no_max,
+                     const LocalKey &mouse_over_hint_key);
     void addSkull();
     void setHealth(int h);
     void setPotionMagic(PotionMagic pm, bool poison_immunity);
@@ -104,8 +111,10 @@ private:
         const Graphic *overdraw;
         int no_carried;
         int no_max;
+        LocalKey mouse_over_hint_key;
     };
     std::map<int, BackpackEntry> backpack;
+    std::vector<DrawnBackpackSlot> drawn_slots;
 
     // menu
     const Graphic * menu_gfx_centre;    // 'arrows' graphic

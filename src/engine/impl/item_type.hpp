@@ -148,6 +148,9 @@ public:
     // Custom control (used for eg lockpicks, trap setting)
     const Control * getControl() const { return control; }
 
+    // Mouse-over hint key (for inventory hover tooltips)
+    const LocalKey & getMouseOverHintKey() const { return mouse_over_hint_key; }
+
     // Critical items
     // (A critical item will automatically be respawned if it is destroyed for any reason. See ItemCheckTask.)
     bool isCritical() const { return is_critical; }
@@ -218,8 +221,9 @@ private:
 
     bool is_critical;
     LocalKey critical_msg;
+    LocalKey mouse_over_hint_key;
 
-    const Control * control; 
+    const Control * control;
     
     LuaFunc on_pick_up;
     LuaFunc on_drop;

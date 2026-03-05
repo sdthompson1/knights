@@ -400,6 +400,11 @@ LocalDisplay::LocalDisplay(const Localization &localization,
         for (int j = 0; j < 4; ++j) menu_control[i][j] = 0;
         for (int j = 0; j < TOTAL_NUM_SLOTS; ++j) slot_controls[i][j] = 0;
         mouse_over_slot[i] = NO_SLOT;
+        last_mx = -1;
+        last_my = -1;
+        last_hover_player = 0;
+        last_hover_slot = -1;
+        hover_start_us = 0;
         lmb_down[i] = false;
         chat_flag[i] = false;
     }
@@ -1291,6 +1296,40 @@ int LocalDisplay::draw(Coercri::GfxContext &gc, GfxManager &gm,
                                          dungeon_view[player_num]->aliveRecently(),
                                          *mini_map[player_num], time_limit_string);
 
+        // Draw inventory tooltip
+        if (last_mx >= 0) {
+            int hovered_slot = -1, hint_center_x = 0, hit_top_y = 0;
+            const UTF8String hint = status_display[player_num]->getMouseOverHint(
+                last_mx, last_my, localization,
+                hovered_slot, hint_center_x, hit_top_y);
+            if (hovered_slot != -1 && (hovered_slot != last_hover_slot || player_num != last_hover_player)) {
+                // Positive hit on a new slot or player: start fresh delay only if tooltip wasn't
+                // already open (so moving between items keeps the tooltip showing without delay).
+                last_hover_slot = hovered_slot;
+                last_hover_player = player_num;
+                if (time_us - hover_start_us < 500000) {
+                    hover_start_us = time_us;
+                }
+            } else if (hovered_slot == -1 && player_num == last_hover_player) {
+                // The owning player's display no longer hits: reset so re-entry triggers delay.
+                last_hover_slot = -1;
+                hover_start_us = time_us;
+            }
+            if (!hint.empty() && time_us - hover_start_us >= 500000) {
+                int hint_w, hint_h;
+                txt_font->getTextSize(hint, hint_w, hint_h);
+                const int pad_x = 4, pad_y = 2;
+                const int tx = hint_center_x - hint_w / 2;
+                const int ty = hit_top_y - hint_h - pad_y * 2 - 1 - Round(scale);
+                gc.fillRectangle(Coercri::Rectangle(tx - pad_x, ty - pad_y,
+                                                    hint_w + pad_x * 2, hint_h + pad_y * 2),
+                                 Coercri::Color(0, 0, 0, 220));
+                gc.drawRectangle(Coercri::Rectangle(tx - pad_x, ty - pad_y,
+                                                    hint_w + pad_x * 2, hint_h + pad_y * 2),
+                                 Coercri::Color(180, 180, 180));
+                gc.drawText(tx, ty, *txt_font, hint, Coercri::Color(255, 255, 255));
+            }
+        }
     }
 
     // Draw Tutorial Popup Window
@@ -1692,14 +1731,17 @@ void LocalDisplay::playSounds(SoundManager &sm)
     sounds.clear();
 }
 
-const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mleft, bool mright)
+const UserControl * LocalDisplay::readControl(int plyr, bool mleft, bool mright)
 {
     if (observer_mode) return 0;
-    
+
     if (plyr != 0 && plyr != 1) {
         throw UnexpectedError("bad player number in LocalDisplay");
     }
-    
+
+    // Use the mouse position set by setMousePosition (local copies since they may be reset below)
+    int mx = last_mx, my = last_my;
+
     // set up some constants
     const int64_t menu_delay_us = 500 * 1000; // cutoff btwn 'tapping' and 'holding' fire.
     const bool approached = dungeon_view[plyr]->isApproached();
@@ -1724,7 +1766,7 @@ const UserControl * LocalDisplay::readControl(int plyr, int mx, int my, bool mle
     const bool old_mleft = lmb_down[plyr];
 
     // Left mouse button: Action bar and pickup/drop/open/close.
-    
+
     // Update mouse_over_slot
     // (We don't update if the mouse is held down, this makes the selected control "stick" until the 
     // player releases the mouse.)

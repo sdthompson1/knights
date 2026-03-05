@@ -267,6 +267,18 @@ throw_daggers     Throw Daggers
 use_lock_picks    Use Lock Picks
 
 
+# Inventory tooltips
+inv_key             Key
+inv_picks           Lock Picks
+inv_daggers         Daggers ({0})
+inv_bolts           Crossbow Bolts ({0})
+inv_poison_traps    Poison Needle Traps ({0})
+inv_blade_traps     Spring Blade Traps ({0})
+inv_gems            Gems ({0})
+tooltip_deaths      Deaths ({0})
+tooltip_health      Health ({0}/{1})
+
+
 # Various items and effects
 dispel_magic          Dispel Magic
 healing               Healing

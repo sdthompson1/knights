@@ -30,6 +30,7 @@
 #define POTION_RENDERER_HPP
 
 #include "colour_change.hpp"
+#include "draw.hpp"
 #include "potion_magic.hpp"
 
 #include "gfx/gfx_context.hpp"
@@ -59,7 +60,9 @@ public:
     // (clip rectangle should be unset, will be taken care of by this func)
     //
     void draw(int time, Coercri::GfxContext &, GfxManager &, int health, PotionMagic magic, bool poison_immunity,
-              int left, int top, float scale) const;
+              int left, int top, float scale, std::vector<DrawnBackpackSlot> &drawn_slots) const;
+
+    int getMaxHealth() const { return (int)gfx.size() - 1; }
     
 private:
     const ConfigMap &config_map;

@@ -27,6 +27,8 @@
 #include "round.hpp"
 #include "skull_renderer.hpp"
 
+#include <climits>
+
 void SkullRenderer::addGraphic(const Graphic *g)
 {
     gfx.push_back(g);
@@ -42,10 +44,12 @@ void SkullRenderer::addRow(int r)
     rows.push_back(r);
 }
 
-void SkullRenderer::draw(Coercri::GfxContext &gc, GfxManager &gm, int nsk, int left, int top, float scale_factor) const
+void SkullRenderer::draw(Coercri::GfxContext &gc, GfxManager &gm, int nsk, int left, int top,
+                         float scale_factor, std::vector<DrawnBackpackSlot> &drawn_slots) const
 {
     int r = 0;
     int c = 0;
+    Coercri::Rectangle bbox;
     while (nsk > 0) {
         const int x = Round(float(columns[c])*scale_factor) + left;
         const int y = Round(float(rows[r])*scale_factor) + top;
@@ -57,6 +61,7 @@ void SkullRenderer::draw(Coercri::GfxContext &gc, GfxManager &gm, int nsk, int l
         h = Round(float(h) * scale_factor);
 
         gm.drawTransformedGraphic(gc, x, y, *gfx[n-1], w, h);
+        gm.accumulateBoundingBox(x, y, *gfx[n-1], w, h, bbox);
         nsk -= n;
         ++r;
         if (r >= rows.size()) {
@@ -67,5 +72,8 @@ void SkullRenderer::draw(Coercri::GfxContext &gc, GfxManager &gm, int nsk, int l
                 break;
             }
         }
+    }
+    if (!bbox.isDegenerate()) {
+        drawn_slots.push_back({SKULLS_SLOT, bbox});
     }
 }

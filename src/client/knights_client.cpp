@@ -836,7 +836,9 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                 const Graphic * ovr = pimpl->readGraphic(buf);
                 const int no_carried = buf.readUbyte();
                 const int no_max = buf.readUbyte();
-                if (status_display) status_display->setBackpack(slot, gfx, ovr, no_carried, no_max);
+                const LocalKey mouse_over_hint_key(buf.readString());
+                if (status_display) status_display->setBackpack(slot, gfx, ovr, no_carried, no_max,
+                                                                mouse_over_hint_key);
             }
             break;
 

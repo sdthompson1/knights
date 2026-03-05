@@ -310,3 +310,21 @@ void GfxManager::drawTransformedGraphic(Coercri::GfxContext &gc, int x, int y,
     const Coercri::Graphic & gfx_cc_resized = getResizedGraphic(gfx_cc, new_width, new_height);
     gc.drawGraphic(x, y, gfx_cc_resized);
 }
+
+void GfxManager::accumulateBoundingBox(int x, int y, const Graphic &gfx, int new_width, int new_height,
+                                       Coercri::Rectangle &bbox)
+{
+    if (new_width == 0 || new_height == 0) return;   // Drawing zero-sized graphic; effectively a no-op
+
+    const Coercri::Graphic & gfx_original = getCoercriGraphic(gfx);
+    const Coercri::Graphic & gfx_resized = getResizedGraphic(gfx_original, new_width, new_height);
+
+    int hx, hy;
+    gfx_resized.getHandle(hx, hy);
+    const Coercri::Rectangle new_bbox(x - hx,
+                                      y - hy,
+                                      gfx_resized.getWidth(),
+                                      gfx_resized.getHeight());
+
+    bbox = Coercri::UnionRects(bbox, new_bbox);
+}

@@ -56,7 +56,8 @@ public:
     // 30 for gems.
     //
     virtual void setBackpack(int slot, const Graphic *gfx, const Graphic *overdraw,
-                             int no_carried, int no_max) = 0;
+                             int no_carried, int no_max,
+                             const LocalKey &mouse_over_hint_key) = 0;
     
     // Add a death (skull)
     virtual void addSkull() = 0;

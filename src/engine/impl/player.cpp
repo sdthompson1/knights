@@ -803,7 +803,8 @@ void Player::sendStatusDisplay(StatusDisplay &status_display)
             const int maxno = kt->getMaxNo(item_type);
             
             status_display.setBackpack(item_type.getBackpackSlot(), item_type.getBackpackGraphic(),
-                                       item_type.getBackpackOverdraw(), num_carried, maxno);
+                                       item_type.getBackpackOverdraw(), num_carried, maxno,
+                                       item_type.getMouseOverHintKey());
         }
 
         // Health

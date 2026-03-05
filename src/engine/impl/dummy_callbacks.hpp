@@ -62,7 +62,7 @@ public:
 
 class DummyStatusDisplay : public StatusDisplay {
 public:
-    virtual void setBackpack(int, const Graphic *, const Graphic *, int, int) override { }
+    virtual void setBackpack(int, const Graphic *, const Graphic *, int, int, const LocalKey &) override { }
     virtual void addSkull() override { }
     virtual void setHealth(int) override { }
     virtual void setPotionMagic(PotionMagic, bool) override { }

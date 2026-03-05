@@ -104,6 +104,23 @@ namespace Coercri {
         return Rectangle(new_left, new_top, new_right - new_left, new_bottom - new_top);
     }
 
+    // "Union" of two rectangles - more specifically, returns the smallest rectangle
+    // that includes both input rectangles.
+    inline Rectangle UnionRects(const Rectangle &r1, const Rectangle &r2)
+    {
+        if (r1.isDegenerate()) {
+            return r2;
+        } else if (r2.isDegenerate()) {
+            return r1;
+        } else {
+            const int new_left = std::min(r1.getLeft(), r2.getLeft());
+            const int new_right = std::max(r1.getRight(), r2.getRight());
+            const int new_top = std::min(r1.getTop(), r2.getTop());
+            const int new_bottom = std::max(r1.getBottom(), r2.getBottom());
+            return Rectangle(new_left, new_top, new_right - new_left, new_bottom - new_top);
+        }
+    }
+
     // Check if a point is in a rectangle
     inline bool PointInRect(const Rectangle &r, int x, int y)
     {
