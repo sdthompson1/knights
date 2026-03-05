@@ -23,42 +23,11 @@ For further information and updates please visit the website:
 https://www.knightsgame.org.uk/
 
 
-Visit the Knights forums:
-https://www.knightsgame.org.uk/forum/
-
-or check out the moddb profile:
-https://www.moddb.com/games/knights
+Copyright © Stephen Thompson, 2006 - 2026, and Kalle Marjola, 1994.
+Please see docs/ACKNOWLEDGMENTS.txt for details of open source libraries used.
 
 
-Coming Soon to Steam!
-
-
-%l
-Copyright (C) Stephen Thompson, 2006 - 2026.
-Copyright (C) Kalle Marjola, 1994.
-
-This version of Knights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
-
-Knights is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with Knights.  If not, see <http://www.gnu.org/licenses/>.
-
-
-This program uses the following software libraries, which are copyright by their respective authors:
-
-SDL 2 (www.libsdl.org), by Sam Lantinga and others.
-FreeType (www.freetype.org), by The FreeType Project.
-Guichan (github.com/darkbitsorg/guichan), by Olof Naessen and Per Larsson.
-Boost (www.boost.org).
-ENet (enet.bespin.org), by Lee Salzman.
-Lua (www.lua.org), a scripting language.
-UTF8-CPP (github.com/nemtrif/utfcpp), by Nemanja Trifunovic.
-zlib (https://zlib.net/), a compression library by Jean-loup Gailly and Mark Adler.
-Please refer to the "docs" directory for further details (including licence information).
-
-
-
-%cCLICK MOUSE TO CONTINUE
+CLICK MOUSE TO CONTINUE
 
 
 

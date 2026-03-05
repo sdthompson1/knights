@@ -197,7 +197,7 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
         new_screen.reset(new OptionsScreen);
 
     } else if (event.getSource() == credits.get()) {
-        new_screen.reset(new CreditsScreen("credits_", ".txt"));
+        new_screen.reset(new CreditsScreen("credits_", ".txt", 70));
 
     } else if (event.getSource() == exit.get()) {
         knights_app.requestQuit();
