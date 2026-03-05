@@ -1,3 +1,9 @@
+/* Wrapper div for the entire page content */
+div.wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
 /* Select sans-serif font, black text, white background, 1 em between paragraphs */
 body {
   font-family: sans-serif;
