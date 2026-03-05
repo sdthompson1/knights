@@ -335,6 +335,7 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     int y = 5;
     const int width = std::accumulate(widths.begin(), widths.end(), 0);
 
+    // Title and "Available Games" label
     label1.reset(new gcn::Label(loc.get(LocalKey("avail_games_click_to_join")).asUTF8()));
 
     title_label.reset(new gcn::Label(loc.get(LocalKey("lan_games")).asUTF8()));
@@ -343,6 +344,8 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     y += title_label->getHeight() + 2*pad;
 
 #ifndef ONLINE_PLATFORM
+    // Player name box - only appears in the open source version
+    // (in the Steam version, player name is obtained from Steam)
     name_label.reset(new gcn::Label(loc.get(LocalKey("player_name_colon")).asUTF8() + " "));
     name_field.reset(new UTF8TextField);
     name_field->adjustSize();
@@ -356,6 +359,7 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     container->add(label1.get(), pad, y);
     y += label1->getHeight() + pad;
 
+    // The games listbox
     std::vector<std::string> titles;
     titles.push_back(loc.get(LocalKey("host")).asUTF8());
     titles.push_back(loc.get(LocalKey("address")).asUTF8());
@@ -374,17 +378,9 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     listbox->setWidth(width);
     scroll_area = MakeScrollArea(*listbox, width, 350 - games_titleblock->getHeight());
     container->add(scroll_area.get(), pad, y);
-    y += scroll_area->getHeight() + 12;
+    y += scroll_area->getHeight() + pad;
 
-    const int port = knights_app.getConfigMap().getInt("port_number");
-    help_label.reset(new GuiTextWrap);
-    help_label->setWidth(width);
-    help_label->setText(loc.get(LocalKey("lan_connect_help"), {LocalParam(port)}));
-    help_label->adjustHeight();
-    help_label->setForegroundColor(gcn::Color(30, 30, 30));
-    container->add(help_label.get(), pad, y);
-    y += help_label->getHeight() + 8;
-
+    // Address box and connect button
     connect_button.reset(new GuiButton(loc.get(LocalKey("connect")).asUTF8()));
     connect_button->addActionListener(this);
 
@@ -400,8 +396,9 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     container->add(address_label.get(), pad, y + 5);
     container->add(address_field.get(), pad + address_label->getWidth(), y + 3);
     container->add(connect_button.get(), pad + address_label->getWidth() + address_field_width + pad, y);
-    y += connect_button->getHeight() + 20;
+    y += connect_button->getHeight() + pad;
 
+    // Create Game, Refresh List and Cancel buttons
     create_game_button.reset(new GuiButton(loc.get(LocalKey("create_new_game")).asUTF8()));
     create_game_button->addActionListener(this);
     refresh_list_button.reset(new GuiButton(loc.get(LocalKey("refresh_list")).asUTF8()));
@@ -412,7 +409,20 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     container->add(refresh_list_button.get(), 25 + create_game_button->getWidth() + pad, y);
     container->add(cancel_button.get(), pad + width - cancel_button->getWidth(), y);
 
-    container->setSize(2*pad + width, y + cancel_button->getHeight() + pad);
+    y += create_game_button->getHeight() + 2*pad;
+
+    // Help text - at the bottom
+    const int port = knights_app.getConfigMap().getInt("port_number");
+    help_label.reset(new GuiTextWrap);
+    help_label->setWidth(width);
+    help_label->setText(loc.get(LocalKey("lan_connect_help"), {LocalParam(port)}));
+    help_label->adjustHeight();
+    help_label->setForegroundColor(gcn::Color(30, 30, 30));
+    container->add(help_label.get(), pad, y);
+
+    y += help_label->getHeight() + pad;
+
+    container->setSize(2*pad + width, y);
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
