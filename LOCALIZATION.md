@@ -15,7 +15,7 @@
 
   - Translate the credits text (from `knights_data/client/credits_english.txt`) into the new language, creating a new file `knights_data/client/credits_NAME.txt` (where NAME is the language name).
 
-  - The Steam store settings must be updated, to tell Steam that the new language is supported. (This is only a few mouse clicks, but it can only be done by the owner of the Steam page.)
+  - The Steam store settings must be updated, to tell Steam that the new language is supported. (This is only a few mouse clicks, but it can only be done by someone with admin access for the Steam app.)
 
 
 # Things that aren't done yet
@@ -33,4 +33,6 @@ Aside from the translations themselves, the following localization tasks are sti
 
   - The Steam store page isn't done yet, but when it is, the text will have to be translated to different languages, clearly.
 
-  - Team chat uses the prefix "/t". The "t" obviously comes from English, but maybe it would make sense to use another letter for other languages. (Alternatively, we could change the UI for how team chat works, or we could just leave it as it is - it's pretty minor.)
+  - Team chat uses the prefix "/t". The "t" obviously comes from English, but maybe it would make sense to use another letter for other languages.
+     - Also note that some non-English keyboard layouts (e.g. Russian) won't necessarily even allow to type a letter "t".
+     - On the other hand, team chat is usually done by pressing the "backtick" key to automatically insert the prefix, so maybe this is a non-issue. Probably we just ignore this for now!
