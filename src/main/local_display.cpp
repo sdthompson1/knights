@@ -1694,7 +1694,7 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
         } else {
             vote_status_label->setCaption(vote_msg.asUTF8());
             vote_status_label->adjustSize();
-            vote_status_label->setForegroundColor(gcn::Color(255, 0, 0));  // Red for active voting
+            vote_status_label->setForegroundColor(gcn::Color(255, 80, 80));  // Red for active voting
             if (vote_status.haveIVoted()) {
                 vote_button->setCaption(localization.get(LocalKey("cancel_vote")).asUTF8());
             } else {

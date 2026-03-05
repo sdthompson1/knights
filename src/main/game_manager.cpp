@@ -471,10 +471,8 @@ UTF8String VoteStatus::getStatusMessage(const Localization &loc) const
 
     } else {
         std::vector<LocalParam> params;
-        int n = player_votes.size() - 2;
-        params.reserve(player_votes.size());
+        int n = player_votes.size() - 1;
         params.emplace_back(player_votes[0]);
-        params.emplace_back(player_votes[1]);
         params.emplace_back(n);
         msg1 = loc.get(loc.pluralize(LocalKey("xyz_want_to_restart"), n), params);
     }

@@ -502,7 +502,7 @@ x_cancelled_vote                {0} no longer wants to restart.
 game_restarted                  Game restarted.
 x_wants_to_restart              {0} wants to restart
 xy_want_to_restart              {0} and {1} want to restart
-xyz_want_to_restart[one]        {0}, {1} and {2} other want to restart
-xyz_want_to_restart[other]      {0}, {1} and {2} others want to restart
+xyz_want_to_restart[one]        {0} and {1} other want to restart
+xyz_want_to_restart[other]      {0} and {1} others want to restart
 more_vote_required[one]         ({0} more vote needed)
 more_vote_required[other]       ({0} more votes needed)
