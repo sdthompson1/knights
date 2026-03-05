@@ -18,7 +18,7 @@ amiga_knights/ks_disclaimer.txt for details.
 
 Back in 2009 a multiplayer test was carried out with David Thompson,
 dukey, K9, moikel, Narts, Raytray, rpr and Wil.7ang. The author thanks
-those people for their assistance.
+them for their assistance.
 
 
 
@@ -39,6 +39,16 @@ http://www.libsdl.org/.
 
 This software uses FreeType, which is copyright (C) 2007 The FreeType
 project (http://www.freetype.org/). See third_party_licences/FTL.txt.
+
+
+
+===== Google Fonts =====
+
+The game uses the font "Inter" which is freely available from the
+Google Fonts website: https://fonts.google.com/.
+
+The font is licensed under the SIL Open Font Licence, which is
+included in: third_party_licences/OFL.txt.
 
 
 
