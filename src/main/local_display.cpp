@@ -1682,9 +1682,10 @@ void LocalDisplay::updateGui(GfxManager &gm, int vp_x, int vp_y, int vp_width, i
 
     if (!container.isVisible()) container.setVisible(true);
 
-    // Update vote status label, if needed
-    if (vote_status_label && vote_button && vote_status.isDirty()) {
-        Coercri::UTF8String vote_msg = vote_status.getStatusMessage(localization);
+    // Update vote status label, if needed.
+    // When the game is over, revert to the default "Press ESC" text (no vote button).
+    if (vote_status_label && vote_button && (vote_status.isDirty() || isGameOver())) {
+        Coercri::UTF8String vote_msg = isGameOver() ? Coercri::UTF8String() : vote_status.getStatusMessage(localization);
         if (vote_msg.empty()) {
             vote_status_label->setCaption(localization.get(LocalKey("press_esc_for_more")).asUTF8());
             vote_status_label->adjustSize();

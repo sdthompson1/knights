@@ -423,11 +423,13 @@ void InGameScreen::onKey(Coercri::KeyEventType type, const Coercri::Scancode &sc
         return;
     }
 
-    // R in "pause mode" to vote to restart
+    // R in "pause mode" to vote to restart (ignored if the game is already over)
     if (r_pressed && pause_mode) {
-        VoteStatus &vote_status = knights_app.getGameManager().getVoteStatus();
-        const bool new_vote = !vote_status.haveIVoted();
-        knights_client->voteToRestart(new_vote);
+        if (!display->isGameOver()) {
+            VoteStatus &vote_status = knights_app.getGameManager().getVoteStatus();
+            const bool new_vote = !vote_status.haveIVoted();
+            knights_client->voteToRestart(new_vote);
+        }
         pause_mode = false;
         return;
     }
