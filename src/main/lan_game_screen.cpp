@@ -374,16 +374,16 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     listbox->setWidth(width);
     scroll_area = MakeScrollArea(*listbox, width, 350 - games_titleblock->getHeight());
     container->add(scroll_area.get(), pad, y);
-    y += scroll_area->getHeight() + 15;
+    y += scroll_area->getHeight() + 12;
 
     const int port = knights_app.getConfigMap().getInt("port_number");
     help_label.reset(new GuiTextWrap);
     help_label->setWidth(width);
     help_label->setText(loc.get(LocalKey("lan_connect_help"), {LocalParam(port)}));
     help_label->adjustHeight();
-    help_label->setForegroundColor(gcn::Color(40, 40, 40));
+    help_label->setForegroundColor(gcn::Color(30, 30, 30));
     container->add(help_label.get(), pad, y);
-    y += help_label->getHeight() + 12;
+    y += help_label->getHeight() + 8;
 
     connect_button.reset(new GuiButton(loc.get(LocalKey("connect")).asUTF8()));
     connect_button->addActionListener(this);
@@ -400,7 +400,7 @@ LanGameScreenImpl::LanGameScreenImpl(KnightsApp &ka, boost::shared_ptr<Coercri::
     container->add(address_label.get(), pad, y + 5);
     container->add(address_field.get(), pad + address_label->getWidth(), y + 3);
     container->add(connect_button.get(), pad + address_label->getWidth() + address_field_width + pad, y);
-    y += connect_button->getHeight() + 15;
+    y += connect_button->getHeight() + 20;
 
     create_game_button.reset(new GuiButton(loc.get(LocalKey("create_new_game")).asUTF8()));
     create_game_button->addActionListener(this);

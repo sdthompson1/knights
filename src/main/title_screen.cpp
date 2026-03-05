@@ -129,7 +129,7 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     help_text->setCentred(true);
     help_text->setOpaque(false);
     help_text->setBackgroundColor(gcn::Color(0, 0, 0));
-    help_text->setForegroundColor(gcn::Color(255, 255, 255));
+    help_text->setForegroundColor(gcn::Color(235, 235, 235));
 
     const int panel_w = panel2->getWidth();
     const int outer_w = std::max(panel_w, text_wrap_width);

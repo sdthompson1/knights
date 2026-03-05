@@ -134,7 +134,7 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, boost::shared_ptr<Coer
     help_text->setCentred(true);
     help_text->setOpaque(false);
     help_text->setBackgroundColor(gcn::Color(0, 0, 0));
-    help_text->setForegroundColor(gcn::Color(255, 255, 255));
+    help_text->setForegroundColor(gcn::Color(235, 235, 235));
 
     // Layout: add (text_height + vspace) of padding above the panels to match
     // the help text below them. This keeps GuiCentre placing the panels at
