@@ -90,6 +90,14 @@ licence.
 
 
 
+====== mdns.h ======
+
+This program incorporates code from mdns.h, a cross-platform mDNS and
+DNS-SD library by Mattias Jansson. This code is in the public domain
+and can be used without any restrictions.
+
+
+
 ====== zlib ======
 
 This program uses zlib, a compression library, available from
