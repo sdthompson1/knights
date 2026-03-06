@@ -113,7 +113,8 @@ messages = {
 
    [8] = {
       title = "MINI MAP",
-      body = "By now, you will have noticed the mini-map in the bottom right hand corner. "..
+      body = "By now, you will have noticed the mini-map (below the "..
+          "Action Bar, on the right-hand side). "..
          "This shows all rooms that have been mapped by your knight.\n\n"..
          "Normally rooms are mapped automatically, but if a monster or enemy "..
          "knight is in the room with you, then mapping is delayed "..
@@ -544,8 +545,13 @@ messages = {
    [65] = {
       title = "STAFF",
       graphics = {B.g_floor1, B.g_staff},
-      body = "A staff cannot be used in combat. Instead, it is used for disarming traps. "..
-         "If you open a door or chest while holding a staff, then no trap will harm you."
+      body = "The staff does not make a very effective combat weapon -- it is too lightweight "..
+          "to damage armoured knights. Instead, it is used for "..
+          "disarming traps. If you open a door or chest while holding a staff, "..
+          "then no trap will harm you.\n\n"..
+          "Note that if you try to attack while holding a staff, your knight will "..
+          "automatically drop it and draw their sword instead. If you really "..
+          "want to strike something with the staff, you can use the \"fist\" action icon."
    },
 
    [66] = {
@@ -577,7 +583,7 @@ messages = {
       body = "Well done -- you have found a way back to your entry point (it's just to the north).\n\n"..
          "Unfortunately you don't have enough gems to win yet. Go back through the dungeon and find the missing "..
          "gem(s).\n\n"..
-         "Remember, you can use the mini-map (lower right of screen) to navigate and check which areas you "..
+         "Remember, you can use the mini-map to navigate and check which areas you "..
          "haven't explored yet."
    },
 
