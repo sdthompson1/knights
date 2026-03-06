@@ -370,7 +370,7 @@ namespace {
             if (!(*it)->obs_flag) {
                 ++np;
                 if (!(*it)->id2.empty()) {
-                    if (impl.connections.size() > 1) throw ProtocolError(LocalKey("split_screen_not_allowed"));
+                    if (impl.connections.size() > 1) throw ProtocolError(ProtocolErrorCode::SPLIT_SCREEN_NOT_ALLOWED);
                     ++np;
                 }
             }

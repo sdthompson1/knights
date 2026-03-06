@@ -221,13 +221,6 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
-        case SERVER_JOIN_GAME_DENIED:
-            {
-                const std::string reason = buf.readString();
-                if (client_cb) client_cb->joinGameDenied(LocalKey(reason));
-            }
-            break;
-
         case SERVER_PLAYER_CONNECTED:
             {
                 const PlayerID id = pimpl->readPlayerID(buf);
@@ -436,7 +429,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
                     // Untrusted strings NOT allowed => SERVER_POP_UP_WINDOW is blocked
                     // (This is a tutorial-specific message anyway so it shouldn't be needed
                     // in online scenarios)
-                    throw ProtocolError(LocalKey("bad_server_message"));
+                    throw ProtocolError(ProtocolErrorCode::BAD_SERVER_MESSAGE);
                 }
 
                 const int n = buf.readVarIntThrow(0, 10000);
@@ -863,7 +856,7 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
         case SERVER_SWITCH_PLAYER:
             {
                 const int new_player = buf.readUbyte();
-                if (new_player >= pimpl->ndisplays) throw ProtocolError(LocalKey("dpy_num_out_of_range"));
+                if (new_player >= pimpl->ndisplays) throw ProtocolError(ProtocolErrorCode::DPY_NUM_OUT_OF_RANGE);
                 pimpl->player = new_player;
 
 #ifdef LOG_MSGS
@@ -946,13 +939,13 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
 
                 // If we read MORE than the payload then something has gone wrong.
                 if (pos_now != should_be) {
-                    throw ProtocolError(LocalKey("bad_server_message"));
+                    throw ProtocolError(ProtocolErrorCode::BAD_SERVER_MESSAGE);
                 }
             }
             break;
 
         default:
-            throw ProtocolError(LocalKey("unknown_server_message"));
+            throw ProtocolError(ProtocolErrorCode::UNKNOWN_SERVER_MESSAGE);
         }
     }
 }
@@ -1069,9 +1062,9 @@ void KnightsClient::sendControl(int plyr, const UserControl *ctrl)
     int id = 0;
     if (ctrl) {
         id = ctrl->getID();
-        if (id < 1 || id > 127) throw ProtocolError(LocalKey("invalid_id_client"));
+        if (id < 1 || id > 127) throw ProtocolError(ProtocolErrorCode::INVALID_ID_CLIENT);
     }
-    if (plyr < 0 || plyr > 1) throw ProtocolError(LocalKey("invalid_id_client"));
+    if (plyr < 0 || plyr > 1) throw ProtocolError(ProtocolErrorCode::INVALID_ID_CLIENT);
 
     // optimization: do not send "repeats" of continuous controls.
     if (ctrl == nullptr || ctrl->isContinuous()) {
@@ -1170,7 +1163,7 @@ void KnightsClientImpl::receiveConfiguration(Coercri::InputByteBuf &buf)
 const Graphic * KnightsClientImpl::readGraphic(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->graphics.size())) throw ProtocolError(LocalKey("invalid_id_server"));
+    if (id < 0 || id > int(client_config->graphics.size())) throw ProtocolError(ProtocolErrorCode::INVALID_ID_SERVER);
     if (id == 0) return 0;
     return client_config->graphics.at(id-1);
 }
@@ -1178,7 +1171,7 @@ const Graphic * KnightsClientImpl::readGraphic(Coercri::InputByteBuf &buf) const
 const Anim * KnightsClientImpl::readAnim(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->anims.size())) throw ProtocolError(LocalKey("invalid_id_server"));
+    if (id < 0 || id > int(client_config->anims.size())) throw ProtocolError(ProtocolErrorCode::INVALID_ID_SERVER);
     if (id == 0) return 0;
     return client_config->anims.at(id-1);
 }
@@ -1186,7 +1179,7 @@ const Anim * KnightsClientImpl::readAnim(Coercri::InputByteBuf &buf) const
 const Overlay * KnightsClientImpl::readOverlay(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->overlays.size())) throw ProtocolError(LocalKey("invalid_id_server"));
+    if (id < 0 || id > int(client_config->overlays.size())) throw ProtocolError(ProtocolErrorCode::INVALID_ID_SERVER);
     if (id == 0) return 0;
     return client_config->overlays.at(id-1);
 }
@@ -1194,7 +1187,7 @@ const Overlay * KnightsClientImpl::readOverlay(Coercri::InputByteBuf &buf) const
 const Sound * KnightsClientImpl::readSound(Coercri::InputByteBuf &buf) const
 {
     const int id = buf.readVarInt();
-    if (id < 0 || id > int(client_config->sounds.size())) throw ProtocolError(LocalKey("invalid_id_server"));
+    if (id < 0 || id > int(client_config->sounds.size())) throw ProtocolError(ProtocolErrorCode::INVALID_ID_SERVER);
     if (id == 0) return 0;
     return client_config->sounds.at(id-1);
 }
@@ -1207,6 +1200,6 @@ const UserControl * KnightsClientImpl::getControl(int id) const
     } else if (id <= int(client_config->standard_controls.size() + client_config->other_controls.size())) {
         return client_config->other_controls.at(id - 1 - client_config->standard_controls.size());
     } else {
-        throw ProtocolError(LocalKey("invalid_id_server"));
+        throw ProtocolError(ProtocolErrorCode::INVALID_ID_SERVER);
     }
 }

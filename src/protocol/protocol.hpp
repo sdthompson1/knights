@@ -40,9 +40,30 @@
 // or the data stream ends unexpectedly.
 //
 
+enum class ProtocolErrorCode {
+    ACCESS_DENIED = 1,
+    INVALID_CONNECTION_STRING = 2,
+    WRONG_KNIGHTS_VERSION = 3,
+    UNKNOWN_CLIENT_MESSAGE = 4,
+    UNKNOWN_SERVER_MESSAGE = 5,
+    BAD_SERVER_MESSAGE = 6,
+    INVALID_ID_SERVER = 7,
+    INVALID_ID_CLIENT = 8,
+    DPY_NUM_OUT_OF_RANGE = 9,
+    SPLIT_SCREEN_NOT_ALLOWED = 10,
+    MESSAGE_TOO_LONG = 11,
+    PLAYER_ID_ALREADY_SET = 12,
+    PLAYER_ID_MISMATCH = 13,
+    PLAYER_ID_EMPTY = 14,
+    ALREADY_IN_GAME = 15,
+    GAME_NOT_FOUND = 16,
+    SPLIT_SCREEN_TOO_MANY = 17
+};
+
 class ProtocolError : public ExceptionBase {
 public:
-    explicit ProtocolError(LocalKey key) : ExceptionBase(key) { }
+    explicit ProtocolError(ProtocolErrorCode e)
+        : ExceptionBase(LocalMsg{LocalKey("protocol_error"), {LocalParam(static_cast<int>(e))}}) { }
 };
 
 
@@ -83,7 +104,7 @@ enum ServerMessageCode {
     SERVER_CONNECTION_ACCEPTED = 2,  // followed by varint (server version number)
     
     SERVER_JOIN_GAME_ACCEPTED = 3,   // complex
-    SERVER_JOIN_GAME_DENIED = 4,     // followed by string (reason, as localkey)
+    // 4 = removed (was SERVER_JOIN_GAME_DENIED)
            // 5 = not used (was SERVER_INITIAL_PLAYER_LIST in version 011 and below)
     SERVER_PLAYER_CONNECTED = 6,     // followed by string (player id)
     SERVER_PLAYER_DISCONNECTED = 7,  // followed by string (player id)

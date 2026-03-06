@@ -1106,17 +1106,6 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
 #endif
 }
 
-void GameManager::joinGameDenied(const LocalKey &reason)
-{
-    const Localization &loc = pimpl->knights_app.getLocalization();
-    std::vector<LocalParam> params;
-    params.push_back(LocalParam(reason));
-    UTF8String msg = loc.get(LocalKey("couldnt_join_game"), params);
-    pimpl->chat_list.add(msg);
-    pimpl->current_game_name.clear();
-    pimpl->gui_invalid = true;
-}
-
 namespace {
     struct SecondIsEmpty {
         bool operator()(const std::pair<std::string, std::string> &x) const

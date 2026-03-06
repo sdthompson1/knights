@@ -97,8 +97,6 @@ public:
         Log("Join game accepted");
         join_game_accepted = true;
     }
-    void joinGameDenied(const LocalKey &reason) override { Log("Join game denied. Reason = %s", reason.getKey().c_str()); }
-
     void playerConnected(const PlayerID &id) override { Log("Player connected. ID = %s", id.asString().c_str()); }
     void playerDisconnected(const PlayerID &id) override { Log("Player disconnected. ID = %s", id.asString().c_str()); }
 

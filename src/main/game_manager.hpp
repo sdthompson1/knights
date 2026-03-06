@@ -243,8 +243,6 @@ public:
                                   const std::vector<int> &house_cols,
                                   const std::vector<PlayerID> &observers,
                                   bool already_started) override;
-    virtual void joinGameDenied(const LocalKey &reason) override;     // goes to ErrorScreen
-
     virtual void playerConnected(const PlayerID &id) override;
     virtual void playerDisconnected(const PlayerID &id) override;
 

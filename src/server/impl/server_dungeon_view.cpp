@@ -43,7 +43,7 @@ namespace {
     void WriteTileInfo(Coercri::OutputByteBuf &buf, int depth, bool cc)
     {
         int d = depth + 64;
-        if (d < 0 || d > 127) throw ProtocolError(LocalKey("invalid_id_server"));  // close enough!
+        if (d < 0 || d > 127) throw ProtocolError(ProtocolErrorCode::INVALID_ID_SERVER);  // close enough!
         buf.writeUbyte(cc ? 128+d : d);
     }
 

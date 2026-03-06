@@ -173,33 +173,14 @@ movement_keys                   {0}, {1}, {2} and {3} keys
 
 # Error messages
 unknown_error                   Unknown error
-access_denied                   Access denied
-invalid_connection_string       Invalid connection string
-player_id_already_set           Player ID already set
-player_id_mismatch              Player ID mismatch
-player_id_empty                 Player ID is empty
+protocol_error                  Network protocol error ({0})
 already_connected               A player with your name/ID is already connected
-already_in_game                 You are already connected to a game
-game_not_found                  Game not found on server
-split_screen_not_allowed        Split screen game not allowed
-split_screen_too_many           Cannot join split-screen if other players are already connected
-unknown_client_message          Unknown message code from client
-unknown_server_message          Unknown message code from server
-old_knights_version             You are running an old version of Knights. Please download the latest version from https://www.knightsgame.org.uk/
-old_server                      Cannot connect because this server is running an older version of Knights.
 update_thread_failed            Update thread failed to start
-bad_server_message              Incorrect server message format
-invalid_id_server               Invalid ID in server message
-invalid_id_client               Invalid ID in client message
-dpy_num_out_of_range            Display number out of range
-n_players_incorrect             Number of players incorrect
 bad_tile_control                Tile 'control' function did not return a control!
 couldnt_start_game              Couldn't start game:
-couldnt_join_game               Could not join game! {0}
 error_is                        Error: {0}
 lua_error_is                    Lua Error: {0}
 error_in_respawn_func           Error in respawn function: {0}
-message_too_long                Message too long
 game_hasnt_started              Game hasn't started or could not be found
 config_key_not_found            Config key '{0}' not found
 cxx_error_is                    C++ error: {0}

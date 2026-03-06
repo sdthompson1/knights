@@ -96,8 +96,6 @@ public:
                                   const std::vector<int> &house_cols,
                                   const std::vector<PlayerID> &observers,
                                   bool already_started) = 0;
-    virtual void joinGameDenied(const LocalKey &reason) = 0;
-
     // called when other players connect to or disconnect from the server.
     virtual void playerConnected(const PlayerID &id) = 0;
     virtual void playerDisconnected(const PlayerID &id) = 0;

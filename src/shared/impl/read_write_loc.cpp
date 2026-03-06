@@ -92,7 +92,7 @@ void ReadLocalMsg(Coercri::InputByteBuf &buf, LocalMsg &msg, bool allow_untruste
             }
             break;
         default:
-            throw ProtocolError(LocalKey("bad_server_message"));
+            throw ProtocolError(ProtocolErrorCode::BAD_SERVER_MESSAGE);
             break;
         }
     }

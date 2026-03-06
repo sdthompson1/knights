@@ -55,7 +55,7 @@ void MyMenuListener::questDescriptionChanged(const std::vector<LocalMsg> &paragr
         Coercri::OutputByteBuf &buf = *bit;
         buf.writeUbyte(SERVER_SET_QUEST_DESCRIPTION);
         if (paragraphs.size() > 255) {
-            throw ProtocolError(LocalKey("message_too_long"));
+            throw ProtocolError(ProtocolErrorCode::MESSAGE_TOO_LONG);
         }
         buf.writeUbyte(paragraphs.size());
         for (const LocalMsg &p : paragraphs) {

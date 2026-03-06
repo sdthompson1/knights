@@ -160,7 +160,7 @@ void TickNetwork::handleVMOutput(const std::vector<unsigned char> &vm_output_dat
                                                 *this);
         if (ptr != vm_output_data.data() + vm_output_data.size()) {
             // This is unexpected.
-            throw std::runtime_error("Not all VM output data was processed");
+            throw std::runtime_error("Not all output data was processed");
         }
     }
 }

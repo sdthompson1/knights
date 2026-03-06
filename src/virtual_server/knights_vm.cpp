@@ -198,7 +198,7 @@ KnightsVM::EcallResult KnightsVM::handleEcall()
         // or return from main() -- it is supposed to run forever.
         // (It does happen though, e.g. if some kind of exception is thrown
         // inside the server.)
-        throw std::runtime_error("Knights game simulation failed");
+        throw std::runtime_error("Knights game server failed");
 
     case 214:
         // BRK

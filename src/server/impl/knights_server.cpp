@@ -110,14 +110,6 @@ namespace {
         }
     }
 
-    void SendJoinGameDenied(ServerConnection &conn, const LocalKey &reason)
-    {
-        ReadDataFromKnightsGame(conn);
-        Coercri::OutputByteBuf buf(conn.output_data);
-        buf.writeUbyte(SERVER_JOIN_GAME_DENIED);
-        buf.writeString(reason.getKey());
-    }
-
     void SendError(ServerConnection &conn,
                    const LocalMsg &error,
                    KnightsServerImpl &impl)
@@ -278,7 +270,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 const std::string client_version_string = buf.readString();
                 const std::string expected = "Knights/";
                 if (client_version_string.substr(0, expected.length()) != expected) {
-                    throw ProtocolError(LocalKey("invalid_connection_string"));
+                    throw ProtocolError(ProtocolErrorCode::INVALID_CONNECTION_STRING);
                 }
 
                 // Parse the version number
@@ -290,10 +282,8 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 // Server version check. For now we just insist that the client is running the same version as the server.
                 // Update Aug 2011: be slightly less strict, allow any client version between
                 // COMPATIBLE_VERSION_NUM and the current server version (inclusive)
-                if (ver < COMPATIBLE_VERSION_NUM) {
-                    throw ProtocolError(LocalKey("old_knights_version"));
-                } else if (ver > KNIGHTS_VERSION_NUM) {
-                    throw ProtocolError(LocalKey("old_server"));
+                if (ver < COMPATIBLE_VERSION_NUM || ver > KNIGHTS_VERSION_NUM) {
+                    throw ProtocolError(ProtocolErrorCode::WRONG_KNIGHTS_VERSION);
                 }
 
                 // Send them the MOTD
@@ -332,7 +322,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 if (conn.error_sent) {
                     return;
                 } else {
-                    throw ProtocolError(LocalKey("access_denied"));
+                    throw ProtocolError(ProtocolErrorCode::ACCESS_DENIED);
                 }
             }
 
@@ -345,19 +335,19 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
                     if (!conn.player_id.empty()) {
                         // They have already sent their ID
-                        SendError(conn, LocalMsg{LocalKey("player_id_already_set")}, *pimpl);
+                        throw ProtocolError(ProtocolErrorCode::PLAYER_ID_ALREADY_SET);
 
                     } else if (!conn.platform_user_id.empty() && new_id != conn.platform_user_id) {
                         // The ID they are setting doesn't match the ID provided by the platform
-                        SendError(conn, LocalMsg{LocalKey("player_id_mismatch")}, *pimpl);
+                        throw ProtocolError(ProtocolErrorCode::PLAYER_ID_MISMATCH);
 
                     } else if (new_id.empty()) {
                         // Claiming you have an empty ID is not allowed
-                        SendError(conn, LocalMsg{LocalKey("player_id_is_empty")}, *pimpl);
+                        throw ProtocolError(ProtocolErrorCode::PLAYER_ID_EMPTY);
 
                     } else if (!IsIDAvailable(pimpl->connections, new_id)) {
                         // This player is already connected
-                        SendError(conn, LocalMsg{LocalKey("already_connected")}, *pimpl);
+                        throw ExceptionBase(LocalKey("already_connected"));
 
                     } else {
                         // set the player id
@@ -381,13 +371,13 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
 
                     game_map::iterator it = pimpl->games.find(game_name);
                     if (conn.game) {
-                        SendJoinGameDenied(conn, LocalKey("already_in_game"));
+                        throw ProtocolError(ProtocolErrorCode::ALREADY_IN_GAME);
                     } else if (it == pimpl->games.end()) {
-                        SendJoinGameDenied(conn, LocalKey("game_not_found"));
+                        throw ProtocolError(ProtocolErrorCode::GAME_NOT_FOUND);
                     } else if (split_screen && !it->second->isSplitScreenAllowed()) {
-                        SendJoinGameDenied(conn, LocalKey("split_screen_not_allowed"));
+                        throw ProtocolError(ProtocolErrorCode::SPLIT_SCREEN_NOT_ALLOWED);
                     } else if (split_screen && (it->second->getNumPlayers() > 0 || it->second->getNumObservers() > 0)) {
-                        SendJoinGameDenied(conn, LocalKey("split_screen_too_many"));
+                        throw ProtocolError(ProtocolErrorCode::SPLIT_SCREEN_TOO_MANY);
                     } else {
 
                         PlayerID client_id_1, client_id_2;
@@ -610,7 +600,7 @@ void KnightsServer::receiveInputData(ServerConnection &conn,
                 break;
 
             default:
-                throw ProtocolError(LocalKey("unknown_client_message"));
+                throw ProtocolError(ProtocolErrorCode::UNKNOWN_CLIENT_MESSAGE);
             }
         }
 
