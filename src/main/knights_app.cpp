@@ -1324,7 +1324,9 @@ void KnightsApp::hostOnlineGame(OnlinePlatform::Visibility vis)
                                               local_player_id));
 
     client->setClientCallbacks(pimpl->game_manager.get());
-    client->setPlayerIdAndControls(local_player_id, pimpl->options->new_control_system);
+
+    // Note: don't set player id and controls here
+    // (LobbyController::checkHostMigration will do it later)
 
     // Go to the HostMigrationScreen while we wait for the connection
     requestScreenChange(std::make_unique<HostMigrationScreen>(LocalKey("creating_game")));
@@ -1349,7 +1351,9 @@ void KnightsApp::joinOnlineGame(const std::string &platform_lobby_id)
                                               local_player_id));
 
     client->setClientCallbacks(pimpl->game_manager.get());
-    client->setPlayerIdAndControls(local_player_id, pimpl->options->new_control_system);
+
+    // Note: don't set player id and controls here
+    // (LobbyController::checkHostMigration will do it later)
 
     // Go to the HostMigrationScreen while we wait for the connection
     requestScreenChange(std::make_unique<HostMigrationScreen>(LocalKey("connecting_to_game")));
