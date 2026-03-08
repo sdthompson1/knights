@@ -1859,10 +1859,10 @@ install_docs:
 	$(INSTALL) -m 644 docs/third_party_licences/FTL.txt $(DOC_DIR)/third_party_licences
 	$(INSTALL) -m 644 docs/third_party_licences/README.txt $(DOC_DIR)/third_party_licences
 	$(INSTALL) -m 644 docs/third_party_licences/zlib.txt $(DOC_DIR)/third_party_licences
+	$(INSTALL) -m 644 docs/third_party_licences/OFL.txt $(DOC_DIR)/third_party_licences
 	$(INSTALL) -m 644 docs/third_party_licences/enet.txt $(DOC_DIR)/third_party_licences
 	$(INSTALL) -m 644 docs/manual/options.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/screen_layout.html $(DOC_DIR)/manual
-	$(INSTALL) -m 644 docs/manual/server.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/copyright.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/starting.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/monsters.html $(DOC_DIR)/manual
@@ -2216,10 +2216,10 @@ uninstall:
 	rm -f $(DOC_DIR)/third_party_licences/FTL.txt
 	rm -f $(DOC_DIR)/third_party_licences/README.txt
 	rm -f $(DOC_DIR)/third_party_licences/zlib.txt
+	rm -f $(DOC_DIR)/third_party_licences/OFL.txt
 	rm -f $(DOC_DIR)/third_party_licences/enet.txt
 	rm -f $(DOC_DIR)/manual/options.html
 	rm -f $(DOC_DIR)/manual/screen_layout.html
-	rm -f $(DOC_DIR)/manual/server.html
 	rm -f $(DOC_DIR)/manual/copyright.html
 	rm -f $(DOC_DIR)/manual/starting.html
 	rm -f $(DOC_DIR)/manual/monsters.html
