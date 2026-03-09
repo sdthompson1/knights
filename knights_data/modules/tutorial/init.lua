@@ -22,7 +22,7 @@ mod.RegisterMod { name = "tutorial", version = "1.0" }
 
 dofile("messages.lua")
 
-local B = mod.GetRegisteredMod("base")
+local B = require("base")
 
 local table_merge = kts.table_merge
 

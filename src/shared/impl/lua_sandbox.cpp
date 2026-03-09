@@ -149,7 +149,7 @@ namespace {
         // NOT: newproxy (undocumented base library function)
         "next",       // safe
         // NOT: os
-        // NOT: package (we provide our own "package" table)
+        // NOT: package (we provide our own "mod" table)
         "pairs",      // safe
         "pcall",      // safe
         // NOT: print (we supply our own)
@@ -157,7 +157,7 @@ namespace {
         "rawget",     // bypasses metatables but we don't care
         "rawlen",     // bypasses metatables but we don't care
         "rawset",     // bypasses metatables but we don't care
-        // NOT: require
+        // NOT: require (we provide our own version)
         "select",     // safe
         "setmetatable",   // they might use this to e.g. redefine string metatable, but we don't care
         "string",     // no problem (see whitelist below)

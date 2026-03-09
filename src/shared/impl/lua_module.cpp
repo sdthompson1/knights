@@ -420,6 +420,19 @@ namespace {
         return 1;
     }
 
+    int Require(lua_State *L)
+    {
+        if (!lua_isstring(L, 1))
+            return luaL_error(L, "require: arg 1 must be a string");
+        const std::string name = lua_tostring(L, 1);
+        lua_getfield(L, LUA_REGISTRYINDEX, "_MOD_REGISTRY");
+        lua_getfield(L, -1, name.c_str());
+        if (lua_isnil(L, -1))
+            return luaL_error(L, "require: mod '%s' is not registered", name.c_str());
+        lua_getfield(L, -1, "ns");
+        return 1;
+    }
+
     int Mod_GetAllMods(lua_State *L)
     {
         lua_getfield(L, LUA_REGISTRYINDEX, "_MOD_REGISTRY");  // [registry]
@@ -473,4 +486,8 @@ void AddModuleFuncs(lua_State *lua)
     lua_setfield(lua, -2, "GetAllMods");
 
     lua_setglobal(lua, "mod");
+
+    // Global "require" function
+    PushCFunction(lua, &Require);
+    lua_setglobal(lua, "require");
 }

@@ -18,7 +18,7 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
-local B = mod.GetRegisteredMod("base")
+local B = require("base")
 
 messages = {
 
