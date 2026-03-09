@@ -39,6 +39,7 @@
 #include "my_exceptions.hpp"
 #include "segment.hpp"
 #include "tile.hpp"
+#include "version.hpp"
 
 #include <string>
 
@@ -215,6 +216,9 @@ void AddLuaConfigFunctions(lua_State *lua, KnightsConfigImpl *kc)
     luaL_getsubtable(lua, -1, "kts");                        // [env kts]
 
     
+    lua_pushinteger(lua, KNIGHTS_VERSION_NUM);
+    lua_setfield(lua, -2, "VERSION");
+
     lua_pushlightuserdata(lua, kc);
     PushCClosure(lua, &MakeAnim, 1);
     lua_setfield(lua, -2, "Anim");
