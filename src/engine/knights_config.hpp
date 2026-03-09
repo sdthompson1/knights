@@ -91,7 +91,7 @@ public:
     // loaded as a separate mount point (so that they can be individually
     // enabled and disabled according to the dependencies of each module).
     KnightsConfig(const VFS &vfs,
-                  const std::vector<std::string> &module_names,
+                  const std::vector<std::string> &mod_vfs_names,
                   bool menu_strict);
 
     // Get lists of all anims, graphics etc that will be used in the
@@ -107,7 +107,7 @@ public:
     const Menu & getMenu() const;
     int getApproachOffset() const;  // clients will need to know this for rendering purposes.
     void getHouseColours(std::vector<Coercri::Color> &cols) const;   // for use on the menu screen.
-    const std::vector<std::string> & getModuleNames() const;
+    const std::vector<std::string> & getModVFSNames() const;
     
     // Menu related functions:
 

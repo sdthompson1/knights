@@ -43,20 +43,19 @@ public:
     void update();
 
     // Determine if a module is installed/available locally
-    bool isModuleInstalled(const std::string &module_name) const;
+    bool isModuleInstalled(const std::string &mod_vfs_name) const;
 
     // Get the user's currently enabled module list (for creating new games)
     std::vector<std::string> getEnabledModules() const;
 
-    // "Resolve" a module list, meaning: add any required dependencies, and sort into
-    // dependency order
-    std::vector<std::string> resolveModuleList(const std::vector<std::string> &modules) const;
+    // "Resolve" a module list, meaning: validate that all names are known and deduplicate
+    std::vector<std::string> resolveModuleList(const std::vector<std::string> &mod_vfs_names) const;
 
     // Get a VFS corresponding to a list of modules
-    VFS getVFS(const std::vector<std::string> &modules) const;
+    VFS getVFS(const std::vector<std::string> &mod_vfs_names) const;
 
     // Get the checksum for a game that uses a particular (resolved) list of modules
-    uint64_t computeCombinedChecksum(const std::vector<std::string> &modules) const;
+    uint64_t computeCombinedChecksum(const std::vector<std::string> &mod_vfs_names) const;
 
     // Check if a game is compatible with ours.
     //  - If returns false and missing_modules_out is empty, that means a checksum mismatch.

@@ -29,17 +29,10 @@
 
 class VFS;
 
-struct ModuleNameList {
-    std::vector<std::string> names;      // hard / required dependencies
-    std::vector<std::string> soft_names; // optional dependencies (prefixed with '*' in file)
-};
-
 bool IsValidModuleName(const std::string &name);
 
 // Reads a given file from the vfs and parses module names from it.
-// Names prefixed with '*' are returned in soft_names; all others in names.
-// Both vectors are sorted and deduplicated.
-// If filename doesn't exist, returns an empty ModuleNameList.
-ModuleNameList ReadModuleNames(const VFS &vfs, const std::string &filename);
+// Returns names in file order, deduplicated. If filename doesn't exist, returns empty vector.
+std::vector<std::string> ReadModuleNames(const VFS &vfs, const std::string &filename);
 
 #endif

@@ -48,7 +48,6 @@
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
-#include "read_module_names.hpp"
 #include "rng.hpp"
 #include "script_actions.hpp"
 #include "segment.hpp"
@@ -61,7 +60,6 @@
 #include "include_lua.hpp"
 
 #include <sstream>
-#include <unordered_set>
 
 #ifdef __LP64__
 #include <stdint.h>
@@ -107,13 +105,13 @@ namespace {
 }
 
 KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
-                                     const std::vector<std::string> &module_names_,
+                                     const std::vector<std::string> &mod_vfs_names_,
                                      bool menu_strict)
     : doing_config(true),
       knight_anim(0), default_item(0),
       stuff_bag_graphic(0),
       blood_icon(0),
-      module_names(module_names_)
+      mod_vfs_names(mod_vfs_names_)
 {
     try {
 
@@ -131,75 +129,28 @@ KnightsConfigImpl::KnightsConfigImpl(const VFS &module_vfs,
         // Add the standard controls
         AddStandardControls(lua, this);
 
-        // Create the registry table that stores finished module tables
-        lua_newtable(lua);
-        lua_setfield(lua, LUA_REGISTRYINDEX, "_MODULES");
-
-        // Load each Lua module
-        std::unordered_set<std::string> loaded;
-        for (const std::string & module_name : module_names_) {
-            // Disable all mounts, then mount the module itself.
-            // This must happen before reading depends.txt, so that in VM mode the
-            // host-side VFS state allows access to this module's files.
+        // Load each Lua module in the order specified by mod_vfs_names_
+        {
             VFS vfs = module_vfs;
             vfs.disableAll();
-            vfs.enable(module_name);
 
-            // Read depends.txt
-            ModuleNameList dep_list = ReadModuleNames(vfs, module_name + "/depends.txt");
-            const std::vector<std::string> &deps = dep_list.names;
+            for (const std::string &mod_vfs_name : mod_vfs_names_) {
+                vfs.enable(mod_vfs_name);
+                SetLuaVFS(lua, vfs);
 
-            // Soft deps are only active if already loaded earlier in the load order
-            std::vector<std::string> active_soft_deps;
-            for (const auto &s : dep_list.soft_names) {
-                if (loaded.count(s)) active_soft_deps.push_back(s);
+                lua_pushstring(lua, ("/" + mod_vfs_name + "/").c_str());
+                lua_setglobal(lua, "_MODULE_PREFIX");
+
+                LuaExecRStreamReadOnly(lua,
+                                       mod_vfs_name + "/init.lua",
+                                       0,
+                                       0,
+                                       false,   // look in root only
+                                       false);  // no namespace proposal (called from C)
             }
 
-            // Also enable the dependencies
-            for (const auto &dep : deps) {
-                vfs.enable(dep);
-            }
-            for (const auto &dep : active_soft_deps) {
-                vfs.enable(dep);
-            }
-            SetLuaVFS(lua, vfs);
-
-            // 1. Create module env table M = {} with __index = _G as fallback
-            lua_newtable(lua);                                            // [M]
-            lua_createtable(lua, 0, 1);                                   // [M meta]
-            lua_rawgeti(lua, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);        // [M meta G]
-            lua_setfield(lua, -2, "__index");                             // [M meta]
-            lua_setmetatable(lua, -2);                                    // [M]
-
-            // 2. Inject each dependency's table into M by name
-            lua_getfield(lua, LUA_REGISTRYINDEX, "_MODULES");             // [M _MODULES]
-            for (const auto &dep : deps) {
-                lua_getfield(lua, -1, dep.c_str());                       // [M _MODULES dep_table]
-                lua_setfield(lua, -3, dep.c_str());                       // [M _MODULES]
-            }
-            for (const auto &dep : active_soft_deps) {
-                lua_getfield(lua, -1, dep.c_str());                       // [M _MODULES dep_table]
-                lua_setfield(lua, -3, dep.c_str());                       // [M _MODULES]
-            }
-            lua_pop(lua, 1);                                              // [M]
-
-            // 3. Load and run init.lua with M as _ENV
-            const int env_idx = lua_gettop(lua);
-            LuaExecRStream(lua,
-                           module_name + "/init.lua",
-                           0,
-                           0,
-                           false,    // look in root only (no cwd lookup)
-                           false,    // no namespace proposal (called from C)
-                           env_idx);
-
-            // 4. Store M in registry for later modules to depend on
-            lua_getfield(lua, LUA_REGISTRYINDEX, "_MODULES");             // [M _MODULES]
-            lua_pushvalue(lua, -2);                                       // [M _MODULES M]
-            lua_setfield(lua, -2, module_name.c_str());                   // [M _MODULES]
-            lua_pop(lua, 2);                                              // []
-
-            loaded.insert(module_name);
+            lua_pushnil(lua);
+            lua_setglobal(lua, "_MODULE_PREFIX");
         }
 
         // After initialization, clear the VFS so that Lua

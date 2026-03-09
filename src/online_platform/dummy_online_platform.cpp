@@ -109,7 +109,7 @@ std::unique_ptr<PlatformLobby> DummyOnlinePlatform::createLobby(Visibility vis,
     std::string payload;
     payload += std::to_string(game_info.checksum);
     payload += '\0';
-    for (const auto &name : game_info.module_names) {
+    for (const auto &name : game_info.module_vfs_names) {
         payload += name;
         payload += '\0';
     }
@@ -287,7 +287,7 @@ OnlinePlatform::LobbyInfo DummyOnlinePlatform::getLobbyInfo(const std::string &l
             for (uint32_t i = 0; i < num_modules; ++i) {
                 null_pos = response_data.find('\0', pos);
                 if (null_pos == std::string::npos) break;
-                info.game_module_spec.module_names.push_back(
+                info.game_module_spec.module_vfs_names.push_back(
                     response_data.substr(pos, null_pos - pos));
                 pos = null_pos + 1;
             }

@@ -73,7 +73,7 @@ public:
     // Note: The given VFS should have each module to be loaded as a
     // separate mount point.
     KnightsConfigImpl(const VFS &vfs,
-                      const std::vector<std::string> &module_names,
+                      const std::vector<std::string> &mod_vfs_names,
                       bool menu_strict);
     ~KnightsConfigImpl();
 
@@ -102,7 +102,7 @@ public:
     void resetMenu();
     int getApproachOffset() const;
     void getHouseColours(std::vector<Coercri::Color> &result) const;
-    const std::vector<std::string> & getModuleNames() const { return module_names; }
+    const std::vector<std::string> & getModVFSNames() const { return mod_vfs_names; }
     boost::shared_ptr<const ConfigMap> getConfigMap() const { return config_map; }
     boost::shared_ptr<lua_State> getLuaState() { return lua_state; }
 
@@ -186,8 +186,10 @@ private:
     // Mapping from tile category names to numbers
     std::map<std::string, int> tile_categories;
     
-    // Module names (in dependency order)
-    std::vector<std::string> module_names;
+    // Module VFS names (in the desired load order)
+    // (These are mount point names. Calling code is responsible for mapping these to
+    // actual filesystem directories in the VFS.)
+    std::vector<std::string> mod_vfs_names;
 
     // Config Map.
     boost::shared_ptr<ConfigMap> config_map;

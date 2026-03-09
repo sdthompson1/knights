@@ -58,18 +58,27 @@ namespace {
 }
 
 // Load and execute lua code in rstream named 'filename'
+namespace {
+    int ReadOnlyNewIndex(lua_State *lua)
+    {
+        return luaL_error(lua,
+                          "attempt to write to global '%s' (read-only environment)",
+                          lua_tostring(lua, 2));
+    }
+}
+
 void LuaExecRStream(lua_State *lua, const std::string &filename,
                     int nargs, int nresults,
                     bool look_in_cwd,
                     bool use_dofile_namespace_proposal,
-                    int env_table_idx)
+                    LuaEnvSetup env_setup)
 {
     // Catch exceptions and convert them to lua errors if required.
     try {
 
         std::string old_cwd = GetCWD(lua);
         std::string to_load;
-        
+
         if (look_in_cwd) {
             to_load = LuaResolveFile(lua, filename);
         } else {
@@ -135,9 +144,8 @@ void LuaExecRStream(lua_State *lua, const std::string &filename,
         // else: We have been called from the top level. There is no previous function, so _G is the
         // appropriate thing to use as the environment.
 
-        if (env_table_idx != 0) {
-            lua_pushvalue(lua, env_table_idx);   // push copy of env table
-            lua_setupvalue(lua, -2, 1);          // set _ENV on chunk, pops copy
+        if (env_setup) {
+            env_setup(lua, lua_gettop(lua));
         }
 
         // stack is currently [<stuff> arg1 .. argn func]
@@ -150,7 +158,7 @@ void LuaExecRStream(lua_State *lua, const std::string &filename,
 
         // now restore _CWD and return.
         SetCWD(lua, old_cwd);
-    
+
     } catch (std::exception &e) {
 
         // See if we need to convert this to a Lua error
@@ -164,4 +172,31 @@ void LuaExecRStream(lua_State *lua, const std::string &filename,
             throw;
         }
     }
+}
+
+void LuaExecRStreamReadOnly(lua_State *lua, const std::string &filename,
+                             int nargs, int nresults,
+                             bool look_in_cwd,
+                             bool use_dofile_namespace_proposal)
+{
+    LuaExecRStream(lua, filename, nargs, nresults, look_in_cwd, use_dofile_namespace_proposal,
+                   [](lua_State *L, int chunk_idx) {
+                       // Create proxy table (empty)
+                       lua_newtable(L);                                           // [proxy]
+                       // Create metatable
+                       lua_createtable(L, 0, 3);                                 // [proxy meta]
+                       // __index = _G (use rawgeti to bypass any proxy)
+                       lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);      // [proxy meta G]
+                       lua_setfield(L, -2, "__index");                           // [proxy meta]
+                       // __newindex = error function
+                       lua_pushcfunction(L, ReadOnlyNewIndex);                   // [proxy meta fn]
+                       lua_setfield(L, -2, "__newindex");                        // [proxy meta]
+                       // __metatable = false (prevents setmetatable on the proxy)
+                       lua_pushboolean(L, 0);                                    // [proxy meta false]
+                       lua_setfield(L, -2, "__metatable");                       // [proxy meta]
+                       // setmetatable(proxy, meta)
+                       lua_setmetatable(L, -2);                                  // [proxy]
+                       // Install as _ENV on chunk
+                       lua_setupvalue(L, chunk_idx, 1);                          // []
+                   });
 }

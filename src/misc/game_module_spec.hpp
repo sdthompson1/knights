@@ -29,7 +29,7 @@
 #include <vector>
 
 struct GameModuleSpec {
-    std::vector<std::string> module_names;  // resolved load order
+    std::vector<std::string> module_vfs_names;  // resolved load order
     uint64_t checksum = 0;                  // hash-of-module-checksums
 };
 

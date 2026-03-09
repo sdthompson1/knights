@@ -355,9 +355,9 @@ boost::shared_ptr<KnightsClient>
     // Get the modules we are using and their checksums
     module_manager->update();  // Will block for short time, probably acceptable
     GameModuleSpec spec;
-    spec.module_names = module_manager->resolveModuleList(module_manager->getEnabledModules());
-    spec.checksum = module_manager->computeCombinedChecksum(spec.module_names);
-    VFS vfs = module_manager->getVFS(spec.module_names);
+    spec.module_vfs_names = module_manager->resolveModuleList(module_manager->getEnabledModules());
+    spec.checksum = module_manager->computeCombinedChecksum(spec.module_vfs_names);
+    VFS vfs = module_manager->getVFS(spec.module_vfs_names);
 
     // Create the platform lobby
     platform_lobby = online_platform.createLobby(vis, spec);
@@ -376,7 +376,7 @@ boost::shared_ptr<KnightsClient>
                                            timer,
                                            online_platform.getCurrentUserId(),
                                            new_control_system,
-                                           spec.module_names,
+                                           spec.module_vfs_names,
                                            std::move(vfs),
                                            loader_mutex,
                                            loader_done,
@@ -503,12 +503,12 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
                 }
 
                 // We haven't booted our local VM yet - do so now.
-                VFS vfs = module_manager->getVFS(spec.module_names);
+                VFS vfs = module_manager->getVFS(spec.module_vfs_names);
                 loader_thread = boost::thread(VMLoader(online_platform.getNetworkDriver(),
                                                        timer,
                                                        online_platform.getCurrentUserId(),
                                                        new_control_system,
-                                                       spec.module_names,
+                                                       spec.module_vfs_names,
                                                        vfs,
                                                        loader_mutex,
                                                        loader_done,

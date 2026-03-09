@@ -18,9 +18,11 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
+mod.RegisterMod { name = "tutorial", version = "1.0" }
+
 dofile("messages.lua")
 
-local B = base
+local B = mod.GetRegisteredMod("base")
 
 local table_merge = kts.table_merge
 

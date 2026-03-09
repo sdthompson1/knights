@@ -1579,7 +1579,6 @@ install_knights: $(KNIGHTS_BINARY_NAME)
 	$(INSTALL) -m 644 -D knights_data/client/gfx/menu_empty.bmp $(DATA_DIR)/client/gfx/menu_empty.bmp
 	$(INSTALL) -m 644 -D knights_data/modules/modules.txt $(DATA_DIR)/modules/modules.txt
 	$(INSTALL) -m 644 -D knights_data/modules/tutorial/init.lua $(DATA_DIR)/modules/tutorial/init.lua
-	$(INSTALL) -m 644 -D knights_data/modules/tutorial/depends.txt $(DATA_DIR)/modules/tutorial/depends.txt
 	$(INSTALL) -m 644 -D knights_data/modules/tutorial/tutorial_map.txt $(DATA_DIR)/modules/tutorial/tutorial_map.txt
 	$(INSTALL) -m 644 -D knights_data/modules/tutorial/messages.lua $(DATA_DIR)/modules/tutorial/messages.lua
 	$(INSTALL) -m 644 -D knights_data/modules/base/sounds.lua $(DATA_DIR)/modules/base/sounds.lua
@@ -1947,7 +1946,6 @@ uninstall:
 	rm -f $(DATA_DIR)/client/gfx/menu_empty.bmp
 	rm -f $(DATA_DIR)/modules/modules.txt
 	rm -f $(DATA_DIR)/modules/tutorial/init.lua
-	rm -f $(DATA_DIR)/modules/tutorial/depends.txt
 	rm -f $(DATA_DIR)/modules/tutorial/tutorial_map.txt
 	rm -f $(DATA_DIR)/modules/tutorial/messages.lua
 	rm -f $(DATA_DIR)/modules/base/sounds.lua

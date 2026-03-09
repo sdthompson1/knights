@@ -24,9 +24,14 @@
 #ifndef LUA_LOAD_FROM_RSTREAM_HPP
 #define LUA_LOAD_FROM_RSTREAM_HPP
 
+#include <functional>
 #include <string>
 
 struct lua_State;
+
+// Callback for customizing _ENV on a freshly loaded chunk.
+// chunk_idx is an absolute stack index pointing at the loaded chunk.
+using LuaEnvSetup = std::function<void(lua_State*, int chunk_idx)>;
 
 // Read a chunk from an Rstream, and execute it, with the given no of args,
 //   and the given no of return values (can be LUA_MULTRET).
@@ -46,6 +51,14 @@ void LuaExecRStream(lua_State *lua, const std::string &filename,
                     int nargs, int nresults,
                     bool look_in_cwd,
                     bool use_dofile_namespace_proposal,
-                    int env_table_idx = 0);
+                    LuaEnvSetup env_setup = {});
+
+// Like LuaExecRStream, but installs a read-only proxy as _ENV so that the
+// chunk cannot write bare globals.  Any attempt to write a global produces a
+// Lua error.  Reads fall through to the real global table (_G).
+void LuaExecRStreamReadOnly(lua_State *lua, const std::string &filename,
+                             int nargs, int nresults,
+                             bool look_in_cwd,
+                             bool use_dofile_namespace_proposal);
 
 #endif

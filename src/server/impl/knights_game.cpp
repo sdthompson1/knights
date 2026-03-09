@@ -402,10 +402,14 @@ namespace {
         }
 
         // Module names list (so client can construct VFS and load localization)
+        //  - Current convention is that vfs_name is equal to the directory name found
+        //    under knights_data/modules.
+        //  - When adding Workshop we will set vfs_name to the Workshop item number,
+        //    which clients should also be able to find.
         {
-            const auto &module_names = impl.knights_config->getModuleNames();
-            buf.writeVarInt(module_names.size());
-            for (const auto &name : module_names) {
+            const auto &mod_vfs_names = impl.knights_config->getModVFSNames();
+            buf.writeVarInt(mod_vfs_names.size());
+            for (const auto &name : mod_vfs_names) {
                 buf.writeString(name);
             }
         }

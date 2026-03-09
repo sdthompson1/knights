@@ -27,10 +27,10 @@
 #include "trim.hpp"
 #include "vfs.hpp"
 
-#include <algorithm>
 #include <cctype>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 bool IsValidModuleName(const std::string &name)
@@ -43,53 +43,29 @@ bool IsValidModuleName(const std::string &name)
     return true;
 }
 
-namespace {
-    void sortAndDedup(std::vector<std::string> &v)
-    {
-        std::sort(v.begin(), v.end());
-        v.erase(std::unique(v.begin(), v.end()), v.end());
-    }
-}
-
-ModuleNameList ReadModuleNames(const VFS &vfs, const std::string &filename)
+std::vector<std::string> ReadModuleNames(const VFS &vfs, const std::string &filename)
 {
     if (!vfs.exists(filename)) return {};
 
     std::ifstream f = vfs.open(filename);
 
-    ModuleNameList result;
+    std::vector<std::string> result;
+    std::unordered_set<std::string> seen;
     std::string line;
 
     while (std::getline(f, line)) {
         // Strip comment
         auto hash_pos = line.find('#');
-        if (hash_pos != std::string::npos) {
-            line.erase(hash_pos);
-        }
+        if (hash_pos != std::string::npos) line.erase(hash_pos);
 
         line = Trim(line);
-
         if (line.empty()) continue;
 
-        bool soft = false;
-        if (line[0] == '*') {
-            soft = true;
-            line = Trim(line.substr(1));
-        }
-
-        if (!IsValidModuleName(line)) {
+        if (!IsValidModuleName(line))
             throw std::runtime_error("Invalid module name in '" + filename + "': '" + line + "'");
-        }
 
-        if (soft) {
-            result.soft_names.push_back(line);
-        } else {
-            result.names.push_back(line);
-        }
+        if (seen.insert(line).second) result.push_back(line);
     }
-
-    sortAndDedup(result.names);
-    sortAndDedup(result.soft_names);
 
     return result;
 }

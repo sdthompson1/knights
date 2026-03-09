@@ -18,6 +18,7 @@
 -- along with Knights.  If not, see <http://www.gnu.org/licenses/>.
 --
 
+mod.RegisterMod { name = "base", version = "1.0" }
 use_strict()
 
 dofile("table_merge.lua")

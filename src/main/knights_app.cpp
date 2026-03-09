@@ -44,13 +44,12 @@
 #include "lua_vfs.hpp"
 #include "lua_sandbox.hpp"
 #include "game_module_spec.hpp"
-#include "module_manager.hpp"
-#include "read_module_names.hpp"
 #include "loading_screen.hpp"
 #include "localization.hpp"
+#include "mdns_discovery.hpp"
+#include "module_manager.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
-#include "mdns_discovery.hpp"
 #include "options.hpp"
 #include "potion_renderer.hpp"
 #include "read_localization.hpp"
@@ -1185,6 +1184,7 @@ void KnightsAppImpl::startLocalGame(KnightsApp &ka,
 {
     std::vector<std::string> modules_to_load;
     if (tutorial_mode) {
+        modules_to_load.push_back("base");
         modules_to_load.push_back("tutorial");
     } else {
         modules_to_load = module_manager->getEnabledModules();

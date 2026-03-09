@@ -32,9 +32,9 @@
 //
 
 KnightsConfig::KnightsConfig(const VFS &vfs,
-                             const std::vector<std::string> &module_names,
+                             const std::vector<std::string> &mod_vfs_names,
                              bool menu_strict)
-    : pimpl(new KnightsConfigImpl(vfs, module_names, menu_strict))
+    : pimpl(new KnightsConfigImpl(vfs, mod_vfs_names, menu_strict))
 { }
 
 void KnightsConfig::getAnims(std::vector<const Anim*> &anims) const
@@ -153,7 +153,7 @@ bool KnightsConfig::runGameStartup(std::string &err_msg)
     return pimpl->getMenuWrapper().runGameStartup(err_msg);
 }
 
-const std::vector<std::string> & KnightsConfig::getModuleNames() const
+const std::vector<std::string> & KnightsConfig::getModVFSNames() const
 {
-    return pimpl->getModuleNames();
+    return pimpl->getModVFSNames();
 }
