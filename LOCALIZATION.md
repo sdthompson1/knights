@@ -22,10 +22,12 @@
 
 Aside from the translations themselves, the following localization tasks are still TODO:
 
+  - The tutorial messages have not been made localizable yet. (This would not be too much work, but it would need both C++ and Lua changes.)
+
   - The key names (strings like "Page Down" or "Space") are not localizable yet.
      - We are just using the SDL function `SDL_GetKeyName` which returns localized names in some cases (e.g. for the single-letter keys) but English names in other cases (e.g. "Page Up").
      - This affects the Options screen (where you can view and change the control keys), the in-game message "Press Tab or ` to chat", and some Tutorial messages.
-     - If there was demand for it, we could potentially add a database of common keys and their localized names in each language. But this has not been done so far.
+     - If there was demand for it, we could potentially add a database of common keys and their localized names in each language. But maybe it's not that important.
 
   - The ESC in-game menu uses some shortcut keys such as "Q" to quit or "R" to restart. It might make sense to allow these letters to be changed in different languages.
 
