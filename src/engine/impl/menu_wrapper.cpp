@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "lua_check.hpp"
 #include "lua_exec.hpp"
 #include "lua_func.hpp"
 #include "lua_func_wrapper.hpp"
@@ -60,6 +61,7 @@ namespace {
         // NOTE: choice_info is only non-empty for 'dropdown' fields!
         std::vector<ChoiceInfo> choice_info;
         LuaFunc randomize;
+        LuaFunc help_func;
     };
 }
 
@@ -285,13 +287,43 @@ namespace {
         return result;
     }
 
+    std::vector<std::vector<LocalMsg>> GetItemHelpMsgs(lua_State *lua, const MenuWrapperImpl &impl)
+    {
+        const int n = impl.menu.getNumItems();
+        std::vector<std::vector<LocalMsg>> result(n);
+
+        for (int i = 0; i < n; ++i) {
+            if (impl.item_info[i].help_func.hasValue()) {
+                impl.s_table.push(lua);   // [S]
+                impl.item_info[i].help_func.run(lua, 1, 1);  // [paragraphs]
+
+                if (lua_istable(lua, -1)) {
+                    int para_idx = 1;
+                    while (para_idx < 50) {  // Max 50 paragraphs for help text (should be more than enough)
+                        lua_pushinteger(lua, para_idx);  // [paragraphs idx]
+                        lua_gettable(lua, -2);           // [paragraphs para]
+                        if (lua_isnil(lua, -1)) {
+                            lua_pop(lua, 1);  // [paragraphs]
+                            break;
+                        }
+                        result[i].push_back(PopLocalMsgFromLua(lua));  // [paragraphs]
+                        ++para_idx;
+                    }
+                }
+                lua_pop(lua, 1);  // []
+            }
+        }
+
+        return result;
+    }
+
     // ---------------------------------------------------------------------------
-    
+
     // Helper to call the "constrain", "on_select" or "features" functions.
 
     // Two arguments are popped from the lua stack.
     // No results are pushed.
-    
+
     void CallAllFuncs(lua_State *lua,
                       const MenuWrapperImpl &impl,
                       LuaFunc Funcs::* which_func,
@@ -556,6 +588,7 @@ namespace {
         std::vector<int> choices;
         std::vector<std::vector<int> > constraints;
         std::vector<LocalMsg> quest_description;
+        std::vector<std::vector<LocalMsg>> item_help_msgs;
     };
 
     void SaveOldSettings(lua_State *lua, const MenuWrapperImpl &impl, OldSettings &out)
@@ -563,6 +596,7 @@ namespace {
         ReadAllCurrentChoices(lua, impl, out.choices);
         out.constraints = impl.constraints;
         out.quest_description = GetQuestDescription(lua, impl);
+        out.item_help_msgs = GetItemHelpMsgs(lua, impl);
     }
 
     void Report(lua_State *lua, MenuWrapperImpl &impl,
@@ -584,6 +618,13 @@ namespace {
         std::vector<LocalMsg> new_quest = GetQuestDescription(lua, impl);
         if (new_quest != old.quest_description) {
             listener.questDescriptionChanged(new_quest);
+        }
+
+        std::vector<std::vector<LocalMsg>> new_help = GetItemHelpMsgs(lua, impl);
+        for (int i = 0; i < (int)new_help.size(); ++i) {
+            if (new_help[i] != old.item_help_msgs[i]) {
+                listener.itemHelpChanged(i, new_help[i]);
+            }
         }
     }
 
@@ -693,6 +734,16 @@ namespace {
         impl.item_info.push_back(ItemInfo());
         ReadFuncs(lua, impl.item_info.back());
         impl.item_info.back().randomize.reset(lua, -1, "randomize");
+
+        lua_getfield(lua, -1, "help_func");  // [item help_func]
+        if (lua_isnil(lua, -1)) {
+            // no help text
+        } else if (LuaIsCallable(lua, -1)) {
+            impl.item_info.back().help_func.reset(lua, -2, "help_func");
+        } else {
+            luaL_error(lua, "'help_func' must be a function or nil");
+        }
+        lua_pop(lua, 1);  // [item]
 
         // set default in S table
         impl.s_table.push(lua);  // [item S]
@@ -830,7 +881,7 @@ namespace {
             lua_pop(lua, 1);  // [item S]
 
             // Add to the menu
-            menu.addItem(MenuItem(title, values));            
+            menu.addItem(MenuItem(title, values));
         }
 
         // Some final setup
@@ -999,6 +1050,14 @@ void MenuWrapper::getCurrentSettings(MenuListener &listener) const
         ReportSetting(lua, *pimpl, item, choice, listener);
     }
     listener.questDescriptionChanged(GetQuestDescription(lua, *pimpl));
+    {
+        const std::vector<std::vector<LocalMsg>> help = GetItemHelpMsgs(lua, *pimpl);
+        for (int i = 0; i < (int)help.size(); ++i) {
+            if (!help[i].empty()) {
+                listener.itemHelpChanged(i, help[i]);
+            }
+        }
+    }
 }
 
 void MenuWrapper::changeSetting(int item_num, int new_choice_num, MenuListener &listener)

@@ -123,6 +123,7 @@ public:
     // menu
     virtual void setMenuSelection(int item, int choice, const std::vector<int> &allowed_values) = 0;
     virtual void setQuestDescription(const std::vector<LocalMsg> &quest_descr) = 0;
+    virtual void setItemHelp(int item_num, std::vector<LocalMsg> help_paragraphs) = 0;
 
     // switching between menu and in-game states
     virtual void startGame(int ndisplays, bool deathmatch_mode, const std::vector<PlayerID> &player_ids, bool already_started) = 0;

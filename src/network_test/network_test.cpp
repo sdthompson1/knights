@@ -138,6 +138,7 @@ public:
     {
         Log("Set quest description");
     }
+    void setItemHelp(int item_num, std::vector<LocalMsg> help_paragraphs) override { }
 
     void startGame(int ndisplays, bool deathmatch_mode, const std::vector<PlayerID> &player_ids, bool already_started) override
     {

@@ -57,7 +57,7 @@ namespace {
     };
 }
 
-class MenuScreenImpl : public gcn::ActionListener, public gcn::SelectionListener {
+class MenuScreenImpl : public gcn::ActionListener, public gcn::SelectionListener, public gcn::MouseListener, public gcn::KeyListener {
 public:
     MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
                    bool extended, bool can_invite,
@@ -67,8 +67,11 @@ public:
     ~MenuScreenImpl();
     void action(const gcn::ActionEvent &event);
     void valueChanged(const gcn::SelectionEvent &event);
+    void mouseEntered(gcn::MouseEvent &event) override;
+    void keyPressed(gcn::KeyEvent &event) override;
     void updateGui();
-    
+    void applyHelpVisibility();
+
     boost::shared_ptr<KnightsClient> knights_client;
     KnightsApp &knights_app;
     gcn::Gui &gui;
@@ -82,10 +85,14 @@ public:
     std::unique_ptr<GuiButton> observe_button;
     std::unique_ptr<GuiButton> exit_button;
     std::unique_ptr<GuiButton> random_quest_button;
+    std::unique_ptr<GuiButton> toggle_help_button;
     std::unique_ptr<gcn::Label> label, title, observer_label;
     std::unique_ptr<GuiTextWrap> quest_description_box;
     std::unique_ptr<gcn::ScrollArea> quest_description_scroll_area;
-    
+    std::unique_ptr<gcn::Label> setting_help_title;
+    std::unique_ptr<GuiTextWrap> setting_help_box;
+    std::unique_ptr<gcn::ScrollArea> setting_help_scroll_area;
+
     std::unique_ptr<gcn::Label> house_colour_label, team_label;
     std::unique_ptr<gcn::DropDown> house_colour_dropdown;
     std::unique_ptr<HouseColourListModel> house_colour_list_model;
@@ -102,10 +109,14 @@ public:
     std::unique_ptr<UTF8TextField> chat_field;
 
     std::unique_ptr<HouseColourFont> house_colour_font;
-    
+
     bool extended;
     bool can_invite;
     bool chat_reformatted;
+    bool help_visible;
+    int container_width_no_help;
+    int container_width_with_help;
+    int toggle_button_right_x;  // right edge of toggle button (fixed, does not change on toggle)
 };
 
 MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
@@ -115,71 +126,110 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
                                const UTF8String &saved_chat)
     : knights_client(kc), knights_app(app), gui(gui_), window(win),
       extended(extended), can_invite(can_invite),
-      chat_reformatted(false)
+      chat_reformatted(false), help_visible(false)
 {
     const Localization &loc = app.getLocalization();
 
-    // create container
     container.reset(new gcn::Container);
     container->setOpaque(false);
-    
-    const int pad = 6, vpad_pretitle = 6, vpad_posttitle = 15, vpad_mid = 15, vpad_bot = 4;
-    const int vpad_before_quest_box = 18, vpad_after_quest_box = 10;
+
+    const int pad = 6, vpad_posttitle = 15, vpad_bot = 4;
+    const int vpad_after_quest_box = 10;
     const int vpad_rhs = 5, width_rhs = extended ? 450 : 0;
-    const int gutter = 15;
-    
+    const int gutter = 20;
+    const int help_window_width = 400;
+    const int label_gap = 2;
+    const int vpad_pretitle = vpad_bot;
+
     // Create title (don't add it yet)
     Coercri::UTF8String menu_title = app.getLocalization().get(app.getGameManager().getMenuTitle());
     title.reset(new gcn::Label(menu_title.asUTF8()));
 
-    // Add menu widgets
+    // Add menu widgets (col1)
     const int menu_y = vpad_pretitle + title->getHeight() + vpad_posttitle;
     int menu_width, y_after_menu;
-    app.getGameManager().createMenuWidgets(this, this, pad, menu_y, *container.get(),
+    app.getGameManager().createMenuWidgets(this, this, this, pad, menu_y, *container.get(),
                                            menu_width, y_after_menu);
 
-    // random quest button
+    // Random Quest button
     y_after_menu += 5;
     random_quest_button.reset(new GuiButton(loc.get(LocalKey("random_quest")).asUTF8()));
     random_quest_button->addActionListener(this);
-    container->add(random_quest_button.get(), pad, y_after_menu);
+    const int rqb_y = y_after_menu;  // y of random quest button row
+    container->add(random_quest_button.get(), pad, rqb_y);
     y_after_menu += random_quest_button->getHeight();
 
-    // ensure there is at least enough width to show the Random Quest button.
-    menu_width = std::max(menu_width, random_quest_button->getWidth());
-    
-    // quest description box
+    // Ensure there is at least enough width to show the Random Quest
+    // and Show/Hide Help buttons.
+    {
+        // Measure the random quest button
+        int w = random_quest_button->getWidth();
+
+        // Measure the show and hide help buttons -- since
+        // toggle_help_button isn't created yet, we can instead make
+        // temporary GuiButton objects for the two possible states
+        // (Show and Hide) and find their widths
+        GuiButton b1(loc.get(LocalKey("show_help")).asUTF8());
+        GuiButton b2(loc.get(LocalKey("hide_help")).asUTF8());
+        w += std::max(b1.getWidth(), b2.getWidth());
+
+        // Apply 'w' as a minimum width
+        menu_width = std::max(menu_width, w);
+    }
+
+    // Add title (centered over col1)
+    container->add(title.get(), pad + menu_width/2 - title->getWidth()/2, vpad_pretitle);
+
+    // Toggle help button: right of Random Quest, right-aligned to the quest description box.
+    toggle_help_button.reset(new GuiButton(loc.get(LocalKey("show_help")).asUTF8()));
+    toggle_help_button->addActionListener(this);
+    toggle_button_right_x = pad + menu_width;
+    container->add(toggle_help_button.get(),
+                   toggle_button_right_x - toggle_help_button->getWidth(),
+                   rqb_y);
+
+    // Quest description box (below random quest button)
+    const int y_quest_scroll = y_after_menu + 5;
+    const int font_h = title->getFont()->getHeight();
+    const int quest_desc_h = 7 * font_h + 4;
     quest_description_box.reset(new GuiTextWrap);
     quest_description_box->setForegroundColor(gcn::Color(0,0,0));
     quest_description_box->setWidth(menu_width - DEFAULT_SCROLLBAR_WIDTH - 4);
     quest_description_box->adjustHeight();
-    quest_description_scroll_area = MakeScrollArea(*quest_description_box, menu_width, title->getFont()->getHeight() * 7);
-    y_after_menu += vpad_before_quest_box;
-    container->add(quest_description_scroll_area.get(), pad, y_after_menu);
-    y_after_menu += quest_description_scroll_area->getHeight();
+    quest_description_scroll_area = MakeScrollArea(*quest_description_box, menu_width, quest_desc_h);
+    container->add(quest_description_scroll_area.get(), pad, y_quest_scroll);
+    const int y_after_col1 = y_quest_scroll + quest_desc_h;
 
-    // Add title
-    container->add(title.get(), pad + menu_width/2 - title->getWidth()/2, vpad_pretitle);
+    // Column x positions.
+    // rhs_x is the left edge of second column. This is the help column
+    //   when help is shown, or the players/chat column in extended mode
+    //   when help is hidden. (It's not used at all in non-extended
+    //   mode with help hidden.)
+    // In extended mode, the players/chat column shifts right to col3_x
+    //   when help is shown (the container expands accordingly).
+    const int rhs_x  = pad + menu_width + gutter;
+    const int col3_x  = rhs_x + help_window_width + gutter;
 
-    const int rhs_x = pad + menu_width + (extended ? gutter : 0);
-    int rhs_y = vpad_pretitle;
+    // Lay out the players/chat column.
+    // We place it at rhs_x; applyHelpVisibility() will move it
+    // to the right if necessary.
+    int rhs_y = 0;
 
     if (extended) {
         // create "house colour font"
         const int HOUSE_COL_WIDTH = 40, HOUSE_COL_HEIGHT = 20;
         house_colour_font.reset(new HouseColourFont(*title->getFont(), HOUSE_COL_WIDTH, HOUSE_COL_HEIGHT));
-        
+
         // Add players area
         players_title.reset(new gcn::Label(loc.get(LocalKey("players")).asUTF8()));
-        container->add(players_title.get(), rhs_x, rhs_y);
-        rhs_y += players_title->getHeight() + 4;
         players_listbox.reset(new gcn::ListBox);
         players_listbox->setFont(house_colour_font.get());
         players_listbox->setListModel(&app.getGameManager().getGamePlayersList());
         players_scrollarea = MakeScrollArea(*players_listbox, width_rhs, 6 * players_listbox->getFont()->getHeight());
         AdjustListBoxSize(*players_listbox, *players_scrollarea);
-        container->add(players_scrollarea.get(), rhs_x, rhs_y);
-        rhs_y += players_scrollarea->getHeight() + vpad_rhs*2;
+        container->add(players_title.get(), rhs_x, menu_y - players_title->getHeight() - 2);
+        container->add(players_scrollarea.get(), rhs_x, menu_y);
+        rhs_y = menu_y + players_scrollarea->getHeight() + vpad_rhs*2;
 
         // Add house colour dropdown
         house_colour_label.reset(new gcn::Label(loc.get(LocalKey("change_house_colour")).asUTF8() + " "));
@@ -198,9 +248,9 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         team_label.reset(new gcn::Label(loc.get(LocalKey("knights_of_same_colour")).asUTF8()));
         container->add(team_label.get(), rhs_x, rhs_y);
         rhs_y += team_label->getHeight() + vpad_rhs;
-        
-        // Add chat field (at bottom)
-        int ybelow = y_after_menu;
+
+        // Add chat field (at bottom, aligned with bottom of quest overview box)
+        int ybelow = y_after_col1;
 
         chat_field.reset(new UTF8TextField);
         chat_field->adjustSize();
@@ -227,11 +277,39 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         container->add(chat_scrollarea.get(), rhs_x, rhs_y);
     }
 
-    const int container_width = rhs_x + width_rhs + pad;
+    // Help area (label and scroll area).
+    // Place at rhs_x, but initially hidden.
+    setting_help_title.reset(new gcn::Label(loc.get(LocalKey("help")).asUTF8()));
+    container->add(setting_help_title.get(), rhs_x, menu_y - setting_help_title->getHeight() - 2);
+    setting_help_title->setVisible(false);
+
+    const int help_area_height = std::max(10, y_after_col1 - menu_y);
+    setting_help_box.reset(new GuiTextWrap);
+    setting_help_box->setForegroundColor(gcn::Color(0,0,0));
+    setting_help_box->setText(loc.get(LocalKey("hover_setting_help")));
+    setting_help_box->setWidth(help_window_width - DEFAULT_SCROLLBAR_WIDTH - 4);
+    setting_help_box->adjustHeight();
+    setting_help_scroll_area = MakeScrollArea(*setting_help_box, help_window_width, help_area_height);
+    container->add(setting_help_scroll_area.get(), rhs_x, menu_y);
+    setting_help_scroll_area->setVisible(false);
+
+    // Precompute container widths for the two help states.
+    // Help hidden: Settings | Chat (extended), or Settings alone (non-extended).
+    // Help shown:  Settings | Help | Chat (extended), or Settings | Help (non-extended).
+    if (extended) {
+        container_width_no_help   = rhs_x + pad + width_rhs;
+        container_width_with_help = col3_x + pad + width_rhs;
+    } else {
+        container_width_no_help   = pad + menu_width + pad;
+        container_width_with_help = rhs_x + pad + help_window_width;
+    }
+
+    // buttons_right: right edge of the chat column in the help-hidden state
+    const int buttons_right = extended ? (rhs_x + width_rhs) : (pad + menu_width);
 
     // Add the start and exit buttons
     const int button_yofs = -3;
-    int y = y_after_menu + vpad_after_quest_box;
+    int y = y_after_col1 + vpad_after_quest_box;
     exit_button.reset(new GuiButton(loc.get(LocalKey("exit")).asUTF8()));
     exit_button->addActionListener(this);
 
@@ -243,7 +321,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
         exit_button->setWidth(min_exit_observe_width);
     }
 
-    container->add(exit_button.get(), container_width - pad - exit_button->getWidth(), y + button_yofs);
+    container->add(exit_button.get(), buttons_right - exit_button->getWidth(), y + button_yofs);
     if (extended) {
         const int exit_button_gap = 30;
 
@@ -283,13 +361,14 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
     }
     y += exit_button->getHeight();
     y += vpad_bot;
-    
+
     // resize the container
-    container->setSize(container_width, y);
+    container->setSize(container_width_no_help, y);
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
     gui.setTop(centre.get());
+    gui.addGlobalKeyListener(this);
 
     // make sure everything is up to date
     updateGui();
@@ -305,6 +384,86 @@ MenuScreenImpl::~MenuScreenImpl()
     // get rid of the menu widgets at this point.
     container.reset();
     knights_app.getGameManager().destroyMenuWidgets();
+}
+
+void MenuScreenImpl::keyPressed(gcn::KeyEvent &event)
+{
+    if (event.getKey().getValue() == gcn::Key::F1) {
+        help_visible = !help_visible;
+        applyHelpVisibility();
+        event.consume();
+    }
+}
+
+void MenuScreenImpl::applyHelpVisibility()
+{
+    const Localization &loc = knights_app.getLocalization();
+    setting_help_scroll_area->setVisible(help_visible);
+    setting_help_title->setVisible(help_visible);
+
+    toggle_help_button->setCaption(
+        loc.get(LocalKey(help_visible ? "hide_help" : "show_help")).asUTF8());
+    toggle_help_button->adjustSize();
+
+    // Toggle button stays right-aligned to toggle_button_right_x (fixed position).
+    toggle_help_button->setX(toggle_button_right_x - toggle_help_button->getWidth());
+
+    // Reset help text to the default prompt whenever the panel is opened.
+    if (help_visible) {
+        setting_help_box->setText(loc.get(LocalKey("hover_setting_help")));
+        setting_help_box->adjustHeight();
+    }
+
+    const int new_width = help_visible ? container_width_with_help : container_width_no_help;
+
+    // dx: amount all right-side elements need to shift.
+    const int dx = new_width - container->getWidth();
+
+    // Shift right-anchored buttons so they remain at the right edge of the panel.
+    if (exit_button)    exit_button->setX(exit_button->getX() + dx);
+    if (observe_button) observe_button->setX(observe_button->getX() + dx);
+    if (join_button)    join_button->setX(join_button->getX() + dx);
+#ifdef ONLINE_PLATFORM
+    if (invite_button)  invite_button->setX(invite_button->getX() + dx);
+#endif
+
+    // In extended mode, shift the chat column widgets (they live at rhs_x when
+    // help is hidden, and shift right to col3_x when help is shown).
+    if (extended) {
+        if (players_title)         players_title->setX(players_title->getX() + dx);
+        if (players_scrollarea)    players_scrollarea->setX(players_scrollarea->getX() + dx);
+        if (house_colour_label)    house_colour_label->setX(house_colour_label->getX() + dx);
+        if (house_colour_dropdown) house_colour_dropdown->setX(house_colour_dropdown->getX() + dx);
+        if (team_label)            team_label->setX(team_label->getX() + dx);
+        if (chat_scrollarea)       chat_scrollarea->setX(chat_scrollarea->getX() + dx);
+        if (chat_field_title)      chat_field_title->setX(chat_field_title->getX() + dx);
+        if (chat_field)            chat_field->setX(chat_field->getX() + dx);
+    }
+
+    container->setSize(new_width, container->getHeight());
+    // GuiPanel does not auto-resize when its child changes size; update it manually.
+    // panel border = 2 * DEFAULT_BORDER = 2 * 3 = 6 (see gui_panel.cpp)
+    panel->setSize(new_width + 6, container->getHeight() + 6);
+    // Re-centre: mirror what cg_listener does on a real window resize — set GuiCentre
+    // to the full window size, which fires widgetResized and re-computes the centering.
+    int win_w, win_h;
+    window->getSize(win_w, win_h);
+    centre->setSize(win_w, win_h);
+    window->invalidateAll();
+}
+
+void MenuScreenImpl::mouseEntered(gcn::MouseEvent &event)
+{
+    const auto help_text = knights_app.getGameManager().getMenuItemHelpText(event.getSource());
+    if (help_text.has_value()) {
+        const Localization &loc = knights_app.getLocalization();
+        const UTF8String &text = help_text->empty()
+            ? loc.get(LocalKey("hover_setting_help"))
+            : *help_text;
+        setting_help_box->setText(text);
+        setting_help_box->adjustHeight();
+        window->invalidateAll();
+    }
 }
 
 void MenuScreenImpl::action(const gcn::ActionEvent &event)
@@ -326,6 +485,12 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
 
     if (event.getSource() == random_quest_button.get()) {
         knights_client->randomQuest();
+        return;
+    }
+
+    if (event.getSource() == toggle_help_button.get()) {
+        help_visible = !help_visible;
+        applyHelpVisibility();
         return;
     }
 
@@ -354,7 +519,7 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
         return;
     }
 #endif
-    
+
     if (event.getSource() == observe_button.get()) {
         knights_client->setObsFlag(true);
         return;
@@ -372,7 +537,7 @@ void MenuScreenImpl::action(const gcn::ActionEvent &event)
 void MenuScreenImpl::valueChanged(const gcn::SelectionEvent &event)
 {
     if (knights_app.getGameManager().doingMenuWidgetUpdate()) return;  // prevent infinite loops -- Trac #72.
-    
+
     int item_num;
     int choice_num;
     const bool found = knights_app.getGameManager().getMenuWidgetInfo(event.getSource(), item_num, choice_num);
@@ -386,11 +551,11 @@ void MenuScreenImpl::updateGui()
     GameManager &game_manager = knights_app.getGameManager();
 
     const bool i_am_observer = game_manager.getMyObsFlag();
-    
+
     if (chat_listbox) {
 
         chat_listbox->adjustSize();
-        
+
         if (!chat_reformatted && chat_listbox->getHeight() > chat_scrollarea->getHeight()) {
             chat_listbox->setWidth(chat_listbox->getWidth() - DEFAULT_SCROLLBAR_WIDTH);
             chat_scrollarea->setVerticalScrollPolicy(gcn::ScrollArea::SHOW_ALWAYS);
@@ -421,7 +586,7 @@ void MenuScreenImpl::updateGui()
 
     // work around guichan bug when buttons are made visible/invisible...
     knights_app.repeatLastMouseInput();
-    
+
     gui.logic();
     window->invalidateAll();
 }

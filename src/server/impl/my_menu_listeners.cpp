@@ -65,6 +65,23 @@ void MyMenuListener::questDescriptionChanged(const std::vector<LocalMsg> &paragr
 }
 
 
+void MyMenuListener::itemHelpChanged(int item_num, const std::vector<LocalMsg> &help_paragraphs)
+{
+    if (help_paragraphs.size() > 255) {
+        throw ProtocolError(ProtocolErrorCode::MESSAGE_TOO_LONG);
+    }
+    for (std::vector<Coercri::OutputByteBuf>::iterator bit = bufs.begin(); bit != bufs.end(); ++bit) {
+        Coercri::OutputByteBuf &buf = *bit;
+        buf.writeUbyte(SERVER_SET_ITEM_HELP);
+        buf.writeVarInt(item_num);
+        buf.writeUbyte(help_paragraphs.size());
+        for (const LocalMsg &m : help_paragraphs) {
+            WriteLocalMsg(buf, m);
+        }
+    }
+}
+
+
 // --------- LogMenuListener --------------------------
 
 void LogMenuListener::settingChanged(int item_num, const char *item_key,

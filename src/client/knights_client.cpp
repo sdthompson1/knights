@@ -271,6 +271,20 @@ void KnightsClient::receiveInputData(const std::vector<ubyte> &data)
             }
             break;
 
+        case SERVER_SET_ITEM_HELP:
+            {
+                int item_num = buf.readVarInt();
+                std::vector<LocalMsg> paragraphs;
+                int np = buf.readUbyte();
+                for (int j = 0; j < np; ++j) {
+                    LocalMsg m;
+                    ReadLocalMsg(buf, m, pimpl->allow_untrusted_strings);
+                    paragraphs.push_back(m);
+                }
+                if (client_cb) client_cb->setItemHelp(item_num, std::move(paragraphs));
+            }
+            break;
+
         case SERVER_START_GAME:
             {
                 pimpl->ndisplays = buf.readUbyte();

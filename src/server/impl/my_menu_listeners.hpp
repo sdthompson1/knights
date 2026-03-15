@@ -43,6 +43,7 @@ public:
                                 int choice_num, const char *choice_string,
                                 const std::vector<int> &allowed_choices) override;
     virtual void questDescriptionChanged(const std::vector<LocalMsg> &paragraphs) override;
+    virtual void itemHelpChanged(int item_num, const std::vector<LocalMsg> &help_paragraphs) override;
     
 private:
     std::vector<Coercri::OutputByteBuf> bufs;

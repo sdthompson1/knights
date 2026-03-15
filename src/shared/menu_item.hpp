@@ -48,7 +48,7 @@ public:
     // general properties
     const LocalKey & getTitleKey() const { return title; }
     bool getSpaceAfter() const { return space_after; }
-    
+
     // type (numeric or dropdown)
     // (Note: "numeric" means a field like "Time Limit" where the user enters a number)
     bool isNumeric() const { return numeric; }

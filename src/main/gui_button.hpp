@@ -33,6 +33,9 @@ public:
     explicit GuiButton(const std::string &txt) : gcn::Button(txt) { }
     void draw(gcn::Graphics *graphics);
     void drawFrame(gcn::Graphics *graphics) { }
+
+    // Y offset of the text within the button (matches the draw() implementation).
+    int getTextY() const { return getHeight() / 2 - getFont()->getHeight() / 2; }
 };
 
 #endif

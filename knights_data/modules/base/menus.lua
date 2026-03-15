@@ -15,6 +15,13 @@ function show_zero_as_none(n)
     end
 end
 
+book_help_texts = {
+    "help_book_ashur",
+    "help_book_knowledge",
+    "help_book_gnomes",
+    "help_book_necronomicon"
+}
+
 kts.MENU = {
 
     text_key = "quest_sel",
@@ -42,6 +49,7 @@ kts.MENU = {
         {
             id = "quest",
             text_key = "quest",
+            help_func = function(S) return {"help_quest"} end,
             on_select = predefined_quest_func,   -- defined in preset_quests.lua
             choices = make_quest_choices(),      -- defined in preset_quests.lua
             randomize = function(S)
@@ -55,6 +63,7 @@ kts.MENU = {
         {
             id = "mission",
             text_key = "mission_type",
+            help_func = function(S) return {"help_mission"} end,
             choices = {
                 {
                     id = "escape",
@@ -138,6 +147,13 @@ kts.MENU = {
         {
             id = "book",
             text_key = "type_of_book",
+            help_func = function(S)
+                if S.book == "none" then
+                    return {"help_nobook"}
+                else
+                    return book_help_texts
+                end
+            end,
             choices = {
                 {
                     id = "none",
@@ -176,6 +192,7 @@ kts.MENU = {
         {
             id = "wand",
             text_key = "type_of_wand",
+            help_func = function(S) return {"help_wand"} end,
             choices = {
                 {
                     id = "none",
@@ -218,6 +235,7 @@ kts.MENU = {
         {
             id = "num_wands",
             text_key = "num_of_wands",
+            help_func = function(S) return {"help_num_wands"} end,
             choice_min = 0,
             choice_max = 8,
             show = show_zero_as_none,
@@ -236,6 +254,7 @@ kts.MENU = {
         {
             id = "num_gems",
             text_key = "num_of_gems",
+            help_func = function(S) return {"help_num_gems"} end,
             choice_min = 0,
             choice_max = 6,
             show = show_zero_as_none,
@@ -249,6 +268,7 @@ kts.MENU = {
         {
             id = "gems_needed",
             text_key = "gems_needed",
+            help_func = function(S) return {"help_gems_needed"} end,
             choice_min = 0,
             choice_max = 6,
             show = show_zero_as_none,
@@ -265,6 +285,7 @@ kts.MENU = {
         {
             id = "dungeon",
             text_key = "dungeon_type",
+            help_func = function(S) return {"help_dungeon"} end,
             choices = {
                 { id = "tiny",
                   text_key = "tiny",
@@ -319,6 +340,7 @@ kts.MENU = {
         {
             id = "premapped",
             text_key = "premapped",
+            help_func = function(S) return {"help_premapped"} end,
             choices = {
                 {
                     id = false,
@@ -336,6 +358,7 @@ kts.MENU = {
         {
             id = "entry",
             text_key = "entry_point",
+            help_func = function(S) return {"help_entry"} end,
             choices = {
                 {
                     id = "random",
@@ -372,6 +395,7 @@ kts.MENU = {
         {
             id = "exit",
             text_key = "exit_point",
+            help_func = function(S) return {"help_exit"} end,
             choices = {
                 {
                     id = "none",
@@ -420,6 +444,7 @@ kts.MENU = {
         {
             id = "gear",
             text_key = "starting_gear",
+            help_func = function(S) return {"help_gear"} end,
             choices = {
                 {
                     id = "none",
@@ -454,6 +479,7 @@ kts.MENU = {
         {
             id = "num_keys",
             text_key = "num_of_keys",
+            help_func = function(S) return {"help_num_keys"} end,
             choice_min = 1,
             choice_max = 3,
             features = function(S)
@@ -466,6 +492,7 @@ kts.MENU = {
         {
             id = "pretrapped",
             text_key = "pretrapped_chests",
+            help_func = function(S) return {"help_pretrapped"} end,
             choices = {
                 {
                     id = false,
@@ -482,6 +509,7 @@ kts.MENU = {
         {
             id = "stuff",
             text_key = "amount_of_stuff",
+            help_func = function(S) return {"help_stuff"} end,
             choice_min = 1,
             choice_max = 5,
             features = function(S)
@@ -495,6 +523,7 @@ kts.MENU = {
         {
             id = "stuff_respawn",
             text_key = "stuff_respawning",
+            help_func = function(S) return {"help_stuff_respawn"} end,
             choices = {
                 {
                     id = "none",
@@ -529,6 +558,7 @@ kts.MENU = {
         {
             id = "zombies",
             text_key = "zombie_activity",
+            help_func = function(S) return {"help_zombies"} end,
             choice_min = 0,
             choice_max = 5,
             features = function(S)
@@ -539,6 +569,7 @@ kts.MENU = {
         {
             id = "bats",
             text_key = "vampire_bats",
+            help_func = function(S) return {"help_bats"} end,
             choice_min = 0,
             choice_max = 5,
             features = function(S)
@@ -566,6 +597,7 @@ kts.MENU = {
         {
             id = "time",
             text_key = "time_limit",
+            help_func = function(S) return {"help_time"} end,
             type = "numeric",
             digits = 2,
             suffix_key = "mins",

@@ -117,6 +117,7 @@ enum ServerMessageCode {
     SERVER_START_GAME_OBS = 13,      // followed by ubyte (num_displays), ubyte (deathmatch flag), NDisp strings (player ids, for obs-mode)
                                      //   + ubyte (0 = at start of game, 1 = halfway through.)
     SERVER_GO_INTO_OBS_MODE = 14,    // followed by ubyte (num displays) + NDisp strings (player ids, for obs-mode)
+    SERVER_SET_ITEM_HELP = 15,       // followed by varint (item_num), ubyte (num_paragraphs), LocalMsgs
 
     SERVER_PLAYER_JOINED_THIS_GAME = 20,     // followed by string (player-id), ubyte (obs-flag), ubyte (house-col)
     SERVER_PLAYER_LEFT_THIS_GAME = 21,       // followed by string (player-id), ubyte (obs-flag)

@@ -54,6 +54,7 @@
 #include "guichan.hpp"
 
 #include <algorithm>
+#include <optional>
 #include <ctime>
 #include <set>
 #include <sstream>
@@ -525,6 +526,7 @@ public:
     std::vector<MenuWidgets> menu_widgets_map;  // item_num -> MenuWidgets
     std::vector<MenuChoices> menu_choices;      // item_num -> MenuChoices
     std::vector<LocalMsg> quest_description;
+    std::vector<std::vector<LocalMsg>> item_help_msgs;
     bool gui_invalid;
     bool are_menu_widgets_enabled;
 
@@ -654,6 +656,7 @@ const LocalKey & GameManager::getMenuTitle() const
 
 void GameManager::createMenuWidgets(gcn::ActionListener *listener,
                                     gcn::SelectionListener *listener2,
+                                    gcn::MouseListener *mouse_listener,
                                     int initial_x,
                                     int initial_y,
                                     gcn::Container &container,
@@ -683,14 +686,21 @@ void GameManager::createMenuWidgets(gcn::ActionListener *listener,
         const MenuItem &item(menu->getItem(i));
         MenuWidgets &mw = pimpl->menu_widgets_map[i];
 
+        mw.label->setWidth(max_label_w + pad);
         container.add(mw.label.get(), initial_x, y+1);
+        if (mouse_listener) mw.label->addMouseListener(mouse_listener);
 
         if (mw.dropdown) {
             mw.dropdown->setWidth(max_widget_w);
             container.add(mw.dropdown.get(), initial_x + max_label_w + pad, y);
+            if (mouse_listener) mw.dropdown->addMouseListener(mouse_listener);
         } else {
             container.add(mw.textfield.get(), initial_x + max_label_w + pad, y);
-            container.add(mw.label2.get(), mw.textfield->getX() + mw.textfield->getWidth() + pad, y+1);
+            mw.label2->setWidth(mw.label2->getWidth() + pad);
+            mw.label2->setAlignment(gcn::Graphics::RIGHT);
+            container.add(mw.label2.get(), mw.textfield->getX() + mw.textfield->getWidth(), y+1);
+            if (mouse_listener) mw.textfield->addMouseListener(mouse_listener);
+            if (mouse_listener) mw.label2->addMouseListener(mouse_listener);
         }
 
         y += std::max(mw.label->getHeight(), GetMenuWidgetHeight(mw)) + vspace;
@@ -790,6 +800,28 @@ bool GameManager::getMenuWidgetInfo(gcn::Widget *source, int &out_item, int &out
 bool GameManager::doingMenuWidgetUpdate() const
 {
     return pimpl->doing_menu_widget_update;
+}
+
+std::optional<UTF8String> GameManager::getMenuItemHelpText(gcn::Widget *source) const
+{
+    if (!pimpl->menu) return std::nullopt;
+
+    for (int i = 0; i < (int)pimpl->menu_widgets_map.size(); ++i) {
+        const MenuWidgets &mw = pimpl->menu_widgets_map[i];
+        if (mw.label.get() == source || mw.dropdown.get() == source || mw.textfield.get() == source || mw.label2.get() == source) {
+            if (i < (int)pimpl->item_help_msgs.size()) {
+                const Localization &loc = pimpl->knights_app.getLocalization();
+                UTF8String text;
+                for (const LocalMsg &para : pimpl->item_help_msgs[i]) {
+                    if (!text.empty()) text += UTF8String::fromUTF8("\n\n");
+                    text += loc.get(para);
+                }
+                return text;
+            }
+            return UTF8String();  // widget found, but no help text
+        }
+    }
+    return std::nullopt;  // not a menu widget
 }
 
 namespace {
@@ -1022,8 +1054,9 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     destroyMenuWidgets();
     pimpl->menu = conf->menu.get();
 
-    // Resize the MenuChoices to the proper size
+    // Resize per-item vectors to the proper size
     pimpl->menu_choices.resize(pimpl->menu->getNumItems());
+    pimpl->item_help_msgs.assign(pimpl->menu->getNumItems(), {});
 
     // Check that modules sent by the server are available locally,
     // and throw a localized exception if not
@@ -1417,6 +1450,12 @@ LocalKey GameManager::getQuestMessageCode() const
 void GameManager::setQuestDescription(const std::vector<LocalMsg> &paragraphs)
 {
     pimpl->quest_description = paragraphs;
+    pimpl->gui_invalid = true;
+}
+
+void GameManager::setItemHelp(int item_num, std::vector<LocalMsg> help_paragraphs)
+{
+    pimpl->item_help_msgs.at(item_num) = std::move(help_paragraphs);
     pimpl->gui_invalid = true;
 }
 

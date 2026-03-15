@@ -41,6 +41,7 @@
 #include "boost/shared_ptr.hpp"
 #include <deque>
 #include <functional>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -191,11 +192,13 @@ public:
     const LocalKey & getMenuTitle() const;
     void createMenuWidgets(gcn::ActionListener *listener,
                            gcn::SelectionListener *listener2,
+                           gcn::MouseListener *mouse_listener,
                            int initial_x,
                            int initial_y,
                            gcn::Container &container,
                            int &menu_width,
                            int &y_after_menu);
+    std::optional<UTF8String> getMenuItemHelpText(gcn::Widget *source) const;
     void destroyMenuWidgets();
     void setMenuWidgetsEnabled(bool enabled);
     void getMenuStrings(std::vector<std::pair<UTF8String, UTF8String> > &menu_strings) const;
@@ -257,6 +260,7 @@ public:
     virtual void leaveGame();     // goes to lobby
     virtual void setMenuSelection(int item_num, int choice_num, const std::vector<int> &allowed_vals) override;
     virtual void setQuestDescription(const std::vector<LocalMsg> &quest_descr) override;
+    virtual void setItemHelp(int item_num, std::vector<LocalMsg> help_paragraphs) override;
     virtual void startGame(int ndisplays, bool deathmatch_mode,
                            const std::vector<PlayerID> &player_ids, bool already_started) override;  // goes to InGameScreen
     virtual void gotoMenu() override;     // goes to MenuScreen

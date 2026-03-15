@@ -43,6 +43,7 @@ public:
                                 const std::vector<int> &allowed_choices) = 0;
 
     virtual void questDescriptionChanged(const std::vector<LocalMsg> &new_description) { }
+    virtual void itemHelpChanged(int item_num, const std::vector<LocalMsg> &help_paragraphs) { }
 };
 
 #endif
