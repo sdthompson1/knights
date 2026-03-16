@@ -15,11 +15,48 @@ function show_zero_as_none(n)
     end
 end
 
+mission_help_texts = {
+    "help_mission_escape",
+    "help_mission_retrieve_book",
+    "help_mission_retrieve_wand",
+    "help_mission_destroy_book",
+    "help_mission_duel_to_death",
+    "help_mission_deathmatch"
+}
+
 book_help_texts = {
     "help_book_ashur",
     "help_book_knowledge",
     "help_book_gnomes",
     "help_book_necronomicon"
+}
+
+wand_help_texts = {
+    "help_wand_destruction",
+    "help_wand_undeath",
+    "help_wand_open_ways",
+    "help_wand_securing"
+}
+
+entry_point_help_texts = {
+    "help_entry_random",
+    "help_entry_close",
+    "help_entry_away",
+    "help_entry_different"
+}
+
+exit_point_help_texts = {
+    "help_exit_same",
+    "help_exit_other",
+    "help_exit_random",
+    "help_exit_guarded"
+}
+
+starting_gear_help_texts = {
+    "help_gear_sword",
+    "help_gear_daggers",
+    "help_gear_traps",
+    "help_gear_daggers_traps"
 }
 
 kts.MENU = {
@@ -49,7 +86,7 @@ kts.MENU = {
         {
             id = "quest",
             text_key = "quest",
-            help_func = function(S) return {"help_quest"} end,
+            help_func = function(S) return {"quest", "help_quest"} end,
             on_select = predefined_quest_func,   -- defined in preset_quests.lua
             choices = make_quest_choices(),      -- defined in preset_quests.lua
             randomize = function(S)
@@ -63,7 +100,16 @@ kts.MENU = {
         {
             id = "mission",
             text_key = "mission_type",
-            help_func = function(S) return {"help_mission"} end,
+            help_func = function(S)
+                local result = {
+                    "mission_type",
+                    "help_mission"
+                }
+                for _, msg in ipairs(mission_help_texts) do
+                    table.insert(result, msg)
+                end
+                return result
+            end,
             choices = {
                 {
                     id = "escape",
@@ -149,9 +195,13 @@ kts.MENU = {
             text_key = "type_of_book",
             help_func = function(S)
                 if S.book == "none" then
-                    return {"help_nobook"}
+                    return {"type_of_book", "help_nobook"}
                 else
-                    return book_help_texts
+                    local result = {"type_of_book", "help_book"}
+                    for _, msg in ipairs(book_help_texts) do
+                        table.insert(result, msg)
+                    end
+                    return result
                 end
             end,
             choices = {
@@ -192,7 +242,17 @@ kts.MENU = {
         {
             id = "wand",
             text_key = "type_of_wand",
-            help_func = function(S) return {"help_wand"} end,
+            help_func = function(S)
+                if S.wand == "none" then
+                    return {"type_of_wand", "help_nowand"}
+                else
+                    local result = {"type_of_wand", "help_wand"}
+                    for _, msg in ipairs(wand_help_texts) do
+                        table.insert(result, msg)
+                    end
+                    return result
+                end
+            end,
             choices = {
                 {
                     id = "none",
@@ -235,7 +295,13 @@ kts.MENU = {
         {
             id = "num_wands",
             text_key = "num_of_wands",
-            help_func = function(S) return {"help_num_wands"} end,
+            help_func = function(S)
+                return {
+                    "num_of_wands",
+                    "help_num_wands_1",
+                    "help_num_wands_2"
+                }
+            end,
             choice_min = 0,
             choice_max = 8,
             show = show_zero_as_none,
@@ -254,7 +320,7 @@ kts.MENU = {
         {
             id = "num_gems",
             text_key = "num_of_gems",
-            help_func = function(S) return {"help_num_gems"} end,
+            help_func = function(S) return {"num_of_gems", "help_num_gems"} end,
             choice_min = 0,
             choice_max = 6,
             show = show_zero_as_none,
@@ -268,7 +334,7 @@ kts.MENU = {
         {
             id = "gems_needed",
             text_key = "gems_needed",
-            help_func = function(S) return {"help_gems_needed"} end,
+            help_func = function(S) return {"gems_needed", "help_gems_needed"} end,
             choice_min = 0,
             choice_max = 6,
             show = show_zero_as_none,
@@ -285,7 +351,7 @@ kts.MENU = {
         {
             id = "dungeon",
             text_key = "dungeon_type",
-            help_func = function(S) return {"help_dungeon"} end,
+            help_func = function(S) return {"dungeon_type", "help_dungeon"} end,
             choices = {
                 { id = "tiny",
                   text_key = "tiny",
@@ -340,7 +406,7 @@ kts.MENU = {
         {
             id = "premapped",
             text_key = "premapped",
-            help_func = function(S) return {"help_premapped"} end,
+            help_func = function(S) return {"premapped", "help_premapped"} end,
             choices = {
                 {
                     id = false,
@@ -358,7 +424,18 @@ kts.MENU = {
         {
             id = "entry",
             text_key = "entry_point",
-            help_func = function(S) return {"help_entry"} end,
+            help_func = function(S)
+                local result = {
+                    "entry_point",
+                    "help_entry_1",
+                    "help_entry_2",
+                    "help_entry_3"
+                }
+                for _, msg in ipairs(entry_point_help_texts) do
+                    table.insert(result, msg)
+                end
+                return result
+            end,
             choices = {
                 {
                     id = "random",
@@ -373,7 +450,7 @@ kts.MENU = {
                     features = function(S)
                         set_entry("close")
                     end,
-                    max_players = 4    -- due to a dungeon generator limitation (#14)
+                    max_players = 4    -- due to a dungeon generator limitation (Old Trac #14)
                 },
                 {
                     id = "away",
@@ -381,7 +458,7 @@ kts.MENU = {
                     features = function(S)
                         set_entry("away")
                     end,
-                    max_players = 4    -- due to a dungeon generator limitation (#15)
+                    max_players = 4    -- due to a dungeon generator limitation (Old Trac #15)
                 },
                 {
                     id = "different",
@@ -395,7 +472,17 @@ kts.MENU = {
         {
             id = "exit",
             text_key = "exit_point",
-            help_func = function(S) return {"help_exit"} end,
+            help_func = function(S)
+                if S.exit == "none" then
+                    return {"exit_point", "help_noexit"}
+                else
+                    local result = {"exit_point", "help_exit_1", "help_exit_2"}
+                    for _, msg in ipairs(exit_point_help_texts) do
+                        table.insert(result, msg)
+                    end
+                    return result
+                end
+            end,
             choices = {
                 {
                     id = "none",
@@ -444,7 +531,13 @@ kts.MENU = {
         {
             id = "gear",
             text_key = "starting_gear",
-            help_func = function(S) return {"help_gear"} end,
+            help_func = function(S)
+                local result = {"starting_gear", "help_gear"}
+                for _, msg in ipairs(starting_gear_help_texts) do
+                    table.insert(result, msg)
+                end
+                return result
+            end,
             choices = {
                 {
                     id = "none",
@@ -479,7 +572,13 @@ kts.MENU = {
         {
             id = "num_keys",
             text_key = "num_of_keys",
-            help_func = function(S) return {"help_num_keys"} end,
+            help_func = function(S)
+                return {
+                    "num_of_keys",
+                    "help_num_keys_1",
+                    "help_num_keys_2"
+                }
+            end,
             choice_min = 1,
             choice_max = 3,
             features = function(S)
@@ -492,7 +591,7 @@ kts.MENU = {
         {
             id = "pretrapped",
             text_key = "pretrapped_chests",
-            help_func = function(S) return {"help_pretrapped"} end,
+            help_func = function(S) return {"pretrapped_chests", "help_pretrapped"} end,
             choices = {
                 {
                     id = false,
@@ -509,7 +608,7 @@ kts.MENU = {
         {
             id = "stuff",
             text_key = "amount_of_stuff",
-            help_func = function(S) return {"help_stuff"} end,
+            help_func = function(S) return {"amount_of_stuff", "help_stuff"} end,
             choice_min = 1,
             choice_max = 5,
             features = function(S)
@@ -523,7 +622,7 @@ kts.MENU = {
         {
             id = "stuff_respawn",
             text_key = "stuff_respawning",
-            help_func = function(S) return {"help_stuff_respawn"} end,
+            help_func = function(S) return {"stuff_respawning", "help_stuff_respawn"} end,
             choices = {
                 {
                     id = "none",
@@ -558,7 +657,7 @@ kts.MENU = {
         {
             id = "zombies",
             text_key = "zombie_activity",
-            help_func = function(S) return {"help_zombies"} end,
+            help_func = function(S) return {"zombie_activity", "help_zombies"} end,
             choice_min = 0,
             choice_max = 5,
             features = function(S)
@@ -569,7 +668,7 @@ kts.MENU = {
         {
             id = "bats",
             text_key = "vampire_bats",
-            help_func = function(S) return {"help_bats"} end,
+            help_func = function(S) return {"vampire_bats", "help_bats"} end,
             choice_min = 0,
             choice_max = 5,
             features = function(S)
@@ -597,7 +696,13 @@ kts.MENU = {
         {
             id = "time",
             text_key = "time_limit",
-            help_func = function(S) return {"help_time"} end,
+            help_func = function(S)
+                return {
+                    "time_limit",
+                    "help_time_1",
+                    "help_time_2"
+                }
+            end,
             type = "numeric",
             digits = 2,
             suffix_key = "mins",

@@ -26,7 +26,7 @@ cancel                          Cancel
 online_multiplayer_desc         Play Knights online with your Steam friends or other Steam players.
 lan_games_desc                  Join or host a game with other players on your local network.
 split_screen_desc               Two players share the same screen, each using their own keyboard controls.
-single_player_desc              Knights is most fun as a multiplayer experience, but you are also very welcome to explore the dungeons on your own.
+single_player_desc              Knights is most fun as a multiplayer experience, but you are also welcome to explore the dungeons on your own.
 cancel_desc                     Return to the main menu.
 
 
@@ -139,31 +139,79 @@ show_help                       Show Help
 hide_help                       Hide Help
 hover_setting_help              Hover over a setting to see its description.
 
-# Quest setting help texts (placeholder text for now)
-help_quest                      Choose a predefined quest, or select Custom to configure your own quest settings.
-help_mission                    Set the mission objective for the quest.
-help_book                       Choose which type of book (if any) appears in the dungeon. Choose from:
-help_book_ashur                 · Lost Book of Ashur: A general Book with no specific powers or abilities.
-help_book_knowledge             · Ancient Book of Knowledge: This Book automatically grants a full map of the dungeon to its carrier. Alas, it also broadcasts your location to your opponents, for as long as you are holding it.
-help_book_necronomicon          · Necronomicon: This book of Dark Magic is always sealed in a conjurer's room behind locked iron doors. When taken, its powers are unleashed and all nearby corpses are instantly raised as zombies. Additionally, whenever the book is held, zombie activity will be at its maximum.
-help_book_gnomes                · Tome of Gnomes: This book of gnomish wisdom is always located behind clever traps or mechanical riddles.
-help_nobook                     No book in the current quest. Change Mission Type if you would like a book.
-help_wand                       Choose which type of wand (if any) appears in the dungeon.
-help_num_wands                  Set how many wands are placed in the dungeon.
-help_num_gems                   Set how many gems are placed in the dungeon.
-help_gems_needed                Set how many gems a player must collect to win.
-help_dungeon                    Choose the size and layout of the dungeon.
-help_premapped                  If Yes, the full dungeon map is revealed to all players from the start.
-help_entry                      Choose where knights appear at the start of the game.
-help_exit                       Choose where the dungeon exit is located.
-help_gear                       Choose what equipment knights start with.
-help_num_keys                   Set how many types of keys appear in the dungeon.
-help_pretrapped                 If Yes, chests start out already trapped.
-help_stuff                      Set the density of items and furniture in the dungeon.
-help_stuff_respawn              Choose how quickly items reappear after being collected.
-help_zombies                    Set the level of zombie activity in the dungeon.
-help_bats                       Set the number of vampire bats in the dungeon.
-help_time                       Set a time limit for the quest in minutes. Set to zero for no time limit.
+# Quest setting help texts
+help_quest                      Choose one of the predefined quests, or make your own by editing the options below.
+
+help_mission                    The victory condition for the game. Choose one of the following:
+help_mission_escape             · Escape from the Dungeon: Find the required number of gems and exit the dungeon to win.
+help_mission_retrieve_book      · Retrieve Book and Escape: Find the book and escape with it. You may also be required to retrieve some gems.
+help_mission_retrieve_wand      · Retrieve Wand and Escape: Find the wand and escape with it. You may also need to recover some gems.
+help_mission_destroy_book       · Destroy Book with Wand: Find the book, bring it to the special pentagram at the top of the stairs (a very special place, easily distinguished from a normal pentagram), find the wand, and then strike the book, lying in the pentagram, with the wand (while also carrying the required number of gems, if applicable).
+help_mission_duel_to_death      · Duel to the Death: Find the Wand of Securing, use it to secure all entry points so that your opponents cannot respawn, and then slay all of your opponents to win.
+help_mission_deathmatch         · Deathmatch: Players get 1 point for killing an enemy knight and -1 for a suicide. Being killed by a monster doesn't affect your score. The player with the most points when time runs out is the winner. (Remember to set a time limit, otherwise the game will go on forever!)
+
+help_book                       A book is hidden in this dungeon. The book is heavy, and fighting while carrying it is impossible. The different kinds of books are:
+help_book_ashur                 · Lost Book of Ashur: A general book with no specific powers or abilities.
+help_book_knowledge             · Ancient Book of Knowledge: This book automatically grants a full map of the dungeon to its holder. Alas, your opponents will always be aware of your location while you are carrying it.
+help_book_necronomicon          · Necronomicon: This book of dark magic is always sealed in a conjurer's room behind locked iron doors. When taken, its powers are unleashed and all nearby corpses are instantly raised as zombies. Additionally, whenever the book is held, zombie activity is automatically at its maximum.
+help_book_gnomes                · Tome of Gnomes: This book of gnomish wisdom is always hidden behind clever traps or mechanical riddles.
+help_nobook                     The dungeon does not currently contain a book. To change this, please adjust the "Mission Type" to one that requires a book.
+
+help_wand                       All wands in the dungeon are of the same kind. Wands are carried and used like any other melee weapon. All targets must be physically hit in order for a wand to work. The types of wands are:
+help_wand_destruction           · Wand of Destruction: Destroys any creature or wooden, breakable object.
+help_wand_undeath               · Wand of Undeath: A nasty wand that destroys zombies, and turns an enemy knight into one! Zombies fear this wand and will flee from any knight who carries it.
+help_wand_open_ways             · Wand of Open Ways: Opens its target, whether it be a locked door, a treasure chest, or a creature...
+help_wand_securing              · Wand of Securing: This wand locks an entry point so that only the securing knight, or their teammates, can use it. (If knights from two different teams both secure the same entry point, it becomes blocked and nobody can use it.) If a knight dies while having no usable entry point, they will lose the game, having no way to re-enter the dungeon.
+help_nowand                     The dungeon does not currently contain any wands. To change this, please adjust the "Number of Wands" setting.
+
+help_num_wands_1                Sets the number of wands hidden in the dungeon. Some missions require at least one wand.
+help_num_wands_2                The number of wands, relative to the number of players, affects game balance – fewer wands than players creates competition to find one, while more wands than players makes wands easy to come by, reducing their tactical value.
+
+help_num_gems                   Sets the number of gems in the dungeon. Gems are almost always in chests, but might also be found on tables, or sometimes just lying on the floor.
+
+help_gems_needed                The number of gems that a knight must retrieve, in addition to any other mission requirements, before they can win the game.
+
+help_dungeon                    Sets the size and general layout of the dungeon. If the selected dungeon type is too small for the current mission, it is automatically enlarged.
+
+help_premapped                  If selected, a full map of the dungeon will be available to all knights at the start of the game. Otherwise, rooms must be mapped as they are explored.
+
+help_entry_1                    The place where knights enter the dungeon. A knight's entry point remains the same at all times, unless "Different every time" is selected, or the Wand of Securing is used.
+help_entry_2                    Knights may receive healing at any time by returning to their entry point.
+help_entry_3                    The available settings are:
+help_entry_random               · Total Random: Entry points are placed completely at random.
+help_entry_close                · Close to Other: Players' entry points are located close to each other. (Max 4 players.)
+help_entry_away                 · Away from Other: Players' entry points are located far away from each other. (Max 4 players.)
+help_entry_different            · Different every time: Knights do not have a fixed entry point. Instead, whenever a knight dies, a new entry point is chosen for them at random.
+
+help_exit_1                     Choose where the dungeon exit is located. If a knight arrives at this location before collecting all required items, they will be told what they still need.
+help_exit_2                     The available choices are:
+help_exit_same                  · Same as Entry: Knights must exit the dungeon via their own entry point.
+help_exit_other                 · Other's Entry: Knights must exit the dungeon via the other player's entry point. Only available in games with exactly two players.
+help_exit_random                · Total Random: The exit point is random, and unknown to knights at the start of the game. The only way to find the correct exit point is by trial and error.
+help_exit_guarded               · Guarded: The exit point is in a special location behind locked iron doors and guarded by vampire bats.
+help_noexit                     The current mission does not require knights to exit the dungeon, and therefore, this setting cannot be changed. Please adjust "Mission Type" if you want the dungeon to contain an exit.
+
+help_gear                       Knights always carry a sword, and may also have additional equipment at the start of the game. The available choices are:
+help_gear_sword                 · Sword Only: Knights start only with their trusty sword. The sword is a good melee weapon, and can also be used for parrying (to parry, simply stand still without touching the controller).
+help_gear_daggers               · Daggers: Knights additionally start with a supply of throwing daggers. Daggers cause minimal damage, but can still be dangerous, especially when combined with magical quickness, or used in large numbers.
+help_gear_traps                 · Traps: Knights additionally start with a supply of spring blade and poison needle traps, which they can set on doors or treasure chests.
+help_gear_daggers_traps         · Daggers and Traps: Knights start with both daggers and traps.
+
+help_num_keys_1                 This sets the number of different key types in the dungeon.
+help_num_keys_2                 In addition to keys, the dungeon will always contain at least one set of lock picks, which can be used to open any locked door – if time is no problem.
+
+help_pretrapped                 If this is selected, then some chests will already be trapped with a poison needle or spring blade trap when the game begins.
+
+help_stuff                      Sets the amount of items (potions, scrolls, weapons and traps) available in the dungeon at the start of the game.
+
+help_stuff_respawn              Sets how quickly potions and scrolls respawn after being used. "None" means that potions and scrolls, once used, will be gone for good. "Fast" ensures the dungeon remains well stocked.
+
+help_zombies                    If this is above zero, then foul magic is at work in the dungeon – dead bodies slowly decompose, and eventually rise up as zombies! The higher the number, the faster this effect.
+
+help_bats                       If this is above zero, the dungeon will contain killer vampire bats. Bats can spawn from pit tiles at any time. Be warned, their sonar cannot be fooled by invisibility.
+
+help_time_1                     Set a time limit for the quest in minutes. Set to zero for no time limit.
+help_time_2                     If time runs out, then all players automatically lose (unless the mission type is Deathmatch).
 
 
 # In-game screen
@@ -442,12 +490,12 @@ desc_exit_guarded               the guarded exit
 
 desc_ashur                      The Lost Book of Ashur is somewhere in the dungeon.
 desc_gnomes                     The Tome of Gnomes is hidden behind unknown traps and riddles.
-desc_knowledge                  The Book of Knowledge reveals knowledge of the dungeon, but also gives away your position to your opponents.
+desc_knowledge                  The Book of Knowledge reveals knowledge of the dungeon.
 desc_necronomicon               The Necronomicon is sealed behind locked doors. It has powers to raise the undead.
 
 desc_destruction                The Wand of Destruction terminates targets.
 desc_open_ways                  The Wand of Open Ways may be used to open any item.
-desc_securing                   The Wand of Securing is used to secure entry points, preventing your opponents from respawning there.
+desc_securing                   The Wand of Securing is used to secure entry points.
 desc_undeath                    The Wand of Undeath controls and slays the undead.
 
 desc_duel_to_death              You must secure all entry points to prevent your opponents entering the dungeon, and then destroy all enemy knights.
@@ -488,7 +536,7 @@ desc_quest_of_giants_2          You must retrieve the book and four out of six g
 desc_run_for_freedom_1          You are trapped in the dungeon of vampire bats.
 desc_run_for_freedom_2          You must run to the exit point and get out before your opponents.
 desc_deathmatch_1               Deathmatch
-desc_deathmatch_2               Players get 1 point for killing an enemy knight, and -1 for a suicide. (Being killed by a monster doesn't affect your score.) The player with the highest score when time runs out is the winner.
+desc_deathmatch_2               Players get 1 point for killing an enemy knight, and -1 for a suicide. The player with the highest score when time runs out is the winner.
 
 # In-game "pause mode" (ESC menu)
 game_paused_caps                GAME PAUSED

@@ -137,7 +137,7 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
     const int vpad_after_quest_box = 10;
     const int vpad_rhs = 5, width_rhs = extended ? 450 : 0;
     const int gutter = 20;
-    const int help_window_width = 400;
+    const int help_window_width = 450;
     const int label_gap = 2;
     const int vpad_pretitle = vpad_bot;
 
