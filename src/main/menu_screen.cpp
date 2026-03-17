@@ -71,6 +71,7 @@ public:
     void keyPressed(gcn::KeyEvent &event) override;
     void updateGui();
     void applyHelpVisibility();
+    void applyHelpText(gcn::Widget *widget);
 
     boost::shared_ptr<KnightsClient> knights_client;
     KnightsApp &knights_app;
@@ -109,6 +110,8 @@ public:
     std::unique_ptr<UTF8TextField> chat_field;
 
     std::unique_ptr<HouseColourFont> house_colour_font;
+
+    gcn::Widget *hovered_menu_widget = nullptr;
 
     bool extended;
     bool can_invite;
@@ -286,7 +289,6 @@ MenuScreenImpl::MenuScreenImpl(boost::shared_ptr<KnightsClient> kc,
     const int help_area_height = std::max(10, y_after_col1 - menu_y);
     setting_help_box.reset(new GuiTextWrap);
     setting_help_box->setForegroundColor(gcn::Color(0,0,0));
-    setting_help_box->setText(loc.get(LocalKey("hover_setting_help")));
     setting_help_box->setWidth(help_window_width - DEFAULT_SCROLLBAR_WIDTH - 4);
     setting_help_box->adjustHeight();
     setting_help_scroll_area = MakeScrollArea(*setting_help_box, help_window_width, help_area_height);
@@ -410,6 +412,7 @@ void MenuScreenImpl::applyHelpVisibility()
 
     // Reset help text to the default prompt whenever the panel is opened.
     if (help_visible) {
+        hovered_menu_widget = nullptr;
         setting_help_box->setText(loc.get(LocalKey("hover_setting_help")));
         setting_help_box->adjustHeight();
     }
@@ -452,9 +455,10 @@ void MenuScreenImpl::applyHelpVisibility()
     window->invalidateAll();
 }
 
-void MenuScreenImpl::mouseEntered(gcn::MouseEvent &event)
+void MenuScreenImpl::applyHelpText(gcn::Widget *widget)
 {
-    const auto help_text = knights_app.getGameManager().getMenuItemHelpText(event.getSource());
+    if (!widget) return;
+    const auto help_text = knights_app.getGameManager().getMenuItemHelpText(widget);
     if (help_text.has_value()) {
         const Localization &loc = knights_app.getLocalization();
         const UTF8String &text = help_text->empty()
@@ -462,6 +466,15 @@ void MenuScreenImpl::mouseEntered(gcn::MouseEvent &event)
             : *help_text;
         setting_help_box->setText(text);
         setting_help_box->adjustHeight();
+    }
+}
+
+void MenuScreenImpl::mouseEntered(gcn::MouseEvent &event)
+{
+    gcn::Widget *source = event.getSource();
+    if (knights_app.getGameManager().getMenuItemHelpText(source).has_value()) {
+        hovered_menu_widget = source;
+        applyHelpText(source);
         window->invalidateAll();
     }
 }
@@ -586,6 +599,12 @@ void MenuScreenImpl::updateGui()
 
     // work around guichan bug when buttons are made visible/invisible...
     knights_app.repeatLastMouseInput();
+
+    // If the help panel is open and the mouse is still over a menu widget,
+    // refresh the help text in case the setting change altered what it should say.
+    if (help_visible) {
+        applyHelpText(hovered_menu_widget);
+    }
 
     gui.logic();
     window->invalidateAll();
