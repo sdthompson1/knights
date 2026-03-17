@@ -1162,6 +1162,32 @@ bool MenuWrapper::checkNumPlayersStrict(LocalMsg &err_msg) const
     return true;
 }
 
+namespace {
+    // Randomizes a single item using its randomize func if available,
+    // or a uniform random pick from the currently allowed choices otherwise.
+    // Returns true if the item was set to a new value, false if it was left alone
+    // (e.g. a numeric field with no randomize func, or a dropdown with no allowed choices).
+    bool RandomizeItem(lua_State *lua, MenuWrapperImpl &impl, int item_no)
+    {
+        if (impl.item_info[item_no].randomize.hasValue()) {
+            impl.s_table.push(lua);
+            lua_pushinteger(lua, impl.num_players);
+            lua_pushinteger(lua, impl.num_teams);
+            impl.item_info[item_no].randomize.run(lua, 3, 1);
+            SetItemNumToChoiceNum(lua, impl, item_no, PopChoiceVal(lua, impl, item_no));
+            return true;
+        } else {
+            const std::vector<int> &allowed = impl.constraints[item_no];
+            if (!allowed.empty()) {
+                SetItemNumToChoiceNum(lua, impl, item_no,
+                    allowed[g_rng.getInt(0, allowed.size())]);
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 void MenuWrapper::randomQuest(MenuListener &listener)
 {
     lua_State *lua = GetLuaState(*pimpl);
@@ -1190,39 +1216,24 @@ void MenuWrapper::randomQuest(MenuListener &listener)
         // For each menu item in the random ordering:
         for (std::vector<int>::const_iterator item_no = item_nos.begin(); item_no != item_nos.end(); ++item_no) {
 
-            int new_value;
-            bool new_value_set = false;
+            if (RandomizeItem(lua, *pimpl, *item_no)) {
 
-            // If this item has a randomize function, then call it
-            if (pimpl->item_info[*item_no].randomize.hasValue()) {
-                // []
-                pimpl->s_table.push(lua);
-                lua_pushinteger(lua, pimpl->num_players);
-                lua_pushinteger(lua, pimpl->num_teams);  // [S nplayers nteams]
-                pimpl->item_info[*item_no].randomize.run(lua, 3, 1);  // [result]
-                new_value = PopChoiceVal(lua, *pimpl, *item_no);    // []
-                new_value_set = true;
-                
-            } else {
-                // find out the allowed values
-                std::vector<int> allowed_values = pimpl->constraints[*item_no];
+                // Revalidate settings before continuing. Some items may have been forced
+                // to change by the constraints (e.g. "Type of Book" snapped to the nearest
+                // valid choice when "Mission Type" changed). To avoid bias, re-randomize
+                // those items from their newly-allowed choices.
+                std::vector<int> choices_before;
+                ReadAllCurrentChoices(lua, *pimpl, choices_before);
 
-                // If allowed_values is empty, this is either a
-                // dropdown where all choices are forbidden, or a
-                // numeric field. In either case, we just leave it
-                // alone.
-                if (!allowed_values.empty()) {
-                    // pick one at random
-                    new_value = allowed_values[g_rng.getInt(0, allowed_values.size())];
-                    new_value_set = true;
+                Validate(lua, *pimpl);
+
+                for (int i = 0; i < pimpl->menu.getNumItems(); ++i) {
+                    if (ItemNumToChoiceNum(lua, *pimpl, i) != choices_before[i]) {
+                        RandomizeItem(lua, *pimpl, i);
+                    }
                 }
-            }
 
-            if (new_value_set) {
-                // set it to that value
-                SetItemNumToChoiceNum(lua, *pimpl, *item_no, new_value);
-
-                // Revalidate settings before continuing
+                // Re-validate to ensure consistency after re-randomization above.
                 Validate(lua, *pimpl);
             }
         }
