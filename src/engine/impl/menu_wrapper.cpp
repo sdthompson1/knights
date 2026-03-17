@@ -31,6 +31,7 @@
 #include "menu.hpp"
 #include "menu_listener.hpp"
 #include "menu_wrapper.hpp"
+#include "pop_local_msg_from_lua.hpp"
 #include "rng.hpp"
 
 #include "include_lua.hpp"

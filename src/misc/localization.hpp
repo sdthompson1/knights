@@ -38,8 +38,6 @@ namespace Coercri {
     class UTF8String;
 }
 
-struct lua_State;
-
 
 // A localization string key
 class LocalKey {
@@ -114,15 +112,6 @@ struct LocalMsg {
         return !(*this == other);
     }
 };
-
-// Pop a LocalMsg from the top of the Lua stack.
-// If top of stack is a string, it represents a plain LocalKey.
-// If it is a table, it has fields "key", "params" and "plural".
-//  - Params are either strings (which represent LocalKeys) or integers.
-//  - Plural is optional - if nil it defaults to -1.
-// Any error with the format throws a lua error.
-LocalMsg PopLocalMsgFromLua(lua_State *state);
-
 
 // Localization string lookup class
 class Localization {

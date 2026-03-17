@@ -36,6 +36,7 @@
 #include "monster.hpp"
 #include "monster_manager.hpp"  // for Necromancy, *ZombieActivity
 #include "player.hpp"
+#include "pop_local_msg_from_lua.hpp"
 #include "room_map.hpp"
 #include "script_actions.hpp"
 #include "status_display.hpp"

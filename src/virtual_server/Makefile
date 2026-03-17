@@ -124,6 +124,7 @@ CXXFILES = \
 	engine/impl/overlay_lua_ctor.cpp \
 	engine/impl/player.cpp \
 	engine/impl/player_task.cpp \
+	engine/impl/pop_local_msg_from_lua.cpp \
 	engine/impl/quest_hint_manager.cpp \
 	engine/impl/random_int.cpp \
 	engine/impl/room_map.cpp \

@@ -168,6 +168,9 @@
     <ClCompile Include="..\..\src\engine\impl\player.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\engine\impl\pop_local_msg_from_lua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\engine\impl\player_task.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -381,6 +384,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\engine\impl\player.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\impl\pop_local_msg_from_lua.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\engine\impl\player_task.hpp">

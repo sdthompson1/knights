@@ -48,6 +48,7 @@
 #include "monster_type.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
+#include "pop_local_msg_from_lua.hpp"
 #include "rng.hpp"
 #include "teleport.hpp"
 #include "tutorial_window.hpp"

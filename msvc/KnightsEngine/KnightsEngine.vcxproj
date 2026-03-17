@@ -140,6 +140,7 @@
     <ClCompile Include="..\..\src\engine\impl\monster_type.cpp" />
     <ClCompile Include="..\..\src\engine\impl\overlay_lua_ctor.cpp" />
     <ClCompile Include="..\..\src\engine\impl\player.cpp" />
+    <ClCompile Include="..\..\src\engine\impl\pop_local_msg_from_lua.cpp" />
     <ClCompile Include="..\..\src\engine\impl\player_task.cpp" />
     <ClCompile Include="..\..\src\engine\impl\quest_hint_manager.cpp" />
     <ClCompile Include="..\..\src\engine\impl\random_int.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="..\..\src\engine\impl\monster_type.hpp" />
     <ClInclude Include="..\..\src\engine\impl\originator.hpp" />
     <ClInclude Include="..\..\src\engine\impl\player.hpp" />
+    <ClInclude Include="..\..\src\engine\impl\pop_local_msg_from_lua.hpp" />
     <ClInclude Include="..\..\src\engine\impl\player_task.hpp" />
     <ClInclude Include="..\..\src\engine\impl\quest_hint_manager.hpp" />
     <ClInclude Include="..\..\src\engine\impl\random_int.hpp" />

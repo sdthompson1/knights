@@ -35,6 +35,7 @@
 #include "monster_manager.hpp"
 #include "my_exceptions.hpp"
 #include "player.hpp"
+#include "pop_local_msg_from_lua.hpp"
 #include "potion_magic.hpp"
 #include "task_manager.hpp"
 #include "teleport.hpp"
