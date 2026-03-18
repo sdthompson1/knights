@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -21,7 +20,7 @@
 <h2>Name</h2>
 <p>kts.table_merge &ndash; merge two Lua tables </p>
 <h2>Synopsis</h2>
-<p><code>require("classic")</code> </p>
+<p><code>require("base")</code> </p>
 <p><code>result = kts.table_merge(table1, table2)</code> </p>
 <h2>Description</h2>
 <p>This creates a new table which contains all keys from both <code>table1</code> and <code>table2</code>, together with the corresponding values. </p>
@@ -31,8 +30,8 @@
 <h2>Errors</h2>
 <p>If the inputs are not valid tables (or table-like objects) then errors will result. </p>
 <h2>Bugs</h2>
-<p>Unlike all other <code>kts</code> functions, <code>kts.table_merge</code> is not actually a built-in part of the <code>kts</code> table. Instead, this function is added to the <code>kts</code> table the first time the <code>classic</code> module is loaded. In other words, at least one module has to import <code>classic</code> before <code>kts.table_merge</code> becomes available. </p>
-<p>This could be seen as a bug, because it is inconsistent with how the other <code>kts</code> functions work. However, it is not normally an issue, because almost all Knights modules will (directly or indirectly) import <code>classic</code> before doing anything else, and therefore, in practice, <code>kts.table_merge</code> will always be available. (The only time this would become an issue is if someone wanted to completely replace the <code>classic</code> module with a new implementation, for some reason.) </p>
+<p>Unlike all other <code>kts</code> functions, <code>kts.table_merge</code> is not actually a built-in part of the <code>kts</code> table; instead, it is added to the <code>kts</code> table when the <code>base</code> module is loaded. </p>
+<p>This could be seen as a bug &ndash; it would have been better if the function was just part of the base module in the normal way (i.e. <code>base.table_merge</code> not <code>kts.table_merge</code>) &ndash; but in practice, this isn't too serious, because most modules end up importing <code>base</code> anyway. </p>
 <h2>Examples</h2>
 <p>Consider the following code: </p>
 <pre>table1 = {a=1, b=2, c=3}

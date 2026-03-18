@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -24,7 +23,8 @@
 <p><code>kts.Regeneration(duration, message, speed)</code> </p>
 <p>Here, <code>duration</code> is an integer; <code>message</code> is a string; and <code>speed</code> is either the string <code>"fast"</code> or the string <code>"slow"</code>. </p>
 <h2>Description</h2>
-<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then that knight gains the Regeneration magical effect, in either its "fast" or "slow" form (according to the <code>speed</code> parameter). The effect lasts for the next <code>duration</code> milliseconds. The string <code>message</code> will also flash on screen above the knight a number of times. </p>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then that knight gains the Regeneration magical effect, in either its "fast" or "slow" form (according to the <code>speed</code> parameter). The effect lasts for the next <code>duration</code> milliseconds. </p>
+<p>The given <code>message</code> will also flash on screen above the knight a number of times. Note that this must be a localized message: either a string key, or a table with parameters, as described in <a href="localization.html">Localization</a>. </p>
 <p>If the knight already has a different incompatible magic effect (such as Strength or Quickness) then the other effect is cancelled in favour of Regeneration. </p>
 <p>If the knight already has Regeneration, then the existing Regeneration effect is cancelled and replaced with the new one (with the duration timer being restarted from the present moment). </p>
 <p>If the current actor is not a knight then nothing happens. </p>
@@ -39,7 +39,7 @@
 if kts.RandomChance(0.5) then speed = "slow" end
 kts.Regeneration(kts.RandomRange(1, 60) * 1000, "Regeneration", speed)
 </pre>
-<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/magic.lua">magic.lua</a>. </p>
+<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/magic.lua">magic.lua</a>. </p>
 <h2>See Also</h2>
 <p><a href="cxt.html">The cxt table</a> </p>
 <p><a href="Invisibility.html">kts.Invisibility</a> </p>

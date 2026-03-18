@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>mod.GetRegisteredMod</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>mod.GetRegisteredMod</h1>
+<h2>Name</h2>
+<p>mod.GetRegisteredMod &ndash; get the Lua table provided by another mod </p>
+<h2>Synopsis</h2>
+<p><code>M = mod.GetRegisteredMod(mod_name)</code> </p>
+<p><code>M = mod.GetRegisteredMod(mod_name, min_version)</code> </p>
+<h2>Description</h2>
+<p>This returns the namespace table of the given mod, or <code>nil</code> if either: </p>
+<ul>
+<li>no mod with that name exists; or </li>
+<li><code>min_version</code> is given and the mod's version is less than <code>min_version</code>. </li>
+</ul>
+<p>Version strings are compared in the expected way, e.g. <code>"1.9"</code> is considered less than <code>"1.10"</code>, and <code>"2.2"</code> is less than <code>"2.2.1"</code>. </p>
+<p>A mod that registered without a version is considered to have no version, and will fail any <code>min_version</code> check. </p>
+<h2>Errors</h2>
+<p>Errors are raised if argument 1 is not a string, or if <code>min_version</code> is provided but is not a valid version string. (Valid version strings consist of numeric digits separated by dots.) </p>
+<h2>Notes</h2>
+<p><code>min_version</code> is useful for basic version checking, but if you want something more specific (e.g. accepting only a particular version, or a particular range of versions) then you can call <a href="GetModVersion.html">mod.GetModVersion</a> and inspect the returned version string directly. </p>
+<p><a href="require.html">require</a> can be used if you want to throw an error when the other mod is not present. </p>
+<h2>See Also</h2>
+<p><a href="GetAllMods.html">mod.GetAllMods</a> </p>
+<p><a href="GetModVersion.html">mod.GetModVersion</a> </p>
+<p><a href="IsModRegistered.html">mod.IsModRegistered</a> </p>
+<p><a href="RegisterMod.html">mod.RegisterMod</a> </p>
+<p><a href="require.html">require</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

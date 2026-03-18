@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Compatible and incompatible games</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>Compatible and incompatible games</h1>
+<h2>Compatible games definition</h2>
+<h3>Online games</h3>
+<p>The "Online Games" page in the Knights client only allows you to join "compatible" games. A game is considered compatible if all of the following are true: </p>
+<ul>
+<li>All of the mods used by the host are installed on your local machine (in more detail: for each module folder <code>name</code> listed in <code>modules.txt</code> on the host machine, the same folder <code>knights_data/modules/name</code> must exist on the local machine). </li>
+<li>The content of each of those module folders is identical. </li>
+<li>The Knights version (as identified by its Steam build number) is identical. </li>
+</ul>
+<p>Incompatible games cannot be joined. You can still see the game (if you select the "Show incompatible games" checkbox), but attempting to join will show an error message. The main reason for this is that mod data (such as graphics, sounds, and localized text strings) are not transferred across the network, so all players must have the content available locally, otherwise the game will not work. A second reason is that players might want to have some confidence that the host really is running the same version of the mod that they have locally, and has not, e.g., made some local changes that allow them to cheat. </p>
+<h3>LAN games</h3>
+<p>LAN games use a slightly different system &ndash; the LAN games dialog doesn't have the "Show incompatible games" checkbox and it doesn't highlight incompatible games in any way. In fact, it will let you attempt to join an incompatible game &ndash; but, if you do this, it is at your own risk, and the game might crash in some way (e.g. you might get a "file not found" error). The reason for this more relaxed approach is that LAN players are all (presumably) in the same room, so they can co-ordinate with each other and solve compatibility problems more easily than in the online case. </p>
+<h2>Future changes</h2>
+<p>It is likely that we will integrate Steam Workshop into the game in the near future. This means that the process for detecting incompatible games will be modified slightly. </p>
+<p>Basically, the "Online Games" screen will <i>not</i> flag a game as incompatible if the only reason that it's incompatible is that you are missing some module locally, but that module is available from the Steam Workshop. In that case, the game client will instead ask you if you want to download the module from the Workshop. If you agree, you will be allowed to join the game. </p>
+<p>The other compatibility checks will still apply &ndash; so for example, if after downloading the module from Workshop, it is found that the local data doesn't match the host (perhaps because the host has a different version of the mod, or they have edited their files locally), then the game will still be declared to be incompatible and you won't be allowed to join. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

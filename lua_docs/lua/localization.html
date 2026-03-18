@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Localization</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>Localization</h1>
+<p>Knights currently has a work-in-progress localization system. This means that, eventually, it will become possible to translate the game into different languages. </p>
+<p>The system works by defining a set of localization "keys" which correspond to individual messages. For example, the key <code>healing</code> corresponds to the message "Healing" (in English). When the user drinks a healing potion, the Lua code calls <code>kts.FlashMessage("healing")</code>; the game then looks up <code>healing</code> in the file <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/client/localization_english.txt">knights_data/client/localization_english.txt</a>, finds the corresponding message "Healing", and displays that message on-screen. </p>
+<p>In theory, to support other languages, all we would need to do is substitute a different localization file. For example, in <code>localization_german.txt</code>, "healing" might map to "Heilung". </p>
+<p>In practice, some areas of the game (e.g. the tutorial) haven't been added to the localization system yet, so they can't currently be translated; hopefully this can be resolved at some point. </p>
+<h2>Localization system features</h2>
+<p>One feature of the system is that localization messages can include parameters (numbered from zero). For example, the message for <code>desc_escape_gems</code> is "Your mission is to escape via {0} with {1} out of {2} gems.". Here, <code>{0}</code>, <code>{1}</code> and <code>{2}</code> are parameters. Parameters will be substituted at runtime with various things like other localized strings, player names, or raw numbers. For example, in this case, <code>{0}</code> might map to the message "your entry point" (coming from the localization key <code>desc_exit_same</code>), and <code>{1}</code> and <code>{2}</code> might map to the numbers 3 and 4 respectively, to make the message "Your mission is to escape via your entry point with 3 out of 4 gems.". </p>
+<p>Another feature of the system is that messages can have separate variants for singular and plural forms. In English these two forms are called <code>one</code> and <code>other</code>, respectively (different rules might be defined for different languages, and some languages may have more than two forms). For example, the localization strings file defines both <code>retrieve_gem[one]</code>, which maps to "Retrieve {0} gem", and <code>retrieve_gem[other]</code>, which maps to "Retrieve {0} gems". </p>
+<p>Finally, some messages support lists of parameters using a special <code>...</code> syntax. Since this is a fairly rare special case, it is not described fully here, but see the message <code>is_winner</code> in <code>localization_english.txt</code> for an example. </p>
+<h2>Specifying localization messages in Lua</h2>
+<p>In Lua, there are many functions which take a localized message as a parameter: e.g. <a href="FlashMessage.html">kts.FlashMessage</a> and <a href="PrintLoc.html">kts.PrintLoc</a>. </p>
+<p>For the localized message itself, the Lua code may pass either of the following: </p>
+<ul>
+<li>A string, which will be interpreted as a localization key. </li>
+<li>A table, containing the following named fields: <ul>
+<li><code>key</code> (required), which gives the localization key. </li>
+<li><code>params</code> (optional), which is a Lua array containing the message parameters. The element <code>params[i]</code> in Lua corresponds to parameter <code>{i-1}</code> in the message (e.g., <code>params[1]</code> in Lua corresponds to <code>{0}</code> in the actual localized string). On the Lua side, each element <code>params[i]</code> can be one of the following things: <ul>
+<li>A string &ndash; corresponding to another localization key. </li>
+<li>An integer &ndash; which will be printed directly in the message. </li>
+<li>A player &ndash; which will print the player's name in the message. Here, "player" means either a Player object, as returned from <a href="GetPlayer.html">kts.GetPlayer</a> for example, or a Creature representing a knight, e.g. <code>cxt.actor</code>. In the latter case, make sure the Creature really is a knight (e.g. use <a href="IsKnight.html">kts.IsKnight</a>) or else you will get an error message. </li>
+</ul>
+<li><code>plural</code> (optional), which allows different message forms to be used for singular and plural. If this is present it must be set to a non-negative integer. In English, if <code>plural</code> is 1, then the suffix <code>[one]</code> will be appended to the key, otherwise, <code>[other]</code> will be appended. (Other rules may be applied for other languages.) </li>
+</ul>
+</ul>
+<p>Examples: </p>
+<ul>
+<li><code>kts.PrintLoc("dispel_magic")</code> would print "Dispel Magic". </li>
+<li><code>kts.PrintLoc({key="desc_escape", params={"desc_exit_guarded"}})</code> would print "Your mission is to escape via the guarded exit." </li>
+<li><code>kts.PrintLoc({key="desc_retrieve_gems", params={"desc_book", "desc_exit_same", 4, 6}})</code> would print "You must retrieve the book and escape via your entry point with 4 out of 6 gems." </li>
+<li><code>kts.PrintLoc({key="gem_required", params={4}, plural=4})</code> would print "4 Gems Required". This is because <code>plural</code> is 4, so <code>[other]</code> is appended to the key (i.e., the key looked up in <code>localization_english.txt</code> is not <code>gem_required</code>, but <code>gem_required[other]</code>). </li>
+<li><code>kts.PrintLoc({key="gem_required", params={4}})</code> (without a <code>plural</code> value) would print "Missing string [gem_required]" (i.e. this would be an error). This is because no <code>plural</code> parameter has been supplied, so the game tries to look up <code>gem_required</code> directly, instead of either <code>gem_required[one]</code> or <code>gem_required[other]</code>. But <code>gem_required</code> is not defined in <code>localization_english.txt</code>, hence the "missing string" error. </li>
+</ul>
+<h2>Providing new localized strings in mods</h2>
+<p>Individual Lua mods can also include <code>localization_LANGUAGE.txt</code> files in their root directory. The game will pick these up automatically. </p>
+<p>Note that if a mod defines a localization key that already exists (in the base game, or from an earlier mod), then the text for that key will be <i>overwritten</i>. This can sometimes be useful &ndash; it allows mods to update text from the base game (or other mods) if they want &ndash; but it also carries the risk of accidental name clashes. To mitigate this, it's recommended that mods should use their mod name as a prefix when creating new localization keys. For example, if your mod is called <code>skeletons</code>, then name your localization key <code>skeletons.book_of_bones</code>, rather than just <code>book_of_bones</code>. </p>
+<h2>See also</h2>
+<p><a href="https://github.com/sdthompson1/knights/blob/main/knights_data/client/localization_english.txt">knights_data/client/localization_english.txt</a>, where the localization keys (and corresponding English-language messages) are defined. </p>
+<p><a href="https://github.com/sdthompson1/knights/blob/main/LOCALIZATION.md">LOCALIZATION.md</a> also has some notes on localization, including how to do a translation to a new language, and some areas for future work. </p>
+<div class="footer3"></div>
+</div></body>
+</html>

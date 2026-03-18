@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -22,7 +21,7 @@
 <p>use_strict &ndash; enable strict checking of global variable usage </p>
 <h2>Synopsis</h2>
 <pre>-- Place this at the top of init.lua
--- (after "module(...)", if you are using that)
+-- (directly after mod.RegisterMod)
 use_strict()
 </pre>
 <h2>Description</h2>
@@ -31,13 +30,13 @@ use_strict()
 <h2>Return Value</h2>
 <p>None. </p>
 <h2>Errors</h2>
-<p><code>use_strict()</code> itself shouldn't throw errors. However, if global variables are used incorrectly (after <code>use_strict()</code> mode is enabled) then errors will be raised, as described above. </p>
+<p><code>use_strict()</code> itself doesn't throw any errors. After <code>use_strict()</code> returns, errors may be raised by global variable accesses, as described above. </p>
 <h2>Notes</h2>
-<p>If you do actually want to use a global variable with a default value of <code>nil</code>, then you will need to explicitly assign to that variable first, before using it. This can be achieved easily enough, by writing something like <code>my_variable = nil</code> near the top of your code. Then, uses of <code>my_variable</code> will not be classed as errors, because <code>my_variable</code> has previously been assigned to (even though the assigned value was only <code>nil</code>). The <code>classic</code> module uses this technique with a variable called <code>Dsetup</code>: see <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/dungeon_setup.lua#L37">dungeon_setup.lua</a>. </p>
+<p>If you do actually want to use a global variable with a default value of <code>nil</code>, then you will need to explicitly assign to that variable first, before using it. This can be achieved easily enough, by writing something like <code>my_variable = nil</code> near the top of your code. Then, uses of <code>my_variable</code> will not be classed as errors, because <code>my_variable</code> has previously been assigned to (even though the assigned value was only <code>nil</code>). The <code>base</code> module uses this technique with a variable called <code>Dsetup</code>: see <a href="https://github.com/sdthompson1/knights/blob/b53be383b2c1af7591a2d5e4768fbfd444ce0ce3/knights_data/modules/base/dungeon_setup.lua#L34">dungeon_setup.lua</a>. </p>
 <h2>Examples</h2>
-<p>The <code>classic</code> module uses <code>use_strict()</code> in its <a href="https://github.com/sdthompson1/knights/blob/c381d30e932ad3b0bdba28248ec7e5347547df68/knights_data/server/classic/init.lua#L22">init.lua</a>. </p>
+<p>The <code>base</code> module uses <code>use_strict()</code> in its <a href="https://github.com/sdthompson1/knights/blob/b53be383b2c1af7591a2d5e4768fbfd444ce0ce3/knights_data/modules/base/init.lua#L22">init.lua</a>. </p>
 <h2>See Also</h2>
-<p><a href="module.html">module</a> </p>
+<p><a href="RegisterMod.html">mod.RegisterMod</a> </p>
 <div class="footer3"></div>
 </div></body>
 </html>

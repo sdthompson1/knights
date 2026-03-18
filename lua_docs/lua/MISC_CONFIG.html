@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -26,7 +25,7 @@
 }
 </pre>
 <h2>Description</h2>
-<p>The table <code>kts.MISC_CONFIG</code>, defined in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/misc_config.lua">misc_config.lua</a>, contains configuration variables that affect the game in various ways. </p>
+<p>The table <code>kts.MISC_CONFIG</code>, defined in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/misc_config.lua">misc_config.lua</a>, contains configuration variables that affect the game in various ways. </p>
 <p>Most mods will probably not need to change any of these settings, but they are documented here for completeness. </p>
 <p>The following fields are available: </p>
 <ul>
@@ -69,7 +68,7 @@
 <li><code>flying_monster_targetting_offset</code> sets how far away you have to be from a vampire bat before it can bite you. This is on a scale from 0 to 1000, where e.g. 500 represents a distance of exactly half a square. </li>
 <li><code>flying_monster_bite_wait</code> sets the waiting time (in milliseconds) after a vampire bat attacks, before it is able to attack again. </li>
 <li><code>walking_monster_damage_delay</code> controls the timing for animations when a zombie is damaged without also being "stunned". This is a rare occurrence so this setting probably does nothing useful. </li>
-<li><code>control_poll_interval</code> sets the interval (in milliseconds) at which the Knights server will read control inputs from the player(s). Lower values would give lower input latency, at the expense of greater CPU usage. </li>
+<li><code>control_poll_interval</code> sets the interval (in milliseconds) at which the game will read control inputs from the player(s). Lower values would give lower input latency, at the expense of greater CPU usage. </li>
 <li><code>player_task_interval</code> sets the interval (in milliseconds) at which the player's mini-map is updated. </li>
 <li><code>missile_check_interval</code> is the interval (in milliseconds) at which missile collision detection is done. (This needs to be set relatively low, so that collisions are not missed.) </li>
 <li><code>blood_icon_duration</code> sets the amount of time (in milliseconds) for which blood effects are shown, when a knight is hit. </li>
@@ -78,8 +77,8 @@
 <li><code>dagger_time_delay</code> sets the amount of time (in milliseconds) between pressing the "throw dagger" button, in the new control system, and daggers actually being thrown. The reasoning behind this is that the old (Amiga-style) control system required you to open a menu (which took about half a second) before you could start throwing daggers, and it would be unfair if users of the new control system could throw daggers without a similar delay being imposed. </li>
 </ul>
 <h2>Notes</h2>
-<p>The <code>MISC_CONFIG</code> is only loaded once, when the server starts up. Therefore, changes to <code>MISC_CONFIG</code> mid-game, or pre-game (i.e. while players are choosing the next quest), will <i>not</i> affect the game at all. </p>
-<p>This page is about the server-side <code>MISC_CONFIG</code> table. There is also another <code>MISC_CONFIG</code> in the Knights client settings (file <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/client/client_config.lua">client_config.lua</a>), which configures various aspects of the game client's UI. This client-side configuration cannot be changed by Knights "mods" and therefore is not documented here. However, it should not be confused with the server-side <code>MISC_CONFIG</code> (i.e. the <code>kts.MISC_CONFIG</code> variable defined in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/misc_config.lua">misc_config.lua</a>) which is what is being discussed on this page. </p>
+<p>The <code>MISC_CONFIG</code> is only loaded once, when the game instance starts up. Therefore, changes to <code>MISC_CONFIG</code> mid-game, or pre-game (i.e. while players are choosing the next quest), will <i>not</i> affect the game at all. </p>
+<p>This page is about the server-side <code>MISC_CONFIG</code> table. There is also another <code>MISC_CONFIG</code> in the Knights client settings (file <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/client/client_config.lua">client_config.lua</a>), which configures various aspects of the game client's UI. This client-side configuration cannot be changed by Knights "mods" and therefore is not documented here. However, it should not be confused with the server-side <code>MISC_CONFIG</code> (i.e. the <code>kts.MISC_CONFIG</code> variable defined in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/misc_config.lua">misc_config.lua</a>) which is what is being discussed on this page. </p>
 <h2>Bugs</h2>
 <p>The <code>monster_radius</code> setting does not quite work as described above. What actually happens is that when it is time to run monster generation, the game calculates the minimum x and y coordinates of all knights in the dungeon, and subtracts <code>monster_radius</code> from those; it also calculates the maximum x and y coordinates of all knights, and adds <code>monster_radius</code>. This calculation produces two dungeon positions, which become the top-left and bottom-right corners of a rectangle. Monsters can then be generated at any dungeon position inside that rectangle. What this means is that if all knights are fairly close together, then monsters will be generated only in the vicinity of the knights, but if the knights are far apart (say in opposite corners of the dungeon), then monsters will be generated pretty much anywhere in the dungeon. This is, obviously, not a critical issue, since the monsters will move about and players will find them eventually, but perhaps a future version of the game could implement some slightly more sophisticated logic for this feature. </p>
 <h2>Examples</h2>

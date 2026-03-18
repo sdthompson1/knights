@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>mod.GetModVersion</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>mod.GetModVersion</h1>
+<h2>Name</h2>
+<p>mod.GetModVersion &ndash; query the version of another mod </p>
+<h2>Synopsis</h2>
+<p><code>version = mod.GetModVersion(mod_name)</code> </p>
+<h2>Description</h2>
+<p>If a mod with the given name was registered, then this returns that mod's version string, or <code>""</code> if the mod registered without a version. </p>
+<p>If no mod with the given name was registered, then this returns <code>nil</code>. </p>
+<h2>Errors</h2>
+<p>An error is raised if the first argument is not a string; otherwise, no errors are possible. </p>
+<h2>See Also</h2>
+<p><a href="GetRegisteredMod.html">mod.GetRegisteredMod</a> </p>
+<p><a href="IsModRegistered.html">mod.IsModRegistered</a> </p>
+<p><a href="RegisterMod.html">mod.RegisterMod</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

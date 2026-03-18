@@ -11,27 +11,32 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><b>Lua Docs</b></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
 <h1>Knights: Lua Documentation</h1>
 <h2>Introduction</h2>
-<p>Knights uses Lua scripting to customise many aspects of the game, including items, monsters, dungeon rooms, and many other things. </p>
-<p>For an introduction to the Lua scripting system, including instructions on how to create a Knights "mod", please read <a href="lua/intro.html">Knights Lua overview</a>. </p>
-<h2>Index of Lua API functions</h2>
-<p>Here is a list of all Lua API functions provided by Knights, with links to their documentation: </p>
+<p>Knights uses Lua scripting to customise many aspects of the game, including items, monsters, dungeon rooms, and many other things. This page contains the documentation for that system. </p>
+<h2>General notes</h2>
 <ul>
+<li><a href="lua/intro.html">Knights Lua overview</a> &ndash; start here </li>
 <li><a href="lua/cxt.html">The Context table (cxt)</a> </li>
+<li><a href="lua/localization.html">Localization</a> </li>
 <li><a href="lua/misc_vars.html">Miscellaneous variables</a> </li>
+<li><a href="lua/compat_check.html">Compatible and incompatible games</a> </li>
+</ul>
+<h2>Global functions</h2>
+<ul>
 <li><a href="lua/dofile.html">dofile</a> </li>
-<li><a href="lua/module.html">module</a> </li>
 <li><a href="lua/print.html">print</a> </li>
 <li><a href="lua/require.html">require</a> </li>
 <li><a href="lua/use_strict.html">use_strict</a> </li>
-<li><a href="lua/Activate.html">kts.Activate</a> </li>
+</ul>
+<h2>"kts" namespace</h2>
+<ul>
+<li><a href="lua/Activate.html">kts.Activate, kts.Can_Activate</a> </li>
 <li><a href="lua/ActorIsKnight.html">kts.ActorIsKnight</a> </li>
 <li><a href="lua/AddHint.html">kts.AddHint</a> </li>
 <li><a href="lua/AddItem.html">kts.AddItem</a> </li>
@@ -58,8 +63,8 @@
 <li><a href="lua/Delay.html">kts.Delay</a> </li>
 <li><a href="lua/DestroyCreature.html">kts.DestroyCreature</a> </li>
 <li><a href="lua/DispelMagic.html">kts.DispelMagic</a> </li>
-<li><a href="lua/Drop.html">kts.Drop</a> </li>
-<li><a href="lua/DropHeld.html">kts.DropHeld</a> </li>
+<li><a href="lua/Drop.html">kts.Drop, kts.Can_Drop</a> </li>
+<li><a href="lua/DropHeld.html">kts.DropHeld, kts.Can_DropHeld</a> </li>
 <li><a href="lua/EliminatePlayer.html">kts.EliminatePlayer</a> </li>
 <li><a href="lua/FlashMessage.html">kts.FlashMessage</a> </li>
 <li><a href="lua/FlashScreen.html">kts.FlashScreen</a> </li>
@@ -75,7 +80,7 @@
 <li><a href="lua/GetMonsterLimit.html">kts.GetMonsterLimit</a> </li>
 <li><a href="lua/GetNumHeld.html">kts.GetNumHeld</a> </li>
 <li><a href="lua/GetPlayer.html">kts.GetPlayer</a> </li>
-<li><a href="lua/GetPlayerName.html">kts.GetPlayerName</a> </li>
+<li><a href="lua/GetPlayerID.html">kts.GetPlayerID</a> </li>
 <li><a href="lua/GetPos.html">kts.GetPos</a> </li>
 <li><a href="lua/GetRandomPos.html">kts.GetRandomPos</a> </li>
 <li><a href="lua/GetRespawnFunction.html">kts.GetRespawnFunction</a> </li>
@@ -109,21 +114,21 @@
 <li><a href="lua/MISC_CONFIG.html">kts.MISC_CONFIG</a> </li>
 <li><a href="lua/MonsterType.html">kts.MonsterType</a> </li>
 <li><a href="lua/Necromancy.html">kts.Necromancy</a> </li>
-<li><a href="lua/Nop.html">kts.Nop</a> </li>
 <li><a href="lua/NormalZombieActivity.html">kts.NormalZombieActivity</a> </li>
 <li><a href="lua/OpenDoor.html">kts.OpenDoor</a> </li>
 <li><a href="lua/OpenOrCloseDoor.html">kts.OpenOrCloseDoor</a> </li>
 <li><a href="lua/OpenWays.html">kts.OpenWays</a> </li>
 <li><a href="lua/Overlay.html">kts.Overlay</a> </li>
 <li><a href="lua/Paralyzation.html">kts.Paralyzation</a> </li>
-<li><a href="lua/PickLock.html">kts.PickLock</a> </li>
-<li><a href="lua/PickUp.html">kts.PickUp</a> </li>
+<li><a href="lua/PickLock.html">kts.PickLock, kts.Can_PickLock</a> </li>
+<li><a href="lua/PickUp.html">kts.PickUp, kts.Can_PickUp</a> </li>
 <li><a href="lua/PitKill.html">kts.PitKill</a> </li>
 <li><a href="lua/PlaceItem.html">kts.PlaceItem</a> </li>
 <li><a href="lua/PlaySound.html">kts.PlaySound</a> </li>
 <li><a href="lua/Poison.html">kts.Poison</a> </li>
 <li><a href="lua/PoisonImmunity.html">kts.PoisonImmunity</a> </li>
 <li><a href="lua/PopUpWindow.html">kts.PopUpWindow</a> </li>
+<li><a href="lua/PrintLoc.html">kts.PrintLoc</a> </li>
 <li><a href="lua/Quickness.html">kts.Quickness</a> </li>
 <li><a href="lua/RandomChance.html">kts.RandomChance</a> </li>
 <li><a href="lua/RandomRange.html">kts.RandomRange</a> </li>
@@ -138,15 +143,15 @@
 <li><a href="lua/Secure.html">kts.Secure</a> </li>
 <li><a href="lua/SenseItems.html">kts.SenseItems</a> </li>
 <li><a href="lua/SenseKnight.html">kts.SenseKnight</a> </li>
-<li><a href="lua/SetBearTrap.html">kts.SetBearTrap</a> </li>
+<li><a href="lua/SetBearTrap.html">kts.SetBearTrap, kts.Can_SetBearTrap</a> </li>
 <li><a href="lua/SetBladeTrap.html">kts.SetBladeTrap</a> </li>
-<li><a href="lua/SetBladeTrapOld.html">kts.SetBladeTrapOld</a> </li>
+<li><a href="lua/SetBladeTrapOld.html">kts.SetBladeTrapOld, kts.Can_SetBladeTrapOld</a> </li>
 <li><a href="lua/SetDeathmatchMode.html">kts.SetDeathmatchMode</a> </li>
 <li><a href="lua/SetHomeFor.html">kts.SetHomeFor</a> </li>
 <li><a href="lua/SetLockpickSpawn.html">kts.SetLockpickSpawn</a> </li>
 <li><a href="lua/SetOverlayOffsets.html">kts.SetOverlayOffsets</a> </li>
 <li><a href="lua/SetPoisonTrap.html">kts.SetPoisonTrap</a> </li>
-<li><a href="lua/SetPoisonTrapOld.html">kts.SetPoisonTrapOld</a> </li>
+<li><a href="lua/SetPoisonTrapOld.html">kts.SetPoisonTrapOld, kts.Can_SetPoisonTrapOld</a> </li>
 <li><a href="lua/SetPremapped.html">kts.SetPremapped</a> </li>
 <li><a href="lua/SetReflect.html">kts.SetReflect</a> </li>
 <li><a href="lua/SetRespawnFunction.html">kts.SetRespawnFunction</a> </li>
@@ -156,18 +161,18 @@
 <li><a href="lua/SetTimeLimit.html">kts.SetTimeLimit</a> </li>
 <li><a href="lua/SetZombieActivity.html">kts.SetZombieActivity</a> </li>
 <li><a href="lua/Sound.html">kts.Sound</a> </li>
-<li><a href="lua/StartTutorialManager.html">kts.StartTutorialManager</a> </li>
 <li><a href="lua/Strength.html">kts.Strength</a> </li>
 <li><a href="lua/Suicide.html">kts.Suicide</a> </li>
 <li><a href="lua/Super.html">kts.Super</a> </li>
-<li><a href="lua/Swing.html">kts.Swing</a> </li>
-<li><a href="lua/SwingOrDrop.html">kts.SwingOrDrop</a> </li>
+<li><a href="lua/Swing.html">kts.Swing, kts.Can_Swing</a> </li>
+<li><a href="lua/SwingOrDrop.html">kts.SwingOrDrop, kts.Can_SwingOrDrop</a> </li>
 <li><a href="lua/table_merge.html">kts.table_merge</a> </li>
 <li><a href="lua/TeleportRandom.html">kts.TeleportRandom</a> </li>
 <li><a href="lua/TeleportTo.html">kts.TeleportTo</a> </li>
-<li><a href="lua/Throw.html">kts.Throw</a> </li>
-<li><a href="lua/ThrowOrShoot.html">kts.ThrowOrShoot</a> </li>
+<li><a href="lua/Throw.html">kts.Throw, kts.Can_Throw</a> </li>
+<li><a href="lua/ThrowOrShoot.html">kts.ThrowOrShoot, kts.Can_ThrowOrShoot</a> </li>
 <li><a href="lua/Tile.html">kts.Tile</a> </li>
+<li><a href="lua/VERSION.html">kts.VERSION</a> </li>
 <li><a href="lua/WinGame.html">kts.WinGame</a> </li>
 <li><a href="lua/WipeDungeon.html">kts.WipeDungeon</a> </li>
 <li><a href="lua/WipeMap.html">kts.WipeMap</a> </li>
@@ -175,6 +180,19 @@
 <li><a href="lua/ZombifyActor.html">kts.ZombifyActor</a> </li>
 <li><a href="lua/ZombifyTarget.html">kts.ZombifyTarget</a> </li>
 </ul>
+<h2>"mod" namespace</h2>
+<ul>
+<li><a href="lua/GetAllMods.html">mod.GetAllMods</a> </li>
+<li><a href="lua/GetModPrefix.html">mod.GetModPrefix</a> </li>
+<li><a href="lua/GetModVersion.html">mod.GetModVersion</a> </li>
+<li><a href="lua/GetRegisteredMod.html">mod.GetRegisteredMod</a> </li>
+<li><a href="lua/IsModRegistered.html">mod.IsModRegistered</a> </li>
+<li><a href="lua/RegisterMod.html">mod.RegisterMod</a> </li>
+</ul>
+<h2>Lua version used</h2>
+<p>The Steam version of Knights currently uses Lua 5.4.8. </p>
+<p>Lua 5.5 is now out (see <a href="https://www.lua.org/manual/5.5/readme.html#changes">changes</a>), and we may upgrade to it at some point. </p>
+<p>Note that other versions of Knights (e.g. the open source version downloaded directly from <a href="https://www.knightsgame.org.uk/">knightsgame.org.uk</a>) might use a different Lua version. </p>
 <div class="footer3"></div>
 </div></body>
 </html>

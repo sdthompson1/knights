@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>mod.IsModRegistered</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>mod.IsModRegistered</h1>
+<h2>Name</h2>
+<p>mod.IsModRegistered &ndash; determine whether a given mod has been registered </p>
+<h2>Synopsis</h2>
+<p><code>result = mod.IsModRegistered(mod_name)</code> </p>
+<h2>Description</h2>
+<p>This returns <code>true</code> if a mod with the given name has been registered, or <code>false</code> otherwise. </p>
+<h2>Errors</h2>
+<p>An error is raised if the first argument is not a string; otherwise, no errors are possible. </p>
+<h2>Notes</h2>
+<p><code>mod.IsModRegistered(name)</code> is equivalent to <code>mod.GetModVersion(name) ~= nil</code>. </p>
+<h2>See Also</h2>
+<p><a href="GetModVersion.html">mod.GetModVersion</a> </p>
+<p><a href="GetRegisteredMod.html">mod.GetRegisteredMod</a> </p>
+<p><a href="RegisterMod.html">mod.RegisterMod</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

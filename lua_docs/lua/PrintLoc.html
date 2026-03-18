@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.PrintLoc</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.PrintLoc</h1>
+<h2>Name</h2>
+<p>kts.PrintLoc &ndash; print localized messages to the game window </p>
+<h2>Synopsis</h2>
+<p><code>kts.PrintLoc(msg)</code> </p>
+<p><code>kts.PrintLoc(player, msg)</code> </p>
+<h2>Description</h2>
+<p>In the first form &ndash; <code>kts.PrintLoc(msg)</code> &ndash; <code>msg</code> is a <a href="localization.html">localization message</a>: either a string key, or the extended form as a table with key and parameters. The given localized message is printed to the in-game "Messages" window for all players. </p>
+<p>In the second form &ndash; <code>kts.PrintLoc(player, msg)</code> &ndash; <code>player</code> is a "Player" object, such as is returned from <a href="GetPlayer.html">kts.GetPlayer</a> or <a href="GetAllPlayers.html">kts.GetAllPlayers</a> for example. In this case, the message is printed for the given player only. </p>
+<h2>Return Value</h2>
+<p>No value is returned. </p>
+<h2>See Also</h2>
+<p><a href="DebugPrint.html">kts.DebugPrint</a> </p>
+<p><a href="localization.html">Localization</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -68,7 +67,7 @@ kts.AddStuff({ {"chest", 0.8, chest_item_generator},
                {"floor", 0.1, floor_item_generator} })
 </pre>
 <p>The above means that each tile of category "chest" will have an 80% probability of containing an item, and if it does, then the item will be chosen by a call to the function <code>chest_item_generator</code>. Therefore, chests will contain a mixture of poison traps, blade traps, potions, scrolls and daggers; in the latter case, the number of daggers will be between 2 and 4. Also, each tile of category "floor" has a 10% chance of containing an item, and in this case the item will be equally likely to be an axe, hammer or staff. </p>
-<p>In the "real" config files (in folder knights_data/server/classic) a more complicated system is used, where the probabilities depend on the "Amount of Stuff" setting in the menus. </p>
+<p>In the "real" config files (in folder knights_data/modules/base) a more complicated system is used, where the probabilities depend on the "Amount of Stuff" setting in the menus. </p>
 <h2>See Also</h2>
 <p><a href="AddStuff.html">kts.AddItem</a> </p>
 <p><a href="ItemType.html">kts.ItemType</a> </p>

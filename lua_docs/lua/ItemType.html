@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -49,6 +48,7 @@
     missile_range = &lt;integer&gt;,
     missile_speed = &lt;integer&gt;,
     missile_stun_time = &lt;function or integer&gt;,
+    mouse_over_hint_key = &lt;string&gt;,
     on_drop = &lt;function&gt;,
     on_hit = &lt;function&gt;,
     on_pick_up = &lt;function&gt;,
@@ -61,7 +61,6 @@
     reload_action_time = &lt;integer&gt;,
     reload_time = &lt;integer&gt;,
     stack_graphic = &lt;graphic&gt;,
-    tutorial_key = &lt;integer&gt;,
     type = &lt;"held", "backpack", "magic" or "nopickup"&gt;
 }
 </pre>
@@ -77,7 +76,7 @@
 <li><code>backpack_slot</code> gives the position where this item will appear in the on-screen inventory display. Slots 11 to 19 are used for normal items (left to right), 20 to 22 for keys, 23 for the lock picks, and 30 for gems. </li>
 <li><code>can_throw</code> is true if the item can be thrown (like an axe). </li>
 <li><code>control</code> gives a <a href="Control.html">kts.Control</a> that is available while this item is held. Examples include setting traps, throwing daggers, or using the lockpicks. </li>
-<li><code>critical</code> specifies whether the item is "quest-critical" (which means it will be automatically respawned if it is destroyed for any reason). Examples of quest-critical items include wands, books and gems. <code>critical</code> may be set to true or false, or it may be set to a string like "A gem". (The latter case is the same as setting <code>critical</code> to <code>true</code>, but also, a message like "A gem has been respawned at a random location" will be displayed at the appropriate time.) </li>
+<li><code>critical</code> specifies whether the item is "quest-critical" (which means it will be automatically respawned if it is destroyed for any reason). Examples of quest-critical items include wands, books and gems. <code>critical</code> may be set to true or false, or it may be set to a string like <code>"a_gem"</code>. (The latter case is the same as setting <code>critical</code> to <code>true</code>, but also, a message like "A gem has been respawned at a random location" will be displayed at the appropriate time. The string passed should be a <a href="localization.html">localization key</a>. Note that only a plain key can be used here &ndash; the extended table form with key and parameters is not allowed in this case.) </li>
 <li><code>fragile</code> indicates that the item will be destroyed if it is inside a chest that is destroyed, or on a table that is destroyed. (E.g. potions.) </li>
 <li><code>graphic</code> is the image to use for the item within the Dungeon. </li>
 <li><code>key</code> is an integer between 1 and 3 if this is one of the three key types, or -1 if this is the lock picks. </li>
@@ -97,6 +96,7 @@
 <li><code>missile_range</code> is the maximum range (in squares) of a missile weapon. </li>
 <li><code>missile_speed</code> gives the speed at which a missile weapon travels through the dungeon. Typical values include 250 for the axe, 350 for daggers and 440 for crossbow bolts. </li>
 <li><code>missile_stun_time</code> is the amount of time (in milliseconds) for which a creature will be stunned after being hit by this missile weapon. This can also be a function returning a number (useful for randomisation). </li>
+<li><code>mouse_over_hint_key</code> is a localization key which sets the tooltip text that will be displayed when the item is moused-over in the player's inventory. The message can contain one parameter ("{0}") which will be replaced with the number of copies of the item currently held. For some items it might make sense to include this parameter (e.g. "Daggers ({0})"), while for others it might not (e.g. "Lock Picks"). See also <a href="localization.html">Localization</a>. </li>
 <li><code>on_drop</code> is a function called whenever this item is dropped into the dungeon. The function takes no arguments, but the <a href="cxt.html">cxt</a> variable will be available. </li>
 <li><code>on_hit</code> is a function called whenever this item is hit with a weapon. The function takes no arguments, but the <a href="cxt.html">cxt</a> variable will be available. </li>
 <li><code>on_pick_up</code> is a function called whenever this item is picked up by a knight. The function takes no arguments, but the <a href="cxt.html">cxt</a> variable will be available. </li>
@@ -109,7 +109,6 @@
 <li><code>reload_action_time</code> is the time (in milliseconds) between calls to <code>reload_action</code>. </li>
 <li><code>reload_time</code> is the total time before the weapon is loaded. </li>
 <li><code>stack_graphic</code> is the <a href="Graphic.html">Graphic</a> used to represent a stack of these items in the dungeon (as opposed to <code>graphic</code> which is used when there is a single item). (If <code>stack_graphic</code> is unset, then <code>graphic</code> is used for both single items and stacks.) </li>
-<li><code>tutorial_key</code> is an integer indicating which tutorial message (if any) is associated with seeing this item. </li>
 <li><code>type</code> determines the type of item: <code>"held"</code> means the knight holds the item in their hands (like a sword or axe); <code>"backpack"</code> means the item is carried in the inventory (like daggers or gems); <code>"magic"</code> means the item is consumed when picked up (like potions or scrolls); and <code>"nopickup"</code> means the item cannot be picked up at all (like open bear traps). </li>
 </ul>
 <h2>Return Value</h2>
@@ -119,7 +118,7 @@
 <h2>Notes</h2>
 <p>Once created, it is permissible to set "custom properties" on an ItemType. For example, if <code>i</code> is an ItemType, you could write a value to <code>i.my_custom_field</code> and read it back again later. This might be useful for some special purposes. </p>
 <h2>Examples</h2>
-<p>Several examples of ItemTypes can be found in the file <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/items.lua">knights_data/server/classic/items.lua</a> in the Knights distribution. </p>
+<p>Several examples of ItemTypes can be found in the file <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/items.lua">knights_data/modules/base/items.lua</a> in the Knights distribution. </p>
 <h2>See Also</h2>
 <p><a href="Anim.html">kts.Anim</a> </p>
 <p><a href="Control.html">kts.Control</a> </p>

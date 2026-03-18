@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -40,7 +39,6 @@
         on_walk_over = &lt;function&gt;,
         on_withdraw = &lt;function&gt;,
         stairs_down = &lt;"special", "north", "south", "east", "west"&gt;,
-        tutorial = &lt;integer&gt;,
         map_as = &lt;"wall", "floor"&gt;,
 
         -- For type = "home":
@@ -116,7 +114,6 @@
 <li>Stairs affect missile range &ndash; you will have slightly shorter range if throwing/shooting upstairs, or longer if downstairs. </li>
 <li>Stairs also affect the dungeon generator. If a tile has stairs_down equal to a direction, or "special", then doors will not be added next to the tile, nor will monsters be generated on the tile. </li>
 </ul>
-<li><code>tutorial</code> is an integer indicating which tutorial message (if any) is associated with seeing this tile. </li>
 <li><code>map_as</code> indicates whether the tile should be shown on the mini-map as either a <code>"wall"</code> or a <code>"floor"</code>. If omitted, the game will decide automatically, based on the access settings and whether or not the tile is destructible. </li>
 <li><code>facing</code> indicates the orientation of a home or chest tile. For home tiles, this must point "towards" the exit (i.e. out of the dungeon). For chests, this is the direction from the centre of the chest towards the "front" of the chest. (A chest cannot be opened from behind.) </li>
 <li><code>special_exit</code> (for homes) indicates that this is the "special" exit point (e.g. used for "guarded exit" quests). </li>

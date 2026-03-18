@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -31,7 +30,7 @@
     menu_direction = &lt;"north", "south", "east" or "west"&gt;,
     menu_icon = &lt;graphic&gt;,
     menu_special = &lt;integer&gt;,
-    name = &lt;string&gt;,
+    name_key = &lt;string&gt;,
     possible = &lt;function&gt;,
     suicide_key = &lt;boolean&gt;,
     tap_priority = &lt;integer&gt;
@@ -56,7 +55,7 @@
 </ul>
 <li>4 indicates that the control should not appear on the Action Menu at all. (It can still appear on the Action Bar, as that is controlled by a different setting.) </li>
 </ul>
-<p><code>name</code> is a name for the control. This will appear when the control is "moused over" in the new control system. </p>
+<p><code>name_key</code> specifies a name for the control. This will appear when the control is "moused over" in the new control system. The string passed should be a <a href="localization.html">localization key</a>. Note that only a plain string key can be used here &ndash; the extended table form (with key and parameters) is not allowed in this case. </p>
 <p><code>possible</code> is a function which the game will call to determine whether the control is usable in the current situation. The <code>possible</code> function receives no arguments, and should return <code>true</code> if the control is usable, or <code>false</code> otherwise. (The <a href="cxt.html">cxt</a> table will be available during the call.) Controls which are not currently <code>possible</code> will not be shown in the Action Bar or Action Menu. If <code>possible</code> is nil (or omitted) then the control is considered possible always. </p>
 <p>If <code>suicide_key</code> is true then this control will be activated when the player's "suicide key" is pressed. The default is false. </p>
 <p>If <code>tap_priority</code> is specified then the control can be activated simply by tapping the appropriate key. For example, doors can be opened by tapping, rather than having to use the action bar or menu. If multiple controls are available for "tapping" then the one with the highest <code>tap_priority</code> "wins". </p>
@@ -69,7 +68,7 @@
 <p>When specifying directions, the strings "up", "down", "left" and "right" may be used as alternatives to "north", "south", "east" and "west". </p>
 <p>Note also that it is possible to store custom properties on the Control userdata objects. For example, if <code>c</code> is a Control, you can write to fields like <code>c.my_custom_field</code> and read the same value back again later. This might be useful for some special purposes. </p>
 <h2>Examples</h2>
-<p>Several examples of Controls can be seen in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/controls.lua">controls.lua</a>, <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/items.lua">items.lua</a> and <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/tiles.lua">tiles.lua</a> (search for <code>kts.Control</code>). </p>
+<p>Several examples of Controls can be seen in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/controls.lua">controls.lua</a>, <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/items.lua">items.lua</a> and <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/tiles.lua">tiles.lua</a> (search for <code>kts.Control</code>). </p>
 <h2>See Also</h2>
 <p><a href="cxt.html">cxt</a> </p>
 <p><a href="Activate.html">kts.Activate</a> </p>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>mod.GetModPrefix</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>mod.GetModPrefix</h1>
+<h2>Name</h2>
+<p>mod.GetModPrefix &ndash; return the path prefix for a given mod </p>
+<h2>Synopsis</h2>
+<p><code>prefix = mod.GetModPrefix(mod_name)</code> </p>
+<h2>Description</h2>
+<p>Returns a string giving a filesystem path for the given mod. The mod must previously have been registered (i.e., you can't use this with mods that haven't been loaded yet). </p>
+<p>This is useful when you want to load files from a different mod. For example, if you want to do something with the <code>"gfx/axe.bmp"</code> file from the <code>base</code> mod (for some reason), the appropriate filename to use would be: <code>mod.GetModPrefix("base") + "gfx/axe.bmp"</code>. </p>
+<h2>Return Value</h2>
+<p>Returns a string containing a path prefix. The returned string will always begin and end with a slash (<code>/</code>). </p>
+<p>If no mod with the given name exists, then <code>nil</code> is returned. </p>
+<h2>Errors</h2>
+<p>An error is raised if the first argument is not a string; otherwise, no errors are possible. </p>
+<h2>Notes</h2>
+<p>All Knights mods load within a "virtual filesystem", so the paths returned will not be real filesystem paths, but rather something like <code>"/base/"</code> or <code>"/spiders/"</code>. </p>
+<p>Note that when referencing files from your <i>own</i> mod, <code>mod.GetPathPrefix</code> is not necessary &ndash; you can just give the path relative to the current Lua script file location. For example, the base mod loads the <code>axe.bmp</code> file using something like <code>kts.Graphic("gfx/axe.bmp", ...)</code> &ndash; this works because <code>graphics.lua</code> and <code>gfx</code> are both in the same folder (the root folder of the module in this case), so <code>gfx/axe.bmp</code> is the correct relative path, when starting from <code>graphics.lua</code>. </p>
+<p>However, if you want to load data files from <i>another</i> mod (for whatever reason), then you can use <code>mod.GetPathPrefix</code> to find the correct folder location for that other mod. </p>
+<p>Note that the folder name won't necessarily be the same as the mod name &ndash; so you should always use <code>mod.GetPathPrefix</code>, rather than, say, trying to construct a string like <code>"/" + mod_name + "/"</code> (this will not work in general). </p>
+<h2>See Also</h2>
+<p><a href="GetRegisteredMod.html">mod.GetRegisteredMod</a> </p>
+<p><a href="RegisterMod.html">mod.RegisterMod</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>mod.RegisterMod</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>mod.RegisterMod</h1>
+<h2>Name</h2>
+<p>mod.RegisterMod &ndash; register a Lua mod </p>
+<h2>Synopsis</h2>
+<pre>mod.RegisterMod{
+  name = "my_mod",        -- required
+  version = "1.0.2",      -- optional
+  keep_env = false        -- optional, not usually used
+}
+</pre>
+<h2>Description</h2>
+<p>Register the current module with the mod system. This must be called at the beginning of the module's <code>init.lua</code>. </p>
+<p>The parameter is a table with the following fields: </p>
+<ul>
+<li>name (string, required) &ndash; The mod's identifier. Must be unique. </li>
+<li>version (string, optional) &ndash; Version number in dotted format, e.g. <code>"1.0"</code> or <code>"2.3.1"</code>. </li>
+<li>keep_env (boolean, optional) &ndash; See "Notes" below. Not usually used. </li>
+</ul>
+<p>After <code>mod.RegisterMod</code> is called (and assuming <code>keep_env</code> was not used), the current environment (<code>_ENV</code>) is redirected to a special namespace created specifically for this mod. This means that you can create global variables without fear of name clashes with other mods, and these globals will then be accessible to other mods using <a href="GetRegisteredMod.html">mod.GetRegisteredMod</a> or <a href="require.html">require</a>. See "Examples" below. </p>
+<h2>Return Value</h2>
+<p>The function returns the (newly created) namespace table for the mod being registered. However, this can usually be ignored, given that <code>mod.RegisterMod</code> replaces the global environment (<code>_ENV</code>) with this table anyway. (But if you use <code>keep_env</code> then you may need this return value.) </p>
+<h2>Errors</h2>
+<p>Errors can be raised if: </p>
+<ul>
+<li>The first argument is not a table. </li>
+<li>The <code>name</code> field is missing, or is not a string. </li>
+<li>The <code>name</code> is already registered to another module. </li>
+<li>The <code>version</code> is neither <code>nil</code> nor a valid version string. (Valid version strings consist only of numeric components separated by dots, and components are not allowed to be empty.) </li>
+<li><code>mod.RegisterMod</code> is called while the game is running (it should only be called from <code>init.lua</code> during module startup). </li>
+</ul>
+<h2>Notes</h2>
+<p>For those who want to know the technical details, <code>mod.RegisterMod</code> does the following: </p>
+<ol>
+<li>Creates a new namespace table. </li>
+<li>Sets an <code>__index</code> metamethod on the new table, which points to <code>_G</code>. (This means that existing global names, such as <code>kts</code> or <code>require</code>, can still be accessed, providing that these names are not overwritten by the module code.) </li>
+<li>Stores this namespace table (and the mod's version string) in an internal cache, indexed by module name &ndash; this allows the same table to be returned again later, to other mods, in <a href="GetRegisteredMod.html">mod.GetRegisteredMod</a> or <a href="require.html">require</a> calls. </li>
+<li>If <code>keep_env</code> is false or nil, replaces the caller's <code>_ENV</code> with the namespace table. </li>
+<li>Returns the namespace table. </li>
+</ol>
+<p>If <code>keep_env</code> is true, the caller's <code>_ENV</code> is left pointing at the normal global Lua namespace &ndash; however, writes through this <code>_ENV</code> will fail with a "read-only environment" error. (This is to prevent accidental writes to the global namespace.) Writing directly to fields in the <code>_G</code> table will still work (this allows mod code to write to the global namespace, if desired, although this is not recommended). </p>
+<h2>Examples</h2>
+<p>Imagine you want to create a new module, "skeletons", that provides some new monster types. Your <code>init.lua</code> might contain this: </p>
+<pre>-- At the beginning of init.lua:
+
+mod.RegisterMod{name = "skeletons", version = "1.0"}
+
+m_skeleton1 = kts.MonsterType{...}
+m_skeleton2 = kts.MonsterType{...}
+</pre>
+<p>To use this mod, another module might call </p>
+<p><code>local S = mod.GetRegisteredMod("skeletons")</code> </p>
+<p>or </p>
+<p><code>local S = require("skeletons")</code> </p>
+<p>for example. The skeleton monsters would now be available as <code>S.m_skeleton1</code> and <code>S.m_skeleton2</code>. </p>
+<p>If you prefer to keep things more explicit, then you can use the <code>keep_env</code> option as follows: </p>
+<pre>-- At the beginning of init.lua:
+
+local MyMod = mod.RegisterMod{
+  name = "skeletons",
+  version = "1.0",
+  keep_env = true
+}
+</pre>
+<p>Then, instead of creating global variables, you would add entries to the <code>MyMod</code> table, like this: </p>
+<pre>MyMod.m_skeleton1 = kts.MonsterType{...}
+MyMod.m_skeleton2 = kts.MonsterType{...}
+</pre>
+<p>Which method you prefer is really just a matter of style, but using <code>keep_env = false</code> (the default) is probably easier. </p>
+<h2>See Also</h2>
+<p><a href="GetAllMods.html">mod.GetAllMods</a> </p>
+<p><a href="GetModVersion.html">mod.GetModVersion</a> </p>
+<p><a href="GetRegisteredMod.html">mod.GetRegisteredMod</a> </p>
+<p><a href="IsModRegistered.html">mod.IsModRegistered</a> </p>
+<p><a href="require.html">require</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

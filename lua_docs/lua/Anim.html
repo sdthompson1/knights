@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -25,7 +24,7 @@
 <h2>Description</h2>
 <p>An Anim is a collection of <a href="Graphic.html">Graphics</a> that represents the complete set of animation frames for a single creature (e.g. a knight, zombie or vampire bat) or for a flying projectile (e.g. an axe). </p>
 <p>The <code>anim_table</code> parameter must be an array of either 4, 12, 16 or 32 Graphics. Each Graphic represents one frame of animation. </p>
-<p>The best way to understand which graphics must be given (and in which order) is to look at <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/anims.lua">anims.lua</a> to see how the existing animations for knights, vampire bats, zombies and flying projectiles (axes, bolts and daggers) are created. </p>
+<p>The best way to understand which graphics must be given (and in which order) is to look at <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/anims.lua">anims.lua</a> to see how the existing animations for knights, vampire bats, zombies and flying projectiles (axes, bolts and daggers) are created. </p>
 <p>As well as the list of Graphics, the <code>anim_table</code> can also include <code>bat=true</code> if the animation is for a vampire bat (this is used for the "flapping wings" effect of the bats). </p>
 <h2>Return Value</h2>
 <p>The new Anim is returned. </p>

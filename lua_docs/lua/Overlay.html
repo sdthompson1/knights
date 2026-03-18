@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -36,10 +35,10 @@
 <p>Note also that it is possible to store custom properties on the Overlay userdata objects. For example, if <code>o</code> is an Overlay, you can write to fields like <code>o.my_custom_field</code> and read the same value back again later. This might be useful for some special purposes. </p>
 <h2>Examples</h2>
 <p>The "Axe" overlay graphics are created as follows (see <code>graphics.lua</code>): </p>
-<pre>g_axe_north = kts.Graphic("+axe_north.bmp",0,0,0, -6,-4)
-g_axe_east  = kts.Graphic("+axe_east.bmp",0,0,0,   0,-6)
-g_axe_south = kts.Graphic("+axe_south.bmp",0,0,0, -7, 0)
-g_axe_west  = kts.Graphic("+axe_west.bmp",0,0,0,  -4,-7)
+<pre>g_axe_north = kts.Graphic("axe_north.bmp",0,0,0, -6,-4)
+g_axe_east  = kts.Graphic("axe_east.bmp",0,0,0,   0,-6)
+g_axe_south = kts.Graphic("axe_south.bmp",0,0,0, -7, 0)
+g_axe_west  = kts.Graphic("axe_west.bmp",0,0,0,  -4,-7)
 </pre>
 <p>Then, in <code>items.lua</code>, when the <code>i_axe</code> ItemType is created, the following line is added to the <code>kts.ItemType</code> call: </p>
 <pre>overlay = kts.Overlay { g_axe_north, g_axe_east, g_axe_south, g_axe_west }

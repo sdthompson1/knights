@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -35,7 +34,7 @@
 <p>The coroutine function should not "block" for an extended period of time, as this would cause the game to freeze up. Instead, the coroutine should generally just do a minimal amount of work (e.g. spawning new monsters, adjusting dungeon tiles etc), before sleeping for a number of milliseconds (by calling <code>coroutine.yield</code>). This will allow the game to run for a period of time before the coroutine resumes once again. </p>
 <p>Note also that all "callback" functions (<code>on_walk_over</code>, <code>on_pick_up</code>, <code>on_activate</code> etc.) are actually implemented as coroutines, which means that they are able to call <code>coroutine.yield</code> if desired. </p>
 <h2>Examples</h2>
-<p>An example of using <code>kts.AddTask</code> can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/tutorial/init.lua">knights_data/server/tutorial/init.lua</a> (search for "AddTask" or "function bat_task"). Briefly, this works by calling <code>kts.AddTask(bat_task)</code> at the start of the tutorial. The "bat task" is then constantly running in the background. The code for function <code>bat_task</code> looks like the following: </p>
+<p>An example of using <code>kts.AddTask</code> can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/tutorial/init.lua">knights_data/modules/tutorial/init.lua</a> (search for "AddTask" or "function bat_task"). Briefly, this works by calling <code>kts.AddTask(bat_task)</code> at the start of the tutorial. The "bat task" is then constantly running in the background. The code for function <code>bat_task</code> looks like the following: </p>
 <pre>function bat_task()
     if bat_task_active then
         -- Do some stuff, e.g. call kts.AddMonster to add new vampire bats.

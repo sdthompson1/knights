@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -129,9 +128,9 @@ ring_layout = {
 <h2>Notes</h2>
 <p>A full dungeon generation system will not only need to call <code>kts.LayoutDungeon</code>, but it will also need to call other functions such as <a href="GenerateLocksAndTraps.html">kts.GenerateLocksAndTraps</a>, <a href="AddItem.html">kts.AddItem</a>, <a href="AddStuff.html">kts.AddStuff</a>, <a href="AddMonsters.html">kts.AddMonsters</a> and <a href="ConnectivityCheck.html">kts.ConnectivityCheck</a> to populate the dungeon with items and monsters, and ensure that all rooms are accessible to players. </p>
 <p>Also, calling the dungeon generator multiple times is sometimes necessary, as there might be cases where dungeon generation fails (just due to random chance) but retrying it succeeds. If dungeon generation fails more than, say, 25 times in a row, then it is likely that the current layout is simply not big enough to fit in everything needed for the current quest, and in that case, starting over with a larger dungeon layout is recommended. </p>
-<p>This is all taken care of by the standard Knights Lua files; the code can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/dungeon_setup.lua">dungeon_setup.lua</a>. (In particular, the function <code>generate_dungeon</code> in that file is the starting point for dungeon generation.) </p>
+<p>This is all taken care of by the standard Knights Lua files; the code can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/dungeon_setup.lua">dungeon_setup.lua</a>. (In particular, the function <code>generate_dungeon</code> in that file is the starting point for dungeon generation.) </p>
 <h2>Examples</h2>
-<p>The standard dungeon layouts ("Tiny", "Basic", "Big", "Huge", "Snake", "Ring" and so on) can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/dungeon_layouts.lua">dungeon_layouts.lua</a>. Note that the actual dungeon layout table is returned by the function marked <code>func</code> in each case (the rest of the structure in that file is internally used by the Lua code, and is not part of the data that is passed to <code>kts.LayoutDungeon</code>). Also note that for many of the dungeon types, there is not just one dungeon layout, but several, which are selected from at random when a game with that dungeon type is played. For example, there are three possible "Huge" dungeon layouts, one of which is selected at random whenever a quest with a "Huge" dungeon is played. </p>
+<p>The standard dungeon layouts ("Tiny", "Basic", "Big", "Huge", "Snake", "Ring" and so on) can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/dungeon_layouts.lua">dungeon_layouts.lua</a>. Note that the actual dungeon layout table is returned by the function marked <code>func</code> in each case (the rest of the structure in that file is internally used by the Lua code, and is not part of the data that is passed to <code>kts.LayoutDungeon</code>). Also note that for many of the dungeon types, there is not just one dungeon layout, but several, which are selected from at random when a game with that dungeon type is played. For example, there are three possible "Huge" dungeon layouts, one of which is selected at random whenever a quest with a "Huge" dungeon is played. </p>
 <h2>See Also</h2>
 <p><a href="AddItem.html">kts.AddItem</a> </p>
 <p><a href="AddStuff.html">kts.AddStuff</a> </p>

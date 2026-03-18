@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -23,7 +22,7 @@
 <h2>Synopsis</h2>
 <p><code>result = dofile(filename)</code> </p>
 <h2>Description</h2>
-<p>This looks for the given <code>filename</code> in the current directory (i.e. the directory containing the currently executing Lua script). If it is not found, then the file is looked for in the "root" directory of the current package instead. </p>
+<p>This looks for the given <code>filename</code> relative to the current directory (i.e. the directory containing the currently executing Lua script). </p>
 <p>Assuming the file is found, it is then loaded and executed as a Lua chunk. </p>
 <h2>Return Value</h2>
 <p><code>dofile</code> returns any value(s) that are returned by the loaded chunk. </p>

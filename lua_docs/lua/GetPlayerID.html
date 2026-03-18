@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>kts.GetPlayerID</title>
+<link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="header"><ul>
+<li><a href="https://www.knightsgame.org.uk/">Home</a></li>
+<li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
+<li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
+<li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
+<li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
+<li><a href="../lua.html">Lua Docs</a></li>
+<li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
+</ul></div>
+<h1>kts.GetPlayerID</h1>
+<h2>Name</h2>
+<p>kts.GetPlayerID &ndash; return a string uniquely identifying a player </p>
+<h2>Synopsis</h2>
+<p><code>result = kts.GetPlayerID(player)</code> </p>
+<h2>Description</h2>
+<p>This function takes one parameter, which can either be a Player object (as returned from <a href="GetPlayer.html">kts.GetPlayer</a> for example), or a Creature object representing a knight. A string that uniquely identifies the player (e.g. via their Steam ID) is returned. </p>
+<h2>Return Value</h2>
+<p>The return value is a string, which is currently either in the format <code>"123456789@steam"</code> (if the game is compiled with Steam support, and we are in either a LAN Game or Online Game); or in the format <code>"Player Name@name"</code> (otherwise). </p>
+<p>The exact format of the string is not guaranteed and may change from one release of Knights to the next. </p>
+<h2>Errors</h2>
+<p>If the input is not either a valid Player or a valid Creature representing a knight, then an error is raised. </p>
+<h2>Notes</h2>
+<p>The reason why this function is needed is as follows: </p>
+<p>In Knights, when you start a new Online Game, LAN Game, Single Player Game or Split Screen game, a new instance of a "Knights server" is created (albeit not a server that's connected to any network, in the case of single player or split screen games). While this Knights server is running, multiple games (quests) can be played. The Lua state persists between quests on the same server, although it is lost once the server is destroyed (i.e. all players disconnect/leave). </p>
+<p>Basically, what this means is that Lua code can persist information from one quest to the next, if desired. This works for as long as players are connected to the same server instance &ndash; saving information across different server instances is not yet supported. </p>
+<p>However, a problem is that the <code>Player</code> objects (e.g. as returned from <code>kts.GetPlayer</code>) are destroyed and recreated for each new quest. Therefore, whilst it's valid to use a <code>Player</code> object as a table key within a single quest, this will not work if you want to persist information (such as player scores, money, etc.) from one quest to the next. </p>
+<p>Instead, you can call <code>kts.GetPlayerID</code> which will give you a unique string identifying each player. You can then use this string as a table key, to identify that specific player, and it will work as expected. </p>
+<h2>See Also</h2>
+<p><a href="GetAllPlayers.html">kts.GetAllPlayers</a> </p>
+<p><a href="GetPlayer.html">kts.GetPlayer</a> </p>
+<div class="footer3"></div>
+</div></body>
+</html>

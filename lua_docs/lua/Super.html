@@ -11,9 +11,8 @@
 <li><a href="https://www.knightsgame.org.uk/screenshots">Screenshots</a></li>
 <li><a href="https://www.knightsgame.org.uk/manual/index.html">Manual</a></li>
 <li><a href="https://www.knightsgame.org.uk/download">Download</a></li>
-<li><a href="https://www.knightsgame.org.uk/forum">Forum</a></li>
+<li><a href="https://www.knightsgame.org.uk/chat">Chat</a></li>
 <li><a href="https://www.knightsgame.org.uk/blog">Blog</a></li>
-<li><a href="https://www.knightsgame.org.uk/server_list.php">Server List</a></li>
 <li><a href="../lua.html">Lua Docs</a></li>
 <li><a href="https://www.knightsgame.org.uk/links">Links</a></li>
 </ul></div>
@@ -23,7 +22,8 @@
 <h2>Synopsis</h2>
 <p><code>kts.Super(duration, message)</code> </p>
 <h2>Description</h2>
-<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then that knight gains the Super magical effect, for the next <code>duration</code> milliseconds. The string <code>message</code> will also flash on screen above the knight a number of times. </p>
+<p>If the current actor (as given by <code>cxt.actor</code>) is a knight, then that knight gains the Super magical effect, for the next <code>duration</code> milliseconds. </p>
+<p>The given <code>message</code> will also flash on screen above the knight a number of times. Note that this must be a localized message: either a string key, or a table with parameters, as described in <a href="localization.html">Localization</a>. </p>
 <p>If the knight already has a different incompatible magic effect (such as Strength or Regeneration) then the other effect is cancelled in favour of Super. </p>
 <p>If the knight already has Super, then the existing Super timer is cancelled and replaced with the new one. </p>
 <p>If the current actor is not a knight then nothing happens. </p>
@@ -35,7 +35,7 @@
 <h2>Examples</h2>
 <p>To give a knight Super for a random number of seconds between 1 and 60: </p>
 <p><code>kts.Super(kts.RandomRange(1, 60) * 1000, "Super")</code> </p>
-<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/server/classic/magic.lua">magic.lua</a>. </p>
+<p>The actual game code uses a slightly more complicated method for determining the duration of potion effects; details can be found in <a href="https://github.com/sdthompson1/knights/blob/main/knights_data/modules/base/magic.lua">magic.lua</a>. </p>
 <h2>See Also</h2>
 <p><a href="cxt.html">The cxt table</a> </p>
 <p><a href="Invisibility.html">kts.Invisibility</a> </p>
