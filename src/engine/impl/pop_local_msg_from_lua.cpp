@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "creature.hpp"
 #include "lua_userdata.hpp"
 #include "player.hpp"
 #include "pop_local_msg_from_lua.hpp"
@@ -74,16 +75,20 @@ LocalMsg PopLocalMsgFromLua(lua_State *lua)
                 msg.params.push_back(LocalParam(static_cast<int>(lua_tointeger(lua, -1))));
             } else if (lua_isstring(lua, -1)) {
                 msg.params.push_back(LocalParam(LocalKey(lua_tostring(lua, -1))));
-            } else if (IsLuaPtr<Player>(lua, -1)) {
-                Player *player = ReadLuaPtr<Player>(lua, -1);
-                if (!player) {
-                    lua_pushstring(lua, "message param: player has been destroyed");
+            } else {
+                Player *player = nullptr;
+                if (IsLuaPtr<Player>(lua, -1)) {
+                    player = ReadLuaPtr<Player>(lua, -1);
+                } else if (IsLuaPtr<Creature>(lua, -1)) {
+                    shared_ptr<Creature> c = ReadLuaSharedPtr<Creature>(lua, -1);
+                    if (c) player = c->getPlayer();
+                }
+                if (player) {
+                    msg.params.push_back(LocalParam(player->getPlayerID()));
+                } else {
+                    lua_pushstring(lua, "message params must be strings, integers, or players");
                     lua_error(lua);
                 }
-                msg.params.push_back(LocalParam(player->getPlayerID()));
-            } else {
-                lua_pushstring(lua, "message params must be strings, integers, or players");
-                lua_error(lua);
             }
 
             lua_pop(lua, 1);
