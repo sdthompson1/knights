@@ -634,11 +634,15 @@ namespace {
                 }
 
                 kg.all_player_ids = player_ids;
-                
+
                 if (player_ids.size() == 2 && kg.connections.size() == 1) {
                     // Split screen game.
-                    // Disable the player names in this case.
-                    for (size_t i = 0; i < player_ids.size(); ++i) { player_ids[i] = PlayerID(); }
+                    // Reset to hard coded player names in this case (for benefit
+                    // of Lua kts.GetPlayerID function)
+                    for (size_t i = 0; i < player_ids.size(); ++i) {
+                        std::string name = "Player " + std::to_string(i+1);
+                        player_ids[i] = PlayerID(UTF8String::fromUTF8(name));
+                    }
                 }
 
                 nplayers = player_ids.size();

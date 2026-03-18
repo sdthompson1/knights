@@ -908,6 +908,27 @@ namespace {
         return 1;
     }
 
+    int GetPlayerID(lua_State *lua)
+    {
+        Player & plyr = GetPlayerOrKnight(lua, 1);
+        const PlayerID & pid = plyr.getPlayerID();
+        std::string result;
+        if (!pid.getPlatform().empty()) {
+            result = pid.getPlatformUserId() + "@" + pid.getPlatform();
+        } else {
+            // Percent-encode '%' and '@' in the user name to avoid ambiguity
+            const std::string utf8name = pid.getUserName().asUTF8();
+            for (char c : utf8name) {
+                if (c == '%') result += "%25";
+                else if (c == '@') result += "%40";
+                else result += c;
+            }
+            result += "@name";
+        }
+        lua_pushstring(lua, result.c_str());
+        return 1;
+    }
+
     int IsEliminated(lua_State *lua)
     {
         Player & pl = CheckLuaPtr<Player>(lua, 1, "Player");
@@ -1342,6 +1363,9 @@ void AddLuaIngameFunctions(lua_State *lua)
 
     PushCFunction(lua, &GetAllPlayers);
     lua_setfield(lua, -2, "GetAllPlayers");
+
+    PushCFunction(lua, &GetPlayerID);
+    lua_setfield(lua, -2, "GetPlayerID");
 
     PushCFunction(lua, &IsEliminated);
     lua_setfield(lua, -2, "IsEliminated");
