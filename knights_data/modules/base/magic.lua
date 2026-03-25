@@ -29,18 +29,27 @@ function pot_dur()
 
     -- This was changed in version 027 of Knights to make the random
     -- distribution closer to the original Amiga game. In particular,
-    -- we can now generate very low values (as low as 1 second) which
-    -- means that potions can sometimes be "duds" that last a very
-    -- short amount of time.
+    -- the variance was increased, and "dud" potions (lasting less
+    -- than 10 seconds) were introduced.
+
+    -- It was changed again in version 028 to reduce the average
+    -- duration of potions while still keeping some of the variance.
+
+    -- The current setup gives:
+    --   Median = 64 seconds
+    --   Mean = 73 seconds
+    --   P(<= 10s) = 7.8% ("dud" potions)
+    --   P(>= 2m) = 20.3%
+    --   Max = 3 minutes
 
     local choice = kts.RandomRange(1, 100)
 
-    if choice <= 37 then
+    if choice <= 70 then
+        -- 70% chance of 1s to 90s
         return 1000 * kts.RandomRange(1, 90)
-    elseif choice <= 77 then
-        return 1000 * kts.RandomRange(1, 180)
     else
-        return 1000 * kts.RandomRange(1, 360)
+        -- 30% chance of 91s to 180s
+        return 1000 * kts.RandomRange(91, 180)
     end
 end
 
