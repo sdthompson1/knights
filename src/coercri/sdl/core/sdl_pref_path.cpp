@@ -48,7 +48,7 @@ namespace Coercri {
     {
         char *path = SDL_GetPrefPath(org.c_str(), app.c_str());
         if (path) {
-            std::filesystem::path result(path);
+            std::filesystem::path result(reinterpret_cast<char8_t*>(path));
             SDL_free(path);
             return result;
         }
