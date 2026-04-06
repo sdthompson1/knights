@@ -231,6 +231,13 @@ void ThrowingTask::execute(TaskManager &tm)
     if (me->isMoving()) return;
 
     const int gvt = tm.getGVT();
+    if (me->impact_time == 0) {   // throw was cancelled.
+        me->setFrameToZeroImmediately();  // Make sure we cancel the throwing animation.
+        // Restore overlay to the item in hand (it was changed to the thrown item's overlay in doThrow).
+        ItemType *ih = me->getItemInHand();
+        me->setOverlay(ih ? ih->getOverlay() : 0);
+        return;
+    }
     if (me->impact_time != gvt) return;
     me->impact_time = 0;
 
@@ -259,6 +266,9 @@ void ThrowingTask::execute(TaskManager &tm)
         // call DropItem, this will remove it from inventory
         shared_ptr<Item> item(new Item(itype));
         DropItem(item, *dmap, me->getPos(), true, false, me->getFacing(), me);
+        // Restore overlay to item in hand (DropItem doesn't do this)
+        ItemType *ih = me->getItemInHand();
+        me->setOverlay(ih ? ih->getOverlay() : 0);
     } else {
         // remove from inventory manually
         me->throwAwayItem(&itype);
