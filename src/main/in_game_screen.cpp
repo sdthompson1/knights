@@ -288,8 +288,15 @@ void InGameScreen::update()
     // Read controllers
     if (player_ids.empty()) { // NOT in observer mode
         ASSERT(nplayers == 1 || nplayers == 2);
-        knights_client->sendControl(0, display->readControl(0, mleft, mright));
-        if (nplayers == 2) knights_client->sendControl(1, display->readControl(1, false, false));
+        if (pause_mode) {
+            // Don't send game controls while the pause menu is open.
+            knights_client->sendControl(0, nullptr);
+            if (nplayers == 2) knights_client->sendControl(1, nullptr);
+            mleft = mright = false;
+        } else {
+            knights_client->sendControl(0, display->readControl(0, mleft, mright));
+            if (nplayers == 2) knights_client->sendControl(1, display->readControl(1, false, false));
+        }
     }
 
     // Make sure sounds get played
