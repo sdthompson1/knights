@@ -3,7 +3,7 @@
 KNIGHTS
 
 Release 028
-Released ??-???-????
+Released 13-May-2026
 
 
 Programmed by
@@ -15,7 +15,8 @@ Based on the Amiga game by
 Kalle Marjola a.k.a. "Reaper"
 
 
-Thanks to David Thompson, dukey, K9, moikel, Narts, Raytray, rpr and Wil.7ang
+Thanks to David Thompson, dukey, K9, moikel, Narts,
+Raytray, rpr, Wil.7ang, ImpassIve and ZaRR
 for help with multiplayer testing.
 
 
