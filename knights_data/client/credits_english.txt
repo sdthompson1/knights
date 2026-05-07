@@ -24,6 +24,10 @@ For further information and updates please visit the website:
 https://www.knightsgame.org.uk/
 
 
+Also available on Steam:
+https://store.steampowered.com/app/4146180/Knights/
+
+
 Copyright © Stephen Thompson, 2006 - 2026, and Kalle Marjola, 1994.
 Please see docs/ACKNOWLEDGMENTS.txt for details of open source libraries used.
 
