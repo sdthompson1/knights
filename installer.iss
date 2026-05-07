@@ -37,9 +37,9 @@ Source: "msvc\x64\Release\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 ; note: the below lines might need to be updated if you have a different version of Visual Studio
 ; or you have installed it in a non-standard place
-Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\VCRUNTIME140_1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.44.35112\x64\Microsoft.VC143.CRT\MSVCP140.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Redist\MSVC\14.50.35710\x64\Microsoft.VC145.CRT\VCRUNTIME140.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Redist\MSVC\14.50.35710\x64\Microsoft.VC145.CRT\VCRUNTIME140_1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Redist\MSVC\14.50.35710\x64\Microsoft.VC145.CRT\MSVCP140.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "COPYRIGHT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README-SDL.txt"; DestDir: "{app}"; Flags: ignoreversion
