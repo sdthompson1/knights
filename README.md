@@ -1,4 +1,4 @@
-# Knights Release 028 -- Source Code
+# Knights Release 029 -- Source Code
 
 This is the source code for KNIGHTS, a game of multi-player violent
 dungeon bashing. (For more information about the game, please visit
