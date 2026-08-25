@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # Convert Knights KRD file into Kconfig format.
 
@@ -53,8 +53,8 @@ def gtrap(x, y, mjr, mnr):
         elif hi==2 and lo==2:
             return None
         else:
-            print "bad trap"
-            print x, y, mjr, mnr
+            print("bad trap")
+            print(x, y, mjr, mnr)
             sys.exit(1)
 
 def dowrite(f, t, xb, yb):
@@ -68,7 +68,7 @@ def writetrap(f, tdat, xb, yb):
         if t != None:
             t2.append(t)
 
-    if len(t2)==0: raise "Trap with no effect?"
+    if len(t2)==0: raise Exception("Trap with no effect?")
 
     f.write('%d ' % len(t2))
     for i in range(len(t2)):
@@ -87,18 +87,18 @@ def matchtrap(tdat,x,y):
 
 # Check arguments
 if len(sys.argv) != 3:
-    print "usage:", sys.argv[0], "<infile> <outdir>"
+    print("usage:", sys.argv[0], "<infile> <outdir>")
     sys.exit(1)
 
 # Open files
-f = file(sys.argv[1], 'rb')
+f = open(sys.argv[1], 'rb')
 
 outdir = sys.argv[2] + '/'
-outfiles = { 'standard_room':     file(outdir + 'standard_rooms.txt', 'w'),
-             'gnome_room':        file(outdir + 'gnome_rooms.txt', 'w'),
-             'guarded_exit':      file(outdir + 'guarded_exits.txt', 'w'),
-             'liche_tomb':        file(outdir + 'liche_tombs.txt', 'w'),
-             'special_pentagram': file(outdir + 'special_pentagrams.txt', 'w') }
+outfiles = { 'standard_room':     open(outdir + 'standard_rooms.txt', 'w'),
+             'gnome_room':        open(outdir + 'gnome_rooms.txt', 'w'),
+             'guarded_exit':      open(outdir + 'guarded_exits.txt', 'w'),
+             'liche_tomb':        open(outdir + 'liche_tombs.txt', 'w'),
+             'special_pentagram': open(outdir + 'special_pentagrams.txt', 'w') }
 
 for k in outfiles:
     outfiles[k].write(PRE+"\n")
@@ -159,8 +159,8 @@ for a in range(nrooms):
                     continue
                 rumcheck[xx][yy] = rumcheck[xx][yy]+1
                 if rumcheck[xx][yy] > 2:
-                    print "ROOMS ERROR, more than 2 rooms at", xx, ",", yy
-                    print rumdata
+                    print("ROOMS ERROR, more than 2 rooms at", xx, ",", yy)
+                    print(rumdata)
                     sys.exit(1)
 
     # Load traps table
@@ -221,7 +221,7 @@ for a in range(nrooms):
         elif (letter=='Z' and nrot==3):
             roomtype = 'special_pentagram'
         else:
-            raise "Unknown room type"
+            raise Exception("Unknown room type")
 
         outfile = outfiles[roomtype]
 
@@ -273,19 +273,19 @@ for a in range(nrooms):
                     # This particular tile should be replaced with 81 (stair-top)
                     # to prevent the dungeon generator creating doors into the guarded exit area.
                     if t != 59:
-                        print "Unexpected tile in room Z3:1"
-                        print "Found:", t, "Expected:", 59
+                        print("Unexpected tile in room Z3:1")
+                        print("Found:", t, "Expected:", 59)
                         sys.exit(1)
                     t = 81
-                        
+
                 if t < 1 or (t > 95):
-                    print "bad tile"
-                    print x, y, t
-                    raise "bad tile"
+                    print("bad tile")
+                    print(x, y, t)
+                    raise Exception("bad tile")
 
                 if x==0 or x==13 or y==0 or y==13:
-                    if t<>2:
-                        raise "non wall tile on border"
+                    if t!=2:
+                        raise Exception("non wall tile on border")
                 else:
                     if t == 43:
                         # horiz table -- may need gnome book or necronomicon
@@ -296,7 +296,7 @@ for a in range(nrooms):
 
                 r.append(t)
 
-                if tr<>0:
+                if tr!=0:
                     sx.append(x)
                     sy.append(y)
                     sn.append(tr)
@@ -366,5 +366,5 @@ for a in range(nrooms):
 for k in outfiles:
     outfiles[k].write(POST+"\n")
     outfiles[k].close()
-print 'wrote', nrooms, '* 4 rooms'
-print na,nb,nc,nx,nz
+print('wrote', nrooms, '* 4 rooms')
+print(na,nb,nc,nx,nz)
