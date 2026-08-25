@@ -320,6 +320,11 @@ for a in range(nrooms):
                     isok(x+1, y-1) and \
                     isok(x+1, y  ) and \
                     isok(x+1, y+1)
+
+                # Special cases for segments B21.1, B21.3, B21.4
+                if x==9 and y==1 and letter=="B" and nroom==21 and r[y*14+x]==9:
+                    result = True
+
                 if result: r[y*14+x] = 2
 
         # Now write the output
