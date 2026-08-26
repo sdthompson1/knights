@@ -195,7 +195,7 @@ int main(int argc, char * argv[])
         std::cout << "  -d, --datadir [directory name]: Set location of 'knights_data' directory\n";
         std::cout << "     (default: " << default_data_dir << ")\n";
         std::cout << "  --modules-dir [directory name]: Add an extra directory to search for modules\n";
-        std::cout << "     (searched after knights_data/modules; may be given more than once)\n";
+        std::cout << "     (searched before knights_data/modules; may be given more than once)\n";
         std::cout << "  --modules [name1,name2,...]: Load the given comma-separated list of modules\n";
         std::cout << "     (instead of the list in modules.txt)\n";
         std::cout << "\n";

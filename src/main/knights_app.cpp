@@ -301,11 +301,9 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     {
         // Build the list of modules directories: the default (resource_dir/modules)
-        // always comes first, followed by any extra directories given on the command line.
-        std::vector<std::filesystem::path> modules_paths;
+        // always comes LAST, after any extra directories given on the command line.
+        std::vector<std::filesystem::path> modules_paths = extra_modules_dirs;
         modules_paths.push_back(resource_dir / "modules");
-        modules_paths.insert(modules_paths.end(),
-                             extra_modules_dirs.begin(), extra_modules_dirs.end());
 #ifdef ONLINE_PLATFORM
         pimpl->module_manager = std::make_unique<ModuleManager>(modules_paths, module_names,
                                                                 pimpl->online_platform->getBuildId());
