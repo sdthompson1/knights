@@ -245,7 +245,6 @@ public:
 
     // saved paths
     VFS client_vfs;
-    std::filesystem::path modules_path;
     std::unique_ptr<ModuleManager> module_manager;
 
     // functions
@@ -275,6 +274,8 @@ public:
 /////////////////////////////////////////////////////
 
 KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &resource_dir,
+                       const std::vector<std::filesystem::path> &extra_modules_dirs,
+                       const std::vector<std::string> &module_names,
                        bool autostart, Localization &localization)
     : pimpl(new KnightsAppImpl(localization))
 {
@@ -298,13 +299,20 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     client_vfs.add(resource_dir / "client", "");
     pimpl->client_vfs = client_vfs;
 
-    // Save the modules directory for use in getModules
-    pimpl->modules_path = resource_dir / "modules";
+    {
+        // Build the list of modules directories: the default (resource_dir/modules)
+        // always comes first, followed by any extra directories given on the command line.
+        std::vector<std::filesystem::path> modules_paths;
+        modules_paths.push_back(resource_dir / "modules");
+        modules_paths.insert(modules_paths.end(),
+                             extra_modules_dirs.begin(), extra_modules_dirs.end());
 #ifdef ONLINE_PLATFORM
-    pimpl->module_manager = std::make_unique<ModuleManager>(pimpl->modules_path, pimpl->online_platform->getBuildId());
+        pimpl->module_manager = std::make_unique<ModuleManager>(modules_paths, module_names,
+                                                                pimpl->online_platform->getBuildId());
 #else
-    pimpl->module_manager = std::make_unique<ModuleManager>(pimpl->modules_path);
+        pimpl->module_manager = std::make_unique<ModuleManager>(modules_paths, module_names);
 #endif
+    }
     pimpl->lobby_controller.setModuleManager(pimpl->module_manager.get());
 
     // Read the client config

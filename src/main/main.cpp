@@ -40,8 +40,10 @@
 
 #include <SDL2/SDL.h>
 
+#include <filesystem>
 #include <sstream>
 #include <string>
+#include <vector>
 
 //----------------
  
@@ -74,11 +76,31 @@ namespace {
         return argv[i];
     }
 
+    // Split a comma-separated list of module names. Surrounding whitespace is
+    // trimmed from each name, and empty entries are ignored.
+    void ParseModuleNames(const std::string &names, std::vector<std::string> &module_names)
+    {
+        std::string::size_type start = 0;
+        while (start <= names.size()) {
+            std::string::size_type comma = names.find(',', start);
+            if (comma == std::string::npos) comma = names.size();
+            std::string name = names.substr(start, comma - start);
+            std::string::size_type first = name.find_first_not_of(" \t");
+            std::string::size_type last = name.find_last_not_of(" \t");
+            if (first != std::string::npos) {
+                module_names.push_back(name.substr(first, last - first + 1));
+            }
+            start = comma + 1;
+        }
+    }
+
     // Parse the command line arguments. Throws PrintUsageAndExit if there is an error
     // or PrintVersionAndExit if "-v" option was given.
     void ParseCmdLineArgs(int argc, char const * const * argv,
                           DisplayType & display_type,
                           std::filesystem::path & data_dir,
+                          std::vector<std::filesystem::path> & extra_modules_dirs,
+                          std::vector<std::string> & module_names,
                           bool & autostart)
     {
         for (int i = 1; i < argc; ++i) {
@@ -89,6 +111,12 @@ namespace {
                 display_type = DT_WINDOWED;
             } else if (arg == "-d" || arg == "--datadir") {
                 data_dir = ReadParam(i, argc, argv);
+            } else if (arg == "--modules-dir") {
+                extra_modules_dirs.push_back(ReadParam(i, argc, argv));
+            } else if (arg == "--modules") {
+                module_names.clear();
+                ParseModuleNames(ReadParam(i, argc, argv), module_names);
+                if (module_names.empty()) throw PrintUsageAndExit();
             } else if (arg == "-a" || arg == "--autostart") {
                 autostart = true;
             } else if (arg == "-v" || arg == "--version") {
@@ -139,12 +167,14 @@ int main(int argc, char * argv[])
         bool autostart = false;
 
         std::filesystem::path data_dir = default_data_dir;
+        std::vector<std::filesystem::path> extra_modules_dirs;
+        std::vector<std::string> module_names;
 
         // Parse the cmd line arguments
-        ParseCmdLineArgs(argc, argv, display_type, data_dir, autostart);
-        
+        ParseCmdLineArgs(argc, argv, display_type, data_dir, extra_modules_dirs, module_names, autostart);
+
         // Run the game itself:
-        KnightsApp app(display_type, data_dir, autostart, localization);
+        KnightsApp app(display_type, data_dir, extra_modules_dirs, module_names, autostart, localization);
         app.runKnights();
 
 #ifdef ONLINE_PLATFORM
@@ -164,6 +194,10 @@ int main(int argc, char * argv[])
         std::cout << "     (used by map editor)\n";
         std::cout << "  -d, --datadir [directory name]: Set location of 'knights_data' directory\n";
         std::cout << "     (default: " << default_data_dir << ")\n";
+        std::cout << "  --modules-dir [directory name]: Add an extra directory to search for modules\n";
+        std::cout << "     (searched after knights_data/modules; may be given more than once)\n";
+        std::cout << "  --modules [name1,name2,...]: Load the given comma-separated list of modules\n";
+        std::cout << "     (instead of the list in modules.txt)\n";
         std::cout << "\n";
         std::cout << "Miscellaneous options:\n";
         std::cout << "  -v, --version:  Print Knights version and exit.\n";

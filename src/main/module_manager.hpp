@@ -36,7 +36,14 @@ struct ModuleManagerImpl;
 
 class ModuleManager {
 public:
-    explicit ModuleManager(std::filesystem::path modules_path, std::string build_id = "");
+    // modules_paths: directories to search for modules, in order. If the same
+    //   module name appears in more than one directory, the first one found wins.
+    // module_names: if non-empty, this is used directly as the enabled-module
+    //   list and modules.txt is never read. If empty, modules.txt is read (from
+    //   the first directory in modules_paths that contains it) as normal.
+    ModuleManager(std::vector<std::filesystem::path> modules_paths,
+                  std::vector<std::string> module_names,
+                  std::string build_id = "");
     ~ModuleManager();
 
     // Re-read available modules and their checksums from disk

@@ -46,18 +46,26 @@ struct ModuleInfo {
 };
 
 struct ModuleManagerImpl {
-    std::filesystem::path modules_path;
+    std::vector<std::filesystem::path> modules_paths;
+    std::vector<std::string> module_names;   // overrides modules.txt if non-empty
     std::string build_id;
     std::vector<ModuleInfo> modules;
     std::unordered_map<std::string, size_t> index;
     std::vector<std::string> enabled_modules;
 };
 
-ModuleManager::ModuleManager(std::filesystem::path modules_path, std::string build_id)
+ModuleManager::ModuleManager(std::vector<std::filesystem::path> modules_paths,
+                             std::vector<std::string> module_names,
+                             std::string build_id)
     : pimpl(std::make_unique<ModuleManagerImpl>())
 {
-    pimpl->modules_path = std::move(modules_path);
+    pimpl->modules_paths = std::move(modules_paths);
+    pimpl->module_names = std::move(module_names);
     pimpl->build_id = std::move(build_id);
+
+    if (pimpl->modules_paths.empty()) {
+        throw std::runtime_error("ModuleManager: no modules directories were given");
+    }
 
     // Do an initial update so that we are ready to go from the start
     update();
@@ -67,39 +75,73 @@ ModuleManager::~ModuleManager() = default;
 
 void ModuleManager::update()
 {
-    VFS root_vfs;
-    root_vfs.add(pimpl->modules_path, "");
+    // Determine the module load order
+    std::vector<std::string> enabled_names;
+    std::string enabled_names_source;
 
-    // Load modules.txt: this is the user's enabled-module list, not the full install list.
-    std::vector<std::string> enabled_names = ReadModuleNames(root_vfs, "modules.txt");
-
-    // Discover all installed modules by scanning subdirectories of modules_path.
-    std::vector<std::string> names;
-    for (const auto &entry : std::filesystem::directory_iterator(pimpl->modules_path)) {
-        if (!entry.is_directory()) continue;
-        std::string name = entry.path().filename().string();
-        if (IsValidModuleName(name)) names.push_back(name);
-    }
-    std::sort(names.begin(), names.end());
-
-    std::unordered_set<std::string> known(names.begin(), names.end());
-
-    // Validate that every name in modules.txt corresponds to a discovered directory.
-    for (const std::string &name : enabled_names) {
-        if (!known.count(name)) {
-            throw std::runtime_error(
-                "modules.txt lists '" + name + "', but no such module directory was found");
+    if (!pimpl->module_names.empty()) {
+        // An explicit module list was given (e.g. on the command line);
+        // use it directly and do not touch modules.txt at all.
+        enabled_names_source = "the module list given";
+        std::unordered_set<std::string> seen;
+        for (const std::string &name : pimpl->module_names) {
+            if (!IsValidModuleName(name)) {
+                throw std::runtime_error("Invalid module name: '" + name + "'");
+            }
+            if (seen.insert(name).second) enabled_names.push_back(name);
+        }
+    } else {
+        // Load modules.txt from the first modules directory that contains it.
+        enabled_names_source = "modules.txt";
+        for (const auto &dir : pimpl->modules_paths) {
+            VFS root_vfs;
+            root_vfs.add(dir, "");
+            // note: ReadModuleNames will check file existence, and return empty list if
+            // file not found
+            enabled_names = ReadModuleNames(root_vfs, "modules.txt");
+            if (!enabled_names.empty()) {
+                break;
+            }
         }
     }
 
+    // Discover all installed modules by scanning subdirectories of each
+    // modules directory in turn. If a module of the same name exists in more
+    // than one directory, the earlier directory takes priority.
     std::vector<ModuleInfo> new_modules;
+    std::unordered_set<std::string> known;
 
-    for (const std::string &name : names) {
-        ModuleInfo info;
-        info.name = name;
-        info.path = pimpl->modules_path / name;
-        info.checksum = ComputeLocalChecksum(info.path);
-        new_modules.push_back(std::move(info));
+    for (const auto &dir : pimpl->modules_paths) {
+        if (!std::filesystem::is_directory(dir)) {
+            throw std::runtime_error(
+                "Modules directory not found: \"" + dir.string() + "\"");
+        }
+
+        std::vector<std::string> names;
+        for (const auto &entry : std::filesystem::directory_iterator(dir)) {
+            if (!entry.is_directory()) continue;
+            std::string name = entry.path().filename().string();
+            if (IsValidModuleName(name) && !known.count(name)) names.push_back(name);
+        }
+        std::sort(names.begin(), names.end());
+
+        for (const std::string &name : names) {
+            known.insert(name);
+            ModuleInfo info;
+            info.name = name;
+            info.path = dir / name;
+            info.checksum = ComputeLocalChecksum(info.path);
+            new_modules.push_back(std::move(info));
+        }
+    }
+
+    // Validate that every enabled name corresponds to a discovered directory.
+    for (const std::string &name : enabled_names) {
+        if (!known.count(name)) {
+            throw std::runtime_error(
+                enabled_names_source + " lists '" + name
+                + "', but no such module directory was found");
+        }
     }
 
     pimpl->modules = std::move(new_modules);
