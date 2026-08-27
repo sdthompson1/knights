@@ -34,6 +34,20 @@
 #include <vector>
 #include <iterator>
 
+// The sandbox whitelists below are tuned for Lua 5.4. Building against
+// a different Lua version is possible, but the whitelists (and the
+// assumptions made by lua_module.cpp about _ENV upvalues) should be
+// reviewed first.
+#if LUA_VERSION_NUM < 503
+#error "Knights requires Lua 5.3 or later"
+#elif LUA_VERSION_NUM != 504
+#  ifdef _MSC_VER
+#    pragma message("warning: Lua sandbox whitelists are tuned for Lua 5.4; review lua_sandbox.cpp for this Lua version")
+#  else
+#    warning "Lua sandbox whitelists are tuned for Lua 5.4; review lua_sandbox.cpp for this Lua version"
+#  endif
+#endif
+
 namespace {
 
     int OnPanic(lua_State *lua)
@@ -122,23 +136,23 @@ namespace {
 #endif
         
     // Whitelists of functions that can be included in the sandbox
-    // environment. These must be SORTED.
-    
+    // environment. These must be SORTED (plain byte-order comparison).
+
     // NOTE: If you add a new whitelist, don't forget to update MakeLuaSandbox()
     // to actually apply the new whitelist!
-    
+
     const char * global_whitelist[] = {
         "_G",         // not a problem: we don't care if they have access to global environment
         "_VERSION",   // safe
         "assert",     // safe
-        // NOT: collectgarbage
+        // NOT: collectgarbage (lets scripts change GC mode/parameters; not needed by mods)
         "coroutine",  // no problem; theoretically they could modify this table, thus affecting
                       // code outside the sandbox, but:
                       //  a) this would be considered rude; and
                       //  b) they won't be able to make the code outside the sandbox DO anything nasty,
                       //       because we haven't exposed any "nasty" functions to Lua.
         // NOT: debug
-        // NOT: dofile
+        // NOT: dofile (we supply our own version, see AddModuleFuncs)
         "error",      // safe
         "getmetatable",  // they might use this to e.g. redefine string metatable, but we don't care
         // NOT: io
@@ -146,13 +160,13 @@ namespace {
         // NOT: load (allows unsafe loading of binary chunks)
         // NOT: loadfile (ditto; also accesses filesystem)
         "math",       // no problem (see whitelist below)
-        // NOT: newproxy (undocumented base library function)
         "next",       // safe
         // NOT: os
         // NOT: package (we provide our own "mod" table)
         "pairs",      // safe
         "pcall",      // safe
-        // NOT: print (we supply our own)
+        // NOT: print (the engine supplies its own; the client-config sandbox in knights_app.cpp
+        //             has no "print" at all)
         "rawequal",   // bypasses metatables but we don't care
         "rawget",     // bypasses metatables but we don't care
         "rawlen",     // bypasses metatables but we don't care
@@ -165,17 +179,22 @@ namespace {
         "tonumber",   // safe
         "tostring",   // safe
         "type",       // safe
+        "utf8",       // no problem (see whitelist below)
+        // NOT: warn (Lua 5.4; writes to stderr and can be toggled with "@on"/"@off" control
+        //            messages. Harmless but noisy, and not useful to mods.)
         "xpcall",     // safe
         0
     };
 
     const char * coroutine_whitelist[] = {
-        "create",  // safe
-        "resume",  // safe
-        "running", // safe
-        "status",  // safe
-        "wrap",    // safe
-        "yield",   // safe
+        "close",       // safe (Lua 5.4)
+        "create",      // safe
+        "isyieldable", // safe (Lua 5.3)
+        "resume",      // safe
+        "running",     // safe
+        "status",      // safe
+        "wrap",        // safe
+        "yield",       // safe
         0
     };
     const char * string_whitelist[] = {
@@ -189,15 +208,21 @@ namespace {
         "len",     // safe
         "lower",   // safe
         "match",   // safe
+        "pack",    // safe (Lua 5.3; pure binary serialization, no I/O)
+        "packsize", // safe (Lua 5.3)
         "rep",     // safe
         "reverse", // safe
         "sub",     // safe
+        "unpack",  // safe (Lua 5.3)
         "upper",   // safe
         0
     };
     const char * table_whitelist[] = {
+        "concat",  // safe
         "insert",  // safe
-        "maxn",    // safe
+        // NOT: maxn (removed in Lua 5.2)
+        "move",    // safe (Lua 5.3)
+        "pack",    // safe (Lua 5.2)
         "remove",  // safe
         "sort",    // safe
         "unpack",  // safe
@@ -207,32 +232,49 @@ namespace {
         "abs",   // safe
         "acos",  // safe
         "asin",  // safe
-        "atan",  // safe
-        "atan2", // safe
+        "atan",  // safe (takes optional 2nd arg since Lua 5.3, replacing atan2)
+        // NOT: atan2 (LUA_COMPAT_5_3 only; use math.atan(y, x))
         "ceil",  // safe
         "cos",   // safe
-        "cosh",  // safe
+        // NOT: cosh (LUA_COMPAT_5_3 only)
         "deg",   // safe
         "exp",   // safe
         "floor", // safe
         "fmod",  // safe
-        "frexp", // safe
+        // NOT: frexp (LUA_COMPAT_5_3 only)
         "huge",  // safe
-        "ldexp", // safe
+        // NOT: ldexp (LUA_COMPAT_5_3 only)
         "log",   // safe
+        // NOT: log10 (LUA_COMPAT_5_3 only; use math.log(x, 10))
         "max",   // safe
+        "maxinteger",  // safe (Lua 5.3)
         "min",   // safe
+        "mininteger",  // safe (Lua 5.3)
         "modf",  // safe
         "pi",    // safe
-        "pow",   // safe
+        // NOT: pow (LUA_COMPAT_5_3 only; use x^y)
         "rad",   // safe
-        // NOT: random, because Knights has its own RNG (for game recording/playback purposes).
-        // NOT: randomseed, for same reason
+        "random",      // safe. (Note: the game engine also has its own RNG, exposed via
+                       // kts.RandomRange etc., but there is no longer any requirement for
+                       // Lua-level determinism, so math.random is allowed too.)
+        "randomseed",  // safe
         "sin",   // safe
-        "sinh",  // safe
+        // NOT: sinh (LUA_COMPAT_5_3 only)
         "sqrt",  // safe
         "tan",   // safe
-        "tanh",  // safe
+        // NOT: tanh (LUA_COMPAT_5_3 only)
+        "tointeger",   // safe (Lua 5.3)
+        "type",        // safe (Lua 5.3)
+        "ult",         // safe (Lua 5.3)
+        0
+    };
+    const char * utf8_whitelist[] = {
+        "char",        // safe
+        "charpattern", // safe
+        "codepoint",   // safe
+        "codes",       // safe
+        "len",         // safe
+        "offset",      // safe
         0
     };
 
@@ -295,6 +337,7 @@ namespace {
           {LUA_TABLIBNAME, luaopen_table},
           {LUA_STRLIBNAME, luaopen_string},
           {LUA_MATHLIBNAME, luaopen_math},
+          {LUA_UTF8LIBNAME, luaopen_utf8},
           {0, 0}
     };
 
@@ -341,6 +384,9 @@ boost::shared_ptr<lua_State> MakeLuaSandbox()
     
     lua_getglobal(lua.get(), "table");
     ApplyWhitelist(lua.get(), table_whitelist);
+
+    lua_getglobal(lua.get(), "utf8");
+    ApplyWhitelist(lua.get(), utf8_whitelist);
 
     AddModuleFuncs(lua.get());
     
