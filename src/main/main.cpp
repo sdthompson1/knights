@@ -99,8 +99,8 @@ namespace {
     void ParseCmdLineArgs(int argc, char const * const * argv,
                           DisplayType & display_type,
                           std::filesystem::path & data_dir,
-                          std::vector<std::filesystem::path> & extra_modules_dirs,
-                          std::vector<std::string> & module_names,
+                          std::vector<std::filesystem::path> & extra_module_dirs,
+                          std::vector<std::string> & module_load_order,
                           bool & autostart)
     {
         for (int i = 1; i < argc; ++i) {
@@ -111,12 +111,12 @@ namespace {
                 display_type = DT_WINDOWED;
             } else if (arg == "-d" || arg == "--datadir") {
                 data_dir = ReadParam(i, argc, argv);
-            } else if (arg == "--modules-dir") {
-                extra_modules_dirs.push_back(ReadParam(i, argc, argv));
-            } else if (arg == "--modules") {
-                module_names.clear();
-                ParseModuleNames(ReadParam(i, argc, argv), module_names);
-                if (module_names.empty()) throw PrintUsageAndExit();
+            } else if (arg == "--module-dir") {
+                extra_module_dirs.push_back(ReadParam(i, argc, argv));
+            } else if (arg == "--load-modules") {
+                module_load_order.clear();
+                ParseModuleNames(ReadParam(i, argc, argv), module_load_order);
+                if (module_load_order.empty()) throw PrintUsageAndExit();
             } else if (arg == "-a" || arg == "--autostart") {
                 autostart = true;
             } else if (arg == "-v" || arg == "--version") {
@@ -167,14 +167,14 @@ int main(int argc, char * argv[])
         bool autostart = false;
 
         std::filesystem::path data_dir = default_data_dir;
-        std::vector<std::filesystem::path> extra_modules_dirs;
-        std::vector<std::string> module_names;
+        std::vector<std::filesystem::path> extra_module_dirs;
+        std::vector<std::string> module_load_order;
 
         // Parse the cmd line arguments
-        ParseCmdLineArgs(argc, argv, display_type, data_dir, extra_modules_dirs, module_names, autostart);
+        ParseCmdLineArgs(argc, argv, display_type, data_dir, extra_module_dirs, module_load_order, autostart);
 
         // Run the game itself:
-        KnightsApp app(display_type, data_dir, extra_modules_dirs, module_names, autostart, localization);
+        KnightsApp app(display_type, data_dir, extra_module_dirs, module_load_order, autostart, localization);
         app.runKnights();
 
 #ifdef ONLINE_PLATFORM
@@ -194,10 +194,10 @@ int main(int argc, char * argv[])
         std::cout << "     (used by map editor)\n";
         std::cout << "  -d, --datadir [directory name]: Set location of 'knights_data' directory\n";
         std::cout << "     (default: " << default_data_dir << ")\n";
-        std::cout << "  --modules-dir [directory name]: Add an extra directory to search for modules\n";
-        std::cout << "     (searched before knights_data/modules; may be given more than once)\n";
-        std::cout << "  --modules [name1,name2,...]: Load the given comma-separated list of modules\n";
-        std::cout << "     (instead of the list in modules.txt)\n";
+        std::cout << "  --module-dir [directory name]: Make the game aware of the given Lua module\n";
+        std::cout << "     (may be given more than once)\n";
+        std::cout << "  --load-modules [name1,name2,...]: Set the module load order\n";
+        std::cout << "     (overrides modules.txt)\n";
         std::cout << "\n";
         std::cout << "Miscellaneous options:\n";
         std::cout << "  -v, --version:  Print Knights version and exit.\n";

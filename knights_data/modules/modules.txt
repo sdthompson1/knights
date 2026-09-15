@@ -1,1 +1,3 @@
-base
+# This file is no longer used. Instead, module load order is edited
+# using the in-game UI, and modules.txt is saved to the user's prefs
+# folder.

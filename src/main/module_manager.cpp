@@ -46,26 +46,54 @@ struct ModuleInfo {
 };
 
 struct ModuleManagerImpl {
-    std::vector<std::filesystem::path> modules_paths;
+    std::optional<std::filesystem::path> pref_path;
+    std::filesystem::path knights_data_modules_dir;
+    std::vector<std::filesystem::path> extra_module_dirs;
     std::vector<std::string> module_names;   // overrides modules.txt if non-empty
     std::string build_id;
-    std::vector<ModuleInfo> modules;
-    std::unordered_map<std::string, size_t> index;
-    std::vector<std::string> enabled_modules;
+    std::vector<ModuleInfo> modules;  // All available (installed) modules
+    std::unordered_map<std::string, size_t> index;   // Index into `modules` vector
+    std::vector<std::string> enabled_modules;   // Enabled modules (for new games)
 };
 
-ModuleManager::ModuleManager(std::vector<std::filesystem::path> modules_paths,
-                             std::vector<std::string> module_names,
+namespace {
+    // Add a filesystem directory to `infos` and `known`
+    // (if it is a valid module directory)
+    void AddModuleInfo(std::vector<ModuleInfo> &infos,
+                       std::unordered_set<std::string> &known,
+                       const std::filesystem::path &path)
+    {
+        // Only directories are accepted
+        if (!std::filesystem::is_directory(path)) return;
+
+        // The "VFS mod name" comes from the directory name
+        std::string name = path.filename().string();
+
+        // Only accept valid mod names
+        if (!IsValidModuleName(name)) return;
+
+        // Construct the ModuleInfo and add it
+        ModuleInfo info;
+        info.name = name;
+        info.path = path;
+        info.checksum = ComputeLocalChecksum(path);
+        infos.push_back(info);
+        known.insert(name);
+    }
+}
+
+ModuleManager::ModuleManager(std::optional<std::filesystem::path> pref_path,
+                             std::filesystem::path knights_data_modules_dir,
+                             std::vector<std::filesystem::path> extra_module_dirs,
+                             std::vector<std::string> module_load_order,
                              std::string build_id)
     : pimpl(std::make_unique<ModuleManagerImpl>())
 {
-    pimpl->modules_paths = std::move(modules_paths);
-    pimpl->module_names = std::move(module_names);
+    pimpl->pref_path = std::move(pref_path);
+    pimpl->knights_data_modules_dir = std::move(knights_data_modules_dir);
+    pimpl->extra_module_dirs = std::move(extra_module_dirs);
+    pimpl->module_names = std::move(module_load_order);
     pimpl->build_id = std::move(build_id);
-
-    if (pimpl->modules_paths.empty()) {
-        throw std::runtime_error("ModuleManager: no modules directories were given");
-    }
 
     // Do an initial update so that we are ready to go from the start
     update();
@@ -75,14 +103,11 @@ ModuleManager::~ModuleManager() = default;
 
 void ModuleManager::update()
 {
-    // Determine the module load order
+    // Read the module load order from modules.txt (or pimpl->module_names override).
     std::vector<std::string> enabled_names;
-    std::string enabled_names_source;
-
     if (!pimpl->module_names.empty()) {
-        // An explicit module list was given (e.g. on the command line);
-        // use it directly and do not touch modules.txt at all.
-        enabled_names_source = "the module list given";
+        // An explicit module list was given (e.g. on the command line).
+        // Use it directly, and do not touch modules.txt at all.
         std::unordered_set<std::string> seen;
         for (const std::string &name : pimpl->module_names) {
             if (!IsValidModuleName(name)) {
@@ -91,59 +116,51 @@ void ModuleManager::update()
             if (seen.insert(name).second) enabled_names.push_back(name);
         }
     } else {
-        // Load modules.txt from the first modules directory that contains it.
-        enabled_names_source = "modules.txt";
-        for (const auto &dir : pimpl->modules_paths) {
-            VFS root_vfs;
-            root_vfs.add(dir, "");
-            // note: ReadModuleNames will check file existence, and return empty list if
-            // file not found
-            enabled_names = ReadModuleNames(root_vfs, "modules.txt");
-            if (!enabled_names.empty()) {
-                break;
-            }
-        }
+        // Load modules.txt from the prefs directory.
+        enabled_names = ReadModuleNames(pimpl->pref_path);
     }
 
-    // Discover all installed modules by scanning subdirectories of each
-    // modules directory in turn. If a module of the same name exists in more
-    // than one directory, the earlier directory takes priority.
+    // Discover all installed modules by scanning:
+    //  (1) All subdirectories of knights_data/modules
+    //  (2) All dirs given in extra_module_dirs (if any)
+    //  (3) All installed Steam Workshop (or other online platform) mods
+
     std::vector<ModuleInfo> new_modules;
     std::unordered_set<std::string> known;
 
-    for (const auto &dir : pimpl->modules_paths) {
-        if (!std::filesystem::is_directory(dir)) {
-            throw std::runtime_error(
-                "Modules directory not found: \"" + dir.string() + "\"");
-        }
+    // (1) knights_data modules (sorted alphabetically)
+    for (const auto &entry : std::filesystem::directory_iterator(pimpl->knights_data_modules_dir)) {
+        AddModuleInfo(new_modules, known, entry.path());
+    }
+    std::sort(new_modules.begin(), new_modules.end(),
+              [](const ModuleInfo &lhs, const ModuleInfo &rhs) {
+                  return lhs.name < rhs.name;
+              });
 
-        std::vector<std::string> names;
-        for (const auto &entry : std::filesystem::directory_iterator(dir)) {
-            if (!entry.is_directory()) continue;
-            std::string name = entry.path().filename().string();
-            if (IsValidModuleName(name) && !known.count(name)) names.push_back(name);
-        }
-        std::sort(names.begin(), names.end());
-
-        for (const std::string &name : names) {
-            known.insert(name);
-            ModuleInfo info;
-            info.name = name;
-            info.path = dir / name;
-            info.checksum = ComputeLocalChecksum(info.path);
-            new_modules.push_back(std::move(info));
-        }
+    // (2) extra_module_dirs (in order given, and after the knights_data modules)
+    for (const auto &path : pimpl->extra_module_dirs) {
+        AddModuleInfo(new_modules, known, path);
     }
 
-    // Validate that every enabled name corresponds to a discovered directory.
-    for (const std::string &name : enabled_names) {
-        if (!known.count(name)) {
-            throw std::runtime_error(
-                enabled_names_source + " lists '" + name
-                + "', but no such module directory was found");
+    // (3) Workshop modules, after the others, in the order returned by the online platform.
+    // TODO
+
+    // Filter down the load order (enabled_names) to only include actually installed names.
+    enabled_names.erase(
+        std::remove_if(enabled_names.begin(), enabled_names.end(),
+            [&known](const std::string& s) { return !known.count(s); }),
+        enabled_names.end());
+
+    // If the load order is empty, use "base" as a default.
+    if (enabled_names.empty()) {
+        if (!known.count("base")) {
+            // "base" should always exist
+            throw std::runtime_error("'base' module not found!");
         }
+        enabled_names.push_back("base");
     }
 
+    // Success: copy results back, and recompute pimpl->index.
     pimpl->modules = std::move(new_modules);
     pimpl->index.clear();
     for (size_t i = 0; i < pimpl->modules.size(); ++i) {

@@ -81,12 +81,9 @@ enum DisplayType {
 
 class KnightsApp {
 public:
-    // extra_modules_dirs: additional directories (searched before resource_dir/modules)
-    //   in which to look for modules.
-    // module_names: if non-empty, overrides modules.txt as the list of modules to load.
     KnightsApp(DisplayType dt, const std::filesystem::path &resource_dir,
-               const std::vector<std::filesystem::path> &extra_modules_dirs,
-               const std::vector<std::string> &module_names,
+               const std::vector<std::filesystem::path> &extra_module_dirs,
+               const std::vector<std::string> &module_load_order,
                bool autostart, Localization &localization);
 
     // Start the main loop

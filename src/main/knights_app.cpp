@@ -274,8 +274,8 @@ public:
 /////////////////////////////////////////////////////
 
 KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &resource_dir,
-                       const std::vector<std::filesystem::path> &extra_modules_dirs,
-                       const std::vector<std::string> &module_names,
+                       const std::vector<std::filesystem::path> &extra_module_dirs,
+                       const std::vector<std::string> &module_load_order,
                        bool autostart, Localization &localization)
     : pimpl(new KnightsAppImpl(localization))
 {
@@ -300,16 +300,16 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     pimpl->client_vfs = client_vfs;
 
     {
-        // Build the list of modules directories: the default (resource_dir/modules)
-        // always comes LAST, after any extra directories given on the command line.
-        std::vector<std::filesystem::path> modules_paths = extra_modules_dirs;
-        modules_paths.push_back(resource_dir / "modules");
+        std::string build_id;
 #ifdef ONLINE_PLATFORM
-        pimpl->module_manager = std::make_unique<ModuleManager>(modules_paths, module_names,
-                                                                pimpl->online_platform->getBuildId());
-#else
-        pimpl->module_manager = std::make_unique<ModuleManager>(modules_paths, module_names);
+        build_id = pimpl->online_platform->getBuildId();
 #endif
+        pimpl->module_manager =
+            std::make_unique<ModuleManager>(Coercri::GetPrefPath("Knights", "Knights"),
+                                            resource_dir / "modules",
+                                            extra_module_dirs,
+                                            module_load_order,
+                                            build_id);
     }
     pimpl->lobby_controller.setModuleManager(pimpl->module_manager.get());
 

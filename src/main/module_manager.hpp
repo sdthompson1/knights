@@ -36,17 +36,20 @@ struct ModuleManagerImpl;
 
 class ModuleManager {
 public:
-    // modules_paths: directories to search for modules, in order. If the same
-    //   module name appears in more than one directory, the first one found wins.
-    // module_names: if non-empty, this is used directly as the enabled-module
-    //   list and modules.txt is never read. If empty, modules.txt is read (from
-    //   the first directory in modules_paths that contains it) as normal.
-    ModuleManager(std::vector<std::filesystem::path> modules_paths,
-                  std::vector<std::string> module_names,
+    // pref_path: Directory where modules.txt is located.
+    // knights_data_modules_dir: Subdirs of this are considered module dirs, available for use.
+    // extra_module_dirs: Additional module dirs, beyond the ones in knights_data_modules_dir.
+    // module_load_order: List of modules to load in order (if empty, load modules.txt instead).
+    // build_id: Added to the hash - makes different Knights builds incompatible.
+    ModuleManager(std::optional<std::filesystem::path> pref_path,
+                  std::filesystem::path knights_data_modules_dir,
+                  std::vector<std::filesystem::path> extra_module_dirs,
+                  std::vector<std::string> module_load_order,
                   std::string build_id = "");
     ~ModuleManager();
 
-    // Re-read available modules and their checksums from disk
+    // Rediscover available modules and recompute their checksums.
+    // Also reload modules.txt from disk (unless overridden by module_load_order in ctor).
     void update();
 
     // Determine if a module is installed/available locally

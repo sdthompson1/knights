@@ -25,9 +25,9 @@
 
 #include "read_module_names.hpp"
 #include "trim.hpp"
-#include "vfs.hpp"
 
 #include <cctype>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -38,34 +38,47 @@ bool IsValidModuleName(const std::string &name)
     if (name.empty() || !std::isalpha(static_cast<unsigned char>(name[0]))) return false;
     for (size_t i = 1; i < name.size(); ++i) {
         char c = name[i];
-        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') return false;
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_' && c != '-') return false;
     }
     return true;
 }
 
-std::vector<std::string> ReadModuleNames(const VFS &vfs, const std::string &filename)
+std::vector<std::string> ReadModuleNames(const std::optional<std::filesystem::path> &pref_path)
 {
-    if (!vfs.exists(filename)) return {};
-
-    std::ifstream f = vfs.open(filename);
-
     std::vector<std::string> result;
-    std::unordered_set<std::string> seen;
-    std::string line;
 
-    while (std::getline(f, line)) {
-        // Strip comment
-        auto hash_pos = line.find('#');
-        if (hash_pos != std::string::npos) line.erase(hash_pos);
+    if (pref_path) {
+        std::ifstream f(*pref_path / "modules.txt");
 
-        line = Trim(line);
-        if (line.empty()) continue;
+        std::unordered_set<std::string> seen;
+        std::string line;
 
-        if (!IsValidModuleName(line))
-            throw std::runtime_error("Invalid module name in '" + filename + "': '" + line + "'");
+        while (std::getline(f, line)) {
+            // Strip comment
+            auto hash_pos = line.find('#');
+            if (hash_pos != std::string::npos) line.erase(hash_pos);
 
-        if (seen.insert(line).second) result.push_back(line);
+            line = Trim(line);
+            if (line.empty()) continue;
+
+            if (IsValidModuleName(line)) {
+                if (seen.insert(line).second) {
+                    result.push_back(line);
+                }
+            }
+        }
     }
 
     return result;
+}
+
+void WriteModuleNames(const std::optional<std::filesystem::path> &pref_path,
+                      const std::vector<std::string> &names)
+{
+    if (pref_path) {
+        std::ofstream f(*pref_path / "modules.txt");
+        for (const std::string &name : names) {
+            f << name << "\n";
+        }
+    }
 }

@@ -24,15 +24,21 @@
 #ifndef READ_MODULE_NAMES_HPP
 #define READ_MODULE_NAMES_HPP
 
+#include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 
-class VFS;
-
+// Checks whether the given string is valid as a module folder name.
 bool IsValidModuleName(const std::string &name);
 
-// Reads a given file from the vfs and parses module names from it.
-// Returns names in file order, deduplicated. If filename doesn't exist, returns empty vector.
-std::vector<std::string> ReadModuleNames(const VFS &vfs, const std::string &filename);
+// Read modules.txt from the prefs directory, and return module names
+// in file order, deduplicated. If file not found, returns empty vector.
+std::vector<std::string> ReadModuleNames(const std::optional<std::filesystem::path> &pref_path);
+
+// Save the given modules list back to the prefs directory. Overwrites
+// any current list.
+void WriteModuleNames(const std::optional<std::filesystem::path> &pref_path,
+                      const std::vector<std::string> &names);
 
 #endif
