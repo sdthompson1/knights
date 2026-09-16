@@ -39,21 +39,30 @@ public:
     // pref_path: Directory where modules.txt is located.
     // knights_data_modules_dir: Subdirs of this are considered module dirs, available for use.
     // extra_module_dirs: Additional module dirs, beyond the ones in knights_data_modules_dir.
-    // module_load_order: List of modules to load in order (if empty, load modules.txt instead).
+    // cmd_line_load_order: Cmd-line-specified module load order (if empty, reads from modules.txt instead).
     // build_id: Added to the hash - makes different Knights builds incompatible.
     ModuleManager(std::optional<std::filesystem::path> pref_path,
                   std::filesystem::path knights_data_modules_dir,
                   std::vector<std::filesystem::path> extra_module_dirs,
-                  std::vector<std::string> module_load_order,
+                  std::vector<std::string> cmd_line_load_order,
                   std::string build_id = "");
     ~ModuleManager();
 
     // Rediscover available modules and recompute their checksums.
-    // Also reload modules.txt from disk (unless overridden by module_load_order in ctor).
+    // Also reload modules.txt from disk (unless cmd_line_load_order is non-empty, in which
+    // case use that instead).
     void update();
+
+    // Set a new module load order, also saving it to modules.txt.
+    // This also cancels any cmd_line_load_order that was set previously.
+    // It also calls update() afterwards.
+    void setAndSaveLoadOrder(std::vector<std::string> load_order);
 
     // Determine if a module is installed/available locally
     bool isModuleInstalled(const std::string &mod_vfs_name) const;
+
+    // Get the names of all installed modules (in discovery order)
+    std::vector<std::string> getInstalledModules() const;
 
     // Get the user's currently enabled module list (for creating new games)
     std::vector<std::string> getEnabledModules() const;

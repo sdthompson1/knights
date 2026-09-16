@@ -7,13 +7,22 @@ knights_caps                    KNIGHTS
 start_game                      Start Game
 tutorial                        Tutorial
 options                         Options
+mods                            Mods
 credits                         Credits
 quit                            Quit
 start_game_desc                 Start a new game.
 tutorial_desc                   This will explain how to play Knights and guide you through your first quest. Recommended for all new players.
 options_desc                    Change settings and key bindings.
+mods_desc                       Enable or disable game modules and change their load order.
 credits_desc                    Show the game credits.
 quit_desc                       Exit to desktop.
+
+
+# Mods screen
+mods_help                       (Placeholder text) This screen controls which mods will be enabled for starting new games. Install new mods by adding them to your knights_data/modules folder. Then tick the box below to enable. Mods will be loaded in the order shown; use the Up and Down buttons to change the order.
+up                              Up
+down                            Down
+save                            Save
 
 
 # Start Game screen

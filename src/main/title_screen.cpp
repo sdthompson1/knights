@@ -26,6 +26,7 @@
 #include "credits_screen.hpp"
 #include "knights_app.hpp"
 #include "loading_screen.hpp"
+#include "mods_screen.hpp"
 #include "options_screen.hpp"
 #include "start_game_screen.hpp"
 #include "title_screen.hpp"
@@ -61,6 +62,7 @@ private:
     std::unique_ptr<gcn::Button> start_game;
     std::unique_ptr<gcn::Button> tutorial;
     std::unique_ptr<gcn::Button> options;
+    std::unique_ptr<gcn::Button> mods;
     std::unique_ptr<gcn::Button> credits;
     std::unique_ptr<gcn::Button> exit;
 };
@@ -94,6 +96,12 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     options->setSize(w, h);
     options->addActionListener(this);
     container->add(options.get(), x, y);
+    y += yinc;
+
+    mods.reset(new GuiButton(loc.get(LocalKey("mods")).asUTF8()));
+    mods->setSize(w, h);
+    mods->addActionListener(this);
+    container->add(mods.get(), x, y);
     y += yinc;
 
     credits.reset(new GuiButton(loc.get(LocalKey("credits")).asUTF8()));
@@ -150,6 +158,7 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     start_game->addMouseListener(this);
     tutorial->addMouseListener(this);
     options->addMouseListener(this);
+    mods->addMouseListener(this);
     credits->addMouseListener(this);
     exit->addMouseListener(this);
 
@@ -167,6 +176,8 @@ void TitleScreenImpl::mouseEntered(gcn::MouseEvent &e)
         desc = loc.get(LocalKey("tutorial_desc"));
     } else if (e.getSource() == options.get()) {
         desc = loc.get(LocalKey("options_desc"));
+    } else if (e.getSource() == mods.get()) {
+        desc = loc.get(LocalKey("mods_desc"));
     } else if (e.getSource() == credits.get()) {
         desc = loc.get(LocalKey("credits_desc"));
     } else if (e.getSource() == exit.get()) {
@@ -195,6 +206,9 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
 
     } else if (event.getSource() == options.get()) {
         new_screen.reset(new OptionsScreen);
+
+    } else if (event.getSource() == mods.get()) {
+        new_screen.reset(new ModsScreen);
 
     } else if (event.getSource() == credits.get()) {
         new_screen.reset(new CreditsScreen("credits_", ".txt", 70));

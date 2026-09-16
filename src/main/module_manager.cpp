@@ -49,7 +49,7 @@ struct ModuleManagerImpl {
     std::optional<std::filesystem::path> pref_path;
     std::filesystem::path knights_data_modules_dir;
     std::vector<std::filesystem::path> extra_module_dirs;
-    std::vector<std::string> module_names;   // overrides modules.txt if non-empty
+    std::vector<std::string> cmd_line_load_order;
     std::string build_id;
     std::vector<ModuleInfo> modules;  // All available (installed) modules
     std::unordered_map<std::string, size_t> index;   // Index into `modules` vector
@@ -85,14 +85,14 @@ namespace {
 ModuleManager::ModuleManager(std::optional<std::filesystem::path> pref_path,
                              std::filesystem::path knights_data_modules_dir,
                              std::vector<std::filesystem::path> extra_module_dirs,
-                             std::vector<std::string> module_load_order,
+                             std::vector<std::string> cmd_line_load_order,
                              std::string build_id)
     : pimpl(std::make_unique<ModuleManagerImpl>())
 {
     pimpl->pref_path = std::move(pref_path);
     pimpl->knights_data_modules_dir = std::move(knights_data_modules_dir);
     pimpl->extra_module_dirs = std::move(extra_module_dirs);
-    pimpl->module_names = std::move(module_load_order);
+    pimpl->cmd_line_load_order = std::move(cmd_line_load_order);
     pimpl->build_id = std::move(build_id);
 
     // Do an initial update so that we are ready to go from the start
@@ -103,21 +103,29 @@ ModuleManager::~ModuleManager() = default;
 
 void ModuleManager::update()
 {
-    // Read the module load order from modules.txt (or pimpl->module_names override).
+    // Read the module load order from modules.txt (or cmd_line_load_order if set).
     std::vector<std::string> enabled_names;
-    if (!pimpl->module_names.empty()) {
-        // An explicit module list was given (e.g. on the command line).
-        // Use it directly, and do not touch modules.txt at all.
+    if (!pimpl->cmd_line_load_order.empty()) {
+        // Use the cmd line load order, ignoring modules.txt.
         std::unordered_set<std::string> seen;
-        for (const std::string &name : pimpl->module_names) {
+        for (const std::string &name : pimpl->cmd_line_load_order) {
             if (!IsValidModuleName(name)) {
                 throw std::runtime_error("Invalid module name: '" + name + "'");
             }
             if (seen.insert(name).second) enabled_names.push_back(name);
         }
-    } else {
+    } else if (pimpl->pref_path) {
         // Load modules.txt from the prefs directory.
         enabled_names = ReadModuleNames(pimpl->pref_path);
+
+        // If loading fails (or no modules.txt exists), try re-using the previous value
+        // of pimpl->enabled_names. On startup this will just be empty, but if the user
+        // went to the Mods UI (which calls setAndSaveLoadOrder) there might be something
+        // valid there. This at least means that mods set in the UI will work for this
+        // session, even if saving for future sessions fails for some reason.
+        if (enabled_names.empty()) {
+            enabled_names = pimpl->enabled_modules;
+        }
     }
 
     // Discover all installed modules by scanning:
@@ -169,9 +177,27 @@ void ModuleManager::update()
     pimpl->enabled_modules = std::move(enabled_names);
 }
 
+void ModuleManager::setAndSaveLoadOrder(std::vector<std::string> load_order)
+{
+    pimpl->enabled_modules = load_order;
+    WriteModuleNames(pimpl->pref_path, load_order);  // save to modules.txt if possible
+    pimpl->cmd_line_load_order.clear();
+    update();
+}
+
 bool ModuleManager::isModuleInstalled(const std::string &module_name) const
 {
     return pimpl->index.count(module_name) != 0;
+}
+
+std::vector<std::string> ModuleManager::getInstalledModules() const
+{
+    std::vector<std::string> result;
+    result.reserve(pimpl->modules.size());
+    for (const ModuleInfo &info : pimpl->modules) {
+        result.push_back(info.name);
+    }
+    return result;
 }
 
 std::vector<std::string> ModuleManager::getEnabledModules() const
