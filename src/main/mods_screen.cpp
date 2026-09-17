@@ -131,9 +131,13 @@ private:
     std::unique_ptr<gcn::ScrollArea> scroll_area;
     std::unique_ptr<gcn::Button> up_button;
     std::unique_ptr<gcn::Button> down_button;
-    std::unique_ptr<gcn::Button> save_button;
     std::unique_ptr<gcn::Button> refresh_button;
+    std::unique_ptr<gcn::Button> save_button;
     std::unique_ptr<gcn::Button> cancel_button;
+#ifdef ONLINE_PLATFORM
+    std::unique_ptr<gcn::Button> browse_button;
+    std::unique_ptr<gcn::Button> upload_button;
+#endif
 };
 
 
@@ -266,7 +270,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     container->setOpaque(false);
 
     const int pad = 10;
-    const int list_width = 400;
+    const int list_width = 600;
     const int list_height = 300;
     int y = pad;
 
@@ -274,14 +278,32 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     title_label.reset(new gcn::Label(loc.get(LocalKey("mods")).asUTF8()));
     title_label->setForegroundColor(gcn::Color(0, 0, 128));
 
-    // Up / Down buttons (to the right of the list)
-    up_button.reset(new GuiButton(loc.get(LocalKey("up")).asUTF8()));
+    // Side buttons (to the right of the list): Up / Down at the top,
+    // Upload Mod / Refresh List at the bottom.
+    up_button.reset(new GuiButton(loc.get(LocalKey("move_up")).asUTF8()));
     up_button->addActionListener(this);
-    down_button.reset(new GuiButton(loc.get(LocalKey("down")).asUTF8()));
+    down_button.reset(new GuiButton(loc.get(LocalKey("move_down")).asUTF8()));
     down_button->addActionListener(this);
-    const int side_button_width = std::max(up_button->getWidth(), down_button->getWidth()) + 20;
+#ifdef ONLINE_PLATFORM
+    upload_button.reset(new GuiButton(loc.get(LocalKey("upload_mod")).asUTF8()));
+    upload_button->addActionListener(this);
+#endif
+    refresh_button.reset(new GuiButton(loc.get(LocalKey("refresh_list")).asUTF8()));
+    refresh_button->addActionListener(this);
+
+    int side_button_width =
+        std::max(std::max(up_button->getWidth(), down_button->getWidth()),
+                 refresh_button->getWidth());
+#ifdef ONLINE_PLATFORM
+    side_button_width = std::max(side_button_width, upload_button->getWidth());
+#endif
+
     up_button->setWidth(side_button_width);
     down_button->setWidth(side_button_width);
+    refresh_button->setWidth(side_button_width);
+#ifdef ONLINE_PLATFORM
+    upload_button->setWidth(side_button_width);
+#endif
 
     const int width = list_width + pad + side_button_width;
 
@@ -304,20 +326,35 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     scroll_area = MakeScrollArea(*listbox, list_width, list_height);
     container->add(scroll_area.get(), pad, y);
 
-    container->add(up_button.get(), pad + list_width + pad, y);
-    container->add(down_button.get(), pad + list_width + pad, y + up_button->getHeight() + pad);
+    const int side_x = pad + list_width + pad;
+    const int list_bottom = y + scroll_area->getHeight();
 
-    y += scroll_area->getHeight() + 2*pad;
+    // Up / Down: aligned with the top of the list
+    container->add(up_button.get(), side_x, y);
+    container->add(down_button.get(), side_x, y + up_button->getHeight() + pad);
 
-    // Save, Refresh List and Cancel buttons
-    save_button.reset(new GuiButton(loc.get(LocalKey("save")).asUTF8()));
+    // Refresh List: aligned with the bottom of the list; Upload Mod just above it
+    const int refresh_y = list_bottom - refresh_button->getHeight();
+    container->add(refresh_button.get(), side_x, refresh_y);
+#ifdef ONLINE_PLATFORM
+    container->add(upload_button.get(), side_x, refresh_y - pad - upload_button->getHeight());
+#endif
+
+    y = list_bottom + 2*pad;
+
+    // Save, Browse Workshop and Cancel buttons
+    save_button.reset(new GuiButton(loc.get(LocalKey("save_changes")).asUTF8()));
     save_button->addActionListener(this);
-    refresh_button.reset(new GuiButton(loc.get(LocalKey("refresh_list")).asUTF8()));
-    refresh_button->addActionListener(this);
+#ifdef ONLINE_PLATFORM
+    browse_button.reset(new GuiButton(loc.get(LocalKey("browse_workshop")).asUTF8()));
+    browse_button->addActionListener(this);
+#endif
     cancel_button.reset(new GuiButton(loc.get(LocalKey("cancel")).asUTF8()));
     cancel_button->addActionListener(this);
     container->add(save_button.get(), pad, y);
-    container->add(refresh_button.get(), pad + width/2 - refresh_button->getWidth()/2, y);
+#ifdef ONLINE_PLATFORM
+    container->add(browse_button.get(), pad + width/2 - browse_button->getWidth()/2, y);
+#endif
     container->add(cancel_button.get(), pad + width - cancel_button->getWidth(), y);
     y += save_button->getHeight() + pad;
 
@@ -483,6 +520,15 @@ void ModsScreenImpl::action(const gcn::ActionEvent &event)
 
     } else if (event.getSource() == down_button.get()) {
         moveSelected(+1);
+
+#ifdef ONLINE_PLATFORM
+    } else if (event.getSource() == upload_button.get()) {
+        // TODO: go to mod uploading dialog
+
+    } else if (event.getSource() == browse_button.get()) {
+        knights_app.getOnlinePlatform().browseWorkshop();
+#endif
+
     }
 }
 

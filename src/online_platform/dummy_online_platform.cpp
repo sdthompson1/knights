@@ -36,6 +36,7 @@
 #include <random>
 #include <sstream>
 #include <cstring>
+#include <iostream>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -501,6 +502,12 @@ std::vector<OnlinePlatform::ModInfo> DummyOnlinePlatform::getInstalledMods()
         { "workshop_1001", "/tmp/mod_1001" },
         { "workshop_1002", "/tmp/mod_1002" }
     };
+}
+
+void DummyOnlinePlatform::browseWorkshop()
+{
+    // Just print a debug message
+    std::cout << "DummyOnlinePlatform::browseWorkshop called" << std::endl;
 }
 
 #endif

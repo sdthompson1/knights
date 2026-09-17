@@ -19,10 +19,12 @@ quit_desc                       Exit to desktop.
 
 
 # Mods screen
-mods_help                       (Placeholder text) This screen controls which mods will be enabled for starting new games. Install new mods by adding them to your knights_data/modules folder. Then tick the box below to enable. Mods will be loaded in the order shown; use the Up and Down buttons to change the order.
-up                              Up
-down                            Down
-save                            Save
+mods_help                       If you have installed any Knights mods, they will appear below. Use this panel to enable or disable mods, or change their load order.\n\nThe selections below will be used for newly created games. If you join someone else's game, then the host's mods will be used instead.
+move_up                         Move Up
+move_down                       Move Down
+save_changes                    Save Changes
+upload_mod                      Upload Mod…
+browse_workshop                 Browse Workshop
 
 
 # Start Game screen

@@ -191,6 +191,7 @@ public:
     };
     virtual std::vector<ModInfo> getInstalledMods() = 0;
 
+    virtual void browseWorkshop() = 0;  // Open Workshop (or equivalent) in a web browser
 
 };
 

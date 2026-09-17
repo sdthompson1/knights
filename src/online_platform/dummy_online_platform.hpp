@@ -81,6 +81,7 @@ public:
 
     // Mods - a hard-coded list
     virtual std::vector<ModInfo> getInstalledMods() override;
+    virtual void browseWorkshop() override;
 
     // Public methods for DummyPlatformLobby to use
     bool sendMessage(unsigned char msg_type, const std::string& payload);
