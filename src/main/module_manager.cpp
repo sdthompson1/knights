@@ -26,6 +26,7 @@
 #include "compute_checksum.hpp"
 #include "game_module_spec.hpp"
 #include "module_manager.hpp"
+#include "online_platform.hpp"
 #include "read_module_names.hpp"
 #include "version.hpp"
 #include "vfs.hpp"
@@ -46,6 +47,10 @@ struct ModuleInfo {
 };
 
 struct ModuleManagerImpl {
+#ifdef ONLINE_PLATFORM
+    explicit ModuleManagerImpl(OnlinePlatform &op) : online_platform(op) { }
+    OnlinePlatform &online_platform;
+#endif
     std::optional<std::filesystem::path> pref_path;
     std::filesystem::path knights_data_modules_dir;
     std::vector<std::filesystem::path> extra_module_dirs;
@@ -61,13 +66,11 @@ namespace {
     // (if it is a valid module directory)
     void AddModuleInfo(std::vector<ModuleInfo> &infos,
                        std::unordered_set<std::string> &known,
+                       std::string name,  // "VFS mod name" e.g. "workshop_123" or dir name
                        const std::filesystem::path &path)
     {
         // Only directories are accepted
         if (!std::filesystem::is_directory(path)) return;
-
-        // The "VFS mod name" comes from the directory name
-        std::string name = path.filename().string();
 
         // Only accept valid mod names
         if (!IsValidModuleName(name)) return;
@@ -85,15 +88,24 @@ namespace {
 ModuleManager::ModuleManager(std::optional<std::filesystem::path> pref_path,
                              std::filesystem::path knights_data_modules_dir,
                              std::vector<std::filesystem::path> extra_module_dirs,
-                             std::vector<std::string> cmd_line_load_order,
-                             std::string build_id)
-    : pimpl(std::make_unique<ModuleManagerImpl>())
+                             std::vector<std::string> cmd_line_load_order
+#ifdef ONLINE_PLATFORM
+                             , OnlinePlatform &online_platform
+#endif
+                             )
+    : pimpl(std::make_unique<ModuleManagerImpl>(
+#ifdef ONLINE_PLATFORM
+          online_platform
+#endif
+      ))
 {
     pimpl->pref_path = std::move(pref_path);
     pimpl->knights_data_modules_dir = std::move(knights_data_modules_dir);
     pimpl->extra_module_dirs = std::move(extra_module_dirs);
     pimpl->cmd_line_load_order = std::move(cmd_line_load_order);
-    pimpl->build_id = std::move(build_id);
+#ifdef ONLINE_PLATFORM
+    pimpl->build_id = online_platform.getBuildId();
+#endif
 
     // Do an initial update so that we are ready to go from the start
     update();
@@ -138,7 +150,7 @@ void ModuleManager::update()
 
     // (1) knights_data modules (sorted alphabetically)
     for (const auto &entry : std::filesystem::directory_iterator(pimpl->knights_data_modules_dir)) {
-        AddModuleInfo(new_modules, known, entry.path());
+        AddModuleInfo(new_modules, known, entry.path().filename().string(), entry.path());
     }
     std::sort(new_modules.begin(), new_modules.end(),
               [](const ModuleInfo &lhs, const ModuleInfo &rhs) {
@@ -147,11 +159,15 @@ void ModuleManager::update()
 
     // (2) extra_module_dirs (in order given, and after the knights_data modules)
     for (const auto &path : pimpl->extra_module_dirs) {
-        AddModuleInfo(new_modules, known, path);
+        AddModuleInfo(new_modules, known, path.filename().string(), path);
     }
 
+#ifdef ONLINE_PLATFORM
     // (3) Workshop modules, after the others, in the order returned by the online platform.
-    // TODO
+    for (const OnlinePlatform::ModInfo &info : pimpl->online_platform.getInstalledMods()) {
+        AddModuleInfo(new_modules, known, info.vfs_name, info.path);
+    }
+#endif
 
     // Filter down the load order (enabled_names) to only include actually installed names.
     enabled_names.erase(

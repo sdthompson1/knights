@@ -79,6 +79,9 @@ public:
     // This platform just returns a hard-coded language
     virtual std::string getGameLanguage() override { return "english"; }
 
+    // Mods - a hard-coded list
+    virtual std::vector<ModInfo> getInstalledMods() override;
+
     // Public methods for DummyPlatformLobby to use
     bool sendMessage(unsigned char msg_type, const std::string& payload);
     bool receiveResponse(std::string& response_data);

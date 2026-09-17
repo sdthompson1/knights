@@ -26,6 +26,7 @@
 
 #ifdef ONLINE_PLATFORM
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -180,6 +181,16 @@ public:
     // the "API language code" column.)
     // If the current game language is unknown, this can return an empty string instead.
     virtual std::string getGameLanguage() { return std::string(); }
+
+
+    // Mods/Workshop:
+
+    struct ModInfo {
+        std::string vfs_name;     // something like "workshop_12345"
+        std::filesystem::path path;   // install path on disk
+    };
+    virtual std::vector<ModInfo> getInstalledMods() = 0;
+
 
 };
 

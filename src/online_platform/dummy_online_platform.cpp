@@ -493,4 +493,14 @@ void DummyOnlinePlatform::create_network_driver(const PlayerID &my_user_id)
     network_driver.reset(new DummyNetworkDriver(my_user_id));
 }
 
+std::vector<OnlinePlatform::ModInfo> DummyOnlinePlatform::getInstalledMods()
+{
+    // This is just a hard-coded list for testing purposes.
+    // Note: ModuleManager will only use these if the directory actually exists.
+    return {
+        { "workshop_1001", "/tmp/mod_1001" },
+        { "workshop_1002", "/tmp/mod_1002" }
+    };
+}
+
 #endif

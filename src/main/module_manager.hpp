@@ -34,18 +34,24 @@ class VFS;
 struct GameModuleSpec;
 struct ModuleManagerImpl;
 
+#ifdef ONLINE_PLATFORM
+class OnlinePlatform;
+#endif
+
 class ModuleManager {
 public:
     // pref_path: Directory where modules.txt is located.
     // knights_data_modules_dir: Subdirs of this are considered module dirs, available for use.
     // extra_module_dirs: Additional module dirs, beyond the ones in knights_data_modules_dir.
     // cmd_line_load_order: Cmd-line-specified module load order (if empty, reads from modules.txt instead).
-    // build_id: Added to the hash - makes different Knights builds incompatible.
     ModuleManager(std::optional<std::filesystem::path> pref_path,
                   std::filesystem::path knights_data_modules_dir,
                   std::vector<std::filesystem::path> extra_module_dirs,
-                  std::vector<std::string> cmd_line_load_order,
-                  std::string build_id = "");
+                  std::vector<std::string> cmd_line_load_order
+#ifdef ONLINE_PLATFORM
+                  , OnlinePlatform &online_platform  // must out-live the ModuleManager
+#endif
+                  );
     ~ModuleManager();
 
     // Rediscover available modules and recompute their checksums.

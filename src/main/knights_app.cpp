@@ -300,16 +300,15 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
     pimpl->client_vfs = client_vfs;
 
     {
-        std::string build_id;
-#ifdef ONLINE_PLATFORM
-        build_id = pimpl->online_platform->getBuildId();
-#endif
         pimpl->module_manager =
             std::make_unique<ModuleManager>(Coercri::GetPrefPath("Knights", "Knights"),
                                             resource_dir / "modules",
                                             extra_module_dirs,
-                                            module_load_order,
-                                            build_id);
+                                            module_load_order
+#ifdef ONLINE_PLATFORM
+                                            , *pimpl->online_platform
+#endif
+                                            );
     }
     pimpl->lobby_controller.setModuleManager(pimpl->module_manager.get());
 
