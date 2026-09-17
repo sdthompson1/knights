@@ -25,6 +25,11 @@ move_down                       Move Down
 save_changes                    Save Changes
 upload_mod                      Upload Mod…
 browse_workshop                 Browse Workshop
+move_up_tooltip                 Move this mod up one place in the list. The order matters if there are dependencies (a mod must load after its dependencies).
+move_down_tooltip               Move this mod down one place in the list. The order matters if there are dependencies (a mod must load after its dependencies).
+upload_mod_tooltip              Use this to upload a mod you have created to the Workshop.
+refresh_list_tooltip            Refresh the list of installed mods.
+browse_workshop_tooltip         Open the Steam Workshop page.
 
 
 # Start Game screen

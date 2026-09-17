@@ -35,6 +35,7 @@
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
 #include "gui_text_wrap.hpp"
+#include "tooltip_widget.hpp"
 
 #include "guichan.hpp"
 
@@ -48,6 +49,9 @@ namespace {
 
     // The "base" module is always enabled and always loaded first.
     const char * const BASE_MODULE_NAME = "base";
+
+    // The "tutorial" module is filtered out from the list
+    const char * const TUTORIAL_MODULE_NAME = "tutorial";
 
     struct ModEntry {
         std::string name;
@@ -100,10 +104,12 @@ private:
     const std::vector<ModEntry> &entries;
 };
 
-class ModsScreenImpl : public gcn::ActionListener {
+class ModsScreenImpl : public gcn::ActionListener, public gcn::MouseListener {
 public:
     ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
     void action(const gcn::ActionEvent &event) override;
+    void mouseEntered(gcn::MouseEvent &e) override;
+    void mouseExited(gcn::MouseEvent &e) override;
 
     // Called by ModListBox when the user clicks a check box.
     void toggleEnabled(int index);
@@ -137,6 +143,13 @@ private:
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<gcn::Button> browse_button;
     std::unique_ptr<gcn::Button> upload_button;
+#endif
+    std::unique_ptr<TooltipWidget> up_tooltip;
+    std::unique_ptr<TooltipWidget> down_tooltip;
+    std::unique_ptr<TooltipWidget> refresh_tooltip;
+#ifdef ONLINE_PLATFORM
+    std::unique_ptr<TooltipWidget> upload_tooltip;
+    std::unique_ptr<TooltipWidget> browse_tooltip;
 #endif
 };
 
@@ -358,6 +371,47 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     container->add(cancel_button.get(), pad + width - cancel_button->getWidth(), y);
     y += save_button->getHeight() + pad;
 
+    // Tooltips -- added last so they render on top of all other widgets
+    const int TOOLTIP_MAX_WIDTH = list_width / 2;
+    Coercri::Timer &tmr = knights_app.getTimer();
+
+    up_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("move_up_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    down_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("move_down_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    refresh_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("refresh_list_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+#ifdef ONLINE_PLATFORM
+    upload_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("upload_mod_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    browse_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("browse_workshop_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+#endif
+
+    // Side button tooltips appear to the left of the button (over the list)
+    auto place_side_tooltip = [&](TooltipWidget *tt, gcn::Widget *btn) {
+        container->add(tt, btn->getX() - tt->getWidth() - 3, btn->getY());
+    };
+    place_side_tooltip(up_tooltip.get(),      up_button.get());
+    place_side_tooltip(down_tooltip.get(),    down_button.get());
+    place_side_tooltip(refresh_tooltip.get(), refresh_button.get());
+#ifdef ONLINE_PLATFORM
+    place_side_tooltip(upload_tooltip.get(),  upload_button.get());
+
+    // Browse Workshop tooltip appears above the button
+    container->add(browse_tooltip.get(),
+                   browse_button->getX() + 15,
+                   browse_button->getY() - browse_tooltip->getHeight() - 3);
+#endif
+
+    up_button->addMouseListener(this);
+    down_button->addMouseListener(this);
+    refresh_button->addMouseListener(this);
+#ifdef ONLINE_PLATFORM
+    upload_button->addMouseListener(this);
+    browse_button->addMouseListener(this);
+#endif
+
     container->setSize(2*pad + width, y);
 
     panel.reset(new GuiPanel(container.get()));
@@ -368,10 +422,13 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 }
 
 // Build the initial list: enabled modules first (in load order), then
-// all other installed modules, sorted alphabetically.
+// all other installed modules (alphabetically). Updates the
+// ModuleManager first.
 void ModsScreenImpl::populateFromModuleManager()
 {
-    const ModuleManager &mm = knights_app.getModuleManager();
+    ModuleManager &mm = knights_app.getModuleManager();
+    mm.update();
+
     const std::vector<std::string> enabled = mm.getEnabledModules();
     std::vector<std::string> installed = mm.getInstalledModules();
 
@@ -379,14 +436,14 @@ void ModsScreenImpl::populateFromModuleManager()
 
     std::unordered_set<std::string> seen;
     for (const std::string &name : enabled) {
-        if (seen.insert(name).second) {
+        if (seen.insert(name).second && name != TUTORIAL_MODULE_NAME) {
             entries.push_back(ModEntry{name, true, false});
         }
     }
 
     std::sort(installed.begin(), installed.end());
     for (const std::string &name : installed) {
-        if (seen.insert(name).second) {
+        if (seen.insert(name).second && name != TUTORIAL_MODULE_NAME) {
             entries.push_back(ModEntry{name, false, false});
         }
     }
@@ -394,17 +451,18 @@ void ModsScreenImpl::populateFromModuleManager()
     enforceBaseModule();
 }
 
-// Re-scan installed modules, preserving the user's current ordering and
-// enabled/disabled choices as far as possible.
+// Update the ModuleManager (which re-scans installed modules), then
+// drop any uninstalled modules from the list, and add newly-installed
+// modules (disabled) to the end of the list (alphabetically). Does
+// not re-read modules.txt or change the enabled-state of any module
+// in the list.
 void ModsScreenImpl::refreshList()
 {
     ModuleManager &mm = knights_app.getModuleManager();
     mm.update();
 
     const std::vector<std::string> installed = mm.getInstalledModules();
-    const std::vector<std::string> enabled = mm.getEnabledModules();
     const std::unordered_set<std::string> installed_set(installed.begin(), installed.end());
-    const std::unordered_set<std::string> enabled_set(enabled.begin(), enabled.end());
 
     // Remember the selected module (by name) so we can restore it afterwards
     std::string selected_name;
@@ -417,18 +475,20 @@ void ModsScreenImpl::refreshList()
             [&installed_set](const ModEntry &e) { return installed_set.count(e.name) == 0; }),
         entries.end());
 
-    // Add newly discovered modules at the end (alphabetically). Their initial
-    // enabled state comes from the module manager's current enabled list.
+    // Add newly discovered modules at the end (alphabetically), disabled.
+    // Exception: TUTORIAL_MODULE_NAME is ignored.
     std::unordered_set<std::string> present;
     for (const ModEntry &e : entries) present.insert(e.name);
 
     std::vector<std::string> new_names;
     for (const std::string &name : installed) {
-        if (present.count(name) == 0) new_names.push_back(name);
+        if (present.count(name) == 0 && name != TUTORIAL_MODULE_NAME) {
+            new_names.push_back(name);
+        }
     }
     std::sort(new_names.begin(), new_names.end());
     for (const std::string &name : new_names) {
-        entries.push_back(ModEntry{name, enabled_set.count(name) != 0, false});
+        entries.push_back(ModEntry{name, false, false});
     }
 
     enforceBaseModule();
@@ -529,6 +589,40 @@ void ModsScreenImpl::action(const gcn::ActionEvent &event)
         knights_app.getOnlinePlatform().browseWorkshop();
 #endif
 
+    }
+}
+
+void ModsScreenImpl::mouseEntered(gcn::MouseEvent &e)
+{
+    if (e.getSource() == up_button.get()) {
+        up_tooltip->scheduleShow();
+    } else if (e.getSource() == down_button.get()) {
+        down_tooltip->scheduleShow();
+    } else if (e.getSource() == refresh_button.get()) {
+        refresh_tooltip->scheduleShow();
+#ifdef ONLINE_PLATFORM
+    } else if (e.getSource() == upload_button.get()) {
+        upload_tooltip->scheduleShow();
+    } else if (e.getSource() == browse_button.get()) {
+        browse_tooltip->scheduleShow();
+#endif
+    }
+}
+
+void ModsScreenImpl::mouseExited(gcn::MouseEvent &e)
+{
+    if (e.getSource() == up_button.get()) {
+        up_tooltip->cancelShow();
+    } else if (e.getSource() == down_button.get()) {
+        down_tooltip->cancelShow();
+    } else if (e.getSource() == refresh_button.get()) {
+        refresh_tooltip->cancelShow();
+#ifdef ONLINE_PLATFORM
+    } else if (e.getSource() == upload_button.get()) {
+        upload_tooltip->cancelShow();
+    } else if (e.getSource() == browse_button.get()) {
+        browse_tooltip->cancelShow();
+#endif
     }
 }
 
