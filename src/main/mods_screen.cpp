@@ -42,6 +42,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <unordered_set>
 #include <vector>
 
@@ -53,16 +54,27 @@ namespace {
     // The "tutorial" module is filtered out from the list
     const char * const TUTORIAL_MODULE_NAME = "tutorial";
 
+    // How often to poll the online platform for mod titles
+    const unsigned int TITLE_POLL_INTERVAL_MS = 200;
+
     struct ModEntry {
-        std::string name;
+        std::string name;    // "vfs mod name" (identifier; this is what gets saved)
+        std::string title;   // Displayed in the list (UTF-8). Same as name until/unless
+                             // the online platform gives us a proper title.
+        bool title_pending;  // true if still waiting for the online platform
         bool enabled;
         bool locked;   // true if the user cannot toggle or move this entry (i.e. "base")
     };
 
+    bool TitleLess(const ModEntry &a, const ModEntry &b)
+    {
+        return std::tie(a.title, a.name) < std::tie(b.title, b.name);
+    }
+
     // Colour used for locked entries
     const gcn::Color LOCKED_COLOUR(150, 150, 150);
 
-    // Simple ListModel exposing the names from a vector<ModEntry>.
+    // Simple ListModel exposing the titles from a vector<ModEntry>.
     class ModListModel : public gcn::ListModel {
     public:
         explicit ModListModel(const std::vector<ModEntry> &e) : entries(e) { }
@@ -72,7 +84,7 @@ namespace {
         }
 
         std::string getElementAt(int i) override {
-            if (i >= 0 && i < int(entries.size())) return entries[i].name;
+            if (i >= 0 && i < int(entries.size())) return entries[i].title;
             return std::string();
         }
 
@@ -114,9 +126,15 @@ public:
     // Called by ModListBox when the user clicks a check box.
     void toggleEnabled(int index);
 
+    // Called every frame. Polls for any mod titles that we are still waiting for.
+    void update();
+
 private:
     void populateFromModuleManager();
     void refreshList();
+    void sendTitleQuery(const std::vector<std::string> &names);
+    ModEntry makeEntry(const std::string &name, bool enabled);
+    void resolveTitle(ModEntry &entry);
     void enforceBaseModule();
     void moveSelected(int delta);
     void listChanged();
@@ -127,6 +145,8 @@ private:
 
     std::vector<ModEntry> entries;
     std::unique_ptr<ModListModel> list_model;
+    bool titles_pending;   // true if any entry might have title_pending set
+    unsigned int last_poll_msec;
 
     std::unique_ptr<GuiCentre> centre;
     std::unique_ptr<GuiPanel> panel;
@@ -272,7 +292,7 @@ void ModListBox::keyPressed(gcn::KeyEvent &keyEvent)
 //
 
 ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
-    : knights_app(app), window(win), gui(g)
+    : knights_app(app), window(win), gui(g), titles_pending(false), last_poll_msec(0)
 {
     const Localization &loc = knights_app.getLocalization();
 
@@ -430,25 +450,94 @@ void ModsScreenImpl::populateFromModuleManager()
     mm.update();
 
     const std::vector<std::string> enabled = mm.getEnabledModules();
-    std::vector<std::string> installed = mm.getInstalledModules();
+    const std::vector<std::string> installed = mm.getInstalledModules();
+
+    std::vector<std::string> all_names = enabled;
+    all_names.insert(all_names.end(), installed.begin(), installed.end());
+    sendTitleQuery(all_names);
 
     entries.clear();
 
     std::unordered_set<std::string> seen;
     for (const std::string &name : enabled) {
         if (seen.insert(name).second && name != TUTORIAL_MODULE_NAME) {
-            entries.push_back(ModEntry{name, true, false});
+            entries.push_back(makeEntry(name, true));
         }
     }
 
-    std::sort(installed.begin(), installed.end());
+    const size_t num_enabled = entries.size();
     for (const std::string &name : installed) {
         if (seen.insert(name).second && name != TUTORIAL_MODULE_NAME) {
-            entries.push_back(ModEntry{name, false, false});
+            entries.push_back(makeEntry(name, false));
         }
     }
+    std::sort(entries.begin() + num_enabled, entries.end(), TitleLess);
 
     enforceBaseModule();
+}
+
+// Ask the online platform (if any) for the titles of the given mods.
+// Results are picked up by resolveTitle.
+void ModsScreenImpl::sendTitleQuery(const std::vector<std::string> &names)
+{
+#ifdef ONLINE_PLATFORM
+    knights_app.getOnlinePlatform().sendModQuery(names);
+#endif
+    titles_pending = true;   // update() will clear this once all titles are resolved
+}
+
+// Make a new ModEntry. The title is looked up immediately if it is available,
+// otherwise it is set to the vfs name for now (and update() will fix it later).
+ModEntry ModsScreenImpl::makeEntry(const std::string &name, bool enabled)
+{
+    ModEntry entry{name, name, true, enabled, false};
+    resolveTitle(entry);
+    return entry;
+}
+
+// Check whether the title query result is available yet. If so, set
+// entry.title and clear entry.title_pending.
+void ModsScreenImpl::resolveTitle(ModEntry &entry)
+{
+#ifdef ONLINE_PLATFORM
+    OnlinePlatform::ModDetails details;
+    switch (knights_app.getOnlinePlatform().getModQueryResult(entry.name, details)) {
+    case OnlinePlatform::MQR_WAITING:
+        return;
+    case OnlinePlatform::MQR_SUCCESS:
+        entry.title = details.title.asUTF8();
+        break;
+    case OnlinePlatform::MQR_FAILED:
+        // Assume this is a local (non-workshop) mod, and just use the vfs name
+        entry.title = entry.name;
+        break;
+    }
+#endif
+    entry.title_pending = false;
+}
+
+void ModsScreenImpl::update()
+{
+    if (!titles_pending) return;
+
+    const unsigned int now = knights_app.getTimer().getMsec();
+    if (now - last_poll_msec < TITLE_POLL_INTERVAL_MS) return;
+    last_poll_msec = now;
+
+    // Note: Titles are replaced in-place. We don't re-sort the list at this point.
+    bool changed = false;
+    titles_pending = false;
+    for (ModEntry &entry : entries) {
+        if (entry.title_pending) {
+            resolveTitle(entry);
+            if (entry.title_pending) {
+                titles_pending = true;
+            } else {
+                changed = true;
+            }
+        }
+    }
+    if (changed) listChanged();
 }
 
 // Update the ModuleManager (which re-scans installed modules), then
@@ -464,6 +553,8 @@ void ModsScreenImpl::refreshList()
     const std::vector<std::string> installed = mm.getInstalledModules();
     const std::unordered_set<std::string> installed_set(installed.begin(), installed.end());
 
+    sendTitleQuery(installed);
+
     // Remember the selected module (by name) so we can restore it afterwards
     std::string selected_name;
     const int sel = listbox->getSelected();
@@ -475,21 +566,23 @@ void ModsScreenImpl::refreshList()
             [&installed_set](const ModEntry &e) { return installed_set.count(e.name) == 0; }),
         entries.end());
 
+    // Re-check the titles of the existing entries (update() will do this). The
+    // current title stays on display in the meantime.
+    std::unordered_set<std::string> present;
+    for (ModEntry &e : entries) {
+        e.title_pending = true;
+        present.insert(e.name);
+    }
+
     // Add newly discovered modules at the end (alphabetically), disabled.
     // Exception: TUTORIAL_MODULE_NAME is ignored.
-    std::unordered_set<std::string> present;
-    for (const ModEntry &e : entries) present.insert(e.name);
-
-    std::vector<std::string> new_names;
+    const size_t num_existing = entries.size();
     for (const std::string &name : installed) {
         if (present.count(name) == 0 && name != TUTORIAL_MODULE_NAME) {
-            new_names.push_back(name);
+            entries.push_back(makeEntry(name, false));
         }
     }
-    std::sort(new_names.begin(), new_names.end());
-    for (const std::string &name : new_names) {
-        entries.push_back(ModEntry{name, false, false});
-    }
+    std::sort(entries.begin() + num_existing, entries.end(), TitleLess);
 
     enforceBaseModule();
 
@@ -635,4 +728,9 @@ bool ModsScreen::start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Windo
 {
     pimpl.reset(new ModsScreenImpl(knights_app, w, gui));
     return true;
+}
+
+void ModsScreen::update()
+{
+    pimpl->update();
 }

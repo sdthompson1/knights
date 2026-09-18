@@ -28,6 +28,7 @@
 
 #include "online_platform.hpp"
 #include <chrono>
+#include <map>
 #include <optional>
 
 // DummyOnlinePlatform implements the OnlinePlatform interface by
@@ -117,6 +118,7 @@ private:
     std::chrono::steady_clock::time_point last_mod_query_time;
     std::chrono::steady_clock::time_point mod_upload_start_time;
     std::filesystem::path upload_dir;
+    std::map<std::string, UTF8String> mod_title_cache;
 
     bool connect_to_server();
 

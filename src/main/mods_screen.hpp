@@ -37,6 +37,7 @@ class ModsScreenImpl;
 class ModsScreen : public Screen {
 public:
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
+    virtual void update();
 
 private:
     boost::shared_ptr<ModsScreenImpl> pimpl;

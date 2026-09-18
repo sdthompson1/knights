@@ -502,12 +502,18 @@ void DummyOnlinePlatform::create_network_driver(const PlayerID &my_user_id)
 
 std::vector<OnlinePlatform::InstalledMod> DummyOnlinePlatform::getInstalledMods()
 {
-    // This is just a hard-coded list for testing purposes.
-    // Note: ModuleManager will only use these if the directory actually exists.
-    return {
-        { "workshop_1001", "/tmp/mod_1001" },
-        { "workshop_1002", "/tmp/mod_1002" }
-    };
+    // Look in "/tmp/knights_workshop/" for (fake) Workshop modules...
+    std::vector<InstalledMod> result;
+    for (const auto &entry : std::filesystem::directory_iterator("/tmp/knights_workshop")) {
+        if (std::filesystem::is_directory(entry.path())) {
+            std::string name = "workshop_" + entry.path().filename().string();
+            InstalledMod im;
+            im.vfs_name = name;
+            im.path = entry.path();
+            result.push_back(im);
+        }
+    }
+    return result;
 }
 
 void DummyOnlinePlatform::sendModQuery(const std::vector<std::string> &vfs_mod_names)
@@ -521,17 +527,29 @@ OnlinePlatform::ModQueryResult
 {
     // Workshop mod names always begin "workshop_":
     if (vfs_mod_name.substr(0, 9) == "workshop_") {
+
+        auto it = mod_title_cache.find(vfs_mod_name);
+        if (it != mod_title_cache.end()) {
+            // Return cached result
+            details_out.title = it->second;
+            return MQR_SUCCESS;
+        }
+
         // Simulate a small time delay while the query is in progress
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - last_mod_query_time);
         if (elapsed.count() < 3) {
             return MQR_WAITING;
-        } else {
-            // Return a simulated title, since we don't have a real backend to query
-            details_out.title = UTF8String::fromUTF8Safe("Workshop #" + vfs_mod_name.substr(9));
-            return MQR_SUCCESS;
         }
+
+        // The (pretend) query to the online server has now completed, so add to our cache
+        // and return a success result.
+        UTF8String title = UTF8String::fromUTF8Safe("---Workshop #" + vfs_mod_name.substr(9));
+        mod_title_cache[vfs_mod_name] = title;
+        details_out.title = title;
+        return MQR_SUCCESS;
+
     } else {
-        // This must be a local (non-Workshop) mod, so the query fails
+        // This must be a local (non-Workshop) mod, so the query fails immediately
         return MQR_FAILED;
     }
 }
