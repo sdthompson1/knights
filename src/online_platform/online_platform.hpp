@@ -185,13 +185,48 @@ public:
 
     // Mods/Workshop:
 
-    struct ModInfo {
+    // Get installed Workshop mods, and their path on disk.
+    struct InstalledMod {
         std::string vfs_name;     // something like "workshop_12345"
         std::filesystem::path path;   // install path on disk
     };
-    virtual std::vector<ModInfo> getInstalledMods() = 0;
+    virtual std::vector<InstalledMod> getInstalledMods() = 0;
 
-    virtual void browseWorkshop() = 0;  // Open Workshop (or equivalent) in a web browser
+    // Query further details about mods.
+    // Call sendModQuery first, then use getModQueryResult to check results.
+    struct ModDetails {
+        UTF8String title;
+        // TODO: add other stats e.g. number of current subscribers?
+    };
+    enum ModQueryResult {
+        MQR_WAITING,  // still waiting for the query result
+        MQR_SUCCESS,  // details were returned
+        MQR_FAILED    // query failed (e.g. mod doesn't exist)
+    };
+    virtual void sendModQuery(const std::vector<std::string> &vfs_mod_names) = 0;
+    virtual ModQueryResult getModQueryResult(const std::string &vfs_mod_name,
+                                             ModDetails &details_out) = 0;
+
+    // Mod uploading.
+    // 1) Call isFirstTimeUpload to check if this is a first-time upload or a re-upload
+    //    (affects UI messages). For Steam this just checks for workshop_item_id.txt in
+    //    the mod folder.
+    // 2) Call uploadMod to start an upload for the given path. (This throws if another
+    //    upload is already in progress.)
+    // 3) Check getUploadProgress to check status. Returns integer percentage progress if
+    //    still ongoing, or a UTF8String error message (English only for now) on failure.
+    //    The upload can't be stopped once it is started.
+    enum UploadStatus {
+        UPLOAD_IN_PROGRESS,
+        UPLOAD_COMPLETE,
+        UPLOAD_ERROR
+    };
+    virtual bool isFirstTimeUpload(const std::filesystem::path &local_mod_dir) = 0;
+    virtual void uploadMod(const std::filesystem::path &local_mod_dir) = 0;
+    virtual UploadStatus getUploadStatus(int &progress_out, UTF8String &error_out) = 0;
+
+    // Open the Workshop (or equivalent) in a web browser
+    virtual void browseWorkshop() = 0;
 
 };
 

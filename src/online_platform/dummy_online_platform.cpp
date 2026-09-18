@@ -37,6 +37,7 @@
 #include <sstream>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -494,7 +495,12 @@ void DummyOnlinePlatform::create_network_driver(const PlayerID &my_user_id)
     network_driver.reset(new DummyNetworkDriver(my_user_id));
 }
 
-std::vector<OnlinePlatform::ModInfo> DummyOnlinePlatform::getInstalledMods()
+
+//
+// Dummy Workshop implementation
+//
+
+std::vector<OnlinePlatform::InstalledMod> DummyOnlinePlatform::getInstalledMods()
 {
     // This is just a hard-coded list for testing purposes.
     // Note: ModuleManager will only use these if the directory actually exists.
@@ -502,6 +508,73 @@ std::vector<OnlinePlatform::ModInfo> DummyOnlinePlatform::getInstalledMods()
         { "workshop_1001", "/tmp/mod_1001" },
         { "workshop_1002", "/tmp/mod_1002" }
     };
+}
+
+void DummyOnlinePlatform::sendModQuery(const std::vector<std::string> &vfs_mod_names)
+{
+    last_mod_query_time = std::chrono::steady_clock::now();
+}
+
+OnlinePlatform::ModQueryResult
+    DummyOnlinePlatform::getModQueryResult(const std::string &vfs_mod_name,
+                                           ModDetails &details_out)
+{
+    // Workshop mod names always begin "workshop_":
+    if (vfs_mod_name.substr(0, 9) == "workshop_") {
+        // Simulate a small time delay while the query is in progress
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - last_mod_query_time);
+        if (elapsed.count() < 3) {
+            return MQR_WAITING;
+        } else {
+            // Return a simulated title, since we don't have a real backend to query
+            details_out.title = UTF8String::fromUTF8Safe("Workshop #" + vfs_mod_name.substr(9));
+            return MQR_SUCCESS;
+        }
+    } else {
+        // This must be a local (non-Workshop) mod, so the query fails
+        return MQR_FAILED;
+    }
+}
+
+const char * const WORKSHOP_ITEM_ID_FILENAME = "workshop_item_id.txt";
+
+bool DummyOnlinePlatform::isFirstTimeUpload(const std::filesystem::path &local_mod_dir)
+{
+    return std::filesystem::exists(local_mod_dir / WORKSHOP_ITEM_ID_FILENAME);
+}
+
+void DummyOnlinePlatform::uploadMod(const std::filesystem::path &local_mod_dir)
+{
+    // Start a timer
+    mod_upload_start_time = std::chrono::steady_clock::now();
+
+    // Save the local path
+    upload_dir = local_mod_dir;
+}
+
+OnlinePlatform::UploadStatus DummyOnlinePlatform::getUploadStatus(int &progress_out, UTF8String &error_out)
+{
+    auto elapsed = std::chrono::steady_clock::now() - mod_upload_start_time;
+    double elapsed_secs = std::chrono::duration<double>(elapsed).count();
+    if (elapsed_secs < 10.0) {
+        // Still in progress
+        progress_out = (10.0 - elapsed_secs) * 10.0;
+        return UPLOAD_IN_PROGRESS;
+    }
+
+    // If error.txt present, simulate an error
+    if (std::filesystem::exists(upload_dir / "error.txt")) {
+        error_out = UTF8String::fromUTF8Safe("error.txt file exists, simulating error message");
+        return UPLOAD_ERROR;
+    }
+
+    // Otherwise, simulate success
+    // Also create the workshop_item_id file if it doesn't exist already
+    std::filesystem::path p = upload_dir / WORKSHOP_ITEM_ID_FILENAME;
+    if (!std::filesystem::exists(p)) {
+        std::ofstream str(p);  // create an empty file
+    }
+    return UPLOAD_COMPLETE;
 }
 
 void DummyOnlinePlatform::browseWorkshop()

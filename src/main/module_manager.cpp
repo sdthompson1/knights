@@ -164,8 +164,8 @@ void ModuleManager::update()
 
 #ifdef ONLINE_PLATFORM
     // (3) Workshop modules, after the others, in the order returned by the online platform.
-    for (const OnlinePlatform::ModInfo &info : pimpl->online_platform.getInstalledMods()) {
-        AddModuleInfo(new_modules, known, info.vfs_name, info.path);
+    for (const OnlinePlatform::InstalledMod &mod : pimpl->online_platform.getInstalledMods()) {
+        AddModuleInfo(new_modules, known, mod.vfs_name, mod.path);
     }
 #endif
 

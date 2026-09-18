@@ -79,8 +79,13 @@ public:
     // This platform just returns a hard-coded language
     virtual std::string getGameLanguage() override { return "english"; }
 
-    // Mods - a hard-coded list
-    virtual std::vector<ModInfo> getInstalledMods() override;
+    // Mods/Workshop
+    virtual std::vector<InstalledMod> getInstalledMods() override;
+    virtual void sendModQuery(const std::vector<std::string> &vfs_mod_names) override;
+    virtual ModQueryResult getModQueryResult(const std::string &vfs_mod_name, ModDetails &details_out) override;
+    virtual bool isFirstTimeUpload(const std::filesystem::path &local_mod_dir) override;
+    virtual void uploadMod(const std::filesystem::path &local_mod_dir) override;
+    virtual UploadStatus getUploadStatus(int &progress_out, UTF8String &error_out) override;
     virtual void browseWorkshop() override;
 
     // Public methods for DummyPlatformLobby to use
@@ -107,6 +112,11 @@ private:
     // Cache for lobby list
     std::vector<std::string> cached_lobby_list;
     std::chrono::steady_clock::time_point last_lobby_list_time;
+
+    // Workshop variables
+    std::chrono::steady_clock::time_point last_mod_query_time;
+    std::chrono::steady_clock::time_point mod_upload_start_time;
+    std::filesystem::path upload_dir;
 
     bool connect_to_server();
 
