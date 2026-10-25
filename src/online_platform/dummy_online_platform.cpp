@@ -558,7 +558,7 @@ const char * const WORKSHOP_ITEM_ID_FILENAME = "workshop_item_id.txt";
 
 bool DummyOnlinePlatform::isFirstTimeUpload(const std::filesystem::path &local_mod_dir)
 {
-    return std::filesystem::exists(local_mod_dir / WORKSHOP_ITEM_ID_FILENAME);
+    return !std::filesystem::exists(local_mod_dir / WORKSHOP_ITEM_ID_FILENAME);
 }
 
 void DummyOnlinePlatform::uploadMod(const std::filesystem::path &local_mod_dir)
@@ -572,11 +572,14 @@ void DummyOnlinePlatform::uploadMod(const std::filesystem::path &local_mod_dir)
 
 OnlinePlatform::UploadStatus DummyOnlinePlatform::getUploadStatus(int &progress_out, UTF8String &error_out)
 {
+    // No upload has been started yet
+    if (upload_dir.empty()) return UPLOAD_COMPLETE;
+
     auto elapsed = std::chrono::steady_clock::now() - mod_upload_start_time;
     double elapsed_secs = std::chrono::duration<double>(elapsed).count();
     if (elapsed_secs < 10.0) {
         // Still in progress
-        progress_out = (10.0 - elapsed_secs) * 10.0;
+        progress_out = elapsed_secs * 10.0;
         return UPLOAD_IN_PROGRESS;
     }
 

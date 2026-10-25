@@ -30,6 +30,7 @@
 #include "mods_screen.hpp"
 #include "module_manager.hpp"
 #include "title_screen.hpp"
+#include "upload_mod_screen.hpp"
 
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
@@ -304,7 +305,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 
     const int pad = 10;
     const int list_width = 600;
-    const int list_height = 300;
+    const int list_height = 350;
     int y = pad;
 
     // Title
@@ -676,7 +677,8 @@ void ModsScreenImpl::action(const gcn::ActionEvent &event)
 
 #ifdef ONLINE_PLATFORM
     } else if (event.getSource() == upload_button.get()) {
-        // TODO: go to mod uploading dialog
+        std::unique_ptr<Screen> new_screen(new UploadModScreen);
+        knights_app.requestScreenChange(std::move(new_screen));
 
     } else if (event.getSource() == browse_button.get()) {
         knights_app.getOnlinePlatform().browseWorkshop();

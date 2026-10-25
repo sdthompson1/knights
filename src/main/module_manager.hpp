@@ -67,6 +67,15 @@ public:
     // Determine if a module is installed/available locally
     bool isModuleInstalled(const std::string &mod_vfs_name) const;
 
+    // Determine if a module is a local module (from knights_data/modules or
+    // extra_module_dirs), as opposed to a Workshop (online platform) module.
+    // Returns false if the module is not installed.
+    bool isLocalModule(const std::string &mod_vfs_name) const;
+
+    // Get the path of an installed module on the local filesystem.
+    // Throws if the module is not installed.
+    std::filesystem::path getModulePath(const std::string &mod_vfs_name) const;
+
     // Get the names of all installed modules (in discovery order)
     std::vector<std::string> getInstalledModules() const;
 

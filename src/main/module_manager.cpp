@@ -44,6 +44,7 @@ struct ModuleInfo {
     std::string name;  // VFS name (mount point)
     std::filesystem::path path;  // Path on local filesystem
     uint64_t checksum;
+    bool is_local;  // true for local mods, false for Workshop (online platform) mods
 };
 
 struct ModuleManagerImpl {
@@ -67,7 +68,8 @@ namespace {
     void AddModuleInfo(std::vector<ModuleInfo> &infos,
                        std::unordered_set<std::string> &known,
                        std::string name,  // "VFS mod name" e.g. "workshop_123" or dir name
-                       const std::filesystem::path &path)
+                       const std::filesystem::path &path,
+                       bool is_local)
     {
         // Only directories are accepted
         if (!std::filesystem::is_directory(path)) return;
@@ -80,6 +82,7 @@ namespace {
         info.name = name;
         info.path = path;
         info.checksum = ComputeLocalChecksum(path);
+        info.is_local = is_local;
         infos.push_back(info);
         known.insert(name);
     }
@@ -150,7 +153,7 @@ void ModuleManager::update()
 
     // (1) knights_data modules (sorted alphabetically)
     for (const auto &entry : std::filesystem::directory_iterator(pimpl->knights_data_modules_dir)) {
-        AddModuleInfo(new_modules, known, entry.path().filename().string(), entry.path());
+        AddModuleInfo(new_modules, known, entry.path().filename().string(), entry.path(), true);
     }
     std::sort(new_modules.begin(), new_modules.end(),
               [](const ModuleInfo &lhs, const ModuleInfo &rhs) {
@@ -159,13 +162,13 @@ void ModuleManager::update()
 
     // (2) extra_module_dirs (in order given, and after the knights_data modules)
     for (const auto &path : pimpl->extra_module_dirs) {
-        AddModuleInfo(new_modules, known, path.filename().string(), path);
+        AddModuleInfo(new_modules, known, path.filename().string(), path, true);
     }
 
 #ifdef ONLINE_PLATFORM
     // (3) Workshop modules, after the others, in the order returned by the online platform.
     for (const OnlinePlatform::InstalledMod &mod : pimpl->online_platform.getInstalledMods()) {
-        AddModuleInfo(new_modules, known, mod.vfs_name, mod.path);
+        AddModuleInfo(new_modules, known, mod.vfs_name, mod.path, false);
     }
 #endif
 
@@ -204,6 +207,21 @@ void ModuleManager::setAndSaveLoadOrder(std::vector<std::string> load_order)
 bool ModuleManager::isModuleInstalled(const std::string &module_name) const
 {
     return pimpl->index.count(module_name) != 0;
+}
+
+bool ModuleManager::isLocalModule(const std::string &module_name) const
+{
+    auto it = pimpl->index.find(module_name);
+    return it != pimpl->index.end() && pimpl->modules[it->second].is_local;
+}
+
+std::filesystem::path ModuleManager::getModulePath(const std::string &module_name) const
+{
+    auto it = pimpl->index.find(module_name);
+    if (it == pimpl->index.end()) {
+        throw std::runtime_error("Unknown module: '" + module_name + "'");
+    }
+    return pimpl->modules[it->second].path;
 }
 
 std::vector<std::string> ModuleManager::getInstalledModules() const

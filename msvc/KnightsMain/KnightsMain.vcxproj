@@ -170,6 +170,7 @@
     <ClCompile Include="..\..\src\main\utf8_text_field.cpp" />
     <ClCompile Include="..\..\src\main\title_block.cpp" />
     <ClCompile Include="..\..\src\main\title_screen.cpp" />
+    <ClCompile Include="..\..\src\main\upload_mod_screen.cpp" />
     <ClCompile Include="..\..\src\main\x_centre.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -231,6 +232,7 @@
     <ClInclude Include="..\..\src\main\utf8_text_field.hpp" />
     <ClInclude Include="..\..\src\main\title_block.hpp" />
     <ClInclude Include="..\..\src\main\title_screen.hpp" />
+    <ClInclude Include="..\..\src\main\upload_mod_screen.hpp" />
     <ClInclude Include="..\..\src\main\x_centre.hpp" />
   </ItemGroup>
   <ItemGroup>

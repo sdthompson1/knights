@@ -213,9 +213,12 @@ public:
     //    the mod folder.
     // 2) Call uploadMod to start an upload for the given path. (This throws if another
     //    upload is already in progress.)
-    // 3) Check getUploadProgress to check status. Returns integer percentage progress if
+    // 3) Check getUploadStatus to check status. Returns integer percentage progress if
     //    still ongoing, or a UTF8String error message (English only for now) on failure.
     //    The upload can't be stopped once it is started.
+    // If getUploadStatus is called before any upload has been started, it returns
+    // UPLOAD_COMPLETE. So, callers can check for UPLOAD_IN_PROGRESS to find out whether
+    // an upload is currently running.
     enum UploadStatus {
         UPLOAD_IN_PROGRESS,
         UPLOAD_COMPLETE,
