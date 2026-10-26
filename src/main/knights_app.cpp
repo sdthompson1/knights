@@ -1092,9 +1092,6 @@ void KnightsApp::runKnights()
             // Re-throw to allow the app to exit
             throw;
 #endif
-        } catch (LuaError&) {
-            // These are big and better displayed on stdout than in a guichan dialog box:
-            throw;
         } catch (MissingModulesError &e) {
             error = getLocalization().get(e.getMsg());
             missing_mods = e.getModVfsNames();

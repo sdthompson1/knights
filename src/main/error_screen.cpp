@@ -31,6 +31,7 @@
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
+#include "gui_text_wrap.hpp"
 
 #include <memory>
 using namespace boost;
@@ -47,19 +48,29 @@ public:
         int y = 6;
         const int hpad = 6, vpad = 6;
         
-        // create label
-        label.reset(new gcn::Label(msg.asUTF8()));
-        container->add(label.get(), hpad, y);
-        y += label->getHeight() + vpad;
-        
+        // create label, or text wrap if the message is too wide or multi-line
+        const int max_width = 900;
+        std::unique_ptr<gcn::Label> label(new gcn::Label(msg.asUTF8()));
+        if (label->getWidth() > max_width || msg.asUTF8().find('\n') != std::string::npos) {
+            std::unique_ptr<GuiTextWrap> wrap(new GuiTextWrap);
+            wrap->setWidth(max_width);
+            wrap->setText(msg);
+            wrap->adjustHeight();
+            message = std::move(wrap);
+        } else {
+            message = std::move(label);
+        }
+        container->add(message.get(), hpad, y);
+        y += message->getHeight() + vpad;
+
         // create exit button
         exit_button.reset(new GuiButton(app.getLocalization().get(LocalKey("exit")).asUTF8()));
         exit_button->addActionListener(this);
-        container->add(exit_button.get(), hpad + label->getWidth()/2 - exit_button->getWidth()/2, y);
+        container->add(exit_button.get(), hpad + message->getWidth()/2 - exit_button->getWidth()/2, y);
         y += exit_button->getHeight() + vpad;
 
         // resize the container
-        container->setSize(label->getWidth() + 2*hpad, y);
+        container->setSize(message->getWidth() + 2*hpad, y);
 
         // add panel, centre.
         panel.reset(new GuiPanel(container.get()));
@@ -78,7 +89,7 @@ private:
     std::unique_ptr<GuiCentre> centre;
     std::unique_ptr<GuiPanel> panel;
     std::unique_ptr<gcn::Container> container;
-    std::unique_ptr<gcn::Label> label;
+    std::unique_ptr<gcn::Widget> message;
     std::unique_ptr<gcn::Button> exit_button;
 };
 
