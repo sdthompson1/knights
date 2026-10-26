@@ -19,7 +19,7 @@ quit_desc                       Exit to desktop.
 
 
 # Mods screen
-mods_help                       Mods can be installed from Steam Workshop, or by manually copying them to knights_data/modules/.\n\nOnce you have installed some mods, use the panel below to enable or disable them, or change their load order.\n\nNote that the selections below only affect newly created games. If you join someone else's game, the host's mods will be used instead (you will be notified if you don't have the necessary mods installed).
+mods_help                       Mods can be installed from Steam Workshop, or by manually copying them to knights_data/modules/.\n\nOnce you have installed some mods, use the panel below to enable or disable them, or change their load order.\n\nNote: The selections below only affect newly created games. If you join someone else's game, the host's mods will be used instead (you will be notified if you don't have the necessary mods installed).
 move_up                         Move Up
 move_down                       Move Down
 save_changes                    Save Changes
