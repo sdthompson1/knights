@@ -49,11 +49,17 @@
 
 namespace {
 
-    // The "base" module is always enabled and always loaded first.
+    // The "base" module is not shown in the list, but is always enabled
+    // and always loaded first (if installed).
     const char * const BASE_MODULE_NAME = "base";
 
     // The "tutorial" module is filtered out from the list
     const char * const TUTORIAL_MODULE_NAME = "tutorial";
+
+    bool IsHiddenModule(const std::string &name)
+    {
+        return name == BASE_MODULE_NAME || name == TUTORIAL_MODULE_NAME;
+    }
 
     // How often to poll the online platform for mod titles
     const unsigned int TITLE_POLL_INTERVAL_MS = 200;
@@ -64,16 +70,12 @@ namespace {
                              // the online platform gives us a proper title.
         bool title_pending;  // true if still waiting for the online platform
         bool enabled;
-        bool locked;   // true if the user cannot toggle or move this entry (i.e. "base")
     };
 
     bool TitleLess(const ModEntry &a, const ModEntry &b)
     {
         return std::tie(a.title, a.name) < std::tie(b.title, b.name);
     }
-
-    // Colour used for locked entries
-    const gcn::Color LOCKED_COLOUR(150, 150, 150);
 
     // Simple ListModel exposing the titles from a vector<ModEntry>.
     class ModListModel : public gcn::ListModel {
@@ -111,7 +113,7 @@ private:
     // Size of the check box, and the total width of the check box column
     int getBoxSize() const { return getFont()->getHeight() - 2; }
     int getBoxColumnWidth() const { return getBoxSize() + 8; }
-    void drawCheckBox(gcn::Graphics *graphics, int x, int y, bool checked, bool locked);
+    void drawCheckBox(gcn::Graphics *graphics, int x, int y, bool checked);
 
     ModsScreenImpl &impl;
     const std::vector<ModEntry> &entries;
@@ -136,7 +138,6 @@ private:
     void sendTitleQuery(const std::vector<std::string> &names);
     ModEntry makeEntry(const std::string &name, bool enabled);
     void resolveTitle(ModEntry &entry);
-    void enforceBaseModule();
     void moveSelected(int delta);
     void listChanged();
 
@@ -184,7 +185,7 @@ unsigned int ModListBox::getRowHeight() const
     return getFont()->getHeight() + 4;
 }
 
-void ModListBox::drawCheckBox(gcn::Graphics *graphics, int x, int y, bool checked, bool locked)
+void ModListBox::drawCheckBox(gcn::Graphics *graphics, int x, int y, bool checked)
 {
     // Modelled on gcn::CheckBox::drawBox
     const int h = getBoxSize();
@@ -201,12 +202,11 @@ void ModListBox::drawCheckBox(gcn::Graphics *graphics, int x, int y, bool checke
     graphics->drawLine(x + h - 1, y, x + h - 1, y + h - 1);
     graphics->drawLine(x, y + h - 1, x + h - 2, y + h - 1);
 
-    // Locked check boxes get a grey interior, like a disabled control
-    graphics->setColor(locked ? gcn::Color(225, 225, 225) : gcn::Color(255, 255, 255));
+    graphics->setColor(gcn::Color(255, 255, 255));
     graphics->fillRectangle(gcn::Rectangle(x + 1, y + 1, h - 2, h - 2));
 
     if (checked) {
-        graphics->setColor(locked ? LOCKED_COLOUR : getForegroundColor());
+        graphics->setColor(getForegroundColor());
         // Two-pixel-thick tick mark
         graphics->drawLine(x + 2, y + 4, x + 2, y + h - 3);
         graphics->drawLine(x + 3, y + 4, x + 3, y + h - 3);
@@ -248,10 +248,9 @@ void ModListBox::draw(gcn::Graphics *graphics)
 
         const bool valid = (i >= 0 && i < int(entries.size()));
         const bool checked = valid && entries[i].enabled;
-        const bool locked = valid && entries[i].locked;
-        drawCheckBox(graphics, 3, y + (rowHeight - box_size) / 2, checked, locked);
+        drawCheckBox(graphics, 3, y + (rowHeight - box_size) / 2, checked);
 
-        graphics->setColor(locked ? LOCKED_COLOUR : getForegroundColor());
+        graphics->setColor(getForegroundColor());
         graphics->drawText(mListModel->getElementAt(i), text_x, y + (rowHeight - font_height) / 2);
 
         y += rowHeight;
@@ -461,20 +460,18 @@ void ModsScreenImpl::populateFromModuleManager()
 
     std::unordered_set<std::string> seen;
     for (const std::string &name : enabled) {
-        if (seen.insert(name).second && name != TUTORIAL_MODULE_NAME) {
+        if (seen.insert(name).second && !IsHiddenModule(name)) {
             entries.push_back(makeEntry(name, true));
         }
     }
 
     const size_t num_enabled = entries.size();
     for (const std::string &name : installed) {
-        if (seen.insert(name).second && name != TUTORIAL_MODULE_NAME) {
+        if (seen.insert(name).second && !IsHiddenModule(name)) {
             entries.push_back(makeEntry(name, false));
         }
     }
     std::sort(entries.begin() + num_enabled, entries.end(), TitleLess);
-
-    enforceBaseModule();
 }
 
 // Ask the online platform (if any) for the titles of the given mods.
@@ -491,7 +488,7 @@ void ModsScreenImpl::sendTitleQuery(const std::vector<std::string> &names)
 // otherwise it is set to the vfs name for now (and update() will fix it later).
 ModEntry ModsScreenImpl::makeEntry(const std::string &name, bool enabled)
 {
-    ModEntry entry{name, name, true, enabled, false};
+    ModEntry entry{name, name, true, enabled};
     resolveTitle(entry);
     return entry;
 }
@@ -576,16 +573,14 @@ void ModsScreenImpl::refreshList()
     }
 
     // Add newly discovered modules at the end (alphabetically), disabled.
-    // Exception: TUTORIAL_MODULE_NAME is ignored.
+    // Exception: hidden modules ("base" and "tutorial") are ignored.
     const size_t num_existing = entries.size();
     for (const std::string &name : installed) {
-        if (present.count(name) == 0 && name != TUTORIAL_MODULE_NAME) {
+        if (present.count(name) == 0 && !IsHiddenModule(name)) {
             entries.push_back(makeEntry(name, false));
         }
     }
     std::sort(entries.begin() + num_existing, entries.end(), TitleLess);
-
-    enforceBaseModule();
 
     // Restore selection
     int new_sel = -1;
@@ -600,22 +595,9 @@ void ModsScreenImpl::refreshList()
     listChanged();
 }
 
-// Ensure "base" (if installed) is enabled, locked, and at the top of the list.
-void ModsScreenImpl::enforceBaseModule()
-{
-    auto it = std::find_if(entries.begin(), entries.end(),
-        [](const ModEntry &e) { return e.name == BASE_MODULE_NAME; });
-    if (it == entries.end()) return;
-
-    it->enabled = true;
-    it->locked = true;
-    std::rotate(entries.begin(), it, it + 1);
-}
-
 void ModsScreenImpl::toggleEnabled(int index)
 {
     if (index < 0 || index >= int(entries.size())) return;
-    if (entries[index].locked) return;
 
     entries[index].enabled = !entries[index].enabled;
     listChanged();
@@ -628,9 +610,6 @@ void ModsScreenImpl::moveSelected(int delta)
     const int j = i + delta;
     if (i < 0 || i >= int(entries.size())) return;
     if (j < 0 || j >= int(entries.size())) return;
-
-    // Locked entries ("base") can neither be moved nor swapped with.
-    if (entries[i].locked || entries[j].locked) return;
 
     std::swap(entries[i], entries[j]);
     listbox->setSelected(j);
@@ -647,15 +626,19 @@ void ModsScreenImpl::listChanged()
 void ModsScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == save_button.get()) {
-        // Save the settings
+        // Save the settings. "base" (if installed) always goes first.
+        ModuleManager &mm = knights_app.getModuleManager();
+        const std::vector<std::string> installed = mm.getInstalledModules();
         std::vector<std::string> mods;
-        mods.reserve(entries.size());
+        if (std::find(installed.begin(), installed.end(), BASE_MODULE_NAME) != installed.end()) {
+            mods.push_back(BASE_MODULE_NAME);
+        }
         for (const auto &entry : entries) {
             if (entry.enabled) {
                 mods.push_back(entry.name);
             }
         }
-        knights_app.getModuleManager().setAndSaveLoadOrder(mods);
+        mm.setAndSaveLoadOrder(mods);
 
         // Go back to title screen
         std::unique_ptr<Screen> new_screen(new TitleScreen);
