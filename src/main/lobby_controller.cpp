@@ -28,6 +28,7 @@
 #include "knights_client.hpp"
 #include "knights_config.hpp"
 #include "lobby_controller.hpp"
+#include "missing_modules_error.hpp"
 #include "module_manager.hpp"
 #include "simple_knights_lobby.hpp"
 #include "vfs.hpp"
@@ -498,7 +499,10 @@ void LobbyController::checkHostMigration(OnlinePlatform &online_platform,
                 // Now that we have joined the lobby, we can check that game is compatible
                 GameModuleSpec spec = platform_lobby->getModuleSpec();
                 std::vector<std::string> missing_modules;
-                if (!module_manager->isCompatible(spec, missing_modules)) {
+                const bool compatible = module_manager->isCompatible(spec, missing_modules);
+                if (!missing_modules.empty()) {
+                    throw MissingModulesError(std::move(missing_modules));
+                } else if (!compatible) {
                     throw ExceptionBase(LocalKey("incompatible_game"));
                 }
 

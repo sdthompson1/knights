@@ -194,6 +194,10 @@ public:
     void inviteFriendToLobby();
 #endif
 
+    // Repeat the most recent joinLanGame or joinOnlineGame call (if any).
+    // (Used to try again after installing missing mods.)
+    void retryLastJoin();
+
 
     //
     // mDNS advertiser for LAN game discovery. (Reset when we return to title screen.)

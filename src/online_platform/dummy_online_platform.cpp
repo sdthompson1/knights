@@ -516,6 +516,12 @@ std::vector<OnlinePlatform::InstalledMod> DummyOnlinePlatform::getInstalledMods(
     return result;
 }
 
+bool DummyOnlinePlatform::isWorkshopModName(const std::string &vfs_mod_name)
+{
+    // Workshop mod names always begin "workshop_":
+    return vfs_mod_name.substr(0, 9) == "workshop_";
+}
+
 void DummyOnlinePlatform::sendModQuery(const std::vector<std::string> &vfs_mod_names)
 {
     last_mod_query_time = std::chrono::steady_clock::now();
@@ -525,8 +531,7 @@ OnlinePlatform::ModQueryResult
     DummyOnlinePlatform::getModQueryResult(const std::string &vfs_mod_name,
                                            ModDetails &details_out)
 {
-    // Workshop mod names always begin "workshop_":
-    if (vfs_mod_name.substr(0, 9) == "workshop_") {
+    if (isWorkshopModName(vfs_mod_name)) {
 
         auto it = mod_title_cache.find(vfs_mod_name);
         if (it != mod_title_cache.end()) {

@@ -92,10 +92,12 @@ public:
     uint64_t computeCombinedChecksum(const std::vector<std::string> &mod_vfs_names) const;
 
     // Check if a game is compatible with ours.
-    //  - If returns false and missing_modules_out is empty, that means a checksum mismatch.
-    //  - If returns false and missing_modules_out is non-empty, those modules are loaded on the
-    //    remote server but not installed locally.
-    //  - If returns true, the game is compatible.
+    //  - missing_modules_out is set to the modules that are loaded on the remote server
+    //    but not installed locally.
+    //  - If missing_modules_out contains only Workshop mods, returns true (because the
+    //    user could install those mods). The checksum is not checked in this case.
+    //  - If missing_modules_out contains any local (non-Workshop) mods, returns false.
+    //  - If missing_modules_out is empty, returns true iff the checksum matches.
     bool isCompatible(const GameModuleSpec &other_spec,
                       std::vector<std::string> &missing_modules_out) const;
 

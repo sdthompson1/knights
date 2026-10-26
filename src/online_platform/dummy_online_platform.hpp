@@ -82,6 +82,7 @@ public:
 
     // Mods/Workshop
     virtual std::vector<InstalledMod> getInstalledMods() override;
+    virtual bool isWorkshopModName(const std::string &vfs_mod_name) override;
     virtual void sendModQuery(const std::vector<std::string> &vfs_mod_names) override;
     virtual ModQueryResult getModQueryResult(const std::string &vfs_mod_name, ModDetails &details_out) override;
     virtual bool isFirstTimeUpload(const std::filesystem::path &local_mod_dir) override;

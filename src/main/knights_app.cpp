@@ -47,6 +47,8 @@
 #include "loading_screen.hpp"
 #include "localization.hpp"
 #include "mdns_discovery.hpp"
+#include "missing_mods_screen.hpp"
+#include "missing_modules_error.hpp"
 #include "module_manager.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
@@ -82,6 +84,7 @@
 #include "include_lua.hpp"
 
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -235,6 +238,9 @@ public:
 
     // game manager
     std::unique_ptr<GameManager> game_manager;
+
+    // repeats the most recent joinLanGame or joinOnlineGame call
+    std::function<void()> last_join;
 
     // autostart mode
     bool autostart;
@@ -934,6 +940,7 @@ void KnightsApp::runKnights()
 
     // Error Handling system.
     UTF8String error;
+    std::vector<std::string> missing_mods;  // if non-empty, go to MissingModsScreen instead of ErrorScreen
     int num_errors = 0;
 
     // Frame timing
@@ -956,11 +963,16 @@ void KnightsApp::runKnights()
 
         try {
             if (!error.empty()) {
-                // Error detected: try to go to ErrorScreen.
-                // (If going to ErrorScreen itself throws an error, then num_errors will keep increasing
-                // and eventually we will abort, see above.)
+                // Error detected: try to go to ErrorScreen (or MissingModsScreen if applicable).
+                // (If going to the error screen itself throws an error, then num_errors will
+                // keep increasing, and eventually we will abort -- see above.)
                 std::unique_ptr<Screen> screen;
-                screen.reset(new ErrorScreen(error));
+                if (missing_mods.empty()) {
+                    screen.reset(new ErrorScreen(error));
+                } else {
+                    screen.reset(new MissingModsScreen(std::move(missing_mods)));
+                    missing_mods.clear();
+                }
                 requestScreenChange(std::move(screen));
                 executeScreenChange();
                 error = UTF8String();
@@ -1083,6 +1095,9 @@ void KnightsApp::runKnights()
         } catch (LuaError&) {
             // These are big and better displayed on stdout than in a guichan dialog box:
             throw;
+        } catch (MissingModulesError &e) {
+            error = getLocalization().get(e.getMsg());
+            missing_mods = e.getModVfsNames();
         } catch (ExceptionBase &e) {
             error = getLocalization().get(e.getMsg());
         } catch (std::exception &e) {
@@ -1282,6 +1297,10 @@ void KnightsApp::joinLanGame(const PlayerID &local_player_id,
                              int port,
                              const std::string &display_name)
 {
+    pimpl->last_join = [this, local_player_id, address, port, display_name]() {
+        joinLanGame(local_player_id, address, port, display_name);
+    };
+
     boost::shared_ptr<KnightsClient> client =
         pimpl->lobby_controller.joinLanGame(*pimpl->lan_net_driver,
                                             pimpl->timer,
@@ -1339,6 +1358,8 @@ void KnightsApp::hostOnlineGame(OnlinePlatform::Visibility vis)
 
 void KnightsApp::joinOnlineGame(const std::string &platform_lobby_id)
 {
+    pimpl->last_join = [this, platform_lobby_id]() { joinOnlineGame(platform_lobby_id); };
+
     boost::shared_ptr<KnightsClient> client =
         pimpl->lobby_controller.joinOnlineGame(*pimpl->online_platform,
                                                platform_lobby_id);
@@ -1384,6 +1405,13 @@ void KnightsApp::inviteFriendToLobby()
     pimpl->lobby_controller.inviteFriendToLobby();
 }
 #endif
+
+void KnightsApp::retryLastJoin()
+{
+    // Take a copy, because the join function will overwrite pimpl->last_join
+    std::function<void()> join = pimpl->last_join;
+    if (join) join();
+}
 
 //////////////////////////////////////////////
 // Online Platform Update

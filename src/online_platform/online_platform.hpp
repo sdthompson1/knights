@@ -192,8 +192,14 @@ public:
     };
     virtual std::vector<InstalledMod> getInstalledMods() = 0;
 
-    // Query further details about mods.
+    // Determine whether a vfs name refers to a Workshop mod (as opposed to a local mod).
+    // This only looks at the name; it doesn't check whether the mod is installed, or
+    // even whether it exists.
+    virtual bool isWorkshopModName(const std::string &vfs_mod_name) = 0;
+
+    // Query further details about Workshop mods.
     // Call sendModQuery first, then use getModQueryResult to check results.
+    // Can be used even for mods that are not installed locally.
     struct ModDetails {
         UTF8String title;
         // TODO: add other stats e.g. number of current subscribers?

@@ -54,14 +54,12 @@ namespace {
                  const LocalKey &game_status_key,
                  const std::vector<LocalParam> &game_status_params,
                  const GameModuleSpec &game_module_spec,
-                 bool is_compatible,
-                 std::vector<std::string> missing_modules)
+                 bool is_compatible)
             : lobby_id(lobby_id), leader_name(leader_name), num_players(players),
               game_status_key(game_status_key),
               game_status_params(game_status_params),
               game_module_spec(game_module_spec),
-              is_compatible(is_compatible),
-              missing_modules(std::move(missing_modules))
+              is_compatible(is_compatible)
         { }
         std::string lobby_id;
         Coercri::UTF8String leader_name;
@@ -70,7 +68,6 @@ namespace {
         std::vector<LocalParam> game_status_params;
         GameModuleSpec game_module_spec;
         bool is_compatible;
-        std::vector<std::string> missing_modules;  // non-empty iff !is_compatible due to missing modules
     };
 
     class GameList : public gcn::ListModel {
@@ -118,7 +115,7 @@ namespace {
             bool compat = knights_app.getModuleManager().isCompatible(info.game_module_spec, missing);
             all_games.push_back(GameInfo(lobby_id, leader_name, info.num_players,
                                          info.game_status_key, info.game_status_params,
-                                         info.game_module_spec, compat, std::move(missing)));
+                                         info.game_module_spec, compat));
         }
         buildDisplayList();
     }
@@ -162,12 +159,11 @@ namespace {
 
     class MyGameListBox : public gcn::ListBox {
     public:
-        MyGameListBox(KnightsApp &ka, const GameList &gl, OnlineMultiplayerScreenImpl &impl)
-            : knights_app(ka), game_list(gl), screen_impl(impl) { }
+        MyGameListBox(const GameList &gl, OnlineMultiplayerScreenImpl &impl)
+            : game_list(gl), screen_impl(impl) { }
         virtual void mouseClicked(gcn::MouseEvent &mouse_event);
         virtual void draw(gcn::Graphics* graphics);
     private:
-        KnightsApp &knights_app;
         const GameList &game_list;
         OnlineMultiplayerScreenImpl &screen_impl;
     };
@@ -217,25 +213,11 @@ namespace
         gcn::ListBox::mouseClicked(mouse_event);
 
         if (mouse_event.getButton() == gcn::MouseEvent::LEFT && mouse_event.getClickCount() == 2) {
+            // Note: we try to join even if the game is incompatible. Compatibility is
+            // re-checked after joining the lobby (see LobbyController), and the user will be
+            // shown either the "incompatible game" error, or the list of missing mods.
             const GameInfo *gi = game_list.getGameAt(getSelected());
             if (gi) {
-                if (!gi->is_compatible) {
-                    if (!gi->missing_modules.empty()) {
-                        std::string list;
-                        for (const auto &m : gi->missing_modules) {
-                            if (!list.empty()) list += ", ";
-                            list += "'" + m + "'";
-                        }
-                        // Filter list through the online platform, just to be safe!
-                        Coercri::UTF8String filtered_list =
-                            knights_app.getOnlinePlatform().filterGameContent(
-                                Coercri::UTF8String::fromUTF8Safe(list));
-                        throw ExceptionBase(LocalMsg{LocalKey("missing_modules_game"),
-                                                     {LocalParam(filtered_list)}});
-                    } else {
-                        throw ExceptionBase(LocalKey("incompatible_game"));
-                    }
-                }
                 screen_impl.joinGame(gi->lobby_id);
             }
         }
@@ -387,7 +369,7 @@ OnlineMultiplayerScreenImpl::OnlineMultiplayerScreenImpl(KnightsApp &ka, boost::
     container->add(games_titleblock.get(), pad, y);
     y += games_titleblock->getHeight();
 
-    listbox.reset(new MyGameListBox(knights_app, *game_list, *this));
+    listbox.reset(new MyGameListBox(*game_list, *this));
     listbox->setListModel(game_list.get());
     listbox->setFont(tab_font.get());
     listbox->setWidth(width);

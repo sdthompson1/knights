@@ -46,6 +46,14 @@ upload_complete                 Upload complete!
 upload_failed                   Upload failed: {0}
 
 
+# Missing Mods screen
+missing_mods_title              Missing Mods
+missing_mods_intro              This game uses the following mods, which you don't have installed:
+missing_mods_workshop           If you want to, you can install the above mods from Steam Workshop, and then click Retry to join the game.
+missing_mods_local              One or more of the above mods are custom mods (not available from Steam Workshop). Contact the host to find out how to install them.
+retry                           Retry
+
+
 # Start Game screen
 start_game_caps                 START GAME
 online_multiplayer              Online Multiplayer
@@ -293,7 +301,7 @@ game_hasnt_started              Game hasn't started or could not be found
 config_key_not_found            Config key '{0}' not found
 cxx_error_is                    C++ error: {0}
 incompatible_game               This game is running a different version of Knights or using modified game data
-missing_modules_game            This game requires modules that are not installed locally: {0}
+missing_modules_game            This game requires modules that are not installed locally
 connection_lost                 The network connection has been lost
 connection_failed               Connection failed
 bad_port_number                 Bad port number

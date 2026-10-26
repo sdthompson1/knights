@@ -40,6 +40,7 @@
 #include "menu.hpp"
 #include "menu_item.hpp"
 #include "menu_screen.hpp"
+#include "missing_modules_error.hpp"
 #include "my_dropdown.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
@@ -1059,20 +1060,15 @@ void GameManager::joinGameAccepted(boost::shared_ptr<const ClientConfig> conf,
     pimpl->item_help_msgs.assign(pimpl->menu->getNumItems(), {});
 
     // Check that modules sent by the server are available locally,
-    // and throw a localized exception if not
-    std::string missing_names;
+    // and throw MissingModulesError if not
+    std::vector<std::string> missing_modules;
     for (const auto &name : module_names) {
         if (!pimpl->knights_app.getModuleManager().isModuleInstalled(name)) {
-            if (!missing_names.empty()) missing_names += ", ";
-            missing_names += "'" + name + "'";
+            missing_modules.push_back(name);
         }
     }
-    if (!missing_names.empty()) {
-        std::vector<LocalParam> params;
-        if (pimpl->knights_client->allowUntrustedStrings()) {
-            params.push_back(LocalParam(Coercri::UTF8String::fromUTF8Safe(missing_names)));
-        }
-        throw ExceptionBase({LocalKey("missing_modules_game"), params});
+    if (!missing_modules.empty()) {
+        throw MissingModulesError(std::move(missing_modules));
     }
 
     try {

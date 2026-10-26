@@ -309,15 +309,22 @@ bool ModuleManager::isCompatible(const GameModuleSpec &other_spec,
                                  std::vector<std::string> &missing_modules_out) const
 {
     missing_modules_out.clear();
+    bool all_workshop = true;
 
     for (const auto &other_module : other_spec.module_vfs_names) {
         if (pimpl->index.count(other_module) == 0) {
             missing_modules_out.push_back(other_module);
+#ifdef ONLINE_PLATFORM
+            if (!pimpl->online_platform.isWorkshopModName(other_module))
+#endif
+                all_workshop = false;
         }
     }
 
     if (!missing_modules_out.empty()) {
-        return false;
+        // Missing Workshop mods can be installed by the user, so the game still counts
+        // as compatible. (The checksum will be checked once the mods are installed.)
+        return all_workshop;
     }
 
     return computeCombinedChecksum(other_spec.module_vfs_names) == other_spec.checksum;
