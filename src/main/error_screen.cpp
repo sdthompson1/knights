@@ -33,13 +33,16 @@
 #include "gui_panel.hpp"
 #include "gui_text_wrap.hpp"
 
+// See note in utf8_text_field.cpp about accessing SDL clipboard directly
+#include <SDL2/SDL.h>
+
 #include <memory>
 using namespace boost;
 
-class ErrorScreenImpl : public gcn::ActionListener {
+class ErrorScreenImpl : public gcn::ActionListener, public gcn::KeyListener {
 public:
     ErrorScreenImpl(KnightsApp &app, gcn::Gui &gui, const UTF8String &msg)
-        : knights_app(app)
+        : knights_app(app), msg(msg)
     {
         // create container
         container.reset(new gcn::Container);
@@ -76,6 +79,7 @@ public:
         panel.reset(new GuiPanel(container.get()));
         centre.reset(new GuiCentre(panel.get()));
         gui.setTop(centre.get());
+        gui.addGlobalKeyListener(this);
     }
 
     void action(const gcn::ActionEvent &event)
@@ -84,8 +88,18 @@ public:
         knights_app.requestScreenChange(std::move(title_screen));
     }
 
+    void keyPressed(gcn::KeyEvent &event) override
+    {
+        // Ctrl+C: copy error message to clipboard
+        if (event.getKey().getValue() == 'c' && event.isControlPressed()) {
+            SDL_SetClipboardText(msg.asUTF8().c_str());
+            event.consume();
+        }
+    }
+
 private:
     KnightsApp &knights_app;
+    UTF8String msg;
     std::unique_ptr<GuiCentre> centre;
     std::unique_ptr<GuiPanel> panel;
     std::unique_ptr<gcn::Container> container;
