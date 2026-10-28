@@ -88,7 +88,11 @@ public:
     virtual bool isFirstTimeUpload(const std::filesystem::path &local_mod_dir) override;
     virtual void uploadMod(const std::filesystem::path &local_mod_dir) override;
     virtual UploadStatus getUploadStatus(int &progress_out, UTF8String &error_out) override;
+    virtual void subscribeMod(const std::string &vfs_mod_name) override;
+    virtual ModDownloadStatus getModDownloadStatus(const std::string &vfs_mod_name,
+                                                   int &progress_out, LocalMsg &error_out) override;
     virtual void browseWorkshop() override;
+    virtual void browseWorkshopMod(const std::string &vfs_mod_name) override;
 
     // Public methods for DummyPlatformLobby to use
     bool sendMessage(unsigned char msg_type, const std::string& payload);
@@ -120,6 +124,7 @@ private:
     std::chrono::steady_clock::time_point mod_upload_start_time;
     std::filesystem::path upload_dir;
     std::map<std::string, UTF8String> mod_title_cache;
+    std::map<std::string, std::chrono::steady_clock::time_point> mod_download_start_times;
 
     bool connect_to_server();
 

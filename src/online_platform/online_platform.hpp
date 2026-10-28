@@ -207,7 +207,7 @@ public:
     enum ModQueryResult {
         MQR_WAITING,  // still waiting for the query result
         MQR_SUCCESS,  // details were returned
-        MQR_FAILED    // query failed (e.g. mod doesn't exist)
+        MQR_FAILED    // query failed (e.g. mod doesn't exist, or it was a non-Workshop mod)
     };
     virtual void sendModQuery(const std::vector<std::string> &vfs_mod_names) = 0;
     virtual ModQueryResult getModQueryResult(const std::string &vfs_mod_name,
@@ -234,8 +234,38 @@ public:
     virtual void uploadMod(const std::filesystem::path &local_mod_dir) = 0;
     virtual UploadStatus getUploadStatus(int &progress_out, UTF8String &error_out) = 0;
 
+    // Ask the online platform to download and install the given mod. (For Steam this is
+    // ISteamUGC::SubscribeItem followed by a high-priority DownloadItem.)
+    // If vfs_mod_name isn't a Workshop mod name, this is a no-op.
+    virtual void subscribeMod(const std::string &vfs_mod_name) = 0;
+
+    // Check current install-status of a Workshop mod.
+    // Returns the platform's actual status (so it also works for mods subscribed from
+    // outside of the game, for example).
+    // Returns integer percentage progress while downloading, or a localizable error
+    // message on failure.
+    // If status is MDS_FAILED then calling subscribeMod again will retry the download.
+    // If status is MDS_INSTALLED then the mod will be included in the result of
+    // getInstalledMods.
+    // For non-Workshop vfs_mod_names, this just returns MDS_NOT_SUBSCRIBED.
+    enum ModDownloadStatus {
+        MDS_NOT_SUBSCRIBED,   // not currently subscribed
+        MDS_PENDING,          // subscribe request sent, or download queued, no progress yet
+        MDS_DOWNLOADING,      // progress_out is valid
+        MDS_INSTALLED,        // download complete (and mod is up to date)
+        MDS_FAILED            // error_out is valid
+    };
+    virtual ModDownloadStatus getModDownloadStatus(const std::string &vfs_mod_name,
+                                                   int &progress_out, LocalMsg &error_out) = 0;
+
     // Open the Workshop (or equivalent) in a web browser
     virtual void browseWorkshop() = 0;
+
+    // Open the Workshop page for a specific mod (e.g. so the player can preview it
+    // before subscribing).
+    // (For Steam: ActivateGameOverlayToWebPage with the item's filedetails URL.)
+    // For non-Workshop mod names, this is a no-op.
+    virtual void browseWorkshopMod(const std::string &vfs_mod_name) = 0;
 
 };
 

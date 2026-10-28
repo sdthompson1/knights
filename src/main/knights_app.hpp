@@ -198,6 +198,10 @@ public:
     // (Used to try again after installing missing mods.)
     void retryLastJoin();
 
+    // Go back to the screen (LAN or online) from which the most recent join was made,
+    // or the title screen if none.
+    void exitLastJoin();
+
 
     //
     // mDNS advertiser for LAN game discovery. (Reset when we return to title screen.)

@@ -48,10 +48,17 @@ upload_failed                   Upload failed: {0}
 
 # Missing Mods screen
 missing_mods_title              Missing Mods
-missing_mods_intro              This game uses the following mods, which you don't have installed:
-missing_mods_workshop           If you want to, you can install the above mods from Steam Workshop, and then click Retry to join the game.
-missing_mods_local              One or more of the above mods are custom mods (not available from Steam Workshop). Contact the host to find out how to install them.
-retry                           Retry
+missing_mods_intro              This game uses the following mods, but they are not currently installed:
+missing_mods_workshop           If you want to install these mods from Steam Workshop, click "Subscribe" below. Otherwise, click "Exit" to go back to the previous screen. You can also "View" each mod's Workshop page before you decide.
+missing_mods_local              Some (or all) of the above mods are not available from Steam Workshop, so you will have to install these manually into knights_data/modules.
+subscribe                       Subscribe
+view                            View
+mod_status_waiting              Waiting for download to start…
+mod_status_downloading          Downloading ({0} of {1})… {2}%
+mod_status_workshop_installed   All Steam Workshop mods are now installed. The remaining mods must be installed manually.
+mod_download_failed             Download failed for {0}: {1}
+mod_download_error_not_found    mod not found on Steam Workshop
+mod_download_error_other        Steam error code {0}
 
 
 # Start Game screen
@@ -72,7 +79,7 @@ cancel_desc                     Return to the main menu.
 online_multiplayer_games        Online Multiplayer Games
 avail_games_click_to_join       Available Games (double-click to join):
 show_incompat_games             Show incompatible games
-show_incompat_games_tooltip     When enabled, all games are shown in the list, even those that you cannot join (because the host is running a different Knights version or has unexpected changes to game data files). Incompatible games are shown in red.
+show_incompat_games_tooltip     When enabled, all games are shown in the list, even those that you cannot join (because the host is running a different Knights version, different mod versions, or custom mods that aren't available from Steam Workshop). Incompatible games are shown in red.
 host                            Host
 players                         Players
 status                          Status

@@ -23,9 +23,7 @@
 
 /*
  * Missing Mods Screen -- shown (instead of the ErrorScreen) when we
- * try to join a game that uses mods we don't have installed. Lists
- * the missing mods (by title, if the online platform can tell us),
- * explains how to install them, and offers a Retry button.
+ * try to join a game that uses mods we don't have installed.
  *
  */
 

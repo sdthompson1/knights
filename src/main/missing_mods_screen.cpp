@@ -27,7 +27,6 @@
 #include "localization.hpp"
 #include "missing_mods_screen.hpp"
 #include "online_platform.hpp"
-#include "title_screen.hpp"
 
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
@@ -36,15 +35,82 @@
 
 #include "guichan.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace {
-    // How often to poll the online platform for mod titles, and how long to wait
-    // for the titles before giving up (and showing the vfs names instead)
-    const unsigned int TITLE_POLL_INTERVAL_MS = 200;
+    // How often to poll the online platform for mod titles and download progress,
+    // and how long to wait for the titles before giving up (and showing the vfs
+    // names instead)
+    const unsigned int POLL_INTERVAL_MS = 200;
     const unsigned int TITLE_TIMEOUT_MS = 5000;
+
+    // Layout. The mod names are centred, with View buttons just to the right of
+    // the widest name.
+    const int PAD = 10;
+    const int WIDTH = 500;
+    const int VIEW_GAP = 15;
+    const int ROW_GAP = 5;
+
+#ifdef ONLINE_PLATFORM
+    struct DownloadInfo {
+        bool workshop = false;
+        OnlinePlatform::ModDownloadStatus status = OnlinePlatform::MDS_NOT_SUBSCRIBED;
+        int progress = 0;
+        LocalMsg error;
+
+        bool operator!=(const DownloadInfo &other) const {
+            return status != other.status || progress != other.progress || error != other.error;
+        }
+    };
+
+    // Returns true for Workshop mods that should have OnlinePlatform::subscribeMod
+    // called on them (when the Subscribe button is clicked).
+    bool CanSubscribe(const DownloadInfo &d)
+    {
+        return d.workshop && (d.status == OnlinePlatform::MDS_NOT_SUBSCRIBED
+                              || d.status == OnlinePlatform::MDS_FAILED);
+    }
+#endif
+
+    struct ModRow {
+        std::string vfs_name;
+        std::string title;   // empty string = title not known yet
+        std::unique_ptr<gcn::Label> name_label;
+        std::unique_ptr<GuiButton> view_button;   // only for Workshop mods
+#ifdef ONLINE_PLATFORM
+        DownloadInfo download;
+#endif
+    };
+
+    std::string DisplayName(const ModRow &row)
+    {
+        return row.title.empty() ? row.vfs_name : row.title;
+    }
+
+    // Shorten a string (adding "…") so that it fits within max_width pixels
+    std::string TruncateToWidth(const gcn::Font &font, std::string str, int max_width)
+    {
+        if (font.getWidth(str) <= max_width) return str;
+        const std::string ellipsis = "…";
+        while (!str.empty() && font.getWidth(str + ellipsis) > max_width) {
+            // Remove the last UTF-8 character (continuation bytes, then the lead byte)
+            while (!str.empty() && (str.back() & 0xC0) == 0x80) str.pop_back();
+            if (!str.empty()) str.pop_back();
+        }
+        return str + ellipsis;
+    }
+
+    std::unique_ptr<GuiTextWrap> MakeTextWrap(bool centred)
+    {
+        std::unique_ptr<GuiTextWrap> text(new GuiTextWrap);
+        text->setForegroundColor(gcn::Color(30, 30, 30));
+        text->setWidth(WIDTH);
+        text->setCentred(centred);
+        return text;
+    }
 }
 
 class MissingModsScreenImpl : public gcn::ActionListener {
@@ -56,40 +122,110 @@ public:
 
 private:
     bool pollTitles();
-    void createGui();
+    UTF8String statusText() const;
+    bool canSubscribe() const;
+    void updateStatus();
+    void layout();
+#ifdef ONLINE_PLATFORM
+    bool pollDownloads();
+    bool readyForAutoJoin() const;
+    bool subscribeFailed() const;
+#endif
 
     KnightsApp &knights_app;
     boost::shared_ptr<Coercri::Window> window;
     gcn::Gui &gui;
 
-    std::vector<std::string> mod_vfs_names;
-    std::vector<std::string> titles;   // empty string = title not known yet
+    std::vector<ModRow> rows;
+    int view_space;           // width of a View button plus gap (or 0 if no View buttons)
+#ifdef ONLINE_PLATFORM
+    bool subscribe_clicked;   // if true, join the game automatically once all mods are installed
+#endif
     bool gui_created;
+    bool subscribe_shown;     // whether the Subscribe button is currently shown
+
     unsigned int start_msec, last_poll_msec;
 
     std::unique_ptr<GuiCentre> centre;
     std::unique_ptr<GuiPanel> panel;
     std::unique_ptr<gcn::Container> container;
     std::unique_ptr<gcn::Label> title_label;
-    std::unique_ptr<GuiTextWrap> message;
-    std::unique_ptr<gcn::Button> retry_button;
-    std::unique_ptr<gcn::Button> browse_button;
+    std::unique_ptr<GuiTextWrap> intro_text;
+    std::unique_ptr<GuiTextWrap> instructions_text;
+    std::unique_ptr<GuiTextWrap> status_text;
+    std::unique_ptr<gcn::Button> subscribe_button;
     std::unique_ptr<gcn::Button> exit_button;
 };
 
 MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win,
                                              gcn::Gui &g, const std::vector<std::string> &names)
-    : knights_app(app), window(win), gui(g),
-      mod_vfs_names(names), titles(names.size()), gui_created(false),
+    : knights_app(app), window(win), gui(g), rows(names.size()), view_space(0),
+#ifdef ONLINE_PLATFORM
+      subscribe_clicked(false),
+#endif
+      gui_created(false), subscribe_shown(false),
       start_msec(app.getTimer().getMsec()), last_poll_msec(0)
 {
+    const Localization &loc = knights_app.getLocalization();
+
+    title_label.reset(new gcn::Label(loc.get(LocalKey("missing_mods_title")).asUTF8()));
+    title_label->setForegroundColor(gcn::Color(0, 0, 128));
+
+    intro_text = MakeTextWrap(false);
+    intro_text->setText(loc.get(LocalKey("missing_mods_intro")));
+    intro_text->adjustHeight();
+
+    // Create the per-mod widgets, and find out whether we have Workshop mods,
+    // local mods, or both
+    bool any_workshop = false, any_local = false;
+    for (size_t i = 0; i < names.size(); ++i) {
+        ModRow &row = rows[i];
+        row.vfs_name = names[i];
+        row.name_label.reset(new gcn::Label);
+        row.name_label->setForegroundColor(gcn::Color(30, 30, 30));
+#ifdef ONLINE_PLATFORM
+        row.download.workshop = knights_app.getOnlinePlatform().isWorkshopModName(row.vfs_name);
+        if (row.download.workshop) {
+            row.view_button.reset(new GuiButton(loc.get(LocalKey("view")).asUTF8()));
+            row.view_button->addActionListener(this);
+            view_space = row.view_button->getWidth() + VIEW_GAP;
+            any_workshop = true;
+            continue;
+        }
+#endif
+        any_local = true;
+    }
+
+    instructions_text = MakeTextWrap(false);
+    Coercri::UTF8String instructions_string;
+    if (any_workshop) {
+        instructions_string = loc.get(LocalKey("missing_mods_workshop"));
+    }
+    if (any_local) {
+        if (!instructions_string.empty()) {
+            instructions_string += Coercri::UTF8String::fromUTF8("\n\n");
+        }
+        instructions_string += loc.get(LocalKey("missing_mods_local"));
+    }
+    instructions_text->setText(instructions_string);
+    instructions_text->adjustHeight();
+
+    status_text = MakeTextWrap(true);
+
+#ifdef ONLINE_PLATFORM
+    subscribe_button.reset(new GuiButton(loc.get(LocalKey("subscribe")).asUTF8()));
+    subscribe_button->addActionListener(this);
+#endif
+    exit_button.reset(new GuiButton(loc.get(LocalKey("exit")).asUTF8()));
+    exit_button->addActionListener(this);
+
     // Show a blank screen (guichan requires a top widget) until the titles come in
     container.reset(new gcn::Container);
     container->setOpaque(false);
     gui.setTop(container.get());
 
 #ifdef ONLINE_PLATFORM
-    knights_app.getOnlinePlatform().sendModQuery(mod_vfs_names);
+    knights_app.getOnlinePlatform().sendModQuery(names);
 #endif
 }
 
@@ -97,92 +233,227 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
 bool MissingModsScreenImpl::pollTitles()
 {
     bool all_known = true;
-    for (size_t i = 0; i < mod_vfs_names.size(); ++i) {
-        if (!titles[i].empty()) continue;
+    for (ModRow &row : rows) {
+        if (!row.title.empty()) continue;
 #ifdef ONLINE_PLATFORM
         OnlinePlatform::ModDetails details;
-        switch (knights_app.getOnlinePlatform().getModQueryResult(mod_vfs_names[i], details)) {
+        switch (knights_app.getOnlinePlatform().getModQueryResult(row.vfs_name, details)) {
         case OnlinePlatform::MQR_WAITING:
             all_known = false;
             break;
         case OnlinePlatform::MQR_SUCCESS:
-            titles[i] = details.title.asUTF8();
+            row.title = details.title.asUTF8();
             break;
         case OnlinePlatform::MQR_FAILED:
             // Probably a local (non-Workshop) mod, so just use the vfs name
-            titles[i] = mod_vfs_names[i];
+            row.title = row.vfs_name;
             break;
         }
 #else
-        titles[i] = mod_vfs_names[i];
+        row.title = row.vfs_name;
 #endif
     }
     return all_known;
 }
 
-void MissingModsScreenImpl::createGui()
+#ifdef ONLINE_PLATFORM
+// Check download status of the Workshop mods. Returns true if anything changed.
+// If the subscription attempt failed, stops polling (by setting subscribe_clicked to false).
+bool MissingModsScreenImpl::pollDownloads()
 {
-    const Localization &loc = knights_app.getLocalization();
+    OnlinePlatform &op = knights_app.getOnlinePlatform();
+    bool changed = false;
 
-    // Build the message: intro, list of mods (one per line), then instructions
-    // depending on whether we have Workshop mods, local mods, or both
-    bool any_workshop = false, any_local = false;
-    std::string msg = loc.get(LocalKey("missing_mods_intro")).asUTF8() + "\n\n";
-    for (size_t i = 0; i < mod_vfs_names.size(); ++i) {
-        msg += "    " + (titles[i].empty() ? mod_vfs_names[i] : titles[i]) + "\n";
-#ifdef ONLINE_PLATFORM
-        if (knights_app.getOnlinePlatform().isWorkshopModName(mod_vfs_names[i])) {
-            any_workshop = true;
-            continue;
+    for (ModRow &row : rows) {
+        if (!row.download.workshop) continue;
+        DownloadInfo d = row.download;
+        d.status = op.getModDownloadStatus(row.vfs_name, d.progress, d.error);
+        if (d != row.download) {
+            row.download = d;
+            changed = true;
         }
-#endif
-        any_local = true;
     }
-    if (any_local) msg += "\n" + loc.get(LocalKey("missing_mods_local")).asUTF8();
-    else if (any_workshop) msg += "\n" + loc.get(LocalKey("missing_mods_workshop")).asUTF8();
 
-    // Create widgets
-    title_label.reset(new gcn::Label(loc.get(LocalKey("missing_mods_title")).asUTF8()));
-    title_label->setForegroundColor(gcn::Color(0, 0, 128));
+    if (subscribeFailed()) subscribe_clicked = false;
 
-    message.reset(new GuiTextWrap);
-    message->setForegroundColor(gcn::Color(30, 30, 30));
+    return changed;
+}
 
-    retry_button.reset(new GuiButton(loc.get(LocalKey("retry")).asUTF8()));
-    retry_button->addActionListener(this);
-#ifdef ONLINE_PLATFORM
-    browse_button.reset(new GuiButton(loc.get(LocalKey("browse_workshop")).asUTF8()));
-    browse_button->addActionListener(this);
+// True if we may attempt auto-join: all workshop mods are
+// MDS_INSTALLED, no local mods exist, and subscribe_clicked is true.
+bool MissingModsScreenImpl::readyForAutoJoin() const
+{
+    if (!subscribe_clicked) return false;  // Never auto-join before subscribe is clicked
+    for (const ModRow &row : rows) {
+        if (row.download.workshop) {
+            if (row.download.status != OnlinePlatform::MDS_INSTALLED) {
+                // Non-installed workshop mod exists, so can't auto-join
+                return false;
+            }
+        } else {
+            // Local mod exists, so can't auto-join
+            return false;
+        }
+    }
+    return true;
+}
+
+// True if our subscribe attempt ended in failure, in other words: all
+// Workshop mods have reached a terminal state (MDS_INSTALLED or
+// MDS_FAILED) and at least one was FAILED.
+bool MissingModsScreenImpl::subscribeFailed() const
+{
+    bool any_failed = false;
+    for (const ModRow &row : rows) {
+        if (row.download.workshop) {
+            if (row.download.status != OnlinePlatform::MDS_INSTALLED
+            && row.download.status != OnlinePlatform::MDS_FAILED) {
+                // Non-terminal row exists; result is false.
+                return false;
+            }
+            if (row.download.status == OnlinePlatform::MDS_FAILED) {
+                any_failed = true;
+            }
+        }
+    }
+    return any_failed;
+}
 #endif
-    exit_button.reset(new GuiButton(loc.get(LocalKey("exit")).asUTF8()));
-    exit_button->addActionListener(this);
 
-    // Lay out the container
+// Status message shown below the list of mods: an error line for each failed download,
+// then overall download progress (or a message saying all Workshop mods are installed)
+UTF8String MissingModsScreenImpl::statusText() const
+{
+    std::string msg;
+#ifdef ONLINE_PLATFORM
+    const Localization &loc = knights_app.getLocalization();
+    auto add_line = [&msg](const UTF8String &line) {
+        if (!msg.empty()) msg += "\n";
+        msg += line.asUTF8();
+    };
+
+    int num_workshop = 0, num_installed = 0;
+    int progress = -1;   // progress of the current download, or -1 if none
+    bool waiting = false;
+    for (const ModRow &row : rows) {
+        const DownloadInfo &d = row.download;
+        if (!d.workshop) continue;
+        ++num_workshop;
+        switch (d.status) {
+        case OnlinePlatform::MDS_NOT_SUBSCRIBED:
+            break;
+        case OnlinePlatform::MDS_PENDING:
+            waiting = true;
+            break;
+        case OnlinePlatform::MDS_DOWNLOADING:
+            if (progress < 0) progress = d.progress;
+            break;
+        case OnlinePlatform::MDS_INSTALLED:
+            ++num_installed;
+            break;
+        case OnlinePlatform::MDS_FAILED:
+            add_line(loc.get(LocalKey("mod_download_failed"),
+                             {LocalParam(UTF8String::fromUTF8Safe(DisplayName(row))),
+                              LocalParam(loc.get(d.error))}));
+            break;
+        }
+    }
+
+    if (progress >= 0) {
+        add_line(loc.get(LocalKey("mod_status_downloading"),
+                         {LocalParam(std::min(num_installed + 1, num_workshop)),
+                          LocalParam(num_workshop),
+                          LocalParam(progress)}));
+    } else if (waiting) {
+        add_line(loc.get(LocalKey("mod_status_waiting")));
+    } else if (num_workshop > 0 && num_installed == num_workshop && num_workshop < int(rows.size())) {
+        // All Workshop mods installed, but there are local mods, so we can't auto-join
+        add_line(loc.get(LocalKey("mod_status_workshop_installed")));
+    }
+#endif
+    return UTF8String::fromUTF8Safe(msg);
+}
+
+// Returns true if the Subscribe button should be visible.
+// subscribe_clicked must be false (i.e. there must not already be a
+// Subscribe in progress), and at least one row must report
+// CanSubscribe true (i.e. clicking Subscribe would actually do
+// something for that row).
+bool MissingModsScreenImpl::canSubscribe() const
+{
+#ifdef ONLINE_PLATFORM
+    if (subscribe_clicked) return false;
+    for (const ModRow &row : rows) {
+        if (CanSubscribe(row.download)) return true;
+    }
+#endif
+    return false;
+}
+
+// Update the status text. The whole panel is only re-created if its size or
+// buttons have changed (to avoid destroying widgets every time the progress changes).
+void MissingModsScreenImpl::updateStatus()
+{
+    const int old_height = status_text->getHeight();
+    status_text->setText(statusText());
+    status_text->adjustHeight();
+    if (!gui_created || status_text->getHeight() != old_height || canSubscribe() != subscribe_shown) {
+        layout();
+    } else {
+        window->invalidateAll();
+    }
+}
+
+// (Re-)create the panel. Expects all texts to be set already.
+// (This shouldn't be called from within action(), because it destroys gui objects.)
+void MissingModsScreenImpl::layout()
+{
+    subscribe_shown = canSubscribe();
+
     gui.setTop(nullptr);
     container.reset(new gcn::Container);
     container->setOpaque(false);
 
-    const int pad = 10;
-    const int width = 500;
-    int y = pad;
+    int y = PAD;
 
-    container->add(title_label.get(), pad + width/2 - title_label->getWidth()/2, y);
-    y += title_label->getHeight() + 2*pad;
+    container->add(title_label.get(), PAD + WIDTH/2 - title_label->getWidth()/2, y);
+    y += title_label->getHeight() + 2*PAD;
 
-    message->setWidth(width);
-    message->setText(UTF8String::fromUTF8Safe(msg));
-    message->adjustHeight();
-    container->add(message.get(), pad, y);
-    y += message->getHeight() + 2*pad;
+    container->add(intro_text.get(), PAD, y);
+    y += intro_text->getHeight() + PAD*3/2;
 
-    container->add(retry_button.get(), pad, y);
-    if (browse_button && any_workshop) {
-        container->add(browse_button.get(), pad + width/2 - browse_button->getWidth()/2, y);
+    // Mod names are centred within a column as wide as the widest name, and that
+    // column (plus the View buttons) is centred within the panel
+    int names_width = 0;
+    for (const ModRow &row : rows) names_width = std::max(names_width, row.name_label->getWidth());
+    const int names_x = PAD + (WIDTH - names_width - view_space) / 2;
+
+    for (ModRow &row : rows) {
+        // If there is a View button, line up the name with the button's caption
+        const int text_dy = row.view_button ? row.view_button->getTextY() : 0;
+        container->add(row.name_label.get(), names_x + (names_width - row.name_label->getWidth()) / 2, y + text_dy);
+        int row_height = text_dy + row.name_label->getHeight();
+        if (row.view_button) {
+            container->add(row.view_button.get(), names_x + names_width + VIEW_GAP, y);
+            row_height = std::max(row_height, row.view_button->getHeight());
+        }
+        y += row_height + ROW_GAP;
     }
-    container->add(exit_button.get(), pad + width - exit_button->getWidth(), y);
-    y += exit_button->getHeight() + pad;
+    y += PAD*3/2;
 
-    container->setSize(2*pad + width, y);
+    container->add(instructions_text.get(), PAD, y);
+    y += instructions_text->getHeight() + 2*PAD;
+
+    if (!status_text->getText().empty()) {
+        container->add(status_text.get(), PAD, y);
+        y += status_text->getHeight() + 2*PAD;
+    }
+
+    if (subscribe_shown) container->add(subscribe_button.get(), PAD, y);
+    container->add(exit_button.get(), PAD + WIDTH - exit_button->getWidth(), y);
+    y += exit_button->getHeight() + PAD;
+
+    container->setSize(2*PAD + WIDTH, y);
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
@@ -199,29 +470,56 @@ void MissingModsScreenImpl::createGui()
 
 void MissingModsScreenImpl::action(const gcn::ActionEvent &event)
 {
-    if (event.getSource() == retry_button.get()) {
-        knights_app.retryLastJoin();
-#ifdef ONLINE_PLATFORM
-    } else if (event.getSource() == browse_button.get()) {
-        knights_app.getOnlinePlatform().browseWorkshop();
-#endif
-    } else {
-        std::unique_ptr<Screen> title_screen(new TitleScreen);
-        knights_app.requestScreenChange(std::move(title_screen));
+    if (event.getSource() == exit_button.get()) {
+        knights_app.exitLastJoin();
+        return;
     }
+
+#ifdef ONLINE_PLATFORM
+    OnlinePlatform &op = knights_app.getOnlinePlatform();
+    if (event.getSource() == subscribe_button.get()) subscribe_clicked = true;
+    for (const ModRow &row : rows) {
+        if (event.getSource() == row.view_button.get()) {
+            op.browseWorkshopMod(row.vfs_name);
+        } else if (event.getSource() == subscribe_button.get() && CanSubscribe(row.download)) {
+            // The new status will be picked up by the next pollDownloads() call
+            op.subscribeMod(row.vfs_name);
+        }
+    }
+#endif
 }
 
 void MissingModsScreenImpl::update()
 {
-    if (gui_created) return;
-
     const unsigned int now = knights_app.getTimer().getMsec();
-    if (now - last_poll_msec < TITLE_POLL_INTERVAL_MS) return;
+    if (now - last_poll_msec < POLL_INTERVAL_MS) return;
     last_poll_msec = now;
 
-    if (pollTitles() || now - start_msec >= TITLE_TIMEOUT_MS) {
-        createGui();
+    if (!gui_created) {
+        if (pollTitles() || now - start_msec >= TITLE_TIMEOUT_MS) {
+            // Long names are shortened so that the name and View button fit in the panel
+            for (ModRow &row : rows) {
+                row.name_label->setCaption(TruncateToWidth(*row.name_label->getFont(),
+                                                           DisplayName(row),
+                                                           WIDTH - view_space));
+                row.name_label->adjustSize();
+            }
+            updateStatus();
+        }
+        return;
     }
+
+#ifdef ONLINE_PLATFORM
+    // Download status is only monitored once the user has clicked Subscribe
+    if (subscribe_clicked && pollDownloads()) updateStatus();
+
+    // Join the game automatically once all downloads are complete (unless there are
+    // local mods). subscribe_clicked is reset to make sure we only try once.
+    if (readyForAutoJoin()) {
+        subscribe_clicked = false;
+        knights_app.retryLastJoin();
+    }
+#endif
 }
 
 

@@ -38,6 +38,7 @@
 #include "keyboard_controller.hpp"
 #include "knights_app.hpp"
 #include "knights_client.hpp"
+#include "lan_game_screen.hpp"
 #include "lua_exec.hpp"
 #include "lua_func_wrapper.hpp"
 #include "lua_load_from_rstream.hpp"
@@ -52,6 +53,7 @@
 #include "module_manager.hpp"
 #include "my_ctype.hpp"
 #include "my_exceptions.hpp"
+#include "online_multiplayer_screen.hpp"
 #include "options.hpp"
 #include "potion_renderer.hpp"
 #include "read_localization.hpp"
@@ -241,6 +243,9 @@ public:
 
     // repeats the most recent joinLanGame or joinOnlineGame call
     std::function<void()> last_join;
+
+    // returns to the screen from which the most recent join was made
+    std::function<void()> last_join_exit;
 
     // autostart mode
     bool autostart;
@@ -1297,6 +1302,7 @@ void KnightsApp::joinLanGame(const PlayerID &local_player_id,
     pimpl->last_join = [this, local_player_id, address, port, display_name]() {
         joinLanGame(local_player_id, address, port, display_name);
     };
+    pimpl->last_join_exit = [this]() { requestScreenChange(std::make_unique<LanGameScreen>()); };
 
     boost::shared_ptr<KnightsClient> client =
         pimpl->lobby_controller.joinLanGame(*pimpl->lan_net_driver,
@@ -1356,6 +1362,7 @@ void KnightsApp::hostOnlineGame(OnlinePlatform::Visibility vis)
 void KnightsApp::joinOnlineGame(const std::string &platform_lobby_id)
 {
     pimpl->last_join = [this, platform_lobby_id]() { joinOnlineGame(platform_lobby_id); };
+    pimpl->last_join_exit = [this]() { requestScreenChange(std::make_unique<OnlineMultiplayerScreen>()); };
 
     boost::shared_ptr<KnightsClient> client =
         pimpl->lobby_controller.joinOnlineGame(*pimpl->online_platform,
@@ -1408,6 +1415,12 @@ void KnightsApp::retryLastJoin()
     // Take a copy, because the join function will overwrite pimpl->last_join
     std::function<void()> join = pimpl->last_join;
     if (join) join();
+}
+
+void KnightsApp::exitLastJoin()
+{
+    if (pimpl->last_join_exit) pimpl->last_join_exit();
+    else requestScreenChange(std::make_unique<TitleScreen>());
 }
 
 //////////////////////////////////////////////

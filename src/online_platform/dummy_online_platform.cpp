@@ -603,10 +603,72 @@ OnlinePlatform::UploadStatus DummyOnlinePlatform::getUploadStatus(int &progress_
     return UPLOAD_COMPLETE;
 }
 
+// Downloading mod "workshop_<id>" copies /tmp/knights_workshop_server/<id> (the fake
+// Workshop server) into /tmp/knights_workshop/<id> (the fake install location).
+void DummyOnlinePlatform::subscribeMod(const std::string &vfs_mod_name)
+{
+    if (!isWorkshopModName(vfs_mod_name)) {
+        // Non-workshop mod, ignore the request
+        return;
+    }
+    mod_download_start_times[vfs_mod_name] = std::chrono::steady_clock::now();
+}
+
+OnlinePlatform::ModDownloadStatus DummyOnlinePlatform::getModDownloadStatus(const std::string &vfs_mod_name,
+                                                                            int &progress_out,
+                                                                            LocalMsg &error_out)
+{
+    if (!isWorkshopModName(vfs_mod_name)) {
+        // Non-Workshop mod, just say that it is not subscribed
+        return MDS_NOT_SUBSCRIBED;
+    }
+
+    const std::string id = vfs_mod_name.substr(9);
+    const std::filesystem::path install_dir = std::filesystem::path("/tmp/knights_workshop") / id;
+    if (std::filesystem::exists(install_dir)) return MDS_INSTALLED;
+
+    auto it = mod_download_start_times.find(vfs_mod_name);
+    if (it == mod_download_start_times.end()) return MDS_NOT_SUBSCRIBED;
+
+    // Simulate a short wait before the download starts, then 8 seconds of downloading
+    auto elapsed = std::chrono::steady_clock::now() - it->second;
+    double elapsed_secs = std::chrono::duration<double>(elapsed).count();
+    if (elapsed_secs < 2.0) return MDS_PENDING;
+    if (elapsed_secs < 10.0) {
+        progress_out = (elapsed_secs - 2.0) * 12.5;
+        return MDS_DOWNLOADING;
+    }
+
+    // If the mod doesn't exist on the "server", simulate a not-found error
+    const std::filesystem::path server_dir = std::filesystem::path("/tmp/knights_workshop_server") / id;
+    if (!std::filesystem::is_directory(server_dir)) {
+        error_out = LocalMsg{LocalKey("mod_download_error_not_found")};
+        return MDS_FAILED;
+    }
+
+    // If error.txt present, simulate a generic error (with a made-up error code)
+    if (std::filesystem::exists(server_dir / "error.txt")) {
+        error_out = LocalMsg{LocalKey("mod_download_error_other"), {LocalParam(2)}};
+        return MDS_FAILED;
+    }
+
+    // Otherwise, "install" the mod
+    std::filesystem::copy(server_dir, install_dir, std::filesystem::copy_options::recursive);
+    return MDS_INSTALLED;
+}
+
 void DummyOnlinePlatform::browseWorkshop()
 {
     // Just print a debug message
     std::cout << "DummyOnlinePlatform::browseWorkshop called" << std::endl;
+}
+
+void DummyOnlinePlatform::browseWorkshopMod(const std::string &vfs_mod_name)
+{
+    if (!isWorkshopModName(vfs_mod_name)) return; // No-op for non-Workshop mod names
+
+    // Just print a debug message
+    std::cout << "DummyOnlinePlatform::browseWorkshopMod called for " << vfs_mod_name << std::endl;
 }
 
 #endif
