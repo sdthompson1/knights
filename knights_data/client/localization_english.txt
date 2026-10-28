@@ -307,7 +307,7 @@ error_in_respawn_func           Error in respawn function: {0}
 game_hasnt_started              Game hasn't started or could not be found
 config_key_not_found            Config key '{0}' not found
 cxx_error_is                    C++ error: {0}
-incompatible_game               This game is running a different version of Knights or using modified game data
+incompatible_game               Incompatible game (checksum mismatch). This could be caused by:\n\n · Different Knights versions (make sure Knights is updated in Steam)\n · Different mod versions (make sure all mods are updated in Steam Workshop)\n · Files in knights_data/modules don't match (make sure you haven't edited these files locally; use Steam's "verify game files" feature to check)
 missing_modules_game            This game requires modules that are not installed locally
 connection_lost                 The network connection has been lost
 connection_failed               Connection failed
