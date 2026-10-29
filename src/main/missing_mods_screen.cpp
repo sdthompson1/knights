@@ -42,8 +42,7 @@
 
 namespace {
     // How often to poll the online platform for mod titles and download progress,
-    // and how long to wait for the titles before giving up (and showing the vfs
-    // names instead)
+    // and how long to wait for the titles before showing the GUI.
     const unsigned int POLL_INTERVAL_MS = 200;
     const unsigned int TITLE_TIMEOUT_MS = 5000;
 
@@ -77,18 +76,14 @@ namespace {
 
     struct ModRow {
         std::string vfs_name;
-        std::string title;   // empty string = title not known yet
+        std::string title;  // initially vfs_name; becomes the actual Workshop title when known
+        bool title_finalized = false;
         std::unique_ptr<gcn::Label> name_label;
         std::unique_ptr<GuiButton> view_button;   // only for Workshop mods
 #ifdef ONLINE_PLATFORM
         DownloadInfo download;
 #endif
     };
-
-    std::string DisplayName(const ModRow &row)
-    {
-        return row.title.empty() ? row.vfs_name : row.title;
-    }
 
     // Shorten a string (adding "…") so that it fits within max_width pixels
     std::string TruncateToWidth(const gcn::Font &font, std::string str, int max_width)
@@ -122,9 +117,10 @@ public:
 
 private:
     bool pollTitles();
+    bool allTitlesFinalized() const;
     UTF8String statusText() const;
     bool canSubscribe() const;
-    void updateStatus();
+    bool updateStatus();
     void layout();
 #ifdef ONLINE_PLATFORM
     bool pollDownloads();
@@ -181,6 +177,7 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
     for (size_t i = 0; i < names.size(); ++i) {
         ModRow &row = rows[i];
         row.vfs_name = names[i];
+        row.title = names[i];  // Initial title, might be overridden later
         row.name_label.reset(new gcn::Label);
         row.name_label->setForegroundColor(gcn::Color(30, 30, 30));
 #ifdef ONLINE_PLATFORM
@@ -192,6 +189,13 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
             any_workshop = true;
             continue;
         }
+
+        // Apply filtering to the initial title (the vfs name).
+        // (The thinking behind the filtering is that malicious hosts might create
+        // local mod directories with offensive names, so those names shouldn't be
+        // displayed to the player unless they have been through the online platform's
+        // game content filter.)
+        row.title = knights_app.getOnlinePlatform().filterGameContent(UTF8String::fromUTF8Safe(names[i])).asUTF8();
 #endif
         any_local = true;
     }
@@ -229,31 +233,47 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
 #endif
 }
 
-// Check for title query results. Returns true if all titles are now known.
+// Check for title query results. Returns true if any title text was changed.
 bool MissingModsScreenImpl::pollTitles()
 {
-    bool all_known = true;
+    bool changed = false;
     for (ModRow &row : rows) {
-        if (!row.title.empty()) continue;
+        if (row.title_finalized) continue;
 #ifdef ONLINE_PLATFORM
         OnlinePlatform::ModDetails details;
         switch (knights_app.getOnlinePlatform().getModQueryResult(row.vfs_name, details)) {
         case OnlinePlatform::MQR_WAITING:
-            all_known = false;
+            // Title isn't known yet
             break;
         case OnlinePlatform::MQR_SUCCESS:
+            // We have the actual Workshop title; use it.
+            // Note: Workshop titles are not filtered; we assume Steam is already policing
+            // Workshop item titles for offensive content.
             row.title = details.title.asUTF8();
+            row.title_finalized = true;
+            changed = true;
             break;
         case OnlinePlatform::MQR_FAILED:
-            // Probably a local (non-Workshop) mod, so just use the vfs name
-            row.title = row.vfs_name;
+            // Probably a local (non-Workshop) mod, so continue using the vfs_name,
+            // and count the title as finalized now.
+            row.title_finalized = true;
             break;
         }
 #else
-        row.title = row.vfs_name;
+        // No OnlinePlatform available to query, so continue using the vfs_name,
+        // and count the title as finalized now.
+        row.title_finalized = true;
 #endif
     }
-    return all_known;
+    return changed;
+}
+
+bool MissingModsScreenImpl::allTitlesFinalized() const
+{
+    for (const ModRow &row : rows) {
+        if (!row.title_finalized) return false;
+    }
+    return true;
 }
 
 #ifdef ONLINE_PLATFORM
@@ -353,7 +373,7 @@ UTF8String MissingModsScreenImpl::statusText() const
             break;
         case OnlinePlatform::MDS_FAILED:
             add_line(loc.get(LocalKey("mod_download_failed"),
-                             {LocalParam(UTF8String::fromUTF8Safe(DisplayName(row))),
+                             {LocalParam(UTF8String::fromUTF8Safe(row.title)),
                               LocalParam(loc.get(d.error))}));
             break;
         }
@@ -390,17 +410,18 @@ bool MissingModsScreenImpl::canSubscribe() const
     return false;
 }
 
-// Update the status text. The whole panel is only re-created if its size or
-// buttons have changed (to avoid destroying widgets every time the progress changes).
-void MissingModsScreenImpl::updateStatus()
+// Update the status text. Returns true if layout() needs to be called (because the
+// height of something changed, or the subscribe button needs to be shown or hidden).
+bool MissingModsScreenImpl::updateStatus()
 {
     const int old_height = status_text->getHeight();
     status_text->setText(statusText());
     status_text->adjustHeight();
     if (!gui_created || status_text->getHeight() != old_height || canSubscribe() != subscribe_shown) {
-        layout();
+        return true;
     } else {
         window->invalidateAll();
+        return false;
     }
 }
 
@@ -495,31 +516,63 @@ void MissingModsScreenImpl::update()
     if (now - last_poll_msec < POLL_INTERVAL_MS) return;
     last_poll_msec = now;
 
+    bool need_row_labels_update = false;
+    bool need_status_update = false;
+    bool need_relayout = false;
+
+    // If the gui is already created, then run pollTitles anyway, to handle the
+    // (rare) case where titles come in after the gui is created. (In the common
+    // case where all titles are finalized already, pollTitles will return false,
+    // quickly.)
+    if (gui_created && pollTitles()) {
+        need_row_labels_update = need_status_update = need_relayout = true;
+    }
+
+    // If the gui is NOT created, run pollTitles and see if the gui is ready to create.
     if (!gui_created) {
-        if (pollTitles() || now - start_msec >= TITLE_TIMEOUT_MS) {
-            // Long names are shortened so that the name and View button fit in the panel
-            for (ModRow &row : rows) {
-                row.name_label->setCaption(TruncateToWidth(*row.name_label->getFont(),
-                                                           DisplayName(row),
-                                                           WIDTH - view_space));
-                row.name_label->adjustSize();
-            }
-            updateStatus();
+        pollTitles();
+        if (allTitlesFinalized() || now - start_msec >= TITLE_TIMEOUT_MS) {
+            need_row_labels_update = need_status_update = need_relayout = true;
         }
-        return;
     }
 
 #ifdef ONLINE_PLATFORM
-    // Download status is only monitored once the user has clicked Subscribe
-    if (subscribe_clicked && pollDownloads()) updateStatus();
+    // If Subscribe has been clicked, then poll downloads.
+    // If pollDownloads returned true, that means something changed, so we have
+    // to update the status text.
+    if (subscribe_clicked && pollDownloads()) need_status_update = true;
 
     // Join the game automatically once all downloads are complete (unless there are
     // local mods). subscribe_clicked is reset to make sure we only try once.
     if (readyForAutoJoin()) {
         subscribe_clicked = false;
         knights_app.retryLastJoin();
+
+        // retryLastJoin will close this UI, so there is no point continuing with updates
+        return;
     }
 #endif
+
+    // Apply required updates.
+    if (need_row_labels_update) {
+        // Long names are shortened so that the name and View button fit in the panel
+        for (ModRow &row : rows) {
+            row.name_label->setCaption(TruncateToWidth(*row.name_label->getFont(),
+                                                       row.title,
+                                                       WIDTH - view_space));
+            row.name_label->adjustSize();
+        }
+    }
+
+    if (need_status_update) {
+        if (updateStatus()) {
+            need_relayout = true;
+        }
+    }
+
+    if (need_relayout) {
+        layout();
+    }
 }
 
 
