@@ -60,7 +60,6 @@ private:
     std::unique_ptr<gcn::Label> title;
     std::unique_ptr<GuiTextWrap> help_text;
     std::unique_ptr<gcn::Button> start_game;
-    std::unique_ptr<gcn::Button> tutorial;
     std::unique_ptr<gcn::Button> options;
     std::unique_ptr<gcn::Button> mods;
     std::unique_ptr<gcn::Button> credits;
@@ -86,12 +85,6 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     container->add(start_game.get(), x, y);
     y += yinc;
     
-    tutorial.reset(new GuiButton(loc.get(LocalKey("tutorial")).asUTF8()));
-    tutorial->setSize(w,h);
-    tutorial->addActionListener(this);
-    container->add(tutorial.get(), x, y);
-    y += yinc;
-
     options.reset(new GuiButton(loc.get(LocalKey("options")).asUTF8()));
     options->setSize(w, h);
     options->addActionListener(this);
@@ -156,7 +149,6 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     outer_container->setSize(outer_w, text_y + text_height);
 
     start_game->addMouseListener(this);
-    tutorial->addMouseListener(this);
     options->addMouseListener(this);
     mods->addMouseListener(this);
     credits->addMouseListener(this);
@@ -172,8 +164,6 @@ void TitleScreenImpl::mouseEntered(gcn::MouseEvent &e)
     UTF8String desc;
     if (e.getSource() == start_game.get()) {
         desc = loc.get(LocalKey("start_game_desc"));
-    } else if (e.getSource() == tutorial.get()) {
-        desc = loc.get(LocalKey("tutorial_desc"));
     } else if (e.getSource() == options.get()) {
         desc = loc.get(LocalKey("options_desc"));
     } else if (e.getSource() == mods.get()) {
@@ -201,9 +191,6 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
         // Go to Start Game sub-menu
         new_screen.reset(new StartGameScreen);
         
-    } else if (event.getSource() == tutorial.get()) {
-        knights_app.startTutorial();
-
     } else if (event.getSource() == options.get()) {
         new_screen.reset(new OptionsScreen);
 

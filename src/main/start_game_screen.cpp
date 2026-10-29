@@ -58,6 +58,7 @@ private:
     std::unique_ptr<gcn::Container> container;
     std::unique_ptr<gcn::Label> title;
     std::unique_ptr<GuiTextWrap> help_text;
+    std::unique_ptr<gcn::Button> tutorial;
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<gcn::Button> online_multiplayer;
 #endif
@@ -79,6 +80,12 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, boost::shared_ptr<Coer
     const int x = pad;
     int y = pad;
     const int yinc = h + vspace;
+
+    tutorial.reset(new GuiButton(loc.get(LocalKey("tutorial_start_here")).asUTF8()));
+    tutorial->setSize(w,h);
+    tutorial->addActionListener(this);
+    container->add(tutorial.get(), x, y);
+    y += yinc;
 
 #ifdef ONLINE_PLATFORM
     online_multiplayer.reset(new GuiButton(loc.get(LocalKey("online_multiplayer")).asUTF8()));
@@ -155,6 +162,7 @@ StartGameScreenImpl::StartGameScreenImpl(KnightsApp &app, boost::shared_ptr<Coer
     outer_container->add(help_text.get(), text_x, text_y);
     outer_container->setSize(outer_w, text_y + text_height);
 
+    tutorial->addMouseListener(this);
 #ifdef ONLINE_PLATFORM
     online_multiplayer->addMouseListener(this);
 #endif
@@ -171,12 +179,13 @@ void StartGameScreenImpl::mouseEntered(gcn::MouseEvent &e)
 {
     const Localization &loc = knights_app.getLocalization();
     UTF8String desc;
+    if (e.getSource() == tutorial.get()) {
+        desc = loc.get(LocalKey("tutorial_desc"));
 #ifdef ONLINE_PLATFORM
-    if (e.getSource() == online_multiplayer.get()) {
+    } else if (e.getSource() == online_multiplayer.get()) {
         desc = loc.get(LocalKey("online_multiplayer_desc"));
-    } else
 #endif
-    if (e.getSource() == lan_games.get()) {
+    } else if (e.getSource() == lan_games.get()) {
         desc = loc.get(LocalKey("lan_games_desc"));
     } else if (e.getSource() == split_screen_mode.get()) {
         desc = loc.get(LocalKey("split_screen_desc"));
@@ -199,7 +208,10 @@ void StartGameScreenImpl::action(const gcn::ActionEvent &event)
 {
     std::unique_ptr<Screen> new_screen;
 
-    if (event.getSource() == split_screen_mode.get()) {
+    if (event.getSource() == tutorial.get()) {
+        knights_app.startTutorial();
+
+    } else if (event.getSource() == split_screen_mode.get()) {
         knights_app.startSplitScreenGame();
 
 #ifdef ONLINE_PLATFORM

@@ -11,7 +11,6 @@ mods                            Mods
 credits                         Credits
 quit                            Quit
 start_game_desc                 Start a new game.
-tutorial_desc                   This will explain how to play Knights and guide you through your first quest. Recommended for all new players.
 options_desc                    Change settings and key bindings.
 mods_desc                       Enable or disable game modules and change their load order.
 credits_desc                    Show the game credits.
@@ -67,15 +66,17 @@ mod_download_error_other        Steam error code {0}
 
 # Start Game screen
 start_game_caps                 START GAME
+tutorial_start_here             Tutorial (Start Here)
 online_multiplayer              Online Multiplayer
 lan_games                       LAN Games
 split_screen_mode               Split Screen Mode
-single_player_mode              Single Player Mode
+single_player_mode              Single Player (Practice Mode)
 cancel                          Cancel
+tutorial_desc                   This will explain how to play Knights and guide you through your first quest. Recommended for all new players.
 online_multiplayer_desc         Play Knights online with your Steam friends or other Steam players.
 lan_games_desc                  Join or host a game with other players on your local network.
 split_screen_desc               Two players share the same screen, each using their own keyboard controls.
-single_player_desc              Knights is most fun as a multiplayer experience, but you are also welcome to explore the dungeons on your own.
+single_player_desc              Knights isn't really designed for single player, so this is best used as a practice mode, or perhaps for trying out different quests or mods before using them in multiplayer.
 cancel_desc                     Return to the main menu.
 
 
