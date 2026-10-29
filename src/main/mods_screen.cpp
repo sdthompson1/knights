@@ -40,6 +40,8 @@
 
 #include "guichan.hpp"
 
+#include <SDL2/SDL.h>
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -60,6 +62,9 @@ namespace {
     {
         return name == BASE_MODULE_NAME || name == TUTORIAL_MODULE_NAME;
     }
+
+    // Opened by the "Modding Docs" button
+    const char * const MODDING_DOCS_URL = "https://www.knightsgame.org.uk/lua";
 
     // How often to poll the online platform for mod titles
     const unsigned int TITLE_POLL_INTERVAL_MS = 200;
@@ -183,6 +188,7 @@ private:
     std::unique_ptr<gcn::Button> up_button;
     std::unique_ptr<gcn::Button> down_button;
     std::unique_ptr<gcn::Button> refresh_button;
+    std::unique_ptr<gcn::Button> docs_button;
     std::unique_ptr<gcn::Button> save_button;
     std::unique_ptr<gcn::Button> cancel_button;
 #ifdef ONLINE_PLATFORM
@@ -192,6 +198,7 @@ private:
     std::unique_ptr<TooltipWidget> up_tooltip;
     std::unique_ptr<TooltipWidget> down_tooltip;
     std::unique_ptr<TooltipWidget> refresh_tooltip;
+    std::unique_ptr<TooltipWidget> docs_tooltip;
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<TooltipWidget> upload_tooltip;
     std::unique_ptr<TooltipWidget> browse_tooltip;
@@ -335,11 +342,13 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     title_label->setForegroundColor(gcn::Color(0, 0, 128));
 
     // Side buttons (to the right of the list): Up / Down at the top,
-    // Upload Mod / Refresh List at the bottom.
+    // Modding Docs / Upload Mod / Refresh List at the bottom.
     up_button.reset(new GuiButton(loc.get(LocalKey("move_up")).asUTF8()));
     up_button->addActionListener(this);
     down_button.reset(new GuiButton(loc.get(LocalKey("move_down")).asUTF8()));
     down_button->addActionListener(this);
+    docs_button.reset(new GuiButton(loc.get(LocalKey("modding_docs")).asUTF8()));
+    docs_button->addActionListener(this);
 #ifdef ONLINE_PLATFORM
     upload_button.reset(new GuiButton(loc.get(LocalKey("upload_mod")).asUTF8()));
     upload_button->addActionListener(this);
@@ -349,7 +358,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 
     int side_button_width =
         std::max(std::max(up_button->getWidth(), down_button->getWidth()),
-                 refresh_button->getWidth());
+                 std::max(refresh_button->getWidth(), docs_button->getWidth()));
 #ifdef ONLINE_PLATFORM
     side_button_width = std::max(side_button_width, upload_button->getWidth());
 #endif
@@ -357,6 +366,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     up_button->setWidth(side_button_width);
     down_button->setWidth(side_button_width);
     refresh_button->setWidth(side_button_width);
+    docs_button->setWidth(side_button_width);
 #ifdef ONLINE_PLATFORM
     upload_button->setWidth(side_button_width);
 #endif
@@ -389,12 +399,15 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     container->add(up_button.get(), side_x, y);
     container->add(down_button.get(), side_x, y + up_button->getHeight() + pad);
 
-    // Refresh List: aligned with the bottom of the list; Upload Mod just above it
-    const int refresh_y = list_bottom - refresh_button->getHeight();
-    container->add(refresh_button.get(), side_x, refresh_y);
+    // Refresh List: aligned with the bottom of the list; Upload Mod just above it;
+    // Modding Docs above that
+    int side_y = list_bottom - refresh_button->getHeight();
+    container->add(refresh_button.get(), side_x, side_y);
 #ifdef ONLINE_PLATFORM
-    container->add(upload_button.get(), side_x, refresh_y - pad - upload_button->getHeight());
+    side_y -= pad + upload_button->getHeight();
+    container->add(upload_button.get(), side_x, side_y);
 #endif
+    container->add(docs_button.get(), side_x, side_y - pad - docs_button->getHeight());
 
     y = list_bottom + 2*pad;
 
@@ -432,6 +445,8 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
         loc.get(LocalKey("move_down_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
     refresh_tooltip.reset(new TooltipWidget(
         loc.get(LocalKey("refresh_list_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    docs_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("modding_docs_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
 #ifdef ONLINE_PLATFORM
     upload_tooltip.reset(new TooltipWidget(
         loc.get(LocalKey("upload_mod_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
@@ -446,6 +461,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     place_side_tooltip(up_tooltip.get(),      up_button.get());
     place_side_tooltip(down_tooltip.get(),    down_button.get());
     place_side_tooltip(refresh_tooltip.get(), refresh_button.get());
+    place_side_tooltip(docs_tooltip.get(),    docs_button.get());
 #ifdef ONLINE_PLATFORM
     place_side_tooltip(upload_tooltip.get(),  upload_button.get());
 
@@ -456,6 +472,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     up_button->addMouseListener(this);
     down_button->addMouseListener(this);
     refresh_button->addMouseListener(this);
+    docs_button->addMouseListener(this);
 #ifdef ONLINE_PLATFORM
     upload_button->addMouseListener(this);
     browse_button->addMouseListener(this);
@@ -721,6 +738,9 @@ void ModsScreenImpl::action(const gcn::ActionEvent &event)
     } else if (event.getSource() == down_button.get()) {
         moveSelected(+1);
 
+    } else if (event.getSource() == docs_button.get()) {
+        SDL_OpenURL(MODDING_DOCS_URL);
+
 #ifdef ONLINE_PLATFORM
     } else if (event.getSource() == upload_button.get()) {
         std::unique_ptr<Screen> new_screen(new UploadModScreen);
@@ -741,6 +761,8 @@ void ModsScreenImpl::mouseEntered(gcn::MouseEvent &e)
         down_tooltip->scheduleShow();
     } else if (e.getSource() == refresh_button.get()) {
         refresh_tooltip->scheduleShow();
+    } else if (e.getSource() == docs_button.get()) {
+        docs_tooltip->scheduleShow();
 #ifdef ONLINE_PLATFORM
     } else if (e.getSource() == upload_button.get()) {
         upload_tooltip->scheduleShow();
@@ -758,6 +780,8 @@ void ModsScreenImpl::mouseExited(gcn::MouseEvent &e)
         down_tooltip->cancelShow();
     } else if (e.getSource() == refresh_button.get()) {
         refresh_tooltip->cancelShow();
+    } else if (e.getSource() == docs_button.get()) {
+        docs_tooltip->cancelShow();
 #ifdef ONLINE_PLATFORM
     } else if (e.getSource() == upload_button.get()) {
         upload_tooltip->cancelShow();
