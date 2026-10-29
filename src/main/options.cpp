@@ -57,7 +57,7 @@ Options::Options()
     action_bar_tool_tips = true;
 
     use_scale2x = true;
-    fullscreen = false;  // Default to windowed mode (#169)
+    fullscreen = true;  // Default to full screen mode
 
     allow_non_integer_scaling = false;
     window_width = 1000;

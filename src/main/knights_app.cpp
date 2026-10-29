@@ -429,16 +429,26 @@ KnightsApp::KnightsApp(DisplayType display_type, const std::filesystem::path &re
 
     try {
         pimpl->window = pimpl->gfx_driver->createWindow(params);
+
     } catch (Coercri::CoercriError &) {
-        // If creation in fullscreen mode fails then try again in windowed mode (Trac #118)
-        // (If it wasn't fullscreen mode then re-throw the exception)
+        // If creation in fullscreen mode fails then try again in windowed mode.
         if (params.fullscreen) {
-            // shrink the window a little bit, so it doesn't fill the entire screen
-            params.width = std::max(params.width - 200, 400);
-            params.height = std::max(params.height - 200, 400);
-            params.maximized = params.fullscreen = false;
+            // Here, it's possible that params.width and params.height came from a previous
+            // options file, which was set to fullscreen mode (so that the width and height
+            // correspond to the full monitor size). If we used those directly, the new
+            // window would cover the entire screen, which might not be what we want.
+            // Therefore, shrink the sizes by 200 for safety (but applying a lower bound
+            // of 600, to prevent a postage stamp sized window!).
+            params.width = std::max(params.width - 200, 600);
+            params.height = std::max(params.height - 200, 600);
+            // Try in maximized, but not fullscreen, mode. (Therefore, the above width and
+            // height only come into play when the user un-maximizes the window.)
+            params.fullscreen = false;
+            params.maximized = true;
+            // Re-create window. (If it fails again, the exception is allowed to propagate.)
             pimpl->window = pimpl->gfx_driver->createWindow(params);
         } else {
+            // We weren't trying to create in fullscreen mode, so just re-throw the exception.
             throw;
         }
     }
