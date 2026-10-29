@@ -64,13 +64,28 @@ namespace {
     // How often to poll the online platform for mod titles
     const unsigned int TITLE_POLL_INTERVAL_MS = 200;
 
+    // Padding between widgets
+    const int PAD = 10;
+
     struct ModEntry {
         std::string name;    // "vfs mod name" (identifier; this is what gets saved)
         std::string title;   // Displayed in the list (UTF-8). Same as name until/unless
                              // the online platform gives us a proper title.
         bool title_pending;  // true if still waiting for the online platform
         bool enabled;
+        bool local;          // true for local (non-Workshop) mods
     };
+
+    // Whether a mod should be shown as "local". Without an online platform,
+    // the local/Workshop distinction is meaningless, so no mods are shown as local.
+    bool ShowAsLocal(const ModuleManager &mm, const std::string &name)
+    {
+#ifdef ONLINE_PLATFORM
+        return mm.isLocalModule(name);
+#else
+        return false;
+#endif
+    }
 
     bool TitleLess(const ModEntry &a, const ModEntry &b)
     {
@@ -78,21 +93,27 @@ namespace {
     }
 
     // Simple ListModel exposing the titles from a vector<ModEntry>.
+    // Local mods have local_suffix appended.
     class ModListModel : public gcn::ListModel {
     public:
-        explicit ModListModel(const std::vector<ModEntry> &e) : entries(e) { }
+        ModListModel(const std::vector<ModEntry> &e, const std::string &suffix)
+            : entries(e), local_suffix(suffix) { }
 
         int getNumberOfElements() override {
             return int(entries.size());
         }
 
         std::string getElementAt(int i) override {
-            if (i >= 0 && i < int(entries.size())) return entries[i].title;
+            if (i >= 0 && i < int(entries.size())) {
+                const ModEntry &e = entries[i];
+                return e.local ? e.title + " " + local_suffix : e.title;
+            }
             return std::string();
         }
 
     private:
         const std::vector<ModEntry> &entries;
+        std::string local_suffix;
     };
 }
 
@@ -140,6 +161,7 @@ private:
     void resolveTitle(ModEntry &entry);
     void moveSelected(int delta);
     void listChanged();
+    void updateLocalHelp();
 
     KnightsApp &knights_app;
     boost::shared_ptr<Coercri::Window> window;
@@ -157,6 +179,7 @@ private:
     std::unique_ptr<GuiTextWrap> help_text;
     std::unique_ptr<ModListBox> listbox;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
+    std::unique_ptr<GuiTextWrap> local_help_text;   // only visible if there are local mods
     std::unique_ptr<gcn::Button> up_button;
     std::unique_ptr<gcn::Button> down_button;
     std::unique_ptr<gcn::Button> refresh_button;
@@ -297,12 +320,12 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     const Localization &loc = knights_app.getLocalization();
 
     populateFromModuleManager();
-    list_model.reset(new ModListModel(entries));
+    list_model.reset(new ModListModel(entries, loc.get(LocalKey("local_mod_suffix")).asUTF8()));
 
     container.reset(new gcn::Container);
     container->setOpaque(false);
 
-    const int pad = 10;
+    const int pad = PAD;
     const int list_width = 600;
     const int list_height = 350;
     int y = pad;
@@ -375,6 +398,15 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 
     y = list_bottom + 2*pad;
 
+    // Local mod help text (visibility, and the y-position of everything
+    // below it, is set by updateLocalHelp)
+    local_help_text.reset(new GuiTextWrap);
+    local_help_text->setWidth(width);
+    local_help_text->setText(loc.get(LocalKey("local_mod_help")));
+    local_help_text->adjustHeight();
+    local_help_text->setForegroundColor(gcn::Color(30, 30, 30));
+    container->add(local_help_text.get(), pad, y);
+
     // Save, Browse Workshop and Cancel buttons
     save_button.reset(new GuiButton(loc.get(LocalKey("save_changes")).asUTF8()));
     save_button->addActionListener(this);
@@ -389,7 +421,6 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     container->add(browse_button.get(), pad + width/2 - browse_button->getWidth()/2, y);
 #endif
     container->add(cancel_button.get(), pad + width - cancel_button->getWidth(), y);
-    y += save_button->getHeight() + pad;
 
     // Tooltips -- added last so they render on top of all other widgets
     const int TOOLTIP_MAX_WIDTH = list_width / 2;
@@ -418,10 +449,8 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 #ifdef ONLINE_PLATFORM
     place_side_tooltip(upload_tooltip.get(),  upload_button.get());
 
-    // Browse Workshop tooltip appears above the button
-    container->add(browse_tooltip.get(),
-                   browse_button->getX() + 15,
-                   browse_button->getY() - browse_tooltip->getHeight() - 3);
+    // Browse Workshop tooltip appears above the button (y-position set by updateLocalHelp)
+    container->add(browse_tooltip.get(), browse_button->getX() + 15, 0);
 #endif
 
     up_button->addMouseListener(this);
@@ -432,7 +461,8 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     browse_button->addMouseListener(this);
 #endif
 
-    container->setSize(2*pad + width, y);
+    container->setWidth(2*pad + width);
+    updateLocalHelp();   // sets container height
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
@@ -488,7 +518,8 @@ void ModsScreenImpl::sendTitleQuery(const std::vector<std::string> &names)
 // otherwise it is set to the vfs name for now (and update() will fix it later).
 ModEntry ModsScreenImpl::makeEntry(const std::string &name, bool enabled)
 {
-    ModEntry entry{name, name, true, enabled};
+    ModEntry entry{name, name, true, enabled,
+                   ShowAsLocal(knights_app.getModuleManager(), name)};
     resolveTitle(entry);
     return entry;
 }
@@ -569,6 +600,7 @@ void ModsScreenImpl::refreshList()
     std::unordered_set<std::string> present;
     for (ModEntry &e : entries) {
         e.title_pending = true;
+        e.local = ShowAsLocal(mm, e.name);
         present.insert(e.name);
     }
 
@@ -592,6 +624,7 @@ void ModsScreenImpl::refreshList()
     }
     listbox->setSelected(new_sel);
 
+    updateLocalHelp();
     listChanged();
 }
 
@@ -614,6 +647,36 @@ void ModsScreenImpl::moveSelected(int delta)
     std::swap(entries[i], entries[j]);
     listbox->setSelected(j);
     listChanged();
+}
+
+// Show the local mod help text iff there are any local mods in the list,
+// and position the bottom row of buttons (and size the container) to suit.
+void ModsScreenImpl::updateLocalHelp()
+{
+    const bool show = std::any_of(entries.begin(), entries.end(),
+                                  [](const ModEntry &e) { return e.local; });
+    local_help_text->setVisible(show);
+
+    int y = local_help_text->getY();
+    if (show) y += local_help_text->getHeight() + 2*PAD;
+
+    save_button->setY(y);
+    cancel_button->setY(y);
+#ifdef ONLINE_PLATFORM
+    browse_button->setY(y);
+    browse_tooltip->setY(y - browse_tooltip->getHeight() - 3);
+#endif
+    container->setHeight(y + save_button->getHeight() + PAD);
+
+    // GuiPanel does not auto-resize when its child changes size, so update it
+    // manually, then re-centre (see also MenuScreenImpl::applyHelpVisibility).
+    // (During the constructor, panel does not exist yet, so nothing to do.)
+    if (panel) {
+        panel->setSize(container->getWidth() + 6, container->getHeight() + 6);
+        int win_w, win_h;
+        window->getSize(win_w, win_h);
+        centre->setSize(win_w, win_h);
+    }
 }
 
 void ModsScreenImpl::listChanged()

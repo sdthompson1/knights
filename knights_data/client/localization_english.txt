@@ -30,6 +30,8 @@ move_down_tooltip               Move the selected mod down one place in the list
 upload_mod_tooltip              Use this to upload a mod you have created to the Workshop.
 refresh_list_tooltip            Refresh the list of installed mods.
 browse_workshop_tooltip         Open the Steam Workshop page.
+local_mod_suffix                (local)
+local_mod_help                  One or more local mods were detected in knights_data/modules. Note that if you host a game with local mods enabled, then other players won't be able to join your game, unless they also have identical copies of those mods in their own knights_data/modules folder.
 
 
 # Upload Mod screen
