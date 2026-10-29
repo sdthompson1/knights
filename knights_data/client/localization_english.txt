@@ -76,7 +76,7 @@ tutorial_desc                   This will explain how to play Knights and guide 
 online_multiplayer_desc         Play Knights online with your Steam friends or other Steam players.
 lan_games_desc                  Join or host a game with other players on your local network.
 split_screen_desc               Two players share the same screen, each using their own keyboard controls.
-single_player_desc              Knights isn't really designed for single player, so this is best used as a practice mode, or perhaps for trying out different quests or mods before using them in multiplayer.
+single_player_desc              Knights isn't really designed for single player, so this is best used as a practice mode, or for trying out different quests or mods before using them in multiplayer.
 cancel_desc                     Return to the main menu.
 
 
