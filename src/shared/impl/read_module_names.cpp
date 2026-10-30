@@ -43,9 +43,9 @@ bool IsValidModuleName(const std::string &name)
     return true;
 }
 
-std::vector<std::string> ReadModuleNames(const std::optional<std::filesystem::path> &pref_path)
+std::vector<ModulesTxtLine> ReadModulesTxt(const std::optional<std::filesystem::path> &pref_path)
 {
-    std::vector<std::string> result;
+    std::vector<ModulesTxtLine> result;
 
     if (pref_path) {
         std::ifstream f(*pref_path / "modules.txt");
@@ -61,24 +61,34 @@ std::vector<std::string> ReadModuleNames(const std::optional<std::filesystem::pa
             line = Trim(line);
             if (line.empty()) continue;
 
-            if (IsValidModuleName(line)) {
-                if (seen.insert(line).second) {
-                    result.push_back(line);
-                }
+            ModulesTxtLine m;
+            if (line[0] == '-') {
+                m.module_name = line.substr(1);
+                m.enabled = false;
+            } else {
+                m.module_name = line;
+                m.enabled = true;
             }
+
+            // Skip invalid, or previously seen, module names
+            if (!IsValidModuleName(m.module_name)) continue;
+            if (!seen.insert(m.module_name).second) continue;
+
+            result.push_back(m);
         }
     }
 
     return result;
 }
 
-void WriteModuleNames(const std::optional<std::filesystem::path> &pref_path,
-                      const std::vector<std::string> &names)
+void WriteModulesTxt(const std::optional<std::filesystem::path> &pref_path,
+                     const std::vector<ModulesTxtLine> &modules)
 {
     if (pref_path) {
         std::ofstream f(*pref_path / "modules.txt");
-        for (const std::string &name : names) {
-            f << name << "\n";
+        for (const ModulesTxtLine &m : modules) {
+            if (!m.enabled) f << "-";
+            f << m.module_name << "\n";
         }
     }
 }

@@ -177,7 +177,8 @@ UploadModScreenImpl::UploadModScreenImpl(KnightsApp &app, boost::shared_ptr<Coer
 
     // Only local mods can be uploaded (excluding the built-in ones)
     const ModuleManager &mm = knights_app.getModuleManager();
-    for (const std::string &name : mm.getInstalledModules()) {
+    for (const ModulesTxtLine &line : mm.getInstalledModules()) {
+        const std::string &name = line.module_name;
         if (mm.isLocalModule(name) && name != BASE_MODULE_NAME && name != TUTORIAL_MODULE_NAME) {
             mod_names.push_back(name);
         }

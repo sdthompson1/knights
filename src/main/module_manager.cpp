@@ -45,6 +45,7 @@ struct ModuleInfo {
     std::filesystem::path path;  // Path on local filesystem
     uint64_t checksum;
     bool is_local;  // true for local mods, false for Workshop (online platform) mods
+    bool enabled;
 };
 
 struct ModuleManagerImpl {
@@ -59,14 +60,12 @@ struct ModuleManagerImpl {
     std::string build_id;
     std::vector<ModuleInfo> modules;  // All available (installed) modules
     std::unordered_map<std::string, size_t> index;   // Index into `modules` vector
-    std::vector<std::string> enabled_modules;   // Enabled modules (for new games)
 };
 
 namespace {
-    // Add a filesystem directory to `infos` and `known`
+    // Add a filesystem directory to `infos`
     // (if it is a valid module directory)
     void AddModuleInfo(std::vector<ModuleInfo> &infos,
-                       std::unordered_set<std::string> &known,
                        std::string name,  // "VFS mod name" e.g. "workshop_123" or dir name
                        const std::filesystem::path &path,
                        bool is_local)
@@ -77,14 +76,123 @@ namespace {
         // Only accept valid mod names
         if (!IsValidModuleName(name)) return;
 
-        // Construct the ModuleInfo and add it
+        // Construct the ModuleInfo and add it (disabled initially)
         ModuleInfo info;
         info.name = name;
         info.path = path;
         info.checksum = ComputeLocalChecksum(path);
         info.is_local = is_local;
+        info.enabled = false;
         infos.push_back(info);
-        known.insert(name);
+    }
+
+    // Discover all installed modules by scanning:
+    //  (1) All subdirectories of knights_data/modules
+    //  (2) All dirs given in extra_module_dirs (if any)
+    //  (3) All installed Steam Workshop (or other online platform) mods
+    // Results are appended to "infos", with a correctly computed checksum, but with
+    // enabled=false initially.
+    void DiscoverModules(const std::filesystem::path &knights_data_modules_dir,
+                         const std::vector<std::filesystem::path> &extra_module_dirs,
+#ifdef ONLINE_PLATFORM
+                         OnlinePlatform &online_platform,
+#endif
+                         std::vector<ModuleInfo> &infos)
+    {
+        // (1) knights_data modules (sorted alphabetically)
+        for (const auto &entry : std::filesystem::directory_iterator(knights_data_modules_dir)) {
+            AddModuleInfo(infos, entry.path().filename().string(), entry.path(), true);
+        }
+        std::sort(infos.begin(), infos.end(),
+                  [](const ModuleInfo &lhs, const ModuleInfo &rhs) {
+                      return lhs.name < rhs.name;
+                  });
+
+        // (2) extra_module_dirs (in order given, and after the knights_data modules)
+        for (const auto &path : extra_module_dirs) {
+            AddModuleInfo(infos, path.filename().string(), path, true);
+        }
+
+#ifdef ONLINE_PLATFORM
+        // (3) Workshop modules, after the others, in the order returned by the online platform.
+        for (const OnlinePlatform::InstalledMod &mod : online_platform.getInstalledMods()) {
+            AddModuleInfo(infos, mod.vfs_name, mod.path, false);
+        }
+#endif
+    }
+
+    // Adjust a load order (vector of ModulesTxtLine) to match a given list of
+    // installed modules.
+    // Load order items corresponding to a non-installed module are removed.
+    // Then, any installed modules not in the load order are added to the end,
+    // with the enabled flag taken from the installed-list.
+    void ReconcileLoadOrder(std::vector<ModulesTxtLine> &load_order,
+                            const std::vector<ModuleInfo> &installed)
+    {
+        // Make a hash set of the installed names, for speedy lookup
+        std::unordered_set<std::string> known;
+        for (const ModuleInfo &info : installed) {
+            known.insert(info.name);
+        }
+
+        // Remove load order entries that correspond to unknown (uninstalled) modules
+        std::erase_if(load_order, [&known](const ModulesTxtLine &line) {
+            return known.count(line.module_name) == 0; });
+
+        // Now we need the hash set to contain everything that exists in the load order
+        known.clear();
+        for (const ModulesTxtLine &line : load_order) {
+            known.insert(line.module_name);
+        }
+
+        // Now add any installed-modules that are NOT in the load order
+        for (const ModuleInfo &info : installed) {
+            if (known.count(info.name) == 0) {
+                load_order.push_back(ModulesTxtLine{ info.name, info.enabled });
+            }
+        }
+    }
+
+    // Reorder the "infos" according to the given load order, and apply the
+    // enabled-flags from the load order as well.
+    // ReconcileLoadOrder should be called first (so that the load_order includes
+    // exactly the set of module names present in "infos").
+    // Throws exception if no module is enabled.
+    void ApplyLoadOrder(std::vector<ModuleInfo> &infos,
+                        const std::vector<ModulesTxtLine> &load_order)
+    {
+        // Build an index
+        std::unordered_map<std::string, const ModuleInfo *> index;
+        for (const ModuleInfo &info : infos) {
+            index[info.name] = &info;
+        }
+
+        // Copy the ModuleInfos to the new vector in the correct order, and set
+        // the enabled flags
+        bool any_enabled = false;
+        std::vector<ModuleInfo> new_infos;
+        new_infos.reserve(load_order.size());
+        for (const ModulesTxtLine &line : load_order) {
+            auto find = index.find(line.module_name);
+            if (find == index.end()) {
+                throw std::runtime_error("ApplyLoadOrder: load_order must be reconciled first");
+            }
+            new_infos.push_back(*find->second);
+            new_infos.back().enabled = line.enabled;
+            any_enabled |= line.enabled;
+        }
+
+        if (!any_enabled) {
+            // This is always a user error: the mods UI always adds "base" as an
+            // enabled module, and "base" should always be installed, so if we end
+            // up without any enabled modules, the user must have either deleted
+            // knights_data/modules/base, or edited modules.txt by hand, or set
+            // enabled modules on the command line (setting no valid ones).
+            throw std::runtime_error("No modules enabled! Check modules.txt, command line options, and whether knights_data/modules/base exists.");
+        }
+
+        // Copy results back
+        infos = std::move(new_infos);
     }
 }
 
@@ -119,7 +227,7 @@ ModuleManager::~ModuleManager() = default;
 void ModuleManager::update()
 {
     // Read the module load order from modules.txt (or cmd_line_load_order if set).
-    std::vector<std::string> enabled_names;
+    std::vector<ModulesTxtLine> load_order;
     if (!pimpl->cmd_line_load_order.empty()) {
         // Use the cmd line load order, ignoring modules.txt.
         std::unordered_set<std::string> seen;
@@ -127,81 +235,70 @@ void ModuleManager::update()
             if (!IsValidModuleName(name)) {
                 throw std::runtime_error("Invalid module name: '" + name + "'");
             }
-            if (seen.insert(name).second) enabled_names.push_back(name);
+            if (seen.insert(name).second) {
+                load_order.push_back(ModulesTxtLine{ name, true });
+            }
         }
     } else if (pimpl->pref_path) {
         // Load modules.txt from the prefs directory.
-        enabled_names = ReadModuleNames(pimpl->pref_path);
+        load_order = ReadModulesTxt(pimpl->pref_path);
 
         // If loading fails (or no modules.txt exists), try re-using the previous value
-        // of pimpl->enabled_names. On startup this will just be empty, but if the user
-        // went to the Mods UI (which calls setAndSaveLoadOrder) there might be something
-        // valid there. This at least means that mods set in the UI will work for this
-        // session, even if saving for future sessions fails for some reason.
-        if (enabled_names.empty()) {
-            enabled_names = pimpl->enabled_modules;
+        // of getInstalledModules as the load order. On startup this will just be empty,
+        // but if the user went to the Mods UI (which calls setAndSaveLoadOrder) there
+        // might be something valid there. This at least means that mods set in the UI
+        // will work for this session, even if saving for future sessions fails for some
+        // reason.
+        if (load_order.empty()) {
+            load_order = getInstalledModules();
         }
     }
-
-    // Discover all installed modules by scanning:
-    //  (1) All subdirectories of knights_data/modules
-    //  (2) All dirs given in extra_module_dirs (if any)
-    //  (3) All installed Steam Workshop (or other online platform) mods
-
-    std::vector<ModuleInfo> new_modules;
-    std::unordered_set<std::string> known;
-
-    // (1) knights_data modules (sorted alphabetically)
-    for (const auto &entry : std::filesystem::directory_iterator(pimpl->knights_data_modules_dir)) {
-        AddModuleInfo(new_modules, known, entry.path().filename().string(), entry.path(), true);
-    }
-    std::sort(new_modules.begin(), new_modules.end(),
-              [](const ModuleInfo &lhs, const ModuleInfo &rhs) {
-                  return lhs.name < rhs.name;
-              });
-
-    // (2) extra_module_dirs (in order given, and after the knights_data modules)
-    for (const auto &path : pimpl->extra_module_dirs) {
-        AddModuleInfo(new_modules, known, path.filename().string(), path, true);
-    }
-
-#ifdef ONLINE_PLATFORM
-    // (3) Workshop modules, after the others, in the order returned by the online platform.
-    for (const OnlinePlatform::InstalledMod &mod : pimpl->online_platform.getInstalledMods()) {
-        AddModuleInfo(new_modules, known, mod.vfs_name, mod.path, false);
-    }
-#endif
-
-    // Filter down the load order (enabled_names) to only include actually installed names.
-    enabled_names.erase(
-        std::remove_if(enabled_names.begin(), enabled_names.end(),
-            [&known](const std::string& s) { return !known.count(s); }),
-        enabled_names.end());
 
     // If the load order is empty, use "base" as a default.
-    if (enabled_names.empty()) {
-        if (!known.count("base")) {
-            // "base" should always exist
-            throw std::runtime_error("'base' module not found!");
-        }
-        enabled_names.push_back("base");
+    if (load_order.empty()) {
+        load_order.push_back(ModulesTxtLine{ "base", true });
     }
 
-    // Success: copy results back, and recompute pimpl->index.
+    // Discover all installed modules
+    std::vector<ModuleInfo> new_modules;
+    DiscoverModules(pimpl->knights_data_modules_dir,
+                    pimpl->extra_module_dirs,
+#ifdef ONLINE_PLATFORM
+                    pimpl->online_platform,
+#endif
+                    new_modules);
+
+    // Reconcile the load order with the installed list
+    ReconcileLoadOrder(load_order, new_modules);
+
+    // Apply the load order to the installed list
+    ApplyLoadOrder(new_modules, load_order);
+
+    // Copy the result to pimpl->modules and recompute the index
     pimpl->modules = std::move(new_modules);
     pimpl->index.clear();
     for (size_t i = 0; i < pimpl->modules.size(); ++i) {
         pimpl->index[pimpl->modules[i].name] = i;
     }
-    pimpl->enabled_modules = std::move(enabled_names);
 }
 
-void ModuleManager::setAndSaveLoadOrder(std::vector<std::string> load_order)
+void ModuleManager::setAndSaveLoadOrder(std::vector<ModulesTxtLine> load_order)
 {
-    pimpl->enabled_modules = load_order;
-    WriteModuleNames(pimpl->pref_path, load_order);  // save to modules.txt if possible
+    // Cancel any previous command line load order
     pimpl->cmd_line_load_order.clear();
-    update();
+
+    // Save to modules.txt if possible
+    WriteModulesTxt(pimpl->pref_path, load_order);
+
+    // Confirm that the save worked
+    if (ReadModulesTxt(pimpl->pref_path) == load_order) {
+        // It did; we can call update
+        update();
+    } else {
+        // It did not; apply the load order to the current pimpl->modules list instead.
+        ReconcileLoadOrder(load_order, pimpl->modules);
+        ApplyLoadOrder(pimpl->modules, load_order);
+    }
 }
 
 bool ModuleManager::isModuleInstalled(const std::string &module_name) const
@@ -224,19 +321,25 @@ std::filesystem::path ModuleManager::getModulePath(const std::string &module_nam
     return pimpl->modules[it->second].path;
 }
 
-std::vector<std::string> ModuleManager::getInstalledModules() const
+std::vector<ModulesTxtLine> ModuleManager::getInstalledModules() const
 {
-    std::vector<std::string> result;
+    std::vector<ModulesTxtLine> result;
     result.reserve(pimpl->modules.size());
     for (const ModuleInfo &info : pimpl->modules) {
-        result.push_back(info.name);
+        result.push_back(ModulesTxtLine{ info.name, info.enabled });
     }
     return result;
 }
 
 std::vector<std::string> ModuleManager::getEnabledModules() const
 {
-    return pimpl->enabled_modules;
+    std::vector<std::string> result;
+    for (const ModuleInfo &info : pimpl->modules) {
+        if (info.enabled) {
+            result.push_back(info.name);
+        }
+    }
+    return result;
 }
 
 std::vector<std::string> ModuleManager::resolveModuleList(

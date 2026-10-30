@@ -24,6 +24,8 @@
 #ifndef MODULE_MANAGER_HPP
 #define MODULE_MANAGER_HPP
 
+#include "read_module_names.hpp"
+
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -61,8 +63,9 @@ public:
 
     // Set a new module load order, also saving it to modules.txt.
     // This also cancels any cmd_line_load_order that was set previously.
-    // It also calls update() afterwards.
-    void setAndSaveLoadOrder(std::vector<std::string> load_order);
+    // It also calls update() afterwards (unless saving fails; in which case it tries
+    // to set the load order on the currently known list of modules).
+    void setAndSaveLoadOrder(std::vector<ModulesTxtLine> load_order);
 
     // Determine if a module is installed/available locally
     bool isModuleInstalled(const std::string &mod_vfs_name) const;
@@ -76,8 +79,8 @@ public:
     // Throws if the module is not installed.
     std::filesystem::path getModulePath(const std::string &mod_vfs_name) const;
 
-    // Get the names of all installed modules (in discovery order)
-    std::vector<std::string> getInstalledModules() const;
+    // Get the names of all installed modules (in load order), with an enabled-flag for each
+    std::vector<ModulesTxtLine> getInstalledModules() const;
 
     // Get the user's currently enabled module list (for creating new games)
     std::vector<std::string> getEnabledModules() const;

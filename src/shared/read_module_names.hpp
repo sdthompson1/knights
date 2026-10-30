@@ -32,13 +32,23 @@
 // Checks whether the given string is valid as a module folder name.
 bool IsValidModuleName(const std::string &name);
 
+struct ModulesTxtLine {
+    std::string module_name;
+    bool enabled;
+
+    bool operator==(const ModulesTxtLine &other) const {
+        return module_name == other.module_name && enabled == other.enabled;
+    }
+};
+
 // Read modules.txt from the prefs directory, and return module names
-// in file order, deduplicated. If file not found, returns empty vector.
-std::vector<std::string> ReadModuleNames(const std::optional<std::filesystem::path> &pref_path);
+// and enabled-flags in file order. If file not found, returns empty vector.
+// Duplicate module names are removed from the list before returning.
+std::vector<ModulesTxtLine> ReadModulesTxt(const std::optional<std::filesystem::path> &pref_path);
 
 // Save the given modules list back to the prefs directory. Overwrites
 // any current list.
-void WriteModuleNames(const std::optional<std::filesystem::path> &pref_path,
-                      const std::vector<std::string> &names);
+void WriteModulesTxt(const std::optional<std::filesystem::path> &pref_path,
+                     const std::vector<ModulesTxtLine> &modules);
 
 #endif

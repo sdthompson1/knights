@@ -45,7 +45,6 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <unordered_set>
 #include <vector>
 
@@ -90,11 +89,6 @@ namespace {
 #else
         return false;
 #endif
-    }
-
-    bool TitleLess(const ModEntry &a, const ModEntry &b)
-    {
-        return std::tie(a.title, a.name) < std::tie(b.title, b.name);
     }
 
     // Simple ListModel exposing the titles from a vector<ModEntry>.
@@ -161,8 +155,8 @@ public:
 private:
     void populateFromModuleManager();
     void refreshList();
-    void sendTitleQuery(const std::vector<std::string> &names);
-    ModEntry makeEntry(const std::string &name, bool enabled);
+    void sendTitleQuery(const std::vector<ModulesTxtLine> &modules);
+    ModEntry makeEntry(const ModulesTxtLine &line);
     void resolveTitle(ModEntry &entry);
     void moveSelected(int delta);
     void listChanged();
@@ -491,44 +485,36 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     AdjustListBoxSize(*listbox, *scroll_area);
 }
 
-// Build the initial list: enabled modules first (in load order), then
-// all other installed modules (alphabetically). Updates the
-// ModuleManager first.
+// Updates the ModuleManager, then populates the list box entries from
+// the ModuleManager's installed modules list. Used during initial startup
+// (not on "Refresh List").
 void ModsScreenImpl::populateFromModuleManager()
 {
     ModuleManager &mm = knights_app.getModuleManager();
     mm.update();
 
-    const std::vector<std::string> enabled = mm.getEnabledModules();
-    const std::vector<std::string> installed = mm.getInstalledModules();
-
-    std::vector<std::string> all_names = enabled;
-    all_names.insert(all_names.end(), installed.begin(), installed.end());
-    sendTitleQuery(all_names);
+    const std::vector<ModulesTxtLine> lines = mm.getInstalledModules();
+    sendTitleQuery(lines);
 
     entries.clear();
 
-    std::unordered_set<std::string> seen;
-    for (const std::string &name : enabled) {
-        if (seen.insert(name).second && !IsHiddenModule(name)) {
-            entries.push_back(makeEntry(name, true));
+    for (const ModulesTxtLine &line : lines) {
+        if (!IsHiddenModule(line.module_name)) {
+            entries.push_back(makeEntry(line));
         }
     }
-
-    const size_t num_enabled = entries.size();
-    for (const std::string &name : installed) {
-        if (seen.insert(name).second && !IsHiddenModule(name)) {
-            entries.push_back(makeEntry(name, false));
-        }
-    }
-    std::sort(entries.begin() + num_enabled, entries.end(), TitleLess);
 }
 
 // Ask the online platform (if any) for the titles of the given mods.
 // Results are picked up by resolveTitle.
-void ModsScreenImpl::sendTitleQuery(const std::vector<std::string> &names)
+void ModsScreenImpl::sendTitleQuery(const std::vector<ModulesTxtLine> &modules)
 {
 #ifdef ONLINE_PLATFORM
+    std::vector<std::string> names;
+    names.reserve(modules.size());
+    for (const ModulesTxtLine &line : modules) {
+        names.push_back(line.module_name);
+    }
     knights_app.getOnlinePlatform().sendModQuery(names);
 #endif
     titles_pending = true;   // update() will clear this once all titles are resolved
@@ -536,10 +522,10 @@ void ModsScreenImpl::sendTitleQuery(const std::vector<std::string> &names)
 
 // Make a new ModEntry. The title is looked up immediately if it is available,
 // otherwise it is set to the vfs name for now (and update() will fix it later).
-ModEntry ModsScreenImpl::makeEntry(const std::string &name, bool enabled)
+ModEntry ModsScreenImpl::makeEntry(const ModulesTxtLine &line)
 {
-    ModEntry entry{name, name, true, enabled,
-                   ShowAsLocal(knights_app.getModuleManager(), name)};
+    ModEntry entry{line.module_name, line.module_name, true, line.enabled,
+                   ShowAsLocal(knights_app.getModuleManager(), line.module_name)};
     resolveTitle(entry);
     return entry;
 }
@@ -589,19 +575,24 @@ void ModsScreenImpl::update()
     if (changed) listChanged();
 }
 
-// Update the ModuleManager (which re-scans installed modules), then
-// drop any uninstalled modules from the list, and add newly-installed
-// modules (disabled) to the end of the list (alphabetically). Does
-// not re-read modules.txt or change the enabled-state of any module
+// Update the ModuleManager (which re-scans installed modules and re-reads
+// modules.txt), then drop any uninstalled modules from the list, and add
+// newly-installed modules to the end of the list.
+// This does not change the enabled-state or position of any module already
 // in the list.
 void ModsScreenImpl::refreshList()
 {
+    // Update the ModuleManager, and get the new installed-modules list
     ModuleManager &mm = knights_app.getModuleManager();
     mm.update();
 
-    const std::vector<std::string> installed = mm.getInstalledModules();
-    const std::unordered_set<std::string> installed_set(installed.begin(), installed.end());
+    const std::vector<ModulesTxtLine> installed = mm.getInstalledModules();
+    std::unordered_set<std::string> installed_set;
+    for (const ModulesTxtLine &line : installed) {
+        installed_set.insert(line.module_name);
+    }
 
+    // Re-query titles of all modules
     sendTitleQuery(installed);
 
     // Remember the selected module (by name) so we can restore it afterwards
@@ -615,8 +606,9 @@ void ModsScreenImpl::refreshList()
             [&installed_set](const ModEntry &e) { return installed_set.count(e.name) == 0; }),
         entries.end());
 
-    // Re-check the titles of the existing entries (update() will do this). The
-    // current title stays on display in the meantime.
+    // Set title_pending to true for all remaining modules (this will force update()
+    // to recheck the title query results). The current title stays on display in the
+    // meantime. Also, gather a set of all modules currently in the list box.
     std::unordered_set<std::string> present;
     for (ModEntry &e : entries) {
         e.title_pending = true;
@@ -624,15 +616,13 @@ void ModsScreenImpl::refreshList()
         present.insert(e.name);
     }
 
-    // Add newly discovered modules at the end (alphabetically), disabled.
+    // Add newly discovered modules at the end.
     // Exception: hidden modules ("base" and "tutorial") are ignored.
-    const size_t num_existing = entries.size();
-    for (const std::string &name : installed) {
-        if (present.count(name) == 0 && !IsHiddenModule(name)) {
-            entries.push_back(makeEntry(name, false));
+    for (const ModulesTxtLine &line : installed) {
+        if (present.count(line.module_name) == 0 && !IsHiddenModule(line.module_name)) {
+            entries.push_back(makeEntry(line));
         }
     }
-    std::sort(entries.begin() + num_existing, entries.end(), TitleLess);
 
     // Restore selection
     int new_sel = -1;
@@ -644,6 +634,7 @@ void ModsScreenImpl::refreshList()
     }
     listbox->setSelected(new_sel);
 
+    // Update UI as needed.
     updateLocalHelp();
     listChanged();
 }
@@ -709,19 +700,20 @@ void ModsScreenImpl::listChanged()
 void ModsScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == save_button.get()) {
-        // Save the settings. "base" (if installed) always goes first.
+        // Save the new module load order:
+        //  - "base", if installed, comes first;
+        //  - then all entries from the list box, with their enabled-state from the checkbox.
+        // Note that "base" is never shown in the list box, so this will not cause
+        // a duplicate "base" entry.
         ModuleManager &mm = knights_app.getModuleManager();
-        const std::vector<std::string> installed = mm.getInstalledModules();
-        std::vector<std::string> mods;
-        if (std::find(installed.begin(), installed.end(), BASE_MODULE_NAME) != installed.end()) {
-            mods.push_back(BASE_MODULE_NAME);
+        std::vector<ModulesTxtLine> load_order;
+        if (mm.isModuleInstalled(BASE_MODULE_NAME)) {
+            load_order.push_back(ModulesTxtLine{ BASE_MODULE_NAME, true });
         }
         for (const auto &entry : entries) {
-            if (entry.enabled) {
-                mods.push_back(entry.name);
-            }
+            load_order.push_back(ModulesTxtLine{ entry.name, entry.enabled });
         }
-        mm.setAndSaveLoadOrder(mods);
+        mm.setAndSaveLoadOrder(load_order);
 
         // Go back to title screen
         std::unique_ptr<Screen> new_screen(new TitleScreen);
