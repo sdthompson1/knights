@@ -18,7 +18,9 @@ quit_desc                       Exit to desktop.
 
 
 # Mods screen
-mods_help                       Mods can be installed from Steam Workshop, or by manually copying them to knights_data/modules/.\n\nOnce you have installed some mods, use the panel below to enable or disable them, or change their load order.\n\nNote: The selections below only affect newly created games. If you join someone else's game, the host's mods will be used instead (you will be notified if you don't have the necessary mods installed).
+mods_help_1                     Mods can be installed by copying them to knights_data/modules/.
+mods_help_1_steam               Mods can be installed from Steam Workshop, or by manually copying them to knights_data/modules/.
+mods_help_2                     Once you have installed some mods, use the panel below to enable or disable them, or change their load order.\n\nNote: The selections below only affect newly created games. If you join someone else's game, the host's mods will be used instead (you will be notified if you don't have the necessary mods installed).
 move_up                         Move Up
 move_down                       Move Down
 save_changes                    Save Changes
@@ -53,7 +55,8 @@ upload_failed                   Upload failed: {0}
 missing_mods_title              Missing Mods
 missing_mods_intro              This game uses the following mods, but they are not currently installed:
 missing_mods_workshop           If you want to install these mods from Steam Workshop, click "Subscribe" below. Otherwise, click "Exit" to go back to the previous screen. You can also "View" each mod's Workshop page before you decide.
-missing_mods_local              Some (or all) of the above mods are not available from Steam Workshop, so you will have to install these manually into knights_data/modules.
+missing_mods_local              You will need to copy these mods to your knights_data/modules folder, then try again.
+missing_mods_local_steam        Some (or all) of the above mods are not available from Steam Workshop, so you will have to install these manually into knights_data/modules.
 subscribe                       Subscribe
 view                            View
 mod_status_waiting              Waiting for download to start…

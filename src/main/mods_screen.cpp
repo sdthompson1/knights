@@ -379,7 +379,10 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     // Help text
     help_text.reset(new GuiTextWrap);
     help_text->setWidth(width);
-    help_text->setText(loc.get(LocalKey("mods_help")));
+    UTF8String help_string(loc.get(LocalKey("mods_help_1" PLATFORM_SUFFIX)));
+    help_string += UTF8String::fromUTF8("\n\n");
+    help_string += loc.get(LocalKey("mods_help_2"));
+    help_text->setText(help_string);
     help_text->adjustHeight();
     help_text->setForegroundColor(gcn::Color(30, 30, 30));
     container->add(help_text.get(), pad, y);

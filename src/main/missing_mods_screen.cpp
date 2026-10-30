@@ -209,7 +209,7 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
         if (!instructions_string.empty()) {
             instructions_string += Coercri::UTF8String::fromUTF8("\n\n");
         }
-        instructions_string += loc.get(LocalKey("missing_mods_local"));
+        instructions_string += loc.get(LocalKey("missing_mods_local" PLATFORM_SUFFIX));
     }
     instructions_text->setText(instructions_string);
     instructions_text->adjustHeight();

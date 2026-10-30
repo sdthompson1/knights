@@ -88,15 +88,21 @@ args = parser.parse_args()
 # Set ONLINE_PLATFORM_FLAGS based on argument
 # Note: if an online platform is set, then USE_VM_LOBBY is automatically enabled as well
 if args.online_platform:
-    online_platform_flags = f"-DONLINE_PLATFORM -DONLINE_PLATFORM_{args.online_platform.upper()} -DUSE_VM_LOBBY"
+    online_platform_flags = f"-DONLINE_PLATFORM -DONLINE_PLATFORM_{args.online_platform.upper()} -DUSE_VM_LOBBY -DPLATFORM_SUFFIX="
+    if args.online_platform == "dummy":
+        # "dummy" can use the same suffix as steam for now
+        online_platform_flags += '\\"_steam\\"'
+    else:
+        online_platform_flags += '\\"_' + args.online_platform + '\\"'
+
     online_platform_comment = "# Enable online platform support"
 
     # Extra projects when online platform enabled:
     PROJECTS_MAIN += ['OnlinePlatform', 'VirtualServer']
 
 else:
-    online_platform_flags = ""
-    online_platform_comment = "# Support for online platforms (like Steam) is disabled in this version\n# of Knights, hence ONLINE_PLATFORM_FLAGS is empty."
+    online_platform_flags = '-DPLATFORM_SUFFIX=\\"\\"'
+    online_platform_comment = "# Support for online platforms (like Steam) is disabled in this version\n# of Knights, hence ONLINE_PLATFORM_FLAGS is mostly empty (it contains only\n# an empty PLATFORM_SUFFIX definition)."
 
 # Calculate PROJECTS_ALL
 PROJECTS_ALL = list(set(PROJECTS_MAIN))

@@ -112,8 +112,9 @@ LUA_CFLAGS = `pkg-config lua-c++ --cflags`
 LUA_LIBS = `pkg-config lua-c++ --libs`
 
 # Support for online platforms (like Steam) is disabled in this version
-# of Knights, hence ONLINE_PLATFORM_FLAGS is empty.
-ONLINE_PLATFORM_FLAGS = 
+# of Knights, hence ONLINE_PLATFORM_FLAGS is mostly empty (it contains only
+# an empty PLATFORM_SUFFIX definition).
+ONLINE_PLATFORM_FLAGS = -DPLATFORM_SUFFIX=\"\"
 
 CPPFLAGS = -DDATA_DIR=$(DATA_DIR) -DNDEBUG $(ONLINE_PLATFORM_FLAGS)
 CFLAGS = -O2 -ffast-math -pthread
