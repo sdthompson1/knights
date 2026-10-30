@@ -226,6 +226,9 @@ ModuleManager::~ModuleManager() = default;
 
 void ModuleManager::update()
 {
+    bool using_modules_txt = false;
+    std::vector<ModulesTxtLine> modules_txt_contents;
+
     // Read the module load order from modules.txt (or cmd_line_load_order if set).
     std::vector<ModulesTxtLine> load_order;
     if (!pimpl->cmd_line_load_order.empty()) {
@@ -242,6 +245,8 @@ void ModuleManager::update()
     } else if (pimpl->pref_path) {
         // Load modules.txt from the prefs directory.
         load_order = ReadModulesTxt(pimpl->pref_path);
+        using_modules_txt = true;
+        modules_txt_contents = load_order;
 
         // If loading fails (or no modules.txt exists), try re-using the previous value
         // of getInstalledModules as the load order. On startup this will just be empty,
@@ -251,6 +256,7 @@ void ModuleManager::update()
         // reason.
         if (load_order.empty()) {
             load_order = getInstalledModules();
+            using_modules_txt = false;
         }
     }
 
@@ -271,6 +277,14 @@ void ModuleManager::update()
     // Reconcile the load order with the installed list
     ReconcileLoadOrder(load_order, new_modules);
 
+    // If we're using the contents of modules.txt verbatim, but then the load_order
+    // changed after reconciliation, then this means that modules.txt is out of date
+    // (e.g. because new modules were installed, or previously enabled mods were uninstalled).
+    // To avoid future confusion, we'll try to update modules.txt right now.
+    if (using_modules_txt && load_order != modules_txt_contents) {
+        WriteModulesTxt(pimpl->pref_path, load_order);
+    }
+
     // Apply the load order to the installed list
     ApplyLoadOrder(new_modules, load_order);
 
@@ -287,18 +301,25 @@ void ModuleManager::setAndSaveLoadOrder(std::vector<ModulesTxtLine> load_order)
     // Cancel any previous command line load order
     pimpl->cmd_line_load_order.clear();
 
-    // Save to modules.txt if possible
+    // Reconcile the load order and apply it to the current pimpl->modules list.
+    ReconcileLoadOrder(load_order, pimpl->modules);
+    ApplyLoadOrder(pimpl->modules, load_order);
+
+    // Save to modules.txt if possible.
     WriteModulesTxt(pimpl->pref_path, load_order);
 
-    // Confirm that the save worked
-    if (ReadModulesTxt(pimpl->pref_path) == load_order) {
-        // It did; we can call update
-        update();
-    } else {
-        // It did not; apply the load order to the current pimpl->modules list instead.
-        ReconcileLoadOrder(load_order, pimpl->modules);
-        ApplyLoadOrder(pimpl->modules, load_order);
-    }
+    // Now do a full update.
+    // Note: If saving failed, this will revert back to what's on disk currently.
+    // There are two cases:
+    //  1) No modules.txt exists at all. In this case, the fallback in update() will
+    //     engage, and the current getInstalledModules() list will be used. That was
+    //     already set to load_order above (in the call to ApplyLoadOrder) so that's
+    //     what we want. The user's load_order will be used for this session, but it
+    //     can't be saved for future sessions.
+    //  2) A conflicting modules.txt exists on disk, and we can't write to it. In
+    //     this case, the existing modules.txt takes priority, and the user's attempt
+    //     to set a new load order is just ignored.
+    update();
 }
 
 bool ModuleManager::isModuleInstalled(const std::string &module_name) const

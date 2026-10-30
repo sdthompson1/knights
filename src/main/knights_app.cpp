@@ -1214,6 +1214,8 @@ void KnightsAppImpl::startLocalGame(KnightsApp &ka,
                                     bool tutorial_mode,
                                     bool autostart_mode)
 {
+    module_manager->update();  // Will block for a short time, probably acceptable
+
     std::vector<std::string> modules_to_load;
     if (tutorial_mode) {
         modules_to_load.push_back("base");
@@ -1221,7 +1223,6 @@ void KnightsAppImpl::startLocalGame(KnightsApp &ka,
     } else {
         modules_to_load = module_manager->getEnabledModules();
     }
-    modules_to_load = module_manager->resolveModuleList(modules_to_load);
     boost::shared_ptr<KnightsClient> client = lobby_controller.startLocalGame(timer,
                                                                               modules_to_load);
 

@@ -268,8 +268,7 @@ boost::shared_ptr<KnightsClient>
 {
     resetAll();
 
-    // Get the currently selected modules
-    module_manager->update();  // Will block for short time, probably acceptable
+    // Get a VFS for the selected modules
     std::vector<std::string> module_names = module_manager->resolveModuleList(modules_to_load);
     VFS vfs = module_manager->getVFS(module_names);
 

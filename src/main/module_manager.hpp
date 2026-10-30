@@ -63,8 +63,7 @@ public:
 
     // Set a new module load order, also saving it to modules.txt.
     // This also cancels any cmd_line_load_order that was set previously.
-    // It also calls update() afterwards (unless saving fails; in which case it tries
-    // to set the load order on the currently known list of modules).
+    // It also calls update() afterwards.
     void setAndSaveLoadOrder(std::vector<ModulesTxtLine> load_order);
 
     // Determine if a module is installed/available locally

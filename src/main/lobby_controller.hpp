@@ -78,11 +78,16 @@ public:
     // Reset
     void resetAll();
 
-    // Create a local game
+    // Create a local game.
+    // Note: startLocalGame doesn't update the module manager itself (this is different
+    // to all the other "host game" or "join game" methods, which do update it).
+    // The reason is that the caller is passing a modules_to_load list in this case, so
+    // they probably want to update the module manager themselves (to check that the list
+    // is valid), and it would be redundant for startLocalGame to update it again.
     boost::shared_ptr<KnightsClient> startLocalGame(boost::shared_ptr<Coercri::Timer> timer,
                                                     const std::vector<std::string> &modules_to_load);
 
-    // Create a LAN game
+    // Create a LAN game.
     boost::shared_ptr<KnightsClient> hostLanGame(Coercri::NetworkDriver &net_driver,
                                                  boost::shared_ptr<Coercri::Timer> timer,
                                                  int port);
