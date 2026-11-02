@@ -65,17 +65,24 @@ struct ModuleManagerImpl {
 
 namespace {
     // Add a filesystem directory to `infos`
-    // (if it is a valid module directory)
+    // (if it is a valid module directory, and not a duplicate of an existing).
+    // Uses 'known' set to track duplicates.
     void AddModuleInfo(std::vector<ModuleInfo> &infos,
                        std::string name,  // "VFS mod name" e.g. "workshop_123" or dir name
                        const std::filesystem::path &path,
-                       bool is_local)
+                       bool is_local,
+                       std::unordered_set<std::string> &known)
     {
         // Only directories are accepted
         if (!std::filesystem::is_directory(path)) return;
 
         // Only accept valid mod names
         if (!IsValidModuleName(name)) return;
+
+        // Reject duplicates
+        if (!known.insert(name).second) {
+            return;
+        }
 
         // Construct the ModuleInfo and add it (disabled initially)
         ModuleInfo info;
@@ -100,9 +107,22 @@ namespace {
 #endif
                          std::vector<ModuleInfo> &infos)
     {
+        std::unordered_set<std::string> known;
+
         // (1) knights_data modules (sorted alphabetically)
         for (const auto &entry : std::filesystem::directory_iterator(knights_data_modules_dir)) {
-            AddModuleInfo(infos, entry.path().filename().string(), entry.path(), true);
+
+            std::string vfs_name = entry.path().filename().string();
+
+            // If any knights_data module has a Workshop name, this will confuse things
+            // later on, so reject this case
+#ifdef ONLINE_PLATFORM
+            if (online_platform.isWorkshopModName(vfs_name)) {
+                throw std::runtime_error("knights_data module name \"" + vfs_name + "\" is not acceptable; it might be mistaken for a Workshop module. Please rename it.");
+            }
+#endif
+
+            AddModuleInfo(infos, vfs_name, entry.path(), true, known);
         }
         std::sort(infos.begin(), infos.end(),
                   [](const ModuleInfo &lhs, const ModuleInfo &rhs) {
@@ -111,13 +131,13 @@ namespace {
 
         // (2) extra_module_dirs (in order given, and after the knights_data modules)
         for (const auto &path : extra_module_dirs) {
-            AddModuleInfo(infos, path.filename().string(), path, true);
+            AddModuleInfo(infos, path.filename().string(), path, true, known);
         }
 
 #ifdef ONLINE_PLATFORM
         // (3) Workshop modules, after the others, in the order returned by the online platform.
         for (const OnlinePlatform::InstalledMod &mod : online_platform.getInstalledMods()) {
-            AddModuleInfo(infos, mod.vfs_name, mod.path, false);
+            AddModuleInfo(infos, mod.vfs_name, mod.path, false, known);
         }
 #endif
     }
