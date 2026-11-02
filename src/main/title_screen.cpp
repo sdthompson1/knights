@@ -26,6 +26,7 @@
 #include "credits_screen.hpp"
 #include "knights_app.hpp"
 #include "loading_screen.hpp"
+#include "module_manager.hpp"
 #include "mods_screen.hpp"
 #include "options_screen.hpp"
 #include "start_game_screen.hpp"
@@ -59,6 +60,7 @@ private:
     std::unique_ptr<gcn::Container> container;
     std::unique_ptr<gcn::Label> title;
     std::unique_ptr<GuiTextWrap> help_text;
+    std::unique_ptr<GuiTextWrap> new_mods_text;
     std::unique_ptr<gcn::Button> start_game;
     std::unique_ptr<gcn::Button> options;
     std::unique_ptr<gcn::Button> mods;
@@ -146,6 +148,18 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     outer_container->add(panel1.get(), panel_x, panel1_y);
     outer_container->add(panel2.get(), panel_x, buttons_y);
     outer_container->add(help_text.get(), text_x, text_y);
+
+    // Show a red "new mods" message in the (otherwise empty) space above the title
+    if (app.getModuleManager().newModsDetected()) {
+        new_mods_text.reset(new GuiTextWrap);
+        new_mods_text->setWidth(text_wrap_width);
+        new_mods_text->setHeight(text_height);
+        new_mods_text->setCentred(true);
+        new_mods_text->setOpaque(false);
+        new_mods_text->setForegroundColor(gcn::Color(255, 128, 128));
+        new_mods_text->setText(loc.get(LocalKey("new_mods_detected")));
+        outer_container->add(new_mods_text.get(), text_x, 50);
+    }
     outer_container->setSize(outer_w, text_y + text_height);
 
     start_game->addMouseListener(this);

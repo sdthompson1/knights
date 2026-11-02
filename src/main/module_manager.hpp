@@ -66,6 +66,10 @@ public:
     // It also calls update() afterwards.
     void setAndSaveLoadOrder(std::vector<ModulesTxtLine> load_order);
 
+    // Returns true if update() has found installed modules that were not previously
+    // in the load order. Reset to false by setAndSaveLoadOrder().
+    bool newModsDetected() const;
+
     // Determine if a module is installed/available locally
     bool isModuleInstalled(const std::string &mod_vfs_name) const;
 

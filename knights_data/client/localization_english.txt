@@ -12,9 +12,10 @@ credits                         Credits
 quit                            Quit
 start_game_desc                 Start a new game.
 options_desc                    Change settings and key bindings.
-mods_desc                       Enable or disable game modules and change their load order.
+mods_desc                       View installed mods and enable or disable them.
 credits_desc                    Show the game credits.
 quit_desc                       Exit to desktop.
+new_mods_detected               New mods installed! Go to "Mods" (below) to enable them.
 
 
 # Mods screen
@@ -79,7 +80,7 @@ tutorial_desc                   This will explain how to play Knights and guide 
 online_multiplayer_desc         Play Knights online with your Steam friends or other Steam players.
 lan_games_desc                  Join or host a game with other players on your local network.
 split_screen_desc               Two players share the same screen, each using their own keyboard controls.
-single_player_desc              Knights isn't really designed for single player, so this is best used as a practice mode, or for trying out different quests or mods before using them in multiplayer.
+single_player_desc              Allows you to practice quests on your own. If this is your first game, try Tutorial instead (it's more interesting).
 cancel_desc                     Return to the main menu.
 
 

@@ -60,6 +60,7 @@ struct ModuleManagerImpl {
     std::string build_id;
     std::vector<ModuleInfo> modules;  // All available (installed) modules
     std::unordered_map<std::string, size_t> index;   // Index into `modules` vector
+    bool new_mods_detected = false;
 };
 
 namespace {
@@ -126,7 +127,9 @@ namespace {
     // Load order items corresponding to a non-installed module are removed.
     // Then, any installed modules not in the load order are added to the end,
     // with the enabled flag taken from the installed-list.
-    void ReconcileLoadOrder(std::vector<ModulesTxtLine> &load_order,
+    // Returns true if the "newly installed modules detected" flag needs to
+    // be set.
+    bool ReconcileLoadOrder(std::vector<ModulesTxtLine> &load_order,
                             const std::vector<ModuleInfo> &installed)
     {
         // Make a hash set of the installed names, for speedy lookup
@@ -146,11 +149,14 @@ namespace {
         }
 
         // Now add any installed-modules that are NOT in the load order
+        bool new_install_detected = false;
         for (const ModuleInfo &info : installed) {
             if (known.count(info.name) == 0) {
                 load_order.push_back(ModulesTxtLine{ info.name, info.enabled });
+                if (info.name != "tutorial") new_install_detected = true;
             }
         }
+        return new_install_detected;
     }
 
     // Reorder the "infos" according to the given load order, and apply the
@@ -226,9 +232,6 @@ ModuleManager::~ModuleManager() = default;
 
 void ModuleManager::update()
 {
-    bool using_modules_txt = false;
-    std::vector<ModulesTxtLine> modules_txt_contents;
-
     // Read the module load order from modules.txt (or cmd_line_load_order if set).
     std::vector<ModulesTxtLine> load_order;
     if (!pimpl->cmd_line_load_order.empty()) {
@@ -245,8 +248,6 @@ void ModuleManager::update()
     } else if (pimpl->pref_path) {
         // Load modules.txt from the prefs directory.
         load_order = ReadModulesTxt(pimpl->pref_path);
-        using_modules_txt = true;
-        modules_txt_contents = load_order;
 
         // If loading fails (or no modules.txt exists), try re-using the previous value
         // of getInstalledModules as the load order. On startup this will just be empty,
@@ -256,7 +257,6 @@ void ModuleManager::update()
         // reason.
         if (load_order.empty()) {
             load_order = getInstalledModules();
-            using_modules_txt = false;
         }
     }
 
@@ -274,15 +274,15 @@ void ModuleManager::update()
 #endif
                     new_modules);
 
-    // Reconcile the load order with the installed list
-    ReconcileLoadOrder(load_order, new_modules);
-
-    // If we're using the contents of modules.txt verbatim, but then the load_order
-    // changed after reconciliation, then this means that modules.txt is out of date
-    // (e.g. because new modules were installed, or previously enabled mods were uninstalled).
-    // To avoid future confusion, we'll try to update modules.txt right now.
-    if (using_modules_txt && load_order != modules_txt_contents) {
-        WriteModulesTxt(pimpl->pref_path, load_order);
+    // Reconcile the load order with the installed list.
+    if (ReconcileLoadOrder(load_order, new_modules)) {
+        // ReconcileLoadOrder detected new (non-tutorial) mods, which were added to
+        // the load order. This means the "New mods detected!" message should be shown
+        // on the title screen. Exception: if the load order came from cmd line, skip
+        // this.
+        if (pimpl->cmd_line_load_order.empty()) {
+            pimpl->new_mods_detected = true;
+        }
     }
 
     // Apply the load order to the installed list
@@ -300,6 +300,9 @@ void ModuleManager::setAndSaveLoadOrder(std::vector<ModulesTxtLine> load_order)
 {
     // Cancel any previous command line load order
     pimpl->cmd_line_load_order.clear();
+
+    // The user has now seen (and saved) the mods list, so clear the "new mods" flag.
+    pimpl->new_mods_detected = false;
 
     // Reconcile the load order and apply it to the current pimpl->modules list.
     ReconcileLoadOrder(load_order, pimpl->modules);
@@ -320,6 +323,11 @@ void ModuleManager::setAndSaveLoadOrder(std::vector<ModulesTxtLine> load_order)
     //     this case, the existing modules.txt takes priority, and the user's attempt
     //     to set a new load order is just ignored.
     update();
+}
+
+bool ModuleManager::newModsDetected() const
+{
+    return pimpl->new_mods_detected;
 }
 
 bool ModuleManager::isModuleInstalled(const std::string &module_name) const

@@ -793,6 +793,15 @@ void ModsScreenImpl::mouseExited(gcn::MouseEvent &e)
 
 bool ModsScreen::start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
+    // If the user came here because they saw the "New modules installed!" message on the
+    // title screen, then we will re-save modules.txt now. This gets rid of the message,
+    // without the user having to click "Save Changes" explicitly.
+    auto &mm = knights_app.getModuleManager();
+    if (mm.newModsDetected()) {
+        mm.setAndSaveLoadOrder(mm.getInstalledModules());
+    }
+
+    // Set up the GUI
     pimpl.reset(new ModsScreenImpl(knights_app, w, gui));
     return true;
 }
