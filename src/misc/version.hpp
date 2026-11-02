@@ -34,7 +34,7 @@
 #define KNIGHTS_PLATFORM "Unix"
 #endif
 
-#define KNIGHTS_WEBSITE "https://www.knightsgame.org.uk/"
-
+//#define KNIGHTS_WEBSITE "https://www.knightsgame.org.uk/"
+#define MODDING_DOCS_URL "https://www.knightsgame.org.uk/lua"
 
 #endif

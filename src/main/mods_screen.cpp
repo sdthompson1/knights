@@ -31,6 +31,7 @@
 #include "module_manager.hpp"
 #include "title_screen.hpp"
 #include "upload_mod_screen.hpp"
+#include "version.hpp"
 
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
@@ -61,9 +62,6 @@ namespace {
     {
         return name == BASE_MODULE_NAME || name == TUTORIAL_MODULE_NAME;
     }
-
-    // Opened by the "Modding Docs" button
-    const char * const MODDING_DOCS_URL = "https://www.knightsgame.org.uk/lua";
 
     // How often to poll the online platform for mod titles
     const unsigned int TITLE_POLL_INTERVAL_MS = 200;
