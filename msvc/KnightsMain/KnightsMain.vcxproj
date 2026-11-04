@@ -54,7 +54,7 @@
       <AdditionalOptions>/MP4 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\lobby;..\..\src\misc;..\..\src\online_platform;..\..\src\rstream;..\..\src\shared;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;WIN32_LEAN_AND_MEAN;PLATFORM_SUFFIX="";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -90,7 +90,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>..\..\src\client;..\..\src\coercri;..\..\src\engine;..\..\src\external;..\..\src\external\guichan\include;..\..\src\lobby;..\..\src\misc;..\..\src\online_platform;..\..\src\rstream;..\..\src\shared;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;WIN32_LEAN_AND_MEAN;PLATFORM_SUFFIX="";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
