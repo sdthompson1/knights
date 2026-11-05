@@ -63,8 +63,10 @@ namespace {
         return name == BASE_MODULE_NAME || name == TUTORIAL_MODULE_NAME;
     }
 
-    // How often to poll the online platform for mod titles
+    // How often to poll the online platform for mod titles, and how long to
+    // wait for the titles before showing the GUI (when the screen first opens)
     const unsigned int TITLE_POLL_INTERVAL_MS = 200;
+    const unsigned int TITLE_TIMEOUT_MS = 3000;
 
     // Padding between widgets
     const int PAD = 10;
@@ -167,8 +169,10 @@ private:
     std::vector<ModEntry> entries;
     std::unique_ptr<ModListModel> list_model;
     bool titles_pending;   // true if any entry might have title_pending set
-    unsigned int last_poll_msec;
+    bool gui_shown;        // false until the initial titles come in (or timeout)
+    unsigned int start_msec, last_poll_msec;
 
+    std::unique_ptr<gcn::Container> blank_container;   // shown until gui_shown
     std::unique_ptr<GuiCentre> centre;
     std::unique_ptr<GuiPanel> panel;
     std::unique_ptr<gcn::Container> container;
@@ -314,7 +318,8 @@ void ModListBox::keyPressed(gcn::KeyEvent &keyEvent)
 //
 
 ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
-    : knights_app(app), window(win), gui(g), titles_pending(false), last_poll_msec(0)
+    : knights_app(app), window(win), gui(g), titles_pending(false), gui_shown(false),
+      start_msec(app.getTimer().getMsec()), last_poll_msec(0)
 {
     const Localization &loc = knights_app.getLocalization();
 
@@ -478,7 +483,12 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
-    gui.setTop(centre.get());
+
+    // Show a blank screen (guichan requires a top widget) until the titles
+    // come in. update() will switch to the real GUI.
+    blank_container.reset(new gcn::Container);
+    blank_container->setOpaque(false);
+    gui.setTop(blank_container.get());
 
     AdjustListBoxSize(*listbox, *scroll_area);
 }
@@ -551,26 +561,41 @@ void ModsScreenImpl::resolveTitle(ModEntry &entry)
 
 void ModsScreenImpl::update()
 {
-    if (!titles_pending) return;
+    if (gui_shown && !titles_pending) return;  // Nothing else to do
 
     const unsigned int now = knights_app.getTimer().getMsec();
-    if (now - last_poll_msec < TITLE_POLL_INTERVAL_MS) return;
-    last_poll_msec = now;
 
-    // Note: Titles are replaced in-place. We don't re-sort the list at this point.
-    bool changed = false;
-    titles_pending = false;
-    for (ModEntry &entry : entries) {
-        if (entry.title_pending) {
-            resolveTitle(entry);
+    // Check if titles have arrived
+    if (titles_pending && now - last_poll_msec >= TITLE_POLL_INTERVAL_MS) {
+        last_poll_msec = now;
+
+        // Note: Titles are replaced in-place. We don't re-sort the list at this point.
+        bool changed = false;
+        titles_pending = false;
+        for (ModEntry &entry : entries) {
             if (entry.title_pending) {
-                titles_pending = true;
-            } else {
-                changed = true;
+                resolveTitle(entry);
+                if (entry.title_pending) {
+                    titles_pending = true;
+                } else {
+                    changed = true;
+                }
             }
         }
+        if (changed) listChanged();
     }
-    if (changed) listChanged();
+
+    // When the screen first opens, wait until all titles are known (or the
+    // timeout expires) before showing the GUI, so that the vfs names don't
+    // briefly flash up on screen.
+    if (!gui_shown && (!titles_pending || now - start_msec >= TITLE_TIMEOUT_MS)) {
+        int w, h;
+        window->getSize(w, h);
+        centre->setSize(w, h);
+        gui.setTop(centre.get());
+        gui_shown = true;
+        listChanged();
+    }
 }
 
 // Update the ModuleManager (which re-scans installed modules and re-reads
