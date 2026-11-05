@@ -247,11 +247,11 @@ void TitleScreenImpl::update()
 bool TitleScreen::start(KnightsApp &knights_app, shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
     knights_app.resetAll();
-#ifdef ONLINE_PLATFORM
+
     // Update modules when (re-)entering title screen.
     // (This will block for a short time, but that's probably acceptable.)
     knights_app.getModuleManager().update();
-#endif
+
     pimpl.reset(new TitleScreenImpl(knights_app, w, gui));
     return true;
 }
