@@ -248,6 +248,13 @@ bool TitleScreen::start(KnightsApp &knights_app, shared_ptr<Coercri::Window> w, 
 {
     knights_app.resetAll();
 
+#ifdef ONLINE_PLATFORM
+    // Clear the online platform's "new mods" flag, since we are about
+    // to do a module manager update anyway -- leaving the flag set
+    // would cause a redundant extra update.
+    (void) knights_app.getOnlinePlatform().modUpdateRequired();
+#endif
+
     // Update modules when (re-)entering title screen.
     // (This will block for a short time, but that's probably acceptable.)
     knights_app.getModuleManager().update();
