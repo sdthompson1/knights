@@ -267,6 +267,16 @@ public:
     // For non-Workshop mod names, this is a no-op.
     virtual void browseWorkshopMod(const std::string &vfs_mod_name) = 0;
 
+    // Returns true if the game should call ModuleManager::update, e.g., if a
+    // new Workshop item has been installed from outside the game.
+    // The game calls this on the title screen (not on the Mods screen - on that screen
+    // it waits for an explicit Refresh - to avoid list items moving around in the UI
+    // unexpectedly).
+    // Once this is called and returns true, the OnlinePlatform can assume that the game
+    // will do the necessary updates, so it should not return true again (unless/until a
+    // different mod is installed and a further ModuleManager update is required).
+    virtual bool modUpdateRequired() = 0;
+
 };
 
 #endif  // ONLINE_PLATFORM

@@ -37,6 +37,10 @@ class TitleScreen : public Screen {
 public:
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
 
+#ifdef ONLINE_PLATFORM
+    virtual void update();
+#endif
+
 private:
     boost::shared_ptr<TitleScreenImpl> pimpl;
 };

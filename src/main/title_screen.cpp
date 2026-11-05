@@ -51,6 +51,13 @@ public:
     void mouseEntered(gcn::MouseEvent &e) override;
     void mouseExited(gcn::MouseEvent &e) override;
 
+#ifdef ONLINE_PLATFORM
+    void update();
+#endif
+    void updateNewModsText() {
+        new_mods_text->setVisible(knights_app.getModuleManager().newModsDetected());
+    }
+
 private:
     KnightsApp &knights_app;
     boost::shared_ptr<Coercri::Window> window;
@@ -150,16 +157,16 @@ TitleScreenImpl::TitleScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Win
     outer_container->add(help_text.get(), text_x, text_y);
 
     // Show a red "new mods" message in the (otherwise empty) space above the title
-    if (app.getModuleManager().newModsDetected()) {
-        new_mods_text.reset(new GuiTextWrap);
-        new_mods_text->setWidth(text_wrap_width);
-        new_mods_text->setHeight(text_height);
-        new_mods_text->setCentred(true);
-        new_mods_text->setOpaque(false);
-        new_mods_text->setForegroundColor(gcn::Color(255, 128, 128));
-        new_mods_text->setText(loc.get(LocalKey("new_mods_detected")));
-        outer_container->add(new_mods_text.get(), text_x, 50);
-    }
+    new_mods_text.reset(new GuiTextWrap);
+    new_mods_text->setWidth(text_wrap_width);
+    new_mods_text->setHeight(text_height);
+    new_mods_text->setCentred(true);
+    new_mods_text->setOpaque(false);
+    new_mods_text->setForegroundColor(gcn::Color(255, 128, 128));
+    new_mods_text->setText(loc.get(LocalKey("new_mods_detected")));
+    outer_container->add(new_mods_text.get(), text_x, 50);
+    updateNewModsText();  // Set visibility according to whether module manager reports new mods
+
     outer_container->setSize(outer_w, text_y + text_height);
 
     start_game->addMouseListener(this);
@@ -223,9 +230,35 @@ void TitleScreenImpl::action(const gcn::ActionEvent &event)
     }
 }        
 
+#ifdef ONLINE_PLATFORM
+void TitleScreenImpl::update()
+{
+    // If the online platform is telling us that a new mod was downloaded (e.g. from the
+    // Steam app or overlay), then update the module manager, and update the "new mods
+    // detected" message visibility.
+    if (knights_app.getOnlinePlatform().modUpdateRequired()) {
+        knights_app.getModuleManager().update();
+        updateNewModsText();
+        window->invalidateAll();
+    }
+}
+#endif
+
 bool TitleScreen::start(KnightsApp &knights_app, shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
     knights_app.resetAll();
+#ifdef ONLINE_PLATFORM
+    // Update modules when (re-)entering title screen.
+    // (This will block for a short time, but that's probably acceptable.)
+    knights_app.getModuleManager().update();
+#endif
     pimpl.reset(new TitleScreenImpl(knights_app, w, gui));
     return true;
 }
+
+#ifdef ONLINE_PLATFORM
+void TitleScreen::update()
+{
+    pimpl->update();
+}
+#endif

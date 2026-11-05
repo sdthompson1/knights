@@ -93,6 +93,7 @@ public:
                                                    int &progress_out, LocalMsg &error_out) override;
     virtual void browseWorkshop() override;
     virtual void browseWorkshopMod(const std::string &vfs_mod_name) override;
+    virtual bool modUpdateRequired() override { return false; }  // Not implemented for dummy platform
 
     // Public methods for DummyPlatformLobby to use
     bool sendMessage(unsigned char msg_type, const std::string& payload);

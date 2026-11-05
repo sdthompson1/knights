@@ -244,8 +244,7 @@ ModuleManager::ModuleManager(std::optional<std::filesystem::path> pref_path,
     pimpl->build_id = online_platform.getBuildId();
 #endif
 
-    // Do an initial update so that we are ready to go from the start
-    update();
+    // Title screen will call update(), so we don't need to do it here.
 }
 
 ModuleManager::~ModuleManager() = default;
