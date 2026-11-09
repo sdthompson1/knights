@@ -331,11 +331,13 @@ void Player::setControl(const Control *ctrl)
 
             control = ctrl;
 
-            // Wake up the KnightTask immediately, rather than waiting for its poll interval
-            // (this reduces control latency)
-            TaskManager &tm(Mediator::instance().getTaskManager());
-            tm.rmTask(knight_task);
-            tm.addTask(knight_task, TP_NORMAL, tm.getGVT());
+            // Wake up the KnightTask (if it exists) immediately, rather than waiting for
+            // its poll interval. (This reduces control latency.)
+            if (knight_task) {
+                TaskManager &tm(Mediator::instance().getTaskManager());
+                tm.rmTask(knight_task);
+                tm.addTask(knight_task, TP_NORMAL, tm.getGVT());
+            }
         }
     }
 }
