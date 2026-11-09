@@ -107,7 +107,11 @@ tile_table = {
    t_home_south_special,  -- 92
    t_home_west_special,   -- 93
    t_home_north_special,  -- 94
-   t_home_east_special    -- 95
+   t_home_east_special,   -- 95
+
+   -- Rotated skulls (these weren't in the original 1994 game)
+   t_wall_skull_north,    -- 96
+   t_wall_skull_south     -- 97
 }
 
 
