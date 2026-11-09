@@ -33,12 +33,23 @@
 #include <unordered_set>
 #include <vector>
 
+namespace {
+    bool ValidModChar(char c)
+    {
+        return (c >= 'a' && c <= 'z')
+            || (c >= 'A' && c <= 'Z')
+            || (c >= '0' && c <= '9')
+            || c == '_'
+            || c == '-'
+            || c == '.';
+    }
+}
+
 bool IsValidModuleName(const std::string &name)
 {
-    if (name.empty() || !std::isalpha(static_cast<unsigned char>(name[0]))) return false;
-    for (size_t i = 1; i < name.size(); ++i) {
-        char c = name[i];
-        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_' && c != '-') return false;
+    if (name.empty()) return false;
+    for (size_t i = 0; i < name.size(); ++i) {
+        if (!ValidModChar(name[i])) return false;
     }
     return true;
 }
@@ -62,7 +73,7 @@ std::vector<ModulesTxtLine> ReadModulesTxt(const std::optional<std::filesystem::
             if (line.empty()) continue;
 
             ModulesTxtLine m;
-            if (line[0] == '-') {
+            if (line[0] == '!') {
                 m.module_name = line.substr(1);
                 m.enabled = false;
             } else {
@@ -87,7 +98,7 @@ void WriteModulesTxt(const std::optional<std::filesystem::path> &pref_path,
     if (pref_path) {
         std::ofstream f(*pref_path / "modules.txt");
         for (const ModulesTxtLine &m : modules) {
-            if (!m.enabled) f << "-";
+            if (!m.enabled) f << "!";
             f << m.module_name << "\n";
         }
     }
