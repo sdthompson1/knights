@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -77,7 +78,11 @@ namespace {
         if (!std::filesystem::is_directory(path)) return;
 
         // Only accept valid mod names
-        if (!IsValidModuleName(name)) return;
+        if (!IsValidModuleName(name)) {
+            // Print a warning message so that the user can debug (just to stdout for now)
+            std::cout << "Warning: Invalid module name \"" << name << "\" was skipped" << std::endl;
+            return;
+        }
 
         // Reject duplicates
         if (!known.insert(name).second) {
