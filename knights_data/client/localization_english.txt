@@ -65,6 +65,13 @@ mod_status_downloading          Downloading ({0} of {1})… {2}%
 mod_status_workshop_installed   All Steam Workshop mods are now installed. The remaining mods must be installed manually.
 mod_download_failed             Download failed for {0}: {1}
 mod_download_error_not_found    mod not found on Steam Workshop
+mod_download_error_no_connection    could not connect to Steam Workshop
+mod_download_error_not_logged_on    not logged on to Steam
+mod_download_error_disk_full    not enough disk space
+mod_download_error_access_denied    access denied (the mod may be hidden or private)
+mod_download_error_corrupt      downloaded data was corrupt, please try again
+mod_download_error_cancelled    download was cancelled or paused
+mod_download_error_rate_limit   too many requests, please try again later
 mod_download_error_other        Steam error code {0}
 
 
