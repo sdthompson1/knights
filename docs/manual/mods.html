@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+    "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>10. Mods</title>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="header"><table><tr><td align="left"><a href="options.html">Previous</a></td><td align="center"><a href="index.html">Contents</a></td><td align="right"><a href="building.html">Next</a></td></tr></table></div>
+      <h2>10. Mods</h2>
+      <p><img src="images/mods_1.png" alt="Mods Screen"></p>
+      <p>This screen allows you to enable and disable mods for the
+      game.</p>
+
+      <p>Mods can be installed from Steam Workshop (for the Steam
+      version of the game), or by manually copying them to
+      "knights_data/modules" (all versions).
+      See <a href="https://www.knightsgame.org.uk/lua">Knights Lua
+      Documentation</a> for more information about how mods can be
+      created.</p>
+
+      <p>After installing a mod, you must enable it on this screen,
+      before it will have any effect. Simply tick the box next to each
+      mod to enable or disable it. You can also use "Move Up" and
+      "Move Down" to rearrange mods in the load order. The load order
+      is important if mods have dependencies: mods must load after the
+      things that they depend on.</p>
+
+      <p>Note that mods enabled here only affect newly created games.
+      If you are joining an existing game, the host's mods will be
+      used instead. The required mods must be installed on your
+      computer for this to work. (If the host is using Steam Workshop
+      mods, but you are not subscribed to them, then you will be asked
+      if you want to subscribe, at the point when you join the game.
+      If, instead, the host is using locally installed mods in
+      "knights_data/modules", you'll need to copy these manually to
+      your computer, before you can join.)</p>
+
+      <p>Clicking "Refresh List" will re-scan the knights_data/modules
+      folder, and (for Steam) recheck for any new Steam Workshop
+      subscriptions. (This check might take a few moments; if it
+      doesn't work, try clicking Refresh List again, or, if all else
+      fails, exit the game and restart it.)</p>
+
+      <p>The "Browse Workshop" button (Steam only) will open Workshop
+      in your Steam Overlay, allowing you to subscribe to new mods
+      directly from within the game. If you do add any new
+      subscriptions, use "Refresh List" to make them appear in the
+      list, and don't forget to enable the new mod before trying to
+      use it.</p>
+
+      <p>The "Upload Mod..." button (Steam only) allows you to upload
+      one of your own mods to the Workshop. Further instructions for
+      this can be found in
+      the <a href="https://www.knightsgame.org.uk/lua">Knights Lua
+      docs</a>. Note that uploading a mod does not automatically
+      subscribe to it. If you want to subscribe to a mod after
+      uploading it, you can do so, but then you will have two copies
+      of the mod in your list (the local copy, and the Workshop copy)
+      &ndash; make sure to only enable one at a time.</p>
+
+      <p>Finally, the "Modding Docs" button simply opens the Knights
+      Lua docs directly in your web browser.</p>
+
+      <div class="footer2"><table><tr><td align="left"><a href="options.html">Previous</a></td><td align="center"><a href="index.html">Contents</a></td><td align="right"><a href="building.html">Next</a></td></tr><tr><td align="left">Game
+      Options</td><td></td><td align="right">Building/Installing from Source</td></tr></table></div>
+    </div>
+  </body>
+</html>
