@@ -57,9 +57,8 @@ std::string LuaTraceback(lua_State *lua)
             }
         }
 
-        if (found_lua_yet) str << ',';
-        else str << "\nTraceback:";
-        str << "   " << ar.short_src << ':' << ar.currentline;
+        if (!found_lua_yet) str << "\n\nTraceback:";
+        str << "\n" << ar.short_src << ':' << ar.currentline;
         found_lua_yet = true;
     }
 
