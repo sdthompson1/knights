@@ -167,11 +167,21 @@ public:
     // Filtering and Blocking:
 
     // Filter a game content string. Returns filtered version.
+    // Note: this performs only minimal filtering ("only legally required filtering" on Steam).
+    // As such, it is used only for trusted localization strings (either installed with the
+    // game itself, or with mods that the user has explicitly chosen to install).
     virtual Coercri::UTF8String filterGameContent(const Coercri::UTF8String &str) = 0;
 
     // Filter a chat message from a given user. If the user is blocked this will return
     // an empty string; otherwise it returns a filtered version of the msg.
     virtual Coercri::UTF8String filterChatMessage(const PlayerID &sender, const Coercri::UTF8String &msg) = 0;
+
+    // Filter a user name, item name, etc.
+    // We use this when displaying mod vfs names that came from the network (as these might
+    // contain offensive words, and the user didn't choose to install them).
+    // We don't use it for mod titles from getModQueryResult (it's assumed that the platform
+    // has already filtered these as needed).
+    virtual Coercri::UTF8String filterNameString(const Coercri::UTF8String &str) = 0;
 
 
     // Language Choice:

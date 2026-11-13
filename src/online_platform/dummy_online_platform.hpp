@@ -76,6 +76,7 @@ public:
     // Text/Chat filtering - no-ops on this platform
     virtual Coercri::UTF8String filterGameContent(const Coercri::UTF8String &str) override { return str; }
     virtual Coercri::UTF8String filterChatMessage(const PlayerID &sender, const Coercri::UTF8String &str) override { return str; }
+    virtual Coercri::UTF8String filterNameString(const Coercri::UTF8String &str) override { return str; }
 
     // This platform just returns a hard-coded language
     virtual std::string getGameLanguage() override { return "english"; }
