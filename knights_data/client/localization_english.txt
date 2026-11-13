@@ -21,7 +21,7 @@ new_mods_detected               New mods installed! Go to "Mods" (below) to enab
 # Mods screen
 mods_help_1                     Mods can be installed by copying them to knights_data/modules/.
 mods_help_1_steam               Mods can be installed from Steam Workshop, or by manually copying them to knights_data/modules/.
-mods_help_2                     Once you have installed some mods, use the panel below to enable or disable them, or change their load order.\n\nNote: The selections below only affect newly created games. If you join someone else's game, the host's mods will be used instead (you will be notified if you don't have the necessary mods installed).
+mods_help_2                     Once you have installed some mods, use the panel below to enable or disable them, or change their load order.\n\nNote: These settings only apply to games you create. When you join someone else's game, the host's mods are used instead (you'll be prompted to download any you don't already have).
 move_up                         Move Up
 move_down                       Move Down
 save_changes                    Save Changes
@@ -41,7 +41,7 @@ local_mod_help                  One or more local mods were detected in knights_
 # Upload Mod screen
 upload_mod_title                Upload Mod
 upload                          Upload
-upload_select_mod               This screen allows you to upload your own mod to Steam Workshop.\n\nOn first upload of a new mod, the tool will create a new Workshop item (hidden from the public initially), and save the Workshop item ID to workshop_item_id.txt. On later uploads, the tool will read workshop_item_id.txt and update the same Workshop item automatically.\n\nTo use, copy your mod to knights_data/modules (if it is not there already), select it from the list below, and click Upload.\n\nAfter upload, use the Steam Workshop page to edit title, description, visibility, screenshots/videos, and other Workshop details.
+upload_select_mod               This allows you to upload your own mod to Steam Workshop.\n\nTo proceed, copy your mod to knights_data/modules (if it is not there already), select it from the list below, and click Upload.\n\nThe first upload of a new mod will create a new Workshop item and save its ID to workshop_item_id.txt. Later uploads will read workshop_item_id.txt and update the same item automatically.\n\nAfter upload, use the Steam Workshop page to edit title, description, visibility, screenshots/videos, and other Workshop details.
 upload_no_local_mods            No uploadable mods were found in knights_data/modules.\n\nTo upload your own mod, first copy it to knights_data/modules, then come back to this screen and try again.
 upload_new_item                 Please confirm that you want to create a new Workshop item for the following mod:\n\n{0}
 upload_existing_item            Please confirm that you want to update the existing Workshop item for the following mod:\n\n{0}
@@ -54,8 +54,8 @@ upload_failed                   Upload failed: {0}
 
 # Missing Mods screen
 missing_mods_title              Missing Mods
-missing_mods_intro              This game uses the following mods, but they are not currently installed:
-missing_mods_workshop           If you want to install these mods from Steam Workshop, click "Subscribe" below. Otherwise, click "Exit" to go back to the previous screen. You can also "View" each mod's Workshop page before you decide.
+missing_mods_intro              The game you are joining uses the following mods, but they are not currently installed:
+missing_mods_workshop           Click "Subscribe" to install these mods and continue joining, or click "Exit" to cancel joining this game. You can also "View" each mod's Workshop page before you decide.
 missing_mods_local              You will need to copy these mods to your knights_data/modules folder, then try again.
 missing_mods_local_steam        Some (or all) of the above mods are not available from Steam Workshop, so you will have to install these manually into knights_data/modules.
 subscribe                       Subscribe
