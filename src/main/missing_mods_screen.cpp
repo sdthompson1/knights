@@ -194,8 +194,8 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
         // (The thinking behind the filtering is that malicious hosts might create
         // local mod directories with offensive names, so those names shouldn't be
         // displayed to the player unless they have been through the online platform's
-        // game content filter.)
-        row.title = knights_app.getOnlinePlatform().filterGameContent(UTF8String::fromUTF8Safe(names[i])).asUTF8();
+        // filter. The "name" filter seems most appropriate here.)
+        row.title = knights_app.getOnlinePlatform().filterName(UTF8String::fromUTF8Safe(names[i])).asUTF8();
 #endif
         any_local = true;
     }
