@@ -1892,6 +1892,7 @@ install_docs:
 	$(INSTALL) -m 644 docs/manual/monsters.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/controls.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/items.html $(DOC_DIR)/manual
+	$(INSTALL) -m 644 docs/manual/mods.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/intro.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/quest_selection.html $(DOC_DIR)/manual
 	$(INSTALL) -m 644 docs/manual/building.html $(DOC_DIR)/manual
@@ -1915,6 +1916,7 @@ install_docs:
 	$(INSTALL) -m 644 docs/manual/images/menu_beartrap.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/pentagram.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/bear_trap_closed.png $(DOC_DIR)/manual/images
+	$(INSTALL) -m 644 docs/manual/images/mods_1.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/menu_dagger.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/menu_crossbow.png $(DOC_DIR)/manual/images
 	$(INSTALL) -m 644 docs/manual/images/action_menu.png $(DOC_DIR)/manual/images
@@ -2248,6 +2250,7 @@ uninstall:
 	rm -f $(DOC_DIR)/manual/monsters.html
 	rm -f $(DOC_DIR)/manual/controls.html
 	rm -f $(DOC_DIR)/manual/items.html
+	rm -f $(DOC_DIR)/manual/mods.html
 	rm -f $(DOC_DIR)/manual/intro.html
 	rm -f $(DOC_DIR)/manual/quest_selection.html
 	rm -f $(DOC_DIR)/manual/building.html
@@ -2271,6 +2274,7 @@ uninstall:
 	rm -f $(DOC_DIR)/manual/images/menu_beartrap.png
 	rm -f $(DOC_DIR)/manual/images/pentagram.png
 	rm -f $(DOC_DIR)/manual/images/bear_trap_closed.png
+	rm -f $(DOC_DIR)/manual/images/mods_1.png
 	rm -f $(DOC_DIR)/manual/images/menu_dagger.png
 	rm -f $(DOC_DIR)/manual/images/menu_crossbow.png
 	rm -f $(DOC_DIR)/manual/images/action_menu.png
