@@ -26,6 +26,10 @@
  * whether any installed Workshop mods need updating. If so, goes to
  * the MissingModsScreen (in UPDATES mode), otherwise shows a message.
  *
+ * In silent mode (used at game startup) no UI is shown; if no updates
+ * are found (or the check fails or times out), we go straight to the
+ * TitleScreen instead.
+ *
  */
 
 #ifndef CHECK_UPDATES_SCREEN_HPP
@@ -39,11 +43,13 @@ class CheckUpdatesScreenImpl;
 
 class CheckUpdatesScreen : public Screen {
 public:
+    explicit CheckUpdatesScreen(bool silent = false) : silent(silent) { }
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
 
 private:
     boost::shared_ptr<CheckUpdatesScreenImpl> pimpl;
+    bool silent;
 };
 
 #endif  // ONLINE_PLATFORM

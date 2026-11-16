@@ -23,6 +23,7 @@
 
 #include "misc.hpp"
 
+#include "check_updates_screen.hpp"
 #include "config_map.hpp"
 #include "connecting_screen.hpp"
 #include "dummy_online_platform.hpp"
@@ -945,9 +946,14 @@ void KnightsApp::runKnights()
         // startLocalGame will request screen change to LoadingScreen.
         pimpl->startLocalGame(*this, true, false, true);
     } else {
-        // Go to title screen.
+        // Go to title screen. (With an online platform, we silently check for
+        // mod updates first; CheckUpdatesScreen will go on to the title screen.)
         std::unique_ptr<Screen> initial_screen;
+#ifdef ONLINE_PLATFORM
+        initial_screen.reset(new CheckUpdatesScreen(true));
+#else
         initial_screen.reset(new TitleScreen);
+#endif
         requestScreenChange(std::move(initial_screen));
     }
 

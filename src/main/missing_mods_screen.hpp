@@ -44,11 +44,13 @@ class MissingModsScreen : public Screen {
 public:
     // MISSING: mods are missing, so we can't join the game. Exit returns to the
     //   previous menu; once all downloads are complete, we try to join again.
-    // UPDATES: Workshop mods need updating. Exit returns to the Mods screen.
+    // UPDATES: Workshop mods need updating. Exit returns to the Mods screen (or to the
+    //   Title screen, if from_startup is true).
     enum Mode { MISSING, UPDATES };
 
-    explicit MissingModsScreen(std::vector<std::string> mod_vfs_names, Mode mode = MISSING)
-        : mod_vfs_names(std::move(mod_vfs_names)), mode(mode) { }
+    explicit MissingModsScreen(std::vector<std::string> mod_vfs_names, Mode mode = MISSING,
+                               bool from_startup = false)
+        : mod_vfs_names(std::move(mod_vfs_names)), mode(mode), from_startup(from_startup) { }
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
 
@@ -56,6 +58,7 @@ private:
     boost::shared_ptr<MissingModsScreenImpl> pimpl;
     std::vector<std::string> mod_vfs_names;
     Mode mode;
+    bool from_startup;
 };
 
 #endif

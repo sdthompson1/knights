@@ -75,7 +75,7 @@ mod_status_downloading          Downloading ({0} of {1})… {2}%
 mod_status_workshop_installed   All Steam Workshop mods are now installed. The remaining mods must be installed manually.
 mod_updates_title               Mod Updates
 mod_updates_intro               New versions of the following Steam Workshop mods are available:
-mod_updates_workshop            Click "Update" to download these updates. Click "View" to open the mod's Workshop page.
+mod_updates_workshop            Click "Update" to download these updates. Click "View" if you want to look at the mod's Workshop page first.
 update                          Update
 mod_status_updates_installed    All updates have been installed.
 mod_download_failed             Download failed for {0}: {1}

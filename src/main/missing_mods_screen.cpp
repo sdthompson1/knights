@@ -28,6 +28,7 @@
 #include "missing_mods_screen.hpp"
 #include "mods_screen.hpp"
 #include "online_platform.hpp"
+#include "title_screen.hpp"
 
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
@@ -112,7 +113,8 @@ namespace {
 class MissingModsScreenImpl : public gcn::ActionListener {
 public:
     MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui,
-                          const std::vector<std::string> &mod_vfs_names, bool update_mode);
+                          const std::vector<std::string> &mod_vfs_names, bool update_mode,
+                          bool exit_to_title);
     void action(const gcn::ActionEvent &event) override;
     void update();
 
@@ -135,6 +137,7 @@ private:
 
     std::vector<ModRow> rows;
     bool update_mode;         // true if updating installed mods (instead of downloading missing ones)
+    bool exit_to_title;       // (update mode only) true if Exit goes to the Title screen instead of Mods screen
     int view_space;           // width of a View button plus gap (or 0 if no View buttons)
 #ifdef ONLINE_PLATFORM
     bool subscribe_clicked;   // if true, join the game automatically once all mods are installed
@@ -157,8 +160,9 @@ private:
 
 MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win,
                                              gcn::Gui &g, const std::vector<std::string> &names,
-                                             bool upd)
-    : knights_app(app), window(win), gui(g), rows(names.size()), update_mode(upd), view_space(0),
+                                             bool upd, bool to_title)
+    : knights_app(app), window(win), gui(g), rows(names.size()), update_mode(upd),
+      exit_to_title(to_title), view_space(0),
 #ifdef ONLINE_PLATFORM
       subscribe_clicked(false),
 #endif
@@ -501,7 +505,9 @@ void MissingModsScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == exit_button.get()) {
         if (update_mode) {
-            std::unique_ptr<Screen> new_screen(new ModsScreen);
+            std::unique_ptr<Screen> new_screen;
+            if (exit_to_title) new_screen.reset(new TitleScreen);
+            else new_screen.reset(new ModsScreen);
             knights_app.requestScreenChange(std::move(new_screen));
         } else {
             knights_app.exitLastJoin();
@@ -600,12 +606,12 @@ void MissingModsScreenImpl::update()
 bool MissingModsScreen::start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
     if (mode == UPDATES) {
-        pimpl.reset(new MissingModsScreenImpl(knights_app, w, gui, mod_vfs_names, true));
+        pimpl.reset(new MissingModsScreenImpl(knights_app, w, gui, mod_vfs_names, true, from_startup));
     } else {
         // As for ErrorScreen: reset everything (this leaves the game we were trying to
         // join), and flash the window to get the user's attention.
         knights_app.resetAll();
-        pimpl.reset(new MissingModsScreenImpl(knights_app, w, gui, mod_vfs_names, false));
+        pimpl.reset(new MissingModsScreenImpl(knights_app, w, gui, mod_vfs_names, false, false));
         knights_app.flashWindow();
     }
     return true;

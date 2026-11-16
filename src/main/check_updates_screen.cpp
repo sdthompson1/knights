@@ -31,6 +31,7 @@
 #include "missing_mods_screen.hpp"
 #include "mods_screen.hpp"
 #include "online_platform.hpp"
+#include "title_screen.hpp"
 
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
@@ -47,18 +48,23 @@ namespace {
     // How often to poll the online platform for query results
     const unsigned int POLL_INTERVAL_MS = 200;
 
+    // In silent mode, give up waiting after this long (and go to the title screen)
+    const unsigned int SILENT_TIMEOUT_MS = 3000;
+
     const int PAD = 10;
     const int WIDTH = 400;
 }
 
 class CheckUpdatesScreenImpl : public gcn::ActionListener {
 public:
-    CheckUpdatesScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui);
+    CheckUpdatesScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui,
+                           bool silent);
     void action(const gcn::ActionEvent &event) override;
     void update();
 
 private:
     void showMessage(const char *msg_key, const char *button_key);
+    void goToTitle();
     void pollResults();
 
     KnightsApp &knights_app;
@@ -66,8 +72,9 @@ private:
     gcn::Gui &gui;
 
     std::vector<std::string> mod_names;   // Installed Workshop mods (vfs names)
+    bool silent;                          // if true, show no UI (see header file)
     bool checking;                        // true while waiting for query results
-    unsigned int last_poll_msec;
+    unsigned int start_msec, last_poll_msec;
 
     std::unique_ptr<GuiCentre> centre;
     std::unique_ptr<GuiPanel> panel;
@@ -77,8 +84,10 @@ private:
     std::unique_ptr<gcn::Button> button;
 };
 
-CheckUpdatesScreenImpl::CheckUpdatesScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g)
-    : knights_app(app), window(win), gui(g), checking(false), last_poll_msec(0)
+CheckUpdatesScreenImpl::CheckUpdatesScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &g,
+                                               bool s)
+    : knights_app(app), window(win), gui(g), silent(s), checking(false),
+      start_msec(app.getTimer().getMsec()), last_poll_msec(0)
 {
     const Localization &loc = knights_app.getLocalization();
 
@@ -95,12 +104,19 @@ CheckUpdatesScreenImpl::CheckUpdatesScreenImpl(KnightsApp &app, boost::shared_pt
     }
 
     if (mod_names.empty()) {
-        showMessage("check_updates_no_mods", "ok");
+        if (silent) goToTitle();
+        else showMessage("check_updates_no_mods", "ok");
     } else {
         op.sendModQuery(mod_names);
         checking = true;
-        showMessage("check_updates_checking", "cancel");
+        if (!silent) showMessage("check_updates_checking", "cancel");
     }
+}
+
+void CheckUpdatesScreenImpl::goToTitle()
+{
+    std::unique_ptr<Screen> new_screen(new TitleScreen);
+    knights_app.requestScreenChange(std::move(new_screen));
 }
 
 // Set the message and button caption, and (re-)create the panel at the appropriate size.
@@ -179,8 +195,11 @@ void CheckUpdatesScreenImpl::pollResults()
 
     if (!needs_update.empty()) {
         std::unique_ptr<Screen> new_screen(new MissingModsScreen(std::move(needs_update),
-                                                                 MissingModsScreen::UPDATES));
+                                                                 MissingModsScreen::UPDATES,
+                                                                 silent));
         knights_app.requestScreenChange(std::move(new_screen));
+    } else if (silent) {
+        goToTitle();
     } else if (any_success) {
         showMessage("check_updates_up_to_date", "ok");
     } else {
@@ -193,6 +212,15 @@ void CheckUpdatesScreenImpl::update()
     if (!checking) return;
 
     const unsigned int now = knights_app.getTimer().getMsec();
+
+    // In silent mode, don't wait forever. (Any queries still in progress are
+    // just left running.)
+    if (silent && now - start_msec >= SILENT_TIMEOUT_MS) {
+        checking = false;
+        goToTitle();
+        return;
+    }
+
     if (now - last_poll_msec < POLL_INTERVAL_MS) return;
     last_poll_msec = now;
 
@@ -206,8 +234,8 @@ void CheckUpdatesScreenImpl::update()
 
 bool CheckUpdatesScreen::start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
-    pimpl.reset(new CheckUpdatesScreenImpl(knights_app, w, gui));
-    return true;
+    pimpl.reset(new CheckUpdatesScreenImpl(knights_app, w, gui, silent));
+    return !silent;
 }
 
 void CheckUpdatesScreen::update()
