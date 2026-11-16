@@ -26,6 +26,7 @@
 #include "knights_app.hpp"
 #include "localization.hpp"
 #include "missing_mods_screen.hpp"
+#include "mods_screen.hpp"
 #include "online_platform.hpp"
 
 #include "gui_button.hpp"
@@ -111,7 +112,7 @@ namespace {
 class MissingModsScreenImpl : public gcn::ActionListener {
 public:
     MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win, gcn::Gui &gui,
-                          const std::vector<std::string> &mod_vfs_names);
+                          const std::vector<std::string> &mod_vfs_names, bool update_mode);
     void action(const gcn::ActionEvent &event) override;
     void update();
 
@@ -133,6 +134,7 @@ private:
     gcn::Gui &gui;
 
     std::vector<ModRow> rows;
+    bool update_mode;         // true if updating installed mods (instead of downloading missing ones)
     int view_space;           // width of a View button plus gap (or 0 if no View buttons)
 #ifdef ONLINE_PLATFORM
     bool subscribe_clicked;   // if true, join the game automatically once all mods are installed
@@ -154,8 +156,9 @@ private:
 };
 
 MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Window> win,
-                                             gcn::Gui &g, const std::vector<std::string> &names)
-    : knights_app(app), window(win), gui(g), rows(names.size()), view_space(0),
+                                             gcn::Gui &g, const std::vector<std::string> &names,
+                                             bool upd)
+    : knights_app(app), window(win), gui(g), rows(names.size()), update_mode(upd), view_space(0),
 #ifdef ONLINE_PLATFORM
       subscribe_clicked(false),
 #endif
@@ -164,11 +167,11 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
 {
     const Localization &loc = knights_app.getLocalization();
 
-    title_label.reset(new gcn::Label(loc.get(LocalKey("missing_mods_title")).asUTF8()));
+    title_label.reset(new gcn::Label(loc.get(LocalKey(update_mode ? "mod_updates_title" : "missing_mods_title")).asUTF8()));
     title_label->setForegroundColor(gcn::Color(0, 0, 128));
 
     intro_text = MakeTextWrap(false);
-    intro_text->setText(loc.get(LocalKey("missing_mods_intro")));
+    intro_text->setText(loc.get(LocalKey(update_mode ? "mod_updates_intro" : "missing_mods_intro")));
     intro_text->adjustHeight();
 
     // Create the per-mod widgets, and find out whether we have Workshop mods,
@@ -203,7 +206,7 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
     instructions_text = MakeTextWrap(false);
     Coercri::UTF8String instructions_string;
     if (any_workshop) {
-        instructions_string = loc.get(LocalKey("missing_mods_workshop"));
+        instructions_string = loc.get(LocalKey(update_mode ? "mod_updates_workshop" : "missing_mods_workshop"));
     }
     if (any_local) {
         if (!instructions_string.empty()) {
@@ -217,10 +220,10 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
     status_text = MakeTextWrap(true);
 
 #ifdef ONLINE_PLATFORM
-    subscribe_button.reset(new GuiButton(loc.get(LocalKey("subscribe")).asUTF8()));
+    subscribe_button.reset(new GuiButton(loc.get(LocalKey(update_mode ? "update" : "subscribe")).asUTF8()));
     subscribe_button->addActionListener(this);
 #endif
-    exit_button.reset(new GuiButton(loc.get(LocalKey("exit")).asUTF8()));
+    exit_button.reset(new GuiButton(loc.get(LocalKey(update_mode ? "back" : "exit")).asUTF8()));
     exit_button->addActionListener(this);
 
     // Show a blank screen (guichan requires a top widget) until the titles come in
@@ -299,8 +302,9 @@ bool MissingModsScreenImpl::pollDownloads()
     return changed;
 }
 
-// True if we may attempt auto-join: all workshop mods are
-// MDS_INSTALLED, no local mods exist, and subscribe_clicked is true.
+// True if we may attempt auto-join (or, in update mode, if all updates are
+// complete): all workshop mods are MDS_INSTALLED, no local mods exist, and
+// subscribe_clicked is true.
 bool MissingModsScreenImpl::readyForAutoJoin() const
 {
     if (!subscribe_clicked) return false;  // Never auto-join before subscribe is clicked
@@ -389,6 +393,10 @@ UTF8String MissingModsScreenImpl::statusText() const
     } else if (num_workshop > 0 && num_installed == num_workshop && num_workshop < int(rows.size())) {
         // All Workshop mods installed, but there are local mods, so we can't auto-join
         add_line(loc.get(LocalKey("mod_status_workshop_installed")));
+    } else if (update_mode && num_workshop > 0 && num_installed == num_workshop) {
+        // (Statuses are only polled after Update is clicked, so this means the updates
+        // have finished.)
+        add_line(loc.get(LocalKey("mod_status_updates_installed")));
     }
 #endif
     return UTF8String::fromUTF8Safe(msg);
@@ -492,7 +500,12 @@ void MissingModsScreenImpl::layout()
 void MissingModsScreenImpl::action(const gcn::ActionEvent &event)
 {
     if (event.getSource() == exit_button.get()) {
-        knights_app.exitLastJoin();
+        if (update_mode) {
+            std::unique_ptr<Screen> new_screen(new ModsScreen);
+            knights_app.requestScreenChange(std::move(new_screen));
+        } else {
+            knights_app.exitLastJoin();
+        }
         return;
     }
 
@@ -544,12 +557,16 @@ void MissingModsScreenImpl::update()
 
     // Join the game automatically once all downloads are complete (unless there are
     // local mods). subscribe_clicked is reset to make sure we only try once.
+    // (In update mode, we just stop polling; statusText will report that the
+    // updates are complete.)
     if (readyForAutoJoin()) {
         subscribe_clicked = false;
-        knights_app.retryLastJoin();
+        if (!update_mode) {
+            knights_app.retryLastJoin();
 
-        // retryLastJoin will close this UI, so there is no point continuing with updates
-        return;
+            // retryLastJoin will close this UI, so there is no point continuing with updates
+            return;
+        }
     }
 #endif
 
@@ -582,11 +599,15 @@ void MissingModsScreenImpl::update()
 
 bool MissingModsScreen::start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> w, gcn::Gui &gui)
 {
-    // As for ErrorScreen: reset everything (this leaves the game we were trying to
-    // join), and flash the window to get the user's attention.
-    knights_app.resetAll();
-    pimpl.reset(new MissingModsScreenImpl(knights_app, w, gui, mod_vfs_names));
-    knights_app.flashWindow();
+    if (mode == UPDATES) {
+        pimpl.reset(new MissingModsScreenImpl(knights_app, w, gui, mod_vfs_names, true));
+    } else {
+        // As for ErrorScreen: reset everything (this leaves the game we were trying to
+        // join), and flash the window to get the user's attention.
+        knights_app.resetAll();
+        pimpl.reset(new MissingModsScreenImpl(knights_app, w, gui, mod_vfs_names, false));
+        knights_app.flashWindow();
+    }
     return true;
 }
 

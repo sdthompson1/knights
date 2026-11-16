@@ -25,6 +25,9 @@
  * Missing Mods Screen -- shown (instead of the ErrorScreen) when we
  * try to join a game that uses mods we don't have installed.
  *
+ * Also used (in UPDATES mode) to download updates for installed
+ * Workshop mods (see CheckUpdatesScreen).
+ *
  */
 
 #ifndef MISSING_MODS_SCREEN_HPP
@@ -39,14 +42,20 @@ class MissingModsScreenImpl;
 
 class MissingModsScreen : public Screen {
 public:
-    explicit MissingModsScreen(std::vector<std::string> mod_vfs_names)
-        : mod_vfs_names(std::move(mod_vfs_names)) { }
+    // MISSING: mods are missing, so we can't join the game. Exit returns to the
+    //   previous menu; once all downloads are complete, we try to join again.
+    // UPDATES: Workshop mods need updating. Exit returns to the Mods screen.
+    enum Mode { MISSING, UPDATES };
+
+    explicit MissingModsScreen(std::vector<std::string> mod_vfs_names, Mode mode = MISSING)
+        : mod_vfs_names(std::move(mod_vfs_names)), mode(mode) { }
     virtual bool start(KnightsApp &knights_app, boost::shared_ptr<Coercri::Window> window, gcn::Gui &gui);
     virtual void update();
 
 private:
     boost::shared_ptr<MissingModsScreenImpl> pimpl;
     std::vector<std::string> mod_vfs_names;
+    Mode mode;
 };
 
 #endif

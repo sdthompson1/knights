@@ -24,6 +24,7 @@
 #include "misc.hpp"
 
 #include "adjust_list_box_size.hpp"
+#include "check_updates_screen.hpp"
 #include "knights_app.hpp"
 #include "localization.hpp"
 #include "make_scroll_area.hpp"
@@ -190,6 +191,7 @@ private:
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<gcn::Button> browse_button;
     std::unique_ptr<gcn::Button> upload_button;
+    std::unique_ptr<gcn::Button> check_updates_button;
 #endif
     std::unique_ptr<TooltipWidget> up_tooltip;
     std::unique_ptr<TooltipWidget> down_tooltip;
@@ -198,6 +200,7 @@ private:
 #ifdef ONLINE_PLATFORM
     std::unique_ptr<TooltipWidget> upload_tooltip;
     std::unique_ptr<TooltipWidget> browse_tooltip;
+    std::unique_ptr<TooltipWidget> check_updates_tooltip;
 #endif
 };
 
@@ -339,7 +342,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     title_label->setForegroundColor(gcn::Color(0, 0, 128));
 
     // Side buttons (to the right of the list): Up / Down at the top,
-    // Modding Docs / Upload Mod / Refresh List at the bottom.
+    // Modding Docs / Upload Mod / Check Updates / Refresh List at the bottom.
     up_button.reset(new GuiButton(loc.get(LocalKey("move_up")).asUTF8()));
     up_button->addActionListener(this);
     down_button.reset(new GuiButton(loc.get(LocalKey("move_down")).asUTF8()));
@@ -349,6 +352,8 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 #ifdef ONLINE_PLATFORM
     upload_button.reset(new GuiButton(loc.get(LocalKey("upload_mod")).asUTF8()));
     upload_button->addActionListener(this);
+    check_updates_button.reset(new GuiButton(loc.get(LocalKey("check_updates")).asUTF8()));
+    check_updates_button->addActionListener(this);
 #endif
     refresh_button.reset(new GuiButton(loc.get(LocalKey("refresh_list")).asUTF8()));
     refresh_button->addActionListener(this);
@@ -358,6 +363,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
                  std::max(refresh_button->getWidth(), docs_button->getWidth()));
 #ifdef ONLINE_PLATFORM
     side_button_width = std::max(side_button_width, upload_button->getWidth());
+    side_button_width = std::max(side_button_width, check_updates_button->getWidth());
 #endif
 
     up_button->setWidth(side_button_width);
@@ -366,6 +372,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     docs_button->setWidth(side_button_width);
 #ifdef ONLINE_PLATFORM
     upload_button->setWidth(side_button_width);
+    check_updates_button->setWidth(side_button_width);
 #endif
 
     const int width = list_width + pad + side_button_width;
@@ -399,12 +406,14 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     container->add(up_button.get(), side_x, y);
     container->add(down_button.get(), side_x, y + up_button->getHeight() + pad);
 
-    // Refresh List: aligned with the bottom of the list; Upload Mod just above it;
-    // Modding Docs above that
+    // Refresh List: aligned with the bottom of the list; Check Updates just above it;
+    // then a larger gap; then Upload Mod; then Modding Docs above that
     int side_y = list_bottom - refresh_button->getHeight();
     container->add(refresh_button.get(), side_x, side_y);
 #ifdef ONLINE_PLATFORM
-    side_y -= pad + upload_button->getHeight();
+    side_y -= pad + check_updates_button->getHeight();
+    container->add(check_updates_button.get(), side_x, side_y);
+    side_y -= 3*pad + upload_button->getHeight();
     container->add(upload_button.get(), side_x, side_y);
 #endif
     container->add(docs_button.get(), side_x, side_y - pad - docs_button->getHeight());
@@ -452,6 +461,8 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
         loc.get(LocalKey("upload_mod_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
     browse_tooltip.reset(new TooltipWidget(
         loc.get(LocalKey("browse_workshop_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
+    check_updates_tooltip.reset(new TooltipWidget(
+        loc.get(LocalKey("check_updates_tooltip")), TOOLTIP_MAX_WIDTH, tmr, *window));
 #endif
 
     // Side button tooltips appear to the left of the button (over the list)
@@ -464,6 +475,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     place_side_tooltip(docs_tooltip.get(),    docs_button.get());
 #ifdef ONLINE_PLATFORM
     place_side_tooltip(upload_tooltip.get(),  upload_button.get());
+    place_side_tooltip(check_updates_tooltip.get(), check_updates_button.get());
 
     // Browse Workshop tooltip appears above the button (y-position set by updateLocalHelp)
     container->add(browse_tooltip.get(), browse_button->getX() + 15, 0);
@@ -476,6 +488,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 #ifdef ONLINE_PLATFORM
     upload_button->addMouseListener(this);
     browse_button->addMouseListener(this);
+    check_updates_button->addMouseListener(this);
 #endif
 
     container->setWidth(2*pad + width);
@@ -764,6 +777,10 @@ void ModsScreenImpl::action(const gcn::ActionEvent &event)
         std::unique_ptr<Screen> new_screen(new UploadModScreen);
         knights_app.requestScreenChange(std::move(new_screen));
 
+    } else if (event.getSource() == check_updates_button.get()) {
+        std::unique_ptr<Screen> new_screen(new CheckUpdatesScreen);
+        knights_app.requestScreenChange(std::move(new_screen));
+
     } else if (event.getSource() == browse_button.get()) {
         knights_app.getOnlinePlatform().browseWorkshop();
 #endif
@@ -786,6 +803,8 @@ void ModsScreenImpl::mouseEntered(gcn::MouseEvent &e)
         upload_tooltip->scheduleShow();
     } else if (e.getSource() == browse_button.get()) {
         browse_tooltip->scheduleShow();
+    } else if (e.getSource() == check_updates_button.get()) {
+        check_updates_tooltip->scheduleShow();
 #endif
     }
 }
@@ -805,6 +824,8 @@ void ModsScreenImpl::mouseExited(gcn::MouseEvent &e)
         upload_tooltip->cancelShow();
     } else if (e.getSource() == browse_button.get()) {
         browse_tooltip->cancelShow();
+    } else if (e.getSource() == check_updates_button.get()) {
+        check_updates_tooltip->cancelShow();
 #endif
     }
 }

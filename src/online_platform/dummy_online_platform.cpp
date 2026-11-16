@@ -534,23 +534,30 @@ OnlinePlatform::ModQueryResult
     if (isWorkshopModName(vfs_mod_name)) {
 
         auto it = mod_title_cache.find(vfs_mod_name);
-        if (it != mod_title_cache.end()) {
-            // Return cached result
-            details_out.title = it->second;
-            return MQR_SUCCESS;
+        if (it == mod_title_cache.end()) {
+            // Simulate a small time delay while the query is in progress
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - last_mod_query_time);
+            if (elapsed.count() < 1) {
+                return MQR_WAITING;
+            }
+
+            // The (pretend) query to the online server has now completed, so add to our cache.
+            UTF8String title = UTF8String::fromUTF8Safe("---Workshop #" + vfs_mod_name.substr(9));
+            it = mod_title_cache.emplace(vfs_mod_name, title).first;
         }
 
-        // Simulate a small time delay while the query is in progress
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - last_mod_query_time);
-        if (elapsed.count() < 3) {
-            return MQR_WAITING;
-        }
+        // Fake update check: an update is required if the "server" copy of init.lua is
+        // newer than the installed copy. (So, touch the server's init.lua to test updates.)
+        // If either init.lua is missing, no update is required.
+        const std::string id = vfs_mod_name.substr(9);
+        std::error_code ec1, ec2;
+        const auto installed_time = std::filesystem::last_write_time(
+            std::filesystem::path("/tmp/knights_workshop") / id / "init.lua", ec1);
+        const auto server_time = std::filesystem::last_write_time(
+            std::filesystem::path("/tmp/knights_workshop_server") / id / "init.lua", ec2);
 
-        // The (pretend) query to the online server has now completed, so add to our cache
-        // and return a success result.
-        UTF8String title = UTF8String::fromUTF8Safe("---Workshop #" + vfs_mod_name.substr(9));
-        mod_title_cache[vfs_mod_name] = title;
-        details_out.title = title;
+        details_out.title = it->second;
+        details_out.requires_update = !ec1 && !ec2 && server_time > installed_time;
         return MQR_SUCCESS;
 
     } else {
@@ -625,10 +632,14 @@ OnlinePlatform::ModDownloadStatus DummyOnlinePlatform::getModDownloadStatus(cons
 
     const std::string id = vfs_mod_name.substr(9);
     const std::filesystem::path install_dir = std::filesystem::path("/tmp/knights_workshop") / id;
-    if (std::filesystem::exists(install_dir)) return MDS_INSTALLED;
 
+    // If no download is in progress, the mod is either installed or not subscribed.
+    // (Note: if subscribeMod is called on an already-installed mod, we simulate a fresh
+    // download, in order to support mod updates.)
     auto it = mod_download_start_times.find(vfs_mod_name);
-    if (it == mod_download_start_times.end()) return MDS_NOT_SUBSCRIBED;
+    if (it == mod_download_start_times.end()) {
+        return std::filesystem::exists(install_dir) ? MDS_INSTALLED : MDS_NOT_SUBSCRIBED;
+    }
 
     // Simulate a short wait before the download starts, then 8 seconds of downloading
     auto elapsed = std::chrono::steady_clock::now() - it->second;
@@ -652,8 +663,11 @@ OnlinePlatform::ModDownloadStatus DummyOnlinePlatform::getModDownloadStatus(cons
         return MDS_FAILED;
     }
 
-    // Otherwise, "install" the mod
+    // Otherwise, "install" the mod (replacing any existing version), and mark the
+    // download as finished
+    std::filesystem::remove_all(install_dir);
     std::filesystem::copy(server_dir, install_dir, std::filesystem::copy_options::recursive);
+    mod_download_start_times.erase(it);
     return MDS_INSTALLED;
 }
 

@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\main\action_bar.cpp" />
     <ClCompile Include="..\..\src\main\adjust_list_box_size.cpp" />
+    <ClCompile Include="..\..\src\main\check_updates_screen.cpp" />
     <ClCompile Include="..\..\src\main\connecting_screen.cpp" />
     <ClCompile Include="..\..\src\main\credits_screen.cpp" />
     <ClCompile Include="..\..\src\main\draw.cpp" />
@@ -177,6 +178,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\main\action_bar.hpp" />
     <ClInclude Include="..\..\src\main\adjust_list_box_size.hpp" />
+    <ClInclude Include="..\..\src\main\check_updates_screen.hpp" />
     <ClInclude Include="..\..\src\main\compute_checksum.hpp" />
     <ClInclude Include="..\..\src\main\connecting_screen.hpp" />
     <ClInclude Include="..\..\src\main\controller.hpp" />

@@ -26,12 +26,14 @@ move_up                         Move Up
 move_down                       Move Down
 save_changes                    Save Changes
 upload_mod                      Upload Mod…
+check_updates                   Check Updates
 modding_docs                    Modding Docs
 browse_workshop                 Browse Workshop
 move_up_tooltip                 Move the selected mod up one place in the list. The order matters if there are dependencies (a mod must load after its dependencies).
 move_down_tooltip               Move the selected mod down one place in the list. The order matters if there are dependencies (a mod must load after its dependencies).
 upload_mod_tooltip              Use this to upload a mod you have created to the Workshop.
 refresh_list_tooltip            Refresh the list of installed mods.
+check_updates_tooltip           Check whether any of your Steam Workshop mods have updates available.
 modding_docs_tooltip            Open the Knights modding documentation in your web browser.
 browse_workshop_tooltip         Open the Steam Workshop page.
 local_mod_suffix                (local)
@@ -52,6 +54,14 @@ upload_complete                 Upload complete!
 upload_failed                   Upload failed: {0}
 
 
+# Check Updates screen
+check_updates_title             Check Updates
+check_updates_checking          Checking for updates…
+check_updates_no_mods           You do not have any Workshop mods installed, so there is nothing to update.
+check_updates_up_to_date        All of your Workshop mods are up to date.
+check_updates_failed            Update check failed. Check that Steam is online and you have Internet access.
+
+
 # Missing Mods screen
 missing_mods_title              Missing Mods
 missing_mods_intro              The game you are joining uses the following mods, but they are not currently installed:
@@ -63,6 +73,11 @@ view                            View
 mod_status_waiting              Waiting for download to start…
 mod_status_downloading          Downloading ({0} of {1})… {2}%
 mod_status_workshop_installed   All Steam Workshop mods are now installed. The remaining mods must be installed manually.
+mod_updates_title               Mod Updates
+mod_updates_intro               New versions of the following Steam Workshop mods are available:
+mod_updates_workshop            Click "Update" to download these updates. Click "View" to open the mod's Workshop page.
+update                          Update
+mod_status_updates_installed    All updates have been installed.
 mod_download_failed             Download failed for {0}: {1}
 mod_download_error_not_found    mod not found on Steam Workshop
 mod_download_error_no_connection    could not connect to Steam Workshop

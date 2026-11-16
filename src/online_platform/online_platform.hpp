@@ -211,8 +211,12 @@ public:
     // Call sendModQuery first, then use getModQueryResult to check results.
     // Can be used even for mods that are not installed locally.
     struct ModDetails {
+        // The mod's title, as reported by the online platform.
         UTF8String title;
-        // TODO: add other stats e.g. number of current subscribers?
+
+        // True if the mod is installed locally, but a newer version is available on the
+        // Workshop. (Calling subscribeMod will then download the update.)
+        bool requires_update = false;
     };
     enum ModQueryResult {
         MQR_WAITING,  // still waiting for the query result
@@ -247,6 +251,8 @@ public:
     // Ask the online platform to download and install the given mod. (For Steam this is
     // ISteamUGC::SubscribeItem followed by a high-priority DownloadItem.)
     // If vfs_mod_name isn't a Workshop mod name, this is a no-op.
+    // Re-subscribing to an already subscribed mod is allowed, and will force a re-download
+    // if required (e.g. if an update is available).
     virtual void subscribeMod(const std::string &vfs_mod_name) = 0;
 
     // Check current install-status of a Workshop mod.
