@@ -30,6 +30,7 @@
 #include "gui_button.hpp"
 #include "gui_centre.hpp"
 #include "gui_panel.hpp"
+#include "gui_text_wrap.hpp"
 #include "knights_app.hpp"
 #include "loading_screen.hpp"
 #include "make_scroll_area.hpp"
@@ -169,6 +170,15 @@ namespace {
     };
 
     bool g_show_incompatible = false;
+
+    // Returns true if any local (non-Workshop) mods are enabled, not counting "base"
+    bool LocalModsEnabled(const ModuleManager &mm)
+    {
+        for (const std::string &name : mm.getEnabledModules()) {
+            if (name != "base" && mm.isLocalModule(name)) return true;
+        }
+        return false;
+    }
 }
 
 class OnlineMultiplayerScreenImpl : public gcn::ActionListener, public gcn::MouseListener {
@@ -183,6 +193,9 @@ public:
     void refreshGameList();
 
 private:
+    void showLocalModsWarning();
+    void setTop(GuiCentre &c);
+
     KnightsApp &knights_app;
     boost::shared_ptr<Coercri::Window> window;
     gcn::Gui &gui;
@@ -202,6 +215,15 @@ private:
     std::unique_ptr<gcn::Button> cancel_button;
     std::unique_ptr<gcn::Button> create_game_button;
     std::unique_ptr<TooltipWidget> show_incompatible_tooltip;
+
+    // "Local mods enabled" warning dialog
+    std::unique_ptr<GuiCentre> warn_centre;
+    std::unique_ptr<GuiPanel> warn_panel;
+    std::unique_ptr<gcn::Container> warn_container;
+    std::unique_ptr<GuiTextWrap> warn_text;
+    std::unique_ptr<gcn::Button> warn_create_button;
+    std::unique_ptr<gcn::Button> warn_cancel_button;
+
     boost::shared_ptr<gcn::Font> cg_font;
     std::unique_ptr<gcn::Font> tab_font;
 };
@@ -406,7 +428,18 @@ void OnlineMultiplayerScreenImpl::action(const gcn::ActionEvent &event)
         knights_app.requestScreenChange(std::move(start_screen));
 
     } else if (event.getSource() == create_game_button.get()) {
+        if (LocalModsEnabled(knights_app.getModuleManager())) {
+            showLocalModsWarning();
+        } else {
+            createGame();
+        }
+
+    } else if (event.getSource() == warn_create_button.get()) {
         createGame();
+
+    } else if (event.getSource() == warn_cancel_button.get()) {
+        // Go back to the main screen
+        setTop(*centre);
 
     } else if (event.getSource() == show_incompatible_checkbox.get()) {
         g_show_incompatible = show_incompatible_checkbox->isSelected(); // Remember the setting for next time
@@ -446,6 +479,46 @@ void OnlineMultiplayerScreenImpl::createGame()
     // TODO: Maybe allow user to select visibility? (e.g. friends-only games)
     OnlinePlatform::Visibility vis = OnlinePlatform::Visibility::PUBLIC;
     knights_app.hostOnlineGame(vis);
+}
+
+void OnlineMultiplayerScreenImpl::showLocalModsWarning()
+{
+    const Localization &loc = knights_app.getLocalization();
+    const int pad = 10;
+    const int width = 500;
+
+    warn_container.reset(new gcn::Container);
+    warn_container->setOpaque(false);
+
+    warn_text.reset(new GuiTextWrap);
+    warn_text->setWidth(width);
+    warn_text->setText(loc.get(LocalKey("local_mod_help")));
+    warn_text->adjustHeight();
+    warn_text->setForegroundColor(gcn::Color(30, 30, 30));
+    warn_container->add(warn_text.get(), pad, pad);
+    const int y = pad + warn_text->getHeight() + 2*pad;
+
+    warn_create_button.reset(new GuiButton(loc.get(LocalKey("create_anyway")).asUTF8()));
+    warn_create_button->addActionListener(this);
+    warn_cancel_button.reset(new GuiButton(loc.get(LocalKey("cancel")).asUTF8()));
+    warn_cancel_button->addActionListener(this);
+    warn_container->add(warn_create_button.get(), pad, y);
+    warn_container->add(warn_cancel_button.get(), pad + width - warn_cancel_button->getWidth(), y);
+    warn_container->setSize(2*pad + width, y + warn_cancel_button->getHeight() + pad);
+
+    warn_panel.reset(new GuiPanel(warn_container.get()));
+    warn_centre.reset(new GuiCentre(warn_panel.get()));
+    setTop(*warn_centre);
+}
+
+void OnlineMultiplayerScreenImpl::setTop(GuiCentre &c)
+{
+    int w, h;
+    window->getSize(w, h);
+    c.setSize(w, h);
+    gui.setTop(&c);
+    gui.logic();
+    window->invalidateAll();
 }
 
 void OnlineMultiplayerScreenImpl::refreshGameList()

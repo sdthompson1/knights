@@ -161,7 +161,6 @@ private:
     void resolveTitle(ModEntry &entry);
     void moveSelected(int delta);
     void listChanged();
-    void updateLocalHelp();
 
     KnightsApp &knights_app;
     boost::shared_ptr<Coercri::Window> window;
@@ -181,7 +180,6 @@ private:
     std::unique_ptr<GuiTextWrap> help_text;
     std::unique_ptr<ModListBox> listbox;
     std::unique_ptr<gcn::ScrollArea> scroll_area;
-    std::unique_ptr<GuiTextWrap> local_help_text;   // only visible if there are local mods
     std::unique_ptr<gcn::Button> up_button;
     std::unique_ptr<gcn::Button> down_button;
     std::unique_ptr<gcn::Button> refresh_button;
@@ -420,15 +418,6 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 
     y = list_bottom + 2*pad;
 
-    // Local mod help text (visibility, and the y-position of everything
-    // below it, is set by updateLocalHelp)
-    local_help_text.reset(new GuiTextWrap);
-    local_help_text->setWidth(width);
-    local_help_text->setText(loc.get(LocalKey("local_mod_help")));
-    local_help_text->adjustHeight();
-    local_help_text->setForegroundColor(gcn::Color(30, 30, 30));
-    container->add(local_help_text.get(), pad, y);
-
     // Save, Browse Workshop and Cancel buttons
     save_button.reset(new GuiButton(loc.get(LocalKey("save_changes")).asUTF8()));
     save_button->addActionListener(this);
@@ -477,8 +466,9 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     place_side_tooltip(upload_tooltip.get(),  upload_button.get());
     place_side_tooltip(check_updates_tooltip.get(), check_updates_button.get());
 
-    // Browse Workshop tooltip appears above the button (y-position set by updateLocalHelp)
-    container->add(browse_tooltip.get(), browse_button->getX() + 15, 0);
+    // Browse Workshop tooltip appears above the button
+    container->add(browse_tooltip.get(), browse_button->getX() + 15,
+                   browse_button->getY() - browse_tooltip->getHeight() - 3);
 #endif
 
     up_button->addMouseListener(this);
@@ -491,8 +481,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
     check_updates_button->addMouseListener(this);
 #endif
 
-    container->setWidth(2*pad + width);
-    updateLocalHelp();   // sets container height
+    container->setSize(2*pad + width, y + save_button->getHeight() + pad);
 
     panel.reset(new GuiPanel(container.get()));
     centre.reset(new GuiCentre(panel.get()));
@@ -671,7 +660,6 @@ void ModsScreenImpl::refreshList()
     listbox->setSelected(new_sel);
 
     // Update UI as needed.
-    updateLocalHelp();
     listChanged();
 }
 
@@ -694,36 +682,6 @@ void ModsScreenImpl::moveSelected(int delta)
     std::swap(entries[i], entries[j]);
     listbox->setSelected(j);
     listChanged();
-}
-
-// Show the local mod help text iff there are any local mods in the list,
-// and position the bottom row of buttons (and size the container) to suit.
-void ModsScreenImpl::updateLocalHelp()
-{
-    const bool show = std::any_of(entries.begin(), entries.end(),
-                                  [](const ModEntry &e) { return e.local; });
-    local_help_text->setVisible(show);
-
-    int y = local_help_text->getY();
-    if (show) y += local_help_text->getHeight() + 2*PAD;
-
-    save_button->setY(y);
-    cancel_button->setY(y);
-#ifdef ONLINE_PLATFORM
-    browse_button->setY(y);
-    browse_tooltip->setY(y - browse_tooltip->getHeight() - 3);
-#endif
-    container->setHeight(y + save_button->getHeight() + PAD);
-
-    // GuiPanel does not auto-resize when its child changes size, so update it
-    // manually, then re-centre (see also MenuScreenImpl::applyHelpVisibility).
-    // (During the constructor, panel does not exist yet, so nothing to do.)
-    if (panel) {
-        panel->setSize(container->getWidth() + 6, container->getHeight() + 6);
-        int win_w, win_h;
-        window->getSize(win_w, win_h);
-        centre->setSize(win_w, win_h);
-    }
 }
 
 void ModsScreenImpl::listChanged()
