@@ -227,7 +227,7 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
     subscribe_button.reset(new GuiButton(loc.get(LocalKey(update_mode ? "update" : "subscribe")).asUTF8()));
     subscribe_button->addActionListener(this);
 #endif
-    exit_button.reset(new GuiButton(loc.get(LocalKey(update_mode ? "cancel" : "exit")).asUTF8()));
+    exit_button.reset(new GuiButton(loc.get(LocalKey("close")).asUTF8()));
     exit_button->addActionListener(this);
 
     // Show a blank screen (guichan requires a top widget) until the titles come in
@@ -573,9 +573,6 @@ void MissingModsScreenImpl::update()
             // retryLastJoin will close this UI, so there is no point continuing with updates
             return;
         }
-        exit_button->setCaption(knights_app.getLocalization().get(LocalKey("exit")).asUTF8());
-        exit_button->adjustSize();
-        need_relayout = true;  // the button is right-aligned, so its position depends on its width
     }
 #endif
 

@@ -65,7 +65,7 @@ check_updates_failed            Update check failed. Check that Steam is online 
 # Missing Mods / Mod Updates screen
 missing_mods_title              Missing Mods
 missing_mods_intro              The game you are joining uses the following mods, but they are not currently installed:
-missing_mods_workshop           Click "Subscribe" to install these mods and continue joining, or click "Exit" to cancel joining this game. You can also "View" each mod's Workshop page before you decide.
+missing_mods_workshop           Click "Subscribe" if you want to install these mods and continue, or "Close" if you no longer want to join this game. You can also "View" each mod's Workshop page before you decide.
 missing_mods_local              You will need to copy these mods to your knights_data/modules folder, then try again.
 missing_mods_local_steam        Some (or all) of the above mods are not available from Steam Workshop, so you will have to install these manually into knights_data/modules.
 subscribe                       Subscribe
