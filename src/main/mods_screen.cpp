@@ -413,7 +413,7 @@ ModsScreenImpl::ModsScreenImpl(KnightsApp &app, boost::shared_ptr<Coercri::Windo
 #ifdef ONLINE_PLATFORM
     side_y -= pad + check_updates_button->getHeight();
     container->add(check_updates_button.get(), side_x, side_y);
-    side_y -= 3*pad + upload_button->getHeight();
+    side_y -= 35 + upload_button->getHeight();
     container->add(upload_button.get(), side_x, side_y);
 #endif
     container->add(docs_button.get(), side_x, side_y - pad - docs_button->getHeight());

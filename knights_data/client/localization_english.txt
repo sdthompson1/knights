@@ -43,7 +43,7 @@ local_mod_help                  One or more local mods were detected in knights_
 # Upload Mod screen
 upload_mod_title                Upload Mod
 upload                          Upload
-upload_select_mod               This allows you to upload your own mod to Steam Workshop.\n\nTo proceed, copy your mod to knights_data/modules (if it is not there already), select it from the list below, and click Upload.\n\nThe first upload of a new mod will create a new Workshop item and save its ID to workshop_item_id.txt. Later uploads will read workshop_item_id.txt and update the same item automatically.\n\nAfter upload, use the Steam Workshop page to edit title, description, visibility, screenshots/videos, and other Workshop details.
+upload_select_mod               This allows you to upload your own mod to Steam Workshop.\n\nTo proceed, copy your mod to knights_data/modules (if it is not there already), select it from the list below, and click Upload.\n\nThe first upload of a new mod will create a new Workshop item (hidden from the public initially) and save its ID to workshop_item_id.txt. Later uploads will read workshop_item_id.txt and update the same item automatically.\n\nAfter upload, use the Steam Workshop page to edit title, description, visibility, screenshots/videos, and other Workshop details.
 upload_no_local_mods            No uploadable mods were found in knights_data/modules.\n\nTo upload your own mod, first copy it to knights_data/modules, then come back to this screen and try again.
 upload_new_item                 Please confirm that you want to create a new Workshop item for the following mod:\n\n{0}
 upload_existing_item            Please confirm that you want to update the existing Workshop item for the following mod:\n\n{0}

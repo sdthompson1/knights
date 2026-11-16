@@ -88,7 +88,6 @@ CheckUpdatesScreenImpl::CheckUpdatesScreenImpl(KnightsApp &app, boost::shared_pt
     message.reset(new GuiTextWrap);
     message->setForegroundColor(gcn::Color(30, 30, 30));
     message->setWidth(WIDTH);
-    //message->setCentred(true);
 
     OnlinePlatform &op = knights_app.getOnlinePlatform();
     for (const OnlinePlatform::InstalledMod &mod : op.getInstalledMods()) {
