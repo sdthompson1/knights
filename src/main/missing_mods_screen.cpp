@@ -564,7 +564,7 @@ void MissingModsScreenImpl::update()
     // Join the game automatically once all downloads are complete (unless there are
     // local mods). subscribe_clicked is reset to make sure we only try once.
     // (In update mode, we just stop polling; statusText will report that the
-    // updates are complete.)
+    // updates are complete, and the Cancel button becomes Exit.)
     if (readyForAutoJoin()) {
         subscribe_clicked = false;
         if (!update_mode) {
@@ -573,6 +573,9 @@ void MissingModsScreenImpl::update()
             // retryLastJoin will close this UI, so there is no point continuing with updates
             return;
         }
+        exit_button->setCaption(knights_app.getLocalization().get(LocalKey("exit")).asUTF8());
+        exit_button->adjustSize();
+        need_relayout = true;  // the button is right-aligned, so its position depends on its width
     }
 #endif
 
