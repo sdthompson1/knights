@@ -223,7 +223,7 @@ MissingModsScreenImpl::MissingModsScreenImpl(KnightsApp &app, boost::shared_ptr<
     subscribe_button.reset(new GuiButton(loc.get(LocalKey(update_mode ? "update" : "subscribe")).asUTF8()));
     subscribe_button->addActionListener(this);
 #endif
-    exit_button.reset(new GuiButton(loc.get(LocalKey(update_mode ? "back" : "exit")).asUTF8()));
+    exit_button.reset(new GuiButton(loc.get(LocalKey(update_mode ? "cancel" : "exit")).asUTF8()));
     exit_button->addActionListener(this);
 
     // Show a blank screen (guichan requires a top widget) until the titles come in

@@ -62,7 +62,7 @@ check_updates_up_to_date        All of your Workshop mods are up to date.
 check_updates_failed            Update check failed. Check that Steam is online and you have Internet access.
 
 
-# Missing Mods screen
+# Missing Mods / Mod Updates screen
 missing_mods_title              Missing Mods
 missing_mods_intro              The game you are joining uses the following mods, but they are not currently installed:
 missing_mods_workshop           Click "Subscribe" to install these mods and continue joining, or click "Exit" to cancel joining this game. You can also "View" each mod's Workshop page before you decide.
