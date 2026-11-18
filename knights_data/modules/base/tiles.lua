@@ -228,21 +228,21 @@ kts.SetRotate(t_door_horiz, t_door_vert)
 kts.SetRotate(t_iron_door_horiz, t_iron_door_vert)
 
 
--- NOTE: For closed gates set connectivity_check = -1 to force the connectivity check
--- to consider these as "impassable". (They may or may not be openable by a switch, but 
--- we don't really have any way to check this so we have to be conservative and assume
--- they can't be.)
-
 t_gate_horiz      = kts.Tile( table_merge(gate, {  -- 16, 64
     depth = -4, 
-    graphic = g_door_hgc, 
+    graphic = g_door_hgc,
+
+    -- Note: it is now believed that connectivity_check = -1 is not actually needed for
+    -- closed gates (they have access="approach", and are *not* type="door", so the normal
+    -- heuristic will consider them impassable, which is what we want). But we leave it
+    -- here anyway for historical reasons (it does no harm).
     connectivity_check = -1,
 }))
 
 t_gate_vert       = kts.Tile( table_merge(gate, {  -- 17, 65
     depth = -4, 
     graphic = g_door_vgc, 
-    connectivity_check = -1,
+    connectivity_check = -1,  -- See t_gate_horiz comment, above.
 }))
 
 t_open_gate_horiz = kts.Tile( table_merge(floor, {

@@ -928,16 +928,21 @@ namespace {
             
             // Find out whether there is a key (or lock picks) on this square.
             // (This is complicated slightly because there could be an item hidden inside a chest.)
+            // (Only destructible tiles containing items are considered; this means that e.g. if
+            // someone makes an "iron chest" tile in a mod, then the connectivity check won't look
+            // inside it, because the knight is not guaranteed to be able to get inside.)
             shared_ptr<Item> item = dmap.getItem(mc);
             if (!item) {
                 for (vector<shared_ptr<Tile> >::iterator it = tiles.begin(); it != tiles.end(); ++it) {
-                    item = (*it)->getPlacedItem();
-                    if (item) {
-                        break;
+                    if ((*it)->destructible()) {
+                        item = (*it)->getPlacedItem();
+                        if (item) {
+                            break;
+                        }
                     }
                 }
             }
-        
+
             const ItemType * item_type = item ? &item->getType() : 0;
     
             // As soon as we find lock picks, we are done (as they can then open any door).
@@ -963,7 +968,7 @@ namespace {
             // we can add its neighbours to "open". If it's impassable
             // currently, but might become passable if we find the right
             // key, then add it to "locked".
-            
+
             bool can_get_through = true;
             bool is_locked = false;
             
@@ -971,6 +976,7 @@ namespace {
                 // Check whether the tile has explicit connectivity info set
                 if ((*it)->getConnectivityCheck() == -1) {
                     can_get_through = false;
+                    is_locked = false; // No key will help us here
                     break;
                 } else if ((*it)->getConnectivityCheck() == 1) {
                     continue;
@@ -982,29 +988,37 @@ namespace {
                 
                 // This tile might block access, unless:
                 // (i) It is destructible
-                // (ii) It is locked, but can be opened by one of our keys.
+                // (ii) It is an unlocked door
+                // (iii) It is a locked door, but we have the key.
                 if ((*it)->destructible()) continue;
 
                 const Lockable * lockable = dynamic_cast<Lockable*>(it->get());
                 if (lockable) {
                     const int lock_num = lockable->getLockNum();
                     if (lock_num > 0 && keys_found.find(lock_num) == keys_found.end()) {
+                        // Locked door, with a key, but we don't have that key
                         can_get_through = false;
-                        is_locked = true;
+                        is_locked = true;  // We might find the key later
+                        break;
+                    } else if (lockable->isSpecialLocked()) {
+                        // We now consider special-locked doors impassable.
+                        // Usually such doors are opened by a nearby switch, but we have no way
+                        // to know where that switch is (e.g. it might itself be behind a locked
+                        // door, requiring a key); so the safest thing to do is treat special-locked
+                        // doors as completely impassable.
+                        can_get_through = false;
+                        is_locked = false;  // No key will help us here
                         break;
                     } else {
-                        // Either lock_num == 0 (i.e. its an unlocked or "special-locked" iron door)
-                        // or lock_num != 0 but we have the key for it. In this case the door is
-                        // passable.
-                        // NOTE: We assume that the levers/pressure pads that open "special-locked" doors are
-                        // always accessible. 
-                        can_get_through = true;
-                        break;
+                        // This is either an unlocked door, or we have the key to unlock it.
+                        // In this case the door is passable.
+                        continue;  // We still have to check the remaining tiles on the square
                     }
                 }
 
                 // If we get to here then it must be impassable.
                 can_get_through = false;
+                is_locked = false; // No key will help us here
                 break;
             }
             
