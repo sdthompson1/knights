@@ -587,6 +587,15 @@ namespace Coercri {
         : video_subsystem(SDL_INIT_VIDEO)
     {
         SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+
+#ifdef WIN32
+        // On Windows, use Direct3D 11 driver, which handles graphics
+        // device changes better than the default of Direct3D 9.
+        // (This is only a hint; SDL will fall back to D3D 9 if 11 fails
+        // to start up.)
+        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
+#endif
+
         InitKeyTable();
     }
 
