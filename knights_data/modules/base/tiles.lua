@@ -366,7 +366,7 @@ furniture5 = table_merge( furniture, { on_destroy = destroy5 })
 
 t_staff_pile = kts.Tile (table_merge( furniture4, {   -- 23
     access  = switch_acc,
-    graphic = g_haystack,
+    graphic = g_staff_pile,
 
     -- Players can pick up a staff from the staff pile, if they are not already
     -- carrying a large item.
