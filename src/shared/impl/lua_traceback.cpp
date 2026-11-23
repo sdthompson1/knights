@@ -29,14 +29,16 @@
 
 #include <sstream>
 
-std::string LuaTraceback(lua_State *lua)
+void LuaAppendTraceback(lua_State *lua, std::string &msg)
 {
     const int MAXLEVEL = 15;
+    const char *HEADER = "\n\nTraceback:";
 
     bool found_lua_yet = false;
+    bool have_header = msg.find(HEADER) != std::string::npos;
 
     std::ostringstream str;
-    
+
     for (int level = 0; level <= MAXLEVEL; ++level) {
         lua_Debug ar;
         const int result = lua_getstack(lua, level, &ar);
@@ -57,10 +59,13 @@ std::string LuaTraceback(lua_State *lua)
             }
         }
 
-        if (!found_lua_yet) str << "\n\nTraceback:";
+        if (!have_header) {
+            str << HEADER;
+            have_header = true;
+        }
         str << "\n" << ar.short_src << ':' << ar.currentline;
         found_lua_yet = true;
     }
 
-    return str.str();
+    msg += str.str();
 }

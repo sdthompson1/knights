@@ -179,7 +179,7 @@ bool CoroutineTask::doExec(TaskManager &tm)
         {
             const char *p = lua_tostring(thread, -1);
             std::string err(p ? p : "<No err msg>");
-            err += LuaTraceback(thread);
+            LuaAppendTraceback(thread, err);
             lua_settop(thread, 0);  // clear its stack
 
             LocalMsg msg{LocalKey("lua_error_is"), {LocalParam(UTF8String::fromUTF8Safe(err))}};

@@ -41,7 +41,7 @@ namespace {
         // Should return one error message.
 
         std::string result = lua_isstring(lua, 1) ? lua_tostring(lua, 1) : "<No err msg>";
-        result += LuaTraceback(lua);
+        LuaAppendTraceback(lua, result);
         lua_pop(lua, 1);
         lua_pushstring(lua, result.c_str());
         return 1;

@@ -28,8 +28,10 @@
 
 struct lua_State;
 
-// Returns a stack traceback of the given lua state
+// Appends a stack traceback of the given lua state to msg
 // (Does not include C functions, and stops at the first C function after a Lua function.)
-std::string LuaTraceback(lua_State *lua);
+// If msg already contains a traceback (e.g. from a nested dofile), the new lines are
+// added to the existing traceback rather than starting a new one.
+void LuaAppendTraceback(lua_State *lua, std::string &msg);
 
 #endif
