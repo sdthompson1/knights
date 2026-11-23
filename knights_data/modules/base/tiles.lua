@@ -375,9 +375,9 @@ t_staff_pile = kts.Tile (table_merge( furniture4, {   -- 23
         possible = function() return kts.GetItemInHand(cxt.actor) == kts.DEFAULT_ITEM end,  -- Can only take staff when not carrying something else
         menu_icon = g_menu_pickup,
         menu_direction = "down",
-        tap_priority = 1,
+        tap_priority = 1,  -- Prioritizes pick up from floor over taking from the pile (new controls).
         action_bar_slot = 3,
-        menu_special = 0,
+        menu_special = 1,  -- Prioritizes pick up from floor over taking from the pile (Amiga controls).
         name_key = "take_staff"
     }
 }))
