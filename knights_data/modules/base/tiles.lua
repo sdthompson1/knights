@@ -364,10 +364,28 @@ furniture = {
 furniture4 = table_merge( furniture, { on_destroy = destroy4 })
 furniture5 = table_merge( furniture, { on_destroy = destroy5 })
 
-t_haystack = kts.Tile (table_merge( furniture4, {   -- 23
+t_staff_pile = kts.Tile (table_merge( furniture4, {   -- 23
     access  = switch_acc,
     graphic = g_haystack,
+
+    -- Players can pick up a staff from the staff pile, if they are not already
+    -- carrying a large item.
+    control = kts.Control{
+        action = function() kts.GiveItem(cxt.actor, i_staff); snd_click() end,
+        possible = function() return kts.GetItemInHand(cxt.actor) == kts.DEFAULT_ITEM end,  -- Can only take staff when not carrying something else
+        menu_icon = g_menu_pickup,
+        menu_direction = "down",
+        tap_priority = 3,
+        action_bar_slot = 3,
+        menu_special = 0,
+        name_key = "take_staff"
+    }
 }))
+
+-- The t_staff_pile tile was originally (mistakenly) called t_haystack. The original
+-- name is preserved here in case any mods were relying on it.
+t_haystack = t_staff_pile
+
 t_barrel = kts.Tile (table_merge( furniture4, {   -- 24
     type = "barrel",
     access = barrel_acc,

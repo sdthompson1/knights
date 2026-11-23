@@ -553,7 +553,13 @@ namespace {
         }
 
         if (kt && itype && !itype->isBig() && num > 0) {
+            // Add item(s) to backpack
             kt->addToBackpack(*itype, num);
+
+        } else if (kt && itype && itype->isBig() && num == 1 && !kt->canDropHeld()) {
+            // Add held item (the !canDropHeld check ensures that this does not overwrite
+            // some other item, except the knight's default sword)
+            kt->setItemInHand(itype);
         }
 
         return 0;

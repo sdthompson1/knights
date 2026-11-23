@@ -34,7 +34,7 @@ tile_table = {
    nil,              -- 20
    nil,              -- 21
    nil,              -- 22
-   t_haystack,          -- 23
+   t_staff_pile,        -- 23
    t_barrel,            -- 24
    t_chest_north,       -- 25
    t_chest_east,        -- 26
