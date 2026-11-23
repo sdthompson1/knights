@@ -334,7 +334,7 @@ update_thread_failed            Update thread failed to start
 bad_tile_control                Tile 'control' function did not return a control!
 couldnt_start_game              Couldn't start game:
 error_is                        Error: {0}
-lua_error_is                    Lua Error: {0}
+lua_error_is                    Lua Error: {0}\n\n[Press Ctrl-C to copy this message to clipboard.]
 error_in_respawn_func           Error in respawn function: {0}
 game_hasnt_started              Game hasn't started or could not be found
 config_key_not_found            Config key '{0}' not found
