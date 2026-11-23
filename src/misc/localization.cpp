@@ -269,3 +269,10 @@ LocalKey Localization::pluralize(const LocalKey &key, int count) const
         return LocalKey(key.getKey() + "[other]");
     }
 }
+
+bool Localization::exists(const LocalKey &key) const {
+    // Any key in 'strings' exists.
+    // The empty key also exists (special case, see get(key) above).
+    // Anything else is a missing string.
+    return strings.find(key) != strings.end() || key == LocalKey();
+}

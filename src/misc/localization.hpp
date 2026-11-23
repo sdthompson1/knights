@@ -158,6 +158,9 @@ public:
         return get(pluralize(msg.key, msg.count), msg.params);
     }
 
+    // Determine if a certain key exists (i.e., is not a missing string)
+    bool exists(const LocalKey &key) const;
+
 private:
     static Coercri::UTF8String substituteParameters(const Coercri::UTF8String& template_str, const std::vector<Coercri::UTF8String>& params);
     static Coercri::UTF8String buildList(const std::vector<Coercri::UTF8String>& params, size_t start_index);

@@ -209,7 +209,14 @@ int main(int argc, char * argv[])
 #ifdef CATCH_EXCEPTIONS
     } catch (ExceptionBase &e) {
         err_msg = "ERROR:\n";
-        err_msg += localization.get(e.getMsg()).asUTF8();
+        if (localization.exists(e.getMsg().key)) {
+            err_msg += localization.get(e.getMsg()).asUTF8();
+        } else {
+            // Missing string, e.g. could happen for errors in client_config.lua
+            // (which runs before localization is loaded). Use the exception's
+            // "what()" message instead.
+            err_msg += e.what();
+        }
 
     } catch (std::exception &e) {
         err_msg = "ERROR: Caught exception:\n";
