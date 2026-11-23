@@ -63,7 +63,7 @@ namespace {
 
         } catch (const std::exception &e) {
             // Convert this to a Lua error.
-            return luaL_error(lua, e.what());
+            return luaL_error(lua, "%s", e.what());
 
         } catch (...) {
             // Convert this to a Lua error.
