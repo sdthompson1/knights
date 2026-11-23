@@ -650,6 +650,16 @@ messages = {
          "place where you died. (If you had multiple items, they will have "..
          "been left in a brown bag like the one shown above.) "..
          "Don't forget to go back and collect them before continuing."
+   },
+
+   [80] = {
+       title = "STAFF PILE",
+       graphics = {B.g_floor1, B.g_haystack},
+       body = "This is a staff pile. It provides an unlimited source of staffs " ..
+           "(until it is destroyed, that is).\n\n" ..
+           "To get a staff, first drop any item you are already holding (such as a hammer or " ..
+           "another staff), then approach the staff pile and click the left mouse " ..
+           "button. Alternatively, you can use the \"Take Staff\" icon on the Action Bar."
    }
 }
 
